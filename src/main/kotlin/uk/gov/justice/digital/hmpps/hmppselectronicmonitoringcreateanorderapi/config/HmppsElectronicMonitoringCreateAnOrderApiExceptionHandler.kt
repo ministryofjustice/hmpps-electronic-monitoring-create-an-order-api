@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.hmppstemplatepackagename.config
+package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.config
 
 import jakarta.validation.ValidationException
 import org.slf4j.LoggerFactory
@@ -14,7 +14,7 @@ import org.springframework.web.servlet.resource.NoResourceFoundException
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 
 @RestControllerAdvice
-class HmppsTemplateKotlinExceptionHandler {
+class HmppsElectronicMonitoringCreateAnOrderApiExceptionHandler {
   @ExceptionHandler(ValidationException::class)
   fun handleValidationException(e: ValidationException): ResponseEntity<ErrorResponse> = ResponseEntity
     .status(BAD_REQUEST)
