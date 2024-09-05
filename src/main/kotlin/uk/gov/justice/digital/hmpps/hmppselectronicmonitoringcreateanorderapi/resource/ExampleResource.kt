@@ -1,11 +1,11 @@
-package uk.gov.justice.digital.hmpps.hmppstemplatepackagename.resource
+package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource
 
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-import uk.gov.justice.digital.hmpps.hmppstemplatepackagename.service.ExampleApiService
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.ExampleApiService
 import java.time.LocalDateTime
 
 // This controller is expected to be called from the UI - so the hmpps-template-typescript project.

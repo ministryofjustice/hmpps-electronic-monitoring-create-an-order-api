@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.hmppstemplatepackagename.config
+package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.config
 
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean

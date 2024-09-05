@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.hmppstemplatepackagename.integration
+package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
