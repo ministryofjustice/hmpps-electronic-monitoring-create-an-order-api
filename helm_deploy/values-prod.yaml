@@ -7,9 +7,7 @@ generic-service:
 
   env:
     HMPPS_AUTH_URL: "https://sign-in.hmpps.service.justice.gov.uk/auth"
-    # Template kotlin calls out to itself to provide an example of a service call
-    # TODO: This should be replaced by a call to a different service, or removed
-    EXAMPLE_API_URL: "https://hmpps-electronic-monitoring-create-an-order-api.hmpps.service.justice.gov.uk"
+    SENTRY_ENVIRONMENT: prod
 
 # CloudPlatform AlertManager receiver to route prometheus alerts to slack
 # See https://user-guide.cloud-platform.service.justice.gov.uk/documentation/monitoring-an-app/how-to-create-alarms.html#creating-your-own-custom-alerts
