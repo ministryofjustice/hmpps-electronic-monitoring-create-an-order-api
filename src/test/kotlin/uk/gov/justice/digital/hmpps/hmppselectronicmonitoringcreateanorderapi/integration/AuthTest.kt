@@ -1,8 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration
 
-
 import org.junit.jupiter.api.Test
-class AuthTest : IntegrationTestBase()  {
+class AuthTest : IntegrationTestBase() {
   @Test
   fun `Providing no JWT to a secured endpoint returns 403`() {
     webTestClient.get()
@@ -36,7 +35,7 @@ class AuthTest : IntegrationTestBase()  {
   }
 
   @Test
-  fun `Providing JWT without user name claim return 403`(){
+  fun `Providing JWT without user name claim return 403`() {
     webTestClient.get()
       .uri("/api/CreateForm?title=mockTitle")
       .headers(setAuthorisationWithoutUsername())
@@ -46,10 +45,10 @@ class AuthTest : IntegrationTestBase()  {
   }
 
   @Test
-  fun `Providing JWT without right role return 403`(){
+  fun `Providing JWT without right role return 403`() {
     webTestClient.get()
       .uri("/api/CreateForm?title=mockTitle")
-      .headers(setAuthorisation(roles= emptyList<String>()))
+      .headers(setAuthorisation(roles = emptyList<String>()))
       .exchange()
       .expectStatus()
       .isForbidden

@@ -29,10 +29,9 @@ abstract class IntegrationTestBase {
   ): (HttpHeaders) -> Unit = jwtAuthHelper.setAuthorisationHeader(username = username, scope = scopes, roles = roles)
 
   internal fun setAuthorisationWithoutUsername(
-
     roles: List<String> = listOf("ROLE_COMMUNITY"),
     scopes: List<String> = listOf("read"),
-  ): (HttpHeaders) -> Unit = jwtAuthHelper.setAuthorisationHeader( scope = scopes, roles = roles)
+  ): (HttpHeaders) -> Unit = jwtAuthHelper.setAuthorisationHeader(scope = scopes, roles = roles)
   protected fun stubPingWithResponse(status: Int) {
     hmppsAuth.stubHealthPing(status)
   }
