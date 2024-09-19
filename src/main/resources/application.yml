@@ -24,6 +24,16 @@ spring:
         jwt:
           issuer-uri:  ${services.hmpps-auth.url}issuer
           jwk-set-uri:  ${services.hmpps-auth.url}/.well-known/jwks.json
+      client:
+        registration:
+          serco-api:
+            provider: serco-auth
+            client-id: ${services.serco.client-id}
+            client-secret: ${services.serco.client-secret}
+            authorization-grant-type: password
+        provider:
+          serco-auth:
+            token-uri: ${services.serco.auth-url}
 server:
   port: 8080
   servlet:
