@@ -1,0 +1,13 @@
+spring:
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: create-drop
+  datasource:
+    url: jdbc:postgresql://localhost:5432/postgres?sslmode=prefer
+    username: postgres
+    password: postgres
+
+services:
+  hmppsauth:
+    url: http://localhost:8090/auth
