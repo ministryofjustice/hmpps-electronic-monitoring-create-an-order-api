@@ -24,16 +24,16 @@ class SercoAuthClient(
   private val encodedCredentials = Base64.getEncoder().encodeToString("$clientId:$clientSecret".toByteArray())
 
   fun getClientToken(): String {
-
     return try {
       val response =
         webClient
           .post()
           .uri("")
           .body(
-            BodyInserters.fromFormData("username",username )
+            BodyInserters.fromFormData("username", username)
               .with("password", password)
-              .with("grant_type","password"))
+              .with("grant_type", "password"),
+          )
           .header("Authorization", "Basic $encodedCredentials")
           .retrieve()
           .bodyToMono(String::class.java)

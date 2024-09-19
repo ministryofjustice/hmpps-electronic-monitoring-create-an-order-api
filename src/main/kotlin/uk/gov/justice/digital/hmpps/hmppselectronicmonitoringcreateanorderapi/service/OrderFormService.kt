@@ -10,7 +10,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.re
 @Service
 class OrderFormService(
   val repo: OrderFormRepository,
-  val sercoGateway: SercoGateway
+  val sercoGateway: SercoGateway,
 ) {
 
   fun createOrderForm(title: String, username: String): OrderForm {
