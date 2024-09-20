@@ -1,13 +1,12 @@
-package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.gateway
+package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client
 
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpHeaders
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.SercoAuthClient
 
 @Service
-class SercoGateway(
+class SercoClient(
   @Value("\${services.serco.url}") url: String,
   private val sercoAuthClient: SercoAuthClient,
 ) {

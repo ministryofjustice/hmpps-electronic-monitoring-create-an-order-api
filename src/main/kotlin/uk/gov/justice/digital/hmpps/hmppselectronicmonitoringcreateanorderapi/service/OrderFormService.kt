@@ -1,7 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service
 
 import org.springframework.stereotype.Service
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.gateway.SercoGateway
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.SercoClient
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderForm
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.SubmissionResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FormStatus
@@ -10,7 +10,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.re
 @Service
 class OrderFormService(
   val repo: OrderFormRepository,
-  val sercoGateway: SercoGateway,
+  val sercoClient: SercoClient,
 ) {
 
   fun createOrderForm(title: String, username: String): OrderForm {
@@ -21,7 +21,7 @@ class OrderFormService(
 
   fun submitOrderForm(): SubmissionResult {
     var result = SubmissionResult(false)
-    val deviceWear = sercoGateway.createDeviceWeaer()
+    val deviceWear = sercoClient.createDeviceWeaer()
     return result
   }
 }
