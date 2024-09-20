@@ -16,7 +16,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.se
 
 @RestController
 // TODO: Replace with CEMO Role one created
-@PreAuthorize("hasRole('ROLE_COMMUNITY')")
+@PreAuthorize("hasRole('ROLE_EM_CEMO__CREATE_ORDER')")
 @RequestMapping("/api/")
 class OrderFormController(
   @Autowired val orderFromService: OrderFormService,
