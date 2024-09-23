@@ -18,6 +18,7 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
   private val mockLastName: String = "mockLastName"
   private val mockGender: String = "mockGender"
   private val mockDateOfBirth: LocalDate = LocalDate.of(1970, 1, 1)
+
   @BeforeEach
   fun setup() {
     repo.deleteAll()
@@ -48,7 +49,6 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
 
   @Test
   fun `Device wearer created and saved in database with device wearer details`() {
-
     val result = webTestClient.get()
       .uri("/api/CreateDeviceWearer?orderId=$mockOrderId&firstName=$mockFirstName&lastName=$mockLastName&gender=$mockGender&dateOfBirth=$mockDateOfBirth")
       .headers(setAuthorisation())
