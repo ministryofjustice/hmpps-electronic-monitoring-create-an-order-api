@@ -15,7 +15,7 @@ import java.util.UUID
 
 @RestController
 // TODO: Replace with CEMO Role one created
-@PreAuthorize("hasRole('ROLE_COMMUNITY')")
+@PreAuthorize("hasRole('ROLE_EM_CEMO__CREATE_DEVICE_WEARER')")
 @RequestMapping("/api/")
 class DeviceWearerController(
   @Autowired val deviceWearerService: DeviceWearerService,
