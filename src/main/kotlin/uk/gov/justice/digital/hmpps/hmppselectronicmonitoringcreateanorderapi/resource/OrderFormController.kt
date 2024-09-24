@@ -27,4 +27,12 @@ class OrderFormController(
     val form = orderFromService.createOrderForm(title, username)
     return ResponseEntity(form, HttpStatus.OK)
   }
+
+  @GetMapping("/ListForms")
+  fun listForms(authentication: Authentication): ResponseEntity<List<OrderForm>> {
+    val username = authentication.name
+
+    val orders = orderFromService.listOrderFormsForUser(username)
+    return ResponseEntity(orders, HttpStatus.OK)
+  }
 }

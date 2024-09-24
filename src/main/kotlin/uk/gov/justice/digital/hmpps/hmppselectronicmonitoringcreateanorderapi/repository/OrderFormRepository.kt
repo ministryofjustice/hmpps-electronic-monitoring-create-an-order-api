@@ -6,4 +6,6 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import java.util.UUID
 
 @Repository
-interface OrderFormRepository : JpaRepository<OrderForm, UUID>
+interface OrderFormRepository : JpaRepository<OrderForm, UUID> {
+  fun findByUsername(username: String): List<OrderForm>
+}
