@@ -39,29 +39,9 @@ class OrderFormControllerTest : IntegrationTestBase() {
 
   @Test
   fun `Only forms belonging to user returned from database`() {
-    val result1 = webTestClient.get()
-      .uri("/api/CreateForm?title=mockTitle")
-      .headers(setAuthorisation("User1"))
-      .exchange()
-      .expectStatus()
-      .isOk
-      .expectBody(OrderForm::class.java)
-
-    val result2 = webTestClient.get()
-      .uri("/api/CreateForm?title=mockTitle")
-      .headers(setAuthorisation("User1"))
-      .exchange()
-      .expectStatus()
-      .isOk
-      .expectBody(OrderForm::class.java)
-
-    val result3 = webTestClient.get()
-      .uri("/api/CreateForm?title=mockTitle")
-      .headers(setAuthorisation("User2"))
-      .exchange()
-      .expectStatus()
-      .isOk
-      .expectBody(OrderForm::class.java)
+    createOrder("AUTH_ADM")
+    createOrder("AUTH_ADM")
+    createOrder("AUTH_ADM_2")
 
     // Verify the database is set up correctly
     val allForms = repo.findAll()
@@ -69,11 +49,47 @@ class OrderFormControllerTest : IntegrationTestBase() {
 
     val orderForms = webTestClient.get()
       .uri("/api/ListForms")
-      .headers(setAuthorisation("User1"))
+      .headers(setAuthorisation("AUTH_ADM"))
       .exchange()
       .expectStatus()
       .isOk
       .expectBodyList(OrderForm::class.java)
       .hasSize(2)
+  }
+
+  @Test
+  fun `Should return order if owned by the user`() {
+    val order = createOrder()
+
+    val orderForms = webTestClient.get()
+      .uri("/api/GetForm?id=${order.id}")
+      .headers(setAuthorisation())
+      .exchange()
+      .expectStatus()
+      .isOk
+      .expectBody(OrderForm::class.java)
+      .isEqualTo(order)
+  }
+
+  @Test
+  fun `Should return bad request if order does not exist`() {
+    val orderForms = webTestClient.get()
+      .uri("/api/GetForm?id=${UUID.randomUUID()}")
+      .headers(setAuthorisation())
+      .exchange()
+      .expectStatus()
+      .isBadRequest()
+  }
+
+  @Test
+  fun `Should return bad request if order belongs to another user`() {
+    val order = createOrder("AUTH_ADM")
+
+    val orderForms = webTestClient.get()
+      .uri("/api/GetForm?id=${order.id}")
+      .headers(setAuthorisation("AUTH_ADM_2"))
+      .exchange()
+      .expectStatus()
+      .isBadRequest()
   }
 }

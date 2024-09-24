@@ -41,6 +41,17 @@ class OrderFormControllerTest {
   }
 
   @Test
+  fun `query a single form and return`() {
+    val orderForm = OrderForm(username = "mockUser", status = FormStatus.IN_PROGRESS)
+
+    `when`(orderFormService.getOrderForm("mockUser", orderForm.id)).thenReturn(orderForm)
+    `when`(authentication.name).thenReturn("mockUser")
+
+    val result = controller.getForm(orderForm.id, authentication)
+    Assertions.assertThat(result.body).isEqualTo(orderForm)
+  }
+
+  @Test
   fun `query forms for current user and return`() {
     val orderForms: List<OrderForm> = listOf(
       OrderForm(username = "mockUser", status = FormStatus.IN_PROGRESS),
