@@ -43,8 +43,8 @@ class OrderFormControllerTest {
   @Test
   fun `query forms for current user and return`() {
     val orderForms: List<OrderForm> = listOf(
-      OrderForm(title = "mockForm1", username = "mockUser", status = FormStatus.IN_PROGRESS),
-      OrderForm(title = "mockForm2", username = "mockUser", status = FormStatus.IN_PROGRESS),
+      OrderForm(username = "mockUser", status = FormStatus.IN_PROGRESS),
+      OrderForm(username = "mockUser", status = FormStatus.IN_PROGRESS),
     )
 
     `when`(orderFromService.listOrderFormsForUser("mockUser")).thenReturn(orderForms)
