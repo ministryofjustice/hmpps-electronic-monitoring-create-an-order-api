@@ -20,10 +20,4 @@ class OrderFormService(
     repo.save(orderForm)
     return orderForm
   }
-
-  fun getOrderForm(id: UUID): OrderForm {
-    val order = repo.findById(id).get()
-
-    return order
-  }
 }

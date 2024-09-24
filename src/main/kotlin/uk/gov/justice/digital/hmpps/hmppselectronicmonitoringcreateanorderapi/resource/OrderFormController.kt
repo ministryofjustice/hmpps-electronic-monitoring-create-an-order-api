@@ -7,7 +7,6 @@ import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderForm
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.OrderFormService
@@ -25,12 +24,6 @@ class OrderFormController(
     val username = authentication.name
 
     val form = orderFromService.createOrderForm(username)
-    return ResponseEntity(form, HttpStatus.OK)
-  }
-
-  @GetMapping("/GetForm")
-  fun getForm(@RequestParam("id") id: UUID, authentication: Authentication): ResponseEntity<OrderForm> {
-    val form = orderFromService.getOrderForm(id)
     return ResponseEntity(form, HttpStatus.OK)
   }
 }
