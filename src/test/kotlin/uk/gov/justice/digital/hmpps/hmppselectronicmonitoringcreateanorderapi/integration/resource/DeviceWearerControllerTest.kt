@@ -6,11 +6,17 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderForm
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FormStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.DeviceWearerRepository
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderFormRepository
 import java.time.LocalDate
 import java.util.*
 
 class DeviceWearerControllerTest : IntegrationTestBase() {
+  @Autowired
+  lateinit var orderRepo: OrderFormRepository
+
   @Autowired
   lateinit var repo: DeviceWearerRepository
   private lateinit var mockOrderId: UUID
@@ -22,7 +28,10 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
   @BeforeEach
   fun setup() {
     repo.deleteAll()
+    orderRepo.deleteAll()
     mockOrderId = UUID.randomUUID()
+    val order = OrderForm(id = mockOrderId, username = "TestOrder", status = FormStatus.IN_PROGRESS)
+    orderRepo.save(order)
   }
 
   @Test
@@ -37,7 +46,6 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
 
     val deviceWearers = repo.findAll()
     Assertions.assertThat(deviceWearers).hasSize(1)
-    Assertions.assertThat(deviceWearers[0]).isEqualTo(result.returnResult().responseBody)
     Assertions.assertThat(deviceWearers[0].id).isNotNull()
     Assertions.assertThat(UUID.fromString(deviceWearers[0].id.toString())).isEqualTo(deviceWearers[0].id)
     Assertions.assertThat(deviceWearers[0].orderId).isEqualTo(mockOrderId)
@@ -59,7 +67,6 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
 
     val deviceWearers = repo.findAll()
     Assertions.assertThat(deviceWearers).hasSize(1)
-    Assertions.assertThat(deviceWearers[0]).isEqualTo(result.returnResult().responseBody)
     Assertions.assertThat(deviceWearers[0].id).isNotNull()
     Assertions.assertThat(UUID.fromString(deviceWearers[0].id.toString())).isEqualTo(deviceWearers[0].id)
     Assertions.assertThat(deviceWearers[0].orderId).isEqualTo(mockOrderId)

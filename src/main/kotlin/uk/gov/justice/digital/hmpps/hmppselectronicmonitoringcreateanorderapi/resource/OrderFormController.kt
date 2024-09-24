@@ -11,9 +11,9 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderForm
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.OrderFormService
+import java.util.*
 
 @RestController
-// TODO: Replace with CEMO Role one created
 @PreAuthorize("hasRole('ROLE_EM_CEMO__CREATE_ORDER')")
 @RequestMapping("/api/")
 class OrderFormController(
@@ -21,10 +21,16 @@ class OrderFormController(
 ) {
 
   @GetMapping("/CreateForm")
-  fun createForm(@RequestParam("title") title: String, authentication: Authentication): ResponseEntity<OrderForm> {
+  fun createForm(authentication: Authentication): ResponseEntity<OrderForm> {
     val username = authentication.name
 
-    val form = orderFromService.createOrderForm(title, username)
+    val form = orderFromService.createOrderForm(username)
+    return ResponseEntity(form, HttpStatus.OK)
+  }
+
+  @GetMapping("/GetForm")
+  fun getForm(@RequestParam("id") id: UUID, authentication: Authentication): ResponseEntity<OrderForm> {
+    val form = orderFromService.getOrderForm(id)
     return ResponseEntity(form, HttpStatus.OK)
   }
 }
