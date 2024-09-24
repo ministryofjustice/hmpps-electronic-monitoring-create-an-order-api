@@ -16,7 +16,6 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
   implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-  implementation("org.springframework:spring-webmvc0:6.1.13")
   implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:4.4.4")
   implementation("io.sentry:sentry-spring-boot-starter-jakarta:7.14.0")
   runtimeOnly("org.flywaydb:flyway-database-postgresql")
