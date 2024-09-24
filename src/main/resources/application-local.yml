@@ -11,3 +11,4 @@ spring:
 services:
   hmppsauth:
     url: http://localhost:8090/auth
+    #url: https://sign-in-dev.hmpps.service.justice.gov.uk/auth
