@@ -15,4 +15,8 @@ class OrderFormService(
     repo.save(orderForm)
     return orderForm
   }
+
+  fun listOrderFormsForUser(username: String): List<OrderForm> {
+    return repo.findByUsername(username)
+  }
 }

@@ -38,4 +38,44 @@ class OrderFormControllerTest : IntegrationTestBase() {
     Assertions.assertThat(forms[0].id).isNotNull()
     Assertions.assertThat(UUID.fromString(forms[0].id.toString())).isEqualTo(forms[0].id)
   }
+
+  @Test
+  fun `Only forms belonging to user returned from database`() {
+    val result1 = webTestClient.get()
+      .uri("/api/CreateForm?title=mockTitle")
+      .headers(setAuthorisation("User1"))
+      .exchange()
+      .expectStatus()
+      .isOk
+      .expectBody(OrderForm::class.java)
+
+    val result2 = webTestClient.get()
+      .uri("/api/CreateForm?title=mockTitle")
+      .headers(setAuthorisation("User1"))
+      .exchange()
+      .expectStatus()
+      .isOk
+      .expectBody(OrderForm::class.java)
+
+    val result3 = webTestClient.get()
+      .uri("/api/CreateForm?title=mockTitle")
+      .headers(setAuthorisation("User2"))
+      .exchange()
+      .expectStatus()
+      .isOk
+      .expectBody(OrderForm::class.java)
+
+    // Verify the database is set up correctly
+    val allForms = repo.findAll()
+    Assertions.assertThat(allForms).hasSize(3)
+
+    val orderForms = webTestClient.get()
+      .uri("/api/ListForms")
+      .headers(setAuthorisation("User1"))
+      .exchange()
+      .expectStatus()
+      .isOk
+      .expectBodyList(OrderForm::class.java)
+      .hasSize(2)
+  }
 }
