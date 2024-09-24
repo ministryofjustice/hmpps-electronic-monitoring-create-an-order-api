@@ -72,17 +72,17 @@ class OrderFormControllerTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `Should return bad request if order does not exist`() {
+  fun `Should return not found if order does not exist`() {
     val orderForms = webTestClient.get()
       .uri("/api/GetForm?id=${UUID.randomUUID()}")
       .headers(setAuthorisation())
       .exchange()
       .expectStatus()
-      .isBadRequest()
+      .isNotFound()
   }
 
   @Test
-  fun `Should return bad request if order belongs to another user`() {
+  fun `Should return not found if order belongs to another user`() {
     val order = createOrder("AUTH_ADM")
 
     val orderForms = webTestClient.get()
@@ -90,6 +90,6 @@ class OrderFormControllerTest : IntegrationTestBase() {
       .headers(setAuthorisation("AUTH_ADM_2"))
       .exchange()
       .expectStatus()
-      .isBadRequest()
+      .isNotFound()
   }
 }
