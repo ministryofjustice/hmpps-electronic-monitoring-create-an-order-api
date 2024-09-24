@@ -12,6 +12,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FormStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.OrderFormController
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.OrderFormService
+import java.util.*
 
 @ActiveProfiles("test")
 @JsonTest
@@ -27,12 +28,16 @@ class OrderFormControllerTest {
 
   @Test
   fun `create a new order form and return`() {
-    val mockForm = OrderForm(title = "mockForm", username = "mockUser", status = FormStatus.IN_PROGRESS)
-    `when`(orderFromService.createOrderForm("mockForm", "mockUser")).thenReturn(mockForm)
+    val mockForm = OrderForm(username = "mockUser", status = FormStatus.IN_PROGRESS)
+    `when`(orderFromService.createOrderForm("mockUser")).thenReturn(mockForm)
     `when`(authentication.name).thenReturn("mockUser")
 
-    val result = controller.createForm("mockForm", authentication)
-    Assertions.assertThat(result.body).isEqualTo(mockForm)
+    val result = controller.createForm(authentication)
+    Assertions.assertThat(result.body).isNotNull
+    Assertions.assertThat(result.body!!.username).isEqualTo("mockUser")
+    Assertions.assertThat(result.body!!.status).isEqualTo(FormStatus.IN_PROGRESS)
+    Assertions.assertThat(result.body!!.id).isNotNull()
+    Assertions.assertThat(UUID.fromString(result.body!!.id.toString())).isEqualTo(result.body!!.id)
   }
 
   @Test

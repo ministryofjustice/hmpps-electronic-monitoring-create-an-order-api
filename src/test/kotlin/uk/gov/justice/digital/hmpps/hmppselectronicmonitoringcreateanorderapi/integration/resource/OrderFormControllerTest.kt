@@ -22,7 +22,7 @@ class OrderFormControllerTest : IntegrationTestBase() {
   @Test
   fun `Form created and saved in database`() {
     val result = webTestClient.get()
-      .uri("/api/CreateForm?title=mockTitle")
+      .uri("/api/CreateForm")
       .headers(setAuthorisation())
       .exchange()
       .expectStatus()
@@ -31,8 +31,6 @@ class OrderFormControllerTest : IntegrationTestBase() {
 
     val forms = repo.findAll()
     Assertions.assertThat(forms).hasSize(1)
-    Assertions.assertThat(forms[0]).isEqualTo(result.returnResult().responseBody)
-    Assertions.assertThat(forms[0].title).isEqualTo("mockTitle")
     Assertions.assertThat(forms[0].username).isEqualTo("AUTH_ADM")
     Assertions.assertThat(forms[0].status).isEqualTo(FormStatus.IN_PROGRESS)
     Assertions.assertThat(forms[0].id).isNotNull()

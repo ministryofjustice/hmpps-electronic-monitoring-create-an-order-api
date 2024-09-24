@@ -24,12 +24,12 @@ abstract class IntegrationTestBase {
 
   internal fun setAuthorisation(
     username: String? = "AUTH_ADM",
-    roles: List<String> = listOf("ROLE_EM_CEMO__CREATE_ORDER"),
+    roles: List<String> = listOf("ROLE_EM_CEMO__CREATE_ORDER", "ROLE_EM_CEMO__CREATE_DEVICE_WEARER"),
     scopes: List<String> = listOf("read"),
   ): (HttpHeaders) -> Unit = jwtAuthHelper.setAuthorisationHeader(username = username, scope = scopes, roles = roles)
 
   internal fun setAuthorisationWithoutUsername(
-    roles: List<String> = listOf("ROLE_EM_CEMO__CREATE_ORDER"),
+    roles: List<String> = listOf("ROLE_EM_CEMO__CREATE_ORDER", "ROLE_EM_CEMO__CREATE_DEVICE_WEARER"),
     scopes: List<String> = listOf("read"),
   ): (HttpHeaders) -> Unit = jwtAuthHelper.setAuthorisationHeader(scope = scopes, roles = roles)
   protected fun stubPingWithResponse(status: Int) {

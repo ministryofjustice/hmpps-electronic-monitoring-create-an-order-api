@@ -37,7 +37,7 @@ class AuthTest : IntegrationTestBase() {
   @Test
   fun `Providing JWT without user name claim return 403`() {
     webTestClient.get()
-      .uri("/api/CreateForm?title=mockTitle")
+      .uri("/api/CreateForm")
       .headers(setAuthorisationWithoutUsername())
       .exchange()
       .expectStatus()
@@ -47,7 +47,7 @@ class AuthTest : IntegrationTestBase() {
   @Test
   fun `Providing JWT without right role return 403`() {
     webTestClient.get()
-      .uri("/api/CreateForm?title=mockTitle")
+      .uri("/api/CreateForm")
       .headers(setAuthorisation(roles = emptyList<String>()))
       .exchange()
       .expectStatus()
