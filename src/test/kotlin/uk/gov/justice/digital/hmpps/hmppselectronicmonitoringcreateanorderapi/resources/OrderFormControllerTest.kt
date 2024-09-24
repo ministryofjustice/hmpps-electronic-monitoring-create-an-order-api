@@ -17,8 +17,8 @@ import java.util.*
 @ActiveProfiles("test")
 @JsonTest
 class OrderFormControllerTest {
-  private val orderFromService: OrderFormService = mock()
-  private val controller = OrderFormController(orderFromService)
+  private val orderFormService: OrderFormService = mock()
+  private val controller = OrderFormController(orderFormService)
   private lateinit var authentication: Authentication
 
   @BeforeEach
@@ -29,7 +29,7 @@ class OrderFormControllerTest {
   @Test
   fun `create a new order form and return`() {
     val mockForm = OrderForm(username = "mockUser", status = FormStatus.IN_PROGRESS)
-    `when`(orderFromService.createOrderForm("mockUser")).thenReturn(mockForm)
+    `when`(orderFormService.createOrderForm("mockUser")).thenReturn(mockForm)
     `when`(authentication.name).thenReturn("mockUser")
 
     val result = controller.createForm(authentication)
@@ -41,13 +41,24 @@ class OrderFormControllerTest {
   }
 
   @Test
+  fun `query a single form and return`() {
+    val orderForm = OrderForm(username = "mockUser", status = FormStatus.IN_PROGRESS)
+
+    `when`(orderFormService.getOrderForm("mockUser", orderForm.id)).thenReturn(orderForm)
+    `when`(authentication.name).thenReturn("mockUser")
+
+    val result = controller.getForm(orderForm.id, authentication)
+    Assertions.assertThat(result.body).isEqualTo(orderForm)
+  }
+
+  @Test
   fun `query forms for current user and return`() {
     val orderForms: List<OrderForm> = listOf(
       OrderForm(username = "mockUser", status = FormStatus.IN_PROGRESS),
       OrderForm(username = "mockUser", status = FormStatus.IN_PROGRESS),
     )
 
-    `when`(orderFromService.listOrderFormsForUser("mockUser")).thenReturn(orderForms)
+    `when`(orderFormService.listOrderFormsForUser("mockUser")).thenReturn(orderForms)
     `when`(authentication.name).thenReturn("mockUser")
 
     val result = controller.listForms(authentication)

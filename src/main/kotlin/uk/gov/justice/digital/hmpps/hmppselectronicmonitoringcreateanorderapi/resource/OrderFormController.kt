@@ -1,13 +1,17 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource
 
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.dao.EmptyResultDataAccessException
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.Authentication
+import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ErrorMessage
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderForm
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.OrderFormService
 import java.util.*
@@ -16,22 +20,37 @@ import java.util.*
 @PreAuthorize("hasRole('ROLE_EM_CEMO__CREATE_ORDER')")
 @RequestMapping("/api/")
 class OrderFormController(
-  @Autowired val orderFromService: OrderFormService,
+  @Autowired val orderFormService: OrderFormService,
 ) {
+
+  @ExceptionHandler(EmptyResultDataAccessException::class)
+  fun handleEmptyResultException(e: EmptyResultDataAccessException): ResponseEntity<ErrorMessage> {
+    return ResponseEntity
+      .status(HttpStatus.NOT_FOUND)
+      .body(ErrorMessage(404, "Not Found"))
+  }
 
   @GetMapping("/CreateForm")
   fun createForm(authentication: Authentication): ResponseEntity<OrderForm> {
     val username = authentication.name
 
-    val form = orderFromService.createOrderForm(username)
+    val form = orderFormService.createOrderForm(username)
     return ResponseEntity(form, HttpStatus.OK)
+  }
+
+  @GetMapping("/GetForm")
+  fun getForm(@RequestParam("id") id: UUID, authentication: Authentication): ResponseEntity<OrderForm> {
+    val username = authentication.name
+    val order = orderFormService.getOrderForm(username, id)
+
+    return ResponseEntity(order, HttpStatus.OK)
   }
 
   @GetMapping("/ListForms")
   fun listForms(authentication: Authentication): ResponseEntity<List<OrderForm>> {
     val username = authentication.name
 
-    val orders = orderFromService.listOrderFormsForUser(username)
+    val orders = orderFormService.listOrderFormsForUser(username)
     return ResponseEntity(orders, HttpStatus.OK)
   }
 }

@@ -24,4 +24,8 @@ class OrderFormService(
   fun listOrderFormsForUser(username: String): List<OrderForm> {
     return repo.findByUsername(username)
   }
+
+  fun getOrderForm(username: String, id: UUID): OrderForm {
+    return repo.findByUsernameAndId(username, id)
+  }
 }

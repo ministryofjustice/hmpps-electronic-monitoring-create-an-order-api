@@ -9,6 +9,7 @@ import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.HmppsAuthApiExtension
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.HmppsAuthApiExtension.Companion.hmppsAuth
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderForm
 import uk.gov.justice.hmpps.test.kotlin.auth.JwtAuthorisationHelper
 
 @ExtendWith(HmppsAuthApiExtension::class)
@@ -35,4 +36,16 @@ abstract class IntegrationTestBase {
   protected fun stubPingWithResponse(status: Int) {
     hmppsAuth.stubHealthPing(status)
   }
+
+  fun createOrder(
+    username: String? = "AUTH_ADM",
+  ): OrderForm =
+    webTestClient.get()
+      .uri("/api/CreateForm")
+      .headers(setAuthorisation(username))
+      .exchange()
+      .expectStatus()
+      .isOk
+      .returnResult(OrderForm::class.java)
+      .responseBody.blockFirst()!!
 }

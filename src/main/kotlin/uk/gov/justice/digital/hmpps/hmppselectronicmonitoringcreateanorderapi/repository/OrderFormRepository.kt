@@ -8,4 +8,6 @@ import java.util.UUID
 @Repository
 interface OrderFormRepository : JpaRepository<OrderForm, UUID> {
   fun findByUsername(username: String): List<OrderForm>
+
+  fun findByUsernameAndId(username: String, id: UUID): OrderForm
 }
