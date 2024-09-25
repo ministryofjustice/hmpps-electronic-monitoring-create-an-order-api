@@ -36,6 +36,7 @@ class DeviceWearerServiceTest {
     Assertions.assertThat(result.orderId).isEqualTo(mockOrderId)
     Assertions.assertThat(result.firstName).isNull()
     Assertions.assertThat(result.lastName).isNull()
+    Assertions.assertThat(result.alias).isNull()
     Assertions.assertThat(result.gender).isNull()
     Assertions.assertThat(result.dateOfBirth).isNull()
     argumentCaptor<DeviceWearer>().apply {

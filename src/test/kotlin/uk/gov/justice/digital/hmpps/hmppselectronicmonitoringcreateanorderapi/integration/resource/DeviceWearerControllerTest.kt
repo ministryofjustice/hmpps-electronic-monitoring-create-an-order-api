@@ -51,6 +51,7 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
     Assertions.assertThat(deviceWearers[0].orderId).isEqualTo(mockOrderId)
     Assertions.assertThat(deviceWearers[0].firstName).isNull()
     Assertions.assertThat(deviceWearers[0].lastName).isNull()
+    Assertions.assertThat(deviceWearers[0].alias).isNull()
     Assertions.assertThat(deviceWearers[0].gender).isNull()
     Assertions.assertThat(deviceWearers[0].dateOfBirth).isNull()
   }

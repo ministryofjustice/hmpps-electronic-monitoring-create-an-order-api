@@ -29,6 +29,9 @@ data class DeviceWearer(
   @Column(name = "LAST_NAME", nullable = true)
   var lastName: String? = null,
 
+  @Column(name = "ALIAS", nullable = true)
+  var alias: String? = null,
+
   @Column(name = "GENDER", nullable = true)
   var gender: String? = null,
 

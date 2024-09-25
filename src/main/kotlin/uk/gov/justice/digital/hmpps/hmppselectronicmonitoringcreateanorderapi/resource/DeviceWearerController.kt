@@ -24,10 +24,11 @@ class DeviceWearerController(
     @RequestParam("orderId") orderId: UUID,
     @RequestParam("firstName") firstName: String? = null,
     @RequestParam("lastName") lastName: String? = null,
+    @RequestParam("alias") alias: String? = null,
     @RequestParam("gender") gender: String? = null,
     @RequestParam("dateOfBirth") dateOfBirth: LocalDate? = null,
   ): ResponseEntity<DeviceWearer> {
-    val deviceWearer = deviceWearerService.createDeviceWearer(orderId, firstName, lastName, gender, dateOfBirth)
+    val deviceWearer = deviceWearerService.createDeviceWearer(orderId, firstName, lastName, alias, gender, dateOfBirth)
     return ResponseEntity(deviceWearer, HttpStatus.OK)
   }
 

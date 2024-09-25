@@ -11,8 +11,8 @@ class DeviceWearerService(
   val repo: DeviceWearerRepository,
 ) {
 
-  fun createDeviceWearer(orderId: UUID, firstName: String? = null, lastName: String? = null, gender: String? = null, dateOfBirth: LocalDate? = null): DeviceWearer {
-    val deviceWearer = DeviceWearer(orderId = orderId, firstName = firstName, lastName = lastName, gender = gender, dateOfBirth = dateOfBirth)
+  fun createDeviceWearer(orderId: UUID, firstName: String? = null, lastName: String? = null, alias: String? = null, gender: String? = null, dateOfBirth: LocalDate? = null): DeviceWearer {
+    val deviceWearer = DeviceWearer(orderId = orderId, firstName = firstName, lastName = lastName, alias = alias, gender = gender, dateOfBirth = dateOfBirth)
     repo.save(deviceWearer)
     return deviceWearer
   }
