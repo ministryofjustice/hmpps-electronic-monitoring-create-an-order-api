@@ -6,4 +6,6 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import java.util.UUID
 
 @Repository
-interface DeviceWearerRepository : JpaRepository<DeviceWearer, UUID>
+interface DeviceWearerRepository : JpaRepository<DeviceWearer, UUID> {
+  fun findByOrderId(orderId: UUID): DeviceWearer?
+}

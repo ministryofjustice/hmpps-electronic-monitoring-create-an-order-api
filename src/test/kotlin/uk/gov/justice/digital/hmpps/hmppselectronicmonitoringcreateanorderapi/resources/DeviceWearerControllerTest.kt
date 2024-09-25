@@ -35,7 +35,31 @@ class DeviceWearerControllerTest {
 
     val result = controller.createDeviceWearer(mockOrderId)
 
-    Assertions.assertThat(result.statusCode.is2xxSuccessful)
     Assertions.assertThat(result.body).isEqualTo(mockDeviceWearer)
+    Assertions.assertThat(result.statusCode.is2xxSuccessful)
+  }
+
+  @Test
+  fun `Get a device wearer`() {
+    val mockDeviceWearer = DeviceWearer(orderId = mockOrderId)
+    `when`(deviceWearerService.getDeviceWearer(mockOrderId)).thenReturn(mockDeviceWearer)
+    `when`(authentication.name).thenReturn("mockUser")
+
+    val result = controller.getDeviceWearer(mockOrderId)
+
+    Assertions.assertThat(result.body).isEqualTo(mockDeviceWearer)
+    Assertions.assertThat(result.statusCode.is2xxSuccessful)
+  }
+
+  @Test
+  fun `Return a 4xx status if no device wearer is found with the specified order ID`() {
+    val mockDeviceWearer = null
+    `when`(deviceWearerService.getDeviceWearer(mockOrderId)).thenReturn(mockDeviceWearer)
+    `when`(authentication.name).thenReturn("mockUser")
+
+    val result = controller.getDeviceWearer(mockOrderId)
+
+    Assertions.assertThat(result.body).isEqualTo(mockDeviceWearer)
+    Assertions.assertThat(result.statusCode.is4xxClientError)
   }
 }

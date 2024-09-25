@@ -16,4 +16,8 @@ class DeviceWearerService(
     repo.save(deviceWearer)
     return deviceWearer
   }
+
+  fun getDeviceWearer(orderId: UUID): DeviceWearer? {
+    return repo.findByOrderId(orderId)
+  }
 }

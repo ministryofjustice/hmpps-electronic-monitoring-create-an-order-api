@@ -19,7 +19,6 @@ import java.util.UUID
 class DeviceWearerController(
   @Autowired val deviceWearerService: DeviceWearerService,
 ) {
-
   @GetMapping("/CreateDeviceWearer")
   fun createDeviceWearer(
     @RequestParam("orderId") orderId: UUID,
@@ -30,5 +29,17 @@ class DeviceWearerController(
   ): ResponseEntity<DeviceWearer> {
     val deviceWearer = deviceWearerService.createDeviceWearer(orderId, firstName, lastName, gender, dateOfBirth)
     return ResponseEntity(deviceWearer, HttpStatus.OK)
+  }
+
+  @GetMapping("/GetDeviceWearer")
+  fun getDeviceWearer(
+    @RequestParam("orderId") orderId: UUID,
+  ): ResponseEntity<DeviceWearer> {
+    val deviceWearer = deviceWearerService.getDeviceWearer(orderId)
+    return if (deviceWearer != null) {
+      ResponseEntity(deviceWearer, HttpStatus.OK)
+    } else {
+      ResponseEntity(deviceWearer, HttpStatus.NOT_FOUND)
+    }
   }
 }

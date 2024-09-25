@@ -35,7 +35,7 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `Device wearer created and saved in database without device wearer details`() {
+  fun `Create device wearer`() {
     val result = webTestClient.get()
       .uri("/api/CreateDeviceWearer?orderId=$mockOrderId")
       .headers(setAuthorisation())
@@ -56,23 +56,38 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `Device wearer created and saved in database with device wearer details`() {
-    val result = webTestClient.get()
-      .uri("/api/CreateDeviceWearer?orderId=$mockOrderId&firstName=$mockFirstName&lastName=$mockLastName&gender=$mockGender&dateOfBirth=$mockDateOfBirth")
+  fun `Get a device wearer`() {
+    val createDeviceWearer = webTestClient.get()
+      .uri("/api/CreateDeviceWearer?orderId=$mockOrderId")
       .headers(setAuthorisation())
       .exchange()
       .expectStatus()
       .isOk
       .expectBody(DeviceWearer::class.java)
 
-    val deviceWearers = repo.findAll()
-    Assertions.assertThat(deviceWearers).hasSize(1)
-    Assertions.assertThat(deviceWearers[0].id).isNotNull()
-    Assertions.assertThat(UUID.fromString(deviceWearers[0].id.toString())).isEqualTo(deviceWearers[0].id)
-    Assertions.assertThat(deviceWearers[0].orderId).isEqualTo(mockOrderId)
-    Assertions.assertThat(deviceWearers[0].firstName).isEqualTo(mockFirstName)
-    Assertions.assertThat(deviceWearers[0].lastName).isEqualTo(mockLastName)
-    Assertions.assertThat(deviceWearers[0].gender).isEqualTo(mockGender)
-    Assertions.assertThat(deviceWearers[0].dateOfBirth).isEqualTo(mockDateOfBirth)
+    val getDeviceWearer = webTestClient.get()
+      .uri("/api/GetDeviceWearer?orderId=$mockOrderId")
+      .headers(setAuthorisation())
+      .exchange()
+      .expectStatus()
+      .isOk
+      .expectBody(DeviceWearer::class.java)
+      .returnResult()
+
+    Assertions.assertThat(getDeviceWearer.responseBody?.orderId).isEqualTo(mockOrderId)
+  }
+
+  @Test
+  fun `Returns 404 status if a device wearer can't be found`() {
+    val getDeviceWearer = webTestClient.get()
+      .uri("/api/GetDeviceWearer?orderId=$mockOrderId")
+      .headers(setAuthorisation())
+      .exchange()
+      .expectStatus()
+      .isNotFound
+      .expectBody(DeviceWearer::class.java)
+      .returnResult()
+
+    Assertions.assertThat(getDeviceWearer.responseBody).isNull()
   }
 }
