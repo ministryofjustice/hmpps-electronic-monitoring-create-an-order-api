@@ -9,8 +9,10 @@
 - [Get started](#get-started)
     - [Using IntelliJ IDEA](#using-intellij-idea)
 - [Usage](#usage)
-    - [Running the application](#running-the-application-locally)
+    - [Running the application locally](#running-the-application-locally)
       - [Calling endpoints](#calling-endpoints)
+        - [Generate a token for a HMPPS Auth client](#generate-a-token-for-a-hmpps-auth-client)
+      - [Running the application locally with the UI](#running-both-the-ui-and-the-api-locally)
 
 
 ## About this project
@@ -72,7 +74,7 @@ Or, to run the application using the command line:
 SPRING_PROFILES_ACTIVE=local ./gradlew bootRun
 ```
 
-Then visit [http://localhost:8081/health](hhttp://localhost:8081/health).
+Then visit [http://localhost:8080/health](hhttp://localhost:8081/health).
 
 #### Calling endpoints
 
@@ -82,8 +84,7 @@ locally, [the in-memory database is seeded with data including a number of clien
 If you wish to call an endpoint of a dependent API directly, an access token must be provided that is generated from the HMPPS Auth
 service.
 
-##### Generate a token for a HMPPS Auth client:
-
+##### Generate a token for a HMPPS Auth client
 
 ```bash
 curl -X POST "http://localhost:8090/auth/oauth/token?grant_type=client_credentials" \ 
@@ -116,3 +117,14 @@ There are a couple of options for doing so such as [curl](https://curl.se/),
 [Postman](https://www.postman.com/) and using in-built Swagger UI via the browser e.g.
 for Prison API at [http://localhost:4030/swagger-ui/index.html](http://localhost:4030/swagger-ui/index.html) which documents the
 available API endpoints.
+
+#### Running both the UI And the API locally
+
+The [Create an Electronic Monitoring Order UI](https://github.com/ministryofjustice/hmpps-electronic-monitoring-create-an-order) uses HMPPS Auth in development (rather than locally with Docker).
+
+To interact with the API using the front end, with both running locally:
+1. In the application-local.yml file in the API, change the HMPPS Auth URL value from http://localhost:8090/auth to https://sign-in-dev.hmpps.service.justice.gov.uk/auth
+2. Run the UI locally, using [the UI documentation](https://github.com/ministryofjustice/hmpps-electronic-monitoring-create-an-order)
+3. Run the API locally using the same steps outlined in [get started](#get-started), but replacing the command in step 1 with `docker compose pull && docker compose up --scale hmpps-electronic-monitoring-create-an-order-api=0 --scale hmpps-auth=0` to start a docker instance of the database but not HMPPS Auth.
+
+There is no need to generate a HMPPS Auth token, as authentication is handled by the front end. Valid personal credentials will be needed to sign in via the UI.
