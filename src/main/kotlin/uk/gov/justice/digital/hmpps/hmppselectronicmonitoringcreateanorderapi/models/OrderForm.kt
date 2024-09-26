@@ -31,6 +31,9 @@ data class OrderForm(
   @OneToOne(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "orderForm", orphanRemoval = true)
   var deviceWearer: DeviceWearer? = null,
 
+  @OneToOne(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "order", orphanRemoval = true)
+  var deviceWearerContactDetails: DeviceWearerContactDetails? = null,
+
   @OneToOne(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "orderForm", orphanRemoval = true)
   var monitoringConditions: MonitoringConditions? = null,
 

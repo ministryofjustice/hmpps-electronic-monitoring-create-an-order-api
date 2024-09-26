@@ -8,7 +8,12 @@ configurations {
   testImplementation { exclude(group = "org.junit.vintage") }
 }
 
+repositories {
+  mavenCentral()
+}
+
 dependencies {
+  implementation("com.googlecode.libphonenumber:libphonenumber:8.13.45")
   implementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter:1.0.7")
   implementation("org.springframework.boot:spring-boot-starter-webflux")
   implementation("org.springframework.boot:spring-boot-starter-security")

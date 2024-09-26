@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.s
 
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearerContactDetails
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.MonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderForm
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FormStatus
@@ -16,6 +17,7 @@ class OrderFormService(
   fun createOrderForm(username: String): OrderForm {
     val orderForm = OrderForm(username = username, status = FormStatus.IN_PROGRESS)
     orderForm.deviceWearer = DeviceWearer(orderId = orderForm.id)
+    orderForm.deviceWearerContactDetails = DeviceWearerContactDetails(order = orderForm)
     orderForm.monitoringConditions = MonitoringConditions(orderId = orderForm.id)
     repo.save(orderForm)
     return orderForm
