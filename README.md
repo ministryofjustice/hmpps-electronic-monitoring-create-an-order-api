@@ -4,78 +4,115 @@
 [![Docker Repository on Quay](https://img.shields.io/badge/quay.io-repository-2496ED.svg?logo=docker)](https://quay.io/repository/hmpps/hmpps-electronic-monitoring-create-an-order-api)
 [![API docs](https://img.shields.io/badge/API_docs_-view-85EA2D.svg?logo=swagger)](https://hmpps-electronic-monitoring-create-an-order-api-dev.hmpps.service.justice.gov.uk/webjars/swagger-ui/index.html?configUrl=/v3/api-docs)
 
-This is a skeleton project from which to create new kotlin projects from.
+## Contents
+- [About this project](#about-this-project)
+- [Get started](#get-started)
+    - [Using IntelliJ IDEA](#using-intellij-idea)
+- [Usage](#usage)
+    - [Running the application](#running-the-application-locally)
+      - [Calling endpoints](#calling-endpoints)
 
-# Instructions
 
-If this is a HMPPS project then the project will be created as part of bootstrapping - 
-see https://github.com/ministryofjustice/dps-project-bootstrap.
+## About this project
 
-## Creating a CloudPlatform namespace
+An API used by the [Create an Electronic Monitoring Order UI](https://github.com/ministryofjustice/hmpps-electronic-monitoring-create-an-order), a service that allows users to create electronic monitoring orders.
+It's built using [Spring Boot](https://spring.io/projects/spring-boot/) and [Kotlin](https://kotlinlang.org/)
+as well as the following technologies for its infrastructure:
+- [AWS](https://aws.amazon.com/) - Services utilise AWS features through Cloud Platform.
+- [CircleCI](https://circleci.com/developer) - Used for our build platform, responsible for executing workflows to
+  build, validate, test and deploy our project.
+- [Cloud Platform](https://user-guide.cloud-platform.service.justice.gov.uk/#cloud-platform-user-guide) - Ministry of
+  Justice's (MOJ) cloud hosting platform built on top of AWS which offers numerous tools such as logging, monitoring and
+  alerting for our services.
+- [Docker](https://www.docker.com/) - The API is built into docker images which are deployed to our containers.
+- [Kubernetes](https://kubernetes.io/docs/home/) - Creates 'pods' to host our environment. Manages auto-scaling, load
+  balancing and networking to our application.
 
-When deploying to a new namespace, you may wish to use this template kotlin project namespace as the basis for your new namespace:
+## Get started
 
-<https://github.com/ministryofjustice/cloud-platform-environments/tree/main/namespaces/live.cloud-platform.service.justice.gov.uk/hmpps-electronic-monitoring-create-an-order-api>
+### Using IntelliJ IDEA
 
-Copy this folder, update all the existing namespace references, and submit a PR to the CloudPlatform team. Further instructions from the CloudPlatform team can be found here: <https://user-guide.cloud-platform.service.justice.gov.uk/#cloud-platform-user-guide>
+When using an IDE like [IntelliJ IDEA](https://www.jetbrains.com/idea/), getting started is very simple as it will
+handle installing the required Java SDK and [Gradle](https://gradle.org/) versions. The following are the steps for
+using IntelliJ but other IDEs will prove similar.
 
-## Renaming from Hmpps Electronic Monitoring Create An Order Api - github Actions
-
-Once the new repository is deployed. Navigate to the repository in github, and select the `Actions` tab.
-Click the link to `Enable Actions on this repository`.
-
-Find the Action workflow named: `rename-project-create-pr` and click `Run workflow`.  This workflow will
-execute the `rename-project.bash` and create Pull Request for you to review.  Review the PR and merge.
-
-Note: ideally this workflow would run automatically however due to a recent change github Actions are not
-enabled by default on newly created repos. There is no way to enable Actions other then to click the button in the UI.
-If this situation changes we will update this project so that the workflow is triggered during the bootstrap project.
-Further reading: <https://github.community/t/workflow-isnt-enabled-in-repos-generated-from-template/136421>
-
-## Manually renaming from Hmpps Electronic Monitoring Create An Order Api
-
-Run the `rename-project.bash` and create a PR.
-
-The `rename-project.bash` script takes a single argument - the name of the project and calculates from it:
-* The main class name (project name converted to pascal case) 
-* The project description (class name with spaces between the words)
-* The main package name (project name with hyphens removed)
-
-It then performs a search and replace and directory renames so the project is ready to be used.
-
-## Filling in the `productId`
-
-To allow easy identification of an application, the product Id of the overall product should be set in `values.yaml`. 
-The Service Catalogue contains a list of these IDs and is currently in development here https://developer-portal.hmpps.service.justice.gov.uk/products
-
-## Example Resources
-
-There is an `ExampleResource` that includes best practice and also serve as spring security examples.  The template
-typescript project has a demonstration that calls this endpoint as well.
-
-For the demonstration, rather than introducing a dependency on a different service, this application calls out to
-itself.  This is only to show a service calling out to another service and is certainly not recommended!
-
-## Running the application locally
-
-The application comes with a `dev` spring profile that includes default settings for running locally.  This is not 
-necessary when deploying to kubernetes as these values are included in the helm configuration templates - 
-e.g. `values-dev.yaml`.
-
-There is also a `docker-compose.yml` that can be used to run a local instance of the template in docker and also an
-instance of HMPPS Auth (required if your service calls out to other services using a token).
+1. Clone the repo.
 
 ```bash
-docker compose pull && docker compose up
+git clone git@github.com:ministryofjustice/hmpps-electronic-monitoring-create-an-order-api.git
 ```
-will build the application and run it and HMPPS Auth within a local docker instance.
 
-### Running the application in Intellij
+2. Launch IntelliJ and open the `hmpps-electronic-monitoring-create-an-order-api` project by navigating to the location of the repository.
+
+Upon opening the project, IntelliJ will begin downloading and installing necessary dependencies which may take a few
+minutes.
+
+3. Enable pre-commit hooks for formatting and linting code.
 
 ```bash
-docker compose pull && docker compose up --scale hmpps-electronic-monitoring-create-an-order-api=0 
+./gradlew addKtlintFormatGitPreCommitHook addKtlintCheckGitPreCommitHook
 ```
 
-will just start a docker instance of HMPPS Auth.  The application should then be started with a `dev` active profile
-in Intellij.
+## Usage
 
+### Running the application locally
+
+To run the application using IntelliJ:
+
+1. Run `docker compose pull && docker compose up --scale hmpps-electronic-monitoring-create-an-order-api=0`
+, which will just start a docker instance of the database and HMPPS Auth.
+2. Click the drop-down button for the `HmppsElectronicMonitoringCreateAnOrderApi` run configuration file in the top right corner, and select Edit Configurations. 
+    - For the 'Active Profiles' field, put 'local'
+    - Apply these changes
+3. Click the run button.
+
+Or, to run the application using the command line:
+
+```bash
+SPRING_PROFILES_ACTIVE=local ./gradlew bootRun
+```
+
+Then visit [http://localhost:8081/health](hhttp://localhost:8081/health).
+
+#### Calling endpoints
+
+As part of getting the HMPPS Auth service running
+locally, [the in-memory database is seeded with data including a number of clients](https://github.com/ministryofjustice/hmpps-auth/blob/main/src/main/resources/db/dev/data/auth/V900_0__clients.sql). A client can have different permissions i.e. read, write, reporting, although strangely the column name is called `​​autoapprove`.
+
+If you wish to call an endpoint of a dependent API directly, an access token must be provided that is generated from the HMPPS Auth
+service.
+
+##### Generate a token for a HMPPS Auth client:
+
+
+```bash
+curl -X POST "http://localhost:8090/auth/oauth/token?grant_type=client_credentials" \ 
+-H 'Content-Type: application/json' \
+-H "Authorization: Basic $(echo -n hmpps-electronic-monitoring-cemo-ui:clientsecret | base64)"
+```
+
+This uses the client ID: `hmpps-electronic-monitoring-cemo-ui` and the client secret: `clientsecret`. A number of seeded
+clients use the same client secret.
+
+A JWT token is returned as a result, it will look something like this:
+
+```json
+{
+  "access_token": "eyJhbGciOiJSUzI1NiIs...BAtWD653XpCzn8A",
+  "token_type": "bearer",
+  "expires_in": 3599,
+  "scope": "read write",
+  "user_name": "CEMO.INTEGRATION",
+  "sub": "CEMO.INTEGRATION",
+  "auth_source": "none",
+  "jti": "Ptr-MIdUBDGDOl8_qqeIuNV9Wpc",
+  "iss": "http://localhost:8090/auth/issuer"
+}
+```
+
+Using the value of `access_token`, you can call a dependent API using it as a Bearer Token.
+
+There are a couple of options for doing so such as [curl](https://curl.se/),
+[Postman](https://www.postman.com/) and using in-built Swagger UI via the browser e.g.
+for Prison API at [http://localhost:4030/swagger-ui/index.html](http://localhost:4030/swagger-ui/index.html) which documents the
+available API endpoints.
