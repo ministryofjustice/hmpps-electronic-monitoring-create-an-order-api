@@ -95,7 +95,7 @@ class DeviceWearerContactDetailsControllerTest : IntegrationTestBase() {
 
   @Test
   fun `Contact details cannot be updated for a submitted order`() {
-    var order = createOrder() // TODO: Create submitted order
+    var order = createOrder()
 
     order.status = FormStatus.SUBMITTED
     orderFormRepo.save(order)
