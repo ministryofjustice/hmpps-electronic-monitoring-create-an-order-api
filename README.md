@@ -17,7 +17,8 @@
 
 ## About this project
 
-An API used by the [Create an Electronic Monitoring Order UI](https://github.com/ministryofjustice/hmpps-electronic-monitoring-create-an-order), a service that allows users to create electronic monitoring orders.
+An API used by the [Create an Electronic Monitoring Order UI](https://github.com/ministryofjustice/hmpps-electronic-monitoring-create-an-order), 
+a service that allows users to create electronic monitoring orders.
 It's built using [Spring Boot](https://spring.io/projects/spring-boot/) and [Kotlin](https://kotlinlang.org/)
 as well as the following technologies for its infrastructure:
 - [AWS](https://aws.amazon.com/) - Services utilise AWS features through Cloud Platform.
@@ -44,7 +45,8 @@ using IntelliJ but other IDEs will prove similar.
 git clone git@github.com:ministryofjustice/hmpps-electronic-monitoring-create-an-order-api.git
 ```
 
-2. Launch IntelliJ and open the `hmpps-electronic-monitoring-create-an-order-api` project by navigating to the location of the repository.
+2. Launch IntelliJ and open the `hmpps-electronic-monitoring-create-an-order-api` project by navigating to the location 
+of the repository.
 
 Upon opening the project, IntelliJ will begin downloading and installing necessary dependencies which may take a few
 minutes.
@@ -63,8 +65,10 @@ To run the application using IntelliJ:
 
 1. Run `docker compose pull && docker compose up --scale hmpps-electronic-monitoring-create-an-order-api=0`
 , which will just start a docker instance of the database and HMPPS Auth.
-2. Click the drop-down button for the `HmppsElectronicMonitoringCreateAnOrderApi` run configuration file in the top right corner, and select Edit Configurations. 
+2. Click the drop-down button for the `HmppsElectronicMonitoringCreateAnOrderApi` run configuration file in the top 
+right corner, and select Edit Configurations. 
     - For the 'Active Profiles' field, put 'local'
+    - You may also need to set the JDK to openjdk-23 or openjdk-21
     - Apply these changes
 3. Click the run button.
 
@@ -76,13 +80,14 @@ SPRING_PROFILES_ACTIVE=local ./gradlew bootRun
 
 Then visit [http://localhost:8080/health](hhttp://localhost:8081/health).
 
+
 #### Calling endpoints
 
-As part of getting the HMPPS Auth service running
-locally, [the in-memory database is seeded with data including a number of clients](https://github.com/ministryofjustice/hmpps-auth/blob/main/src/main/resources/db/dev/data/auth/V900_0__clients.sql). A client can have different permissions i.e. read, write, reporting, although strangely the column name is called `​​autoapprove`.
+As part of getting the HMPPS Auth service running locally, 
+[the in-memory database is seeded with data including a number of clients](https://github.com/ministryofjustice/hmpps-auth/blob/main/src/main/resources/db/dev/data/auth/V900_0__clients.sql). 
+A client can have different permissions i.e. read, write, reporting, although strangely the column name is called `​​autoapprove`.
 
-If you wish to call an endpoint of a dependent API directly, an access token must be provided that is generated from the HMPPS Auth
-service.
+If you wish to call an endpoint of the API, an access token must be provided that is generated from the HMPPS Auth service.
 
 ##### Generate a token for a HMPPS Auth client
 
@@ -111,12 +116,10 @@ A JWT token is returned as a result, it will look something like this:
 }
 ```
 
-Using the value of `access_token`, you can call a dependent API using it as a Bearer Token.
+Using the value of `access_token`, you can call this API using it as a Bearer Token.
 
-There are a couple of options for doing so such as [curl](https://curl.se/),
-[Postman](https://www.postman.com/) and using in-built Swagger UI via the browser e.g.
-for Prison API at [http://localhost:4030/swagger-ui/index.html](http://localhost:4030/swagger-ui/index.html) which documents the
-available API endpoints.
+There are a couple of options for doing so such as [curl](https://curl.se/) or
+[Postman](https://www.postman.com/).
 
 #### Running both the UI And the API locally
 
