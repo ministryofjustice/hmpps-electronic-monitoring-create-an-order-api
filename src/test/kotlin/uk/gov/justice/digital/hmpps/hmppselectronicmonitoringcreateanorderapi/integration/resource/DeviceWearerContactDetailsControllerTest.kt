@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.resource
 
+import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -9,6 +10,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.DeviceWearerContactDetailsRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderFormRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.UpdateContactDetailsDto
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidationError
 import java.util.*
 
 class DeviceWearerContactDetailsControllerTest : IntegrationTestBase() {
@@ -72,13 +74,24 @@ class DeviceWearerContactDetailsControllerTest : IntegrationTestBase() {
   @Test
   fun `Contact details cannot be updated with an invalid contact number`() {
     val order = createOrder()
-    val contactDetails = webTestClient.post()
+    val result = webTestClient.post()
       .uri("/api/order/${order.id}/contact-details")
       .bodyValue(UpdateContactDetailsDto(contactNumber = "abc"))
       .headers(setAuthorisation("AUTH_ADM"))
       .exchange()
       .expectStatus()
       .isBadRequest
+      .expectBodyList(ValidationError::class.java)
+      .returnResult()
+
+    Assertions.assertThat(result.responseBody).isNotNull
+    Assertions.assertThat(result.responseBody).hasSize(1)
+    Assertions.assertThat(result.responseBody).first().isNotNull
+
+    val validationError = result.responseBody!!.first()
+
+    Assertions.assertThat(validationError.field).isEqualTo("contactNumber")
+    Assertions.assertThat(validationError.error).isEqualTo("Phone number is in an incorrect format")
   }
 
   @Test
