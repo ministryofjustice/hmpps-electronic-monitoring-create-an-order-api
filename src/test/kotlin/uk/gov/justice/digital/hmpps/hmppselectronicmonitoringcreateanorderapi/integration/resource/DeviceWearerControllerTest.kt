@@ -22,6 +22,7 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
   private lateinit var mockOrderId: UUID
   private val mockFirstName: String = "mockFirstName"
   private val mockLastName: String = "mockLastName"
+  private val mockAlias: String = "mockAlias"
   private val mockGender: String = "mockGender"
   private val mockDateOfBirth: LocalDate = LocalDate.of(1970, 1, 1)
 
@@ -79,7 +80,7 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `Returns 404 status if a device wearer can't be found`() {
+  fun `Get device wearer returns 404 status if a device wearer can't be found`() {
     val getDeviceWearer = webTestClient.get()
       .uri("/api/GetDeviceWearer?orderId=$mockOrderId")
       .headers(setAuthorisation())
@@ -90,5 +91,46 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
       .returnResult()
 
     Assertions.assertThat(getDeviceWearer.responseBody).isNull()
+  }
+
+  @Test
+  fun `Update device wearer`() {
+    val createDeviceWearer = webTestClient.get()
+      .uri("/api/CreateDeviceWearer?orderId=$mockOrderId")
+      .headers(setAuthorisation())
+      .exchange()
+      .expectStatus()
+      .isOk
+      .expectBody(DeviceWearer::class.java)
+
+    val updateDeviceWearer = webTestClient.patch()
+      .uri("/api/UpdateDeviceWearer?orderId=$mockOrderId&firstName=$mockFirstName&lastName=$mockLastName&alias=$mockAlias&gender=$mockGender&dateOfBirth=$mockDateOfBirth")
+      .headers(setAuthorisation())
+      .exchange()
+      .expectStatus()
+      .isOk
+      .expectBody(DeviceWearer::class.java)
+      .returnResult()
+
+    Assertions.assertThat(updateDeviceWearer.responseBody?.orderId).isEqualTo(mockOrderId)
+    Assertions.assertThat(updateDeviceWearer.responseBody?.firstName).isEqualTo(mockFirstName)
+    Assertions.assertThat(updateDeviceWearer.responseBody?.lastName).isEqualTo(mockLastName)
+    Assertions.assertThat(updateDeviceWearer.responseBody?.alias).isEqualTo(mockAlias)
+    Assertions.assertThat(updateDeviceWearer.responseBody?.gender).isEqualTo(mockGender)
+    Assertions.assertThat(updateDeviceWearer.responseBody?.dateOfBirth).isEqualTo(mockDateOfBirth)
+  }
+
+  @Test
+  fun `Update device wearer returns 404 status if a device wearer can't be found`() {
+    val updateDeviceWearer = webTestClient.patch()
+      .uri("/api/UpdateDeviceWearer?orderId=$mockOrderId&firstName=$mockFirstName&lastName=$mockLastName&alias=$mockAlias&gender=$mockGender&dateOfBirth=$mockDateOfBirth")
+      .headers(setAuthorisation())
+      .exchange()
+      .expectStatus()
+      .isNotFound
+      .expectBody(DeviceWearer::class.java)
+      .returnResult()
+
+    Assertions.assertThat(updateDeviceWearer.responseBody).isNull()
   }
 }

@@ -20,4 +20,17 @@ class DeviceWearerService(
   fun getDeviceWearer(orderId: UUID): DeviceWearer? {
     return repo.findByOrderId(orderId)
   }
+
+  fun updateDeviceWearer(orderId: UUID, firstName: String? = null, lastName: String? = null, alias: String? = null, gender: String? = null, dateOfBirth: LocalDate? = null): DeviceWearer? {
+    val deviceWearer = repo.findByOrderId(orderId)
+    if (deviceWearer != null) {
+      deviceWearer.firstName = firstName
+      deviceWearer.lastName = lastName
+      deviceWearer.alias = alias
+      deviceWearer.gender = gender
+      deviceWearer.dateOfBirth = dateOfBirth
+      repo.save(deviceWearer)
+    }
+    return deviceWearer
+  }
 }
