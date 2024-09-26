@@ -17,7 +17,7 @@ class OrderFormService(
   fun createOrderForm(username: String): OrderForm {
     val orderForm = OrderForm(username = username, status = FormStatus.IN_PROGRESS)
     orderForm.deviceWearer = DeviceWearer(orderId = orderForm.id)
-    orderForm.deviceWearerContactDetails = DeviceWearerContactDetails(order = orderForm)
+    orderForm.deviceWearerContactDetails = DeviceWearerContactDetails(orderId = orderForm.id)
     orderForm.monitoringConditions = MonitoringConditions(orderId = orderForm.id)
     repo.save(orderForm)
     return orderForm

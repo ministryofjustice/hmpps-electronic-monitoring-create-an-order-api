@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.s
 import jakarta.persistence.EntityNotFoundException
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearerContactDetails
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FormStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.DeviceWearerContactDetailsRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.UpdateContactDetailsDto
 import java.util.*
@@ -13,11 +14,22 @@ class DeviceWearerContactDetailsService(
 ) {
 
   fun getContactDetails(orderId: UUID, username: String): DeviceWearerContactDetails {
-    return repo.findByOrderIdAndOrderUsername(orderId, username).orElseThrow { EntityNotFoundException("Contact Details for $orderId not found") }
+    return repo.findByOrderIdAndOrderUsername(
+      orderId,
+      username,
+    ).orElseThrow {
+      EntityNotFoundException("Contact Details for $orderId not found")
+    }
   }
 
   fun updateContactDetails(orderId: UUID, username: String, updateContactDetailsRecord: UpdateContactDetailsDto): DeviceWearerContactDetails {
-    val contactDetails = repo.findByOrderIdAndOrderUsername(orderId, username).orElseThrow { EntityNotFoundException("Contact Details for $orderId not found") }
+    val contactDetails = repo.findByOrderIdAndOrderUsernameAndOrderStatus(
+      orderId,
+      username,
+      FormStatus.IN_PROGRESS,
+    ).orElseThrow {
+      EntityNotFoundException("Contact Details for $orderId not found")
+    }
 
     with(updateContactDetailsRecord) {
       contactDetails.contactNumber = contactNumber
