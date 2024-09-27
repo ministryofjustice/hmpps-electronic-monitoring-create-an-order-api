@@ -16,7 +16,10 @@ class OrderFormService(
 ) {
 
   fun createOrderForm(username: String): OrderForm {
-    val orderForm = OrderForm(username = username, status = FormStatus.IN_PROGRESS)
+    val orderForm = OrderForm(
+      username = username,
+      status = FormStatus.IN_PROGRESS,
+    )
     orderForm.deviceWearer = DeviceWearer(orderId = orderForm.id)
     orderForm.deviceWearerContactDetails = DeviceWearerContactDetails(orderId = orderForm.id)
     orderForm.monitoringConditions = MonitoringConditions(orderId = orderForm.id)
@@ -30,7 +33,7 @@ class OrderFormService(
     )
   }
 
-  fun getOrderForm(username: String, id: UUID): OrderForm {
+  fun getOrderForm(username: String, id: UUID): OrderForm? {
     return repo.findByUsernameAndId(
       username,
       id,

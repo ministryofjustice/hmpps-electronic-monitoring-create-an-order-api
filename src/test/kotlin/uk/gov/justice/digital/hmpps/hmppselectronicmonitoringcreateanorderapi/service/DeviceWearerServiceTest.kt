@@ -11,19 +11,22 @@ import org.springframework.boot.test.autoconfigure.json.JsonTest
 import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.DeviceWearerRepository
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderFormRepository
 import java.util.*
 
 @ActiveProfiles("test")
 @JsonTest
 class DeviceWearerServiceTest {
-  private lateinit var repo: DeviceWearerRepository
+  private lateinit var deviceWearerRepo: DeviceWearerRepository
+  private lateinit var orderFormRepo: OrderFormRepository
   private lateinit var service: DeviceWearerService
   private lateinit var mockOrderId: UUID
 
   @BeforeEach
   fun setup() {
-    repo = mock(DeviceWearerRepository::class.java)
-    service = DeviceWearerService(repo)
+    deviceWearerRepo = mock(DeviceWearerRepository::class.java)
+    orderFormRepo = mock(OrderFormRepository::class.java)
+    service = DeviceWearerService(deviceWearerRepo, orderFormRepo)
     mockOrderId = UUID.randomUUID()
   }
 
@@ -40,7 +43,7 @@ class DeviceWearerServiceTest {
     Assertions.assertThat(result.gender).isNull()
     Assertions.assertThat(result.dateOfBirth).isNull()
     argumentCaptor<DeviceWearer>().apply {
-      verify(repo, times(1)).save(capture())
+      verify(deviceWearerRepo, times(1)).save(capture())
       Assertions.assertThat(firstValue).isEqualTo(result)
     }
   }
