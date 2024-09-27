@@ -74,7 +74,7 @@ class DeviceWearerControllerTest {
     val result = controller.getDeviceWearer(mockOrderId, authentication)
 
     Assertions.assertThat(result.body).isEqualTo(mockDeviceWearer)
-    Assertions.assertThat(result.statusCode.is5xxServerError)
+    Assertions.assertThat(result.statusCode.is4xxClientError())
   }
 
   @Test
