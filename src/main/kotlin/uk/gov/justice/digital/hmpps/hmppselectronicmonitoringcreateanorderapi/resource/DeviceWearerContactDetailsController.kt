@@ -1,14 +1,11 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource
 
-import jakarta.persistence.EntityNotFoundException
-import jakarta.validation.ConstraintViolationException
 import jakarta.validation.Valid
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.Authentication
-import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -16,8 +13,6 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearerContactDetails
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ErrorMessage
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidationError
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.DeviceWearerContactDetailsService
 import java.util.*
 
@@ -27,22 +22,6 @@ import java.util.*
 class DeviceWearerContactDetailsController(
   @Autowired val contactDetailsService: DeviceWearerContactDetailsService,
 ) {
-
-  @ExceptionHandler(EntityNotFoundException::class)
-  fun handleEmptyResultException(e: EntityNotFoundException): ResponseEntity<ErrorMessage> {
-    return ResponseEntity
-      .status(HttpStatus.NOT_FOUND)
-      .body(ErrorMessage(404, "Not Found"))
-  }
-
-  @ExceptionHandler(ConstraintViolationException::class)
-  fun handleConstraintViolationException(e: ConstraintViolationException): ResponseEntity<List<ValidationError>> {
-    val details: List<ValidationError> = e.constraintViolations.stream().map { violation ->
-      ValidationError(violation.propertyPath.toString(), violation.message)
-    }.toList()
-
-    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(details)
-  }
 
   @GetMapping("/order/{orderId}/contact-details")
   fun getContactDetails(

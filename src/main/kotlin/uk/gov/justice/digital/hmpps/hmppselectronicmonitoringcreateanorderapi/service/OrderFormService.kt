@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service
 
+import jakarta.persistence.EntityNotFoundException
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearerContactDetails
@@ -24,10 +25,17 @@ class OrderFormService(
   }
 
   fun listOrderFormsForUser(username: String): List<OrderForm> {
-    return repo.findByUsername(username)
+    return repo.findByUsername(
+      username,
+    )
   }
 
   fun getOrderForm(username: String, id: UUID): OrderForm {
-    return repo.findByUsernameAndId(username, id)
+    return repo.findByUsernameAndId(
+      username,
+      id,
+    ).orElseThrow {
+      EntityNotFoundException("Order ($id) for $username not found")
+    }
   }
 }
