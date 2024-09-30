@@ -29,6 +29,12 @@ data class DeviceWearer(
   @Column(name = "LAST_NAME", nullable = true)
   var lastName: String? = null,
 
+  @Column(name = "PREFERRED_NAME", nullable = true)
+  var preferredName: String? = null,
+
+  @Column(name = "ALIAS", nullable = true)
+  var alias: String? = null,
+
   @Column(name = "GENDER", nullable = true)
   var gender: String? = null,
 
@@ -37,7 +43,7 @@ data class DeviceWearer(
 
   @OneToOne
   @JoinColumn(name = "ORDER_ID", updatable = false, insertable = false)
-  private val orderForm: OrderForm? = null,
+  private val order: OrderForm? = null,
 
   @OneToOne(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "deviceWearer", orphanRemoval = true)
   var responsibleAdult: ResponsibleAdult? = null,

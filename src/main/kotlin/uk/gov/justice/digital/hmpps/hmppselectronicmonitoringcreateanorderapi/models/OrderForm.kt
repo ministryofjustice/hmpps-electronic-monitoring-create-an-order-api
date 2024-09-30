@@ -28,7 +28,7 @@ data class OrderForm(
   @Column(name = "STATUS", nullable = false)
   var status: FormStatus,
 
-  @OneToOne(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "orderForm", orphanRemoval = true)
+  @OneToOne(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "order", orphanRemoval = true)
   var deviceWearer: DeviceWearer? = null,
 
   @OneToOne(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "order", orphanRemoval = true)

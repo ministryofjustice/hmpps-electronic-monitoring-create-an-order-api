@@ -21,7 +21,7 @@ class OrderFormControllerTest : IntegrationTestBase() {
 
   @Test
   fun `Form created and saved in database`() {
-    val result = webTestClient.get()
+    webTestClient.get()
       .uri("/api/CreateForm")
       .headers(setAuthorisation())
       .exchange()
@@ -47,7 +47,7 @@ class OrderFormControllerTest : IntegrationTestBase() {
     val allForms = repo.findAll()
     Assertions.assertThat(allForms).hasSize(3)
 
-    val orderForms = webTestClient.get()
+    webTestClient.get()
       .uri("/api/ListForms")
       .headers(setAuthorisation("AUTH_ADM"))
       .exchange()
@@ -61,7 +61,7 @@ class OrderFormControllerTest : IntegrationTestBase() {
   fun `Should return order if owned by the user`() {
     val order = createOrder()
 
-    val orderForms = webTestClient.get()
+    webTestClient.get()
       .uri("/api/GetForm?id=${order.id}")
       .headers(setAuthorisation())
       .exchange()
@@ -73,7 +73,7 @@ class OrderFormControllerTest : IntegrationTestBase() {
 
   @Test
   fun `Should return not found if order does not exist`() {
-    val orderForms = webTestClient.get()
+    webTestClient.get()
       .uri("/api/GetForm?id=${UUID.randomUUID()}")
       .headers(setAuthorisation())
       .exchange()
@@ -85,7 +85,7 @@ class OrderFormControllerTest : IntegrationTestBase() {
   fun `Should return not found if order belongs to another user`() {
     val order = createOrder("AUTH_ADM")
 
-    val orderForms = webTestClient.get()
+    webTestClient.get()
       .uri("/api/GetForm?id=${order.id}")
       .headers(setAuthorisation("AUTH_ADM_2"))
       .exchange()
