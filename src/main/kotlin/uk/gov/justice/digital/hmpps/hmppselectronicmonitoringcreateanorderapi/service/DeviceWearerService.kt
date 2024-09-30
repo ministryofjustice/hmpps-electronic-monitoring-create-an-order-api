@@ -38,7 +38,6 @@ class DeviceWearerService(
     with(deviceWearerUpdateRecord) {
       deviceWearer.firstName = firstName
       deviceWearer.lastName = lastName
-      deviceWearer.preferredName = preferredName
       deviceWearer.alias = alias
       deviceWearer.gender = gender
       deviceWearer.dateOfBirth = dateOfBirth

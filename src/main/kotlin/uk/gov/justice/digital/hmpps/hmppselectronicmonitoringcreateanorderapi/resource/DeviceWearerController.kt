@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.DeviceWearerService
-import java.time.LocalDate
+import java.time.ZonedDateTime
 import java.util.UUID
 
 @RestController
@@ -58,8 +58,7 @@ class DeviceWearerController(
 data class UpdateDeviceWearerDto(
   val firstName: String? = null,
   val lastName: String? = null,
-  val preferredName: String? = null,
   val alias: String? = null,
   val gender: String? = null,
-  val dateOfBirth: LocalDate? = null,
+  val dateOfBirth: ZonedDateTime? = null,
 )
