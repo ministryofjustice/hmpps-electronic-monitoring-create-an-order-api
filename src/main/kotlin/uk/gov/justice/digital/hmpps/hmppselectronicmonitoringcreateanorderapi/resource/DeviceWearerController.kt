@@ -58,6 +58,7 @@ class DeviceWearerController(
 data class UpdateDeviceWearerDto(
   val firstName: String? = null,
   val lastName: String? = null,
+  val preferredName: String? = null,
   val alias: String? = null,
   val gender: String? = null,
   val dateOfBirth: LocalDate? = null,
