@@ -6,22 +6,15 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderForm
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FormStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.DeviceWearerRepository
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderFormRepository
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.UpdateDeviceWearerDto
 import java.time.LocalDate
 import java.util.*
 
 class DeviceWearerControllerTest : IntegrationTestBase() {
   @Autowired
-  lateinit var orderRepo: OrderFormRepository
-
-  @Autowired
   lateinit var deviceWearerRepo: DeviceWearerRepository
 
-  private lateinit var mockOrderId: UUID
-  private val mockUser = "mockUser"
   private val mockFirstName: String = "mockFirstName"
   private val mockLastName: String = "mockLastName"
   private val mockAlias: String = "mockAlias"
@@ -31,61 +24,29 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
   @BeforeEach
   fun setup() {
     deviceWearerRepo.deleteAll()
-    orderRepo.deleteAll()
-    mockOrderId = UUID.randomUUID()
-    val order = OrderForm(id = mockOrderId, username = mockUser, status = FormStatus.IN_PROGRESS)
-    orderRepo.save(order)
-  }
-
-  @Test
-  fun `Create device wearer`() {
-    webTestClient.get()
-      .uri("/api/CreateDeviceWearer?orderId=$mockOrderId")
-      .headers(setAuthorisation(mockUser))
-      .exchange()
-      .expectStatus()
-      .isOk
-      .expectBody(DeviceWearer::class.java)
-
-    val deviceWearers = deviceWearerRepo.findAll()
-    Assertions.assertThat(deviceWearers).hasSize(1)
-    Assertions.assertThat(deviceWearers[0].id).isNotNull()
-    Assertions.assertThat(UUID.fromString(deviceWearers[0].id.toString())).isEqualTo(deviceWearers[0].id)
-    Assertions.assertThat(deviceWearers[0].orderId).isEqualTo(mockOrderId)
-    Assertions.assertThat(deviceWearers[0].firstName).isNull()
-    Assertions.assertThat(deviceWearers[0].lastName).isNull()
-    Assertions.assertThat(deviceWearers[0].alias).isNull()
-    Assertions.assertThat(deviceWearers[0].gender).isNull()
-    Assertions.assertThat(deviceWearers[0].dateOfBirth).isNull()
   }
 
   @Test
   fun `Get a device wearer`() {
-    webTestClient.get()
-      .uri("/api/CreateDeviceWearer?orderId=$mockOrderId")
-      .headers(setAuthorisation(mockUser))
-      .exchange()
-      .expectStatus()
-      .isOk
-      .expectBody(DeviceWearer::class.java)
+    val order = createOrder()
 
     val getDeviceWearer = webTestClient.get()
-      .uri("/api/GetDeviceWearer?orderId=$mockOrderId")
-      .headers(setAuthorisation(mockUser))
+      .uri("/api/order/${order.id}/device-wearer")
+      .headers(setAuthorisation("AUTH_ADM"))
       .exchange()
       .expectStatus()
       .isOk
       .expectBody(DeviceWearer::class.java)
       .returnResult()
 
-    Assertions.assertThat(getDeviceWearer.responseBody?.orderId).isEqualTo(mockOrderId)
+    Assertions.assertThat(getDeviceWearer.responseBody?.orderId).isEqualTo(order.id)
   }
 
   @Test
   fun `Get device wearer returns 404 status if a device wearer can't be found`() {
     webTestClient.get()
-      .uri("/api/GetDeviceWearer?orderId=$mockOrderId")
-      .headers(setAuthorisation(mockUser))
+      .uri("/api/order/${UUID.randomUUID()}/device-wearer")
+      .headers(setAuthorisation("AUTH_ADM"))
       .exchange()
       .expectStatus()
       .isNotFound()
@@ -93,17 +54,11 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
 
   @Test
   fun `Get device wearer returns 404 status if the order belongs to another user`() {
-    webTestClient.get()
-      .uri("/api/CreateDeviceWearer?orderId=$mockOrderId")
-      .headers(setAuthorisation("USER_1"))
-      .exchange()
-      .expectStatus()
-      .isOk
-      .expectBody(DeviceWearer::class.java)
+    val order = createOrder()
 
     webTestClient.get()
-      .uri("/api/GetDeviceWearer?orderId=$mockOrderId")
-      .headers(setAuthorisation("USER_2"))
+      .uri("/api/order/${order.id}/device-wearer")
+      .headers(setAuthorisation("AUTH_ADM_2"))
       .exchange()
       .expectStatus()
       .isNotFound()
@@ -111,24 +66,26 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
 
   @Test
   fun `Update device wearer`() {
-    webTestClient.get()
-      .uri("/api/CreateDeviceWearer?orderId=$mockOrderId")
-      .headers(setAuthorisation(mockUser))
-      .exchange()
-      .expectStatus()
-      .isOk
-      .expectBody(DeviceWearer::class.java)
-
-    val updateDeviceWearer = webTestClient.patch()
-      .uri("/api/UpdateDeviceWearer?orderId=$mockOrderId&firstName=$mockFirstName&lastName=$mockLastName&alias=$mockAlias&gender=$mockGender&dateOfBirth=$mockDateOfBirth")
-      .headers(setAuthorisation(mockUser))
+    val order = createOrder()
+    val updateDeviceWearer = webTestClient.post()
+      .uri("/api/order/${order.id}/device-wearer")
+      .bodyValue(
+        UpdateDeviceWearerDto(
+          firstName = mockFirstName,
+          lastName = mockLastName,
+          alias = mockAlias,
+          gender = mockGender,
+          dateOfBirth = mockDateOfBirth,
+        ),
+      )
+      .headers(setAuthorisation("AUTH_ADM"))
       .exchange()
       .expectStatus()
       .isOk
       .expectBody(DeviceWearer::class.java)
       .returnResult()
 
-    Assertions.assertThat(updateDeviceWearer.responseBody?.orderId).isEqualTo(mockOrderId)
+    Assertions.assertThat(updateDeviceWearer.responseBody?.orderId).isEqualTo(order.id)
     Assertions.assertThat(updateDeviceWearer.responseBody?.firstName).isEqualTo(mockFirstName)
     Assertions.assertThat(updateDeviceWearer.responseBody?.lastName).isEqualTo(mockLastName)
     Assertions.assertThat(updateDeviceWearer.responseBody?.alias).isEqualTo(mockAlias)
@@ -138,9 +95,18 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
 
   @Test
   fun `Update device wearer returns 404 status if a device wearer can't be found`() {
-    webTestClient.patch()
-      .uri("/api/UpdateDeviceWearer?orderId=$mockOrderId&firstName=$mockFirstName&lastName=$mockLastName&alias=$mockAlias&gender=$mockGender&dateOfBirth=$mockDateOfBirth")
-      .headers(setAuthorisation(mockUser))
+    webTestClient.post()
+      .uri("/api/order/${UUID.randomUUID()}/device-wearer")
+      .bodyValue(
+        UpdateDeviceWearerDto(
+          firstName = mockFirstName,
+          lastName = mockLastName,
+          alias = mockAlias,
+          gender = mockGender,
+          dateOfBirth = mockDateOfBirth,
+        ),
+      )
+      .headers(setAuthorisation("AUTH_ADM"))
       .exchange()
       .expectStatus()
       .isNotFound()
@@ -148,17 +114,19 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
 
   @Test
   fun `Update device wearer returns 404 status if the order belongs to another user`() {
-    webTestClient.get()
-      .uri("/api/CreateDeviceWearer?orderId=$mockOrderId")
-      .headers(setAuthorisation(mockUser))
-      .exchange()
-      .expectStatus()
-      .isOk
-      .expectBody(DeviceWearer::class.java)
-
-    webTestClient.patch()
-      .uri("/api/UpdateDeviceWearer?orderId=$mockOrderId&firstName=$mockFirstName&lastName=$mockLastName&alias=$mockAlias&gender=$mockGender&dateOfBirth=$mockDateOfBirth")
-      .headers(setAuthorisation("USER_1"))
+    val order = createOrder()
+    webTestClient.post()
+      .uri("/api/order/${order.id}/device-wearer")
+      .bodyValue(
+        UpdateDeviceWearerDto(
+          firstName = mockFirstName,
+          lastName = mockLastName,
+          alias = mockAlias,
+          gender = mockGender,
+          dateOfBirth = mockDateOfBirth,
+        ),
+      )
+      .headers(setAuthorisation("AUTH_ADM_2"))
       .exchange()
       .expectStatus()
       .isNotFound()

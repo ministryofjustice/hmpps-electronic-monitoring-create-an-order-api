@@ -10,6 +10,7 @@ import org.springframework.security.core.Authentication
 import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.DeviceWearerController
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.UpdateDeviceWearerDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.DeviceWearerService
 import java.time.LocalDate
 import java.util.*
@@ -35,18 +36,6 @@ class DeviceWearerControllerTest {
   }
 
   @Test
-  fun `create a new device wearer and return`() {
-    val mockDeviceWearer = DeviceWearer(orderId = mockOrderId)
-    `when`(deviceWearerService.createDeviceWearer(mockOrderId)).thenReturn(mockDeviceWearer)
-    `when`(authentication.name).thenReturn("mockUser")
-
-    val result = controller.createDeviceWearer(mockOrderId)
-
-    Assertions.assertThat(result.body).isEqualTo(mockDeviceWearer)
-    Assertions.assertThat(result.statusCode.is2xxSuccessful)
-  }
-
-  @Test
   fun `Get a device wearer`() {
     val mockDeviceWearer = DeviceWearer(
       orderId = mockOrderId,
@@ -56,7 +45,7 @@ class DeviceWearerControllerTest {
       gender = null,
       dateOfBirth = null,
     )
-    `when`(deviceWearerService.getDeviceWearer(mockUser, mockOrderId)).thenReturn(mockDeviceWearer)
+    `when`(deviceWearerService.getDeviceWearer(mockOrderId, mockUser)).thenReturn(mockDeviceWearer)
     `when`(authentication.name).thenReturn(mockUser)
 
     val result = controller.getDeviceWearer(mockOrderId, authentication)
@@ -68,7 +57,7 @@ class DeviceWearerControllerTest {
   @Test
   fun `Get device wearer returns a 4xx status if no record matches the order ID & user`() {
     val mockDeviceWearer = null
-    `when`(deviceWearerService.getDeviceWearer(mockUser, mockOrderId)).thenReturn(mockDeviceWearer)
+    `when`(deviceWearerService.getDeviceWearer(mockOrderId, mockUser)).thenReturn(mockDeviceWearer)
     `when`(authentication.name).thenReturn(mockUser)
 
     val result = controller.getDeviceWearer(mockOrderId, authentication)
@@ -87,26 +76,37 @@ class DeviceWearerControllerTest {
       gender = mockGender,
       dateOfBirth = mockDateOfBirth,
     )
+    UpdateDeviceWearerDto(
+      alias = mockAlias,
+      firstName = mockFirstName,
+      lastName = mockLastName,
+      gender = mockGender,
+      dateOfBirth = mockDateOfBirth,
+    )
     `when`(
       deviceWearerService.updateDeviceWearer(
         username = mockUser,
         orderId = mockOrderId,
-        firstName = mockFirstName,
-        lastName = mockLastName,
-        alias = mockAlias,
-        gender = mockGender,
-        dateOfBirth = mockDateOfBirth,
+        deviceWearerUpdateRecord = UpdateDeviceWearerDto(
+          alias = mockAlias,
+          firstName = mockFirstName,
+          lastName = mockLastName,
+          gender = mockGender,
+          dateOfBirth = mockDateOfBirth,
+        ),
       ),
     ).thenReturn(mockDeviceWearer)
     `when`(authentication.name).thenReturn("mockUser")
 
     val result = controller.updateDeviceWearer(
       orderId = mockOrderId,
-      firstName = mockFirstName,
-      lastName = mockLastName,
-      alias = mockAlias,
-      gender = mockGender,
-      dateOfBirth = mockDateOfBirth,
+      deviceWearerUpdateRecord = UpdateDeviceWearerDto(
+        alias = mockAlias,
+        firstName = mockFirstName,
+        lastName = mockLastName,
+        gender = mockGender,
+        dateOfBirth = mockDateOfBirth,
+      ),
       authentication,
     )
 
@@ -119,18 +119,30 @@ class DeviceWearerControllerTest {
     val mockDeviceWearer = null
     `when`(
       deviceWearerService.updateDeviceWearer(
-        username = mockUser,
         orderId = mockOrderId,
-        firstName = mockFirstName,
-        lastName = mockLastName,
-        alias = mockAlias,
-        gender = mockGender,
-        dateOfBirth = mockDateOfBirth,
+        username = mockUser,
+        deviceWearerUpdateRecord = UpdateDeviceWearerDto(
+          alias = mockAlias,
+          firstName = mockFirstName,
+          lastName = mockLastName,
+          gender = mockGender,
+          dateOfBirth = mockDateOfBirth,
+        ),
       ),
     ).thenReturn(mockDeviceWearer)
     `when`(authentication.name).thenReturn("mockUser")
 
-    val result = controller.updateDeviceWearer(orderId = mockOrderId, authentication = authentication)
+    val result = controller.updateDeviceWearer(
+      orderId = mockOrderId,
+      deviceWearerUpdateRecord = UpdateDeviceWearerDto(
+        alias = mockAlias,
+        firstName = mockFirstName,
+        lastName = mockLastName,
+        gender = mockGender,
+        dateOfBirth = mockDateOfBirth,
+      ),
+      authentication = authentication,
+    )
 
     Assertions.assertThat(result.body).isEqualTo(mockDeviceWearer)
     Assertions.assertThat(result.statusCode.is4xxClientError)

@@ -1,68 +1,48 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service
 
+import jakarta.persistence.EntityNotFoundException
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FormStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.DeviceWearerRepository
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderFormRepository
-import java.time.LocalDate
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.UpdateDeviceWearerDto
 import java.util.*
 
 @Service
 class DeviceWearerService(
-  val deviceWearerRepo: DeviceWearerRepository,
-  val orderFormRepo: OrderFormRepository,
+  val repo: DeviceWearerRepository,
 ) {
 
-  fun createDeviceWearer(
-    orderId: UUID,
-    firstName: String? = null,
-    lastName: String? = null,
-    alias: String? = null,
-    gender: String? = null,
-    dateOfBirth: LocalDate? = null,
-  ): DeviceWearer {
-    val deviceWearer = DeviceWearer(
-      orderId = orderId,
-      firstName = firstName,
-      lastName = lastName,
-      alias = alias,
-      gender = gender,
-      dateOfBirth = dateOfBirth,
-    )
-
-    deviceWearerRepo.save(deviceWearer)
-    return deviceWearer
-  }
-
-  fun getDeviceWearer(username: String, orderId: UUID): DeviceWearer? {
-    orderFormRepo.findByUsernameAndId(username, orderId)
-      .orElseThrow { NoSuchElementException("Order could not be found.") }
-
-    return deviceWearerRepo.findByOrderId(orderId)
-      .orElseThrow { NoSuchElementException("Device wearer could not be found.") }
+  fun getDeviceWearer(orderId: UUID, username: String): DeviceWearer {
+    return repo.findByOrderIdAndOrderUsername(
+      orderId,
+      username,
+    ).orElseThrow {
+      EntityNotFoundException("Device Wearer for $orderId not found")
+    }
   }
 
   fun updateDeviceWearer(
-    username: String,
     orderId: UUID,
-    firstName: String? = null,
-    lastName: String? = null,
-    alias: String? = null,
-    gender: String? = null,
-    dateOfBirth: LocalDate? = null,
-  ): DeviceWearer? {
-    orderFormRepo.findByUsernameAndId(username, orderId)
-      .orElseThrow { NoSuchElementException("Order could not be found.") }
+    username: String,
+    deviceWearerUpdateRecord: UpdateDeviceWearerDto,
+  ): DeviceWearer {
+    val deviceWearer = repo.findByOrderIdAndOrderUsernameAndOrderStatus(
+      orderId,
+      username,
+      FormStatus.IN_PROGRESS,
+    ).orElseThrow {
+      EntityNotFoundException("Device Wearer for $orderId not found")
+    }
 
-    val deviceWearer = deviceWearerRepo.findByOrderId(orderId)
-      .orElseThrow { NoSuchElementException("Device wearer could not be found.") }
+    with(deviceWearerUpdateRecord) {
+      deviceWearer.firstName = firstName
+      deviceWearer.lastName = lastName
+      deviceWearer.alias = alias
+      deviceWearer.gender = gender
+      deviceWearer.dateOfBirth = dateOfBirth
+    }
 
-    deviceWearer.firstName = firstName
-    deviceWearer.lastName = lastName
-    deviceWearer.alias = alias
-    deviceWearer.gender = gender
-    deviceWearer.dateOfBirth = dateOfBirth
-
-    return deviceWearerRepo.save(deviceWearer)
+    return repo.save(deviceWearer)
   }
 }

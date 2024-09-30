@@ -22,7 +22,11 @@ class DeviceWearerContactDetailsService(
     }
   }
 
-  fun updateContactDetails(orderId: UUID, username: String, updateContactDetailsRecord: UpdateContactDetailsDto): DeviceWearerContactDetails {
+  fun updateContactDetails(
+    orderId: UUID,
+    username: String,
+    updateContactDetailsRecord: UpdateContactDetailsDto,
+  ): DeviceWearerContactDetails {
     val contactDetails = repo.findByOrderIdAndOrderUsernameAndOrderStatus(
       orderId,
       username,
