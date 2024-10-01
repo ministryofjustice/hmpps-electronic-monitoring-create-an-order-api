@@ -13,6 +13,7 @@ repositories {
 }
 
 dependencies {
+  implementation("commons-io:commons-io:2.15.1")
   implementation("com.googlecode.libphonenumber:libphonenumber:8.13.45")
   implementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter:1.0.7")
   implementation("org.springframework.boot:spring-boot-starter-webflux")

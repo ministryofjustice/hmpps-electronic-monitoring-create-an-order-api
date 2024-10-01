@@ -24,6 +24,16 @@ spring:
         jwt:
           issuer-uri:  ${services.hmpps-auth.url}issuer
           jwk-set-uri:  ${services.hmpps-auth.url}/.well-known/jwks.json
+      client:
+        provider:
+          hmpps-auth:
+            token-uri: ${services.hmpps-auth.url}/oauth/token
+        registration:
+          document-management-api:
+            provider: hmpps-auth
+            client-id: ${CLIENT_ID}
+            client-secret: ${CLIENT_SECRET}
+            authorization-grant-type: client_credentials
 server:
   port: 8080
   servlet:
@@ -59,3 +69,5 @@ management:
 services:
   hmppsauth:
     url: ${HMPPS_AUTH_URL}
+  document:
+    url: ${DOCUMENT_MANAGEMENT_URL}

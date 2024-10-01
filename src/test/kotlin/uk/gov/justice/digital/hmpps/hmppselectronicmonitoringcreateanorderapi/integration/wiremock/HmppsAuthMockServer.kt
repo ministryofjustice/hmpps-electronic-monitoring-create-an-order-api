@@ -26,6 +26,7 @@ class HmppsAuthApiExtension : BeforeAllCallback, AfterAllCallback, BeforeEachCal
 
   override fun beforeEach(context: ExtensionContext) {
     hmppsAuth.resetRequests()
+    hmppsAuth.stubGrantToken()
   }
 
   override fun afterAll(context: ExtensionContext) {

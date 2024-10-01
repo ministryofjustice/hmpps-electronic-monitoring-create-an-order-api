@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums
 
-enum class DeviceWearerAddressType {
-  PRIMARY,
-  SECOND,
-  THIRD,
+enum class DocumentType {
+  LICENCE,
+  PHOTO_ID,
 }
