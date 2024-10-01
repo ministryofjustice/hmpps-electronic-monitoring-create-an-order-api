@@ -14,6 +14,7 @@ import org.springframework.transaction.TransactionSystemException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.servlet.resource.NoResourceFoundException
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.DocumentApiBadRequestException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidationError
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 
@@ -77,6 +78,13 @@ class HmppsElectronicMonitoringCreateAnOrderApiExceptionHandler {
     }
     throw e
   }
+
+  @ExceptionHandler(DocumentApiBadRequestException::class)
+  fun handleDocumentApiBadRequestException(e: DocumentApiBadRequestException): ResponseEntity<ErrorResponse> = ResponseEntity
+    .status(BAD_REQUEST)
+    .body(
+      e.error,
+    ).also { log.error("Unexpected exception", e) }
 
   @ExceptionHandler(Exception::class)
   fun handleException(e: Exception): ResponseEntity<ErrorResponse> = ResponseEntity

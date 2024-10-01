@@ -37,7 +37,7 @@ data class OrderForm(
   @OneToOne(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "orderForm", orphanRemoval = true)
   var monitoringConditions: MonitoringConditions? = null,
 
-  @OneToMany(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "orderForm", orphanRemoval = true)
+  @OneToMany(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "order", orphanRemoval = true)
   var additionalDocuments: MutableList<AdditionalDocument> = mutableListOf(),
 
 )

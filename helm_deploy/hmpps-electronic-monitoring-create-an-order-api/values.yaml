@@ -29,6 +29,8 @@ generic-service:
   namespace_secrets:
     hmpps-electronic-monitoring-create-an-order-api:
       APPINSIGHTS_INSTRUMENTATIONKEY: "APPINSIGHTS_INSTRUMENTATIONKEY"
+      CLIENT_ID: "API_CLIENT_ID"
+      CLIENT_SECRET: "API_CLIENT_SECRET"
 
     rds-postgresql-instance-output:
       DB_SERVER: "rds_instance_endpoint"
