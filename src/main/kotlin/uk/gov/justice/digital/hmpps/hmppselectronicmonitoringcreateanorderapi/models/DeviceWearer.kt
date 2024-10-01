@@ -9,7 +9,8 @@ import jakarta.persistence.JoinColumn
 import jakarta.persistence.OneToMany
 import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
-import java.time.LocalDate
+import jakarta.validation.constraints.Past
+import java.time.ZonedDateTime
 import java.util.UUID
 
 @Entity
@@ -29,9 +30,6 @@ data class DeviceWearer(
   @Column(name = "LAST_NAME", nullable = true)
   var lastName: String? = null,
 
-  @Column(name = "PREFERRED_NAME", nullable = true)
-  var preferredName: String? = null,
-
   @Column(name = "ALIAS", nullable = true)
   var alias: String? = null,
 
@@ -39,7 +37,8 @@ data class DeviceWearer(
   var gender: String? = null,
 
   @Column(name = "DATE_OF_BIRTH", nullable = true)
-  var dateOfBirth: LocalDate? = null,
+  @field:Past(message = "Date of birth must be in the past")
+  var dateOfBirth: ZonedDateTime? = null,
 
   @OneToOne
   @JoinColumn(name = "ORDER_ID", updatable = false, insertable = false)

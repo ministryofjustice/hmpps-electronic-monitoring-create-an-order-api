@@ -9,6 +9,9 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.DeviceWearerRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.UpdateDeviceWearerDto
 import java.time.LocalDate
+import java.time.LocalTime
+import java.time.ZoneId
+import java.time.ZonedDateTime
 import java.util.*
 
 class DeviceWearerControllerTest : IntegrationTestBase() {
@@ -19,7 +22,11 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
   private val mockLastName: String = "mockLastName"
   private val mockAlias: String = "mockAlias"
   private val mockGender: String = "mockGender"
-  private val mockDateOfBirth: LocalDate = LocalDate.of(1970, 1, 1)
+  private val mockDateOfBirth: ZonedDateTime = ZonedDateTime.of(
+    LocalDate.of(1970, 1, 1),
+    LocalTime.NOON,
+    ZoneId.of("UTC"),
+  )
 
   @BeforeEach
   fun setup() {
