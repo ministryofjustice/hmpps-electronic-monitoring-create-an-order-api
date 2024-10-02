@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus.NOT_FOUND
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.AccessDeniedException
 import org.springframework.transaction.TransactionSystemException
+import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.servlet.resource.NoResourceFoundException
@@ -77,6 +78,14 @@ class HmppsElectronicMonitoringCreateAnOrderApiExceptionHandler {
       return ResponseEntity.status(BAD_REQUEST).body(details)
     }
     throw e
+  }
+
+  @ExceptionHandler(MethodArgumentNotValidException::class)
+  fun handleMethodArgumentNotValidException(e: MethodArgumentNotValidException): ResponseEntity<List<ValidationError>> {
+    return ResponseEntity.status(BAD_REQUEST).body(
+      e.bindingResult.fieldErrors.map {
+        ValidationError(it.field, it.defaultMessage ?: "")
+      })
   }
 
   @ExceptionHandler(DocumentApiBadRequestException::class)

@@ -1,6 +1,9 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource
 
 import jakarta.validation.Valid
+import jakarta.validation.constraints.NotNull
+import jakarta.validation.constraints.Past
+import jakarta.validation.constraints.Size
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -56,9 +59,18 @@ class DeviceWearerController(
 }
 
 data class UpdateDeviceWearerDto(
-  val firstName: String? = null,
+  @field:Size(min = 1, message = "First name is required")
+  val firstName: String,
+
+  @field:Size(min = 1, message = "Last name is required")
   val lastName: String? = null,
+
   val alias: String? = null,
+
+  @field:Size(min = 1, message = "Gender is required")
   val gender: String? = null,
-  val dateOfBirth: ZonedDateTime? = null,
+
+  @field:NotNull(message = "Date of birth is required")
+  @field:Past(message = "Date of birth must be in the past")
+  val dateOfBirth: ZonedDateTime? = null
 )
