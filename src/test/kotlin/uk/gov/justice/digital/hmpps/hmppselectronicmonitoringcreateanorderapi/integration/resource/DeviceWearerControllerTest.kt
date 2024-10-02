@@ -8,6 +8,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.in
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.DeviceWearerRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.UpdateDeviceWearerDto
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidationError
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
@@ -137,5 +138,70 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
       .exchange()
       .expectStatus()
       .isNotFound()
+  }
+
+  @Test
+  fun `Update device wearer returns 400 if invalid data`() {
+    val order = createOrder()
+    val result = webTestClient.post()
+      .uri("/api/order/${order.id}/device-wearer")
+      .bodyValue(
+        UpdateDeviceWearerDto(
+          firstName = "",
+          lastName = "",
+          alias = "",
+          gender = "",
+          dateOfBirth = null,
+        ),
+      )
+      .headers(setAuthorisation("AUTH_ADM_2"))
+      .exchange()
+      .expectStatus()
+      .isBadRequest
+      .expectBodyList(ValidationError::class.java)
+      .returnResult()
+
+    Assertions.assertThat(result.responseBody).isNotNull
+    Assertions.assertThat(result.responseBody).hasSize(4)
+    Assertions.assertThat(result.responseBody!!).contains(
+      ValidationError("firstName", "First name is required"),
+    )
+    Assertions.assertThat(result.responseBody!!).contains(
+      ValidationError("lastName", "Last name is required"),
+    )
+    Assertions.assertThat(result.responseBody!!).contains(
+      ValidationError("gender", "Gender is required"),
+    )
+    Assertions.assertThat(result.responseBody!!).contains(
+      ValidationError("dateOfBirth", "Date of birth is required"),
+    )
+  }
+
+  @Test
+  fun `Update device wearer returns 400 if dateOfBirth is in the future`() {
+    val order = createOrder()
+    val result = webTestClient.post()
+      .uri("/api/order/${order.id}/device-wearer")
+      .bodyValue(
+        UpdateDeviceWearerDto(
+          firstName = mockFirstName,
+          lastName = mockLastName,
+          alias = mockAlias,
+          gender = mockGender,
+          dateOfBirth = ZonedDateTime.parse("2222-01-01T00:00:00.000Z"),
+        ),
+      )
+      .headers(setAuthorisation("AUTH_ADM_2"))
+      .exchange()
+      .expectStatus()
+      .isBadRequest
+      .expectBodyList(ValidationError::class.java)
+      .returnResult()
+
+    Assertions.assertThat(result.responseBody).isNotNull
+    Assertions.assertThat(result.responseBody).hasSize(1)
+    Assertions.assertThat(result.responseBody!!).contains(
+      ValidationError("dateOfBirth", "Date of birth must be in the past"),
+    )
   }
 }
