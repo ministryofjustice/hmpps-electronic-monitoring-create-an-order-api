@@ -2,12 +2,10 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.s
 
 import jakarta.persistence.EntityNotFoundException
 import org.springframework.stereotype.Service
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AdditionalDocument
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearerContactDetails
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.MonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderForm
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DocumentType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FormStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderFormRepository
 import java.util.UUID
@@ -25,7 +23,7 @@ class OrderFormService(
     orderForm.deviceWearer = DeviceWearer(orderId = orderForm.id)
     orderForm.deviceWearerContactDetails = DeviceWearerContactDetails(orderId = orderForm.id)
     orderForm.monitoringConditions = MonitoringConditions(orderId = orderForm.id)
-    orderForm.additionalDocuments = mutableListOf(AdditionalDocument(orderId = orderForm.id, fileName = "TestFile", fileType = DocumentType.LICENCE))
+    orderForm.additionalDocuments = mutableListOf()
     repo.save(orderForm)
     return orderForm
   }

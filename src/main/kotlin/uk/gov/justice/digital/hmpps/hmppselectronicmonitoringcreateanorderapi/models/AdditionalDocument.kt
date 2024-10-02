@@ -18,7 +18,7 @@ data class AdditionalDocument(
   @Column(name = "ID", nullable = false, unique = true)
   val id: UUID = UUID.randomUUID(),
 
-  @Column(name = "ORDER_ID", nullable = false, unique = true)
+  @Column(name = "ORDER_ID", nullable = false)
   val orderId: UUID,
 
   @Column(name = "FILE_NAME", nullable = true)
