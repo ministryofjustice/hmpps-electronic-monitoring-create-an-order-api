@@ -60,7 +60,7 @@ class DeviceWearerController(
 
 data class UpdateDeviceWearerDto(
   @field:Size(min = 1, message = "First name is required")
-  val firstName: String,
+  val firstName: String? = null,
 
   @field:Size(min = 1, message = "Last name is required")
   val lastName: String? = null,
