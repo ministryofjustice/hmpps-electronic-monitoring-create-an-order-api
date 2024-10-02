@@ -89,8 +89,7 @@ class HmppsElectronicMonitoringCreateAnOrderApiExceptionHandler {
 
   @ExceptionHandler(Exception::class)
   fun handleException(e: Exception): ResponseEntity<ErrorResponse> {
-
-    if(e is MaxUploadSizeExceededException) {
+    if (e is MaxUploadSizeExceededException) {
       return ResponseEntity
         .status(BAD_REQUEST)
         .body(
