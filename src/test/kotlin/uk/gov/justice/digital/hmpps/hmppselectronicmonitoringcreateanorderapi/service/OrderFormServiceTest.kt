@@ -28,12 +28,11 @@ class OrderFormServiceTest {
 
   @Test
   fun `Create a new order form with tile and username and save to database`() {
-    val result = service.createOrderForm("mockTitle", "mockUser")
+    val result = service.createOrderForm("mockUser")
 
     Assertions.assertThat(result.id).isNotNull()
     Assertions.assertThat(UUID.fromString(result.id.toString())).isEqualTo(result.id)
     Assertions.assertThat(result.username).isEqualTo("mockUser")
-    Assertions.assertThat(result.title).isEqualTo("mockTitle")
     Assertions.assertThat(result.status).isEqualTo(FormStatus.IN_PROGRESS)
     argumentCaptor<OrderForm>().apply {
       verify(repo, times(1)).save(capture())

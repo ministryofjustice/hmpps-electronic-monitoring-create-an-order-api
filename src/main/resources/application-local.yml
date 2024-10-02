@@ -2,7 +2,7 @@ spring:
   jpa:
     show-sql: true
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: create
   datasource:
     url: jdbc:postgresql://localhost:5432/postgres?sslmode=prefer
     username: postgres
@@ -10,4 +10,10 @@ spring:
 
 services:
   hmppsauth:
-    url: http://localhost:8090/auth
+    url: http://localhost:9090/auth
+    #url: https://sign-in-dev.hmpps.service.justice.gov.uk/auth
+
+DOCUMENT_MANAGEMENT_URL:  http://localhost:8081/
+#DOCUMENT_MANAGEMENT_URL:  https://document-api-dev.hmpps.service.justice.gov.uk/
+CLIENT_ID: hmpps-electronic-monitoring-create-an-order-api
+CLIENT_SECRET: clientsecret
