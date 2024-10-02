@@ -85,7 +85,8 @@ class HmppsElectronicMonitoringCreateAnOrderApiExceptionHandler {
     return ResponseEntity.status(BAD_REQUEST).body(
       e.bindingResult.fieldErrors.map {
         ValidationError(it.field, it.defaultMessage ?: "")
-      })
+      },
+    )
   }
 
   @ExceptionHandler(DocumentApiBadRequestException::class)
