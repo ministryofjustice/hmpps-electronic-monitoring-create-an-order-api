@@ -75,7 +75,6 @@ data class UpdateDeviceWearerDto(
 
   val alias: String? = null,
 
-//  @Convert(converter = YesNoConverter::class)
   @field:NotNull(message = "You must indicate whether the device wearer will be an adult at installation")
   var adultAtTimeOfInstallation: Boolean? = null,
 
