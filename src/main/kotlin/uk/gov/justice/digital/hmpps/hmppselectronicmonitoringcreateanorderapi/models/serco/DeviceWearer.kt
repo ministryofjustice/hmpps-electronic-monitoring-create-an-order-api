@@ -75,7 +75,7 @@ data class DeviceWearer(
     fun fromCemoOrder(order:OrderForm):DeviceWearer{
 
       var adultChild= "adult"
-      if(!order.deviceWearer.isAdult)
+      if(!order.deviceWearer.adultAtTimeOfInstallation!!)
         adultChild="child"
       val primaryAddress = order.deviceWearer.deviceWearerAddresses.find{address -> address.addressType==DeviceWearerAddressType.PRIMARY }!!
 
