@@ -1,15 +1,9 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models
 
+import jakarta.persistence.*
 import jakarta.persistence.CascadeType.ALL
-import jakarta.persistence.Column
-import jakarta.persistence.Entity
-import jakarta.persistence.FetchType
-import jakarta.persistence.Id
-import jakarta.persistence.JoinColumn
-import jakarta.persistence.OneToMany
-import jakarta.persistence.OneToOne
-import jakarta.persistence.Table
 import jakarta.validation.constraints.Past
+import org.hibernate.type.YesNoConverter
 import java.time.ZonedDateTime
 import java.util.UUID
 
@@ -24,6 +18,18 @@ data class DeviceWearer(
   @Column(name = "ORDER_ID", nullable = false, unique = true)
   val orderId: UUID,
 
+  @Column(name = "NOMIS_ID", nullable = true)
+  var nomisId: String? = null,
+
+  @Column(name = "PNC_ID", nullable = true)
+  var pncId: String? = null,
+
+  @Column(name = "DELIUS_ID", nullable = true)
+  var deliusId: String? = null,
+
+  @Column(name = "PRISON_NUMBER", nullable = true)
+  var prisonNumber: String? = null,
+
   @Column(name = "FIRST_NAME", nullable = true)
   var firstName: String? = null,
 
@@ -32,6 +38,12 @@ data class DeviceWearer(
 
   @Column(name = "ALIAS", nullable = true)
   var alias: String? = null,
+
+  @Column(name = "ADULT_AT_TIME_OF_INSTALLATION", nullable = true)
+  var adultAtTimeOfInstallation: Boolean? = null,
+
+  @Column(name = "SEX", nullable = true)
+  var sex: String? = null,
 
   @Column(name = "GENDER", nullable = true)
   var gender: String? = null,
