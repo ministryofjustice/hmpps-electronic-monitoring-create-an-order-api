@@ -59,6 +59,14 @@ class DeviceWearerController(
 }
 
 data class UpdateDeviceWearerDto(
+  val nomisId: String? = null,
+
+  val pncId: String? = null,
+
+  val deliusId: String? = null,
+
+  val prisonNumber: String? = null,
+
   @field:Size(min = 1, message = "First name is required")
   val firstName: String? = null,
 
@@ -66,6 +74,12 @@ data class UpdateDeviceWearerDto(
   val lastName: String? = null,
 
   val alias: String? = null,
+
+  @field:NotNull(message = "You must indicate whether the device wearer will be an adult at installation")
+  var adultAtTimeOfInstallation: Boolean? = null,
+
+  @field:Size(min = 1, message = "Sex is required")
+  var sex: String? = null,
 
   @field:Size(min = 1, message = "Gender is required")
   val gender: String? = null,

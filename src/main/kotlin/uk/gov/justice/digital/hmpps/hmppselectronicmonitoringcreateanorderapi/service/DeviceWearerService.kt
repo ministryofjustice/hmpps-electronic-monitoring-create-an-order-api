@@ -36,9 +36,14 @@ class DeviceWearerService(
     }
 
     with(deviceWearerUpdateRecord) {
+      deviceWearer.nomisId = nomisId
+      deviceWearer.pncId = pncId
+      deviceWearer.deliusId = deliusId
+      deviceWearer.prisonNumber = prisonNumber
       deviceWearer.firstName = firstName
       deviceWearer.lastName = lastName
       deviceWearer.alias = alias
+      deviceWearer.adultAtTimeOfInstallation = adultAtTimeOfInstallation
       deviceWearer.gender = gender
       deviceWearer.dateOfBirth = dateOfBirth
     }
