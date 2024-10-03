@@ -61,7 +61,6 @@ data class DeviceWearer(
   @Column(name = "DISABILITIES", nullable = true)
   var disabilities: String? = null,
 
-
   @OneToOne
   @JoinColumn(name = "ORDER_ID", updatable = false, insertable = false)
   private val order: OrderForm? = null,

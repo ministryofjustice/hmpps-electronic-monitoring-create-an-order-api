@@ -3,11 +3,7 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.m
 import com.fasterxml.jackson.annotation.JsonProperty
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderForm
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DeviceWearerAddressType
-import java.time.LocalDate
-import java.time.Period
 import java.time.format.DateTimeFormatter
-
-
 
 data class DeviceWearer(
   var title: String? = "",
@@ -68,32 +64,30 @@ data class DeviceWearer(
   var parentPhoneNumber: String? = "",
   @JsonProperty("parent_dob")
   var partentDateOfBirth: String? = "",
-){
+) {
 
-  companion object{
+  companion object {
     private val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-    fun fromCemoOrder(order:OrderForm):DeviceWearer{
-
-
-      var adultChild= "adult"
-      if(!order.deviceWearer?.adultAtTimeOfInstallation!!)
-        adultChild="child"
-      val primaryAddress = order.deviceWearer?.deviceWearerAddresses?.find{address -> address.addressType==DeviceWearerAddressType.PRIMARY }!!
+    fun fromCemoOrder(order: OrderForm): DeviceWearer {
+      var adultChild = "adult"
+      if (!order.deviceWearer?.adultAtTimeOfInstallation!!) {
+        adultChild = "child"
+      }
+      val primaryAddress = order.deviceWearer?.deviceWearerAddresses?.find { address -> address.addressType == DeviceWearerAddressType.PRIMARY }!!
 
       return DeviceWearer(
         firstName = order.deviceWearer?.firstName,
         lastName = order.deviceWearer?.lastName,
         alias = order.deviceWearer?.alias,
         dateOfBirth = order.deviceWearer?.dateOfBirth!!.format(formatter),
-        adultChild =adultChild,
-        sex =  order.deviceWearer?.gender,
-        address1 =  primaryAddress.AddressLine1,
+        adultChild = adultChild,
+        sex = order.deviceWearer?.gender,
+        address1 = primaryAddress.AddressLine1,
         address2 = primaryAddress.city,
-        addressPostCode =  primaryAddress.postcode,
+        addressPostCode = primaryAddress.postcode,
         phoneNumber = order.deviceWearerContactDetails?.contactNumber,
 
-
-        )
+      )
     }
   }
 }
