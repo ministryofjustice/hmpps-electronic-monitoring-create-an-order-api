@@ -18,6 +18,15 @@ services:
   hmppsauth:
     url: http://localhost:8091/auth
 
+
 DOCUMENT_MANAGEMENT_URL:  http://localhost:8092/
 CLIENT_ID: mockClient
-CLIENT_SECRET: clientsecret
+CLIENT_SECRET: clientsecre
+
+
+SERCO_AUTH_URL: http://localhost:8093/
+SERCO_CLIENT_ID: cliendId
+SERCO_CLIENT_SECRET: clientSecret
+SERCO_USERNAME: username
+SERCO_PASSWORD: password
+SERCO_URL: http://localhost:8094/
