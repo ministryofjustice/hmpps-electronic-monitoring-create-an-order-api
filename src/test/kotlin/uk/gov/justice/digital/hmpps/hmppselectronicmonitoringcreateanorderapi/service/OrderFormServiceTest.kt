@@ -9,6 +9,7 @@ import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.springframework.boot.test.autoconfigure.json.JsonTest
 import org.springframework.test.context.ActiveProfiles
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.SercoClient
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderForm
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FormStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderFormRepository
@@ -18,12 +19,14 @@ import java.util.*
 @JsonTest
 class OrderFormServiceTest {
   private lateinit var repo: OrderFormRepository
+  private lateinit var sercoClient: SercoClient
   private lateinit var service: OrderFormService
 
   @BeforeEach
   fun setup() {
     repo = mock(OrderFormRepository::class.java)
-    service = OrderFormService(repo)
+    sercoClient = mock(SercoClient::class.java)
+    service = OrderFormService(repo, sercoClient)
   }
 
   @Test

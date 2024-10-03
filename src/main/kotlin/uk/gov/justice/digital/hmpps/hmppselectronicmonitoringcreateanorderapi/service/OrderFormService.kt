@@ -1,7 +1,9 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service
 
 import jakarta.persistence.EntityNotFoundException
+import jakarta.validation.ValidationException
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.SercoClient
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearerContactDetails
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.MonitoringConditions
@@ -13,6 +15,7 @@ import java.util.UUID
 @Service
 class OrderFormService(
   val repo: OrderFormRepository,
+  val sercoClient: SercoClient,
 ) {
 
   fun createOrderForm(username: String): OrderForm {
@@ -26,6 +29,14 @@ class OrderFormService(
     orderForm.additionalDocuments = mutableListOf()
     repo.save(orderForm)
     return orderForm
+  }
+
+  fun submitOrderForm(id: UUID, username: String) {
+    val order = getOrderForm(username, id)
+
+    if (order?.deviceWearer?.firstName === null) {
+      throw ValidationException("Order not complete")
+    }
   }
 
   fun listOrderFormsForUser(username: String): List<OrderForm> {

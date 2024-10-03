@@ -6,6 +6,8 @@ import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
@@ -26,6 +28,13 @@ class OrderFormController(
 
     val form = orderFormService.createOrderForm(username)
     return ResponseEntity(form, HttpStatus.OK)
+  }
+
+  @PostMapping("/SubmitForm/{orderId}")
+  fun submitForm(@PathVariable orderId: UUID, authentication: Authentication): ResponseEntity<Any> {
+    val username = authentication.name
+    orderFormService.submitOrderForm(orderId, username)
+    return ResponseEntity(HttpStatus.OK)
   }
 
   @GetMapping("/GetForm")

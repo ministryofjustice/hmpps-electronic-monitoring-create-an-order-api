@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.multipart.MaxUploadSizeExceededException
 import org.springframework.web.servlet.resource.NoResourceFoundException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.DocumentApiBadRequestException
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exceptions.SercoConnectionException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidationError
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 
@@ -97,7 +98,16 @@ class HmppsElectronicMonitoringCreateAnOrderApiExceptionHandler {
       e.error,
     ).also { log.error("Unexpected exception", e) }
 
-  @ExceptionHandler(Exception::class)
+  @ExceptionHandler(SercoConnectionException::class)
+  fun handleSercoAuthenticationException(e: Exception): ResponseEntity<ErrorResponse> = ResponseEntity
+    .status(INTERNAL_SERVER_ERROR)
+    .body(
+      ErrorResponse(
+        status = INTERNAL_SERVER_ERROR,
+        userMessage = "Error with Serco service Now: ${e.message}",
+        developerMessage = e.message,
+      ),
+    ).also { log.error("Unexpected exception", e) }
   fun handleException(e: Exception): ResponseEntity<ErrorResponse> {
     if (e is MaxUploadSizeExceededException) {
       return ResponseEntity

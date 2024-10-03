@@ -65,15 +65,33 @@ To run the application using IntelliJ:
 
 1. Run `docker compose pull && docker compose up --scale hmpps-electronic-monitoring-create-an-order-api=0`
 , which will just start a docker instance of the database and HMPPS Auth.
-2. Click the drop-down button for the `HmppsElectronicMonitoringCreateAnOrderApi` run configuration file in the top 
+2. Create a .env file in the root level of the repository with the following contents. Populate variable values from Kubernetes secret `serco-secret` 
+```
+SERCO_AUTH_URL=
+SERCO_CLIENT_ID=
+SERCO_CLIENT_SECRET=
+SERCO_USERNAME=
+SERCO_PASSWORD=
+SERCO_URL=
+```
+3. Click the drop-down button for the `HmppsElectronicMonitoringCreateAnOrderApi` run configuration file in the top 
 right corner, and select Edit Configurations. 
     - For the 'Active Profiles' field, put 'local'
     - You may also need to set the JDK to openjdk-23 or openjdk-21
+    - Click on Modify options -> Choose Environment Variables
+    - For the 'Environment Variables' field, put path to .env file
     - Apply these changes
-3. Click the run button.
+4. Click the run button.
 
 Or, to run the application using the command line:
 
+setup environment variables:
+
+run setup script
+```bash
+./scripts/setup.sh
+```
+and then
 ```bash
 SPRING_PROFILES_ACTIVE=local ./gradlew bootRun
 ```
