@@ -87,4 +87,6 @@ data class UpdateDeviceWearerDto(
   @field:NotNull(message = "Date of birth is required")
   @field:Past(message = "Date of birth must be in the past")
   val dateOfBirth: ZonedDateTime? = null,
+
+  val disabilities: String? = null,
 )

@@ -44,8 +44,10 @@ class DeviceWearerService(
       deviceWearer.lastName = lastName
       deviceWearer.alias = alias
       deviceWearer.adultAtTimeOfInstallation = adultAtTimeOfInstallation
+      deviceWearer.sex = sex
       deviceWearer.gender = gender
       deviceWearer.dateOfBirth = dateOfBirth
+      deviceWearer.disabilities = disabilities
     }
 
     return repo.save(deviceWearer)
