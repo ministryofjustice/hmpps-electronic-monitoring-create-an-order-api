@@ -28,19 +28,12 @@ spring:
         provider:
           hmpps-auth:
             token-uri: ${services.hmpps-auth.url}/oauth/token
-          serco-auth:
-            token-uri: ${services.serco.auth-url}
         registration:
           document-management-api:
             provider: hmpps-auth
             client-id: ${CLIENT_ID}
             client-secret: ${CLIENT_SECRET}
             authorization-grant-type: client_credentials
-          serco-api:
-            provider: serco-auth
-            client-id: ${services.serco.client-id}
-            client-secret: ${services.serco.client-secret}
-            authorization-grant-type: password
 
 server:
   port: 8080
@@ -79,3 +72,10 @@ services:
     url: ${HMPPS_AUTH_URL}
   document:
     url: ${DOCUMENT_MANAGEMENT_URL}
+  serco:
+    auth-url: ${SERCO_AUTH_URL}
+    client-id: ${SERCO_CLIENT_ID}
+    client-secret: ${SERCO_CLIENT_SECRET}
+    username: ${SERCO_USERNAME}
+    password: ${SERCO_PASSWORD}
+    url: ${SERCO_URL}
