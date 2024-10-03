@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models
 
+import jakarta.persistence.CascadeType.ALL
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
@@ -8,7 +9,6 @@ import jakarta.persistence.JoinColumn
 import jakarta.persistence.OneToMany
 import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
-import jakarta.persistence.CascadeType.ALL
 import jakarta.validation.constraints.Past
 import java.time.ZonedDateTime
 import java.util.UUID
