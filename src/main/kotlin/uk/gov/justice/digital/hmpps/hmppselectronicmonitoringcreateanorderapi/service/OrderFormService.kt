@@ -31,10 +31,14 @@ class OrderFormService(
     return orderForm
   }
 
-  fun submitOrderForm(): SubmissionResult {
-    var result = SubmissionResult(false)
-    val deviceWear = sercoClient.createDeviceWeaer()
-    return result
+  fun submitOrderForm(id: UUID, username: String): SubmissionResult {
+    val order = getOrderForm(username, id)
+
+    if (order?.deviceWearer?.firstName === null) {
+      return SubmissionResult(false, "Order not complete")
+    }
+
+    return SubmissionResult(true)
   }
 
   fun listOrderFormsForUser(username: String): List<OrderForm> {
