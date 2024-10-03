@@ -4,10 +4,11 @@ import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.http.MediaType
+import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.DeviceWearerRepository
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.UpdateDeviceWearerDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidationError
 import java.time.LocalDate
 import java.time.LocalTime
@@ -22,6 +23,7 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
   private val mockFirstName: String = "mockFirstName"
   private val mockLastName: String = "mockLastName"
   private val mockAlias: String = "mockAlias"
+  private val mockSex: String = "mockSex"
   private val mockGender: String = "mockGender"
   private val mockDateOfBirth: ZonedDateTime = ZonedDateTime.of(
     LocalDate.of(1970, 1, 1),
@@ -77,13 +79,20 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
     val order = createOrder()
     val updateDeviceWearer = webTestClient.post()
       .uri("/api/order/${order.id}/device-wearer")
-      .bodyValue(
-        UpdateDeviceWearerDto(
-          firstName = mockFirstName,
-          lastName = mockLastName,
-          alias = mockAlias,
-          gender = mockGender,
-          dateOfBirth = mockDateOfBirth,
+      .contentType(MediaType.APPLICATION_JSON)
+      .body(
+        BodyInserters.fromValue(
+          """
+            {
+              "firstName": "$mockFirstName",
+              "lastName": "$mockLastName",
+              "alias": "$mockAlias",
+              "adultAtTimeOfInstallation": "false",
+              "sex": "$mockSex",
+              "gender": "$mockGender",
+              "dateOfBirth": "$mockDateOfBirth"
+            }
+          """.trimIndent(),
         ),
       )
       .headers(setAuthorisation("AUTH_ADM"))
@@ -105,13 +114,20 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
   fun `Update device wearer returns 404 status if a device wearer can't be found`() {
     webTestClient.post()
       .uri("/api/order/${UUID.randomUUID()}/device-wearer")
-      .bodyValue(
-        UpdateDeviceWearerDto(
-          firstName = mockFirstName,
-          lastName = mockLastName,
-          alias = mockAlias,
-          gender = mockGender,
-          dateOfBirth = mockDateOfBirth,
+      .contentType(MediaType.APPLICATION_JSON)
+      .body(
+        BodyInserters.fromValue(
+          """
+            {
+              "firstName": "$mockFirstName",
+              "lastName": "$mockLastName",
+              "alias": "$mockAlias",
+              "adultAtTimeOfInstallation": "false",
+              "sex": "$mockSex",
+              "gender": "$mockGender",
+              "dateOfBirth": "$mockDateOfBirth"
+            }
+          """.trimIndent(),
         ),
       )
       .headers(setAuthorisation("AUTH_ADM"))
@@ -125,13 +141,20 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
     val order = createOrder()
     webTestClient.post()
       .uri("/api/order/${order.id}/device-wearer")
-      .bodyValue(
-        UpdateDeviceWearerDto(
-          firstName = mockFirstName,
-          lastName = mockLastName,
-          alias = mockAlias,
-          gender = mockGender,
-          dateOfBirth = mockDateOfBirth,
+      .contentType(MediaType.APPLICATION_JSON)
+      .body(
+        BodyInserters.fromValue(
+          """
+            {
+              "firstName": "$mockFirstName",
+              "lastName": "$mockLastName",
+              "alias": "$mockAlias",
+              "adultAtTimeOfInstallation": "false",
+              "sex": "$mockSex",
+              "gender": "$mockGender",
+              "dateOfBirth": "$mockDateOfBirth"
+            }
+          """.trimIndent(),
         ),
       )
       .headers(setAuthorisation("AUTH_ADM_2"))
@@ -145,13 +168,20 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
     val order = createOrder()
     val result = webTestClient.post()
       .uri("/api/order/${order.id}/device-wearer")
-      .bodyValue(
-        UpdateDeviceWearerDto(
-          firstName = "",
-          lastName = "",
-          alias = "",
-          gender = "",
-          dateOfBirth = null,
+      .contentType(MediaType.APPLICATION_JSON)
+      .body(
+        BodyInserters.fromValue(
+          """
+            {
+              "firstName": "",
+              "lastName": "",
+              "alias": "",
+              "adultAtTimeOfInstallation": "",
+              "sex": "",
+              "gender": "",
+              "dateOfBirth": ""
+            }
+          """.trimIndent(),
         ),
       )
       .headers(setAuthorisation("AUTH_ADM_2"))
@@ -162,12 +192,21 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
       .returnResult()
 
     Assertions.assertThat(result.responseBody).isNotNull
-    Assertions.assertThat(result.responseBody).hasSize(4)
+    Assertions.assertThat(result.responseBody).hasSize(6)
     Assertions.assertThat(result.responseBody!!).contains(
       ValidationError("firstName", "First name is required"),
     )
     Assertions.assertThat(result.responseBody!!).contains(
       ValidationError("lastName", "Last name is required"),
+    )
+    Assertions.assertThat(result.responseBody!!).contains(
+      ValidationError(
+        "adultAtTimeOfInstallation",
+        "You must indicate whether the device wearer will be an adult at installation",
+      ),
+    )
+    Assertions.assertThat(result.responseBody!!).contains(
+      ValidationError("sex", "Sex is required"),
     )
     Assertions.assertThat(result.responseBody!!).contains(
       ValidationError("gender", "Gender is required"),
@@ -182,13 +221,20 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
     val order = createOrder()
     val result = webTestClient.post()
       .uri("/api/order/${order.id}/device-wearer")
-      .bodyValue(
-        UpdateDeviceWearerDto(
-          firstName = mockFirstName,
-          lastName = mockLastName,
-          alias = mockAlias,
-          gender = mockGender,
-          dateOfBirth = ZonedDateTime.parse("2222-01-01T00:00:00.000Z"),
+      .contentType(MediaType.APPLICATION_JSON)
+      .body(
+        BodyInserters.fromValue(
+          """
+            {
+              "firstName": "$mockFirstName",
+              "lastName": "$mockLastName",
+              "alias": "$mockAlias",
+              "adultAtTimeOfInstallation": "false",
+              "sex": "$mockSex",
+              "gender": "$mockGender",
+              "dateOfBirth": "${ZonedDateTime.parse("2222-01-01T00:00:00.000Z")}"
+            }
+          """.trimIndent(),
         ),
       )
       .headers(setAuthorisation("AUTH_ADM_2"))
