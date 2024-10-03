@@ -1,3 +1,4 @@
+#!/bin/sh
 SERCO_SECRETS=$(kubectl get secret serco-secret -n hmpps-ems-cemo-ui-dev -o json)
 
 export SERCO_CLIENT_ID=$(jq -r '.data.SERCO_CLIENT_ID' <<< "${SERCO_SECRETS}" | base64 -d)
