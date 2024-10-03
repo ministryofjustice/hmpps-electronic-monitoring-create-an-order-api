@@ -3,7 +3,6 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.r
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
-import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -12,12 +11,11 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderForm
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.SubmissionResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.OrderFormService
 import java.util.UUID
 
 @RestController
-@PreAuthorize("hasRole('ROLE_EM_CEMO__CREATE_ORDER')")
+// @PreAuthorize("hasRole('ROLE_EM_CEMO__CREATE_ORDER')")
 @RequestMapping("/api/")
 class OrderFormController(
   @Autowired val orderFormService: OrderFormService,
@@ -32,10 +30,10 @@ class OrderFormController(
   }
 
   @PostMapping("/SubmitForm/{orderId}")
-  fun submitForm(@PathVariable orderId: UUID, authentication: Authentication): ResponseEntity<SubmissionResult> {
+  fun submitForm(@PathVariable orderId: UUID, authentication: Authentication): ResponseEntity<Any> {
     val username = authentication.name
-    val result = orderFormService.submitOrderForm(orderId, username)
-    return ResponseEntity(result, HttpStatus.OK)
+    orderFormService.submitOrderForm(orderId, username)
+    return ResponseEntity(HttpStatus.OK)
   }
 
   @GetMapping("/GetForm")
