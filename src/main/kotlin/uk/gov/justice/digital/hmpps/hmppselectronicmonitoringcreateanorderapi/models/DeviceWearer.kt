@@ -3,7 +3,6 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.m
 import jakarta.persistence.*
 import jakarta.persistence.CascadeType.ALL
 import jakarta.validation.constraints.Past
-import org.hibernate.type.YesNoConverter
 import java.time.ZonedDateTime
 import java.util.UUID
 
