@@ -24,6 +24,18 @@ data class DeviceWearer(
   @Column(name = "ORDER_ID", nullable = false, unique = true)
   val orderId: UUID,
 
+  @Column(name = "NOMIS_ID", nullable = true)
+  var nomisId: String? = null,
+
+  @Column(name = "PNC_ID", nullable = true)
+  var pncId: String? = null,
+
+  @Column(name = "DELIUS_ID", nullable = true)
+  var deliusId: String? = null,
+
+  @Column(name = "PRISON_NUMBER", nullable = true)
+  var prisonNumber: String? = null,
+
   @Column(name = "FIRST_NAME", nullable = true)
   var firstName: String? = null,
 
@@ -33,12 +45,21 @@ data class DeviceWearer(
   @Column(name = "ALIAS", nullable = true)
   var alias: String? = null,
 
+  @Column(name = "ADULT_AT_TIME_OF_INSTALLATION", nullable = true)
+  var adultAtTimeOfInstallation: Boolean? = null,
+
+  @Column(name = "SEX", nullable = true)
+  var sex: String? = null,
+
   @Column(name = "GENDER", nullable = true)
   var gender: String? = null,
 
   @Column(name = "DATE_OF_BIRTH", nullable = true)
   @field:Past(message = "Date of birth must be in the past")
   var dateOfBirth: ZonedDateTime? = null,
+
+  @Column(name = "DISABILITIES", nullable = true)
+  var disabilities: String? = null,
 
   @OneToOne
   @JoinColumn(name = "ORDER_ID", updatable = false, insertable = false)
