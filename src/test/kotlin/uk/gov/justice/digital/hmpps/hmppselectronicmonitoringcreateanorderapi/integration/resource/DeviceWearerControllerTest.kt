@@ -20,11 +20,16 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
   @Autowired
   lateinit var deviceWearerRepo: DeviceWearerRepository
 
+  private val mockNomisId: String = "mockNomisId"
+  private val mockPncId: String = "mockPncId"
+  private val mockDeliusId: String = "mockDeliusId"
+  private val mockPrisonNumber: String = "mockPrisonerNumber"
   private val mockFirstName: String = "mockFirstName"
   private val mockLastName: String = "mockLastName"
   private val mockAlias: String = "mockAlias"
   private val mockSex: String = "mockSex"
   private val mockGender: String = "mockGender"
+  private val mockDisabilities: String = "mockDisabilities"
   private val mockDateOfBirth: ZonedDateTime = ZonedDateTime.of(
     LocalDate.of(1970, 1, 1),
     LocalTime.NOON,
@@ -84,13 +89,18 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
         BodyInserters.fromValue(
           """
             {
+              "nomisId": "$mockNomisId",
+              "pncId": "$mockPncId",
+              "deliusId": "$mockDeliusId",
+              "prisonNumber": "$mockPrisonNumber",
               "firstName": "$mockFirstName",
               "lastName": "$mockLastName",
               "alias": "$mockAlias",
               "adultAtTimeOfInstallation": "false",
               "sex": "$mockSex",
               "gender": "$mockGender",
-              "dateOfBirth": "$mockDateOfBirth"
+              "dateOfBirth": "$mockDateOfBirth",
+              "disabilities": "$mockDisabilities"
             }
           """.trimIndent(),
         ),
@@ -103,11 +113,18 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
       .returnResult()
 
     Assertions.assertThat(updateDeviceWearer.responseBody?.orderId).isEqualTo(order.id)
+    Assertions.assertThat(updateDeviceWearer.responseBody?.nomisId).isEqualTo(mockNomisId)
+    Assertions.assertThat(updateDeviceWearer.responseBody?.pncId).isEqualTo(mockPncId)
+    Assertions.assertThat(updateDeviceWearer.responseBody?.deliusId).isEqualTo(mockDeliusId)
+    Assertions.assertThat(updateDeviceWearer.responseBody?.prisonNumber).isEqualTo(mockPrisonNumber)
     Assertions.assertThat(updateDeviceWearer.responseBody?.firstName).isEqualTo(mockFirstName)
     Assertions.assertThat(updateDeviceWearer.responseBody?.lastName).isEqualTo(mockLastName)
     Assertions.assertThat(updateDeviceWearer.responseBody?.alias).isEqualTo(mockAlias)
+    Assertions.assertThat(updateDeviceWearer.responseBody?.adultAtTimeOfInstallation).isEqualTo(false)
+    Assertions.assertThat(updateDeviceWearer.responseBody?.sex).isEqualTo(mockSex)
     Assertions.assertThat(updateDeviceWearer.responseBody?.gender).isEqualTo(mockGender)
     Assertions.assertThat(updateDeviceWearer.responseBody?.dateOfBirth).isEqualTo(mockDateOfBirth)
+    Assertions.assertThat(updateDeviceWearer.responseBody?.disabilities).isEqualTo(mockDisabilities)
   }
 
   @Test
