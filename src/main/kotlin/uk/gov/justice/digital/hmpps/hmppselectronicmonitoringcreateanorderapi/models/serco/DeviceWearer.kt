@@ -74,22 +74,23 @@ data class DeviceWearer(
     private val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
     fun fromCemoOrder(order:OrderForm):DeviceWearer{
 
+
       var adultChild= "adult"
-      if(!order.deviceWearer.adultAtTimeOfInstallation!!)
+      if(!order.deviceWearer?.adultAtTimeOfInstallation!!)
         adultChild="child"
-      val primaryAddress = order.deviceWearer.deviceWearerAddresses.find{address -> address.addressType==DeviceWearerAddressType.PRIMARY }!!
+      val primaryAddress = order.deviceWearer?.deviceWearerAddresses?.find{address -> address.addressType==DeviceWearerAddressType.PRIMARY }!!
 
       return DeviceWearer(
-        firstName = order.deviceWearer.firstName,
-        lastName = order.deviceWearer.lastName,
-        alias = order.deviceWearer.alias,
-        dateOfBirth = order.deviceWearer.dateOfBirth!!.format(formatter),
+        firstName = order.deviceWearer?.firstName,
+        lastName = order.deviceWearer?.lastName,
+        alias = order.deviceWearer?.alias,
+        dateOfBirth = order.deviceWearer?.dateOfBirth!!.format(formatter),
         adultChild =adultChild,
-        sex =  order.deviceWearer.gender,
+        sex =  order.deviceWearer?.gender,
         address1 =  primaryAddress.AddressLine1,
         address2 = primaryAddress.city,
         addressPostCode =  primaryAddress.postcode,
-        phoneNumber = order.deviceWearerContactDetails.contactNumber,
+        phoneNumber = order.deviceWearerContactDetails?.contactNumber,
 
 
         )

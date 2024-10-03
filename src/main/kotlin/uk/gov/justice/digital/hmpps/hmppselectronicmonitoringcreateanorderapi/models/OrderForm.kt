@@ -29,16 +29,16 @@ data class OrderForm(
   var status: FormStatus,
 
   @OneToOne(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "order", orphanRemoval = true)
-  var deviceWearer: DeviceWearer,
+  var deviceWearer: DeviceWearer?= null ,
 
   @OneToOne(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "order", orphanRemoval = true)
-  var deviceWearerContactDetails: DeviceWearerContactDetails,
+  var deviceWearerContactDetails: DeviceWearerContactDetails?= null,
 
   @OneToOne(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "orderForm", orphanRemoval = true)
-  var monitoringConditions: MonitoringConditions,
+  var monitoringConditions: MonitoringConditions?= null,
 
   @OneToOne(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "order", orphanRemoval = true)
-  var installationAndRisk: InstallationAndRisk,
+  var installationAndRisk: InstallationAndRisk?= null,
 
   @OneToMany(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "order", orphanRemoval = true)
   var additionalDocuments: MutableList<AdditionalDocument> = mutableListOf(),
