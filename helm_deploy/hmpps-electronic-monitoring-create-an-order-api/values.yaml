@@ -31,7 +31,13 @@ generic-service:
       APPINSIGHTS_INSTRUMENTATIONKEY: "APPINSIGHTS_INSTRUMENTATIONKEY"
       CLIENT_ID: "API_CLIENT_ID"
       CLIENT_SECRET: "API_CLIENT_SECRET"
-
+    secro-secret:
+      SERCO_AUTH_URL: "SERCO_AUTH_URL"
+      SERCO_CLIENT_ID: "SERCO_CLIENT_ID"
+      SERCO_CLIENT_SECRET: "SERCO_CLIENT_SECRET"
+      SERCO_USERNAME: "SERCO_USERNAME"
+      SERCO_PASSWORD: "SERCO_PASSWORD"
+      SERCO_URL: "SERCO_URL"
     rds-postgresql-instance-output:
       DB_SERVER: "rds_instance_endpoint"
       DB_NAME: "database_name"
