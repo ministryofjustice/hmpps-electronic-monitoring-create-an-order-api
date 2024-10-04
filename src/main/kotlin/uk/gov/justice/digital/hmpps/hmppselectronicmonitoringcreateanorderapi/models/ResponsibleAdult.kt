@@ -18,11 +18,8 @@ data class ResponsibleAdult(
   @Column(name = "DEVICE_WEARER_ID", nullable = false, unique = true)
   val deviceWearerId: UUID,
 
-  @Column(name = "FIRST_NAME", nullable = true)
-  var firstName: String? = null,
-
-  @Column(name = "LAST_NAME", nullable = true)
-  var lastName: String? = null,
+  @Column(name = "FULL_NAME", nullable = true)
+  var fullName: String? = null,
 
   @Column(name = "RELATIONSHIP", nullable = true)
   var relationship: String? = null,

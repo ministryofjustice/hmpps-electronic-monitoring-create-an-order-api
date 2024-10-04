@@ -7,9 +7,8 @@ import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.BodyInserters
 import org.springframework.web.reactive.function.client.WebClient
-import org.springframework.web.reactive.function.client.WebClientRequestException
-import org.springframework.web.reactive.function.client.WebClientResponseException
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exceptions.SercoConnectionException
+import reactor.core.publisher.Mono
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.SercoConnectionException
 import java.util.*
 
 @Component
@@ -24,28 +23,22 @@ class SercoAuthClient(
   private val encodedCredentials = Base64.getEncoder().encodeToString("$clientId:$clientSecret".toByteArray())
 
   fun getClientToken(): String {
-    return try {
-      val response =
-        webClient
-          .post()
-          .uri("")
-          .body(
-            BodyInserters.fromFormData("username", username)
-              .with("password", password)
-              .with("grant_type", "password"),
-          )
-          .header("Authorization", "Basic $encodedCredentials")
-          .retrieve()
-          .bodyToMono(String::class.java)
-          .block()
+    val response =
+      webClient
+        .post()
+        .uri("")
+        .body(
+          BodyInserters.fromFormData("username", username)
+            .with("password", password)
+            .with("grant_type", "password"),
+        )
+        .header("Authorization", "Basic $encodedCredentials")
+        .retrieve()
+        .onStatus({ t -> t.value() == 403 }, { Mono.error(SercoConnectionException("Invalid credentials used.")) })
+        .onStatus({ t -> t.value() == 503 }, { Mono.error(SercoConnectionException("Serco authentication service is unavailable.")) })
+        .bodyToMono(String::class.java)
+        .block()
 
-      JSONParser(response).parseObject()["access_token"].toString()
-    } catch (exception: WebClientRequestException) {
-      throw SercoConnectionException("Connection to ${exception.uri.authority} failed .")
-    } catch (exception: WebClientResponseException.ServiceUnavailable) {
-      throw SercoConnectionException("${exception.request?.uri?.authority} is unavailable.")
-    } catch (exception: WebClientResponseException.Unauthorized) {
-      throw SercoConnectionException("Invalid credentials used.")
-    }
+    return JSONParser(response).parseObject()["access_token"].toString()
   }
 }

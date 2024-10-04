@@ -16,8 +16,9 @@ import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.multipart.MaxUploadSizeExceededException
 import org.springframework.web.servlet.resource.NoResourceFoundException
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.CreateSercoDeviceWearerException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.DocumentApiBadRequestException
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exceptions.SercoConnectionException
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.SercoConnectionException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidationError
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 
@@ -108,6 +109,19 @@ class HmppsElectronicMonitoringCreateAnOrderApiExceptionHandler {
         developerMessage = e.message,
       ),
     ).also { log.error("Unexpected exception", e) }
+
+  @ExceptionHandler(CreateSercoDeviceWearerException::class)
+  fun handleCreateSercoDeviceWearerException(e: Exception): ResponseEntity<ErrorResponse> = ResponseEntity
+    .status(INTERNAL_SERVER_ERROR)
+    .body(
+      ErrorResponse(
+        status = INTERNAL_SERVER_ERROR,
+        userMessage = e.message,
+        developerMessage = e.message,
+      ),
+    ).also { log.error("Unexpected exception", e) }
+
+  @ExceptionHandler(Exception::class)
   fun handleException(e: Exception): ResponseEntity<ErrorResponse> {
     if (e is MaxUploadSizeExceededException) {
       return ResponseEntity

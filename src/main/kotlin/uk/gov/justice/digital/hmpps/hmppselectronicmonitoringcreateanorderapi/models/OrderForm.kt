@@ -28,8 +28,14 @@ data class OrderForm(
   @Column(name = "STATUS", nullable = false)
   var status: FormStatus,
 
+  @Column(name = "FMS_DEVICE_WEARER_ID", nullable = true)
+  var fmsDeviceWearerId: String? = null,
+
   @OneToOne(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "order", orphanRemoval = true)
   var deviceWearer: DeviceWearer? = null,
+
+  @OneToOne(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "order", orphanRemoval = true)
+  var responsibleOfficer: ResponsibleOfficer? = null,
 
   @OneToOne(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "order", orphanRemoval = true)
   var deviceWearerContactDetails: DeviceWearerContactDetails? = null,
