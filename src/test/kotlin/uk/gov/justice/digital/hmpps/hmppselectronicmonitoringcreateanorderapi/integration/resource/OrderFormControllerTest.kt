@@ -172,7 +172,7 @@ class OrderFormControllerTest : IntegrationTestBase() {
     "secondary_address_3": "",
     "secondary_address_4": "",
     "secondary_address_post_code": "",
-    "phone_number": "07403825858",
+    "phone_number": "07401111111",
     "risk_serious_harm": "High",
     "risk_self_harm": "Low",
     "risk_details": "Danger",
@@ -187,7 +187,7 @@ class OrderFormControllerTest : IntegrationTestBase() {
     "parent_address_3": "",
     "parent_address_4": "",
     "parent_address_post_code": "",
-    "parent_phone_number": "07403825858",
+    "parent_phone_number": "07401111111",
     "parent_dob": "",
     "pnc_id": "",
     "nomis_id": "",
@@ -244,7 +244,7 @@ class OrderFormControllerTest : IntegrationTestBase() {
     "secondary_address_3": "",
     "secondary_address_4": "",
     "secondary_address_post_code": "",
-    "phone_number": "07403825858",
+    "phone_number": "07401111111",
     "risk_serious_harm": "High",
     "risk_self_harm": "Low",
     "risk_details": "Danger",
@@ -259,7 +259,7 @@ class OrderFormControllerTest : IntegrationTestBase() {
     "parent_address_3": "",
     "parent_address_4": "",
     "parent_address_post_code": "",
-    "parent_phone_number": "07403825858",
+    "parent_phone_number": "07401111111",
     "parent_dob": "",
     "pnc_id": "",
     "nomis_id": "",
@@ -301,7 +301,7 @@ class OrderFormControllerTest : IntegrationTestBase() {
     orderForm.deviceWearer!!.responsibleAdult = ResponsibleAdult(
       deviceWearerId = orderForm.deviceWearer!!.id,
       fullName = "Mark Smith",
-      contactNumber = "07403825858",
+      contactNumber = "07401111111",
     )
     orderForm.deviceWearer!!.deviceWearerAddresses = mutableListOf(
       DeviceWearerAddress(
@@ -334,7 +334,7 @@ class OrderFormControllerTest : IntegrationTestBase() {
 
     orderForm.deviceWearerContactDetails = DeviceWearerContactDetails(
       orderId = orderForm.id,
-      contactNumber = "07403825858",
+      contactNumber = "07401111111",
     )
     orderForm.monitoringConditions = MonitoringConditions(orderId = orderForm.id)
     orderForm.responsibleOfficer = ResponsibleOfficer(orderId = orderForm.id)
