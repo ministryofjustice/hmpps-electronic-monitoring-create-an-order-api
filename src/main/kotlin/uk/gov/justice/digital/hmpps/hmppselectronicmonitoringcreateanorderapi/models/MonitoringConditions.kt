@@ -46,7 +46,7 @@ data class MonitoringConditions(
   @Column(name = "MANDATORY_ATTENDANCE", nullable = true)
   var mandatoryAttendance: Boolean? = null,
 
-  @Column(name = "Alcohol", nullable = true)
+  @Column(name = "ALCOHOL", nullable = true)
   var alcohol: Boolean? = null,
 
   @OneToOne

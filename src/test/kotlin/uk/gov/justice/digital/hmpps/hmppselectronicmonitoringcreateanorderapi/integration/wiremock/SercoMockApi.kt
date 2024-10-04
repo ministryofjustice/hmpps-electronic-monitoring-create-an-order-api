@@ -1,11 +1,17 @@
 
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.tomakehurst.wiremock.WireMockServer
+import com.github.tomakehurst.wiremock.client.WireMock.aResponse
+import com.github.tomakehurst.wiremock.client.WireMock.post
+import com.github.tomakehurst.wiremock.client.WireMock.urlPathTemplate
 import org.junit.jupiter.api.extension.AfterAllCallback
 import org.junit.jupiter.api.extension.BeforeAllCallback
 import org.junit.jupiter.api.extension.BeforeEachCallback
 import org.junit.jupiter.api.extension.ExtensionContext
+import org.springframework.http.HttpStatus
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.SercoResponse
 
 class SercoMockApiExtension : BeforeAllCallback, AfterAllCallback, BeforeEachCallback {
   companion object {
@@ -29,5 +35,20 @@ class SercoMockApiExtension : BeforeAllCallback, AfterAllCallback, BeforeEachCal
 class SercoMockApiServer : WireMockServer(WIREMOCK_PORT) {
   companion object {
     private const val WIREMOCK_PORT = 8094
+  }
+
+  private val objectMapper: ObjectMapper = ObjectMapper()
+  fun stupCreateDeviceWearer(jsonBody: String, status: HttpStatus, result: SercoResponse) {
+    stubFor(
+      post(urlPathTemplate("/device_wearer/createDW"))
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withBody(
+              objectMapper.writeValueAsString(result),
+            )
+            .withStatus(status.value()),
+        ),
+    )
   }
 }

@@ -24,10 +24,16 @@ data class DeviceWearerAddress(
   val deviceWearerId: UUID,
 
   @Column(name = "ADDRESS_LINE_1", nullable = true)
-  var AddressLine1: String? = null,
+  var addressLine1: String? = null,
 
-  @Column(name = "CITY", nullable = true)
-  var city: String? = null,
+  @Column(name = "ADDRESS_LINE_2", nullable = true)
+  var addressLine2: String? = null,
+
+  @Column(name = "ADDRESS_LINE_3", nullable = true)
+  var addressLine3: String? = null,
+
+  @Column(name = "ADDRESS_LINE_4", nullable = true)
+  var addressLine4: String? = null,
 
   @Column(name = "POSTCODE", nullable = true)
   var postcode: String? = null,
