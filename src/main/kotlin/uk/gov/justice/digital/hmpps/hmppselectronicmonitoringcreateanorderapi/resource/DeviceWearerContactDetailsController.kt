@@ -48,5 +48,5 @@ class DeviceWearerContactDetailsController(
 }
 
 data class UpdateContactDetailsDto(
-  val contactNumber: String,
+  val contactNumber: String? = null,
 )
