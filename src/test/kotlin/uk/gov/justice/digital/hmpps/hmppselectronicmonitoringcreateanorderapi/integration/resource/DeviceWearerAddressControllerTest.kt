@@ -10,6 +10,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.in
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearerAddress
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DeviceWearerAddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DeviceWearerAddressUsage
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FormStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.DeviceWearerAddressRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderFormRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidationError
@@ -33,6 +34,88 @@ class DeviceWearerAddressControllerTest : IntegrationTestBase() {
   fun setup() {
     deviceWearerAddressRepo.deleteAll()
     orderFormRepo.deleteAll()
+  }
+
+  @Test
+  fun `Address details for an order created by a different user are not update-able`() {
+    val order = createOrder()
+
+    webTestClient.post()
+      .uri("/api/order/${order.id}/address")
+      .contentType(MediaType.APPLICATION_JSON)
+      .body(
+        BodyInserters.fromValue(
+          """
+            {
+              "addressType": "PRIMARY",
+              "addressLine1": "$mockAddressLine1",
+              "addressLine2": "$mockAddressLine2",
+              "addressLine3": "$mockAddressLine3",
+              "addressLine4": "$mockAddressLine4",
+              "postCode": "$mockPostCode"
+            }
+          """.trimIndent(),
+        ),
+      )
+      .headers(setAuthorisation("AUTH_ADM_2"))
+      .exchange()
+      .expectStatus()
+      .isNotFound
+  }
+
+  @Test
+  fun `Address details for an non-existent order are not update-able`() {
+    webTestClient.post()
+      .uri("/api/order/${UUID.randomUUID()}/address")
+      .contentType(MediaType.APPLICATION_JSON)
+      .body(
+        BodyInserters.fromValue(
+          """
+            {
+              "addressType": "PRIMARY",
+              "addressLine1": "$mockAddressLine1",
+              "addressLine2": "$mockAddressLine2",
+              "addressLine3": "$mockAddressLine3",
+              "addressLine4": "$mockAddressLine4",
+              "postCode": "$mockPostCode"
+            }
+          """.trimIndent(),
+        ),
+      )
+      .headers(setAuthorisation("AUTH_ADM_2"))
+      .exchange()
+      .expectStatus()
+      .isNotFound
+  }
+
+  @Test
+  fun `Address details for an submitted order are not update-able`() {
+    val order = createOrder()
+
+    order.status = FormStatus.SUBMITTED
+    orderFormRepo.save(order)
+
+    webTestClient.post()
+      .uri("/api/order/${order.id}/address")
+      .contentType(MediaType.APPLICATION_JSON)
+      .body(
+        BodyInserters.fromValue(
+          """
+            {
+              "addressType": "PRIMARY",
+              "addressLine1": "$mockAddressLine1",
+              "addressLine2": "$mockAddressLine2",
+              "addressLine3": "$mockAddressLine3",
+              "addressLine4": "$mockAddressLine4",
+              "postCode": "$mockPostCode"
+            }
+          """.trimIndent(),
+        ),
+      )
+      .headers(setAuthorisation("AUTH_ADM_2"))
+      .exchange()
+      .expectStatus()
+      .isNotFound
   }
 
   @Test
