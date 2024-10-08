@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import reactor.core.publisher.Mono
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.CreateSercoDeviceWearerException
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.CreateSercoEntityException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.DeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.SercoResponse
 import java.util.UUID
@@ -27,7 +27,7 @@ class SercoClient(
       .contentType(MediaType.APPLICATION_JSON)
       .bodyValue(deviceWearer)
       .retrieve()
-      .onStatus({ t -> t.is5xxServerError }, { Mono.error(CreateSercoDeviceWearerException("Error creating Serco Device Wearer for order: $orderId")) })
+      .onStatus({ t -> t.is5xxServerError }, { Mono.error(CreateSercoEntityException("Error creating Serco Device Wearer for order: $orderId")) })
       .bodyToMono(SercoResponse::class.java)
       .onErrorResume(WebClientResponseException::class.java) { Mono.empty() }
       .block()!!
@@ -41,7 +41,7 @@ class SercoClient(
       .contentType(MediaType.APPLICATION_JSON)
       .bodyValue(deviceWearer)
       .retrieve()
-      .onStatus({ t -> t.is5xxServerError }, { Mono.error(CreateSercoDeviceWearerException("Error creating Serco Motoring order for order: $orderId")) })
+      .onStatus({ t -> t.is5xxServerError }, { Mono.error(CreateSercoEntityException("Error creating Serco Motoring order for order: $orderId")) })
       .bodyToMono(SercoResponse::class.java)
       .onErrorResume(WebClientResponseException::class.java) { Mono.empty() }
       .block()!!
