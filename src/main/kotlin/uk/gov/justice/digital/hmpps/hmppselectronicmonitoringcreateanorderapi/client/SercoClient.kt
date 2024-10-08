@@ -20,7 +20,7 @@ class SercoClient(
   private val objectMapper: ObjectMapper,
 ) {
   private val webClient: WebClient = WebClient.builder().baseUrl(url).build()
-  fun createDeviceWeaer(deviceWearer: DeviceWearer, orderId: UUID): SercoResponse {
+  fun createDeviceWearer(deviceWearer: DeviceWearer, orderId: UUID): SercoResponse {
     val token = sercoAuthClient.getClientToken()
     val result = webClient.post().uri("/device_wearer/createDW")
       .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
@@ -28,6 +28,20 @@ class SercoClient(
       .bodyValue(deviceWearer)
       .retrieve()
       .onStatus({ t -> t.is5xxServerError }, { Mono.error(CreateSercoDeviceWearerException("Error creating Serco Device Wearer for order: $orderId")) })
+      .bodyToMono(SercoResponse::class.java)
+      .onErrorResume(WebClientResponseException::class.java) { Mono.empty() }
+      .block()!!
+    return result
+  }
+
+  fun createMonitoringOrder(deviceWearer: DeviceWearer, orderId: UUID): SercoResponse {
+    val token = sercoAuthClient.getClientToken()
+    val result = webClient.post().uri("/monitoring_order/createMO")
+      .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+      .contentType(MediaType.APPLICATION_JSON)
+      .bodyValue(deviceWearer)
+      .retrieve()
+      .onStatus({ t -> t.is5xxServerError }, { Mono.error(CreateSercoDeviceWearerException("Error creating Serco Motoring order for order: $orderId")) })
       .bodyToMono(SercoResponse::class.java)
       .onErrorResume(WebClientResponseException::class.java) { Mono.empty() }
       .block()!!
