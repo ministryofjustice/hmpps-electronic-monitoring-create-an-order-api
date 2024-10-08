@@ -25,8 +25,11 @@ data class MonitoringConditions(
   @Column(name = "ORDER_TYPE", nullable = true)
   var orderType: String? = null,
 
-  @Column(name = "ORDER_DESCRIPTION", nullable = true)
-  var orderDescription: String? = null,
+  @Column(name = "MONITORING_REQUIRED", nullable = true)
+  var monitoringRequired: String? = null,
+
+  @Column(name = "DEVICES_REQUIRED", nullable = true)
+  var devicesRequired: String? = null,
 
   @Column(name = "ACQUISITIVE_CRIME", nullable = true)
   var acquisitiveCrimve: Boolean? = null,
@@ -59,8 +62,8 @@ data class MonitoringConditions(
   @OneToMany(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "monitoringConditions", orphanRemoval = true)
   var exclusionZoneConditions: MutableList<ExclusionZoneConditions> = mutableListOf(),
 
-  @OneToOne(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "monitoringConditions", orphanRemoval = true)
-  var mandatoryAttendanceConditions: MandatoryAttendanceConditions? = null,
+  @OneToMany(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "monitoringConditions", orphanRemoval = true)
+  var mandatoryAttendanceConditions: MutableList<MandatoryAttendanceConditions>? = mutableListOf(),
 
   @OneToOne(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "monitoringConditions", orphanRemoval = true)
   var curfewReleaseDateConditions: CurfewReleaseDateConditions? = null,
