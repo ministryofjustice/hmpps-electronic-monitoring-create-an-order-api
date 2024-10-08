@@ -19,17 +19,14 @@ data class AlcoholMonitoringConditions(
   @Column(name = "MONITORING_CONDITION_ID", nullable = false, unique = true)
   val monitoringConditionsId: UUID,
 
+  @Column(name = "MONITORING_TYPE", nullable = true)
+  var monitoringType: String? = null,
+
   @Column(name = "START_DATE", nullable = true)
   var startDate: LocalDate? = null,
 
   @Column(name = "END_DATE", nullable = true)
   var endDate: LocalDate? = null,
-
-  @Column(name = "INSTALLATION_DATE", nullable = true)
-  var installationDate: LocalDate? = null,
-
-  @Column(name = "INSTALLATION_TIME", nullable = true)
-  var installationTime: String? = null,
 
   @Column(name = "INSTALLTION_ADDRESS", nullable = true)
   var installationAddress: UUID? = null,

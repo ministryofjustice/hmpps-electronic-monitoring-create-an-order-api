@@ -19,6 +19,9 @@ data class ExclusionZoneConditions(
   @Column(name = "MONITORING_CONDITION_ID", nullable = false, unique = true)
   val monitoringConditionsId: UUID,
 
+  @Column(name = "ZONE_TYPE", nullable = true)
+  var zoneType: String? = null,
+
   @Column(name = "START_DATE", nullable = true)
   var startDate: LocalDate? = null,
 
@@ -28,8 +31,14 @@ data class ExclusionZoneConditions(
   @Column(name = "DESCRIPTION", nullable = true)
   var description: String? = null,
 
+  @Column(name = "DURATION", nullable = true)
+  var duration: String? = null,
+
   @Column(name = "FILE_NAME", nullable = true)
   var fileName: String? = null,
+
+  @Column(name = "FILE_ID", nullable = true)
+  var fileId: UUID? = null,
 
   @ManyToOne(optional = true)
   @JoinColumn(name = "MONITORING_CONDITION_ID", updatable = false, insertable = false)

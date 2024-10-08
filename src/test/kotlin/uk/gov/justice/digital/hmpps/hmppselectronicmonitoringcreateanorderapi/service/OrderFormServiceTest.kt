@@ -77,7 +77,7 @@ class OrderFormServiceTest {
     )
 
     whenever(repo.findByUsernameAndId("mockUser", mockOrder.id)).thenReturn(Optional.of(mockOrder))
-    whenever(sercoClient.createDeviceWeaer(any<fmsDeviceWearer>(), eq(mockOrder.id))).thenReturn(
+    whenever(sercoClient.createDeviceWearer(any<fmsDeviceWearer>(), eq(mockOrder.id))).thenReturn(
       SercoResponse(
         result = listOf(
           SercoResult("", "mockSercoId"),

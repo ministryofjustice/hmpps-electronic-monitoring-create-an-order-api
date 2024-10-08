@@ -39,7 +39,7 @@ class OrderFormService(
     val order = getOrderForm(username, id)!!
 
     val fmsDeviceWearer = FmsDeviceWearer.fromCemoOrder(order)
-    val createDeviceWearerResult = sercoClient.createDeviceWeaer(fmsDeviceWearer, orderId = id)
+    val createDeviceWearerResult = sercoClient.createDeviceWearer(fmsDeviceWearer, orderId = id)
     // TODO: Create Serco Order
     // TODO: Upload attachments
     order.fmsDeviceWearerId = createDeviceWearerResult.result.first().id
