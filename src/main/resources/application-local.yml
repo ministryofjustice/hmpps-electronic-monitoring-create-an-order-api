@@ -10,8 +10,8 @@ spring:
 
 services:
   hmppsauth:
-    #url: http://localhost:9090/auth
-    url: https://sign-in-dev.hmpps.service.justice.gov.uk/auth
+    url: http://localhost:9090/auth
+    #url: https://sign-in-dev.hmpps.service.justice.gov.uk/auth
 
 DOCUMENT_MANAGEMENT_URL:  http://localhost:8081/
 #DOCUMENT_MANAGEMENT_URL:  https://document-api-dev.hmpps.service.justice.gov.uk/
