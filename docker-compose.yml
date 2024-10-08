@@ -12,8 +12,14 @@ services:
       test: ["CMD", "curl", "-f", "http://localhost:8080/health/ping"]
     environment:
       - SERVER_PORT=8080
-      - HMPPS_AUTH_URL=http://hmpps-auth:8080/auth
+      - HMPPS_AUTH_URL=${HMPPS_AUTH_URL:-http://hmpps-auth:8080/auth}
       - SPRING_PROFILES_ACTIVE=local
+      - SERCO_CLIENT_ID=${SERCO_CLIENT_ID:-dummy}
+      - SERCO_AUTH_URL=${SERCO_AUTH_URL:-dummy}
+      - SERCO_CLIENT_SECRET=${SERCO_CLIENT_SECRET:-dummy}
+      - SERCO_USERNAME=${SERCO_USERNAME:-dummy}
+      - SERCO_PASSWORD=${SERCO_PASSWORD:-dummy}
+      - SERCO_URL=${SERCO_URL:-dummy}
 
   db:
     container_name: cemo-db

@@ -4,12 +4,13 @@ import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.http.MediaType
+import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearerContactDetails
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FormStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.DeviceWearerContactDetailsRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderFormRepository
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.UpdateContactDetailsDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidationError
 import java.util.*
 
@@ -60,11 +61,43 @@ class DeviceWearerContactDetailsControllerTest : IntegrationTestBase() {
   }
 
   @Test
+  fun `Contact details can be updated with a null contactNumber`() {
+    val order = createOrder()
+
+    webTestClient.post()
+      .uri("/api/order/${order.id}/contact-details")
+      .contentType(MediaType.APPLICATION_JSON)
+      .body(
+        BodyInserters.fromValue(
+          """
+            {
+              "contactNumber": null
+            }
+          """.trimIndent(),
+        ),
+      )
+      .headers(setAuthorisation("AUTH_ADM"))
+      .exchange()
+      .expectStatus()
+      .isOk
+  }
+
+  @Test
   fun `Contact details can be updated with a valid contact number`() {
     val order = createOrder()
-    val contactDetails = webTestClient.post()
+
+    webTestClient.post()
       .uri("/api/order/${order.id}/contact-details")
-      .bodyValue(UpdateContactDetailsDto(contactNumber = "01234567890"))
+      .contentType(MediaType.APPLICATION_JSON)
+      .body(
+        BodyInserters.fromValue(
+          """
+            {
+              "contactNumber": "01234567890"
+            }
+          """.trimIndent(),
+        ),
+      )
       .headers(setAuthorisation("AUTH_ADM"))
       .exchange()
       .expectStatus()
@@ -76,7 +109,16 @@ class DeviceWearerContactDetailsControllerTest : IntegrationTestBase() {
     val order = createOrder()
     val result = webTestClient.post()
       .uri("/api/order/${order.id}/contact-details")
-      .bodyValue(UpdateContactDetailsDto(contactNumber = "abc"))
+      .contentType(MediaType.APPLICATION_JSON)
+      .body(
+        BodyInserters.fromValue(
+          """
+            {
+              "contactNumber": "abc"
+            }
+          """.trimIndent(),
+        ),
+      )
       .headers(setAuthorisation("AUTH_ADM"))
       .exchange()
       .expectStatus()
@@ -99,7 +141,16 @@ class DeviceWearerContactDetailsControllerTest : IntegrationTestBase() {
     val order = createOrder()
     val contactDetails = webTestClient.post()
       .uri("/api/order/${order.id}/contact-details")
-      .bodyValue(UpdateContactDetailsDto(contactNumber = "01234567890"))
+      .contentType(MediaType.APPLICATION_JSON)
+      .body(
+        BodyInserters.fromValue(
+          """
+            {
+              "contactNumber": "01234567890"
+            }
+          """.trimIndent(),
+        ),
+      )
       .headers(setAuthorisation("AUTH_ADM_2"))
       .exchange()
       .expectStatus()
@@ -115,7 +166,16 @@ class DeviceWearerContactDetailsControllerTest : IntegrationTestBase() {
 
     val contactDetails = webTestClient.post()
       .uri("/api/order/${order.id}/contact-details")
-      .bodyValue(UpdateContactDetailsDto(contactNumber = "01234567890"))
+      .contentType(MediaType.APPLICATION_JSON)
+      .body(
+        BodyInserters.fromValue(
+          """
+            {
+              "contactNumber": "01234567890"
+            }
+          """.trimIndent(),
+        ),
+      )
       .headers(setAuthorisation("AUTH_ADM"))
       .exchange()
       .expectStatus()
