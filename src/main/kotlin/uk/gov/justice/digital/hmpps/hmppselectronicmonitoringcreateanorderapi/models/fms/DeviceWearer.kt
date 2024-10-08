@@ -156,7 +156,7 @@ data class DeviceWearer(
         parent = "${order.deviceWearer?.responsibleAdult?.fullName}",
         parentPhoneNumber = order.deviceWearer?.responsibleAdult?.contactNumber,
       )
-      order.deviceWearerAddresses?.find { address -> address.addressType == DeviceWearerAddressType.SECOND }.let { address ->
+      order.deviceWearerAddresses?.find { address -> address.addressType == DeviceWearerAddressType.SECONDARY }.let { address ->
         {
           if (address != null) {
             deviceWearer.secondaryAddress1 = address.addressLine1

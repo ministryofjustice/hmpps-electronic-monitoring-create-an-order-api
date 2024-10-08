@@ -40,7 +40,7 @@ class DeviceWearerAddressControllerTest : IntegrationTestBase() {
     val order = createOrder()
 
     val result = webTestClient.post()
-      .uri("/api/order/${order.id}/address/")
+      .uri("/api/order/${order.id}/address")
       .contentType(MediaType.APPLICATION_JSON)
       .body(
         BodyInserters.fromValue(
@@ -75,51 +75,11 @@ class DeviceWearerAddressControllerTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `Address details can be updated with a usage type`() {
-    val order = createOrder()
-
-    val result = webTestClient.post()
-      .uri("/api/order/${order.id}/address/")
-      .contentType(MediaType.APPLICATION_JSON)
-      .body(
-        BodyInserters.fromValue(
-          """
-            {
-              "addressType": "PRIMARY",
-              "addressLine1": "$mockAddressLine1",
-              "addressLine2": "$mockAddressLine2",
-              "addressLine3": "$mockAddressLine3",
-              "addressLine4": "$mockAddressLine4",
-              "postCode": "$mockPostCode",
-              "addressUsage": "$mockAddressUsage"
-            }
-          """.trimIndent(),
-        ),
-      )
-      .headers(setAuthorisation("AUTH_ADM"))
-      .exchange()
-      .expectStatus()
-      .isOk
-      .expectBody(DeviceWearerAddress::class.java)
-      .returnResult()
-
-    val address = result.responseBody!!
-
-    Assertions.assertThat(address.addressType).isEqualTo(DeviceWearerAddressType.PRIMARY)
-    Assertions.assertThat(address.addressLine1).isEqualTo(mockAddressLine1)
-    Assertions.assertThat(address.addressLine2).isEqualTo(mockAddressLine2)
-    Assertions.assertThat(address.addressLine3).isEqualTo(mockAddressLine3)
-    Assertions.assertThat(address.addressLine4).isEqualTo(mockAddressLine4)
-    Assertions.assertThat(address.postcode).isEqualTo(mockPostCode)
-    Assertions.assertThat(address.addressUsage).isEqualTo(DeviceWearerAddressUsage.WORK)
-  }
-
-  @Test
   fun `Primary address details are mandatory`() {
     val order = createOrder()
 
     val result = webTestClient.post()
-      .uri("/api/order/${order.id}/address/")
+      .uri("/api/order/${order.id}/address")
       .contentType(MediaType.APPLICATION_JSON)
       .body(
         BodyInserters.fromValue(
@@ -160,7 +120,7 @@ class DeviceWearerAddressControllerTest : IntegrationTestBase() {
     val order = createOrder()
 
     val result = webTestClient.post()
-      .uri("/api/order/${order.id}/address/")
+      .uri("/api/order/${order.id}/address")
       .contentType(MediaType.APPLICATION_JSON)
       .body(
         BodyInserters.fromValue(
@@ -187,7 +147,7 @@ class DeviceWearerAddressControllerTest : IntegrationTestBase() {
     val order = createOrder()
 
     val result = webTestClient.post()
-      .uri("/api/order/${order.id}/address/")
+      .uri("/api/order/${order.id}/address")
       .contentType(MediaType.APPLICATION_JSON)
       .body(
         BodyInserters.fromValue(

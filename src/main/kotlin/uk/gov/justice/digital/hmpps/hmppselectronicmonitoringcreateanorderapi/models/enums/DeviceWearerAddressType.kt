@@ -2,6 +2,6 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.m
 
 enum class DeviceWearerAddressType {
   PRIMARY,
-  SECOND,
-  THIRD,
+  SECONDARY,
+  TERTIARY,
 }
