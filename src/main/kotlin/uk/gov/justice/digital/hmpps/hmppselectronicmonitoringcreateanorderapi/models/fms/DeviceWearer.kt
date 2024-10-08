@@ -130,7 +130,7 @@ data class DeviceWearer(
       if (!order.deviceWearer?.adultAtTimeOfInstallation!!) {
         adultChild = "child"
       }
-      val primaryAddress = order.deviceWearer?.deviceWearerAddresses?.find { address -> address.addressType == DeviceWearerAddressType.PRIMARY }!!
+      val primaryAddress = order.deviceWearerAddresses?.find { address -> address.addressType == DeviceWearerAddressType.PRIMARY }!!
       val disabilities = order.deviceWearer?.disabilities?.split(',')?.map { disability -> Disability(disability) }?.toList()
       val deviceWearer = DeviceWearer(
         firstName = order.deviceWearer?.firstName,
@@ -156,7 +156,7 @@ data class DeviceWearer(
         parent = "${order.deviceWearer?.responsibleAdult?.fullName}",
         parentPhoneNumber = order.deviceWearer?.responsibleAdult?.contactNumber,
       )
-      order.deviceWearer?.deviceWearerAddresses?.find { address -> address.addressType == DeviceWearerAddressType.SECOND }.let { address ->
+      order.deviceWearerAddresses?.find { address -> address.addressType == DeviceWearerAddressType.SECOND }.let { address ->
         {
           if (address != null) {
             deviceWearer.secondaryAddress1 = address.addressLine1

@@ -6,7 +6,6 @@ import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
 import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
-import jakarta.persistence.OneToMany
 import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
 import jakarta.validation.constraints.Past
@@ -70,7 +69,4 @@ data class DeviceWearer(
 
   @OneToOne(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "deviceWearer", orphanRemoval = true)
   var alternativeContactDetails: AlternativeContractDetails? = null,
-
-  @OneToMany(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "deviceWearer", orphanRemoval = true)
-  var deviceWearerAddresses: MutableList<DeviceWearerAddress> = mutableListOf(),
 )

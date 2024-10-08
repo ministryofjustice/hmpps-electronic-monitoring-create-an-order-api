@@ -8,11 +8,8 @@ import org.springframework.http.MediaType
 import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearerAddress
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearerContactDetails
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DeviceWearerAddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DeviceWearerAddressUsage
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FormStatus
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.DeviceWearerContactDetailsRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.DeviceWearerAddressRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderFormRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidationError
@@ -56,8 +53,8 @@ class DeviceWearerAddressControllerTest : IntegrationTestBase() {
               "addressLine4": "$mockAddressLine4",
               "postCode": "$mockPostCode"
             }
-          """.trimIndent()
-        )
+          """.trimIndent(),
+        ),
       )
       .headers(setAuthorisation("AUTH_ADM"))
       .exchange()
@@ -96,8 +93,8 @@ class DeviceWearerAddressControllerTest : IntegrationTestBase() {
               "postCode": "$mockPostCode",
               "addressUsage": "$mockAddressUsage"
             }
-          """.trimIndent()
-        )
+          """.trimIndent(),
+        ),
       )
       .headers(setAuthorisation("AUTH_ADM"))
       .exchange()
@@ -135,8 +132,8 @@ class DeviceWearerAddressControllerTest : IntegrationTestBase() {
               "addressLine4": "",
               "postCode": ""
             }
-          """.trimIndent()
-        )
+          """.trimIndent(),
+        ),
       )
       .headers(setAuthorisation("AUTH_ADM"))
       .exchange()
@@ -176,8 +173,8 @@ class DeviceWearerAddressControllerTest : IntegrationTestBase() {
               "addressLine4": "",
               "postCode": ""
             }
-          """.trimIndent()
-        )
+          """.trimIndent(),
+        ),
       )
       .headers(setAuthorisation("AUTH_ADM"))
       .exchange()
@@ -203,8 +200,8 @@ class DeviceWearerAddressControllerTest : IntegrationTestBase() {
               "addressLine4": "",
               "postCode": ""
             }
-          """.trimIndent()
-        )
+          """.trimIndent(),
+        ),
       )
       .headers(setAuthorisation("AUTH_ADM"))
       .exchange()
