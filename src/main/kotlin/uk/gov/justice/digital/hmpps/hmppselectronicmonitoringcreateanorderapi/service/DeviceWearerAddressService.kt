@@ -26,7 +26,7 @@ class DeviceWearerAddressService(
       username,
       FormStatus.IN_PROGRESS,
     ).orElseThrow {
-      EntityNotFoundException("Order with id $orderId does not exist")
+      EntityNotFoundException("An editable order with $orderId does not exist")
     }
 
     // Find an existing address or create a new address
