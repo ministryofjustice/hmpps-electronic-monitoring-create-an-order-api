@@ -10,14 +10,14 @@ import java.time.LocalDate
 import java.util.*
 
 @Entity
-@Table(name = "EXCLUSION_ZONE")
-data class ExclusionZoneConditions(
+@Table(name = "ENFORCEMENT_ZONE")
+data class EnforcementZoneConditions(
   @Id
   @Column(name = "ID", nullable = false, unique = true)
   val id: UUID = UUID.randomUUID(),
 
-  @Column(name = "MONITORING_CONDITION_ID", nullable = false, unique = true)
-  val monitoringConditionsId: UUID,
+  @Column(name = "ORDER_ID", nullable = false, unique = true)
+  val orderId: UUID,
 
   @Column(name = "ZONE_TYPE", nullable = true)
   var zoneType: String? = null,
@@ -40,7 +40,10 @@ data class ExclusionZoneConditions(
   @Column(name = "FILE_ID", nullable = true)
   var fileId: UUID? = null,
 
+  @Column(name = "ZONE_ID", nullable = true)
+  var zoneId: Number? = null,
+
   @ManyToOne(optional = true)
-  @JoinColumn(name = "MONITORING_CONDITION_ID", updatable = false, insertable = false)
-  private val monitoringConditions: MonitoringConditions? = null,
+  @JoinColumn(name = "ORDER_ID", updatable = false, insertable = false)
+  private val order: OrderForm? = null,
 )

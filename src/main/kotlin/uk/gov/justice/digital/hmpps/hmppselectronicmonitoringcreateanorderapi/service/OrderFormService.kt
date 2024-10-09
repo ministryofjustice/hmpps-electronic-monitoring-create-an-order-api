@@ -28,6 +28,7 @@ class OrderFormService(
     orderForm.deviceWearerContactDetails = DeviceWearerContactDetails(orderId = orderForm.id)
     orderForm.monitoringConditions = MonitoringConditions(orderId = orderForm.id)
     orderForm.additionalDocuments = mutableListOf()
+    orderForm.exclusionZoneConditions = mutableListOf()
     repo.save(orderForm)
     return orderForm
   }

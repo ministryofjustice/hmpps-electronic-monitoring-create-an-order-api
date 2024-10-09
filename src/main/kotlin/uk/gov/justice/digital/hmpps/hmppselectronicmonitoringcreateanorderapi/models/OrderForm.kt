@@ -56,4 +56,7 @@ data class OrderForm(
 
   @OneToMany(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "order", orphanRemoval = true)
   var additionalDocuments: MutableList<AdditionalDocument> = mutableListOf(),
+
+  @OneToMany(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "order", orphanRemoval = true)
+  var exclusionZoneConditions: MutableList<EnforcementZoneConditions> = mutableListOf(),
 )
