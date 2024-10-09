@@ -20,8 +20,8 @@ data class DeviceWearerAddress(
   @Column(name = "ID", nullable = false, unique = true)
   val id: UUID = UUID.randomUUID(),
 
-  @Column(name = "DEVICE_WEARER_ID", nullable = false)
-  val deviceWearerId: UUID,
+  @Column(name = "ORDER_ID", nullable = false)
+  val orderId: UUID,
 
   @Column(name = "ADDRESS_LINE_1", nullable = true)
   var addressLine1: String? = null,
@@ -47,6 +47,6 @@ data class DeviceWearerAddress(
   var addressUsage: DeviceWearerAddressUsage? = DeviceWearerAddressUsage.NA,
 
   @ManyToOne
-  @JoinColumn(name = "DEVICE_WEARER_ID", updatable = false, insertable = false)
-  private val deviceWearer: DeviceWearer? = null,
+  @JoinColumn(name = "ORDER_ID", updatable = false, insertable = false)
+  private val order: OrderForm? = null,
 )

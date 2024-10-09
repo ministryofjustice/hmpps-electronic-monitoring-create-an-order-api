@@ -24,6 +24,7 @@ class OrderFormService(
       status = FormStatus.IN_PROGRESS,
     )
     orderForm.deviceWearer = DeviceWearer(orderId = orderForm.id)
+    orderForm.deviceWearerAddresses = mutableListOf()
     orderForm.deviceWearerContactDetails = DeviceWearerContactDetails(orderId = orderForm.id)
     orderForm.monitoringConditions = MonitoringConditions(orderId = orderForm.id)
     orderForm.additionalDocuments = mutableListOf()

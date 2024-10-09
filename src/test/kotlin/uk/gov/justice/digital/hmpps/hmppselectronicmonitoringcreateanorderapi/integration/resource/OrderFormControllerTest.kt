@@ -303,9 +303,9 @@ class OrderFormControllerTest : IntegrationTestBase() {
       fullName = "Mark Smith",
       contactNumber = "07401111111",
     )
-    orderForm.deviceWearer!!.deviceWearerAddresses = mutableListOf(
+    orderForm.deviceWearerAddresses = mutableListOf(
       DeviceWearerAddress(
-        deviceWearerId = orderForm.deviceWearer!!.id,
+        orderId = orderForm.id,
         addressLine1 = "20 Somewhere Street",
         addressLine2 = "Nowhere City",
         addressLine3 = "Random County",
@@ -314,7 +314,7 @@ class OrderFormControllerTest : IntegrationTestBase() {
         addressType = DeviceWearerAddressType.PRIMARY,
       ),
       DeviceWearerAddress(
-        deviceWearerId = orderForm.deviceWearer!!.id,
+        orderId = orderForm.id,
         addressLine1 = "22 Somewhere Street",
         addressLine2 = "Nowhere City",
         addressLine3 = "Random County",

@@ -64,9 +64,9 @@ class OrderFormServiceTest {
       orderId = mockOrder.id,
       adultAtTimeOfInstallation = true, dateOfBirth = ZonedDateTime.of(1990, 1, 1, 1, 1, 1, 1, ZoneId.systemDefault()),
     )
-    mockOrder.deviceWearer!!.deviceWearerAddresses = mutableListOf(
+    mockOrder.deviceWearerAddresses = mutableListOf(
       DeviceWearerAddress(
-        deviceWearerId = mockOrder.deviceWearer!!.id,
+        orderId = mockOrder.id,
         addressLine1 = "20 Somewhere Street",
         addressLine2 = "Nowhere City",
         addressLine3 = "Random County",
