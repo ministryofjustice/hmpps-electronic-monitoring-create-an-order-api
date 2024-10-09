@@ -2,12 +2,12 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.r
 
 import jakarta.validation.Valid
 import jakarta.validation.constraints.AssertTrue
+import jakarta.validation.constraints.NotBlank
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.Authentication
-import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -23,18 +23,6 @@ import java.util.*
 class DeviceWearerResponsibleAdultController(
   @Autowired val deviceWearerResponsibleAdultService: DeviceWearerResponsibleAdultService,
 ) {
-
-  @GetMapping("/order/{orderId}/device-wearer-responsible-adult")
-  fun getResponsibleAdult(
-    @PathVariable orderId: UUID,
-    authentication: Authentication,
-  ): ResponseEntity<ResponsibleAdult> {
-    val username = authentication.name
-    val responsibleAdult = deviceWearerResponsibleAdultService.getResponsibleAdult(orderId, username)
-
-    return ResponseEntity(responsibleAdult, HttpStatus.OK)
-  }
-
   @PostMapping("/order/{orderId}/device-wearer-responsible-adult")
   fun updateResponsibleAdult(
     @PathVariable orderId: UUID,
@@ -49,28 +37,16 @@ class DeviceWearerResponsibleAdultController(
 }
 
 data class UpdateDeviceWearerResponsibleAdultDto(
+  @field:NotBlank(message = "Full name is required")
   val fullName: String,
+  @field:NotBlank(message = "Relationship is required")
   val relationship: String,
   val otherRelationshipDetails: String?,
+  @field:NotBlank(message = "Contact number is required")
   val contactNumber: String,
 ) {
-  @AssertTrue(message = "Full name is required")
-  fun isFullName(): Boolean {
-    return this.fullName.isNotBlank()
-  }
-
-  @AssertTrue(message = "Relationship is required")
-  fun isRelationship(): Boolean {
-    return this.relationship.isNotBlank()
-  }
-
   @AssertTrue(message = "You must provide details of the responsible adult to the device wearer")
   fun isOtherRelationshipDetails(): Boolean {
     return !(relationship == "other" && otherRelationshipDetails.isNullOrBlank())
-  }
-
-  @AssertTrue(message = "Contact number is required")
-  fun isContactNumber(): Boolean {
-    return this.contactNumber.isNotBlank()
   }
 }
