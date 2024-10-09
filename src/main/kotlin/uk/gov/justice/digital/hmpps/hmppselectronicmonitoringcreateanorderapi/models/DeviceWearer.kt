@@ -65,8 +65,5 @@ data class DeviceWearer(
   private val order: OrderForm? = null,
 
   @OneToOne(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "deviceWearer", orphanRemoval = true)
-  var responsibleAdult: ResponsibleAdult? = null,
-
-  @OneToOne(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "deviceWearer", orphanRemoval = true)
   var alternativeContactDetails: AlternativeContractDetails? = null,
 )
