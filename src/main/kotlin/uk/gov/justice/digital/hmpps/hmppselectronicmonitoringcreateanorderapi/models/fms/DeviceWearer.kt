@@ -152,9 +152,9 @@ data class DeviceWearer(
         riskDetails = order.installationAndRisk?.riskDetails,
         mappa = order.installationAndRisk?.mappaLevel,
         mappaCaseType = order.installationAndRisk?.mappaCaseType,
-        responsibleAdultRequired = (order.deviceWearer?.responsibleAdult != null).toString(),
-        parent = "${order.deviceWearer?.responsibleAdult?.fullName}",
-        parentPhoneNumber = order.deviceWearer?.responsibleAdult?.contactNumber,
+        responsibleAdultRequired = (order.deviceWearerResponsibleAdult != null).toString(),
+        parent = "${order.deviceWearerResponsibleAdult?.fullName}",
+        parentPhoneNumber = order.deviceWearerResponsibleAdult?.contactNumber,
       )
       order.deviceWearerAddresses?.find { address -> address.addressType == DeviceWearerAddressType.SECONDARY }.let { address ->
         {

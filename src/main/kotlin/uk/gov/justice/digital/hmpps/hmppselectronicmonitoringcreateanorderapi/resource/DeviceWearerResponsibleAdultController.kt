@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource
 
 import jakarta.validation.Valid
+import jakarta.validation.constraints.AssertTrue
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -52,4 +53,24 @@ data class UpdateDeviceWearerResponsibleAdultDto(
   val relationship: String,
   val otherRelationshipDetails: String?,
   val contactNumber: String,
-)
+) {
+  @AssertTrue(message = "Full name is required")
+  fun isFullName(): Boolean {
+    return this.fullName.isNotBlank()
+  }
+
+  @AssertTrue(message = "Relationship is required")
+  fun isRelationship(): Boolean {
+    return this.relationship.isNotBlank()
+  }
+
+  @AssertTrue(message = "You must provide details of the responsible adult to the device wearer")
+  fun isOtherRelationshipDetails(): Boolean {
+    return !(relationship == "other" && otherRelationshipDetails.isNullOrBlank())
+  }
+
+  @AssertTrue(message = "Contact number is required")
+  fun isContactNumber(): Boolean {
+    return this.contactNumber.isNotBlank()
+  }
+}

@@ -298,8 +298,8 @@ class OrderFormControllerTest : IntegrationTestBase() {
       disabilities = "Vision,Hearing",
     )
 
-    orderForm.deviceWearer!!.responsibleAdult = ResponsibleAdult(
-      deviceWearerId = orderForm.deviceWearer!!.id,
+    orderForm.deviceWearerResponsibleAdult = ResponsibleAdult(
+      orderId = orderForm.id,
       fullName = "Mark Smith",
       contactNumber = "07401111111",
     )
