@@ -32,7 +32,7 @@ data class MonitoringConditions(
   var devicesRequired: String? = null,
 
   @Column(name = "ACQUISITIVE_CRIME", nullable = true)
-  var acquisitiveCrimve: Boolean? = null,
+  var acquisitiveCrime: Boolean? = null,
 
   @Column(name = "DAPOL", nullable = true)
   var dapol: Boolean? = null,
