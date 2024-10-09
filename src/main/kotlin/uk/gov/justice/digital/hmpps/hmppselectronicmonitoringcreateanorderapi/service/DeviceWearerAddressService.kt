@@ -1,32 +1,55 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service
 
+import jakarta.persistence.EntityNotFoundException
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearerAddress
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DeviceWearerAddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FormStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.DeviceWearerAddressRepository
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderFormRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.UpdateDeviceWearerAddressDto
 import java.util.UUID
 
 @Service
 class DeviceWearerAddressService(
-  val repo: DeviceWearerAddressRepository,
+  val orderRepo: OrderFormRepository,
+  val addressRepo: DeviceWearerAddressRepository,
 ) {
+  fun getAddress(
+    orderId: UUID,
+    username: String,
+    addressType: DeviceWearerAddressType,
+  ): DeviceWearerAddress {
+    val order = orderRepo.findByIdAndUsernameAndStatus(
+      orderId,
+      username,
+      FormStatus.IN_PROGRESS,
+    ).orElseThrow {
+      EntityNotFoundException("Order with id $orderId does not exist")
+    }
+
+    return addressRepo.findByOrderIdAndOrderUsernameAndOrderStatusAndAddressType(
+      order.id,
+      order.username,
+      order.status,
+      addressType,
+    ).orElse(
+      DeviceWearerAddress(
+        orderId = orderId,
+        addressType = addressType,
+      ),
+    )
+  }
+
   fun createOrUpdateAddress(
     orderId: UUID,
     username: String,
     deviceWearerAddressUpdateRecord: UpdateDeviceWearerAddressDto,
   ): DeviceWearerAddress {
-    // BAD LOGIC - will allow creation of address against submitted order or another user's order
-    val address = repo.findByOrderIdAndOrderUsernameAndOrderStatusAndAddressType(
+    val address = this.getAddress(
       orderId,
       username,
-      FormStatus.IN_PROGRESS,
       deviceWearerAddressUpdateRecord.addressType,
-    ).orElse(
-      DeviceWearerAddress(
-        orderId = orderId,
-        addressType = deviceWearerAddressUpdateRecord.addressType,
-      ),
     )
 
     with(deviceWearerAddressUpdateRecord) {
@@ -37,6 +60,6 @@ class DeviceWearerAddressService(
       address.postcode = postCode
     }
 
-    return repo.save(address)
+    return addressRepo.save(address)
   }
 }
