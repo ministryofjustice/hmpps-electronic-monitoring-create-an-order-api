@@ -27,7 +27,7 @@ class DeviceWearerAddressControllerTest : IntegrationTestBase() {
   private val mockAddressLine2: String = "mockAddressLine2"
   private val mockAddressLine3: String = "mockAddressLine3"
   private val mockAddressLine4: String = "mockAddressLine4"
-  private val mockPostCode: String = "mockPostCode"
+  private val mockPostcode: String = "mockPostcode"
   private val mockAddressUsage: String = "WORK"
 
   @BeforeEach
@@ -52,7 +52,7 @@ class DeviceWearerAddressControllerTest : IntegrationTestBase() {
               "addressLine2": "$mockAddressLine2",
               "addressLine3": "$mockAddressLine3",
               "addressLine4": "$mockAddressLine4",
-              "postCode": "$mockPostCode"
+              "postcode": "$mockPostcode"
             }
           """.trimIndent(),
         ),
@@ -77,7 +77,7 @@ class DeviceWearerAddressControllerTest : IntegrationTestBase() {
               "addressLine2": "$mockAddressLine2",
               "addressLine3": "$mockAddressLine3",
               "addressLine4": "$mockAddressLine4",
-              "postCode": "$mockPostCode"
+              "postcode": "$mockPostcode"
             }
           """.trimIndent(),
         ),
@@ -107,7 +107,7 @@ class DeviceWearerAddressControllerTest : IntegrationTestBase() {
               "addressLine2": "$mockAddressLine2",
               "addressLine3": "$mockAddressLine3",
               "addressLine4": "$mockAddressLine4",
-              "postCode": "$mockPostCode"
+              "postcode": "$mockPostcode"
             }
           """.trimIndent(),
         ),
@@ -134,7 +134,7 @@ class DeviceWearerAddressControllerTest : IntegrationTestBase() {
               "addressLine2": "$mockAddressLine2",
               "addressLine3": "$mockAddressLine3",
               "addressLine4": "$mockAddressLine4",
-              "postCode": "$mockPostCode"
+              "postcode": "$mockPostcode"
             }
           """.trimIndent(),
         ),
@@ -153,7 +153,7 @@ class DeviceWearerAddressControllerTest : IntegrationTestBase() {
     Assertions.assertThat(address.addressLine2).isEqualTo(mockAddressLine2)
     Assertions.assertThat(address.addressLine3).isEqualTo(mockAddressLine3)
     Assertions.assertThat(address.addressLine4).isEqualTo(mockAddressLine4)
-    Assertions.assertThat(address.postcode).isEqualTo(mockPostCode)
+    Assertions.assertThat(address.postcode).isEqualTo(mockPostcode)
     Assertions.assertThat(address.addressUsage).isEqualTo(DeviceWearerAddressUsage.NA)
   }
 
@@ -173,7 +173,7 @@ class DeviceWearerAddressControllerTest : IntegrationTestBase() {
               "addressLine2": "",
               "addressLine3": "",
               "addressLine4": "",
-              "postCode": ""
+              "postcode": ""
             }
           """.trimIndent(),
         ),
@@ -194,7 +194,7 @@ class DeviceWearerAddressControllerTest : IntegrationTestBase() {
       ValidationError("addressLine2", "Address line 2 is required"),
     )
     Assertions.assertThat(result.responseBody!!).contains(
-      ValidationError("postCode", "Post code is required"),
+      ValidationError("postcode", "Postcode is required"),
     )
   }
 
@@ -214,7 +214,7 @@ class DeviceWearerAddressControllerTest : IntegrationTestBase() {
               "addressLine2": "",
               "addressLine3": "",
               "addressLine4": "",
-              "postCode": ""
+              "postcode": ""
             }
           """.trimIndent(),
         ),
@@ -241,7 +241,7 @@ class DeviceWearerAddressControllerTest : IntegrationTestBase() {
               "addressLine2": "",
               "addressLine3": "",
               "addressLine4": "",
-              "postCode": ""
+              "postcode": ""
             }
           """.trimIndent(),
         ),

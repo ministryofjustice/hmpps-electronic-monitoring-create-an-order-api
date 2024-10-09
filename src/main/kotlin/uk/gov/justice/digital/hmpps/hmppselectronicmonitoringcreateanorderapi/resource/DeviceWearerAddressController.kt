@@ -47,7 +47,7 @@ data class UpdateDeviceWearerAddressDto(
   val addressLine2: String,
   val addressLine3: String,
   val addressLine4: String,
-  val postCode: String,
+  val postcode: String,
 ) {
   @AssertTrue(message = "Address line 1 is required")
   fun isAddressLine1(): Boolean {
@@ -65,10 +65,10 @@ data class UpdateDeviceWearerAddressDto(
     return true
   }
 
-  @AssertTrue(message = "Post code is required")
-  fun isPostCode(): Boolean {
+  @AssertTrue(message = "Postcode is required")
+  fun isPostcode(): Boolean {
     if (this.addressType === DeviceWearerAddressType.PRIMARY) {
-      return this.postCode.isNotBlank()
+      return this.postcode.isNotBlank()
     }
     return true
   }

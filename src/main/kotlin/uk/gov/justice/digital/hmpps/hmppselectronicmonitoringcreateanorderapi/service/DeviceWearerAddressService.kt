@@ -59,7 +59,7 @@ class DeviceWearerAddressService(
       address.addressLine2 = addressLine2
       address.addressLine3 = addressLine3
       address.addressLine4 = addressLine4
-      address.postcode = postCode
+      address.postcode = postcode
     }
 
     return addressRepo.save(address)
