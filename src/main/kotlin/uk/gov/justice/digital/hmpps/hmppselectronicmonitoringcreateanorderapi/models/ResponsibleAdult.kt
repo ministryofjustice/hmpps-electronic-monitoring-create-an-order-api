@@ -15,8 +15,8 @@ data class ResponsibleAdult(
   @Column(name = "ID", nullable = false, unique = true)
   val id: UUID = UUID.randomUUID(),
 
-  @Column(name = "DEVICE_WEARER_ID", nullable = false, unique = true)
-  val deviceWearerId: UUID,
+  @Column(name = "ORDER_ID", nullable = false)
+  val orderId: UUID,
 
   @Column(name = "FULL_NAME", nullable = true)
   var fullName: String? = null,
@@ -24,10 +24,13 @@ data class ResponsibleAdult(
   @Column(name = "RELATIONSHIP", nullable = true)
   var relationship: String? = null,
 
+  @Column(name = "OTHER_RELATIONSHIP_DETAILS", nullable = true)
+  var otherRelationshipDetails: String? = null,
+
   @Column(name = "CONTACT_NUMBER", nullable = true)
   var contactNumber: String? = null,
 
   @OneToOne
-  @JoinColumn(name = "DEVICE_WEARER_ID", updatable = false, insertable = false)
-  private val deviceWearer: DeviceWearer? = null,
+  @JoinColumn(name = "ORDER_ID", updatable = false, insertable = false)
+  private val order: OrderForm? = null,
 )
