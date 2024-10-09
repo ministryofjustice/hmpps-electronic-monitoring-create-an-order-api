@@ -20,6 +20,7 @@ class DeviceWearerAddressService(
     username: String,
     addressType: DeviceWearerAddressType,
   ): DeviceWearerAddress {
+    // Verify the order belongs to the user and is in draft state
     val order = orderRepo.findByIdAndUsernameAndStatus(
       orderId,
       username,
@@ -28,6 +29,7 @@ class DeviceWearerAddressService(
       EntityNotFoundException("Order with id $orderId does not exist")
     }
 
+    // Find an existing address or create a new address
     return addressRepo.findByOrderIdAndOrderUsernameAndOrderStatusAndAddressType(
       order.id,
       order.username,
