@@ -82,7 +82,7 @@ class DeviceWearerAddressControllerTest : IntegrationTestBase() {
           """.trimIndent(),
         ),
       )
-      .headers(setAuthorisation("AUTH_ADM_2"))
+      .headers(setAuthorisation("AUTH_ADM"))
       .exchange()
       .expectStatus()
       .isNotFound
@@ -112,7 +112,7 @@ class DeviceWearerAddressControllerTest : IntegrationTestBase() {
           """.trimIndent(),
         ),
       )
-      .headers(setAuthorisation("AUTH_ADM_2"))
+      .headers(setAuthorisation("AUTH_ADM"))
       .exchange()
       .expectStatus()
       .isNotFound

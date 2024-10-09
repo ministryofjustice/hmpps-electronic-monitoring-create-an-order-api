@@ -12,7 +12,7 @@ import java.util.UUID
 @Service
 class DeviceWearerResponsibleAdultService(
   val orderRepo: OrderFormRepository,
-  val resonsibleAdultRepo: DeviceWearerResponsibleAdultRepository,
+  val responsibleAdultRepo: DeviceWearerResponsibleAdultRepository,
 ) {
   fun getResponsibleAdult(orderId: UUID, username: String): ResponsibleAdult {
     // Verify the order belongs to the user and is in draft state
@@ -24,8 +24,8 @@ class DeviceWearerResponsibleAdultService(
       EntityNotFoundException("An editable order with $orderId does not exist")
     }
 
-    // Find an existing address or create a new address
-    return resonsibleAdultRepo.findByOrderIdAndOrderUsernameAndOrderStatus(
+    // Find an existing responsible adult or create a new responsible adult
+    return responsibleAdultRepo.findByOrderIdAndOrderUsernameAndOrderStatus(
       order.id,
       order.username,
       order.status,
@@ -53,6 +53,6 @@ class DeviceWearerResponsibleAdultService(
       responsibleAdult.contactNumber = contactNumber
     }
 
-    return resonsibleAdultRepo.save(responsibleAdult)
+    return responsibleAdultRepo.save(responsibleAdult)
   }
 }
