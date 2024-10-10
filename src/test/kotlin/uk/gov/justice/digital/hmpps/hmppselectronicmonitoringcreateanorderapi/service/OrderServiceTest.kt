@@ -13,14 +13,15 @@ import org.mockito.kotlin.whenever
 import org.springframework.boot.test.autoconfigure.json.JsonTest
 import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.SercoClient
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Address
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearerAddress
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderForm
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DeviceWearerAddressType
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FormStatus
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.SercoResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.SercoResult
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderFormRepository
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.util.*
@@ -28,27 +29,27 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 
 @ActiveProfiles("test")
 @JsonTest
-class OrderFormServiceTest {
-  private lateinit var repo: OrderFormRepository
+class OrderServiceTest {
+  private lateinit var repo: OrderRepository
   private lateinit var sercoClient: SercoClient
-  private lateinit var service: OrderFormService
+  private lateinit var service: OrderService
 
   @BeforeEach
   fun setup() {
-    repo = mock(OrderFormRepository::class.java)
+    repo = mock(OrderRepository::class.java)
     sercoClient = mock(SercoClient::class.java)
-    service = OrderFormService(repo, sercoClient)
+    service = OrderService(repo, sercoClient)
   }
 
   @Test
-  fun `Create a new order form with tile and username and save to database`() {
-    val result = service.createOrderForm("mockUser")
+  fun `Create a new order for user and save to database`() {
+    val result = service.createOrder("mockUser")
 
     Assertions.assertThat(result.id).isNotNull()
     Assertions.assertThat(UUID.fromString(result.id.toString())).isEqualTo(result.id)
     Assertions.assertThat(result.username).isEqualTo("mockUser")
-    Assertions.assertThat(result.status).isEqualTo(FormStatus.IN_PROGRESS)
-    argumentCaptor<OrderForm>().apply {
+    Assertions.assertThat(result.status).isEqualTo(OrderStatus.IN_PROGRESS)
+    argumentCaptor<Order>().apply {
       verify(repo, times(1)).save(capture())
       Assertions.assertThat(firstValue).isEqualTo(result)
     }
@@ -56,9 +57,9 @@ class OrderFormServiceTest {
 
   @Test
   fun `Create FMS device wearer and save fms device wearer id against order`() {
-    val mockOrder = OrderForm(
+    val mockOrder = Order(
       username = "mockUser",
-      status = FormStatus.IN_PROGRESS,
+      status = OrderStatus.IN_PROGRESS,
     )
     mockOrder.deviceWearer = DeviceWearer(
       orderId = mockOrder.id,
@@ -67,11 +68,13 @@ class OrderFormServiceTest {
     mockOrder.deviceWearerAddresses = mutableListOf(
       DeviceWearerAddress(
         orderId = mockOrder.id,
-        addressLine1 = "20 Somewhere Street",
-        addressLine2 = "Nowhere City",
-        addressLine3 = "Random County",
-        addressLine4 = "United Kingdom",
-        postcode = "SW11 1NC",
+        address = Address(
+          addressLine1 = "20 Somewhere Street",
+          addressLine2 = "Nowhere City",
+          addressLine3 = "Random County",
+          addressLine4 = "United Kingdom",
+          postcode = "SW11 1NC",
+        ),
         addressType = DeviceWearerAddressType.PRIMARY,
       ),
     )
@@ -85,9 +88,9 @@ class OrderFormServiceTest {
       ),
     )
 
-    service.submitOrderForm(mockOrder.id, "mockUser")
+    service.submitOrder(mockOrder.id, "mockUser")
 
-    argumentCaptor<OrderForm>().apply {
+    argumentCaptor<Order>().apply {
       verify(repo, times(1)).save(capture())
       Assertions.assertThat(firstValue.fmsDeviceWearerId).isEqualTo("mockSercoId")
     }

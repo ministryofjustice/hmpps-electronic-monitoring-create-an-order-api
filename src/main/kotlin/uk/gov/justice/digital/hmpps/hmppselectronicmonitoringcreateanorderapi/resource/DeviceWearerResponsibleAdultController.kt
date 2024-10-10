@@ -9,11 +9,12 @@ import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ResponsibleAdult
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidPhoneNumber
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.DeviceWearerResponsibleAdultService
 import java.util.*
 
@@ -23,7 +24,7 @@ import java.util.*
 class DeviceWearerResponsibleAdultController(
   @Autowired val deviceWearerResponsibleAdultService: DeviceWearerResponsibleAdultService,
 ) {
-  @PostMapping("/order/{orderId}/device-wearer-responsible-adult")
+  @PutMapping("/orders/{orderId}/device-wearer-responsible-adult")
   fun updateResponsibleAdult(
     @PathVariable orderId: UUID,
     @RequestBody @Valid responsibleAdultUpdateRecord: UpdateDeviceWearerResponsibleAdultDto,
@@ -42,7 +43,7 @@ data class UpdateDeviceWearerResponsibleAdultDto(
   @field:NotBlank(message = "Relationship is required")
   val relationship: String,
   val otherRelationshipDetails: String?,
-  @field:NotBlank(message = "Contact number is required")
+  @field:ValidPhoneNumber
   val contactNumber: String,
 ) {
   @AssertTrue(message = "You must provide details of the responsible adult to the device wearer")

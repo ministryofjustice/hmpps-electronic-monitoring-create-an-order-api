@@ -10,9 +10,9 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.in
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearerAddress
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DeviceWearerAddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DeviceWearerAddressUsage
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FormStatus
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.DeviceWearerAddressRepository
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderFormRepository
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidationError
 import java.util.*
 
@@ -21,27 +21,26 @@ class DeviceWearerAddressControllerTest : IntegrationTestBase() {
   lateinit var deviceWearerAddressRepo: DeviceWearerAddressRepository
 
   @Autowired
-  lateinit var orderFormRepo: OrderFormRepository
+  lateinit var orderRepo: OrderRepository
 
   private val mockAddressLine1: String = "mockAddressLine1"
   private val mockAddressLine2: String = "mockAddressLine2"
   private val mockAddressLine3: String = "mockAddressLine3"
   private val mockAddressLine4: String = "mockAddressLine4"
   private val mockPostcode: String = "mockPostcode"
-  private val mockAddressUsage: String = "WORK"
 
   @BeforeEach
   fun setup() {
     deviceWearerAddressRepo.deleteAll()
-    orderFormRepo.deleteAll()
+    orderRepo.deleteAll()
   }
 
   @Test
   fun `Address details for an order created by a different user are not update-able`() {
     val order = createOrder()
 
-    webTestClient.post()
-      .uri("/api/order/${order.id}/address")
+    webTestClient.put()
+      .uri("/api/orders/${order.id}/address")
       .contentType(MediaType.APPLICATION_JSON)
       .body(
         BodyInserters.fromValue(
@@ -65,8 +64,8 @@ class DeviceWearerAddressControllerTest : IntegrationTestBase() {
 
   @Test
   fun `Address details for an non-existent order are not update-able`() {
-    webTestClient.post()
-      .uri("/api/order/${UUID.randomUUID()}/address")
+    webTestClient.put()
+      .uri("/api/orders/${UUID.randomUUID()}/address")
       .contentType(MediaType.APPLICATION_JSON)
       .body(
         BodyInserters.fromValue(
@@ -92,11 +91,11 @@ class DeviceWearerAddressControllerTest : IntegrationTestBase() {
   fun `Address details for an submitted order are not update-able`() {
     val order = createOrder()
 
-    order.status = FormStatus.SUBMITTED
-    orderFormRepo.save(order)
+    order.status = OrderStatus.SUBMITTED
+    orderRepo.save(order)
 
-    webTestClient.post()
-      .uri("/api/order/${order.id}/address")
+    webTestClient.put()
+      .uri("/api/orders/${order.id}/address")
       .contentType(MediaType.APPLICATION_JSON)
       .body(
         BodyInserters.fromValue(
@@ -122,8 +121,8 @@ class DeviceWearerAddressControllerTest : IntegrationTestBase() {
   fun `Address details can be updated`() {
     val order = createOrder()
 
-    val result = webTestClient.post()
-      .uri("/api/order/${order.id}/address")
+    val result = webTestClient.put()
+      .uri("/api/orders/${order.id}/address")
       .contentType(MediaType.APPLICATION_JSON)
       .body(
         BodyInserters.fromValue(
@@ -149,11 +148,11 @@ class DeviceWearerAddressControllerTest : IntegrationTestBase() {
     val address = result.responseBody!!
 
     Assertions.assertThat(address.addressType).isEqualTo(DeviceWearerAddressType.PRIMARY)
-    Assertions.assertThat(address.addressLine1).isEqualTo(mockAddressLine1)
-    Assertions.assertThat(address.addressLine2).isEqualTo(mockAddressLine2)
-    Assertions.assertThat(address.addressLine3).isEqualTo(mockAddressLine3)
-    Assertions.assertThat(address.addressLine4).isEqualTo(mockAddressLine4)
-    Assertions.assertThat(address.postcode).isEqualTo(mockPostcode)
+    Assertions.assertThat(address.address.addressLine1).isEqualTo(mockAddressLine1)
+    Assertions.assertThat(address.address.addressLine2).isEqualTo(mockAddressLine2)
+    Assertions.assertThat(address.address.addressLine3).isEqualTo(mockAddressLine3)
+    Assertions.assertThat(address.address.addressLine4).isEqualTo(mockAddressLine4)
+    Assertions.assertThat(address.address.postcode).isEqualTo(mockPostcode)
     Assertions.assertThat(address.addressUsage).isEqualTo(DeviceWearerAddressUsage.NA)
   }
 
@@ -161,8 +160,8 @@ class DeviceWearerAddressControllerTest : IntegrationTestBase() {
   fun `Primary address details are mandatory`() {
     val order = createOrder()
 
-    val result = webTestClient.post()
-      .uri("/api/order/${order.id}/address")
+    val result = webTestClient.put()
+      .uri("/api/orders/${order.id}/address")
       .contentType(MediaType.APPLICATION_JSON)
       .body(
         BodyInserters.fromValue(
@@ -202,8 +201,8 @@ class DeviceWearerAddressControllerTest : IntegrationTestBase() {
   fun `Secondary address details are not mandatory`() {
     val order = createOrder()
 
-    val result = webTestClient.post()
-      .uri("/api/order/${order.id}/address")
+    val result = webTestClient.put()
+      .uri("/api/orders/${order.id}/address")
       .contentType(MediaType.APPLICATION_JSON)
       .body(
         BodyInserters.fromValue(
@@ -229,8 +228,8 @@ class DeviceWearerAddressControllerTest : IntegrationTestBase() {
   fun `Tertiary address details are not mandatory`() {
     val order = createOrder()
 
-    val result = webTestClient.post()
-      .uri("/api/order/${order.id}/address")
+    val result = webTestClient.put()
+      .uri("/api/orders/${order.id}/address")
       .contentType(MediaType.APPLICATION_JSON)
       .body(
         BodyInserters.fromValue(

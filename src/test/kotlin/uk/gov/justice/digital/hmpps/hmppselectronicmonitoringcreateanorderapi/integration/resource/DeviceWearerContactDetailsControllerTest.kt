@@ -7,65 +7,30 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearerContactDetails
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FormStatus
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.DeviceWearerContactDetailsRepository
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderFormRepository
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidationError
-import java.util.*
 
 class DeviceWearerContactDetailsControllerTest : IntegrationTestBase() {
   @Autowired
   lateinit var contactDetailRepo: DeviceWearerContactDetailsRepository
 
   @Autowired
-  lateinit var orderFormRepo: OrderFormRepository
+  lateinit var orderRepo: OrderRepository
 
   @BeforeEach
   fun setup() {
     contactDetailRepo.deleteAll()
-    orderFormRepo.deleteAll()
-  }
-
-  @Test
-  fun `Contact details are created and retrievable after order creation`() {
-    val order = createOrder()
-    val contactDetails = webTestClient.get()
-      .uri("/api/order/${order.id}/contact-details")
-      .headers(setAuthorisation("AUTH_ADM"))
-      .exchange()
-      .expectStatus()
-      .isOk
-      .expectBody(DeviceWearerContactDetails::class.java)
-  }
-
-  @Test
-  fun `Contact details created by a different user are not accessible`() {
-    val order = createOrder()
-    val contactDetails = webTestClient.get()
-      .uri("/api/order/${order.id}/contact-details")
-      .headers(setAuthorisation("AUTH_ADM_2"))
-      .exchange()
-      .expectStatus()
-      .isNotFound
-  }
-
-  @Test
-  fun `Contact details for a non-existent order are not accessible`() {
-    val contactDetails = webTestClient.get()
-      .uri("/api/order/${UUID.randomUUID()}/contact-details")
-      .headers(setAuthorisation("AUTH_ADM"))
-      .exchange()
-      .expectStatus()
-      .isNotFound
+    orderRepo.deleteAll()
   }
 
   @Test
   fun `Contact details can be updated with a null contactNumber`() {
     val order = createOrder()
 
-    webTestClient.post()
-      .uri("/api/order/${order.id}/contact-details")
+    webTestClient.put()
+      .uri("/api/orders/${order.id}/contact-details")
       .contentType(MediaType.APPLICATION_JSON)
       .body(
         BodyInserters.fromValue(
@@ -86,8 +51,8 @@ class DeviceWearerContactDetailsControllerTest : IntegrationTestBase() {
   fun `Contact details can be updated with a valid contact number`() {
     val order = createOrder()
 
-    webTestClient.post()
-      .uri("/api/order/${order.id}/contact-details")
+    webTestClient.put()
+      .uri("/api/orders/${order.id}/contact-details")
       .contentType(MediaType.APPLICATION_JSON)
       .body(
         BodyInserters.fromValue(
@@ -107,8 +72,8 @@ class DeviceWearerContactDetailsControllerTest : IntegrationTestBase() {
   @Test
   fun `Contact details cannot be updated with an invalid contact number`() {
     val order = createOrder()
-    val result = webTestClient.post()
-      .uri("/api/order/${order.id}/contact-details")
+    val result = webTestClient.put()
+      .uri("/api/orders/${order.id}/contact-details")
       .contentType(MediaType.APPLICATION_JSON)
       .body(
         BodyInserters.fromValue(
@@ -139,8 +104,8 @@ class DeviceWearerContactDetailsControllerTest : IntegrationTestBase() {
   @Test
   fun `Contact details cannot be updated by a different user`() {
     val order = createOrder()
-    val contactDetails = webTestClient.post()
-      .uri("/api/order/${order.id}/contact-details")
+    val contactDetails = webTestClient.put()
+      .uri("/api/orders/${order.id}/contact-details")
       .contentType(MediaType.APPLICATION_JSON)
       .body(
         BodyInserters.fromValue(
@@ -161,11 +126,11 @@ class DeviceWearerContactDetailsControllerTest : IntegrationTestBase() {
   fun `Contact details cannot be updated for a submitted order`() {
     val order = createOrder()
 
-    order.status = FormStatus.SUBMITTED
-    orderFormRepo.save(order)
+    order.status = OrderStatus.SUBMITTED
+    orderRepo.save(order)
 
-    val contactDetails = webTestClient.post()
-      .uri("/api/order/${order.id}/contact-details")
+    val contactDetails = webTestClient.put()
+      .uri("/api/orders/${order.id}/contact-details")
       .contentType(MediaType.APPLICATION_JSON)
       .body(
         BodyInserters.fromValue(

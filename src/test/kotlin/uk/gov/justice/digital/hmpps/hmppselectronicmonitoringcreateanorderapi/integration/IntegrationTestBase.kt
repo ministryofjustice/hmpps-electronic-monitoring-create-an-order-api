@@ -12,7 +12,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.in
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.HmppsDocumentManagementApiExtension
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.SercoAuthMockServerExtension
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.SercoMockApiExtension
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderForm
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.hmpps.test.kotlin.auth.JwtAuthorisationHelper
 
 @ExtendWith(HmppsAuthApiExtension::class, HmppsDocumentManagementApiExtension::class, SercoAuthMockServerExtension::class, SercoMockApiExtension::class)
@@ -42,13 +42,13 @@ abstract class IntegrationTestBase {
 
   fun createOrder(
     username: String? = "AUTH_ADM",
-  ): OrderForm =
-    webTestClient.get()
-      .uri("/api/CreateForm")
+  ): Order =
+    webTestClient.post()
+      .uri("/api/orders")
       .headers(setAuthorisation(username))
       .exchange()
       .expectStatus()
       .isOk
-      .returnResult(OrderForm::class.java)
+      .returnResult(Order::class.java)
       .responseBody.blockFirst()!!
 }

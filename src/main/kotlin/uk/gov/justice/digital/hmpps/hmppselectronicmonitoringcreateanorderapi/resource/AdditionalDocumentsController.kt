@@ -27,7 +27,7 @@ class AdditionalDocumentsController(
   @Autowired val documentService: AdditionalDocumentService,
 ) {
 
-  @PostMapping("/order/{orderId}/document-type/{fileType}", produces = [MediaType.APPLICATION_JSON_VALUE])
+  @PostMapping("/orders/{orderId}/document-type/{fileType}", produces = [MediaType.APPLICATION_JSON_VALUE])
   fun postAdditionalDocument(
     @PathVariable orderId: UUID,
     @PathVariable fileType: DocumentType,
@@ -40,7 +40,7 @@ class AdditionalDocumentsController(
     return ResponseEntity(HttpStatus.OK)
   }
 
-  @GetMapping("/order/{orderId}/document-type/{fileType}/raw")
+  @GetMapping("/orders/{orderId}/document-type/{fileType}/raw")
   fun downloadDocument(
     @PathVariable orderId: UUID,
     @PathVariable fileType: DocumentType,

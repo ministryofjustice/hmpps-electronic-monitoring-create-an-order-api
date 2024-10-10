@@ -54,7 +54,7 @@ data class MonitoringConditions(
 
   @OneToOne
   @JoinColumn(name = "ORDER_ID", updatable = false, insertable = false)
-  private val orderForm: OrderForm? = null,
+  private val order: Order? = null,
 
   @OneToOne(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "monitoringConditions", orphanRemoval = true)
   var trailMonitoringConditions: TrailMonitoringConditions? = null,
