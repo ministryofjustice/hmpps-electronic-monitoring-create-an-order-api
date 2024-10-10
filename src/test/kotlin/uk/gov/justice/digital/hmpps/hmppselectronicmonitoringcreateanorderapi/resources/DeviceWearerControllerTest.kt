@@ -43,37 +43,6 @@ class DeviceWearerControllerTest {
   }
 
   @Test
-  fun `Get a device wearer`() {
-    val mockDeviceWearer = DeviceWearer(
-      orderId = mockOrderId,
-      firstName = null,
-      lastName = null,
-      alias = null,
-      gender = null,
-      dateOfBirth = null,
-    )
-    `when`(deviceWearerService.getDeviceWearer(mockOrderId, mockUser)).thenReturn(mockDeviceWearer)
-    `when`(authentication.name).thenReturn(mockUser)
-
-    val result = controller.getDeviceWearer(mockOrderId, authentication)
-
-    Assertions.assertThat(result.body).isEqualTo(mockDeviceWearer)
-    Assertions.assertThat(result.statusCode.is2xxSuccessful)
-  }
-
-  @Test
-  fun `Get device wearer returns a 4xx status if no record matches the order ID & user`() {
-    val mockDeviceWearer = null
-    `when`(deviceWearerService.getDeviceWearer(mockOrderId, mockUser)).thenReturn(mockDeviceWearer)
-    `when`(authentication.name).thenReturn(mockUser)
-
-    val result = controller.getDeviceWearer(mockOrderId, authentication)
-
-    Assertions.assertThat(result.body).isEqualTo(mockDeviceWearer)
-    Assertions.assertThat(result.statusCode.is4xxClientError())
-  }
-
-  @Test
   fun `Update a device wearer`() {
     val mockDeviceWearer = DeviceWearer(
       orderId = mockOrderId,

@@ -1,6 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums
 
-enum class FormStatus {
+enum class OrderStatus {
   IN_PROGRESS,
   ERROR,
   SUBMITTED,

@@ -3,15 +3,15 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.s
 import jakarta.persistence.EntityNotFoundException
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ResponsibleAdult
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FormStatus
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.DeviceWearerResponsibleAdultRepository
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderFormRepository
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.UpdateDeviceWearerResponsibleAdultDto
 import java.util.UUID
 
 @Service
 class DeviceWearerResponsibleAdultService(
-  val orderRepo: OrderFormRepository,
+  val orderRepo: OrderRepository,
   val responsibleAdultRepo: DeviceWearerResponsibleAdultRepository,
 ) {
   fun getResponsibleAdult(orderId: UUID, username: String): ResponsibleAdult {
@@ -19,7 +19,7 @@ class DeviceWearerResponsibleAdultService(
     val order = orderRepo.findByIdAndUsernameAndStatus(
       orderId,
       username,
-      FormStatus.IN_PROGRESS,
+      OrderStatus.IN_PROGRESS,
     ).orElseThrow {
       EntityNotFoundException("An editable order with $orderId does not exist")
     }

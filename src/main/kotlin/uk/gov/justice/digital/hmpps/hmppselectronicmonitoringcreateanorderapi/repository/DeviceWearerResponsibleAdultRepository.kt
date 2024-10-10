@@ -3,7 +3,7 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.r
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ResponsibleAdult
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FormStatus
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import java.util.*
 
 @Repository
@@ -11,6 +11,6 @@ interface DeviceWearerResponsibleAdultRepository : JpaRepository<ResponsibleAdul
   fun findByOrderIdAndOrderUsernameAndOrderStatus(
     id: UUID,
     username: String,
-    status: FormStatus,
+    status: OrderStatus,
   ): Optional<ResponsibleAdult>
 }
