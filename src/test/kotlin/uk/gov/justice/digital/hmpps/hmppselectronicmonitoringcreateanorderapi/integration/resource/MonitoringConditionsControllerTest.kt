@@ -123,7 +123,7 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
   @Test
   fun `Monitoring conditions cannot be updated by a different user`() {
     val order = createOrder()
-    val updateMonitoringConditions = webTestClient.post()
+    webTestClient.post()
       .uri("/api/order/${order.id}/monitoring-conditions")
       .contentType(MediaType.APPLICATION_JSON)
       .body(
@@ -148,7 +148,7 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
     order.status = FormStatus.SUBMITTED
     orderFormRepo.save(order)
 
-    val monitoringConditions = webTestClient.post()
+    webTestClient.post()
       .uri("/api/order/${order.id}/monitoring-conditions")
       .contentType(MediaType.APPLICATION_JSON)
       .body(
@@ -168,8 +168,8 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
 
   @Test
   fun `Monitoring conditions for a non-existent order are not accessible`() {
-    val order = createOrder()
-    val monitoringConditions = webTestClient.post()
+    createOrder()
+    webTestClient.post()
       .uri("/api/order/${UUID.randomUUID()}/monitoring-conditions")
       .contentType(MediaType.APPLICATION_JSON)
       .body(
