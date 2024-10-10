@@ -24,7 +24,7 @@ class DeviceWearerResponsibleAdultControllerTest : IntegrationTestBase() {
 
   private val mockFullName: String = "mockFullName"
   private val mockRelationship: String = "mockRelationship"
-  private val mockContactNumber: String = "mockcontactNumber"
+  private val mockContactNumber: String = "01234567890"
 
   @BeforeEach
   fun setup() {
@@ -138,6 +138,41 @@ class DeviceWearerResponsibleAdultControllerTest : IntegrationTestBase() {
   }
 
   @Test
+  fun `Reponsible adult cannot be updated with an invalid contact number`() {
+    val order = createOrder()
+
+    val result = webTestClient.post()
+      .uri("/api/order/${order.id}/device-wearer-responsible-adult")
+      .contentType(MediaType.APPLICATION_JSON)
+      .body(
+        BodyInserters.fromValue(
+          """
+            {
+              "fullName": "$mockFullName",
+              "relationship": "$mockRelationship",
+              "contactNumber": "mock-invalid-phone-number"
+            }
+          """.trimIndent(),
+        ),
+      )
+      .headers(setAuthorisation("AUTH_ADM"))
+      .exchange()
+      .expectStatus()
+      .isBadRequest
+      .expectBodyList(ValidationError::class.java)
+      .returnResult()
+
+    Assertions.assertThat(result.responseBody).isNotNull
+    Assertions.assertThat(result.responseBody).hasSize(1)
+
+    val validationError = result.responseBody!!.first()
+
+    Assertions.assertThat(result.responseBody!!).contains(
+      ValidationError("contactNumber", "Phone number is in an incorrect format"),
+    )
+  }
+
+  @Test
   fun `Responsible Adult Details are mandatory`() {
     val order = createOrder()
 
@@ -171,7 +206,7 @@ class DeviceWearerResponsibleAdultControllerTest : IntegrationTestBase() {
       ValidationError("relationship", "Relationship is required"),
     )
     Assertions.assertThat(result.responseBody!!).contains(
-      ValidationError("contactNumber", "Contact number is required"),
+      ValidationError("contactNumber", "Phone number is in an incorrect format"),
     )
   }
 
@@ -229,7 +264,10 @@ class DeviceWearerResponsibleAdultControllerTest : IntegrationTestBase() {
       Assertions.assertThat(result.responseBody).isNotNull
       Assertions.assertThat(result.responseBody).hasSize(1)
       Assertions.assertThat(result.responseBody!!).contains(
-        ValidationError("otherRelationshipDetails", "You must provide details of the responsible adult to the device wearer"),
+        ValidationError(
+          "otherRelationshipDetails",
+          "You must provide details of the responsible adult to the device wearer",
+        ),
       )
     }
   }
