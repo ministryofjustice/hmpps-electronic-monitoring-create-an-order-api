@@ -2,6 +2,8 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.m
 
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
+import jakarta.persistence.EnumType
+import jakarta.persistence.Enumerated
 import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
@@ -25,6 +27,7 @@ data class EnforcementZoneConditions(
   val orderId: UUID,
 
   @Column(name = "ZONE_TYPE", nullable = false)
+  @Enumerated(EnumType.STRING)
   @field:NotNull(message = "Enforcement zone type is required")
   var zoneType: EnforcementZoneType? = null,
 
@@ -34,14 +37,15 @@ data class EnforcementZoneConditions(
   var startDate: ZonedDateTime? = null,
 
   @field:NotNull(message = "Enforcement zone end date is required")
-  @field:Future(message = "Enforcement zone end date must be in the future")
   @Column(name = "END_DATE", nullable = true)
   var endDate: ZonedDateTime? = null,
 
+  @field:NotNull(message = "Enforcement zone description is required")
   @field:Size(min = 1, message = "Enforcement zone description is required")
   @Column(name = "DESCRIPTION", nullable = true)
   var description: String? = null,
 
+  @field:NotNull(message = "Enforcement zone duration is required")
   @field:Size(min = 1, message = "Enforcement zone duration is required")
   @Column(name = "DURATION", nullable = true)
   var duration: String? = null,
@@ -57,7 +61,7 @@ data class EnforcementZoneConditions(
 
   @ManyToOne(optional = true)
   @JoinColumn(name = "ORDER_ID", updatable = false, insertable = false)
-  private val order: OrderForm? = null,
+  private val order: Order? = null,
 ) {
   @AssertTrue(message = "End date must be after start date")
   fun isEndDate(): Boolean {

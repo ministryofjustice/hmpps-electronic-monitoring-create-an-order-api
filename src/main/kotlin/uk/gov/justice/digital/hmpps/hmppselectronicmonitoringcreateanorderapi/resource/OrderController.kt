@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.r
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -14,7 +15,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.se
 import java.util.UUID
 
 @RestController
-// @PreAuthorize("hasRole('ROLE_EM_CEMO__CREATE_ORDER')")
+@PreAuthorize("hasRole('ROLE_EM_CEMO__CREATE_ORDER')")
 @RequestMapping("/api/")
 class OrderController(
   @Autowired val orderService: OrderService,

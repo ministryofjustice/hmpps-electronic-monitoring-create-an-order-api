@@ -10,27 +10,27 @@ import org.springframework.util.StringUtils
 import org.springframework.web.multipart.MultipartFile
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.DocumentApiClient
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.EnforcementZoneConditions
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderForm
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.documentmanagement.DocumentMetadata
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FormStatus
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.EnformenceZoneRepository
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderFormRepository
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.EnforcementZoneRepository
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 import java.util.*
 
 @Service
 class EnforcementZoneService(
-  val repo: EnformenceZoneRepository,
+  val repo: EnforcementZoneRepository,
   val webClient: DocumentApiClient,
-  val orderRepo: OrderFormRepository,
+  val orderRepo: OrderRepository,
 ) {
 
   val allowedFileExtensions: List<String> = listOf("pdf", "jpeg")
 
-  private fun getOrder(orderId: UUID, username: String): OrderForm {
+  private fun getOrder(orderId: UUID, username: String): Order {
     return orderRepo.findByIdAndUsernameAndStatus(
       orderId,
       username,
-      FormStatus.IN_PROGRESS,
+      OrderStatus.IN_PROGRESS,
     ).orElseThrow {
       EntityNotFoundException("An editable order with $orderId does not exist")
     }
@@ -39,9 +39,12 @@ class EnforcementZoneService(
   fun updateEnforcementZone(orderId: UUID, username: String, enforcementZone: EnforcementZoneConditions) {
     val order = getOrder(orderId, username)
     // remove existing enforcement zone
-    order.exclusionZoneConditions.firstOrNull { it.zoneId == enforcementZone.zoneId }?.let { zone ->
-      order.exclusionZoneConditions.remove(zone)
-      repo.delete(zone)
+    order.enforcementZoneConditions.firstOrNull { it.zoneId == enforcementZone.zoneId }?.let { zone ->
+      order.enforcementZoneConditions.remove(zone)
+      repo.deleteById(zone.id)
+      if (zone.fileId != null) {
+        webClient.deleteDocument(zone.fileId.toString())
+      }
     }
 
     repo.save(enforcementZone)
@@ -50,7 +53,7 @@ class EnforcementZoneService(
   fun uploadEnforcementZoneAttachment(orderId: UUID, username: String, zoneId: Int, multipartFile: MultipartFile) {
     validateFileExtension(multipartFile)
     val order = getOrder(orderId, username)
-    val zone = order.exclusionZoneConditions.firstOrNull { it.zoneId == zoneId }
+    val zone = order.enforcementZoneConditions.firstOrNull { it.zoneId == zoneId }
     if (zone == null) {
       throw EntityNotFoundException("Enforcement zone with  $zoneId does not exist in order with id $orderId")
     }

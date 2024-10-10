@@ -28,7 +28,7 @@ class OrderService(
     order.deviceWearerContactDetails = DeviceWearerContactDetails(orderId = order.id)
     order.monitoringConditions = MonitoringConditions(orderId = order.id)
     order.additionalDocuments = mutableListOf()
-    order.exclusionZoneConditions = mutableListOf()
+    order.enforcementZoneConditions = mutableListOf()
     repo.save(order)
     return order
   }

@@ -58,5 +58,5 @@ data class Order(
   var additionalDocuments: MutableList<AdditionalDocument> = mutableListOf(),
 
   @OneToMany(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "order", orphanRemoval = true)
-  var exclusionZoneConditions: MutableList<EnforcementZoneConditions> = mutableListOf(),
+  var enforcementZoneConditions: MutableList<EnforcementZoneConditions> = mutableListOf(),
 )

@@ -5,9 +5,11 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
+import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestPart
@@ -19,14 +21,14 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.se
 import java.util.UUID
 
 @RestController
-// @PreAuthorize("hasRole('ROLE_EM_CEMO__CREATE_ORDER')")
+@PreAuthorize("hasRole('ROLE_EM_CEMO__CREATE_ORDER')")
 @RequestMapping("/api/")
-class EnformentZoneController(
+class EnforcementZoneController(
   @Autowired val enforcementZoneService: EnforcementZoneService,
 
 ) {
 
-  @PostMapping("/order/{orderId}/enforcementZone")
+  @PutMapping("/orders/{orderId}/enforcementZone")
   fun updateEnforcementZone(
     @PathVariable orderId: UUID,
     @RequestBody @Valid enforcementZone: EnforcementZoneConditions,
@@ -37,8 +39,8 @@ class EnformentZoneController(
     return ResponseEntity(HttpStatus.OK)
   }
 
-  @PostMapping("/order/{orderId}/enforcementZone/{zoneId}/attachment", produces = [MediaType.APPLICATION_JSON_VALUE])
-  fun postAdditionalDocument(
+  @PostMapping("/orders/{orderId}/enforcementZone/{zoneId}/attachment", produces = [MediaType.APPLICATION_JSON_VALUE])
+  fun putAdditionalDocument(
     @PathVariable orderId: UUID,
     @PathVariable zoneId: Int,
     @RequestPart file: MultipartFile,
