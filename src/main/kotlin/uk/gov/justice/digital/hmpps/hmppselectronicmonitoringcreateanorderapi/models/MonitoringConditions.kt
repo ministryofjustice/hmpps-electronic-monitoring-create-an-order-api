@@ -14,7 +14,6 @@ import java.util.*
 @Entity
 @Table(name = "MONITORING_CONDITIONS")
 data class MonitoringConditions(
-
   @Id
   @Column(name = "ID", nullable = false, unique = true)
   val id: UUID = UUID.randomUUID(),
@@ -25,14 +24,11 @@ data class MonitoringConditions(
   @Column(name = "ORDER_TYPE", nullable = true)
   var orderType: String? = null,
 
-  @Column(name = "MONITORING_REQUIRED", nullable = true)
-  var monitoringRequired: String? = null,
-
   @Column(name = "DEVICES_REQUIRED", nullable = true)
-  var devicesRequired: String? = null,
+  var devicesRequiredString: String? = null,
 
   @Column(name = "ACQUISITIVE_CRIME", nullable = true)
-  var acquisitiveCrimve: Boolean? = null,
+  var acquisitiveCrime: Boolean? = null,
 
   @Column(name = "DAPOL", nullable = true)
   var dapol: Boolean? = null,
@@ -54,7 +50,7 @@ data class MonitoringConditions(
 
   @OneToOne
   @JoinColumn(name = "ORDER_ID", updatable = false, insertable = false)
-  private val orderForm: OrderForm? = null,
+  private val order: OrderForm? = null,
 
   @OneToOne(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "monitoringConditions", orphanRemoval = true)
   var trailMonitoringConditions: TrailMonitoringConditions? = null,
@@ -73,4 +69,18 @@ data class MonitoringConditions(
 
   @OneToOne(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "monitoringConditions", orphanRemoval = true)
   var alcoholMonitoringConditions: AlcoholMonitoringConditions? = null,
-)
+
+  @Transient
+  var devicesRequired: Array<String>? = null,
+) {
+  @PrePersist
+  @PreUpdate
+  fun devicesRequiredToString() {
+    devicesRequiredString = devicesRequired?.joinToString(", ")
+  }
+
+  @PostLoad
+  fun devicesRequiredToArray() {
+    devicesRequired = devicesRequiredString?.split(", ")?.toTypedArray()
+  }
+}
