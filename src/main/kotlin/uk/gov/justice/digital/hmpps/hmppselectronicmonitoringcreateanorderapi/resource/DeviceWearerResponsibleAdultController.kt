@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ResponsibleAdult
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidPhoneNumber
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.DeviceWearerResponsibleAdultService
 import java.util.*
 
@@ -42,7 +43,7 @@ data class UpdateDeviceWearerResponsibleAdultDto(
   @field:NotBlank(message = "Relationship is required")
   val relationship: String,
   val otherRelationshipDetails: String?,
-  @field:NotBlank(message = "Contact number is required")
+  @field:ValidPhoneNumber
   val contactNumber: String,
 ) {
   @AssertTrue(message = "You must provide details of the responsible adult to the device wearer")
