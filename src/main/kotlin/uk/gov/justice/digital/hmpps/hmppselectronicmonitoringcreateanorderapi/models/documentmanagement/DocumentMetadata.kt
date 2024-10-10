@@ -5,5 +5,6 @@ import java.util.UUID
 
 data class DocumentMetadata(
   val orderId: UUID?,
-  val documentType: DocumentType?,
+  val documentType: DocumentType? = null,
+
 )

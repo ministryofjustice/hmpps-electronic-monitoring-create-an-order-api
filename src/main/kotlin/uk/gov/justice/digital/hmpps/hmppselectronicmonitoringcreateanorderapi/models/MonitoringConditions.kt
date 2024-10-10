@@ -60,9 +60,6 @@ data class MonitoringConditions(
   var trailMonitoringConditions: TrailMonitoringConditions? = null,
 
   @OneToMany(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "monitoringConditions", orphanRemoval = true)
-  var exclusionZoneConditions: MutableList<ExclusionZoneConditions> = mutableListOf(),
-
-  @OneToMany(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "monitoringConditions", orphanRemoval = true)
   var mandatoryAttendanceConditions: MutableList<MandatoryAttendanceConditions>? = mutableListOf(),
 
   @OneToOne(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "monitoringConditions", orphanRemoval = true)

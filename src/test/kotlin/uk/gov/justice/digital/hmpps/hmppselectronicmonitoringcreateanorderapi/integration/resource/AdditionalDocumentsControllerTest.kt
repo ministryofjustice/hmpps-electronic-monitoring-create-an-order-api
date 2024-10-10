@@ -104,7 +104,7 @@ class AdditionalDocumentsControllerTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `remvoe existing document when upload new document with same type`() {
+  fun `remove existing document when upload new document with same type`() {
     val doc = AdditionalDocument(
       orderId = order.id,
       fileName = "mockFile1",
