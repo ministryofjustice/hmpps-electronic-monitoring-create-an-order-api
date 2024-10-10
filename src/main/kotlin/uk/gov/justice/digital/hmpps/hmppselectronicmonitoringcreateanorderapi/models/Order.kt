@@ -11,12 +11,12 @@ import jakarta.persistence.OneToMany
 import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
 import jakarta.validation.constraints.Size
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FormStatus
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import java.util.UUID
 
 @Entity
-@Table(name = "ORDER_FORM")
-data class OrderForm(
+@Table(name = "ORDERS")
+data class Order(
 
   @Id
   @Column(name = "ID", nullable = false, unique = true)
@@ -27,7 +27,7 @@ data class OrderForm(
 
   @Enumerated(EnumType.STRING)
   @Column(name = "STATUS", nullable = false)
-  var status: FormStatus,
+  var status: OrderStatus,
 
   @Column(name = "FMS_DEVICE_WEARER_ID", nullable = true)
   var fmsDeviceWearerId: String? = null,
@@ -48,7 +48,7 @@ data class OrderForm(
   @Size(min = 0, max = 3)
   var deviceWearerAddresses: MutableList<DeviceWearerAddress> = mutableListOf(),
 
-  @OneToOne(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "orderForm", orphanRemoval = true)
+  @OneToOne(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "order", orphanRemoval = true)
   var monitoringConditions: MonitoringConditions? = null,
 
   @OneToOne(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "order", orphanRemoval = true)

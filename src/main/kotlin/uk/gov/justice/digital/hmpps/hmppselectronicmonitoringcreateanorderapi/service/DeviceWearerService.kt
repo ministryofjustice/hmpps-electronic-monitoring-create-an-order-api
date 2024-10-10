@@ -3,7 +3,7 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.s
 import jakarta.persistence.EntityNotFoundException
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FormStatus
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.DeviceWearerRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.UpdateDeviceWearerDto
 import java.util.*
@@ -30,7 +30,7 @@ class DeviceWearerService(
     val deviceWearer = repo.findByOrderIdAndOrderUsernameAndOrderStatus(
       orderId,
       username,
-      FormStatus.IN_PROGRESS,
+      OrderStatus.IN_PROGRESS,
     ).orElseThrow {
       EntityNotFoundException("Device Wearer for $orderId not found")
     }

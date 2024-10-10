@@ -30,6 +30,6 @@ data class AdditionalDocument(
 
   @ManyToOne(optional = true)
   @JoinColumn(name = "ORDER_ID", updatable = false, insertable = false)
-  private val order: OrderForm? = null,
+  private val order: Order? = null,
 
 )

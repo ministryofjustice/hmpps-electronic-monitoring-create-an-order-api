@@ -6,34 +6,34 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.cl
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearerContactDetails
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.MonitoringConditions
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderForm
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FormStatus
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderFormRepository
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 import java.util.UUID
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.DeviceWearer as FmsDeviceWearer
 
 @Service
-class OrderFormService(
-  val repo: OrderFormRepository,
+class OrderService(
+  val repo: OrderRepository,
   val sercoClient: SercoClient,
 ) {
 
-  fun createOrderForm(username: String): OrderForm {
-    val orderForm = OrderForm(
+  fun createOrder(username: String): Order {
+    val order = Order(
       username = username,
-      status = FormStatus.IN_PROGRESS,
+      status = OrderStatus.IN_PROGRESS,
     )
-    orderForm.deviceWearer = DeviceWearer(orderId = orderForm.id)
-    orderForm.deviceWearerAddresses = mutableListOf()
-    orderForm.deviceWearerContactDetails = DeviceWearerContactDetails(orderId = orderForm.id)
-    orderForm.monitoringConditions = MonitoringConditions(orderId = orderForm.id)
-    orderForm.additionalDocuments = mutableListOf()
-    repo.save(orderForm)
-    return orderForm
+    order.deviceWearer = DeviceWearer(orderId = order.id)
+    order.deviceWearerAddresses = mutableListOf()
+    order.deviceWearerContactDetails = DeviceWearerContactDetails(orderId = order.id)
+    order.monitoringConditions = MonitoringConditions(orderId = order.id)
+    order.additionalDocuments = mutableListOf()
+    repo.save(order)
+    return order
   }
 
-  fun submitOrderForm(id: UUID, username: String) {
-    val order = getOrderForm(username, id)!!
+  fun submitOrder(id: UUID, username: String) {
+    val order = getOrder(username, id)!!
 
     val fmsDeviceWearer = FmsDeviceWearer.fromCemoOrder(order)
     val createDeviceWearerResult = sercoClient.createDeviceWearer(fmsDeviceWearer, orderId = id)
@@ -44,13 +44,13 @@ class OrderFormService(
     repo.save(order)
   }
 
-  fun listOrderFormsForUser(username: String): List<OrderForm> {
+  fun listOrdersForUser(username: String): List<Order> {
     return repo.findByUsername(
       username,
     )
   }
 
-  fun getOrderForm(username: String, id: UUID): OrderForm? {
+  fun getOrder(username: String, id: UUID): Order? {
     return repo.findByUsernameAndId(
       username,
       id,

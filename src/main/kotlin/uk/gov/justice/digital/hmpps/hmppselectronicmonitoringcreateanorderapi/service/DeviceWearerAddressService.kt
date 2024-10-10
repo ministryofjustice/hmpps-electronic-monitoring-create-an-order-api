@@ -5,15 +5,15 @@ import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Address
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearerAddress
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DeviceWearerAddressType
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FormStatus
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.DeviceWearerAddressRepository
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderFormRepository
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.UpdateDeviceWearerAddressDto
 import java.util.UUID
 
 @Service
 class DeviceWearerAddressService(
-  val orderRepo: OrderFormRepository,
+  val orderRepo: OrderRepository,
   val addressRepo: DeviceWearerAddressRepository,
 ) {
   fun getAddress(
@@ -25,7 +25,7 @@ class DeviceWearerAddressService(
     val order = orderRepo.findByIdAndUsernameAndStatus(
       orderId,
       username,
-      FormStatus.IN_PROGRESS,
+      OrderStatus.IN_PROGRESS,
     ).orElseThrow {
       EntityNotFoundException("An editable order with $orderId does not exist")
     }

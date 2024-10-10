@@ -1,7 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderForm
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DeviceWearerAddressType
 import java.time.format.DateTimeFormatter
 
@@ -125,7 +125,7 @@ data class DeviceWearer(
 
   companion object {
     private val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-    fun fromCemoOrder(order: OrderForm): DeviceWearer {
+    fun fromCemoOrder(order: Order): DeviceWearer {
       var adultChild = "adult"
       if (!order.deviceWearer?.adultAtTimeOfInstallation!!) {
         adultChild = "child"
