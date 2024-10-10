@@ -42,48 +42,10 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `Get a device wearer`() {
-    val order = createOrder()
-
-    val getDeviceWearer = webTestClient.get()
-      .uri("/api/order/${order.id}/device-wearer")
-      .headers(setAuthorisation("AUTH_ADM"))
-      .exchange()
-      .expectStatus()
-      .isOk
-      .expectBody(DeviceWearer::class.java)
-      .returnResult()
-
-    Assertions.assertThat(getDeviceWearer.responseBody?.orderId).isEqualTo(order.id)
-  }
-
-  @Test
-  fun `Get device wearer returns 404 status if a device wearer can't be found`() {
-    webTestClient.get()
-      .uri("/api/order/${UUID.randomUUID()}/device-wearer")
-      .headers(setAuthorisation("AUTH_ADM"))
-      .exchange()
-      .expectStatus()
-      .isNotFound()
-  }
-
-  @Test
-  fun `Get device wearer returns 404 status if the order belongs to another user`() {
-    val order = createOrder()
-
-    webTestClient.get()
-      .uri("/api/order/${order.id}/device-wearer")
-      .headers(setAuthorisation("AUTH_ADM_2"))
-      .exchange()
-      .expectStatus()
-      .isNotFound()
-  }
-
-  @Test
   fun `Update device wearer`() {
     val order = createOrder()
-    val updateDeviceWearer = webTestClient.post()
-      .uri("/api/order/${order.id}/device-wearer")
+    val updateDeviceWearer = webTestClient.put()
+      .uri("/api/orders/${order.id}/device-wearer")
       .contentType(MediaType.APPLICATION_JSON)
       .body(
         BodyInserters.fromValue(
@@ -129,8 +91,8 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
 
   @Test
   fun `Update device wearer returns 404 status if a device wearer can't be found`() {
-    webTestClient.post()
-      .uri("/api/order/${UUID.randomUUID()}/device-wearer")
+    webTestClient.put()
+      .uri("/api/orders/${UUID.randomUUID()}/device-wearer")
       .contentType(MediaType.APPLICATION_JSON)
       .body(
         BodyInserters.fromValue(
@@ -156,8 +118,8 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
   @Test
   fun `Update device wearer returns 404 status if the order belongs to another user`() {
     val order = createOrder()
-    webTestClient.post()
-      .uri("/api/order/${order.id}/device-wearer")
+    webTestClient.put()
+      .uri("/api/orders/${order.id}/device-wearer")
       .contentType(MediaType.APPLICATION_JSON)
       .body(
         BodyInserters.fromValue(
@@ -183,8 +145,8 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
   @Test
   fun `Update device wearer returns 400 if invalid data`() {
     val order = createOrder()
-    val result = webTestClient.post()
-      .uri("/api/order/${order.id}/device-wearer")
+    val result = webTestClient.put()
+      .uri("/api/orders/${order.id}/device-wearer")
       .contentType(MediaType.APPLICATION_JSON)
       .body(
         BodyInserters.fromValue(
@@ -236,8 +198,8 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
   @Test
   fun `Update device wearer returns 400 if dateOfBirth is in the future`() {
     val order = createOrder()
-    val result = webTestClient.post()
-      .uri("/api/order/${order.id}/device-wearer")
+    val result = webTestClient.put()
+      .uri("/api/orders/${order.id}/device-wearer")
       .contentType(MediaType.APPLICATION_JSON)
       .body(
         BodyInserters.fromValue(

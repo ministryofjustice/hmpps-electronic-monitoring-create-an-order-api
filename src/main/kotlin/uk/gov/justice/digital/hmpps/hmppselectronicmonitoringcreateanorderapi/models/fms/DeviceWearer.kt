@@ -1,7 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderForm
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DeviceWearerAddressType
 import java.time.format.DateTimeFormatter
 
@@ -125,12 +125,12 @@ data class DeviceWearer(
 
   companion object {
     private val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-    fun fromCemoOrder(order: OrderForm): DeviceWearer {
+    fun fromCemoOrder(order: Order): DeviceWearer {
       var adultChild = "adult"
       if (!order.deviceWearer?.adultAtTimeOfInstallation!!) {
         adultChild = "child"
       }
-      val primaryAddress = order.deviceWearer?.deviceWearerAddresses?.find { address -> address.addressType == DeviceWearerAddressType.PRIMARY }!!
+      val primaryAddress = order.deviceWearerAddresses?.find { address -> address.addressType == DeviceWearerAddressType.PRIMARY }!!
       val disabilities = order.deviceWearer?.disabilities?.split(',')?.map { disability -> Disability(disability) }?.toList()
       val deviceWearer = DeviceWearer(
         firstName = order.deviceWearer?.firstName,
@@ -141,29 +141,29 @@ data class DeviceWearer(
         sex = order.deviceWearer?.sex,
         genderIdentity = order.deviceWearer?.gender,
         disability = disabilities,
-        address1 = primaryAddress.addressLine1,
-        address2 = primaryAddress.addressLine2,
-        address3 = primaryAddress.addressLine3,
-        address4 = primaryAddress.addressLine4,
-        addressPostCode = primaryAddress.postcode,
+        address1 = primaryAddress.address.addressLine1,
+        address2 = primaryAddress.address.addressLine2,
+        address3 = primaryAddress.address.addressLine3,
+        address4 = primaryAddress.address.addressLine4,
+        addressPostCode = primaryAddress.address.postcode,
         phoneNumber = order.deviceWearerContactDetails?.contactNumber,
         riskSeriousHarm = order.installationAndRisk?.riskOfSeriousHarm,
         riskSelfHarm = order.installationAndRisk?.riskOfSelfHarm,
         riskDetails = order.installationAndRisk?.riskDetails,
         mappa = order.installationAndRisk?.mappaLevel,
         mappaCaseType = order.installationAndRisk?.mappaCaseType,
-        responsibleAdultRequired = (order.deviceWearer?.responsibleAdult != null).toString(),
-        parent = "${order.deviceWearer?.responsibleAdult?.fullName}",
-        parentPhoneNumber = order.deviceWearer?.responsibleAdult?.contactNumber,
+        responsibleAdultRequired = (order.deviceWearerResponsibleAdult != null).toString(),
+        parent = "${order.deviceWearerResponsibleAdult?.fullName}",
+        parentPhoneNumber = order.deviceWearerResponsibleAdult?.contactNumber,
       )
-      order.deviceWearer?.deviceWearerAddresses?.find { address -> address.addressType == DeviceWearerAddressType.SECOND }.let { address ->
+      order.deviceWearerAddresses?.find { address -> address.addressType == DeviceWearerAddressType.SECONDARY }.let { address ->
         {
           if (address != null) {
-            deviceWearer.secondaryAddress1 = address.addressLine1
-            deviceWearer.secondaryAddress2 = address.addressLine2
-            deviceWearer.secondaryAddress3 = address.addressLine3
-            deviceWearer.secondaryAddress4 = address.addressLine4
-            deviceWearer.secondaryAddressPostCode = address.postcode
+            deviceWearer.secondaryAddress1 = address.address.addressLine1
+            deviceWearer.secondaryAddress2 = address.address.addressLine2
+            deviceWearer.secondaryAddress3 = address.address.addressLine3
+            deviceWearer.secondaryAddress4 = address.address.addressLine4
+            deviceWearer.secondaryAddressPostCode = address.address.postcode
           }
         }
       }

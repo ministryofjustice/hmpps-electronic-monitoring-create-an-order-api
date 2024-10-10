@@ -18,27 +18,26 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.cl
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.HmppsDocumentManagementApiExtension.Companion.documentApi
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AdditionalDocument
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderForm
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.documentmanagement.DocumentUploadResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DocumentType
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FormStatus
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.AdditionalDocumentRepository
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderFormRepository
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 import java.nio.file.Files
 import java.nio.file.Paths
-import java.util.*
 
 class AdditionalDocumentsControllerTest : IntegrationTestBase() {
   @Autowired
-  lateinit var repo: OrderFormRepository
+  lateinit var repo: OrderRepository
 
   @SpyBean
   lateinit var documentRepo: AdditionalDocumentRepository
 
   @SpyBean
   lateinit var apiCLient: DocumentApiClient
-  val order = OrderForm(username = "mockUser", status = FormStatus.IN_PROGRESS)
+  val order = Order(username = "mockUser", status = OrderStatus.IN_PROGRESS)
 
   @BeforeEach
   fun setup() {
@@ -63,7 +62,7 @@ class AdditionalDocumentsControllerTest : IntegrationTestBase() {
       .header("Content-Disposition", "form-data; name=file; filename=filename2.txt")
 
     val result = webTestClient.post()
-      .uri("/api/order/${order.id}/document-type/${DocumentType.PHOTO_ID}")
+      .uri("/api/orders/${order.id}/document-type/${DocumentType.PHOTO_ID}")
       .bodyValue(bodyBuilder.build())
       .headers(setAuthorisation("mockUser"))
       .exchange()
@@ -90,7 +89,7 @@ class AdditionalDocumentsControllerTest : IntegrationTestBase() {
     )
 
     val result = webTestClient.post()
-      .uri("/api/order/${order.id}/document-type/${DocumentType.PHOTO_ID}")
+      .uri("/api/orders/${order.id}/document-type/${DocumentType.PHOTO_ID}")
       .bodyValue(bodyBuilder.build())
       .headers(setAuthorisation("mockUser"))
       .exchange()
@@ -119,7 +118,7 @@ class AdditionalDocumentsControllerTest : IntegrationTestBase() {
 
     documentApi.stupDeleteDocument(doc.id.toString())
     webTestClient.post()
-      .uri("/api/order/${order.id}/document-type/${DocumentType.PHOTO_ID}")
+      .uri("/api/orders/${order.id}/document-type/${DocumentType.PHOTO_ID}")
       .bodyValue(bodyBuilder.build())
       .headers(setAuthorisation("mockUser"))
       .exchange()
@@ -136,7 +135,7 @@ class AdditionalDocumentsControllerTest : IntegrationTestBase() {
     documentApi.stupUploadDocument(DocumentUploadResponse())
 
     webTestClient.post()
-      .uri("/api/order/${order.id}/document-type/${DocumentType.PHOTO_ID}")
+      .uri("/api/orders/${order.id}/document-type/${DocumentType.PHOTO_ID}")
       .bodyValue(bodyBuilder.build())
       .headers(setAuthorisation("mockUser"))
       .exchange()
@@ -160,7 +159,7 @@ class AdditionalDocumentsControllerTest : IntegrationTestBase() {
   @Test
   fun `get raw document, document not found, return not found`() {
     webTestClient.get()
-      .uri("/api/order/${order.id}/document-type/${DocumentType.PHOTO_ID}/raw")
+      .uri("/api/orders/${order.id}/document-type/${DocumentType.PHOTO_ID}/raw")
       .headers(setAuthorisation("mockUser"))
       .exchange()
       .expectStatus()
@@ -180,7 +179,7 @@ class AdditionalDocumentsControllerTest : IntegrationTestBase() {
     documentApi.stupGetDocument(doc.id.toString())
     val expectedBytes = Files.readAllBytes(Paths.get("src/test/kotlin/uk/gov/justice/digital/hmpps/hmppselectronicmonitoringcreateanorderapi/integration/assets/profile.jpeg"))
     var result = webTestClient.get()
-      .uri("/api/order/${order.id}/document-type/${DocumentType.PHOTO_ID}/raw")
+      .uri("/api/orders/${order.id}/document-type/${DocumentType.PHOTO_ID}/raw")
       .headers(setAuthorisation("mockUser"))
       .exchange()
       .expectStatus()

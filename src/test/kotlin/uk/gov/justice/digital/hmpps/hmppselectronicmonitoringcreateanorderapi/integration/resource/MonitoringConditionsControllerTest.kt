@@ -8,9 +8,9 @@ import org.springframework.http.MediaType
 import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.MonitoringConditions
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FormStatus
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.MonitoringConditionsRepository
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderFormRepository
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 import java.util.*
 
 class MonitoringConditionsControllerTest : IntegrationTestBase() {
@@ -18,7 +18,7 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
   lateinit var repo: MonitoringConditionsRepository
 
   @Autowired
-  lateinit var orderFormRepo: OrderFormRepository
+  lateinit var orderRepo: OrderRepository
 
   private val mockOrderType: String = "mockOrderType"
   private val mockDevicesRequired: String = """["device1", "device2"]"""
@@ -79,24 +79,24 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `Monitoring conditions can be updated with null values`() {
+  fun `Non-mandatory monitoring conditions can be updated with null values`() {
     val order = createOrder()
     val updateMonitoringConditions = webTestClient.post()
-      .uri("/api/order/${order.id}/contact-details")
+      .uri("/api/order/${order.id}/monitoring-conditions")
       .contentType(MediaType.APPLICATION_JSON)
       .body(
         BodyInserters.fromValue(
           """
             {
-              "orderType": "null",
-              "devicesRequired": "null",
-              "acquisitiveCrime": "null",
-              "dapol": "null",
-              "curfew": "null",
-              "exclusionZone": "null",
-              "trail": "null",
-              "mandatoryAttendance": "null",
-              "alcohol": "null"
+              "orderType": "$mockOrderType",
+              "devicesRequired": null,
+              "acquisitiveCrime": null,
+              "dapol": null,
+              "curfew": null,
+              "exclusionZone": null,
+              "trail": null,
+              "mandatoryAttendance": null,
+              "alcohol": null
             }
           """.trimIndent(),
         ),
@@ -109,7 +109,6 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
       .returnResult()
 
     Assertions.assertThat(updateMonitoringConditions.responseBody?.orderId).isEqualTo(order.id)
-    Assertions.assertThat(updateMonitoringConditions.responseBody?.orderType).isNull()
     Assertions.assertThat(updateMonitoringConditions.responseBody?.devicesRequired).isNull()
     Assertions.assertThat(updateMonitoringConditions.responseBody?.acquisitiveCrime).isNull()
     Assertions.assertThat(updateMonitoringConditions.responseBody?.dapol).isNull()
@@ -118,6 +117,27 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
     Assertions.assertThat(updateMonitoringConditions.responseBody?.trail).isNull()
     Assertions.assertThat(updateMonitoringConditions.responseBody?.mandatoryAttendance).isNull()
     Assertions.assertThat(updateMonitoringConditions.responseBody?.alcohol).isNull()
+  }
+
+  @Test
+  fun `Order type cannot be updated with a null value`() {
+    val order = createOrder()
+    webTestClient.post()
+      .uri("/api/order/${order.id}/monitoring-conditions")
+      .contentType(MediaType.APPLICATION_JSON)
+      .body(
+        BodyInserters.fromValue(
+          """
+            {
+              "orderType": null
+            }
+          """.trimIndent(),
+        ),
+      )
+      .headers(setAuthorisation("AUTH_ADM"))
+      .exchange()
+      .expectStatus()
+      .isBadRequest
   }
 
   @Test
@@ -145,8 +165,8 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
   fun `Monitoring conditions cannot be updated for a submitted order`() {
     val order = createOrder()
 
-    order.status = FormStatus.SUBMITTED
-    orderFormRepo.save(order)
+    order.status = OrderStatus.SUBMITTED
+    orderRepo.save(order)
 
     webTestClient.post()
       .uri("/api/order/${order.id}/monitoring-conditions")

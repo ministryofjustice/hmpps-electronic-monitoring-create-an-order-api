@@ -3,33 +3,33 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.i
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.kotlin.times
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.SercoAuthMockServerExtension.Companion.sercoAuthApi
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.SercoMockApiExtension.Companion.sercoApi
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Address
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearerAddress
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearerContactDetails
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationAndRisk
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.MonitoringConditions
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderForm
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ResponsibleAdult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ResponsibleOfficer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DeviceWearerAddressType
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FormStatus
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.SercoResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.SercoResult
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderFormRepository
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.util.*
 
-class OrderFormControllerTest : IntegrationTestBase() {
+class OrderControllerTest : IntegrationTestBase() {
   @Autowired
-  lateinit var repo: OrderFormRepository
+  lateinit var repo: OrderRepository
 
   @BeforeEach
   fun setup() {
@@ -37,40 +37,40 @@ class OrderFormControllerTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `Form created and saved in database`() {
-    webTestClient.get()
-      .uri("/api/CreateForm")
+  fun `Order created and saved in database`() {
+    webTestClient.post()
+      .uri("/api/orders")
       .headers(setAuthorisation())
       .exchange()
       .expectStatus()
       .isOk
-      .expectBody(OrderForm::class.java)
+      .expectBody(Order::class.java)
 
-    val forms = repo.findAll()
-    assertThat(forms).hasSize(1)
-    assertThat(forms[0].username).isEqualTo("AUTH_ADM")
-    assertThat(forms[0].status).isEqualTo(FormStatus.IN_PROGRESS)
-    assertThat(forms[0].id).isNotNull()
-    assertThat(UUID.fromString(forms[0].id.toString())).isEqualTo(forms[0].id)
+    val orders = repo.findAll()
+    assertThat(orders).hasSize(1)
+    assertThat(orders[0].username).isEqualTo("AUTH_ADM")
+    assertThat(orders[0].status).isEqualTo(OrderStatus.IN_PROGRESS)
+    assertThat(orders[0].id).isNotNull()
+    assertThat(UUID.fromString(orders[0].id.toString())).isEqualTo(orders[0].id)
   }
 
   @Test
-  fun `Only forms belonging to user returned from database`() {
+  fun `Only orders belonging to user returned from database`() {
     createOrder("AUTH_ADM")
     createOrder("AUTH_ADM")
     createOrder("AUTH_ADM_2")
 
     // Verify the database is set up correctly
-    val allForms = repo.findAll()
-    assertThat(allForms).hasSize(3)
+    val allOrders = repo.findAll()
+    assertThat(allOrders).hasSize(3)
 
     webTestClient.get()
-      .uri("/api/ListForms")
+      .uri("/api/orders")
       .headers(setAuthorisation("AUTH_ADM"))
       .exchange()
       .expectStatus()
       .isOk
-      .expectBodyList(OrderForm::class.java)
+      .expectBodyList(Order::class.java)
       .hasSize(2)
   }
 
@@ -79,19 +79,19 @@ class OrderFormControllerTest : IntegrationTestBase() {
     val order = createOrder()
 
     webTestClient.get()
-      .uri("/api/GetForm?id=${order.id}")
+      .uri("/api/orders/${order.id}")
       .headers(setAuthorisation())
       .exchange()
       .expectStatus()
       .isOk
-      .expectBody(OrderForm::class.java)
+      .expectBody(Order::class.java)
       .isEqualTo(order)
   }
 
   @Test
   fun `Should return not found if order does not exist`() {
     webTestClient.get()
-      .uri("/api/GetForm?id=${UUID.randomUUID()}")
+      .uri("/api/orders/${UUID.randomUUID()}")
       .headers(setAuthorisation())
       .exchange()
       .expectStatus()
@@ -103,7 +103,7 @@ class OrderFormControllerTest : IntegrationTestBase() {
     val order = createOrder("AUTH_ADM")
 
     webTestClient.get()
-      .uri("/api/GetForm?id=${order.id}")
+      .uri("/api/orders/${order.id}")
       .headers(setAuthorisation("AUTH_ADM_2"))
       .exchange()
       .expectStatus()
@@ -113,7 +113,7 @@ class OrderFormControllerTest : IntegrationTestBase() {
   @Test
   fun `Should return not found if order does not exist when submitting order`() {
     webTestClient.post()
-      .uri("/api/SubmitForm/?id=${UUID.randomUUID()}")
+      .uri("/api/orders/${UUID.randomUUID()}/submit")
       .headers(setAuthorisation())
       .exchange()
       .expectStatus()
@@ -127,7 +127,7 @@ class OrderFormControllerTest : IntegrationTestBase() {
     sercoAuthApi.stubError()
 
     val result = webTestClient.post()
-      .uri("/api/SubmitForm/${order.id}")
+      .uri("/api/orders/${order.id}/submit")
       .headers(setAuthorisation())
       .exchange()
       .expectStatus()
@@ -199,7 +199,7 @@ class OrderFormControllerTest : IntegrationTestBase() {
 
     sercoApi.stupCreateDeviceWearer(mockDeviceWearerJson, HttpStatus.INTERNAL_SERVER_ERROR, SercoResponse())
     val result = webTestClient.post()
-      .uri("/api/SubmitForm/${order.id}")
+      .uri("/api/orders/${order.id}/submit")
       .headers(setAuthorisation())
       .exchange()
       .expectStatus()
@@ -271,7 +271,7 @@ class OrderFormControllerTest : IntegrationTestBase() {
 
     sercoApi.stupCreateDeviceWearer(mockDeviceWearerJson, HttpStatus.OK, SercoResponse(result = listOf(SercoResult(message = "", id = "MockDeviceWearerId"))))
     webTestClient.post()
-      .uri("/api/SubmitForm/${order.id}")
+      .uri("/api/orders/${order.id}/submit")
       .headers(setAuthorisation())
       .exchange()
       .expectStatus()
@@ -281,13 +281,13 @@ class OrderFormControllerTest : IntegrationTestBase() {
     assertThat(updatedOrder.fmsDeviceWearerId).isEqualTo("MockDeviceWearerId")
   }
 
-  fun createOrderWithDeviceWearer(): OrderForm {
-    val orderForm = OrderForm(
+  fun createOrderWithDeviceWearer(): Order {
+    val order = Order(
       username = "AUTH_ADM",
-      status = FormStatus.IN_PROGRESS,
+      status = OrderStatus.IN_PROGRESS,
     )
-    orderForm.deviceWearer = DeviceWearer(
-      orderId = orderForm.id,
+    order.deviceWearer = DeviceWearer(
+      orderId = order.id,
       firstName = "John",
       lastName = "Smith",
       alias = "Johny",
@@ -298,33 +298,37 @@ class OrderFormControllerTest : IntegrationTestBase() {
       disabilities = "Vision,Hearing",
     )
 
-    orderForm.deviceWearer!!.responsibleAdult = ResponsibleAdult(
-      deviceWearerId = orderForm.deviceWearer!!.id,
+    order.deviceWearerResponsibleAdult = ResponsibleAdult(
+      orderId = order.id,
       fullName = "Mark Smith",
       contactNumber = "07401111111",
     )
-    orderForm.deviceWearer!!.deviceWearerAddresses = mutableListOf(
+    order.deviceWearerAddresses = mutableListOf(
       DeviceWearerAddress(
-        deviceWearerId = orderForm.deviceWearer!!.id,
-        addressLine1 = "20 Somewhere Street",
-        addressLine2 = "Nowhere City",
-        addressLine3 = "Random County",
-        addressLine4 = "United Kingdom",
-        postcode = "SW11 1NC",
+        orderId = order.id,
+        address = Address(
+          addressLine1 = "20 Somewhere Street",
+          addressLine2 = "Nowhere City",
+          addressLine3 = "Random County",
+          addressLine4 = "United Kingdom",
+          postcode = "SW11 1NC",
+        ),
         addressType = DeviceWearerAddressType.PRIMARY,
       ),
       DeviceWearerAddress(
-        deviceWearerId = orderForm.deviceWearer!!.id,
-        addressLine1 = "22 Somewhere Street",
-        addressLine2 = "Nowhere City",
-        addressLine3 = "Random County",
-        addressLine4 = "United Kingdom",
-        postcode = "SW11 1NC",
+        orderId = order.id,
+        address = Address(
+          addressLine1 = "22 Somewhere Street",
+          addressLine2 = "Nowhere City",
+          addressLine3 = "Random County",
+          addressLine4 = "United Kingdom",
+          postcode = "SW11 1NC",
+        ),
         addressType = DeviceWearerAddressType.PRIMARY,
       ),
     )
-    orderForm.installationAndRisk = InstallationAndRisk(
-      orderId = orderForm.id,
+    order.installationAndRisk = InstallationAndRisk(
+      orderId = order.id,
       riskOfSeriousHarm = "High",
       riskOfSelfHarm = "Low",
       riskDetails = "Danger",
@@ -332,14 +336,14 @@ class OrderFormControllerTest : IntegrationTestBase() {
       mappaCaseType = "CPPC (Critical Public Protection Case)",
     )
 
-    orderForm.deviceWearerContactDetails = DeviceWearerContactDetails(
-      orderId = orderForm.id,
+    order.deviceWearerContactDetails = DeviceWearerContactDetails(
+      orderId = order.id,
       contactNumber = "07401111111",
     )
-    orderForm.monitoringConditions = MonitoringConditions(orderId = orderForm.id)
-    orderForm.responsibleOfficer = ResponsibleOfficer(orderId = orderForm.id)
-    orderForm.additionalDocuments = mutableListOf()
-    repo.save(orderForm)
-    return orderForm
+    order.monitoringConditions = MonitoringConditions(orderId = order.id)
+    order.responsibleOfficer = ResponsibleOfficer(orderId = order.id)
+    order.additionalDocuments = mutableListOf()
+    repo.save(order)
+    return order
   }
 }
