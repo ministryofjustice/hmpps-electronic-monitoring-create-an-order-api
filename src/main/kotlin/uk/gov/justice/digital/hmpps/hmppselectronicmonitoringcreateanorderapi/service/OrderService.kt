@@ -4,6 +4,7 @@ import jakarta.persistence.EntityNotFoundException
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.SercoClient
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearerAddressInformation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearerContactDetails
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.MonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
@@ -24,7 +25,7 @@ class OrderService(
       status = OrderStatus.IN_PROGRESS,
     )
     order.deviceWearer = DeviceWearer(orderId = order.id)
-    order.deviceWearerAddresses = mutableListOf()
+    order.deviceWearerAddressInformation = DeviceWearerAddressInformation(orderId = order.id)
     order.deviceWearerContactDetails = DeviceWearerContactDetails(orderId = order.id)
     order.monitoringConditions = MonitoringConditions(orderId = order.id)
     order.additionalDocuments = mutableListOf()

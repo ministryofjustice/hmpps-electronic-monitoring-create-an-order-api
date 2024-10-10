@@ -7,18 +7,16 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearerAddress
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DeviceWearerAddressType
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DeviceWearerAddressUsage
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearerAddressInformation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.DeviceWearerAddressRepository
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.DeviceWearerAddressInformationRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidationError
 import java.util.*
 
 class DeviceWearerAddressControllerTest : IntegrationTestBase() {
   @Autowired
-  lateinit var deviceWearerAddressRepo: DeviceWearerAddressRepository
+  lateinit var deviceWearerAddressInformationRepo: DeviceWearerAddressInformationRepository
 
   @Autowired
   lateinit var orderRepo: OrderRepository
@@ -31,7 +29,7 @@ class DeviceWearerAddressControllerTest : IntegrationTestBase() {
 
   @BeforeEach
   fun setup() {
-    deviceWearerAddressRepo.deleteAll()
+    deviceWearerAddressInformationRepo.deleteAll()
     orderRepo.deleteAll()
   }
 
@@ -142,18 +140,16 @@ class DeviceWearerAddressControllerTest : IntegrationTestBase() {
       .exchange()
       .expectStatus()
       .isOk
-      .expectBody(DeviceWearerAddress::class.java)
+      .expectBody(DeviceWearerAddressInformation::class.java)
       .returnResult()
 
-    val address = result.responseBody!!
+    val addressInformation = result.responseBody!!
 
-    Assertions.assertThat(address.addressType).isEqualTo(DeviceWearerAddressType.PRIMARY)
-    Assertions.assertThat(address.address.addressLine1).isEqualTo(mockAddressLine1)
-    Assertions.assertThat(address.address.addressLine2).isEqualTo(mockAddressLine2)
-    Assertions.assertThat(address.address.addressLine3).isEqualTo(mockAddressLine3)
-    Assertions.assertThat(address.address.addressLine4).isEqualTo(mockAddressLine4)
-    Assertions.assertThat(address.address.postcode).isEqualTo(mockPostcode)
-    Assertions.assertThat(address.addressUsage).isEqualTo(DeviceWearerAddressUsage.NA)
+    Assertions.assertThat(addressInformation.primaryAddress?.addressLine1).isEqualTo(mockAddressLine1)
+    Assertions.assertThat(addressInformation.primaryAddress?.addressLine2).isEqualTo(mockAddressLine2)
+    Assertions.assertThat(addressInformation.primaryAddress?.addressLine3).isEqualTo(mockAddressLine3)
+    Assertions.assertThat(addressInformation.primaryAddress?.addressLine4).isEqualTo(mockAddressLine4)
+    Assertions.assertThat(addressInformation.primaryAddress?.postcode).isEqualTo(mockPostcode)
   }
 
   @Test

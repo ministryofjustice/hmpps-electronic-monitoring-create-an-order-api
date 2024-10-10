@@ -10,7 +10,6 @@ import jakarta.persistence.Id
 import jakarta.persistence.OneToMany
 import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
-import jakarta.validation.constraints.Size
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import java.util.UUID
 
@@ -44,9 +43,8 @@ data class Order(
   @OneToOne(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "order", orphanRemoval = true)
   var deviceWearerContactDetails: DeviceWearerContactDetails? = null,
 
-  @OneToMany(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "order", orphanRemoval = true)
-  @Size(min = 0, max = 3)
-  var deviceWearerAddresses: MutableList<DeviceWearerAddress> = mutableListOf(),
+  @OneToOne(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "order", orphanRemoval = true)
+  var deviceWearerAddressInformation: DeviceWearerAddressInformation? = null,
 
   @OneToOne(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "order", orphanRemoval = true)
   var monitoringConditions: MonitoringConditions? = null,
