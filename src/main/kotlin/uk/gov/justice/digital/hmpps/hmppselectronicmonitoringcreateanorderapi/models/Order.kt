@@ -52,6 +52,9 @@ data class Order(
   var monitoringConditions: MonitoringConditions? = null,
 
   @OneToOne(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "order", orphanRemoval = true)
+  var trailMonitoringConditions: TrailMonitoringConditions? = null,
+
+  @OneToOne(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "order", orphanRemoval = true)
   var installationAndRisk: InstallationAndRisk? = null,
 
   @OneToMany(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "order", orphanRemoval = true)

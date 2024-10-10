@@ -17,8 +17,8 @@ data class TrailMonitoringConditions(
   @Column(name = "ID", nullable = false, unique = true)
   val id: UUID = UUID.randomUUID(),
 
-  @Column(name = "MONITORING_CONDITION_ID", nullable = false, unique = true)
-  val monitoringConditionsId: UUID,
+  @Column(name = "ORDER_ID", nullable = false, unique = true)
+  val orderId: UUID,
 
   @Column(name = "START_DATE", nullable = true)
   var startDate: LocalDate? = null,
@@ -27,6 +27,6 @@ data class TrailMonitoringConditions(
   var endDate: LocalDate? = null,
 
   @OneToOne
-  @JoinColumn(name = "MONITORING_CONDITION_ID", updatable = false, insertable = false)
-  private val monitoringConditions: MonitoringConditions? = null,
+  @JoinColumn(name = "ORDER_ID", updatable = false, insertable = false)
+  private val order: Order? = null,
 )
