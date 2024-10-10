@@ -28,7 +28,6 @@ class DeviceWearerAddressControllerTest : IntegrationTestBase() {
   private val mockAddressLine3: String = "mockAddressLine3"
   private val mockAddressLine4: String = "mockAddressLine4"
   private val mockPostcode: String = "mockPostcode"
-  private val mockAddressUsage: String = "WORK"
 
   @BeforeEach
   fun setup() {
@@ -149,11 +148,11 @@ class DeviceWearerAddressControllerTest : IntegrationTestBase() {
     val address = result.responseBody!!
 
     Assertions.assertThat(address.addressType).isEqualTo(DeviceWearerAddressType.PRIMARY)
-    Assertions.assertThat(address.addressLine1).isEqualTo(mockAddressLine1)
-    Assertions.assertThat(address.addressLine2).isEqualTo(mockAddressLine2)
-    Assertions.assertThat(address.addressLine3).isEqualTo(mockAddressLine3)
-    Assertions.assertThat(address.addressLine4).isEqualTo(mockAddressLine4)
-    Assertions.assertThat(address.postcode).isEqualTo(mockPostcode)
+    Assertions.assertThat(address.address.addressLine1).isEqualTo(mockAddressLine1)
+    Assertions.assertThat(address.address.addressLine2).isEqualTo(mockAddressLine2)
+    Assertions.assertThat(address.address.addressLine3).isEqualTo(mockAddressLine3)
+    Assertions.assertThat(address.address.addressLine4).isEqualTo(mockAddressLine4)
+    Assertions.assertThat(address.address.postcode).isEqualTo(mockPostcode)
     Assertions.assertThat(address.addressUsage).isEqualTo(DeviceWearerAddressUsage.NA)
   }
 

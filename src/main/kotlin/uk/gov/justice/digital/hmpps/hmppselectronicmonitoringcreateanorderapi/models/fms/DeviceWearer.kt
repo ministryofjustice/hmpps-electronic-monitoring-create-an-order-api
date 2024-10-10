@@ -141,11 +141,11 @@ data class DeviceWearer(
         sex = order.deviceWearer?.sex,
         genderIdentity = order.deviceWearer?.gender,
         disability = disabilities,
-        address1 = primaryAddress.addressLine1,
-        address2 = primaryAddress.addressLine2,
-        address3 = primaryAddress.addressLine3,
-        address4 = primaryAddress.addressLine4,
-        addressPostCode = primaryAddress.postcode,
+        address1 = primaryAddress.address.addressLine1,
+        address2 = primaryAddress.address.addressLine2,
+        address3 = primaryAddress.address.addressLine3,
+        address4 = primaryAddress.address.addressLine4,
+        addressPostCode = primaryAddress.address.postcode,
         phoneNumber = order.deviceWearerContactDetails?.contactNumber,
         riskSeriousHarm = order.installationAndRisk?.riskOfSeriousHarm,
         riskSelfHarm = order.installationAndRisk?.riskOfSelfHarm,
@@ -159,11 +159,11 @@ data class DeviceWearer(
       order.deviceWearerAddresses?.find { address -> address.addressType == DeviceWearerAddressType.SECONDARY }.let { address ->
         {
           if (address != null) {
-            deviceWearer.secondaryAddress1 = address.addressLine1
-            deviceWearer.secondaryAddress2 = address.addressLine2
-            deviceWearer.secondaryAddress3 = address.addressLine3
-            deviceWearer.secondaryAddress4 = address.addressLine4
-            deviceWearer.secondaryAddressPostCode = address.postcode
+            deviceWearer.secondaryAddress1 = address.address.addressLine1
+            deviceWearer.secondaryAddress2 = address.address.addressLine2
+            deviceWearer.secondaryAddress3 = address.address.addressLine3
+            deviceWearer.secondaryAddress4 = address.address.addressLine4
+            deviceWearer.secondaryAddressPostCode = address.address.postcode
           }
         }
       }

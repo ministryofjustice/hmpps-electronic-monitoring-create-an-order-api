@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.s
 
 import jakarta.persistence.EntityNotFoundException
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Address
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearerAddress
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DeviceWearerAddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FormStatus
@@ -38,6 +39,7 @@ class DeviceWearerAddressService(
     ).orElse(
       DeviceWearerAddress(
         orderId = orderId,
+        address = Address(),
         addressType = addressType,
       ),
     )
@@ -55,11 +57,11 @@ class DeviceWearerAddressService(
     )
 
     with(deviceWearerAddressUpdateRecord) {
-      address.addressLine1 = addressLine1
-      address.addressLine2 = addressLine2
-      address.addressLine3 = addressLine3
-      address.addressLine4 = addressLine4
-      address.postcode = postcode
+      address.address.addressLine1 = addressLine1
+      address.address.addressLine2 = addressLine2
+      address.address.addressLine3 = addressLine3
+      address.address.addressLine4 = addressLine4
+      address.address.postcode = postcode
     }
 
     return addressRepo.save(address)

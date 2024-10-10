@@ -3,12 +3,12 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.i
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.kotlin.times
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.SercoAuthMockServerExtension.Companion.sercoAuthApi
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.SercoMockApiExtension.Companion.sercoApi
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Address
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearerAddress
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearerContactDetails
@@ -306,20 +306,24 @@ class OrderFormControllerTest : IntegrationTestBase() {
     orderForm.deviceWearerAddresses = mutableListOf(
       DeviceWearerAddress(
         orderId = orderForm.id,
-        addressLine1 = "20 Somewhere Street",
-        addressLine2 = "Nowhere City",
-        addressLine3 = "Random County",
-        addressLine4 = "United Kingdom",
-        postcode = "SW11 1NC",
+        address = Address(
+          addressLine1 = "20 Somewhere Street",
+          addressLine2 = "Nowhere City",
+          addressLine3 = "Random County",
+          addressLine4 = "United Kingdom",
+          postcode = "SW11 1NC",
+        ),
         addressType = DeviceWearerAddressType.PRIMARY,
       ),
       DeviceWearerAddress(
         orderId = orderForm.id,
-        addressLine1 = "22 Somewhere Street",
-        addressLine2 = "Nowhere City",
-        addressLine3 = "Random County",
-        addressLine4 = "United Kingdom",
-        postcode = "SW11 1NC",
+        address = Address(
+          addressLine1 = "22 Somewhere Street",
+          addressLine2 = "Nowhere City",
+          addressLine3 = "Random County",
+          addressLine4 = "United Kingdom",
+          postcode = "SW11 1NC",
+        ),
         addressType = DeviceWearerAddressType.PRIMARY,
       ),
     )
