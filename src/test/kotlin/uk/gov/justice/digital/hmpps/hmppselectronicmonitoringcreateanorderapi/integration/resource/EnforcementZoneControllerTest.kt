@@ -78,7 +78,7 @@ class EnforcementZoneControllerTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `Enforcement zone for an order already submitted update-able`() {
+  fun `Enforcement zone for an order already submitted are not update-able`() {
     val order = createOrder()
     order.status = OrderStatus.SUBMITTED
     orderRepo.save(order)
