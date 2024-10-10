@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models
 
+import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
@@ -7,6 +8,7 @@ import jakarta.persistence.Enumerated
 import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
+import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DeviceWearerAddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DeviceWearerAddressUsage
@@ -23,20 +25,8 @@ data class DeviceWearerAddress(
   @Column(name = "ORDER_ID", nullable = false)
   val orderId: UUID,
 
-  @Column(name = "ADDRESS_LINE_1", nullable = true)
-  var addressLine1: String? = null,
-
-  @Column(name = "ADDRESS_LINE_2", nullable = true)
-  var addressLine2: String? = null,
-
-  @Column(name = "ADDRESS_LINE_3", nullable = true)
-  var addressLine3: String? = null,
-
-  @Column(name = "ADDRESS_LINE_4", nullable = true)
-  var addressLine4: String? = null,
-
-  @Column(name = "POSTCODE", nullable = true)
-  var postcode: String? = null,
+  @OneToOne(cascade = [CascadeType.ALL])
+  val address: Address,
 
   @Enumerated(EnumType.STRING)
   @Column(name = "ADDRESSTYPE", nullable = true)

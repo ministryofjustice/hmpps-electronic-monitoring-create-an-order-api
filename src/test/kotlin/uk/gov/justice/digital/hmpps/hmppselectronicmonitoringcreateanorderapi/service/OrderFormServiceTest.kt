@@ -13,6 +13,7 @@ import org.mockito.kotlin.whenever
 import org.springframework.boot.test.autoconfigure.json.JsonTest
 import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.SercoClient
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Address
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearerAddress
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderForm
@@ -67,11 +68,13 @@ class OrderFormServiceTest {
     mockOrder.deviceWearerAddresses = mutableListOf(
       DeviceWearerAddress(
         orderId = mockOrder.id,
-        addressLine1 = "20 Somewhere Street",
-        addressLine2 = "Nowhere City",
-        addressLine3 = "Random County",
-        addressLine4 = "United Kingdom",
-        postcode = "SW11 1NC",
+        address = Address(
+          addressLine1 = "20 Somewhere Street",
+          addressLine2 = "Nowhere City",
+          addressLine3 = "Random County",
+          addressLine4 = "United Kingdom",
+          postcode = "SW11 1NC",
+        ),
         addressType = DeviceWearerAddressType.PRIMARY,
       ),
     )
