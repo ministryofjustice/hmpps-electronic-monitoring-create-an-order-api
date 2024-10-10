@@ -6,7 +6,12 @@ import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
-import java.time.LocalDate
+import jakarta.validation.constraints.AssertTrue
+import jakarta.validation.constraints.Future
+import jakarta.validation.constraints.NotNull
+import jakarta.validation.constraints.Size
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.EnforcementZoneType
+import java.time.ZonedDateTime
 import java.util.*
 
 @Entity
@@ -16,21 +21,28 @@ data class EnforcementZoneConditions(
   @Column(name = "ID", nullable = false, unique = true)
   val id: UUID = UUID.randomUUID(),
 
-  @Column(name = "ORDER_ID", nullable = false, unique = true)
+  @Column(name = "ORDER_ID", nullable = false, unique = false)
   val orderId: UUID,
 
-  @Column(name = "ZONE_TYPE", nullable = true)
-  var zoneType: String? = null,
+  @Column(name = "ZONE_TYPE", nullable = false)
+  @field:NotNull(message = "Enforcement zone type is required")
+  var zoneType: EnforcementZoneType? = null,
 
-  @Column(name = "START_DATE", nullable = true)
-  var startDate: LocalDate? = null,
+  @field:NotNull(message = "Enforcement zone start date is required")
+  @field:Future(message = "Enforcement zone start date must be in the future")
+  @Column(name = "START_DATE", nullable = false)
+  var startDate: ZonedDateTime? = null,
 
+  @field:NotNull(message = "Enforcement zone end date is required")
+  @field:Future(message = "Enforcement zone end date must be in the future")
   @Column(name = "END_DATE", nullable = true)
-  var endDate: LocalDate? = null,
+  var endDate: ZonedDateTime? = null,
 
+  @field:Size(min = 1, message = "Enforcement zone description is required")
   @Column(name = "DESCRIPTION", nullable = true)
   var description: String? = null,
 
+  @field:Size(min = 1, message = "Enforcement zone duration is required")
   @Column(name = "DURATION", nullable = true)
   var duration: String? = null,
 
@@ -41,9 +53,17 @@ data class EnforcementZoneConditions(
   var fileId: UUID? = null,
 
   @Column(name = "ZONE_ID", nullable = true)
-  var zoneId: Number? = null,
+  var zoneId: Int? = null,
 
   @ManyToOne(optional = true)
   @JoinColumn(name = "ORDER_ID", updatable = false, insertable = false)
   private val order: OrderForm? = null,
-)
+) {
+  @AssertTrue(message = "End date must be after start date")
+  fun isEndDate(): Boolean {
+    if (this.endDate != null && this.startDate != null) {
+      return this.endDate!! > this.startDate
+    }
+    return true
+  }
+}
