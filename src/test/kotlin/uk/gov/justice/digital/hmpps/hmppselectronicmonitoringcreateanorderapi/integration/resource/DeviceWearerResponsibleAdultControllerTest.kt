@@ -141,8 +141,8 @@ class DeviceWearerResponsibleAdultControllerTest : IntegrationTestBase() {
   fun `Reponsible adult cannot be updated with an invalid contact number`() {
     val order = createOrder()
 
-    val result = webTestClient.post()
-      .uri("/api/order/${order.id}/device-wearer-responsible-adult")
+    val result = webTestClient.put()
+      .uri("/api/orders/${order.id}/device-wearer-responsible-adult")
       .contentType(MediaType.APPLICATION_JSON)
       .body(
         BodyInserters.fromValue(
