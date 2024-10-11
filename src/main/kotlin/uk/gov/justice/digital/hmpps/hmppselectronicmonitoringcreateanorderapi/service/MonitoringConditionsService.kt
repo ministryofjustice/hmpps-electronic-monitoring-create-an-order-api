@@ -22,7 +22,7 @@ class MonitoringConditionsService(
       username,
       OrderStatus.IN_PROGRESS,
     ).orElseThrow {
-      EntityNotFoundException("Monitoring Conditions for $orderId not found")
+      EntityNotFoundException("An editable Monitoring Conditions was not found for Order: $orderId")
     }
 
     with(monitoringConditionsUpdateRecord) {
