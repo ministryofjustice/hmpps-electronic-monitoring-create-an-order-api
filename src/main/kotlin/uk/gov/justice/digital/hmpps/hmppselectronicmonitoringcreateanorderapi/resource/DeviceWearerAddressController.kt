@@ -43,33 +43,57 @@ class DeviceWearerAddressController(
 
 data class UpdateDeviceWearerAddressDto(
   val addressType: DeviceWearerAddressType,
+  val noFixedAbode: Boolean = false,
+  val installationAddress: Boolean = false,
   val addressLine1: String,
   val addressLine2: String,
   val addressLine3: String,
   val addressLine4: String,
   val postcode: String,
 ) {
+  @AssertTrue(message = "noFixedAbode can only be true for a primary address")
+  fun isNoFixedAbode(): Boolean {
+    if (this.addressType === DeviceWearerAddressType.PRIMARY) {
+      return true
+    }
+    return !this.noFixedAbode
+  }
+
+  @AssertTrue(message = "installationAddress can only be true for a primary address")
+  fun isInstallationAddress(): Boolean {
+    if (this.addressType === DeviceWearerAddressType.PRIMARY) {
+      if (this.noFixedAbode) {
+        return !this.installationAddress
+      }
+      return true
+    }
+    return !this.installationAddress
+  }
+
   @AssertTrue(message = "Address line 1 is required")
   fun isAddressLine1(): Boolean {
-    if (this.addressType === DeviceWearerAddressType.PRIMARY) {
-      return this.addressLine1.isNotBlank()
+    if (this.noFixedAbode) {
+      return true
     }
-    return true
+
+    return this.addressLine1.isNotBlank()
   }
 
   @AssertTrue(message = "Address line 2 is required")
   fun isAddressLine2(): Boolean {
-    if (this.addressType === DeviceWearerAddressType.PRIMARY) {
-      return this.addressLine2.isNotBlank()
+    if (this.noFixedAbode) {
+      return true
     }
-    return true
+
+    return this.addressLine2.isNotBlank()
   }
 
   @AssertTrue(message = "Postcode is required")
   fun isPostcode(): Boolean {
-    if (this.addressType === DeviceWearerAddressType.PRIMARY) {
-      return this.postcode.isNotBlank()
+    if (this.noFixedAbode) {
+      return true
     }
-    return true
+
+    return this.postcode.isNotBlank()
   }
 }

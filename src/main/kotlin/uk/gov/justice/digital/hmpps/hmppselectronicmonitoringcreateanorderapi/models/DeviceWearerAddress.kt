@@ -29,12 +29,18 @@ data class DeviceWearerAddress(
   val address: Address,
 
   @Enumerated(EnumType.STRING)
-  @Column(name = "ADDRESSTYPE", nullable = true)
+  @Column(name = "ADDRESSTYPE", nullable = false)
   var addressType: DeviceWearerAddressType,
 
+  @Column(name = "NO_FIXED_ABODE", nullable = false)
+  var noFixedAbode: Boolean = false,
+
+  @Column(name = "INSTALLATION_ADDRESS", nullable = false)
+  var installationAddress: Boolean = false,
+
   @Enumerated(EnumType.STRING)
-  @Column(name = "ADDRESSUSAGE", nullable = true)
-  var addressUsage: DeviceWearerAddressUsage? = DeviceWearerAddressUsage.NA,
+  @Column(name = "ADDRESSUSAGE", nullable = false)
+  var addressUsage: DeviceWearerAddressUsage = DeviceWearerAddressUsage.NA,
 
   @ManyToOne
   @JoinColumn(name = "ORDER_ID", updatable = false, insertable = false)

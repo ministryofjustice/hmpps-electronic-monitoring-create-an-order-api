@@ -14,17 +14,17 @@ data class Address(
   val id: UUID = UUID.randomUUID(),
 
   @Column(name = "ADDRESS_LINE_1", nullable = true)
-  var addressLine1: String? = null,
+  var addressLine1: String = "",
 
   @Column(name = "ADDRESS_LINE_2", nullable = true)
-  var addressLine2: String? = null,
+  var addressLine2: String = "",
 
   @Column(name = "ADDRESS_LINE_3", nullable = true)
-  var addressLine3: String? = null,
+  var addressLine3: String = "",
 
   @Column(name = "ADDRESS_LINE_4", nullable = true)
-  var addressLine4: String? = null,
+  var addressLine4: String = "",
 
   @Column(name = "POSTCODE", nullable = true)
-  var postcode: String? = null,
+  var postcode: String = "",
 )
