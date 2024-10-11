@@ -25,15 +25,7 @@ class MonitoringConditionsTrailService(
     }
 
     // Find an existing trail monitoring conditions or create new trail monitoring conditions
-    return trailMonitoringConditionsRepo.findByOrderIdAndOrderUsernameAndOrderStatus(
-      order.id,
-      order.username,
-      order.status,
-    ).orElse(
-      TrailMonitoringConditions(
-        orderId = orderId,
-      ),
-    )
+    return order.monitoringConditionsTrail ?: TrailMonitoringConditions(orderId = orderId)
   }
 
   fun createOrUpdateTrailMonitoringConditions(
