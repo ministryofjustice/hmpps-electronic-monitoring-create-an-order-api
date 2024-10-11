@@ -8,13 +8,15 @@ import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.OneToMany
 import jakarta.persistence.OneToOne
+import jakarta.persistence.PostLoad
+import jakarta.persistence.PrePersist
+import jakarta.persistence.PreUpdate
 import jakarta.persistence.Table
 import java.util.*
 
 @Entity
 @Table(name = "MONITORING_CONDITIONS")
 data class MonitoringConditions(
-
   @Id
   @Column(name = "ID", nullable = false, unique = true)
   val id: UUID = UUID.randomUUID(),
@@ -25,11 +27,8 @@ data class MonitoringConditions(
   @Column(name = "ORDER_TYPE", nullable = true)
   var orderType: String? = null,
 
-  @Column(name = "MONITORING_REQUIRED", nullable = true)
-  var monitoringRequired: String? = null,
-
   @Column(name = "DEVICES_REQUIRED", nullable = true)
-  var devicesRequired: String? = null,
+  var devicesRequiredString: String? = null,
 
   @Column(name = "ACQUISITIVE_CRIME", nullable = true)
   var acquisitiveCrime: Boolean? = null,
@@ -70,4 +69,18 @@ data class MonitoringConditions(
 
   @OneToOne(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "monitoringConditions", orphanRemoval = true)
   var alcoholMonitoringConditions: AlcoholMonitoringConditions? = null,
-)
+
+  @Transient
+  var devicesRequired: Array<String>? = null,
+) {
+  @PrePersist
+  @PreUpdate
+  fun devicesRequiredToString() {
+    devicesRequiredString = devicesRequired?.joinToString(", ")
+  }
+
+  @PostLoad
+  fun devicesRequiredToArray() {
+    devicesRequired = devicesRequiredString?.split(", ")?.toTypedArray()
+  }
+}
