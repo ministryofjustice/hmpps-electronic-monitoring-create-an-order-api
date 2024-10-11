@@ -8,9 +8,6 @@ import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.OneToMany
 import jakarta.persistence.OneToOne
-import jakarta.persistence.PostLoad
-import jakarta.persistence.PrePersist
-import jakarta.persistence.PreUpdate
 import jakarta.persistence.Table
 import java.util.*
 
@@ -28,7 +25,7 @@ data class MonitoringConditions(
   var orderType: String? = null,
 
   @Column(name = "DEVICES_REQUIRED", nullable = true)
-  var devicesRequiredString: String? = null,
+  var devicesRequired: String? = null,
 
   @Column(name = "ACQUISITIVE_CRIME", nullable = true)
   var acquisitiveCrime: Boolean? = null,
@@ -66,18 +63,4 @@ data class MonitoringConditions(
 
   @OneToOne(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "monitoringConditions", orphanRemoval = true)
   var alcoholMonitoringConditions: AlcoholMonitoringConditions? = null,
-
-  @Transient
-  var devicesRequired: Array<String>? = null,
-) {
-  @PrePersist
-  @PreUpdate
-  fun devicesRequiredToString() {
-    devicesRequiredString = devicesRequired?.joinToString(", ")
-  }
-
-  @PostLoad
-  fun devicesRequiredToArray() {
-    devicesRequired = devicesRequiredString?.split(", ")?.toTypedArray()
-  }
-}
+)

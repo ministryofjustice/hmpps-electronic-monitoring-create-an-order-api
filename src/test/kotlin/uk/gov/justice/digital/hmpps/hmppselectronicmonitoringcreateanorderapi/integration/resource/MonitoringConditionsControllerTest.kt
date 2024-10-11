@@ -21,7 +21,7 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
   lateinit var orderRepo: OrderRepository
 
   private val mockOrderType: String = "mockOrderType"
-  private val mockDevicesRequired: String = """["device1", "device2"]"""
+  private val mockDevicesRequired: String = "mockDevicesRequired"
   private val mockAcquisitiveCrime: Boolean = true
   private val mockDapol: Boolean = true
   private val mockCurfew: Boolean = true
@@ -46,7 +46,7 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
           """
             {
               "orderType": "$mockOrderType",
-              "devicesRequired": $mockDevicesRequired,
+              "devicesRequired": "$mockDevicesRequired",
               "acquisitiveCrime": "$mockAcquisitiveCrime",
               "dapol": "$mockDapol",
               "curfew": "$mockCurfew",
@@ -67,7 +67,7 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
 
     Assertions.assertThat(updateMonitoringConditions.responseBody?.orderId).isEqualTo(order.id)
     Assertions.assertThat(updateMonitoringConditions.responseBody?.orderType).isEqualTo(mockOrderType)
-    Assertions.assertThat(updateMonitoringConditions.responseBody?.devicesRequired).isEqualTo(arrayOf("device1", "device2"))
+    Assertions.assertThat(updateMonitoringConditions.responseBody?.devicesRequired).isEqualTo(mockDevicesRequired)
     Assertions.assertThat(updateMonitoringConditions.responseBody?.acquisitiveCrime).isEqualTo(mockAcquisitiveCrime)
     Assertions.assertThat(updateMonitoringConditions.responseBody?.dapol).isEqualTo(mockDapol)
     Assertions.assertThat(updateMonitoringConditions.responseBody?.curfew).isEqualTo(mockCurfew)
