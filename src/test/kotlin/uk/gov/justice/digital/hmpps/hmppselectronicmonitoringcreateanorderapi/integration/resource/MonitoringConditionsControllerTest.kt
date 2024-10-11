@@ -38,8 +38,8 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
   @Test
   fun `Monitoring conditions can be updated with valid values`() {
     val order = createOrder()
-    val updateMonitoringConditions = webTestClient.post()
-      .uri("/api/order/${order.id}/monitoring-conditions")
+    val updateMonitoringConditions = webTestClient.put()
+      .uri("/api/orders/${order.id}/monitoring-conditions")
       .contentType(MediaType.APPLICATION_JSON)
       .body(
         BodyInserters.fromValue(
@@ -81,8 +81,8 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
   @Test
   fun `Non-mandatory monitoring conditions can be updated with null values`() {
     val order = createOrder()
-    val updateMonitoringConditions = webTestClient.post()
-      .uri("/api/order/${order.id}/monitoring-conditions")
+    val updateMonitoringConditions = webTestClient.put()
+      .uri("/api/orders/${order.id}/monitoring-conditions")
       .contentType(MediaType.APPLICATION_JSON)
       .body(
         BodyInserters.fromValue(
@@ -122,8 +122,8 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
   @Test
   fun `Order type cannot be updated with a null value`() {
     val order = createOrder()
-    webTestClient.post()
-      .uri("/api/order/${order.id}/monitoring-conditions")
+    webTestClient.put()
+      .uri("/api/orders/${order.id}/monitoring-conditions")
       .contentType(MediaType.APPLICATION_JSON)
       .body(
         BodyInserters.fromValue(
@@ -143,8 +143,8 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
   @Test
   fun `Monitoring conditions cannot be updated by a different user`() {
     val order = createOrder()
-    webTestClient.post()
-      .uri("/api/order/${order.id}/monitoring-conditions")
+    webTestClient.put()
+      .uri("/api/orders/${order.id}/monitoring-conditions")
       .contentType(MediaType.APPLICATION_JSON)
       .body(
         BodyInserters.fromValue(
@@ -168,8 +168,8 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
     order.status = OrderStatus.SUBMITTED
     orderRepo.save(order)
 
-    webTestClient.post()
-      .uri("/api/order/${order.id}/monitoring-conditions")
+    webTestClient.put()
+      .uri("/api/orders/${order.id}/monitoring-conditions")
       .contentType(MediaType.APPLICATION_JSON)
       .body(
         BodyInserters.fromValue(
@@ -189,8 +189,8 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
   @Test
   fun `Monitoring conditions for a non-existent order are not accessible`() {
     createOrder()
-    webTestClient.post()
-      .uri("/api/order/${UUID.randomUUID()}/monitoring-conditions")
+    webTestClient.put()
+      .uri("/api/orders/${UUID.randomUUID()}/monitoring-conditions")
       .contentType(MediaType.APPLICATION_JSON)
       .body(
         BodyInserters.fromValue(
