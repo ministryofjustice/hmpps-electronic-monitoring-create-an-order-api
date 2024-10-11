@@ -22,7 +22,7 @@ import java.util.UUID
 class MonitoringConditionsController(
   @Autowired val monitoringConditionsService: MonitoringConditionsService,
 ) {
-  @PostMapping("/order/{orderId}/monitoring-conditions")
+  @PutMapping("/orders/{orderId}/monitoring-conditions")
   fun updateMonitoringConditions(
     @PathVariable orderId: UUID,
     @RequestBody @Valid monitoringConditionsUpdateRecord: UpdateMonitoringConditionsDto,
