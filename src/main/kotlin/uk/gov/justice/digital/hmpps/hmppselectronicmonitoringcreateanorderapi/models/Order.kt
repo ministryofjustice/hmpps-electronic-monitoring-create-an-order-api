@@ -52,7 +52,7 @@ data class Order(
   var monitoringConditions: MonitoringConditions? = null,
 
   @OneToOne(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "order", orphanRemoval = true)
-  var trailMonitoringConditions: TrailMonitoringConditions? = null,
+  var monitoringConditionsTrail: TrailMonitoringConditions? = null,
 
   @OneToOne(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "order", orphanRemoval = true)
   var installationAndRisk: InstallationAndRisk? = null,

@@ -199,7 +199,7 @@ class MonitoringConditionsTrailControllerTest : IntegrationTestBase() {
     Assertions.assertThat(result.responseBody).isNotNull
     Assertions.assertThat(result.responseBody).hasSize(1)
     Assertions.assertThat(result.responseBody!!).contains(
-      ValidationError("startDate", "Start date must not be in the past"),
+      ValidationError("startDate", "Start date must be in the future"),
     )
   }
 
@@ -229,7 +229,7 @@ class MonitoringConditionsTrailControllerTest : IntegrationTestBase() {
     Assertions.assertThat(result.responseBody).isNotNull
     Assertions.assertThat(result.responseBody).hasSize(1)
     Assertions.assertThat(result.responseBody!!).contains(
-      ValidationError("endDate", "End date must not be in the past"),
+      ValidationError("endDate", "End date must be in the future"),
     )
   }
 }
