@@ -4,4 +4,6 @@ enum class DeviceWearerAddressType {
   PRIMARY,
   SECONDARY,
   TERTIARY,
+  NO_FIXED_ABODE,
+  INSTALLATION,
 }

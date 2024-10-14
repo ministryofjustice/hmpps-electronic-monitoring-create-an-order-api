@@ -39,7 +39,6 @@ class DeviceWearerAddressService(
     ).orElse(
       DeviceWearerAddress(
         orderId = orderId,
-        address = Address(),
         addressType = addressType,
       ),
     )
@@ -56,12 +55,16 @@ class DeviceWearerAddressService(
       deviceWearerAddressUpdateRecord.addressType,
     )
 
-    with(deviceWearerAddressUpdateRecord) {
-      address.address.addressLine1 = addressLine1
-      address.address.addressLine2 = addressLine2
-      address.address.addressLine3 = addressLine3
-      address.address.addressLine4 = addressLine4
-      address.address.postcode = postcode
+    if (deviceWearerAddressUpdateRecord.addressType !== DeviceWearerAddressType.NO_FIXED_ABODE) {
+      with(deviceWearerAddressUpdateRecord) {
+        address.address = Address(
+          addressLine1 = addressLine1,
+          addressLine2 = addressLine2,
+          addressLine3 = addressLine3,
+          addressLine4 = addressLine4,
+          postcode = postcode,
+        )
+      }
     }
 
     return addressRepo.save(address)

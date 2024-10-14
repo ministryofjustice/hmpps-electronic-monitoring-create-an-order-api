@@ -25,8 +25,8 @@ data class DeviceWearerAddress(
   @Column(name = "ORDER_ID", nullable = false)
   val orderId: UUID,
 
-  @OneToOne(cascade = [CascadeType.ALL])
-  val address: Address,
+  @OneToOne(cascade = [CascadeType.ALL], optional = true)
+  var address: Address? = null,
 
   @Enumerated(EnumType.STRING)
   @Column(name = "ADDRESSTYPE", nullable = true)
