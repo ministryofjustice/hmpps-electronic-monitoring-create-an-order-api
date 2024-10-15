@@ -6,6 +6,9 @@ import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
+import jakarta.validation.constraints.Future
+import jakarta.validation.constraints.NotBlank
+import jakarta.validation.constraints.NotNull
 import java.time.LocalDate
 import java.util.*
 
@@ -19,21 +22,27 @@ data class MandatoryAttendanceConditions(
   @Column(name = "MONITORING_CONDITION_ID", nullable = false, unique = true)
   val monitoringConditionsId: UUID,
 
+  @field:NotNull(message = "Mandatory attendance monitoring start date is required")
+  @field:Future(message = "Mandatory attendance monitoring start date must be in the future")
   @Column(name = "START_DATE", nullable = true)
   var startDate: LocalDate? = null,
 
   @Column(name = "END_DATE", nullable = true)
   var endDate: LocalDate? = null,
 
+  @field:NotBlank(message = "Mandatory attendance appointment purpose is required")
   @Column(name = "PURPOSE", nullable = true)
   var purpose: String? = null,
 
+  @field:NotBlank(message = "Mandatory attendance appointment day is required")
   @Column(name = "APPOINTMENT_DAY", nullable = true)
   var appointmentDay: String? = null,
 
+  @field:NotBlank(message = "Mandatory attendance appointment start time is required")
   @Column(name = "START_TIME", nullable = true)
   var startTime: String? = null,
 
+  @field:NotBlank(message = "Mandatory attendance appointment end time is required")
   @Column(name = "END_TIME", nullable = true)
   var endTime: String? = null,
 

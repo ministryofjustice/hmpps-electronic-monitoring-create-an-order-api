@@ -13,7 +13,7 @@ import java.util.UUID
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.DeviceWearer as FmsDeviceWearer
 
 @Service
-class OrderService(
+class  OrderService(
   val repo: OrderRepository,
   val sercoClient: SercoClient,
 ) {
