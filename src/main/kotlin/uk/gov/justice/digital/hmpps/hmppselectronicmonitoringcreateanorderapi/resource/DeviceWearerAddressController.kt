@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource
 
 import jakarta.validation.Valid
-import jakarta.validation.constraints.AssertTrue
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -43,33 +42,10 @@ class DeviceWearerAddressController(
 
 data class UpdateDeviceWearerAddressDto(
   val addressType: DeviceWearerAddressType,
-  val addressLine1: String,
-  val addressLine2: String,
-  val addressLine3: String,
-  val addressLine4: String,
-  val postcode: String,
-) {
-  @AssertTrue(message = "Address line 1 is required")
-  fun isAddressLine1(): Boolean {
-    if (this.addressType === DeviceWearerAddressType.PRIMARY) {
-      return this.addressLine1.isNotBlank()
-    }
-    return true
-  }
-
-  @AssertTrue(message = "Address line 2 is required")
-  fun isAddressLine2(): Boolean {
-    if (this.addressType === DeviceWearerAddressType.PRIMARY) {
-      return this.addressLine2.isNotBlank()
-    }
-    return true
-  }
-
-  @AssertTrue(message = "Postcode is required")
-  fun isPostcode(): Boolean {
-    if (this.addressType === DeviceWearerAddressType.PRIMARY) {
-      return this.postcode.isNotBlank()
-    }
-    return true
-  }
-}
+  val installationAddress: Boolean = false,
+  val addressLine1: String = "",
+  val addressLine2: String = "",
+  val addressLine3: String = "",
+  val addressLine4: String = "",
+  val postcode: String = "",
+)
