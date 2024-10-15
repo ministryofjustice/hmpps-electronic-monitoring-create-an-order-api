@@ -42,9 +42,10 @@ class DeviceWearerAddressController(
 
 data class UpdateDeviceWearerAddressDto(
   val addressType: DeviceWearerAddressType,
-  val addressLine1: String,
-  val addressLine2: String,
-  val addressLine3: String,
-  val addressLine4: String,
-  val postcode: String,
+  val installationAddress: Boolean = false,
+  val addressLine1: String = "",
+  val addressLine2: String = "",
+  val addressLine3: String = "",
+  val addressLine4: String = "",
+  val postcode: String = "",
 )

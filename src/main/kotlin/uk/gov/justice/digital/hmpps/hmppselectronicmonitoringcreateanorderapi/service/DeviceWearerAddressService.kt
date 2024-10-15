@@ -64,6 +64,7 @@ class DeviceWearerAddressService(
           addressLine4 = addressLine4,
           postcode = postcode,
         )
+        address.installationAddress = installationAddress
       }
     }
 

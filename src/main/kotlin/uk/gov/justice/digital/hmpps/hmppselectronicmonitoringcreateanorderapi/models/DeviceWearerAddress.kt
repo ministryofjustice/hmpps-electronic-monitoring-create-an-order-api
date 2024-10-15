@@ -32,6 +32,9 @@ data class DeviceWearerAddress(
   @Column(name = "ADDRESSTYPE", nullable = true)
   var addressType: DeviceWearerAddressType,
 
+  @Column(name = "INSTALLATION_ADDRESS", nullable = false)
+  var installationAddress: Boolean = false,
+
   @Enumerated(EnumType.STRING)
   @Column(name = "ADDRESSUSAGE", nullable = true)
   var addressUsage: DeviceWearerAddressUsage? = DeviceWearerAddressUsage.NA,
