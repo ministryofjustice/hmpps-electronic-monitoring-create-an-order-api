@@ -180,7 +180,7 @@ data class MonitoringOrder(
       val monitoringOrder = MonitoringOrder(
         deviceWearer = order.fmsDeviceWearerId,
         orderType = conditions.orderType,
-        deviceType = conditions.devicesRequiredString,
+        deviceType = conditions.devicesRequired?.joinToString { "," },
         orderStart = conditions.startDate?.format(formatter),
         orderEnd = conditions.endDate?.format(formatter),
         serviceEndDate = conditions.endDate?.format(formatter),
@@ -200,7 +200,7 @@ data class MonitoringOrder(
       }
 
       if (conditions.trail != null && conditions.trail!!) {
-        if (conditions.devicesRequiredString!!.contains("Location - fitted")) {
+        if (conditions.devicesRequired!!.contains("Location - fitted")) {
           monitoringOrder.enforceableCondition!!.add(EnforceableCondition("Location Monitoring (Fitted Device)"))
         } else {
           monitoringOrder.enforceableCondition!!.add(EnforceableCondition("Location Monitoring (using Non-Fitted Device)"))

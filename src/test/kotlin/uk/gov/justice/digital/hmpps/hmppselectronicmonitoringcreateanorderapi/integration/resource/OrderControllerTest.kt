@@ -26,6 +26,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DeviceWearerAddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.EnforcementZoneType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsErrorResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
@@ -35,6 +36,7 @@ import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.ErrorResponse as FmsErrorResponseDetails
 
 class OrderControllerTest : IntegrationTestBase() {
   @Autowired
@@ -210,7 +212,7 @@ class OrderControllerTest : IntegrationTestBase() {
       """
     sercoAuthApi.stubGrantToken()
 
-    sercoApi.stupCreateDeviceWearer(mockDeviceWearerJson, HttpStatus.INTERNAL_SERVER_ERROR, FmsResponse())
+    sercoApi.stupCreateDeviceWearer(mockDeviceWearerJson, HttpStatus.INTERNAL_SERVER_ERROR, FmsResponse(), FmsErrorResponse(error = FmsErrorResponseDetails("", "Mock Create DW Error")))
     val result = webTestClient.post()
       .uri("/api/orders/${order.id}/submit")
       .headers(setAuthorisation())
@@ -222,7 +224,220 @@ class OrderControllerTest : IntegrationTestBase() {
 
     val error = result.responseBody!!
     assertThat(error.userMessage)
-      .isEqualTo("Error creating Serco Device Wearer for order: ${order.id}")
+      .isEqualTo("Error creating FMS Device Wearer for order: ${order.id} with error: Mock Create DW Error")
+  }
+
+  @Test
+  fun `Should return 500 error if serco create monitoring order service returned error`() {
+    val order = createReadyToSubmitOrder()
+    val mockDeviceWearerJson = """
+      {
+    "title": "",
+    "first_name": "John",
+    "middle_name": "",
+    "last_name": "Smith",
+    "alias": "Johny",
+    "date_of_birth": "1990-01-01",
+    "adult_child": "adult",
+    "sex": "Male",
+    "gender_identity": "Male",
+    "disability": [
+        {
+            "disability": "Vision"
+        },
+        {
+            "disability": "Hearing"
+        }
+    ],
+    "address_1": "20 Somewhere Street",
+    "address_2": "Nowhere City",
+    "address_3": "Random County",
+    "address_4": "United Kingdom",
+    "address_post_code": "SW11 1NC",
+    "secondary_address_1": "",
+    "secondary_address_2": "",
+    "secondary_address_3": "",
+    "secondary_address_4": "",
+    "secondary_address_post_code": "",
+    "phone_number": "07401111111",
+    "risk_serious_harm": "High",
+    "risk_self_harm": "Low",
+    "risk_details": "Danger",
+    "mappa": "MAAPA 1",
+    "mappa_case_type": "CPPC (Critical Public Protection Case)",
+    "risk_categories": [],
+    "responsible_adult_required": "true",
+    "parent": "Mark Smith",
+    "guardian": "",
+    "parent_address_1": "",
+    "parent_address_2": "",
+    "parent_address_3": "",
+    "parent_address_4": "",
+    "parent_address_post_code": "",
+    "parent_phone_number": "07401111111",
+    "parent_dob": "",
+    "pnc_id": "",
+    "nomis_id": "",
+    "delius_id": "",
+    "prison_number": ""
+}
+      """
+
+    val mockOrderJson = """
+      {
+      	"case_id": "d8ea62e61bb8d610a10c20e0b24bcb85",
+      	"allday_lockdown": "",
+      	"atv_allowance": "",
+      	"condition_type": "Requirement of Community Order",
+      	"court": "",
+      	"court_order_email": "",
+      	"describe_exclusion": "Mock Exclusion Zone",
+      	"device_type": "Location - fitted,Alcohol (Remote Breath)",
+      	"device_wearer": "ebb5c29d1b115250a10c20e0b24bcb88",
+      	"enforceable_condition": [
+      		{
+      			"condition": "Curfew with EM"
+      		},
+      		{
+      			"condition": "Location Monitoring (Fitted Device)"
+      		},
+      		{
+      			"condition": "EM Exclusion / Inclusion Zone"
+      		},
+      		{
+      			"condition": "AAMR"
+      		}
+      	],
+      	"exclusion_allday": "",
+      	"interim_court_date": "",
+      	"issuing_organisation": "",
+      	"media_interest": "",
+      	"new_order_received": "",
+      	"notifying_officer_email": "",
+      	"notifying_officer_name": "",
+      	"notifying_organization": "Mock Organisation",
+      	"no_post_code": "",
+      	"no_address_1": "",
+      	"no_address_2": "",
+      	"no_address_3": "",
+      	"no_address_4": "",
+      	"no_email": "",
+      	"no_name": "",
+      	"no_phone_number": "",
+      	"offence": "",
+      	"offence_date": "",
+      	"order_end": "${mockEndDate.format(formatter)}",
+      	"order_id": "995069e1-a311-4c19-b9f8-cab259b4dafd",
+      	"order_request_type": "",
+      	"order_start": "${mockStartDate.format(formatter)}",
+      	"order_type": "community",
+      	"order_type_description": "",
+      	"order_type_detail": "",
+      	"order_variation_date": "",
+      	"order_variation_details": "",
+      	"order_variation_req_received_date": "",
+      	"order_variation_type": "",
+      	"pdu_responsible": "",
+      	"pdu_responsible_email": "",
+      	"planned_order_end_date": "",
+      	"responsible_officer_details_received": "",
+      	"responsible_officer_email": "",
+      	"responsible_officer_phone": "07401111111",
+      	"responsible_officer_name": "John Smith",
+      	"responsible_organization": "Avon and Somerset Constabulary",
+      	"ro_post_code": "AB11 1CD",
+      	"ro_address_1": "",
+      	"ro_address_2": "",
+      	"ro_address_3": "",
+      	"ro_address_4": "",
+      	"ro_email": "abc@def.com",
+      	"ro_phone": "07401111111",
+      	"ro_region": "Mock Region",
+      	"sentence_date": "",
+      	"sentence_expiry": "",
+      	"tag_at_source": "",
+      	"tag_at_source_details": "PRIMARY_ADDRESS",
+      	"technical_bail": "",
+      	"trial_date": "",
+      	"trial_outcome": "",
+      	"conditional_release_date": "${mockStartDate.format(formatter)}",
+      	"reason_for_order_ending_early": "",
+      	"business_unit": "",
+      	"service_end_date": "${mockEndDate.format(formatter)}",
+      	"curfew_start": "${mockStartDate.format(formatter)}",
+      	"curfew_end": "${mockEndDate.format(formatter)}",
+      	"curfew_duration": [
+      		{
+      			"location": "primary",
+      			"allday": "",
+      			"schedule": [
+      				{
+      					"day": "Mo",
+      					"start": "17:00",
+      					"end": "09:00"
+      				},
+      				{
+      					"day": "Tu",
+      					"start": "17:00",
+      					"end": "09:00"
+      				},
+      				{
+      					"day": "Wed",
+      					"start": "17:00",
+      					"end": "09:00"
+      				},
+      				{
+      					"day": "Th",
+      					"start": "17:00",
+      					"end": "09:00"
+      				},
+      				{
+      					"day": "Fr",
+      					"start": "17:00",
+      					"end": "09:00"
+      				},
+      				{
+      					"day": "Sa",
+      					"start": "17:00",
+      					"end": "09:00"
+      				},
+      				{
+      					"day": "Su",
+      					"start": "17:00",
+      					"end": "09:00"
+      				}
+      			]
+      		}
+      	],
+      	"trail_monitoring": "true",
+      	"exclusion_zones": "true",
+      	"exclusion_zones_duration": "",
+      	"inclusion_zones": "",
+      	"inclusion_zones_duration": "Mock Exclusion Duration",
+      	"abstinence": "true",
+      	"schedule": "",
+      	"checkin_schedule": "",
+      	"revocation_date": "",
+      	"revocation_type": "",
+      	"order_status": "Not Started"
+      }
+    """.trimIndent()
+    sercoAuthApi.stubGrantToken()
+
+    sercoApi.stupCreateDeviceWearer(mockDeviceWearerJson, HttpStatus.OK, FmsResponse(result = listOf(FmsResult(message = "", id = "MockDeviceWearerId"))))
+    sercoApi.stupMonitoringOrder(mockOrderJson, HttpStatus.INTERNAL_SERVER_ERROR, FmsResponse(), FmsErrorResponse(error = FmsErrorResponseDetails("", "Mock Create MO Error")))
+    var result = webTestClient.post()
+      .uri("/api/orders/${order.id}/submit")
+      .headers(setAuthorisation())
+      .exchange()
+      .expectStatus()
+      .is5xxServerError
+      .expectBody(ErrorResponse::class.java)
+      .returnResult()
+
+    val error = result.responseBody!!
+    assertThat(error.userMessage)
+      .isEqualTo("Error creating FMS Monitoring Order for order: ${order.id} with error: Mock Create MO Error")
   }
 
   @Test
@@ -433,7 +648,7 @@ class OrderControllerTest : IntegrationTestBase() {
 
     val updatedOrder = repo.findById(order.id).get()
     assertThat(updatedOrder.fmsDeviceWearerId).isEqualTo("MockDeviceWearerId")
-    assertThat(updatedOrder.fmsDeviceWearerId).isEqualTo("MockMonitoringOrderId")
+    assertThat(updatedOrder.fmsMonitoringOrderId).isEqualTo("MockMonitoringOrderId")
   }
 
   fun createReadyToSubmitOrder(): Order {

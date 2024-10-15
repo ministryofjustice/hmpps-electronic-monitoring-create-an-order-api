@@ -31,7 +31,7 @@ class FmsClient(
       .retrieve()
       .onStatus({ t -> t.is5xxServerError }, {
         it.bodyToMono(FmsErrorResponse::class.java).flatMap { error ->
-          Mono.error(CreateSercoEntityException("Error creating Serco Device Wearer for order: $orderId with error: ${error?.error?.detail}"))
+          Mono.error(CreateSercoEntityException("Error creating FMS Device Wearer for order: $orderId with error: ${error?.error?.detail}"))
         }
       })
       .bodyToMono(FmsResponse::class.java)
@@ -49,7 +49,7 @@ class FmsClient(
       .retrieve()
       .onStatus({ t -> t.is5xxServerError }, {
         it.bodyToMono(FmsErrorResponse::class.java).flatMap { error ->
-          Mono.error(CreateSercoEntityException("Error creating Serco Motoring Order for order: $orderId with error: ${error?.error?.detail}"))
+          Mono.error(CreateSercoEntityException("Error creating FMS Monitoring Order for order: $orderId with error: ${error?.error?.detail}"))
         }
       })
       .bodyToMono(FmsResponse::class.java)
