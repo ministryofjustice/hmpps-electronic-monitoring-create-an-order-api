@@ -341,7 +341,7 @@ class OrderControllerTest : IntegrationTestBase() {
       contactNumber = "07401111111",
     )
     order.monitoringConditions = MonitoringConditions(orderId = order.id)
-    order.responsibleOfficer = ResponsibleOfficer(orderId = order.id)
+    order.responsibleOfficer = ResponsibleOfficer(orderId = order.id, notifyingOrganisation = "Mock Org")
     order.additionalDocuments = mutableListOf()
     repo.save(order)
     return order
