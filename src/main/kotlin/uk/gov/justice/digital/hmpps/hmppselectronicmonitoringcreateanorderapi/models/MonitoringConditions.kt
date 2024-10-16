@@ -1,16 +1,16 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models
 
+import jakarta.persistence.AttributeConverter
 import jakarta.persistence.CascadeType.ALL
 import jakarta.persistence.Column
+import jakarta.persistence.Convert
+import jakarta.persistence.Converter
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
 import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.OneToMany
 import jakarta.persistence.OneToOne
-import jakarta.persistence.PostLoad
-import jakarta.persistence.PrePersist
-import jakarta.persistence.PreUpdate
 import jakarta.persistence.Table
 import java.time.ZonedDateTime
 import java.util.*
@@ -34,8 +34,9 @@ data class MonitoringConditions(
   @Column(name = "ORDER_TYPE", nullable = true)
   var orderType: String? = null,
 
+  @Convert(converter = ArrayToStringConverter::class)
   @Column(name = "DEVICES_REQUIRED", nullable = true)
-  var devicesRequiredString: String? = null,
+  var devicesRequired: Array<String>? = null,
 
   @Column(name = "CASE_ID", nullable = true)
   var caseId: String? = null,
@@ -79,27 +80,20 @@ data class MonitoringConditions(
 
   @OneToOne(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "monitoringConditions", orphanRemoval = true)
   var alcoholMonitoringConditions: AlcoholMonitoringConditions? = null,
-
-  @Transient
-  var devicesRequired: Array<String>? = null,
 ) {
-
-//  @get:Column(name = "DEVICES_REQUIRED", nullable = true)
-//  @set:Column(name = "DEVICES_REQUIRED", nullable = true)
-//  var devicesRequiredString: String?
-//    get() = this.devicesRequired?.joinToString(",")
-//    set(value) {
-//      this.devicesRequired = value?.split(", ")?.toTypedArray()
-//    }
-
-  @PrePersist
-  @PreUpdate
-  fun devicesRequiredToString() {
-    devicesRequiredString = devicesRequired?.joinToString(", ")
-  }
-
-  @PostLoad
-  fun devicesRequiredToArray() {
-    this.devicesRequired = devicesRequiredString?.split(", ")?.toTypedArray()
+  @Converter
+  class ArrayToStringConverter : AttributeConverter<Array<String>, String> {
+    override fun convertToDatabaseColumn(attribute: Array<String>?): String? {
+      if (attribute.isNullOrEmpty()) {
+        return null
+      }
+      return attribute.joinToString(",")
+    }
+    override fun convertToEntityAttribute(dbData: String?): Array<String>? {
+      if (dbData.isNullOrEmpty()) {
+        return null
+      }
+      return dbData.split(",").toTypedArray() ?: emptyArray()
+    }
   }
 }
