@@ -11,7 +11,7 @@ import org.junit.jupiter.api.extension.BeforeAllCallback
 import org.junit.jupiter.api.extension.BeforeEachCallback
 import org.junit.jupiter.api.extension.ExtensionContext
 import org.springframework.http.HttpStatus
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.SercoResponse
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsResponse
 
 class SercoMockApiExtension : BeforeAllCallback, AfterAllCallback, BeforeEachCallback {
   companion object {
@@ -38,9 +38,23 @@ class SercoMockApiServer : WireMockServer(WIREMOCK_PORT) {
   }
 
   private val objectMapper: ObjectMapper = ObjectMapper()
-  fun stupCreateDeviceWearer(jsonBody: String, status: HttpStatus, result: SercoResponse) {
+  fun stupCreateDeviceWearer(jsonBody: String, status: HttpStatus, result: FmsResponse) {
     stubFor(
       post(urlPathTemplate("/device_wearer/createDW"))
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withBody(
+              objectMapper.writeValueAsString(result),
+            )
+            .withStatus(status.value()),
+        ),
+    )
+  }
+
+  fun stupMonitoringOrder(jsonBody: String, status: HttpStatus, result: FmsResponse) {
+    stubFor(
+      post(urlPathTemplate("/monitoring_order/createMO"))
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")

@@ -34,11 +34,11 @@ data class MonitoringConditions(
   @Column(name = "ORDER_TYPE", nullable = true)
   var orderType: String? = null,
 
-  @Column(name = "CASE_ID", nullable = true)
-  var caseId: String? = null,
-
   @Column(name = "DEVICES_REQUIRED", nullable = true)
   var devicesRequiredString: String? = null,
+
+  @Column(name = "CASE_ID", nullable = true)
+  var caseId: String? = null,
 
   @Column(name = "CONDITION_TYPE", nullable = true)
   var conditionType: String? = null,
@@ -83,6 +83,15 @@ data class MonitoringConditions(
   @Transient
   var devicesRequired: Array<String>? = null,
 ) {
+
+//  @get:Column(name = "DEVICES_REQUIRED", nullable = true)
+//  @set:Column(name = "DEVICES_REQUIRED", nullable = true)
+//  var devicesRequiredString: String?
+//    get() = this.devicesRequired?.joinToString(",")
+//    set(value) {
+//      this.devicesRequired = value?.split(", ")?.toTypedArray()
+//    }
+
   @PrePersist
   @PreUpdate
   fun devicesRequiredToString() {
@@ -91,6 +100,6 @@ data class MonitoringConditions(
 
   @PostLoad
   fun devicesRequiredToArray() {
-    devicesRequired = devicesRequiredString?.split(", ")?.toTypedArray()
+    this.devicesRequired = devicesRequiredString?.split(", ")?.toTypedArray()
   }
 }
