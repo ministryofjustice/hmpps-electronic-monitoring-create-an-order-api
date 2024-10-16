@@ -4,6 +4,7 @@ import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.Id
 import jakarta.persistence.Table
+import jakarta.validation.constraints.NotBlank
 import java.util.*
 
 @Entity
@@ -13,18 +14,21 @@ data class Address(
   @Column(name = "ID", nullable = false, unique = true)
   val id: UUID = UUID.randomUUID(),
 
-  @Column(name = "ADDRESS_LINE_1", nullable = true)
-  var addressLine1: String? = null,
+  @Column(name = "ADDRESS_LINE_1", nullable = false)
+  @field:NotBlank(message = "Address line 1 is required")
+  var addressLine1: String,
 
-  @Column(name = "ADDRESS_LINE_2", nullable = true)
-  var addressLine2: String? = null,
+  @Column(name = "ADDRESS_LINE_2", nullable = false)
+  @field:NotBlank(message = "Address line 2 is required")
+  var addressLine2: String,
 
-  @Column(name = "ADDRESS_LINE_3", nullable = true)
-  var addressLine3: String? = null,
+  @Column(name = "ADDRESS_LINE_3", nullable = false)
+  var addressLine3: String = "",
 
-  @Column(name = "ADDRESS_LINE_4", nullable = true)
-  var addressLine4: String? = null,
+  @Column(name = "ADDRESS_LINE_4", nullable = false)
+  var addressLine4: String = "",
 
-  @Column(name = "POSTCODE", nullable = true)
-  var postcode: String? = null,
+  @Column(name = "POSTCODE", nullable = false)
+  @field:NotBlank(message = "Postcode is required")
+  var postcode: String,
 )

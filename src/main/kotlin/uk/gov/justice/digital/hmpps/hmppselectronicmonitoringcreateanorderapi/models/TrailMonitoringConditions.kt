@@ -6,7 +6,7 @@ import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
-import java.time.LocalDate
+import java.time.ZonedDateTime
 import java.util.*
 
 @Entity
@@ -17,16 +17,16 @@ data class TrailMonitoringConditions(
   @Column(name = "ID", nullable = false, unique = true)
   val id: UUID = UUID.randomUUID(),
 
-  @Column(name = "MONITORING_CONDITION_ID", nullable = false, unique = true)
-  val monitoringConditionsId: UUID,
+  @Column(name = "ORDER_ID", nullable = false, unique = true)
+  val orderId: UUID,
 
   @Column(name = "START_DATE", nullable = true)
-  var startDate: LocalDate? = null,
+  var startDate: ZonedDateTime? = null,
 
   @Column(name = "END_DATE", nullable = true)
-  var endDate: LocalDate? = null,
+  var endDate: ZonedDateTime? = null,
 
   @OneToOne
-  @JoinColumn(name = "MONITORING_CONDITION_ID", updatable = false, insertable = false)
-  private val monitoringConditions: MonitoringConditions? = null,
+  @JoinColumn(name = "ORDER_ID", updatable = false, insertable = false)
+  private val order: Order? = null,
 )
