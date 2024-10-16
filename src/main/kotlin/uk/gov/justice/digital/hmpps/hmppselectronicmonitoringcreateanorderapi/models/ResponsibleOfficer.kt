@@ -6,6 +6,8 @@ import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
+import jakarta.validation.constraints.NotNull
+import jakarta.validation.constraints.Size
 import java.util.*
 
 @Entity
@@ -37,6 +39,11 @@ data class ResponsibleOfficer(
 
   @Column(name = "ORGANISATION_EMAIL", nullable = true)
   var organisationEmail: String? = null,
+
+  @field:NotNull(message = "Notifying organisation is required")
+  @field:Size(min = 1, message = "Notifying organisation is required")
+  @Column(name = "NOTIFYING_ORGANISATION", nullable = true)
+  var notifyingOrganisation: String? = null,
 
   @OneToOne
   @JoinColumn(name = "ORDER_ID", updatable = false, insertable = false)

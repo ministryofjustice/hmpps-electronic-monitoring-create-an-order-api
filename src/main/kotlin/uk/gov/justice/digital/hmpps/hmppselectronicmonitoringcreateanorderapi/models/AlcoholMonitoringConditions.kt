@@ -2,10 +2,13 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.m
 
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
+import jakarta.persistence.EnumType
+import jakarta.persistence.Enumerated
 import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
 import java.time.LocalDate
 import java.util.*
 
@@ -19,8 +22,9 @@ data class AlcoholMonitoringConditions(
   @Column(name = "MONITORING_CONDITION_ID", nullable = false, unique = true)
   val monitoringConditionsId: UUID,
 
+  @Enumerated(EnumType.STRING)
   @Column(name = "MONITORING_TYPE", nullable = true)
-  var monitoringType: String? = null,
+  var monitoringType: AlcoholMonitoringType? = null,
 
   @Column(name = "START_DATE", nullable = true)
   var startDate: LocalDate? = null,
@@ -28,11 +32,8 @@ data class AlcoholMonitoringConditions(
   @Column(name = "END_DATE", nullable = true)
   var endDate: LocalDate? = null,
 
-  @Column(name = "INSTALLTION_ADDRESS", nullable = true)
-  var installationAddress: UUID? = null,
-
-  @Column(name = "INSTALLTION_PLACE", nullable = true)
-  var installationPlace: String? = null,
+  @Column(name = "INSTALLTION_LOCATION", nullable = true)
+  var installationLocation: String? = null,
 
   @OneToOne
   @JoinColumn(name = "MONITORING_CONDITION_ID", updatable = false, insertable = false)

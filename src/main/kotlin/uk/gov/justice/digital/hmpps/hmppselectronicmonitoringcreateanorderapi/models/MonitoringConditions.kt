@@ -9,6 +9,7 @@ import jakarta.persistence.JoinColumn
 import jakarta.persistence.OneToMany
 import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
+import java.time.ZonedDateTime
 import java.util.*
 
 @Entity
@@ -22,8 +23,17 @@ data class MonitoringConditions(
   @Column(name = "ORDER_ID", nullable = false, unique = true)
   val orderId: UUID,
 
+  @Column(name = "START_DATE", nullable = true)
+  var startDate: ZonedDateTime? = null,
+
+  @Column(name = "END_DATE", nullable = true)
+  var endDate: ZonedDateTime? = null,
+
   @Column(name = "ORDER_TYPE", nullable = true)
   var orderType: String? = null,
+
+  @Column(name = "CASE_ID", nullable = true)
+  var caseId: String? = null,
 
   @Column(name = "MONITORING_REQUIRED", nullable = true)
   var monitoringRequired: String? = null,

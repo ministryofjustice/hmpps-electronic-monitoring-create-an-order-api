@@ -9,7 +9,6 @@ import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
 import jakarta.validation.constraints.AssertTrue
-import jakarta.validation.constraints.Future
 import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Size
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.EnforcementZoneType
@@ -31,12 +30,9 @@ data class EnforcementZoneConditions(
   @field:NotNull(message = "Enforcement zone type is required")
   var zoneType: EnforcementZoneType? = null,
 
-  @field:NotNull(message = "Enforcement zone start date is required")
-  @field:Future(message = "Enforcement zone start date must be in the future")
-  @Column(name = "START_DATE", nullable = false)
+  @Column(name = "START_DATE", nullable = true)
   var startDate: ZonedDateTime? = null,
 
-  @field:NotNull(message = "Enforcement zone end date is required")
   @Column(name = "END_DATE", nullable = true)
   var endDate: ZonedDateTime? = null,
 
