@@ -40,6 +40,9 @@ data class MonitoringConditions(
   @Column(name = "DEVICES_REQUIRED", nullable = true)
   var devicesRequiredString: String? = null,
 
+  @Column(name = "CONDITION_TYPE", nullable = true)
+  var conditionType: String? = null,
+
   @Column(name = "ACQUISITIVE_CRIME", nullable = true)
   var acquisitiveCrime: Boolean? = null,
 
