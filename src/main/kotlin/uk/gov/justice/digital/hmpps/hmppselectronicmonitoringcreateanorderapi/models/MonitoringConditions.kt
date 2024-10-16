@@ -37,9 +37,6 @@ data class MonitoringConditions(
   @Column(name = "CASE_ID", nullable = true)
   var caseId: String? = null,
 
-  @Column(name = "MONITORING_REQUIRED", nullable = true)
-  var monitoringRequired: String? = null,
-
   @Column(name = "DEVICES_REQUIRED", nullable = true)
   var devicesRequiredString: String? = null,
 
