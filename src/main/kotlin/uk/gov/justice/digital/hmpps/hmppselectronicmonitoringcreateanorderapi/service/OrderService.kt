@@ -25,7 +25,7 @@ class OrderService(
       status = OrderStatus.IN_PROGRESS,
     )
     order.deviceWearer = DeviceWearer(orderId = order.id)
-    order.deviceWearerAddresses = mutableListOf()
+    order.addresses = mutableListOf()
     order.deviceWearerContactDetails = DeviceWearerContactDetails(orderId = order.id)
     order.monitoringConditions = MonitoringConditions(orderId = order.id)
     order.additionalDocuments = mutableListOf()

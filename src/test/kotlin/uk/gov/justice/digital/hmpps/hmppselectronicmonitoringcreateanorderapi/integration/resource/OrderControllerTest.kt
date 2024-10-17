@@ -14,7 +14,6 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewReleaseDateConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewTimeTable
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearerAddress
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearerContactDetails
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.EnforcementZoneConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationAndRisk
@@ -673,28 +672,24 @@ class OrderControllerTest : IntegrationTestBase() {
       fullName = "Mark Smith",
       contactNumber = "07401111111",
     )
-    order.deviceWearerAddresses = mutableListOf(
-      DeviceWearerAddress(
+    order.addresses = mutableListOf(
+      Address(
         orderId = order.id,
-        address = Address(
-          addressLine1 = "20 Somewhere Street",
-          addressLine2 = "Nowhere City",
-          addressLine3 = "Random County",
-          addressLine4 = "United Kingdom",
-          postcode = "SW11 1NC",
-        ),
-        addressType = DeviceWearerAddressType.PRIMARY,
+        addressLine1 = "20 Somewhere Street",
+        addressLine2 = "Nowhere City",
+        addressLine3 = "Random County",
+        addressLine4 = "United Kingdom",
+        postcode = "SW11 1NC",
+        addressType = AddressType.PRIMARY,
       ),
-      DeviceWearerAddress(
+      Address(
         orderId = order.id,
-        address = Address(
-          addressLine1 = "22 Somewhere Street",
-          addressLine2 = "Nowhere City",
-          addressLine3 = "Random County",
-          addressLine4 = "United Kingdom",
-          postcode = "SW11 1NC",
-        ),
-        addressType = DeviceWearerAddressType.PRIMARY,
+        addressLine1 = "22 Somewhere Street",
+        addressLine2 = "Nowhere City",
+        addressLine3 = "Random County",
+        addressLine4 = "United Kingdom",
+        postcode = "SW11 1NC",
+        addressType = AddressType.SECONDARY,
       ),
     )
     order.installationAndRisk = InstallationAndRisk(
