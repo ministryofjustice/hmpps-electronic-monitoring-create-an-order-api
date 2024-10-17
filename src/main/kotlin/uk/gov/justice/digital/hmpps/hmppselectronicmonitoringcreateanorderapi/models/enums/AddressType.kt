@@ -1,9 +1,12 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums
 
-enum class DeviceWearerAddressType {
+import java.util.*
+
+enum class AddressType {
   PRIMARY,
   SECONDARY,
   TERTIARY,
-  NO_FIXED_ABODE,
+  RESPONSIBLE_ADULT,
   INSTALLATION,
+  NOTIFYING_ORGANISATION,
 }

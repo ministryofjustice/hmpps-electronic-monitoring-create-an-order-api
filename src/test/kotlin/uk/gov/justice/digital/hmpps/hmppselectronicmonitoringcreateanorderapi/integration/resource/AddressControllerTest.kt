@@ -9,18 +9,18 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearerAddress
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DeviceWearerAddressType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Address
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DeviceWearerAddressUsage
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.DeviceWearerAddressRepository
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.AddressRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidationError
 import java.util.*
 
-class DeviceWearerAddressControllerTest : IntegrationTestBase() {
+class AddressControllerTest : IntegrationTestBase() {
   @Autowired
-  lateinit var deviceWearerAddressRepo: DeviceWearerAddressRepository
+  lateinit var addressRepo: AddressRepository
 
   @Autowired
   lateinit var orderRepo: OrderRepository
@@ -33,7 +33,7 @@ class DeviceWearerAddressControllerTest : IntegrationTestBase() {
 
   @BeforeEach
   fun setup() {
-    deviceWearerAddressRepo.deleteAll()
+    addressRepo.deleteAll()
     orderRepo.deleteAll()
   }
 
@@ -145,52 +145,17 @@ class DeviceWearerAddressControllerTest : IntegrationTestBase() {
       .exchange()
       .expectStatus()
       .isOk
-      .expectBody(DeviceWearerAddress::class.java)
+      .expectBody(Address::class.java)
       .returnResult()
 
     val address = result.responseBody!!
 
-    Assertions.assertThat(address.addressType).isEqualTo(DeviceWearerAddressType.valueOf(addressType))
-    Assertions.assertThat(address.address?.addressLine1).isEqualTo(mockAddressLine1)
-    Assertions.assertThat(address.address?.addressLine2).isEqualTo(mockAddressLine2)
-    Assertions.assertThat(address.address?.addressLine3).isEqualTo(mockAddressLine3)
-    Assertions.assertThat(address.address?.addressLine4).isEqualTo(mockAddressLine4)
-    Assertions.assertThat(address.address?.postcode).isEqualTo(mockPostcode)
-    Assertions.assertThat(address.addressUsage).isEqualTo(DeviceWearerAddressUsage.NA)
-  }
-
-  @Test
-  fun `Address details can be updated for NO_FIXED_ABODE address type`() {
-    val order = createOrder()
-
-    val result = webTestClient.put()
-      .uri("/api/orders/${order.id}/address")
-      .contentType(MediaType.APPLICATION_JSON)
-      .body(
-        BodyInserters.fromValue(
-          """
-            {
-              "addressType": "NO_FIXED_ABODE",
-              "addressLine1": "$mockAddressLine1",
-              "addressLine2": "$mockAddressLine2",
-              "addressLine3": "$mockAddressLine3",
-              "addressLine4": "$mockAddressLine4",
-              "postcode": "$mockPostcode"
-            }
-          """.trimIndent(),
-        ),
-      )
-      .headers(setAuthorisation("AUTH_ADM"))
-      .exchange()
-      .expectStatus()
-      .isOk
-      .expectBody(DeviceWearerAddress::class.java)
-      .returnResult()
-
-    val address = result.responseBody!!
-
-    Assertions.assertThat(address.addressType).isEqualTo(DeviceWearerAddressType.NO_FIXED_ABODE)
-    Assertions.assertThat(address.address).isEqualTo(null)
+    Assertions.assertThat(address.addressType).isEqualTo(AddressType.valueOf(addressType))
+    Assertions.assertThat(address.addressLine1).isEqualTo(mockAddressLine1)
+    Assertions.assertThat(address.addressLine2).isEqualTo(mockAddressLine2)
+    Assertions.assertThat(address.addressLine3).isEqualTo(mockAddressLine3)
+    Assertions.assertThat(address.addressLine4).isEqualTo(mockAddressLine4)
+    Assertions.assertThat(address.postcode).isEqualTo(mockPostcode)
     Assertions.assertThat(address.addressUsage).isEqualTo(DeviceWearerAddressUsage.NA)
   }
 

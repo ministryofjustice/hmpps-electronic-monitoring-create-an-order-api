@@ -2,7 +2,7 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.m
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DeviceWearerAddressType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import java.time.format.DateTimeFormatter
 
 data class DeviceWearer(
@@ -130,7 +130,7 @@ data class DeviceWearer(
       if (!order.deviceWearer?.adultAtTimeOfInstallation!!) {
         adultChild = "child"
       }
-      val primaryAddress = order.deviceWearerAddresses.find { address -> address.addressType == DeviceWearerAddressType.PRIMARY }!!
+      val primaryAddress = order.addresses.find { address -> address.addressType == AddressType.PRIMARY }!!
       val disabilities = order.deviceWearer?.disabilities?.split(',')?.map { disability -> Disability(disability) }?.toList()
       val deviceWearer = DeviceWearer(
         firstName = order.deviceWearer?.firstName,
@@ -141,11 +141,11 @@ data class DeviceWearer(
         sex = order.deviceWearer?.sex,
         genderIdentity = order.deviceWearer?.gender,
         disability = disabilities,
-        address1 = primaryAddress.address?.addressLine1,
-        address2 = primaryAddress.address?.addressLine2,
-        address3 = primaryAddress.address?.addressLine3,
-        address4 = primaryAddress.address?.addressLine4,
-        addressPostCode = primaryAddress.address?.postcode,
+        address1 = primaryAddress.addressLine1,
+        address2 = primaryAddress.addressLine2,
+        address3 = primaryAddress.addressLine3,
+        address4 = primaryAddress.addressLine4,
+        addressPostCode = primaryAddress.postcode,
         phoneNumber = order.deviceWearerContactDetails?.contactNumber,
         riskSeriousHarm = order.installationAndRisk?.riskOfSeriousHarm,
         riskSelfHarm = order.installationAndRisk?.riskOfSelfHarm,
@@ -156,14 +156,14 @@ data class DeviceWearer(
         parent = "${order.deviceWearerResponsibleAdult?.fullName}",
         parentPhoneNumber = order.deviceWearerResponsibleAdult?.contactNumber,
       )
-      order.deviceWearerAddresses.find { address -> address.addressType == DeviceWearerAddressType.SECONDARY }.let { address ->
+      order.addresses.find { address -> address.addressType == AddressType.SECONDARY }.let { address ->
         {
           if (address != null) {
-            deviceWearer.secondaryAddress1 = address.address?.addressLine1
-            deviceWearer.secondaryAddress2 = address.address?.addressLine2
-            deviceWearer.secondaryAddress3 = address.address?.addressLine3
-            deviceWearer.secondaryAddress4 = address.address?.addressLine4
-            deviceWearer.secondaryAddressPostCode = address.address?.postcode
+            deviceWearer.secondaryAddress1 = address.addressLine1
+            deviceWearer.secondaryAddress2 = address.addressLine2
+            deviceWearer.secondaryAddress3 = address.addressLine3
+            deviceWearer.secondaryAddress4 = address.addressLine4
+            deviceWearer.secondaryAddressPostCode = address.postcode
           }
         }
       }

@@ -15,9 +15,8 @@ import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.SercoClient
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Address
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearerAddress
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DeviceWearerAddressType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.SercoResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.SercoResult
@@ -65,17 +64,15 @@ class OrderServiceTest {
       orderId = mockOrder.id,
       adultAtTimeOfInstallation = true, dateOfBirth = ZonedDateTime.of(1990, 1, 1, 1, 1, 1, 1, ZoneId.systemDefault()),
     )
-    mockOrder.deviceWearerAddresses = mutableListOf(
-      DeviceWearerAddress(
+    mockOrder.addresses = mutableListOf(
+      Address(
         orderId = mockOrder.id,
-        address = Address(
-          addressLine1 = "20 Somewhere Street",
-          addressLine2 = "Nowhere City",
-          addressLine3 = "Random County",
-          addressLine4 = "United Kingdom",
-          postcode = "SW11 1NC",
-        ),
-        addressType = DeviceWearerAddressType.PRIMARY,
+        addressLine1 = "20 Somewhere Street",
+        addressLine2 = "Nowhere City",
+        addressLine3 = "Random County",
+        addressLine4 = "United Kingdom",
+        postcode = "SW11 1NC",
+        addressType = AddressType.PRIMARY,
       ),
     )
 
