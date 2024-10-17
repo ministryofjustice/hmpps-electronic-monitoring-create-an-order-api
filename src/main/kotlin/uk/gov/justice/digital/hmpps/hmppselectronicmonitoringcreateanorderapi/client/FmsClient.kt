@@ -10,39 +10,49 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import reactor.core.publisher.Mono
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.CreateSercoEntityException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.DeviceWearer
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.SercoResponse
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsErrorResponse
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsResponse
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.MonitoringOrder
 import java.util.UUID
 
 @Service
-class SercoClient(
+class FmsClient(
   @Value("\${services.serco.url}") url: String,
-  private val sercoAuthClient: SercoAuthClient,
+  private val fmsAuthClient: FmsAuthClient,
   private val objectMapper: ObjectMapper,
 ) {
   private val webClient: WebClient = WebClient.builder().baseUrl(url).build()
-  fun createDeviceWearer(deviceWearer: DeviceWearer, orderId: UUID): SercoResponse {
-    val token = sercoAuthClient.getClientToken()
+  fun createDeviceWearer(deviceWearer: DeviceWearer, orderId: UUID): FmsResponse {
+    val token = fmsAuthClient.getClientToken()
     val result = webClient.post().uri("/device_wearer/createDW")
       .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
       .contentType(MediaType.APPLICATION_JSON)
       .bodyValue(deviceWearer)
       .retrieve()
-      .onStatus({ t -> t.is5xxServerError }, { Mono.error(CreateSercoEntityException("Error creating Serco Device Wearer for order: $orderId")) })
-      .bodyToMono(SercoResponse::class.java)
+      .onStatus({ t -> t.is5xxServerError }, {
+        it.bodyToMono(FmsErrorResponse::class.java).flatMap { error ->
+          Mono.error(CreateSercoEntityException("Error creating FMS Device Wearer for order: $orderId with error: ${error?.error?.detail}"))
+        }
+      })
+      .bodyToMono(FmsResponse::class.java)
       .onErrorResume(WebClientResponseException::class.java) { Mono.empty() }
       .block()!!
     return result
   }
 
-  fun createMonitoringOrder(deviceWearer: DeviceWearer, orderId: UUID): SercoResponse {
-    val token = sercoAuthClient.getClientToken()
+  fun createMonitoringOrder(order: MonitoringOrder, orderId: UUID): FmsResponse {
+    val token = fmsAuthClient.getClientToken()
     val result = webClient.post().uri("/monitoring_order/createMO")
       .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
       .contentType(MediaType.APPLICATION_JSON)
-      .bodyValue(deviceWearer)
+      .bodyValue(order)
       .retrieve()
-      .onStatus({ t -> t.is5xxServerError }, { Mono.error(CreateSercoEntityException("Error creating Serco Motoring order for order: $orderId")) })
-      .bodyToMono(SercoResponse::class.java)
+      .onStatus({ t -> t.is5xxServerError }, {
+        it.bodyToMono(FmsErrorResponse::class.java).flatMap { error ->
+          Mono.error(CreateSercoEntityException("Error creating FMS Monitoring Order for order: $orderId with error: ${error?.error?.detail}"))
+        }
+      })
+      .bodyToMono(FmsResponse::class.java)
       .onErrorResume(WebClientResponseException::class.java) { Mono.empty() }
       .block()!!
     return result
