@@ -11,16 +11,16 @@ import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearerAddress
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DeviceWearerAddressType
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.DeviceWearerAddressService
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Address
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.AddressService
 import java.util.*
 
 @RestController
 @PreAuthorize("hasRole('ROLE_EM_CEMO__CREATE_ORDER')")
 @RequestMapping("/api/")
 class DeviceWearerAddressController(
-  @Autowired val deviceWearerAddressService: DeviceWearerAddressService,
+  @Autowired val addressService: AddressService,
 ) {
 
   @PutMapping("/orders/{orderId}/address")
@@ -28,9 +28,9 @@ class DeviceWearerAddressController(
     @PathVariable orderId: UUID,
     @RequestBody @Valid deviceWearerAddressUpdateRecord: UpdateDeviceWearerAddressDto,
     authentication: Authentication,
-  ): ResponseEntity<DeviceWearerAddress> {
+  ): ResponseEntity<Address> {
     val username = authentication.name
-    val address = deviceWearerAddressService.createOrUpdateAddress(
+    val address = addressService.updateAddress(
       orderId,
       username,
       deviceWearerAddressUpdateRecord,
@@ -41,8 +41,7 @@ class DeviceWearerAddressController(
 }
 
 data class UpdateDeviceWearerAddressDto(
-  val addressType: DeviceWearerAddressType,
-  val installationAddress: Boolean = false,
+  val addressType: AddressType,
   val addressLine1: String = "",
   val addressLine2: String = "",
   val addressLine3: String = "",

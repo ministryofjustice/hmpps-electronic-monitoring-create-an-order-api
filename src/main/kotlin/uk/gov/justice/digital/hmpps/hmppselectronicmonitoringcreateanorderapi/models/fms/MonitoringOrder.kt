@@ -4,8 +4,8 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewTimeTable
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DeviceWearerAddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.EnforcementZoneType
 import java.time.DayOfWeek
 import java.time.format.DateTimeFormatter
@@ -256,7 +256,7 @@ data class MonitoringOrder(
       val schedules = mutableListOf<CurfewSchedule>()
       val primaryAddressTimeTable = curfew.curfewTimeTable.filter { it.curfewAddress?.uppercase() == "PRIMARY_ADDRESS" }
       schedules.add(CurfewSchedule(location = "primary", "", primaryAddressTimeTable.map { Schedule.fromCurfewTimeTable(it) }.toMutableList()))
-      val secondaryAddress = order.deviceWearerAddresses.firstOrNull { it.addressType === DeviceWearerAddressType.SECONDARY }
+      val secondaryAddress = order.addresses.firstOrNull { it.addressType === AddressType.SECONDARY }
       if (secondaryAddress != null) {
         val secondaryTimeTable = curfew.curfewTimeTable.filter { it.curfewAddress?.uppercase() == "SECONDARY_ADDRESS" }
         schedules.add(CurfewSchedule(location = "secondary", "", secondaryTimeTable.map { Schedule.fromCurfewTimeTable(it) }.toMutableList()))
