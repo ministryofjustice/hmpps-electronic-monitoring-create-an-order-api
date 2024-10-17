@@ -1,17 +1,18 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models
 
+import jakarta.persistence.AttributeConverter
 import jakarta.persistence.CascadeType.ALL
 import jakarta.persistence.Column
+import jakarta.persistence.Convert
+import jakarta.persistence.Converter
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
 import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.OneToMany
 import jakarta.persistence.OneToOne
-import jakarta.persistence.PostLoad
-import jakarta.persistence.PrePersist
-import jakarta.persistence.PreUpdate
 import jakarta.persistence.Table
+import java.time.ZonedDateTime
 import java.util.*
 
 @Entity
@@ -24,11 +25,24 @@ data class MonitoringConditions(
   @Column(name = "ORDER_ID", nullable = false, unique = true)
   val orderId: UUID,
 
+  @Column(name = "START_DATE", nullable = true)
+  var startDate: ZonedDateTime? = null,
+
+  @Column(name = "END_DATE", nullable = true)
+  var endDate: ZonedDateTime? = null,
+
   @Column(name = "ORDER_TYPE", nullable = true)
   var orderType: String? = null,
 
+  @Convert(converter = ArrayToStringConverter::class)
   @Column(name = "DEVICES_REQUIRED", nullable = true)
-  var devicesRequiredString: String? = null,
+  var devicesRequired: Array<String>? = null,
+
+  @Column(name = "CASE_ID", nullable = true)
+  var caseId: String? = null,
+
+  @Column(name = "CONDITION_TYPE", nullable = true)
+  var conditionType: String? = null,
 
   @Column(name = "ACQUISITIVE_CRIME", nullable = true)
   var acquisitiveCrime: Boolean? = null,
@@ -66,18 +80,20 @@ data class MonitoringConditions(
 
   @OneToOne(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "monitoringConditions", orphanRemoval = true)
   var alcoholMonitoringConditions: AlcoholMonitoringConditions? = null,
-
-  @Transient
-  var devicesRequired: Array<String>? = null,
 ) {
-  @PrePersist
-  @PreUpdate
-  fun devicesRequiredToString() {
-    devicesRequiredString = devicesRequired?.joinToString(", ")
-  }
-
-  @PostLoad
-  fun devicesRequiredToArray() {
-    devicesRequired = devicesRequiredString?.split(", ")?.toTypedArray()
+  @Converter
+  class ArrayToStringConverter : AttributeConverter<Array<String>, String> {
+    override fun convertToDatabaseColumn(attribute: Array<String>?): String? {
+      if (attribute.isNullOrEmpty()) {
+        return null
+      }
+      return attribute.joinToString(",")
+    }
+    override fun convertToEntityAttribute(dbData: String?): Array<String>? {
+      if (dbData.isNullOrEmpty()) {
+        return null
+      }
+      return dbData.split(",").toTypedArray() ?: emptyArray()
+    }
   }
 }

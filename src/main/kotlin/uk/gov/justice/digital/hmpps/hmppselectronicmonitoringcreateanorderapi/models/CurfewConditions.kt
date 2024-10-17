@@ -9,7 +9,7 @@ import jakarta.persistence.JoinColumn
 import jakarta.persistence.OneToMany
 import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
-import java.time.LocalDate
+import java.time.ZonedDateTime
 import java.util.*
 
 @Entity
@@ -23,10 +23,10 @@ data class CurfewConditions(
   val monitoringConditionsId: UUID,
 
   @Column(name = "START_DATE", nullable = true)
-  var startDate: LocalDate? = null,
+  var startDate: ZonedDateTime? = null,
 
   @Column(name = "END_DATE", nullable = true)
-  var endDate: LocalDate? = null,
+  var endDate: ZonedDateTime? = null,
 
   @Column(name = "CURFEW_ADDRESS", nullable = true)
   var curfewAddress: UUID? = null,

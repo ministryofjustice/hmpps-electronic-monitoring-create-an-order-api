@@ -2,12 +2,13 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.s
 
 import jakarta.persistence.EntityNotFoundException
 import org.springframework.stereotype.Service
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.SercoClient
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.FmsClient
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearerContactDetails
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.MonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.MonitoringOrder
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 import java.util.UUID
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.DeviceWearer as FmsDeviceWearer
@@ -15,7 +16,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 @Service
 class OrderService(
   val repo: OrderRepository,
-  val sercoClient: SercoClient,
+  val fmsClient: FmsClient,
 ) {
 
   fun createOrder(username: String): Order {
@@ -35,12 +36,15 @@ class OrderService(
 
   fun submitOrder(id: UUID, username: String) {
     val order = getOrder(username, id)!!
-
+    // create FMS device wearer
     val fmsDeviceWearer = FmsDeviceWearer.fromCemoOrder(order)
-    val createDeviceWearerResult = sercoClient.createDeviceWearer(fmsDeviceWearer, orderId = id)
-    // TODO: Create Serco Order
-    // TODO: Upload attachments
+    val createDeviceWearerResult = fmsClient.createDeviceWearer(fmsDeviceWearer, orderId = id)
     order.fmsDeviceWearerId = createDeviceWearerResult.result.first().id
+    // create FMS monitoring order
+    val fmsOrder = MonitoringOrder.fromOrder(order)
+    val createOrderResult = fmsClient.createMonitoringOrder(fmsOrder, id)
+    order.fmsMonitoringOrderId = createOrderResult.result.first().id
+    // TODO: Upload attachments
 
     repo.save(order)
   }

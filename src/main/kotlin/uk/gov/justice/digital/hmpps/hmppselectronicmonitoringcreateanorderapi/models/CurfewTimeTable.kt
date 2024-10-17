@@ -32,7 +32,7 @@ data class CurfewTimeTable(
   var endTime: String? = null,
 
   @Column(name = "CURFEW_ADDRESS", nullable = true)
-  var curfewAddress: UUID? = null,
+  var curfewAddress: String? = null,
 
   @ManyToOne(optional = true)
   @JoinColumn(name = "CURFEW_CONDITION_ID", updatable = false, insertable = false)

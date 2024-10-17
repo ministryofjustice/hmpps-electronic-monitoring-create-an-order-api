@@ -12,7 +12,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.ex
 import java.util.*
 
 @Component
-class SercoAuthClient(
+class FmsAuthClient(
   @Value("\${services.serco.auth-url}") authUrl: String,
   @Value("\${services.serco.client-id}") clientId: String,
   @Value("\${services.serco.client-secret}") clientSecret: String,

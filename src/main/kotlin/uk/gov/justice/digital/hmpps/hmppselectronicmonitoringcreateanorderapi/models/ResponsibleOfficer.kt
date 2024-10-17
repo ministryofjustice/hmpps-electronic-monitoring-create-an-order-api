@@ -38,6 +38,9 @@ data class ResponsibleOfficer(
   @Column(name = "ORGANISATION_EMAIL", nullable = true)
   var organisationEmail: String? = null,
 
+  @Column(name = "NOTIFYING_ORGANISATION", nullable = true)
+  var notifyingOrganisation: String? = null,
+
   @OneToOne
   @JoinColumn(name = "ORDER_ID", updatable = false, insertable = false)
   private val order: Order? = null,
