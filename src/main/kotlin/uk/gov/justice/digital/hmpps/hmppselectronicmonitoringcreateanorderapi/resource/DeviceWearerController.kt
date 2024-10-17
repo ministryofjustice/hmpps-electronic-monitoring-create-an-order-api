@@ -41,6 +41,22 @@ class DeviceWearerController(
 
     return ResponseEntity(deviceWearer, HttpStatus.OK)
   }
+
+  @PutMapping("/orders/{orderId}/device-wearer/no-fixed-abode")
+  fun updateNoFixedAbode(
+    @PathVariable orderId: UUID,
+    @RequestBody @Valid updateRecord: UpdateNoFixedAbodeDto,
+    authentication: Authentication,
+  ): ResponseEntity<DeviceWearer> {
+    val username = authentication.name
+    val deviceWearer = deviceWearerService.updateNoFixedAbode(
+      orderId,
+      username,
+      updateRecord,
+    )
+
+    return ResponseEntity(deviceWearer, HttpStatus.OK)
+  }
 }
 
 data class UpdateDeviceWearerDto(
@@ -74,4 +90,9 @@ data class UpdateDeviceWearerDto(
   val dateOfBirth: ZonedDateTime? = null,
 
   val disabilities: String? = null,
+)
+
+data class UpdateNoFixedAbodeDto(
+  @field:NotNull(message = "You must indicate whether the device wearer has a fixed abode")
+  var noFixedAbode: Boolean? = null,
 )

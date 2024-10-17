@@ -6,22 +6,13 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.DeviceWearerRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.UpdateDeviceWearerDto
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.UpdateNoFixedAbodeDto
 import java.util.*
 
 @Service
 class DeviceWearerService(
   val repo: DeviceWearerRepository,
 ) {
-
-  fun getDeviceWearer(orderId: UUID, username: String): DeviceWearer {
-    return repo.findByOrderIdAndOrderUsername(
-      orderId,
-      username,
-    ).orElseThrow {
-      EntityNotFoundException("Device Wearer for $orderId not found")
-    }
-  }
-
   fun updateDeviceWearer(
     orderId: UUID,
     username: String,
@@ -32,7 +23,7 @@ class DeviceWearerService(
       username,
       OrderStatus.IN_PROGRESS,
     ).orElseThrow {
-      EntityNotFoundException("Device Wearer for $orderId not found")
+      EntityNotFoundException("An editable device wearer for $orderId could not be found")
     }
 
     with(deviceWearerUpdateRecord) {
@@ -48,6 +39,26 @@ class DeviceWearerService(
       deviceWearer.gender = gender
       deviceWearer.dateOfBirth = dateOfBirth
       deviceWearer.disabilities = disabilities
+    }
+
+    return repo.save(deviceWearer)
+  }
+
+  fun updateNoFixedAbode(
+    orderId: UUID,
+    username: String,
+    updateRecord: UpdateNoFixedAbodeDto,
+  ): DeviceWearer {
+    val deviceWearer = repo.findByOrderIdAndOrderUsernameAndOrderStatus(
+      orderId,
+      username,
+      OrderStatus.IN_PROGRESS,
+    ).orElseThrow {
+      EntityNotFoundException("An editable device wearer for $orderId could not be found")
+    }
+
+    with(updateRecord) {
+      deviceWearer.noFixedAbode = noFixedAbode
     }
 
     return repo.save(deviceWearer)
