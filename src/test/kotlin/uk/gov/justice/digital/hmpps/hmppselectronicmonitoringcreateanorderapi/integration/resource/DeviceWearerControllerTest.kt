@@ -3,12 +3,16 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.i
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.ValueSource
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.DeviceWearerRepository
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidationError
 import java.time.LocalDate
 import java.time.LocalTime
@@ -19,6 +23,9 @@ import java.util.*
 class DeviceWearerControllerTest : IntegrationTestBase() {
   @Autowired
   lateinit var deviceWearerRepo: DeviceWearerRepository
+
+  @Autowired
+  lateinit var orderRepo: OrderRepository
 
   private val mockNomisId: String = "mockNomisId"
   private val mockPncId: String = "mockPncId"
@@ -39,6 +46,7 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
   @BeforeEach
   fun setup() {
     deviceWearerRepo.deleteAll()
+    orderRepo.deleteAll()
   }
 
   @Test
@@ -227,6 +235,155 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
     Assertions.assertThat(result.responseBody).hasSize(1)
     Assertions.assertThat(result.responseBody!!).contains(
       ValidationError("dateOfBirth", "Date of birth must be in the past"),
+    )
+  }
+
+  @Test
+  fun `NoFixedAbode cannot be updated if the order doesn't exist`() {
+    webTestClient.put()
+      .uri("/api/orders/${UUID.randomUUID()}/device-wearer/no-fixed-abode")
+      .contentType(MediaType.APPLICATION_JSON)
+      .body(
+        BodyInserters.fromValue(
+          """
+            {
+              "noFixedAbode": true
+            }
+          """.trimIndent(),
+        ),
+      )
+      .headers(setAuthorisation("AUTH_ADM"))
+      .exchange()
+      .expectStatus()
+      .isNotFound()
+  }
+
+  @Test
+  fun `NoFixedAbode cannot be updated if the order is submitted`() {
+    val order = createOrder()
+
+    order.status = OrderStatus.SUBMITTED
+    orderRepo.save(order)
+
+    webTestClient.put()
+      .uri("/api/orders/${order.id}/device-wearer/no-fixed-abode")
+      .contentType(MediaType.APPLICATION_JSON)
+      .body(
+        BodyInserters.fromValue(
+          """
+            {
+              "noFixedAbode": true
+            }
+          """.trimIndent(),
+        ),
+      )
+      .headers(setAuthorisation("AUTH_ADM"))
+      .exchange()
+      .expectStatus()
+      .isNotFound()
+  }
+
+  @Test
+  fun `NoFixedAbode cannot be updated if the order belongs to another user`() {
+    val order = createOrder()
+    webTestClient.put()
+      .uri("/api/orders/${order.id}/device-wearer/no-fixed-abode")
+      .contentType(MediaType.APPLICATION_JSON)
+      .body(
+        BodyInserters.fromValue(
+          """
+            {
+              "noFixedAbode": true
+            }
+          """.trimIndent(),
+        ),
+      )
+      .headers(setAuthorisation("AUTH_ADM_2"))
+      .exchange()
+      .expectStatus()
+      .isNotFound()
+  }
+
+  @ParameterizedTest(name = "NoFixedAbode can be updated with valid string - {0}")
+  @ValueSource(strings = ["true", "false"])
+  fun `NoFixedAbode can be updated with string values`(value: String) {
+    val order = createOrder()
+    val result = webTestClient.put()
+      .uri("/api/orders/${order.id}/device-wearer/no-fixed-abode")
+      .contentType(MediaType.APPLICATION_JSON)
+      .body(
+        BodyInserters.fromValue(
+          """
+            {
+              "noFixedAbode": "$value"
+            }
+          """.trimIndent(),
+        ),
+      )
+      .headers(setAuthorisation("AUTH_ADM"))
+      .exchange()
+      .expectStatus()
+      .isOk
+      .expectBody(DeviceWearer::class.java)
+      .returnResult()
+
+    val deviceWearer = result.responseBody!!
+    Assertions.assertThat(deviceWearer.noFixedAbode).isEqualTo(value.toBoolean())
+  }
+
+  @ParameterizedTest(name = "NoFixedAbode can be updated with valid boolean - {0}")
+  @ValueSource(booleans = [true, false])
+  fun `NoFixedAbode can be updated with boolean values`(value: Boolean) {
+    val order = createOrder()
+    val result = webTestClient.put()
+      .uri("/api/orders/${order.id}/device-wearer/no-fixed-abode")
+      .contentType(MediaType.APPLICATION_JSON)
+      .body(
+        BodyInserters.fromValue(
+          """
+            {
+              "noFixedAbode": $value
+            }
+          """.trimIndent(),
+        ),
+      )
+      .headers(setAuthorisation("AUTH_ADM"))
+      .exchange()
+      .expectStatus()
+      .isOk
+      .expectBody(DeviceWearer::class.java)
+      .returnResult()
+
+    val deviceWearer = result.responseBody!!
+    Assertions.assertThat(deviceWearer.noFixedAbode).isEqualTo(value)
+  }
+
+  @Test
+  fun `NoFixedAbode is mandatory`() {
+    val order = createOrder()
+    val result = webTestClient.put()
+      .uri("/api/orders/${order.id}/device-wearer/no-fixed-abode")
+      .contentType(MediaType.APPLICATION_JSON)
+      .body(
+        BodyInserters.fromValue(
+          """
+            {
+              "noFixedAbode": null
+            }
+          """.trimIndent(),
+        ),
+      )
+      .headers(setAuthorisation("AUTH_ADM"))
+      .exchange()
+      .expectStatus()
+      .isBadRequest
+      .expectBodyList(ValidationError::class.java)
+      .returnResult()
+
+    Assertions.assertThat(result.responseBody).isNotNull
+    Assertions.assertThat(result.responseBody).hasSize(1)
+    Assertions.assertThat(result.responseBody!!).contains(
+      ValidationError("noFixedAbode", "You must indicate whether the device wearer has a fixed abode"),
     )
   }
 }

@@ -60,6 +60,9 @@ data class DeviceWearer(
   @Column(name = "DISABILITIES", nullable = true)
   var disabilities: String? = null,
 
+  @Column(name = "NO_FIXED_ABODE", nullable = true)
+  var noFixedAbode: Boolean? = null,
+
   @OneToOne
   @JoinColumn(name = "ORDER_ID", updatable = false, insertable = false)
   private val order: Order? = null,
