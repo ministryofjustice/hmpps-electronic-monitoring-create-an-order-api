@@ -1,11 +1,13 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models
 
 import jakarta.persistence.Column
+import jakarta.persistence.Convert
 import jakarta.persistence.Entity
 import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.converter.ArrayToStringConverter
 import java.util.*
 
 @Entity
@@ -18,22 +20,23 @@ data class InstallationAndRisk(
   @Column(name = "ORDER_ID", nullable = false, unique = true)
   val orderId: UUID,
 
-  @Column(name = "RISK_OF_SERIOUS_HARM", nullable = false)
+  @Column(name = "RISK_OF_SERIOUS_HARM", nullable = true)
   val riskOfSeriousHarm: String? = "",
 
-  @Column(name = "RISK_OF_SELF_HARM", nullable = false)
+  @Column(name = "RISK_OF_SELF_HARM", nullable = true)
   val riskOfSelfHarm: String? = "",
 
-  @Column(name = "RISK_CATEGORY", nullable = false)
-  val riskCategory: String? = "",
+  @Convert(converter = ArrayToStringConverter::class)
+  @Column(name = "RISK_CATEGORY", nullable = true)
+  val riskCategory: Array<String>? = null,
 
-  @Column(name = "RISK_DETAILS", nullable = false)
+  @Column(name = "RISK_DETAILS", nullable = true)
   val riskDetails: String? = "",
 
-  @Column(name = "MAPPA_LEVEL", nullable = false)
+  @Column(name = "MAPPA_LEVEL", nullable = true)
   val mappaLevel: String? = "",
 
-  @Column(name = "MAPPA_CASE_TYPE", nullable = false)
+  @Column(name = "MAPPA_CASE_TYPE", nullable = true)
   val mappaCaseType: String? = "",
 
   @OneToOne
