@@ -200,4 +200,53 @@ class AddressControllerTest : IntegrationTestBase() {
       ValidationError("postcode", "Postcode is required"),
     )
   }
+
+  @Test
+  fun `Address details can be updated multiple times`() {
+    val order = createOrder()
+
+    webTestClient.put()
+      .uri("/api/orders/${order.id}/address")
+      .contentType(MediaType.APPLICATION_JSON)
+      .body(
+        BodyInserters.fromValue(
+          """
+            {
+              "addressType": "PRIMARY",
+              "addressLine1": "$mockAddressLine1",
+              "addressLine2": "$mockAddressLine2",
+              "addressLine3": "$mockAddressLine3",
+              "addressLine4": "$mockAddressLine4",
+              "postcode": "$mockPostcode"
+            }
+          """.trimIndent(),
+        ),
+      )
+      .headers(setAuthorisation("AUTH_ADM"))
+      .exchange()
+      .expectStatus()
+      .isOk
+
+    webTestClient.put()
+      .uri("/api/orders/${order.id}/address")
+      .contentType(MediaType.APPLICATION_JSON)
+      .body(
+        BodyInserters.fromValue(
+          """
+            {
+              "addressType": "PRIMARY",
+              "addressLine1": "$mockAddressLine1",
+              "addressLine2": "$mockAddressLine2",
+              "addressLine3": "$mockAddressLine3",
+              "addressLine4": "$mockAddressLine4",
+              "postcode": "$mockPostcode"
+            }
+          """.trimIndent(),
+        ),
+      )
+      .headers(setAuthorisation("AUTH_ADM"))
+      .exchange()
+      .expectStatus()
+      .isOk
+  }
 }
