@@ -22,8 +22,8 @@ data class CurfewTimeTable(
   @Column(name = "DAY_OF_WEEK", nullable = false)
   var dayOfWeek: DayOfWeek,
 
-  @Column(name = "CURFEW_CONDITION_ID", nullable = false)
-  val curfewConditionId: UUID,
+  @Column(name = "ORDER_ID", nullable = false)
+  val orderId: UUID,
 
   @Column(name = "START_TIME", nullable = true)
   var startTime: String? = null,
@@ -35,6 +35,6 @@ data class CurfewTimeTable(
   var curfewAddress: String? = null,
 
   @ManyToOne(optional = true)
-  @JoinColumn(name = "CURFEW_CONDITION_ID", updatable = false, insertable = false)
-  private val conditions: CurfewConditions? = null,
+  @JoinColumn(name = "ORDER_ID", updatable = false, insertable = false)
+  private val order: Order? = null,
 )

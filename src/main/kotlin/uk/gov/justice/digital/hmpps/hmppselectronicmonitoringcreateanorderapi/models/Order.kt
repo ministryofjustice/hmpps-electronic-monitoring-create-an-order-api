@@ -63,4 +63,20 @@ data class Order(
 
   @OneToMany(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "order", orphanRemoval = true)
   var enforcementZoneConditions: MutableList<EnforcementZoneConditions> = mutableListOf(),
+
+  @OneToOne(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "order", orphanRemoval = true)
+  var alcoholMonitoringConditions: AlcoholMonitoringConditions? = null,
+
+  @OneToMany(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "order", orphanRemoval = true)
+  var mandatoryAttendanceConditions: MutableList<MandatoryAttendanceConditions>? = mutableListOf(),
+
+  @OneToOne(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "order", orphanRemoval = true)
+  var curfewReleaseDateConditions: CurfewReleaseDateConditions? = null,
+
+  @OneToOne(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "order", orphanRemoval = true)
+  var curfewConditions: CurfewConditions? = null,
+
+  @OneToMany(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "order", orphanRemoval = true)
+  var curfewTimeTable: MutableList<CurfewTimeTable> = mutableListOf(),
+
 )

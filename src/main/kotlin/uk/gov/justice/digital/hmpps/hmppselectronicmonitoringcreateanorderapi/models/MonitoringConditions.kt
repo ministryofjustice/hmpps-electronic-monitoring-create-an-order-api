@@ -1,15 +1,12 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models
 
 import jakarta.persistence.AttributeConverter
-import jakarta.persistence.CascadeType.ALL
 import jakarta.persistence.Column
 import jakarta.persistence.Convert
 import jakarta.persistence.Converter
 import jakarta.persistence.Entity
-import jakarta.persistence.FetchType
 import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
-import jakarta.persistence.OneToMany
 import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
 import java.time.ZonedDateTime
@@ -68,18 +65,6 @@ data class MonitoringConditions(
   @OneToOne
   @JoinColumn(name = "ORDER_ID", updatable = false, insertable = false)
   private val order: Order? = null,
-
-  @OneToMany(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "monitoringConditions", orphanRemoval = true)
-  var mandatoryAttendanceConditions: MutableList<MandatoryAttendanceConditions>? = mutableListOf(),
-
-  @OneToOne(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "monitoringConditions", orphanRemoval = true)
-  var curfewReleaseDateConditions: CurfewReleaseDateConditions? = null,
-
-  @OneToOne(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "monitoringConditions", orphanRemoval = true)
-  var curfewConditions: CurfewConditions? = null,
-
-  @OneToOne(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "monitoringConditions", orphanRemoval = true)
-  var alcoholMonitoringConditions: AlcoholMonitoringConditions? = null,
 ) {
   @Converter
   class ArrayToStringConverter : AttributeConverter<Array<String>, String> {
