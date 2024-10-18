@@ -723,38 +723,38 @@ class OrderControllerTest : IntegrationTestBase() {
       conditionType = "Requirement of Community Order",
     )
     val curfewConditions = CurfewConditions(
-      monitoringConditionsId = conditions.id,
+      orderId = order.id,
       startDate = mockStartDate,
       endDate = mockEndDate,
     )
 
     val curfewTimeTables = DayOfWeek.entries.map {
       CurfewTimeTable(
-        curfewConditionId = curfewConditions.id,
+        orderId = order.id,
         dayOfWeek = it,
         startTime = "17:00",
         endTime = "09:00",
         curfewAddress = "PRIMARY_ADDRESS",
       )
     }
-    curfewConditions.curfewTimeTable.addAll(curfewTimeTables)
+    order.curfewTimeTable.addAll(curfewTimeTables)
     val secondTimeTable = DayOfWeek.entries.map {
       CurfewTimeTable(
-        curfewConditionId = curfewConditions.id,
+        orderId = order.id,
         dayOfWeek = it,
         startTime = "17:00",
         endTime = "09:00",
         curfewAddress = "SECONDARY_ADDRESS",
       )
     }
-    curfewConditions.curfewTimeTable.addAll(secondTimeTable)
-    conditions.curfewConditions = curfewConditions
+    order.curfewTimeTable.addAll(secondTimeTable)
+    order.curfewConditions = curfewConditions
 
     val releaseDay = CurfewReleaseDateConditions(
-      monitoringConditionsId = conditions.id,
+      orderId = order.id,
       releaseDate = mockStartDate,
     )
-    conditions.curfewReleaseDateConditions = releaseDay
+    order.curfewReleaseDateConditions = releaseDay
 
     order.enforcementZoneConditions.add(
       EnforcementZoneConditions(
@@ -768,11 +768,11 @@ class OrderControllerTest : IntegrationTestBase() {
     )
 
     val alcohol = AlcoholMonitoringConditions(
-      monitoringConditionsId = conditions.id,
+      orderId = order.id,
       monitoringType = AlcoholMonitoringType.ALCOHOL_ABSTINENCE,
       installationLocation = "PRIMARY_ADDRESS",
     )
-    conditions.alcoholMonitoringConditions = alcohol
+    order.alcoholMonitoringConditions = alcohol
 
     val responsibleOfficer = ResponsibleOfficer(
       orderId = order.id,

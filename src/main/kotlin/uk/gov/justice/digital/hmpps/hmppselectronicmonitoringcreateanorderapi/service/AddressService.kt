@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service
 
 import jakarta.persistence.EntityNotFoundException
+import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Address
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
@@ -28,6 +29,7 @@ class AddressService(
     )
   }
 
+  @Transactional
   fun updateAddress(
     orderId: UUID,
     username: String,
@@ -48,6 +50,8 @@ class AddressService(
       username,
       updateRecord.addressType,
     )
+
+    addressRepo.flush()
 
     // Create a new address
     val address = Address(
