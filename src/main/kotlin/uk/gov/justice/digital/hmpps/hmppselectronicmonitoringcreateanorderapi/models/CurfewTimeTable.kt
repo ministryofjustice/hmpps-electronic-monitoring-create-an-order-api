@@ -8,6 +8,8 @@ import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
+import jakarta.validation.constraints.NotNull
+import jakarta.validation.constraints.Size
 import java.time.DayOfWeek
 import java.util.*
 
@@ -26,12 +28,18 @@ data class CurfewTimeTable(
   val orderId: UUID,
 
   @Column(name = "START_TIME", nullable = true)
+  @field:NotNull(message = "Enter start time of curfew")
+  @field:Size(min = 1, message = "Enter start time of curfew")
   var startTime: String? = null,
 
   @Column(name = "END_TIME", nullable = true)
+  @field:NotNull(message = "Enter end time of curfew")
+  @field:Size(min = 1, message = "Enter end time of curfew")
   var endTime: String? = null,
 
   @Column(name = "CURFEW_ADDRESS", nullable = true)
+  @field:NotNull(message = "Curfew address is required")
+  @field:Size(min = 1, message = "Curfew address is required")
   var curfewAddress: String? = null,
 
   @ManyToOne(optional = true)

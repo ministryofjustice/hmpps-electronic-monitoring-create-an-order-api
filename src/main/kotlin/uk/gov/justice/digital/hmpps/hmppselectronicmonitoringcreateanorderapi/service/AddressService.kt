@@ -1,21 +1,18 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service
 
-import jakarta.persistence.EntityNotFoundException
 import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Address
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.AddressRepository
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.UpdateDeviceWearerAddressDto
 import java.util.UUID
 
 @Service
 class AddressService(
-  val orderRepo: OrderRepository,
+
   val addressRepo: AddressRepository,
-) {
+) : OrderSectionServiceBase() {
 
   fun deleteAddress(
     orderId: UUID,
@@ -36,14 +33,7 @@ class AddressService(
     updateRecord: UpdateDeviceWearerAddressDto,
   ): Address {
     // Verify the order belongs to the user and is in draft state
-    orderRepo.findByIdAndUsernameAndStatus(
-      orderId,
-      username,
-      OrderStatus.IN_PROGRESS,
-    ).orElseThrow {
-      EntityNotFoundException("An editable order with $orderId does not exist")
-    }
-
+    this.findEditableOrder(orderId, username)
     // Remove the existing address
     this.deleteAddress(
       orderId,

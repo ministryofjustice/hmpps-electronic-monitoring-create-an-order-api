@@ -10,34 +10,21 @@ import org.springframework.util.StringUtils
 import org.springframework.web.multipart.MultipartFile
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.DocumentApiClient
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.EnforcementZoneConditions
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.documentmanagement.DocumentMetadata
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.EnforcementZoneRepository
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 import java.util.*
 
 @Service
 class EnforcementZoneService(
   val repo: EnforcementZoneRepository,
   val webClient: DocumentApiClient,
-  val orderRepo: OrderRepository,
-) {
+
+) : OrderSectionServiceBase() {
 
   val allowedFileExtensions: List<String> = listOf("pdf", "jpeg")
 
-  private fun getOrder(orderId: UUID, username: String): Order {
-    return orderRepo.findByIdAndUsernameAndStatus(
-      orderId,
-      username,
-      OrderStatus.IN_PROGRESS,
-    ).orElseThrow {
-      EntityNotFoundException("An editable order with $orderId does not exist")
-    }
-  }
-
   fun updateEnforcementZone(orderId: UUID, username: String, enforcementZone: EnforcementZoneConditions) {
-    val order = getOrder(orderId, username)
+    val order = findEditableOrder(orderId, username)
     // remove existing enforcement zone
     order.enforcementZoneConditions.firstOrNull { it.zoneId == enforcementZone.zoneId }?.let { zone ->
       order.enforcementZoneConditions.remove(zone)
@@ -52,7 +39,7 @@ class EnforcementZoneService(
 
   fun uploadEnforcementZoneAttachment(orderId: UUID, username: String, zoneId: Int, multipartFile: MultipartFile) {
     validateFileExtension(multipartFile)
-    val order = getOrder(orderId, username)
+    val order = findEditableOrder(orderId, username)
     val zone = order.enforcementZoneConditions.firstOrNull { it.zoneId == zoneId }
     if (zone == null) {
       throw EntityNotFoundException("Enforcement zone with  $zoneId does not exist in order with id $orderId")
