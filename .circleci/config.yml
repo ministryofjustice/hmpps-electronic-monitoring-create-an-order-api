@@ -72,7 +72,7 @@ workflows:
           jira_env_type: staging
           pipeline_id: <<pipeline.id>>
           pipeline_number: <<pipeline.number>>
-          release_name: PROJECT_NAME_ENV_NAME
+          release_name: electronic-monitoring-create-an-order-api-preprod
           context:
             - hmpps-common-vars
             # - hmpps-ems-cemo-ui-preprod
