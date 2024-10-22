@@ -34,6 +34,7 @@ data class AlcoholMonitoringConditions(
   @Column(name = "END_DATE", nullable = true)
   var endDate: ZonedDateTime? = null,
 
+  @Enumerated(EnumType.STRING)
   @Column(name = "INSTALLATION_LOCATION", nullable = true)
   var installationLocation: AlcoholMonitoringInstallationLocationType? = null,
 
