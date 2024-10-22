@@ -37,7 +37,7 @@ class CurfewTimetableControllerTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `Curfew timetable for an order order created by a different user are not update-able`() {
+  fun `Curfew timetable for an order created by a different user are not update-able`() {
     val order = createOrder()
 
     val result = webTestClient.put()
@@ -45,7 +45,7 @@ class CurfewTimetableControllerTest : IntegrationTestBase() {
       .contentType(MediaType.APPLICATION_JSON)
       .body(
         BodyInserters.fromValue(
-          mockRequestBody(order.id),
+          mockTimetableRequestBody(order.id),
         ),
       )
       .headers(setAuthorisation("AUTH_ADM_2"))
@@ -59,7 +59,7 @@ class CurfewTimetableControllerTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `Curfew timetable zone for an order already submitted are not update-able`() {
+  fun `Curfew timetable for an order already submitted are not update-able`() {
     val order = createOrder()
     order.status = OrderStatus.SUBMITTED
     orderRepo.save(order)
@@ -68,7 +68,7 @@ class CurfewTimetableControllerTest : IntegrationTestBase() {
       .contentType(MediaType.APPLICATION_JSON)
       .body(
         BodyInserters.fromValue(
-          mockRequestBody(order.id),
+          mockTimetableRequestBody(order.id),
         ),
       )
       .headers(setAuthorisation())
@@ -91,7 +91,7 @@ class CurfewTimetableControllerTest : IntegrationTestBase() {
       .contentType(MediaType.APPLICATION_JSON)
       .body(
         BodyInserters.fromValue(
-          mockInvalidREquestBody(order.id),
+          mockInvalidTimetableRequestBody(order.id),
         ),
       )
       .headers(setAuthorisation())
@@ -122,7 +122,7 @@ class CurfewTimetableControllerTest : IntegrationTestBase() {
       .contentType(MediaType.APPLICATION_JSON)
       .body(
         BodyInserters.fromValue(
-          mockRequestBody(order.id),
+          mockTimetableRequestBody(order.id),
         ),
       )
       .headers(setAuthorisation())
@@ -141,7 +141,7 @@ class CurfewTimetableControllerTest : IntegrationTestBase() {
     }
   }
 
-  fun mockRequestBody(
+  fun mockTimetableRequestBody(
     orderId: UUID,
     startTime: String? = "19:00:00",
     endTime: String? = "23:59:00",
@@ -151,7 +151,7 @@ class CurfewTimetableControllerTest : IntegrationTestBase() {
     return objectMapper.writeValueAsString(body)
   }
 
-  fun mockInvalidREquestBody(orderId: UUID): String {
+  fun mockInvalidTimetableRequestBody(orderId: UUID): String {
     return """
       [
           {

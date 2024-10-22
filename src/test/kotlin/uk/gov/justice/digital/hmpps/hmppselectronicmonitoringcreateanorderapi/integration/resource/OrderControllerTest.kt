@@ -753,6 +753,9 @@ class OrderControllerTest : IntegrationTestBase() {
     val releaseDay = CurfewReleaseDateConditions(
       orderId = order.id,
       releaseDate = mockStartDate,
+      startTime = "19:00",
+      endTime = "23:00",
+      curfewAddress = AddressType.PRIMARY,
     )
     order.curfewReleaseDateConditions = releaseDay
 
