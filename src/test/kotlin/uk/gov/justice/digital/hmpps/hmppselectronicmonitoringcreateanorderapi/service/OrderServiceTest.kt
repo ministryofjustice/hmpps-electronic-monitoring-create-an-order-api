@@ -194,7 +194,7 @@ class OrderServiceTest {
       monitoringType = AlcoholMonitoringType.ALCOHOL_ABSTINENCE,
       installationLocation = AlcoholMonitoringInstallationLocationType.PRIMARY,
     )
-    order.alcoholMonitoringConditions = alcohol
+    order.monitoringConditionsAlcohol = alcohol
 
     val responsibleOfficer = ResponsibleOfficer(
       orderId = order.id,

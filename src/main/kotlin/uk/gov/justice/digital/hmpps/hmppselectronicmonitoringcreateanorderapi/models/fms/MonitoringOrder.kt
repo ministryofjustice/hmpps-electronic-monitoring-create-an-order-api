@@ -226,7 +226,7 @@ data class MonitoringOrder(
 //      }
 
       if (conditions.alcohol != null && conditions.alcohol!!) {
-        val condition = order.alcoholMonitoringConditions!!
+        val condition = order.monitoringConditionsAlcohol!!
         if (condition.monitoringType == AlcoholMonitoringType.ALCOHOL_ABSTINENCE) {
           monitoringOrder.enforceableCondition!!.add(EnforceableCondition("AAMR"))
           monitoringOrder.abstinence = "true"

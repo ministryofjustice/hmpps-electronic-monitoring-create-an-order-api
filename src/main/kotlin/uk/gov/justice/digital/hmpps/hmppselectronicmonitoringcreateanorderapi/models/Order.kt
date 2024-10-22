@@ -67,9 +67,6 @@ data class Order(
   @OneToMany(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "order", orphanRemoval = true)
   var enforcementZoneConditions: MutableList<EnforcementZoneConditions> = mutableListOf(),
 
-  @OneToOne(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "order", orphanRemoval = true)
-  var alcoholMonitoringConditions: AlcoholMonitoringConditions? = null,
-
   @OneToMany(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "order", orphanRemoval = true)
   var mandatoryAttendanceConditions: MutableList<MandatoryAttendanceConditions>? = mutableListOf(),
 

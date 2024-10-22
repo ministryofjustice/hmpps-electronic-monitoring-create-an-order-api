@@ -8,6 +8,7 @@ import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
+import jakarta.persistence.*
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringInstallationLocationType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
 import java.time.ZonedDateTime
@@ -45,11 +46,11 @@ data class AlcoholMonitoringConditions(
   @Column(name = "PROBATION_OFFICE_NAME", nullable = true)
   var probationOfficeName: String? = null,
 
-  @OneToOne
+  @OneToOne(optional = true)
   @JoinColumn(name = "ORDER_ID", updatable = false, insertable = false)
   private val order: Order? = null,
 
-  @OneToOne
-  @JoinColumn(name = "INSTALLATION_ADDRESS_ID", updatable = false, insertable = false)
+  @OneToOne(optional = true)
+  @JoinColumn(name = "INSTALLATION_ADDRESS_ID", updatable = false, insertable = false, nullable = true)
   private val address: Address? = null,
 )
