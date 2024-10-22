@@ -1,10 +1,15 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models
 
-import jakarta.persistence.*
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
+import jakarta.persistence.Column
+import jakarta.persistence.Entity
+import jakarta.persistence.EnumType
+import jakarta.persistence.Enumerated
+import jakarta.persistence.Id
+import jakarta.persistence.JoinColumn
+import jakarta.persistence.OneToOne
+import jakarta.persistence.Table
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringInstallationLocationType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
-import java.time.LocalDate
 import java.time.ZonedDateTime
 import java.util.*
 
@@ -47,4 +52,4 @@ data class AlcoholMonitoringConditions(
   @OneToOne
   @JoinColumn(name = "INSTALLATION_ADDRESS_ID", updatable = false, insertable = false)
   private val address: Address? = null,
-  )
+)

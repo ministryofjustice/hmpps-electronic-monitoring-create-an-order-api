@@ -2,9 +2,7 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.s
 
 import jakarta.persistence.EntityNotFoundException
 import org.springframework.stereotype.Service
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Address
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AlcoholMonitoringConditions
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.AddressRepository
@@ -41,7 +39,7 @@ class MonitoringConditionsAlcoholService(
   ): AlcoholMonitoringConditions {
     val alcoholMonitoringConditions = this.getAlcoholMonitoringConditions(
       orderId,
-      username
+      username,
     )
 
     var alcoholMonitoringAddressId: UUID? = null
@@ -53,7 +51,7 @@ class MonitoringConditionsAlcoholService(
         orderId,
         username,
         OrderStatus.IN_PROGRESS,
-        alcoholMonitoringInstallationAddressType
+        alcoholMonitoringInstallationAddressType,
       ).getOrNull()?.id
     } catch (_: IllegalArgumentException) {
     }
