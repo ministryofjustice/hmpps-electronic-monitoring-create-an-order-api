@@ -11,16 +11,20 @@ import org.springframework.http.HttpStatus.NOT_FOUND
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.AccessDeniedException
 import org.springframework.transaction.TransactionSystemException
+import org.springframework.validation.FieldError
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
+import org.springframework.web.method.annotation.HandlerMethodValidationException
 import org.springframework.web.multipart.MaxUploadSizeExceededException
 import org.springframework.web.servlet.resource.NoResourceFoundException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.CreateSercoEntityException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.DocumentApiBadRequestException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.SercoConnectionException
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ListItemValidationError
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidationError
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
+import java.util.stream.Collectors
 
 @RestControllerAdvice
 class HmppsElectronicMonitoringCreateAnOrderApiExceptionHandler {
@@ -78,6 +82,26 @@ class HmppsElectronicMonitoringCreateAnOrderApiExceptionHandler {
           ValidationError(violation.propertyPath.toString(), violation.message)
         }
         .toList()
+      return ResponseEntity.status(BAD_REQUEST).body(details)
+    }
+    throw e
+  }
+
+  @ExceptionHandler(HandlerMethodValidationException::class)
+  fun handleHandlerMethodValidationException(e: HandlerMethodValidationException): ResponseEntity<List<ListItemValidationError>> {
+    if (e.reason == "Validation failure") {
+      val validationResult = e.allValidationResults
+      val details: List<ListItemValidationError> = validationResult.stream()
+        .map {
+          val errors = it.resolvableErrors.stream().map {
+              violation ->
+            val error = violation as FieldError
+            ValidationError(error.field.toString(), error.defaultMessage!!)
+          }.collect(Collectors.toList())
+          ListItemValidationError(errors, it.containerIndex!!)
+        }
+        .toList()
+
       return ResponseEntity.status(BAD_REQUEST).body(details)
     }
     throw e

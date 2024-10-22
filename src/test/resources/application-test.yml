@@ -6,9 +6,10 @@ management.endpoint:
   info.cache.time-to-live: 0
 
 spring:
-  show-sql: true
-  hibernate:
-    ddl-auto: create-drop
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: create
   datasource:
     url: 'jdbc:h2:mem:cemo-db;MODE=PostgreSQL'
     username: sa
