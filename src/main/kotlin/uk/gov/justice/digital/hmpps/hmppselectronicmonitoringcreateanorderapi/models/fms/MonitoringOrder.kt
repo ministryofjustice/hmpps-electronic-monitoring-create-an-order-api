@@ -234,7 +234,12 @@ data class MonitoringOrder(
           monitoringOrder.enforceableCondition!!.add(EnforceableCondition("AML"))
           monitoringOrder.abstinence = "false"
         }
-        monitoringOrder.tagAtSourceDetails = condition.installationLocation
+
+        if (!condition.prisonName.isNullOrBlank()) {
+          monitoringOrder.tagAtSourceDetails = condition.prisonName
+        } else if (!condition.probationOfficeName.isNullOrBlank()) {
+          monitoringOrder.tagAtSourceDetails = condition.probationOfficeName
+        }
       }
 
       if (order.responsibleOfficer != null) {
