@@ -130,16 +130,13 @@ class EnforcementZoneControllerTest : IntegrationTestBase() {
       .expectBodyList(ValidationError::class.java)
       .returnResult()
     Assertions.assertThat(result.responseBody).isNotNull
-    Assertions.assertThat(result.responseBody).hasSize(5)
+    Assertions.assertThat(result.responseBody).hasSize(4)
 
     Assertions.assertThat(result.responseBody!!).contains(
       ValidationError("zoneType", "Enforcement zone type is required"),
     )
     Assertions.assertThat(result.responseBody!!).contains(
       ValidationError("startDate", "Enforcement zone start date is required"),
-    )
-    Assertions.assertThat(result.responseBody!!).contains(
-      ValidationError("endDate", "Enforcement zone end date is required"),
     )
     Assertions.assertThat(result.responseBody!!).contains(
       ValidationError("description", "Enforcement zone description is required"),

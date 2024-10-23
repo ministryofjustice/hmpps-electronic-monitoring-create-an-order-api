@@ -36,7 +36,6 @@ data class EnforcementZoneConditions(
   @Column(name = "START_DATE", nullable = false)
   var startDate: ZonedDateTime? = null,
 
-  @field:NotNull(message = "Enforcement zone end date is required")
   @Column(name = "END_DATE", nullable = true)
   var endDate: ZonedDateTime? = null,
 
