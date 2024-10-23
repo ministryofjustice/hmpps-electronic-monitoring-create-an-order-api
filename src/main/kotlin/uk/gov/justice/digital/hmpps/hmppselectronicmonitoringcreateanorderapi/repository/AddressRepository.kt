@@ -15,10 +15,4 @@ interface AddressRepository : JpaRepository<Address, UUID> {
     status: OrderStatus,
     addressType: AddressType,
   ): Optional<Address>
-
-  fun deleteByOrderIdAndOrderUsernameAndAddressType(
-    orderId: UUID,
-    username: String,
-    addressType: AddressType,
-  )
 }
