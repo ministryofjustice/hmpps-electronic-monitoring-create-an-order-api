@@ -8,6 +8,8 @@ import org.springframework.http.MediaType
 import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AlcoholMonitoringConditions
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringInstallationLocationType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.MonitoringConditionsAlcoholRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
@@ -36,6 +38,17 @@ class MonitoringConditionsAlcoholControllerTest : IntegrationTestBase() {
     ZoneId.of("UTC"),
   )
 
+  private val mockValidAlcoholMonitoringConditions: String = """
+    {
+      "monitoringType": "ALCOHOL_ABSTINENCE",
+      "startDate": "$mockStartDate",
+      "endDate": "$mockEndDate",
+      "installationLocation": "PRIMARY",
+      "prisonName": null,
+      "probationOfficeName": null
+    }
+  """.trimIndent()
+
   @BeforeEach
   fun setup() {
     alcoholMonitoringConditionsRepo.deleteAll()
@@ -58,7 +71,7 @@ class MonitoringConditionsAlcoholControllerTest : IntegrationTestBase() {
               "endDate": "$mockEndDate",
               "installationLocation": "PRIMARY",
               "prisonName": null,
-              "probationOfficeName": null,
+              "probationOfficeName": null
             }
           """.trimIndent(),
         ),
@@ -75,14 +88,7 @@ class MonitoringConditionsAlcoholControllerTest : IntegrationTestBase() {
       .uri("/api/orders/${UUID.randomUUID()}/monitoring-conditions-alcohol")
       .contentType(MediaType.APPLICATION_JSON)
       .body(
-        BodyInserters.fromValue(
-          """
-            {
-              "startDate": "$mockStartDate",
-              "endDate": "$mockEndDate"
-            }
-          """.trimIndent(),
-        ),
+        BodyInserters.fromValue(mockValidAlcoholMonitoringConditions),
       )
       .headers(setAuthorisation("AUTH_ADM"))
       .exchange()
@@ -101,14 +107,7 @@ class MonitoringConditionsAlcoholControllerTest : IntegrationTestBase() {
       .uri("/api/orders/${order.id}/monitoring-conditions-alcohol")
       .contentType(MediaType.APPLICATION_JSON)
       .body(
-        BodyInserters.fromValue(
-          """
-            {
-              "startDate": "$mockStartDate",
-              "endDate": "$mockEndDate"
-            }
-          """.trimIndent(),
-        ),
+        BodyInserters.fromValue(mockValidAlcoholMonitoringConditions),
       )
       .headers(setAuthorisation("AUTH_ADM"))
       .exchange()
@@ -124,14 +123,7 @@ class MonitoringConditionsAlcoholControllerTest : IntegrationTestBase() {
       .uri("/api/orders/${order.id}/monitoring-conditions-alcohol")
       .contentType(MediaType.APPLICATION_JSON)
       .body(
-        BodyInserters.fromValue(
-          """
-            {
-              "startDate": "$mockStartDate",
-              "endDate": "$mockEndDate"
-            }
-          """.trimIndent(),
-        ),
+        BodyInserters.fromValue(mockValidAlcoholMonitoringConditions),
       )
       .headers(setAuthorisation("AUTH_ADM"))
       .exchange()
@@ -144,6 +136,10 @@ class MonitoringConditionsAlcoholControllerTest : IntegrationTestBase() {
 
     Assertions.assertThat(alcoholConditions.startDate).isEqualTo(mockStartDate)
     Assertions.assertThat(alcoholConditions.endDate).isEqualTo(mockEndDate)
+    Assertions.assertThat(alcoholConditions.monitoringType).isEqualTo(AlcoholMonitoringType.ALCOHOL_ABSTINENCE)
+    Assertions.assertThat(alcoholConditions.installationLocation).isEqualTo(AlcoholMonitoringInstallationLocationType.PRIMARY)
+    Assertions.assertThat(alcoholConditions.prisonName).isEqualTo(null)
+    Assertions.assertThat(alcoholConditions.probationOfficeName).isEqualTo(null)
   }
 
   @Test
@@ -157,8 +153,12 @@ class MonitoringConditionsAlcoholControllerTest : IntegrationTestBase() {
         BodyInserters.fromValue(
           """
             {
+              "monitoringType": "ALCOHOL_ABSTINENCE",
               "startDate": "",
-              "endDate": "$mockEndDate"
+              "endDate": "$mockEndDate",
+              "installationLocation": "PRIMARY",
+              "prisonName": null,
+              "probationOfficeName": null
             }
           """.trimIndent(),
         ),
@@ -178,6 +178,76 @@ class MonitoringConditionsAlcoholControllerTest : IntegrationTestBase() {
   }
 
   @Test
+  fun `Monitoring Type is mandatory for alcohol monitoring conditions`() {
+    val order = createOrder()
+
+    val result = webTestClient.put()
+      .uri("/api/orders/${order.id}/monitoring-conditions-alcohol")
+      .contentType(MediaType.APPLICATION_JSON)
+      .body(
+        BodyInserters.fromValue(
+          """
+            {
+              "monitoringType": null,
+              "startDate": "$mockStartDate",
+              "endDate": "$mockEndDate",
+              "installationLocation": "PRIMARY",
+              "prisonName": null,
+              "probationOfficeName": null
+            }
+          """.trimIndent(),
+        ),
+      )
+      .headers(setAuthorisation("AUTH_ADM"))
+      .exchange()
+      .expectStatus()
+      .isBadRequest
+      .expectBodyList(ValidationError::class.java)
+      .returnResult()
+
+    Assertions.assertThat(result.responseBody).isNotNull
+    Assertions.assertThat(result.responseBody).hasSize(1)
+    Assertions.assertThat(result.responseBody!!).contains(
+      ValidationError("monitoringType", "Monitoring type is required"),
+    )
+  }
+
+  @Test
+  fun `Installation location is mandatory for alcohol monitoring conditions`() {
+    val order = createOrder()
+
+    val result = webTestClient.put()
+      .uri("/api/orders/${order.id}/monitoring-conditions-alcohol")
+      .contentType(MediaType.APPLICATION_JSON)
+      .body(
+        BodyInserters.fromValue(
+          """
+            {
+              "monitoringType": "ALCOHOL_ABSTINENCE",
+              "startDate": "$mockStartDate",
+              "endDate": "$mockEndDate",
+              "installationLocation": null,
+              "prisonName": null,
+              "probationOfficeName": null
+            }
+          """.trimIndent(),
+        ),
+      )
+      .headers(setAuthorisation("AUTH_ADM"))
+      .exchange()
+      .expectStatus()
+      .isBadRequest
+      .expectBodyList(ValidationError::class.java)
+      .returnResult()
+
+    Assertions.assertThat(result.responseBody).isNotNull
+    Assertions.assertThat(result.responseBody).hasSize(1)
+    Assertions.assertThat(result.responseBody!!).contains(
+      ValidationError("installationLocation", "Installation location is required"),
+    )
+  }
+
+  @Test
   fun `Alcohol monitoring conditions cannot be updated if startDate is in the past`() {
     val order = createOrder()
     val result = webTestClient.put()
@@ -187,8 +257,12 @@ class MonitoringConditionsAlcoholControllerTest : IntegrationTestBase() {
         BodyInserters.fromValue(
           """
             {
+              "monitoringType": "ALCOHOL_ABSTINENCE",
               "startDate": "${ZonedDateTime.parse("1990-01-01T00:00:00.000Z")}",
-              "endDate": "$mockEndDate"
+              "endDate": "$mockEndDate",
+              "installationLocation": "PRIMARY",
+              "prisonName": null,
+              "probationOfficeName": null
             }
           """.trimIndent(),
         ),
@@ -217,8 +291,12 @@ class MonitoringConditionsAlcoholControllerTest : IntegrationTestBase() {
         BodyInserters.fromValue(
           """
             {
+              "monitoringType": "ALCOHOL_ABSTINENCE",
               "startDate": "$mockStartDate",
-              "endDate": "${ZonedDateTime.parse("1990-01-01T00:00:00.000Z")}"
+              "endDate": "${ZonedDateTime.parse("1990-01-01T00:00:00.000Z")}",
+              "installationLocation": "PRIMARY",
+              "prisonName": null,
+              "probationOfficeName": null
             }
           """.trimIndent(),
         ),
