@@ -226,7 +226,7 @@ data class MonitoringOrder(
 //      }
 
       if (conditions.alcohol != null && conditions.alcohol!!) {
-        val condition = order.alcoholMonitoringConditions!!
+        val condition = order.monitoringConditionsAlcohol!!
         if (condition.monitoringType == AlcoholMonitoringType.ALCOHOL_ABSTINENCE) {
           monitoringOrder.enforceableCondition!!.add(EnforceableCondition("AAMR"))
           monitoringOrder.abstinence = "true"
@@ -234,7 +234,12 @@ data class MonitoringOrder(
           monitoringOrder.enforceableCondition!!.add(EnforceableCondition("AML"))
           monitoringOrder.abstinence = "false"
         }
-        monitoringOrder.tagAtSourceDetails = condition.installationLocation
+
+        if (!condition.prisonName.isNullOrBlank()) {
+          monitoringOrder.tagAtSourceDetails = condition.prisonName
+        } else if (!condition.probationOfficeName.isNullOrBlank()) {
+          monitoringOrder.tagAtSourceDetails = condition.probationOfficeName
+        }
       }
 
       if (order.responsibleOfficer != null) {
