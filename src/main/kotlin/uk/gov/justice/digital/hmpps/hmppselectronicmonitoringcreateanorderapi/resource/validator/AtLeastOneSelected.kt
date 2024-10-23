@@ -8,9 +8,9 @@ import kotlin.reflect.KClass
 import kotlin.reflect.KProperty1
 import kotlin.reflect.full.memberProperties
 
+@Target(AnnotationTarget.CLASS)
 @Constraint(validatedBy = [AtLeastOneSelectedValidator::class])
 @MustBeDocumented
-@Target(AnnotationTarget.CLASS)
 annotation class AtLeastOneSelected(
   val message: String = "At least one option must be selected.",
   val fieldNames: Array<String>,
@@ -20,18 +20,17 @@ annotation class AtLeastOneSelected(
 
 class AtLeastOneSelectedValidator : ConstraintValidator<AtLeastOneSelected, Any> {
   private lateinit var fieldNames: Array<String>
+  private lateinit var message: String
 
   override fun initialize(constraintAnnotation: AtLeastOneSelected) {
     fieldNames = constraintAnnotation.fieldNames
+    message = constraintAnnotation.message
   }
-  override fun isValid(objectToValidate: Any?, context: ConstraintValidatorContext): Boolean {
-    if (objectToValidate == null) {
-      return true
-    }
-
+  override fun isValid(objectToValidate: Any, context: ConstraintValidatorContext): Boolean {
     val fieldValues = fieldNames.mapNotNull { fieldName ->
       getFieldValue(objectToValidate, fieldName)
     }
+
     return fieldValues.any { it }
   }
 

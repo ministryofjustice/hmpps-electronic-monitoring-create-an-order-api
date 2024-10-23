@@ -40,7 +40,10 @@ class MonitoringConditionsController(
   }
 }
 
-@AtLeastOneSelected(fieldNames = ["curfew", "exclusionZone", "trail", "mandatoryAttendance", "alcohol"], message = "Select at least one Monitoring Type.")
+@AtLeastOneSelected(
+  fieldNames = ["curfew", "exclusionZone", "trail", "mandatoryAttendance", "alcohol"],
+  message = "Select at least one monitoring type.",
+)
 data class UpdateMonitoringConditionsDto(
   @field:NotNull(message = "Order type is required")
   val orderType: String? = null,
