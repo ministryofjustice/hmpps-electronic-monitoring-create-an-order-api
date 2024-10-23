@@ -109,10 +109,16 @@ class HmppsElectronicMonitoringCreateAnOrderApiExceptionHandler {
 
   @ExceptionHandler(MethodArgumentNotValidException::class)
   fun handleMethodArgumentNotValidException(e: MethodArgumentNotValidException): ResponseEntity<List<ValidationError>> {
+    val fieldErrors = e.bindingResult.fieldErrors.map {
+      ValidationError(it.field, it.defaultMessage ?: "")
+    }
+
+    val globalErrors = e.bindingResult.globalErrors.map {
+      ValidationError(it.objectName, it.defaultMessage ?: "")
+    }
+
     return ResponseEntity.status(BAD_REQUEST).body(
-      e.bindingResult.fieldErrors.map {
-        ValidationError(it.field, it.defaultMessage ?: "")
-      },
+      fieldErrors + globalErrors,
     )
   }
 
