@@ -727,6 +727,7 @@ class OrderControllerTest : IntegrationTestBase() {
       orderId = order.id,
       startDate = mockStartDate,
       endDate = mockEndDate,
+      curfewAddress = "PRIMARY,SECONDARY",
     )
 
     val curfewTimeTables = DayOfWeek.entries.map {
