@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.MonitoringConditions
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.AtLeastOneSelected
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.MonitoringConditionsService
 import java.util.UUID
 
@@ -39,6 +40,10 @@ class MonitoringConditionsController(
   }
 }
 
+@AtLeastOneSelected(
+  fieldNames = ["curfew", "exclusionZone", "trail", "mandatoryAttendance", "alcohol"],
+  message = "Select at least one monitoring type.",
+)
 data class UpdateMonitoringConditionsDto(
   @field:NotNull(message = "Order type is required")
   val orderType: String? = null,
