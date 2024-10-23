@@ -8,8 +8,9 @@ import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringInstallationLocationType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
-import java.time.LocalDate
+import java.time.ZonedDateTime
 import java.util.*
 
 @Entity
@@ -27,15 +28,29 @@ data class AlcoholMonitoringConditions(
   var monitoringType: AlcoholMonitoringType? = null,
 
   @Column(name = "START_DATE", nullable = true)
-  var startDate: LocalDate? = null,
+  var startDate: ZonedDateTime? = null,
 
   @Column(name = "END_DATE", nullable = true)
-  var endDate: LocalDate? = null,
+  var endDate: ZonedDateTime? = null,
 
-  @Column(name = "INSTALLTION_LOCATION", nullable = true)
-  var installationLocation: String? = null,
+  @Enumerated(EnumType.STRING)
+  @Column(name = "INSTALLATION_LOCATION", nullable = true)
+  var installationLocation: AlcoholMonitoringInstallationLocationType? = null,
 
-  @OneToOne
+  @Column(name = "INSTALLATION_ADDRESS_ID", nullable = true, unique = true)
+  var installationAddressId: UUID? = null,
+
+  @Column(name = "PRISON_NAME", nullable = true)
+  var prisonName: String? = null,
+
+  @Column(name = "PROBATION_OFFICE_NAME", nullable = true)
+  var probationOfficeName: String? = null,
+
+  @OneToOne(optional = true)
   @JoinColumn(name = "ORDER_ID", updatable = false, insertable = false)
   private val order: Order? = null,
+
+  @OneToOne(optional = true)
+  @JoinColumn(name = "INSTALLATION_ADDRESS_ID", updatable = false, insertable = false, nullable = true)
+  private val address: Address? = null,
 )

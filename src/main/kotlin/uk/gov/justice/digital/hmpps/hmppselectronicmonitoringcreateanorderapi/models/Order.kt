@@ -56,6 +56,9 @@ data class Order(
   var monitoringConditionsTrail: TrailMonitoringConditions? = null,
 
   @OneToOne(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "order", orphanRemoval = true)
+  var monitoringConditionsAlcohol: AlcoholMonitoringConditions? = null,
+
+  @OneToOne(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "order", orphanRemoval = true)
   var installationAndRisk: InstallationAndRisk? = null,
 
   @OneToMany(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "order", orphanRemoval = true)
@@ -63,9 +66,6 @@ data class Order(
 
   @OneToMany(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "order", orphanRemoval = true)
   var enforcementZoneConditions: MutableList<EnforcementZoneConditions> = mutableListOf(),
-
-  @OneToOne(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "order", orphanRemoval = true)
-  var alcoholMonitoringConditions: AlcoholMonitoringConditions? = null,
 
   @OneToMany(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "order", orphanRemoval = true)
   var mandatoryAttendanceConditions: MutableList<MandatoryAttendanceConditions>? = mutableListOf(),

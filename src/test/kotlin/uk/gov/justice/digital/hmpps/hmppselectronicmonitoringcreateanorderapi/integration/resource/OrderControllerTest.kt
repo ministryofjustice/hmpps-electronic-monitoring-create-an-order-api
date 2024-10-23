@@ -22,6 +22,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ResponsibleAdult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ResponsibleOfficer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringInstallationLocationType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.EnforcementZoneType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
@@ -773,9 +774,9 @@ class OrderControllerTest : IntegrationTestBase() {
     val alcohol = AlcoholMonitoringConditions(
       orderId = order.id,
       monitoringType = AlcoholMonitoringType.ALCOHOL_ABSTINENCE,
-      installationLocation = "PRIMARY_ADDRESS",
+      installationLocation = AlcoholMonitoringInstallationLocationType.PRIMARY,
     )
-    order.alcoholMonitoringConditions = alcohol
+    order.monitoringConditionsAlcohol = alcohol
 
     val responsibleOfficer = ResponsibleOfficer(
       orderId = order.id,
