@@ -18,10 +18,9 @@ class AddressService() : OrderSectionServiceBase() {
     val order = this.findEditableOrder(orderId, username)
 
     // If the address type exists already, update it - otherwise, create it
-    var existingAddress = order.addresses.find { it.addressType == updateRecord.addressType }
+    val existingAddress = order.addresses.find { it.addressType == updateRecord.addressType }
     var newAddress: Address? = null
     if (existingAddress != null) {
-      existingAddress.addressType = updateRecord.addressType
       existingAddress.addressLine1 = updateRecord.addressLine1
       existingAddress.addressLine2 = updateRecord.addressLine2
       existingAddress.addressLine3 = updateRecord.addressLine3
