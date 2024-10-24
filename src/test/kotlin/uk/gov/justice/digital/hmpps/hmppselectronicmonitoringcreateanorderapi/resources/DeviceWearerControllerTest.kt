@@ -51,6 +51,7 @@ class DeviceWearerControllerTest {
       alias = mockAlias,
       gender = mockGender,
       dateOfBirth = mockDateOfBirth,
+      interpreterRequired = false,
     )
     UpdateDeviceWearerDto(
       alias = mockAlias,
@@ -58,6 +59,7 @@ class DeviceWearerControllerTest {
       lastName = mockLastName,
       gender = mockGender,
       dateOfBirth = mockDateOfBirth,
+      interpreterRequired = false,
     )
     `when`(
       deviceWearerService.updateDeviceWearer(
@@ -69,6 +71,7 @@ class DeviceWearerControllerTest {
           lastName = mockLastName,
           gender = mockGender,
           dateOfBirth = mockDateOfBirth,
+          interpreterRequired = false,
         ),
       ),
     ).thenReturn(mockDeviceWearer)
@@ -82,6 +85,7 @@ class DeviceWearerControllerTest {
         lastName = mockLastName,
         gender = mockGender,
         dateOfBirth = mockDateOfBirth,
+        interpreterRequired = false,
       ),
       authentication,
     )
@@ -103,6 +107,7 @@ class DeviceWearerControllerTest {
           lastName = mockLastName,
           gender = mockGender,
           dateOfBirth = mockDateOfBirth,
+          interpreterRequired = false,
         ),
       ),
     ).thenReturn(mockDeviceWearer)
@@ -116,6 +121,7 @@ class DeviceWearerControllerTest {
         lastName = mockLastName,
         gender = mockGender,
         dateOfBirth = mockDateOfBirth,
+        interpreterRequired = false,
       ),
       authentication = authentication,
     )

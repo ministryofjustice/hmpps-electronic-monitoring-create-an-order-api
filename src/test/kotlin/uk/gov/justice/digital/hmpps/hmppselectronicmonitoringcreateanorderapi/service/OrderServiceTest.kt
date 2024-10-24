@@ -84,6 +84,8 @@ class OrderServiceTest {
       sex = "Male",
       gender = "Male",
       disabilities = "Vision,Hearing",
+      interpreterRequired = true,
+      language = "British Sign",
     )
 
     order.deviceWearerResponsibleAdult = ResponsibleAdult(

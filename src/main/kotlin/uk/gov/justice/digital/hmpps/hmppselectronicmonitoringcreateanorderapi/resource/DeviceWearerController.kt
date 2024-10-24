@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource
 
 import jakarta.validation.Valid
+import jakarta.validation.constraints.AssertTrue
 import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Past
 import jakarta.validation.constraints.Size
@@ -90,7 +91,21 @@ data class UpdateDeviceWearerDto(
   val dateOfBirth: ZonedDateTime? = null,
 
   val disabilities: String? = null,
-)
+
+  val language: String? = null,
+
+  @field:NotNull(message = "You must indicate whether the device wearer will require an interpreter on the day of installation")
+  val interpreterRequired: Boolean? = null,
+) {
+
+  @AssertTrue(message = "Device wearer's main language is required")
+  fun isLanguage(): Boolean {
+    if (this.interpreterRequired != null && this.interpreterRequired) {
+      return this.language != null && this.language != ""
+    }
+    return true
+  }
+}
 
 data class UpdateNoFixedAbodeDto(
   @field:NotNull(message = "You must indicate whether the device wearer has a fixed abode")
