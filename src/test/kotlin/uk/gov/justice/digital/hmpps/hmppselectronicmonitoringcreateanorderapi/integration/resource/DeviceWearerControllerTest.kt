@@ -37,6 +37,7 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
   private val mockSex: String = "mockSex"
   private val mockGender: String = "mockGender"
   private val mockDisabilities: String = "mockDisabilities"
+  private val mockLanguage: String = "mockLanguage"
   private val mockDateOfBirth: ZonedDateTime = ZonedDateTime.of(
     LocalDate.of(1970, 1, 1),
     LocalTime.NOON,
@@ -70,7 +71,9 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
               "sex": "$mockSex",
               "gender": "$mockGender",
               "dateOfBirth": "$mockDateOfBirth",
-              "disabilities": "$mockDisabilities"
+              "disabilities": "$mockDisabilities",
+              "interpreterRequired": true,
+              "language": "$mockLanguage"
             }
           """.trimIndent(),
         ),
@@ -95,6 +98,8 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
     Assertions.assertThat(updateDeviceWearer.responseBody?.gender).isEqualTo(mockGender)
     Assertions.assertThat(updateDeviceWearer.responseBody?.dateOfBirth).isEqualTo(mockDateOfBirth)
     Assertions.assertThat(updateDeviceWearer.responseBody?.disabilities).isEqualTo(mockDisabilities)
+    Assertions.assertThat(updateDeviceWearer.responseBody?.interpreterRequired).isEqualTo(true)
+    Assertions.assertThat(updateDeviceWearer.responseBody?.language).isEqualTo(mockLanguage)
   }
 
   @Test
@@ -112,7 +117,9 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
               "adultAtTimeOfInstallation": "false",
               "sex": "$mockSex",
               "gender": "$mockGender",
-              "dateOfBirth": "$mockDateOfBirth"
+              "dateOfBirth": "$mockDateOfBirth",
+              "interpreterRequired": true,
+              "language": "$mockLanguage"
             }
           """.trimIndent(),
         ),
@@ -139,7 +146,9 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
               "adultAtTimeOfInstallation": "false",
               "sex": "$mockSex",
               "gender": "$mockGender",
-              "dateOfBirth": "$mockDateOfBirth"
+              "dateOfBirth": "$mockDateOfBirth",
+              "interpreterRequired": true,
+              "language": "$mockLanguage"
             }
           """.trimIndent(),
         ),
@@ -166,7 +175,8 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
               "adultAtTimeOfInstallation": "",
               "sex": "",
               "gender": "",
-              "dateOfBirth": ""
+              "dateOfBirth": "",
+              "interpreterRequired": ""
             }
           """.trimIndent(),
         ),
@@ -179,7 +189,7 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
       .returnResult()
 
     Assertions.assertThat(result.responseBody).isNotNull
-    Assertions.assertThat(result.responseBody).hasSize(6)
+    Assertions.assertThat(result.responseBody).hasSize(7)
     Assertions.assertThat(result.responseBody!!).contains(
       ValidationError("firstName", "First name is required"),
     )
@@ -201,6 +211,10 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
     Assertions.assertThat(result.responseBody!!).contains(
       ValidationError("dateOfBirth", "Date of birth is required"),
     )
+
+    Assertions.assertThat(result.responseBody!!).contains(
+      ValidationError("interpreterRequired", "You must indicate whether the device wearer will require an interpreter on the day of installation"),
+    )
   }
 
   @Test
@@ -219,7 +233,9 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
               "adultAtTimeOfInstallation": "false",
               "sex": "$mockSex",
               "gender": "$mockGender",
-              "dateOfBirth": "${ZonedDateTime.parse("2222-01-01T00:00:00.000Z")}"
+              "dateOfBirth": "${ZonedDateTime.parse("2222-01-01T00:00:00.000Z")}",
+              "interpreterRequired": true,
+              "language": "$mockLanguage"
             }
           """.trimIndent(),
         ),
@@ -235,6 +251,43 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
     Assertions.assertThat(result.responseBody).hasSize(1)
     Assertions.assertThat(result.responseBody!!).contains(
       ValidationError("dateOfBirth", "Date of birth must be in the past"),
+    )
+  }
+
+  @Test
+  fun `Update device wearer returns 400 if language is not set when interpreterRequired is true`() {
+    val order = createOrder()
+    val result = webTestClient.put()
+      .uri("/api/orders/${order.id}/device-wearer")
+      .contentType(MediaType.APPLICATION_JSON)
+      .body(
+        BodyInserters.fromValue(
+          """
+            {
+              "firstName": "$mockFirstName",
+              "lastName": "$mockLastName",
+              "alias": "$mockAlias",
+              "adultAtTimeOfInstallation": "false",
+              "sex": "$mockSex",
+              "gender": "$mockGender",
+              "dateOfBirth": "$mockDateOfBirth",
+              "interpreterRequired": true,
+              "language": ""
+            }
+          """.trimIndent(),
+        ),
+      )
+      .headers(setAuthorisation("AUTH_ADM"))
+      .exchange()
+      .expectStatus()
+      .isBadRequest
+      .expectBodyList(ValidationError::class.java)
+      .returnResult()
+
+    Assertions.assertThat(result.responseBody).isNotNull
+    Assertions.assertThat(result.responseBody).hasSize(1)
+    Assertions.assertThat(result.responseBody!!).contains(
+      ValidationError("language", "Device wearer's main language is required"),
     )
   }
 

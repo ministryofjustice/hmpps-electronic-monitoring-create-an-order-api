@@ -53,6 +53,12 @@ data class DeviceWearer(
   @Column(name = "GENDER", nullable = true)
   var gender: String? = null,
 
+  @Column(name = "LANGUAGE", nullable = true)
+  var language: String? = null,
+
+  @Column(name = "INTERPRETER_REQUIRED", nullable = true)
+  var interpreterRequired: Boolean? = null,
+
   @Column(name = "DATE_OF_BIRTH", nullable = true)
   @field:Past(message = "Date of birth must be in the past")
   var dateOfBirth: ZonedDateTime? = null,

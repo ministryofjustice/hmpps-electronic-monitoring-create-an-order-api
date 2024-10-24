@@ -39,6 +39,8 @@ class DeviceWearerService(
       deviceWearer.gender = gender
       deviceWearer.dateOfBirth = dateOfBirth
       deviceWearer.disabilities = disabilities
+      deviceWearer.language = language
+      deviceWearer.interpreterRequired = interpreterRequired
     }
 
     return repo.save(deviceWearer)

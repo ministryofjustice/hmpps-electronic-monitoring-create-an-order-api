@@ -207,7 +207,9 @@ class OrderControllerTest : IntegrationTestBase() {
     "pnc_id": "",
     "nomis_id": "",
     "delius_id": "",
-    "prison_number": ""
+    "prison_number": "",
+    "interpreter_required": "true",
+    "language": "British Sign"
 }
       """
     sercoAuthApi.stubGrantToken()
@@ -279,7 +281,9 @@ class OrderControllerTest : IntegrationTestBase() {
     "pnc_id": "",
     "nomis_id": "",
     "delius_id": "",
-    "prison_number": ""
+    "prison_number": "",
+    "interpreter_required": "true",
+    "language": "British Sign"
 }
       """
 
@@ -492,7 +496,9 @@ class OrderControllerTest : IntegrationTestBase() {
     "pnc_id": "",
     "nomis_id": "",
     "delius_id": "",
-    "prison_number": ""
+    "prison_number": "",
+    "interpreter_required": "true",
+    "language": "British Sign"
 }
       """
 
@@ -666,6 +672,8 @@ class OrderControllerTest : IntegrationTestBase() {
       sex = "Male",
       gender = "Male",
       disabilities = "Vision,Hearing",
+      interpreterRequired = true,
+      language = "British Sign",
     )
 
     order.deviceWearerResponsibleAdult = ResponsibleAdult(

@@ -121,6 +121,11 @@ data class DeviceWearer(
 
   @JsonProperty("prison_number")
   var prisonNumber: String? = "",
+
+  @JsonProperty("interpreter_required")
+  var interpreterRequired: String? = "",
+
+  var language: String? = "",
 ) {
 
   companion object {
@@ -130,6 +135,7 @@ data class DeviceWearer(
       if (!order.deviceWearer?.adultAtTimeOfInstallation!!) {
         adultChild = "child"
       }
+
       val primaryAddress = order.addresses.find { address -> address.addressType == AddressType.PRIMARY }!!
       val disabilities = order.deviceWearer?.disabilities?.split(',')?.map { disability -> Disability(disability) }?.toList()
       val deviceWearer = DeviceWearer(
@@ -155,6 +161,8 @@ data class DeviceWearer(
         responsibleAdultRequired = (order.deviceWearerResponsibleAdult != null).toString(),
         parent = "${order.deviceWearerResponsibleAdult?.fullName}",
         parentPhoneNumber = order.deviceWearerResponsibleAdult?.contactNumber,
+        interpreterRequired = order.deviceWearer?.interpreterRequired!!.toString(),
+        language = order.deviceWearer?.language,
       )
       order.addresses.find { address -> address.addressType == AddressType.SECONDARY }.let { address ->
         {
