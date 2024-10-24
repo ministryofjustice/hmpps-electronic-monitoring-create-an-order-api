@@ -25,7 +25,9 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringInstallationLocationType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.EnforcementZoneType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MonitoringConditionType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderTypeDescription
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsErrorResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsResult
@@ -335,7 +337,7 @@ class OrderControllerTest : IntegrationTestBase() {
       	"order_request_type": "",
       	"order_start": "${mockStartDate.format(formatter)}",
       	"order_type": "community",
-      	"order_type_description": "",
+      	"order_type_description": "DAPOL",
       	"order_type_detail": "",
       	"order_variation_date": "",
       	"order_variation_details": "",
@@ -550,7 +552,7 @@ class OrderControllerTest : IntegrationTestBase() {
       	"order_request_type": "",
       	"order_start": "${mockStartDate.format(formatter)}",
       	"order_type": "community",
-      	"order_type_description": "",
+      	"order_type_description": "DAPOL",
       	"order_type_detail": "",
       	"order_variation_date": "",
       	"order_variation_details": "",
@@ -720,7 +722,7 @@ class OrderControllerTest : IntegrationTestBase() {
     val conditions = MonitoringConditions(
       orderId = order.id,
       orderType = "community",
-
+      orderTypeDescription = OrderTypeDescription.DAPOL,
       devicesRequired = arrayOf("Location - fitted,Alcohol (Remote Breath)"),
       startDate = mockStartDate,
       endDate = mockEndDate,
@@ -729,7 +731,7 @@ class OrderControllerTest : IntegrationTestBase() {
       exclusionZone = true,
       alcohol = true,
       caseId = "d8ea62e61bb8d610a10c20e0b24bcb85",
-      conditionType = "Requirement of Community Order",
+      conditionType = MonitoringConditionType.REQUIREMENT_OF_A_COMMUNITY_ORDER,
     )
     val curfewConditions = CurfewConditions(
       orderId = order.id,

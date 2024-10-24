@@ -27,6 +27,8 @@ class MonitoringConditionsService(
 
     with(monitoringConditionsUpdateRecord) {
       monitoringConditions.orderType = orderType
+      monitoringConditions.orderTypeDescription = orderTypeDescription
+      monitoringConditions.conditionType = conditionType
       monitoringConditions.devicesRequired = devicesRequired
       monitoringConditions.acquisitiveCrime = acquisitiveCrime
       monitoringConditions.dapol = dapol
