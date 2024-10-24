@@ -3,57 +3,42 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.s
 import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Address
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.AddressRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.UpdateDeviceWearerAddressDto
 import java.util.UUID
 
 @Service
-class AddressService(
-
-  val addressRepo: AddressRepository,
-) : OrderSectionServiceBase() {
-
-  fun deleteAddress(
-    orderId: UUID,
-    username: String,
-    addressType: AddressType,
-  ) {
-    addressRepo.deleteByOrderIdAndOrderUsernameAndAddressType(
-      orderId,
-      username,
-      addressType,
-    )
-  }
-
+class AddressService() : OrderSectionServiceBase() {
   @Transactional
   fun updateAddress(
     orderId: UUID,
     username: String,
     updateRecord: UpdateDeviceWearerAddressDto,
-  ): Address {
+  ): Address? {
     // Verify the order belongs to the user and is in draft state
-    this.findEditableOrder(orderId, username)
-    // Remove the existing address
-    this.deleteAddress(
-      orderId,
-      username,
-      updateRecord.addressType,
-    )
+    val order = this.findEditableOrder(orderId, username)
 
-    addressRepo.flush()
-
-    // Create a new address
-    val address = Address(
-      orderId = orderId,
-      addressType = updateRecord.addressType,
-      addressLine1 = updateRecord.addressLine1,
-      addressLine2 = updateRecord.addressLine2,
-      addressLine3 = updateRecord.addressLine3,
-      addressLine4 = updateRecord.addressLine4,
-      postcode = updateRecord.postcode,
-    )
-
-    return addressRepo.save(address)
+    // If the address type exists already, update it - otherwise, create it
+    val existingAddress = order.addresses.find { it.addressType == updateRecord.addressType }
+    var newAddress: Address? = null
+    if (existingAddress != null) {
+      existingAddress.addressLine1 = updateRecord.addressLine1
+      existingAddress.addressLine2 = updateRecord.addressLine2
+      existingAddress.addressLine3 = updateRecord.addressLine3
+      existingAddress.addressLine4 = updateRecord.addressLine4
+      existingAddress.postcode = updateRecord.postcode
+    } else {
+      newAddress = Address(
+        orderId = orderId,
+        addressType = updateRecord.addressType,
+        addressLine1 = updateRecord.addressLine1,
+        addressLine2 = updateRecord.addressLine2,
+        addressLine3 = updateRecord.addressLine3,
+        addressLine4 = updateRecord.addressLine4,
+        postcode = updateRecord.postcode,
+      )
+      order.addresses.add(newAddress)
+    }
+    orderRepo.save(order)
+    return existingAddress ?: newAddress
   }
 }

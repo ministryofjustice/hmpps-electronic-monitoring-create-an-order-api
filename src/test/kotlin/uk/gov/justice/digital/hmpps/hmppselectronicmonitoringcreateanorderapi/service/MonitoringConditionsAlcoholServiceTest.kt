@@ -1,15 +1,12 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service
 
-import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.BeforeEach
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito
-import org.mockito.kotlin.any
-import org.mockito.kotlin.eq
-import org.mockito.kotlin.times
-import org.mockito.kotlin.verify
-import org.springframework.boot.test.autoconfigure.json.JsonTest
+import org.mockito.kotlin.whenever
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Address
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AlcoholMonitoringConditions
@@ -19,7 +16,6 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DeviceWearerAddressUsage
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.AddressRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.MonitoringConditionsAlcoholRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.UpdateAlcoholMonitoringConditionsDto
@@ -30,12 +26,16 @@ import java.time.ZonedDateTime
 import java.util.*
 
 @ActiveProfiles("test")
-@JsonTest
+@SpringBootTest
 class MonitoringConditionsAlcoholServiceTest {
-  private lateinit var alcoholMonitoringConditionsService: MonitoringConditionsAlcoholService
-  private lateinit var alcoholMonitoringConditionsRepo: MonitoringConditionsAlcoholRepository
-  private lateinit var addressRepo: AddressRepository
-  private lateinit var orderRepo: OrderRepository
+  @MockBean
+  lateinit var orderRepo: OrderRepository
+
+  @MockBean
+  lateinit var alcoholMonitoringConditionsRepo: MonitoringConditionsAlcoholRepository
+
+  @Autowired
+  lateinit var alcoholMonitoringConditionsService: MonitoringConditionsAlcoholService
 
   private val mockOrderId: UUID = UUID.fromString("da69b6d1-fb7f-4513-aee5-bd762cd8921d")
   private val mockUsername: String = "username"
@@ -82,42 +82,35 @@ class MonitoringConditionsAlcoholServiceTest {
     postcode = "mockPostcode",
   )
 
-  @BeforeEach
-  fun setup() {
-    alcoholMonitoringConditionsRepo = Mockito.mock(MonitoringConditionsAlcoholRepository::class.java)
-    addressRepo = Mockito.mock(AddressRepository::class.java)
-    orderRepo = Mockito.mock(OrderRepository::class.java)
-    alcoholMonitoringConditionsService = MonitoringConditionsAlcoholService(orderRepo, alcoholMonitoringConditionsRepo, addressRepo)
-  }
-
   @Nested
   inner class WhenCallingCreateOrUpdateAlcoholMonitoringConditions {
     @Test
     fun `gets the address ID from the order ID and address type`() {
-      Mockito.`when`(orderRepo.findByIdAndUsernameAndStatus(mockOrderId, mockUsername, OrderStatus.IN_PROGRESS))
-        .thenReturn(
-          Optional.of(
-            Order(
-              id = mockOrderId,
-              username = mockUsername,
-              status = OrderStatus.IN_PROGRESS,
-              monitoringConditionsAlcohol = AlcoholMonitoringConditions(
-                id = mockAlcoholMonitoringConditionsId,
-                orderId = mockOrderId,
-              ),
+      whenever(orderRepo.findByIdAndUsernameAndStatus(mockOrderId, mockUsername, OrderStatus.IN_PROGRESS)).thenReturn(
+        Optional.of(
+          Order(
+            id = mockOrderId,
+            username = mockUsername,
+            status = OrderStatus.IN_PROGRESS,
+            monitoringConditionsAlcohol = AlcoholMonitoringConditions(
+              id = mockAlcoholMonitoringConditionsId,
+              orderId = mockOrderId,
             ),
+            addresses = mutableListOf(mockAddress),
           ),
-        )
-      Mockito.`when`(addressRepo.findByOrderIdAndOrderUsernameAndOrderStatusAndAddressType(mockOrderId, mockUsername, OrderStatus.IN_PROGRESS, AddressType.PRIMARY))
-        .thenReturn(Optional.of(mockAddress))
-      Mockito.`when`(alcoholMonitoringConditionsRepo.save(mockAlcoholMonitoringConditions))
-        .thenReturn(mockAlcoholMonitoringConditions)
+        ),
+      )
+      whenever(alcoholMonitoringConditionsRepo.save(mockAlcoholMonitoringConditions)).thenReturn(
+        mockAlcoholMonitoringConditions,
+      )
 
-      val result = alcoholMonitoringConditionsService.createOrUpdateAlcoholMonitoringConditions(mockOrderId, mockUsername, mockAlcoholMonitoringConditionsUpdateRecord)
+      val result = alcoholMonitoringConditionsService.createOrUpdateAlcoholMonitoringConditions(
+        mockOrderId,
+        mockUsername,
+        mockAlcoholMonitoringConditionsUpdateRecord,
+      )
 
-      verify(addressRepo, times(1)).findByOrderIdAndOrderUsernameAndOrderStatusAndAddressType(mockOrderId, mockUsername, OrderStatus.IN_PROGRESS, AddressType.PRIMARY)
-      verify(alcoholMonitoringConditionsRepo, times(1)).save(mockAlcoholMonitoringConditions)
-      org.assertj.core.api.Assertions.assertThat(result).isEqualTo(mockAlcoholMonitoringConditions)
+      assertThat(result).isEqualTo(mockAlcoholMonitoringConditions)
     }
 
     @Test
@@ -141,28 +134,27 @@ class MonitoringConditionsAlcoholServiceTest {
         prisonName = null,
         probationOfficeName = "MockProbationOfficeName",
       )
-      Mockito.`when`(orderRepo.findByIdAndUsernameAndStatus(mockOrderId, mockUsername, OrderStatus.IN_PROGRESS))
-        .thenReturn(
-          Optional.of(
-            Order(
-              id = mockOrderId,
-              username = mockUsername,
-              status = OrderStatus.IN_PROGRESS,
-              monitoringConditionsAlcohol = AlcoholMonitoringConditions(
-                id = mockAlcoholMonitoringConditionsId,
-                orderId = mockOrderId,
-              ),
+      whenever(orderRepo.findByIdAndUsernameAndStatus(mockOrderId, mockUsername, OrderStatus.IN_PROGRESS)).thenReturn(
+        Optional.of(
+          Order(
+            id = mockOrderId,
+            username = mockUsername,
+            status = OrderStatus.IN_PROGRESS,
+            monitoringConditionsAlcohol = AlcoholMonitoringConditions(
+              id = mockAlcoholMonitoringConditionsId,
+              orderId = mockOrderId,
             ),
+            addresses = mutableListOf(mockAddress),
           ),
-        )
-      Mockito.`when`(alcoholMonitoringConditionsRepo.save(mockAlcoholMonitoringConditions))
-        .thenReturn(mockAlcoholMonitoringConditions)
+        ),
+      )
+      whenever(alcoholMonitoringConditionsRepo.save(mockAlcoholMonitoringConditions)).thenReturn(
+        mockAlcoholMonitoringConditions,
+      )
 
       val result = alcoholMonitoringConditionsService.createOrUpdateAlcoholMonitoringConditions(mockOrderId, mockUsername, mockAlcoholMonitoringConditionsUpdateRecord)
 
-      verify(addressRepo, times(0)).findByOrderIdAndOrderUsernameAndOrderStatusAndAddressType(eq(mockOrderId), eq(mockUsername), eq(OrderStatus.IN_PROGRESS), any())
-      verify(alcoholMonitoringConditionsRepo, times(1)).save(mockAlcoholMonitoringConditions)
-      org.assertj.core.api.Assertions.assertThat(result).isEqualTo(mockAlcoholMonitoringConditions)
+      assertThat(result).isEqualTo(mockAlcoholMonitoringConditions)
     }
   }
 }
