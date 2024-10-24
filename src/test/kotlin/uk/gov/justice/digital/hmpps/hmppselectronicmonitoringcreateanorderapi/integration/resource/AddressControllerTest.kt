@@ -13,15 +13,11 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DeviceWearerAddressUsage
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.AddressRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidationError
 import java.util.*
 
 class AddressControllerTest : IntegrationTestBase() {
-  @Autowired
-  lateinit var addressRepo: AddressRepository
-
   @Autowired
   lateinit var orderRepo: OrderRepository
 
@@ -33,7 +29,6 @@ class AddressControllerTest : IntegrationTestBase() {
 
   @BeforeEach
   fun setup() {
-    addressRepo.deleteAll()
     orderRepo.deleteAll()
   }
 
