@@ -38,6 +38,7 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
   private val mockGender: String = "mockGender"
   private val mockDisabilities: String = "mockDisabilities"
   private val mockLanguage: String = "mockLanguage"
+  private val mockHomeOfficeReferenceNumber: String = "mockHomeOfficeReferenceNumber"
   private val mockDateOfBirth: ZonedDateTime = ZonedDateTime.of(
     LocalDate.of(1970, 1, 1),
     LocalTime.NOON,
@@ -64,6 +65,7 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
               "pncId": "$mockPncId",
               "deliusId": "$mockDeliusId",
               "prisonNumber": "$mockPrisonNumber",
+              "homeOfficeReferenceNumber": "$mockHomeOfficeReferenceNumber",
               "firstName": "$mockFirstName",
               "lastName": "$mockLastName",
               "alias": "$mockAlias",
@@ -90,6 +92,7 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
     Assertions.assertThat(updateDeviceWearer.responseBody?.pncId).isEqualTo(mockPncId)
     Assertions.assertThat(updateDeviceWearer.responseBody?.deliusId).isEqualTo(mockDeliusId)
     Assertions.assertThat(updateDeviceWearer.responseBody?.prisonNumber).isEqualTo(mockPrisonNumber)
+    Assertions.assertThat(updateDeviceWearer.responseBody?.homeOfficeReferenceNumber).isEqualTo(mockHomeOfficeReferenceNumber)
     Assertions.assertThat(updateDeviceWearer.responseBody?.firstName).isEqualTo(mockFirstName)
     Assertions.assertThat(updateDeviceWearer.responseBody?.lastName).isEqualTo(mockLastName)
     Assertions.assertThat(updateDeviceWearer.responseBody?.alias).isEqualTo(mockAlias)

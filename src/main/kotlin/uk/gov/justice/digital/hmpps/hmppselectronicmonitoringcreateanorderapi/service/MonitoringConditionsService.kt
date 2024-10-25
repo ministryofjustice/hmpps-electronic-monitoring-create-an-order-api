@@ -27,6 +27,8 @@ class MonitoringConditionsService(
 
     with(monitoringConditionsUpdateRecord) {
       monitoringConditions.orderType = orderType
+      monitoringConditions.startDate = startDate
+      monitoringConditions.endDate = endDate
       monitoringConditions.orderTypeDescription = orderTypeDescription
       monitoringConditions.conditionType = conditionType
       monitoringConditions.devicesRequired = devicesRequired

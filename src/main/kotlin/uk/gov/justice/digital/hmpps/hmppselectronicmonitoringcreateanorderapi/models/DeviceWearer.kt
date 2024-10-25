@@ -32,6 +32,9 @@ data class DeviceWearer(
   @Column(name = "DELIUS_ID", nullable = true)
   var deliusId: String? = null,
 
+  @Column(name = "HOME_OFFICE_REFERENCE_NUMBER", nullable = true)
+  var homeOfficeReferenceNumber: String? = null,
+
   @Column(name = "PRISON_NUMBER", nullable = true)
   var prisonNumber: String? = null,
 

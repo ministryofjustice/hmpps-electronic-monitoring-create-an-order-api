@@ -280,10 +280,11 @@ class OrderControllerTest : IntegrationTestBase() {
     "parent_address_post_code": "",
     "parent_phone_number": "07401111111",
     "parent_dob": "",
-    "pnc_id": "",
-    "nomis_id": "",
-    "delius_id": "",
-    "prison_number": "",
+    "pnc_id": "pncId",
+    "nomis_id": "nomisId",
+    "delius_id": "deliusId",
+    "prison_number": "prisonNumber",
+    "home_office_case_reference_number": "homeOfficeReferenceNumber",
     "interpreter_required": "true",
     "language": "British Sign"
 }
@@ -495,10 +496,11 @@ class OrderControllerTest : IntegrationTestBase() {
     "parent_address_post_code": "",
     "parent_phone_number": "07401111111",
     "parent_dob": "",
-    "pnc_id": "",
-    "nomis_id": "",
-    "delius_id": "",
-    "prison_number": "",
+    "pnc_id": "pncId",
+    "nomis_id": "nomisId",
+    "delius_id": "deliusId",
+    "prison_number": "prisonNumber",
+    "home_office_case_reference_number": "homeOfficeReferenceNumber",
     "interpreter_required": "true",
     "language": "British Sign"
 }
@@ -676,6 +678,11 @@ class OrderControllerTest : IntegrationTestBase() {
       disabilities = "Vision,Hearing",
       interpreterRequired = true,
       language = "British Sign",
+      pncId = "pncId",
+      deliusId = "deliusId",
+      nomisId = "nomisId",
+      prisonNumber = "prisonNumber",
+      homeOfficeReferenceNumber = "homeOfficeReferenceNumber",
     )
 
     order.deviceWearerResponsibleAdult = ResponsibleAdult(
