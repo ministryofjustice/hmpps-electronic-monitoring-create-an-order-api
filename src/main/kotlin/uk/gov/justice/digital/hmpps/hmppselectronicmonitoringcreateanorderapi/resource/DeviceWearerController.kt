@@ -69,6 +69,8 @@ data class UpdateDeviceWearerDto(
 
   val prisonNumber: String? = null,
 
+  var homeOfficeReferenceNumber: String? = null,
+
   @field:Size(min = 1, message = "First name is required")
   val firstName: String? = null,
 

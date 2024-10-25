@@ -122,6 +122,9 @@ data class DeviceWearer(
   @JsonProperty("prison_number")
   var prisonNumber: String? = "",
 
+  @JsonProperty("home_office_case_reference_number")
+  var homeOfficeReferenceNumber: String? = "",
+
   @JsonProperty("interpreter_required")
   var interpreterRequired: String? = "",
 
@@ -163,6 +166,11 @@ data class DeviceWearer(
         parentPhoneNumber = order.deviceWearerResponsibleAdult?.contactNumber,
         interpreterRequired = order.deviceWearer?.interpreterRequired!!.toString(),
         language = order.deviceWearer?.language,
+        nomisId = order.deviceWearer?.nomisId,
+        pncId = order.deviceWearer?.pncId,
+        deliusId = order.deviceWearer?.deliusId,
+        homeOfficeReferenceNumber = order.deviceWearer?.homeOfficeReferenceNumber,
+        prisonNumber = order.deviceWearer?.prisonNumber,
       )
       order.addresses.find { address -> address.addressType == AddressType.SECONDARY }.let { address ->
         {

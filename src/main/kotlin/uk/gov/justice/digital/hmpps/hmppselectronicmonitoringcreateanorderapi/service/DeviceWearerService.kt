@@ -31,6 +31,7 @@ class DeviceWearerService(
       deviceWearer.pncId = pncId
       deviceWearer.deliusId = deliusId
       deviceWearer.prisonNumber = prisonNumber
+      deviceWearer.homeOfficeReferenceNumber = homeOfficeReferenceNumber
       deviceWearer.firstName = firstName
       deviceWearer.lastName = lastName
       deviceWearer.alias = alias

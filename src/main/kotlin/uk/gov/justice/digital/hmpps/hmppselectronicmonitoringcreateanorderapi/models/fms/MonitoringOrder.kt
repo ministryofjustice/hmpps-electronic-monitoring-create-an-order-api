@@ -180,12 +180,13 @@ data class MonitoringOrder(
       val monitoringOrder = MonitoringOrder(
         deviceWearer = order.fmsDeviceWearerId,
         orderType = conditions.orderType,
+        orderTypeDescription = conditions.orderTypeDescription!!.value,
         deviceType = conditions.devicesRequired?.joinToString { "," },
         orderStart = conditions.startDate?.format(formatter),
         orderEnd = conditions.endDate?.format(formatter),
         serviceEndDate = conditions.endDate?.format(formatter),
         caseId = conditions.caseId,
-        conditionType = conditions.conditionType,
+        conditionType = conditions.conditionType!!.value,
         orderId = order.id.toString(),
         orderStatus = "Not Started",
       )

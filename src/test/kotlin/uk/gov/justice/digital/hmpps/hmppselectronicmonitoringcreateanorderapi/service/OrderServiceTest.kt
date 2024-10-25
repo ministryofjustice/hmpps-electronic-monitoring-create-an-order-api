@@ -30,7 +30,9 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringInstallationLocationType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.EnforcementZoneType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MonitoringConditionType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderTypeDescription
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.MonitoringOrder
@@ -136,6 +138,7 @@ class OrderServiceTest {
     val conditions = MonitoringConditions(
       orderId = order.id,
       orderType = "community",
+      orderTypeDescription = OrderTypeDescription.DAPOL,
       devicesRequired = arrayOf("Location - fitted,Alcohol (Remote Breath)"),
       startDate = ZonedDateTime.of(2100, 1, 1, 1, 1, 1, 1, ZoneId.systemDefault()),
       endDate = ZonedDateTime.of(2101, 1, 1, 1, 1, 1, 1, ZoneId.systemDefault()),
@@ -144,7 +147,7 @@ class OrderServiceTest {
       exclusionZone = true,
       alcohol = true,
       caseId = "d8ea62e61bb8d610a10c20e0b24bcb85",
-      conditionType = "Requirement of Community Order",
+      conditionType = MonitoringConditionType.REQUIREMENT_OF_A_COMMUNITY_ORDER,
     )
     val curfewConditions = CurfewConditions(
       orderId = order.id,
