@@ -39,6 +39,16 @@ class OrderService(
   fun submitOrder(id: UUID, username: String): Order {
     val order = getOrder(username, id)!!
 
+    if (order.status == OrderStatus.SUBMITTED) {
+      throw IllegalStateException("Order $id for $username has already been submitted")
+    }
+
+    if (order.status == OrderStatus.ERROR) {
+      throw IllegalStateException("Order $id for $username has encountered an error and cannot be submitted")
+      // TODO: Determine suitable error message for this condition.
+    }
+
+    if (order.status == OrderStatus.IN_PROGRESS) {
 //    TODO: Add form validation. The FMS methods below will fail if they are passed an invalid order.
 
 //    create FMS device wearer
@@ -53,8 +63,10 @@ class OrderService(
 
 //    TODO: Upload attachments
 
-    order.status = OrderStatus.SUBMITTED
-    repo.save(order)
+      order.status = OrderStatus.SUBMITTED
+      repo.save(order)
+    }
+
     return order
   }
 

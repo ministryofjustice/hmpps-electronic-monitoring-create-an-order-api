@@ -216,6 +216,34 @@ class OrderServiceTest {
     return order
   }
 
+  @Test
+  fun `Should throw an error if an attempt is made to re-submit a submitted order`() {
+    val mockOrder = createReadyToSubmitOrder()
+    mockOrder.status = OrderStatus.SUBMITTED
+
+    whenever(repo.findByUsernameAndId("mockUser", mockOrder.id)).thenReturn(Optional.of(mockOrder))
+
+    val e = org.junit.jupiter.api.Assertions.assertThrows(IllegalStateException::class.java) {
+      service.submitOrder(mockOrder.id, "mockUser")
+    }
+
+    Assertions.assertThat(e.message).isEqualTo("Order ${mockOrder.id} for mockUser has already been submitted")
+  }
+
+  @Test
+  fun `Should throw an error if an attempt is made to submit an order with error status`() {
+    val mockOrder = createReadyToSubmitOrder()
+    mockOrder.status = OrderStatus.ERROR
+
+    whenever(repo.findByUsernameAndId("mockUser", mockOrder.id)).thenReturn(Optional.of(mockOrder))
+
+    val e = org.junit.jupiter.api.Assertions.assertThrows(IllegalStateException::class.java) {
+      service.submitOrder(mockOrder.id, "mockUser")
+    }
+
+    Assertions.assertThat(e.message).isEqualTo("Order ${mockOrder.id} for mockUser has encountered an error and cannot be submitted")
+  }
+
   @Disabled
   @Test
   fun `Should create fms device wearer and monitoring order and save both id to database`() {
