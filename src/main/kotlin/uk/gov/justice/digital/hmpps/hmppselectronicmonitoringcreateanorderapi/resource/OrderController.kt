@@ -30,10 +30,10 @@ class OrderController(
   }
 
   @PostMapping("/orders/{orderId}/submit")
-  fun submitOrder(@PathVariable orderId: UUID, authentication: Authentication): ResponseEntity<Any> {
+  fun submitOrder(@PathVariable orderId: UUID, authentication: Authentication): ResponseEntity<Order> {
     val username = authentication.name
-    orderService.submitOrder(orderId, username)
-    return ResponseEntity(HttpStatus.OK)
+    val order = orderService.submitOrder(orderId, username)
+    return ResponseEntity(order, HttpStatus.OK)
   }
 
   @GetMapping("/orders/{orderId}")
