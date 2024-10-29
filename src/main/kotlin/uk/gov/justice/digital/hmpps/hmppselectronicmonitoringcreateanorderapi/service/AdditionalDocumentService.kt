@@ -24,7 +24,7 @@ class AdditionalDocumentService(
   val webClient: DocumentApiClient,
 ) {
 
-  val allowedFileExtensions: List<String> = listOf("pdf", "jpeg", "png")
+  val allowedFileExtensions: List<String> = listOf("pdf", "png", "jpeg", "jpg")
 
   fun getDocument(orderId: UUID, username: String, documentType: DocumentType): ResponseEntity<Flux<InputStreamResource>>? {
     val doc = repo.findAdditionalDocumentsByOrderIdAndOrderUsernameAndFileType(orderId, username, documentType).orElseThrow {
