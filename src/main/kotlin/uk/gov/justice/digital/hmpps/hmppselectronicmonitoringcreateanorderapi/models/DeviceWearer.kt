@@ -69,4 +69,16 @@ data class DeviceWearer(
 
   @OneToOne(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "deviceWearer", orphanRemoval = true)
   var alternativeContactDetails: AlternativeContractDetails? = null,
-)
+) {
+  val isValid: Boolean
+    get() = (
+      noFixedAbode != null &&
+        !firstName.isNullOrBlank() &&
+        !lastName.isNullOrBlank() &&
+        adultAtTimeOfInstallation != null &&
+        !sex.isNullOrBlank() &&
+        !gender.isNullOrBlank() &&
+        dateOfBirth != null &&
+        noFixedAbode != null
+      )
+}
