@@ -21,7 +21,7 @@ class EnforcementZoneService(
 
 ) : OrderSectionServiceBase() {
 
-  val allowedFileExtensions: List<String> = listOf("pdf", "jpeg")
+  val allowedFileExtensions: List<String> = listOf("pdf", "jpeg", "jpg")
 
   fun updateEnforcementZone(orderId: UUID, username: String, enforcementZone: EnforcementZoneConditions) {
     val order = findEditableOrder(orderId, username)

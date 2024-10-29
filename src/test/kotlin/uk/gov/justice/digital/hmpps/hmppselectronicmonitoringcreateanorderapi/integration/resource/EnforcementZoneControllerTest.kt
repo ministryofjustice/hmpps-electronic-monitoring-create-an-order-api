@@ -272,7 +272,7 @@ class EnforcementZoneControllerTest : IntegrationTestBase() {
       .returnResult()
 
     val error = result.responseBody!!.first()
-    Assertions.assertThat(error.userMessage).isEqualTo("Validation failure: Unsupported or missing file type txt. Supported file types: pdf, jpeg")
+    Assertions.assertThat(error.userMessage).isEqualTo("Validation failure: Unsupported or missing file type txt. Supported file types: pdf, jpeg, jpg")
   }
 
   @Test

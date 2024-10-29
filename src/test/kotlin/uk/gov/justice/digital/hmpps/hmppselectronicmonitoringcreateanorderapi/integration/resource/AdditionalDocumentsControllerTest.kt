@@ -72,7 +72,7 @@ class AdditionalDocumentsControllerTest : IntegrationTestBase() {
       .returnResult()
 
     val error = result.responseBody!!.first()
-    Assertions.assertThat(error.userMessage).isEqualTo("Validation failure: Unsupported or missing file type txt. Supported file types: pdf, jpeg, png")
+    Assertions.assertThat(error.userMessage).isEqualTo("Validation failure: Unsupported or missing file type txt. Supported file types: pdf, png, jpeg, jpg")
   }
 
   @Test
