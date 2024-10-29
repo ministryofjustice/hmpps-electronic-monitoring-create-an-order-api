@@ -17,31 +17,40 @@ data class ResponsibleOfficer(
   @Column(name = "ORDER_ID", nullable = false, unique = true)
   val orderId: UUID,
 
-  @Column(name = "NAME", nullable = true)
-  var name: String? = null,
+  @Column(name = "RESPONSIBLE_OFFICER_NAME", nullable = true)
+  var responsibleOfficerName: String? = null,
 
-  @Column(name = "PHONE_NUMBER", nullable = true)
-  var phoneNumber: String? = null,
+  @Column(name = "RESPONSIBLE_OFFICER_PHONE_NUMBER", nullable = true)
+  var responsibleOfficerPhoneNumber: String? = null,
 
-  @Column(name = "ORGANISATION", nullable = true)
-  var organisation: String? = null,
+  @Column(name = "RESPONSIBLE_ORGANISATION", nullable = true)
+  var responsibleOrganisation: String? = null,
 
-  @Column(name = "ORGANISATION_REGION", nullable = true)
-  var organisationRegion: String? = null,
+  @Column(name = "RESPONSIBLE_ORGANISATION_REGION", nullable = true)
+  var responsibleOrganisationRegion: String? = null,
 
-  @Column(name = "ORGANISATION_POST_CODE", nullable = true)
-  var organisationPostCode: String? = null,
+  @Column(name = "RESPONSIBLE_ORGANISATION_ADDRESS_ID", nullable = true)
+  var responsibleOrganisationAddressId: UUID? = null,
 
-  @Column(name = "ORGANISATION_PHONE_NUMBER", nullable = true)
-  var organisationPhoneNumber: String? = null,
+  @Column(name = "RESPONSIBLE_ORGANISATION_PHONE_NUMBER", nullable = true)
+  var responsibleOrganisationPhoneNumber: String? = null,
 
-  @Column(name = "ORGANISATION_EMAIL", nullable = true)
-  var organisationEmail: String? = null,
+  @Column(name = "RESPONSIBLE_ORGANISATION_EMAIL", nullable = true)
+  var responsibleOrganisationEmail: String? = null,
 
-  @Column(name = "NOTIFYING_ORGANISATION", nullable = true)
-  var notifyingOrganisation: String? = null,
+  @Column(name = "NOTIFYING_ORGANISATION_EMAIL", nullable = true)
+  var notifyingOrganisationEmail: String? = null,
 
   @OneToOne
   @JoinColumn(name = "ORDER_ID", updatable = false, insertable = false)
   private val order: Order? = null,
+
+  @OneToOne(optional = true)
+  @JoinColumn(
+    name = "RESPONSIBLE_ORGANISATION_ADDRESS_ID",
+    updatable = false,
+    insertable = false,
+    nullable = true,
+  )
+  private val responsibleOrganisationAddress: Address,
 )
