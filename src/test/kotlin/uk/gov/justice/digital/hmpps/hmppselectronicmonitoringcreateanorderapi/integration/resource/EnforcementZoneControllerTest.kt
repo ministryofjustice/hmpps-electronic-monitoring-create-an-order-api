@@ -74,7 +74,9 @@ class EnforcementZoneControllerTest : IntegrationTestBase() {
       .expectBodyList(ErrorResponse::class.java)
       .returnResult()
     val error = result.responseBody!!.first()
-    Assertions.assertThat(error.developerMessage).isEqualTo("An editable order with ${order.id} does not exist")
+    Assertions.assertThat(
+      error.developerMessage,
+    ).isEqualTo("An editable order with ${order.id} does not exist")
   }
 
   @Test
@@ -97,7 +99,9 @@ class EnforcementZoneControllerTest : IntegrationTestBase() {
       .expectBodyList(ErrorResponse::class.java)
       .returnResult()
     val error = result.responseBody!!.first()
-    Assertions.assertThat(error.developerMessage).isEqualTo("An editable order with ${order.id} does not exist")
+    Assertions.assertThat(
+      error.developerMessage,
+    ).isEqualTo("An editable order with ${order.id} does not exist")
   }
 
   @Test
@@ -213,7 +217,7 @@ class EnforcementZoneControllerTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `Should save enforcement zone condition and remove previous zone condition with same zoneId and clear file in document api`() {
+  fun `Should replace the enforcement zone condition and clear file in document api`() {
     val zone = EnforcementZoneConditions(
       zoneId = 0,
       zoneType = EnforcementZoneType.EXCLUSION,
@@ -272,7 +276,11 @@ class EnforcementZoneControllerTest : IntegrationTestBase() {
       .returnResult()
 
     val error = result.responseBody!!.first()
-    Assertions.assertThat(error.userMessage).isEqualTo("Validation failure: Unsupported or missing file type txt. Supported file types: pdf, jpeg, jpg")
+    Assertions.assertThat(
+      error.userMessage,
+    ).isEqualTo(
+      "Validation failure: Unsupported or missing file type txt. Supported file types: pdf, jpeg, jpg",
+    )
   }
 
   @Test
@@ -316,7 +324,7 @@ class EnforcementZoneControllerTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `Should remove existing document and save document to document api and update enforcement zone with file id and name`() {
+  fun `Should replace the document and update enforcement zone with file id and name`() {
     val zone = EnforcementZoneConditions(
       zoneId = 0,
       zoneType = EnforcementZoneType.EXCLUSION,

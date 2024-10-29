@@ -22,7 +22,7 @@ class CurfewTimetableController(val service: CurfewTimetableService) {
 
   @Validated
   @PutMapping("/orders/{orderId}/monitoring-conditions-curfew-timetable")
-  fun updateDeviceWearer(
+  fun updateCurfewTimetable(
     @PathVariable orderId: UUID,
     @RequestBody @Valid timetable: List<CurfewTimeTable>,
     authentication: Authentication,

@@ -57,7 +57,9 @@ class CurfewConditionControllerTest : IntegrationTestBase() {
       .expectBodyList(ErrorResponse::class.java)
       .returnResult()
     val error = result.responseBody!!.first()
-    Assertions.assertThat(error.developerMessage).isEqualTo("An editable order with ${order.id} does not exist")
+    Assertions.assertThat(
+      error.developerMessage,
+    ).isEqualTo("An editable order with ${order.id} does not exist")
   }
 
   @Test
@@ -80,7 +82,9 @@ class CurfewConditionControllerTest : IntegrationTestBase() {
       .expectBodyList(ErrorResponse::class.java)
       .returnResult()
     val error = result.responseBody!!.first()
-    Assertions.assertThat(error.developerMessage).isEqualTo("An editable order with ${order.id} does not exist")
+    Assertions.assertThat(
+      error.developerMessage,
+    ).isEqualTo("An editable order with ${order.id} does not exist")
   }
 
   @Test
@@ -104,7 +108,9 @@ class CurfewConditionControllerTest : IntegrationTestBase() {
       .returnResult()
     val error = result.responseBody!!
     Assertions.assertThat(result.responseBody).hasSize(2)
-    Assertions.assertThat(error).contains(ValidationError("curfewAddress", "Curfew address is required"))
+    Assertions.assertThat(
+      error,
+    ).contains(ValidationError("curfewAddress", "Curfew address is required"))
     Assertions.assertThat(error).contains(ValidationError("startDate", "Enter curfew start day"))
   }
 
@@ -118,7 +124,12 @@ class CurfewConditionControllerTest : IntegrationTestBase() {
       .contentType(MediaType.APPLICATION_JSON)
       .body(
         BodyInserters.fromValue(
-          mockRequestBody(order.id, ZonedDateTime.now().plusDays(-3), ZonedDateTime.now().plusDays(-2), "PRIMARY"),
+          mockRequestBody(
+            order.id,
+            ZonedDateTime.now().plusDays(-3),
+            ZonedDateTime.now().plusDays(-2),
+            "PRIMARY",
+          ),
         ),
       )
       .headers(setAuthorisation())
@@ -130,8 +141,12 @@ class CurfewConditionControllerTest : IntegrationTestBase() {
     val error = result.responseBody!!
     Assertions.assertThat(result.responseBody).hasSize(2)
 
-    Assertions.assertThat(error).contains(ValidationError("startDate", "Curfew start day must be in the future"))
-    Assertions.assertThat(error).contains(ValidationError("endDate", "Curfew end day must be in the future"))
+    Assertions.assertThat(
+      error,
+    ).contains(ValidationError("startDate", "Curfew start day must be in the future"))
+    Assertions.assertThat(
+      error,
+    ).contains(ValidationError("endDate", "Curfew end day must be in the future"))
   }
 
   @Test
@@ -144,7 +159,12 @@ class CurfewConditionControllerTest : IntegrationTestBase() {
       .contentType(MediaType.APPLICATION_JSON)
       .body(
         BodyInserters.fromValue(
-          mockRequestBody(order.id, ZonedDateTime.now().plusDays(3), ZonedDateTime.now().plusDays(2), "PRIMARY"),
+          mockRequestBody(
+            order.id,
+            ZonedDateTime.now().plusDays(3),
+            ZonedDateTime.now().plusDays(2),
+            "PRIMARY",
+          ),
         ),
       )
       .headers(setAuthorisation())
@@ -156,7 +176,9 @@ class CurfewConditionControllerTest : IntegrationTestBase() {
     val error = result.responseBody!!
     Assertions.assertThat(result.responseBody).hasSize(1)
 
-    Assertions.assertThat(error).contains(ValidationError("endDate", "End date must be after start date"))
+    Assertions.assertThat(
+      error,
+    ).contains(ValidationError("endDate", "End date must be after start date"))
   }
 
   @Test
@@ -181,7 +203,9 @@ class CurfewConditionControllerTest : IntegrationTestBase() {
       val updatedOrder = firstValue
       Assertions.assertThat(updatedOrder.curfewConditions?.startDate).isEqualTo(mockStartDate)
       Assertions.assertThat(updatedOrder.curfewConditions?.endDate).isEqualTo(mockEndDate)
-      Assertions.assertThat(updatedOrder.curfewConditions?.curfewAddress).isEqualTo("PRIMARY,SECONDARY")
+      Assertions.assertThat(
+        updatedOrder.curfewConditions?.curfewAddress,
+      ).isEqualTo("PRIMARY,SECONDARY")
     }
   }
 

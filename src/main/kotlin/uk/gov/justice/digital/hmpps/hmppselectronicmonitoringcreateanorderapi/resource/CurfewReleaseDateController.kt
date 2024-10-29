@@ -23,7 +23,7 @@ class CurfewReleaseDateController(val service: CurfewReleaseDateService) {
 
   @Validated
   @PutMapping("/orders/{orderId}/monitoring-conditions-curfew-release-date")
-  fun updateDeviceWearer(
+  fun updateCurfewReleaseDateConditions(
     @PathVariable orderId: UUID,
     @RequestBody @Valid curfewReleaseDateConditions: CurfewReleaseDateConditions,
     authentication: Authentication,

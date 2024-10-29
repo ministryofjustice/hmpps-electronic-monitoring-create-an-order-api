@@ -55,9 +55,13 @@ class AdditionalDocumentServiceTest {
 
   @Test
   fun `document exist should retrieve raw document from document management api`() {
-    `when`(repo.findAdditionalDocumentsByOrderIdAndOrderUsernameAndFileType(orderId, username, docType)).thenReturn(Optional.of(doc))
+    `when`(
+      repo.findAdditionalDocumentsByOrderIdAndOrderUsernameAndFileType(orderId, username, docType),
+    ).thenReturn(Optional.of(doc))
     `when`(client.getDocument(doc.id.toString())).thenReturn(
-      ResponseEntity.ok().body(Flux.just(InputStreamResource(ByteArrayInputStream("".toByteArray())))),
+      ResponseEntity.ok().body(
+        Flux.just(InputStreamResource(ByteArrayInputStream("".toByteArray()))),
+      ),
     )
     service.getDocument(orderId, username, docType)
     verify(client, times(1)).getDocument(doc.id.toString())
@@ -65,7 +69,9 @@ class AdditionalDocumentServiceTest {
 
   @Test
   fun `delete document in repo and in document management api`() {
-    `when`(repo.findAdditionalDocumentsByOrderIdAndOrderUsernameAndFileType(orderId, username, docType)).thenReturn(Optional.of(doc))
+    `when`(
+      repo.findAdditionalDocumentsByOrderIdAndOrderUsernameAndFileType(orderId, username, docType),
+    ).thenReturn(Optional.of(doc))
 
     service.deleteDocument(orderId, username, docType)
 
@@ -95,12 +101,16 @@ class AdditionalDocumentServiceTest {
         ),
       )
     }
-    Assertions.assertThat(e.message).isEqualTo("Unsupported or missing file type txt. Supported file types: pdf, png, jpeg, jpg")
+    Assertions.assertThat(
+      e.message,
+    ).isEqualTo("Unsupported or missing file type txt. Supported file types: pdf, png, jpeg, jpg")
   }
 
   @Test
   fun `document with same type already exist, remove old document`() {
-    `when`(repo.findAdditionalDocumentsByOrderIdAndOrderUsernameAndFileType(orderId, username, docType)).thenReturn(Optional.of(doc))
+    `when`(
+      repo.findAdditionalDocumentsByOrderIdAndOrderUsernameAndFileType(orderId, username, docType),
+    ).thenReturn(Optional.of(doc))
 
     service.uploadDocument(
       orderId,
@@ -154,7 +164,9 @@ class AdditionalDocumentServiceTest {
         Assertions.assertThat(first.firstValue).isEqualTo(defaultUuid.toString())
         val multipartBody = second.firstValue.build()
         Assertions.assertThat(multipartBody["file"]?.get(0)).isNotNull
-        Assertions.assertThat(multipartBody["metadata"]?.get(0)?.body.toString()).isEqualTo("DocumentMetadata(orderId=$orderId, documentType=LICENCE)")
+        Assertions.assertThat(
+          multipartBody["metadata"]?.get(0)?.body.toString(),
+        ).isEqualTo("DocumentMetadata(orderId=$orderId, documentType=LICENCE)")
       }
     }
   }

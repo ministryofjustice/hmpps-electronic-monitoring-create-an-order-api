@@ -8,18 +8,9 @@ import java.util.*
 
 @Repository
 interface OrderRepository : JpaRepository<Order, UUID> {
-  fun findByUsername(
-    username: String,
-  ): List<Order>
+  fun findByUsername(username: String): List<Order>
 
-  fun findByUsernameAndId(
-    username: String,
-    id: UUID,
-  ): Optional<Order>
+  fun findByUsernameAndId(username: String, id: UUID): Optional<Order>
 
-  fun findByIdAndUsernameAndStatus(
-    id: UUID,
-    username: String,
-    status: OrderStatus,
-  ): Optional<Order>
+  fun findByIdAndUsernameAndStatus(id: UUID, username: String, status: OrderStatus): Optional<Order>
 }

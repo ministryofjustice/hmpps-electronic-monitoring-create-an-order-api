@@ -76,6 +76,11 @@ data class DeviceWearer(
   @JoinColumn(name = "ORDER_ID", updatable = false, insertable = false)
   private val order: Order? = null,
 
-  @OneToOne(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "deviceWearer", orphanRemoval = true)
+  @OneToOne(
+    fetch = FetchType.LAZY,
+    cascade = [ALL],
+    mappedBy = "deviceWearer",
+    orphanRemoval = true,
+  )
   var alternativeContactDetails: AlternativeContractDetails? = null,
 )

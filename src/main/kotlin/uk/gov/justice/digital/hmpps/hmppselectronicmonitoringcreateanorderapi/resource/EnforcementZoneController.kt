@@ -39,7 +39,10 @@ class EnforcementZoneController(
     return ResponseEntity(HttpStatus.OK)
   }
 
-  @PostMapping("/orders/{orderId}/enforcementZone/{zoneId}/attachment", produces = [MediaType.APPLICATION_JSON_VALUE])
+  @PostMapping(
+    "/orders/{orderId}/enforcementZone/{zoneId}/attachment",
+    produces = [MediaType.APPLICATION_JSON_VALUE],
+  )
   fun putAdditionalDocument(
     @PathVariable orderId: UUID,
     @PathVariable zoneId: Int,

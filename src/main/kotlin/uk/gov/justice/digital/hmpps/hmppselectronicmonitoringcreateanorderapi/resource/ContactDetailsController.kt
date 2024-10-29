@@ -11,30 +11,31 @@ import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Address
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateAddressDto
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.AddressService
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ContactDetails
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateContactDetailsDto
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.ContactDetailsService
 import java.util.*
 
 @RestController
 @PreAuthorize("hasRole('ROLE_EM_CEMO__CREATE_ORDER')")
 @RequestMapping("/api/")
-class AddressController(
-  @Autowired val addressService: AddressService,
+class ContactDetailsController(
+  @Autowired val contactDetailsService: ContactDetailsService,
 ) {
-  @PutMapping("/orders/{orderId}/address")
-  fun updateAddress(
+
+  @PutMapping("/orders/{orderId}/contact-details")
+  fun updateContactDetails(
     @PathVariable orderId: UUID,
-    @RequestBody @Valid addressUpdateRecord: UpdateAddressDto,
+    @RequestBody @Valid contactDetailsUpdateRecord: UpdateContactDetailsDto,
     authentication: Authentication,
-  ): ResponseEntity<Address> {
+  ): ResponseEntity<ContactDetails> {
     val username = authentication.name
-    val address = addressService.updateAddress(
+    val contactDetails = contactDetailsService.updateContactDetails(
       orderId,
       username,
-      addressUpdateRecord,
+      contactDetailsUpdateRecord,
     )
 
-    return ResponseEntity(address, HttpStatus.OK)
+    return ResponseEntity(contactDetails, HttpStatus.OK)
   }
 }

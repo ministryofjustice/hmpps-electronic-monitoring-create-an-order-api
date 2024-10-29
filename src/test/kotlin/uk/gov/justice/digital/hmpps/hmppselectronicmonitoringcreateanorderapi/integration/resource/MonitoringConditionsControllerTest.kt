@@ -72,10 +72,18 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
       .returnResult()
 
     Assertions.assertThat(updateMonitoringConditions.responseBody?.orderId).isEqualTo(order.id)
-    Assertions.assertThat(updateMonitoringConditions.responseBody?.orderType).isEqualTo(mockOrderType)
-    Assertions.assertThat(updateMonitoringConditions.responseBody?.orderTypeDescription).isEqualTo(mockOrderTypeDescription)
-    Assertions.assertThat(updateMonitoringConditions.responseBody?.conditionType).isEqualTo(mockConditionType)
-    Assertions.assertThat(updateMonitoringConditions.responseBody?.devicesRequired).isEqualTo(arrayOf("device1", "device2"))
+    Assertions.assertThat(
+      updateMonitoringConditions.responseBody?.orderType,
+    ).isEqualTo(mockOrderType)
+    Assertions.assertThat(
+      updateMonitoringConditions.responseBody?.orderTypeDescription,
+    ).isEqualTo(mockOrderTypeDescription)
+    Assertions.assertThat(
+      updateMonitoringConditions.responseBody?.conditionType,
+    ).isEqualTo(mockConditionType)
+    Assertions.assertThat(
+      updateMonitoringConditions.responseBody?.devicesRequired,
+    ).isEqualTo(arrayOf("device1", "device2"))
     Assertions.assertThat(updateMonitoringConditions.responseBody?.acquisitiveCrime).isTrue()
     Assertions.assertThat(updateMonitoringConditions.responseBody?.dapol).isTrue()
     Assertions.assertThat(updateMonitoringConditions.responseBody?.curfew).isTrue()

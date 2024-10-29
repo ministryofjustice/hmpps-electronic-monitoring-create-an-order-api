@@ -10,11 +10,11 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.in
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.SercoMockApiExtension.Companion.sercoApi
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Address
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AlcoholMonitoringConditions
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ContactDetails
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewReleaseDateConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewTimeTable
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearerContactDetails
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.EnforcementZoneConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationAndRisk
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.MonitoringConditions
@@ -216,7 +216,12 @@ class OrderControllerTest : IntegrationTestBase() {
       """
     sercoAuthApi.stubGrantToken()
 
-    sercoApi.stupCreateDeviceWearer(mockDeviceWearerJson, HttpStatus.INTERNAL_SERVER_ERROR, FmsResponse(), FmsErrorResponse(error = FmsErrorResponseDetails("", "Mock Create DW Error")))
+    sercoApi.stupCreateDeviceWearer(
+      mockDeviceWearerJson,
+      HttpStatus.INTERNAL_SERVER_ERROR,
+      FmsResponse(),
+      FmsErrorResponse(error = FmsErrorResponseDetails("", "Mock Create DW Error")),
+    )
     val result = webTestClient.post()
       .uri("/api/orders/${order.id}/submit")
       .headers(setAuthorisation())
@@ -228,7 +233,9 @@ class OrderControllerTest : IntegrationTestBase() {
 
     val error = result.responseBody!!
     assertThat(error.userMessage)
-      .isEqualTo("Error creating FMS Device Wearer for order: ${order.id} with error: Mock Create DW Error")
+      .isEqualTo(
+        "Error creating FMS Device Wearer for order: ${order.id} with error: Mock Create DW Error",
+      )
   }
 
   @Test
@@ -431,8 +438,17 @@ class OrderControllerTest : IntegrationTestBase() {
     """.trimIndent()
     sercoAuthApi.stubGrantToken()
 
-    sercoApi.stupCreateDeviceWearer(mockDeviceWearerJson, HttpStatus.OK, FmsResponse(result = listOf(FmsResult(message = "", id = "MockDeviceWearerId"))))
-    sercoApi.stupMonitoringOrder(mockOrderJson, HttpStatus.INTERNAL_SERVER_ERROR, FmsResponse(), FmsErrorResponse(error = FmsErrorResponseDetails("", "Mock Create MO Error")))
+    sercoApi.stupCreateDeviceWearer(
+      mockDeviceWearerJson,
+      HttpStatus.OK,
+      FmsResponse(result = listOf(FmsResult(message = "", id = "MockDeviceWearerId"))),
+    )
+    sercoApi.stupMonitoringOrder(
+      mockOrderJson,
+      HttpStatus.INTERNAL_SERVER_ERROR,
+      FmsResponse(),
+      FmsErrorResponse(error = FmsErrorResponseDetails("", "Mock Create MO Error")),
+    )
     var result = webTestClient.post()
       .uri("/api/orders/${order.id}/submit")
       .headers(setAuthorisation())
@@ -444,7 +460,9 @@ class OrderControllerTest : IntegrationTestBase() {
 
     val error = result.responseBody!!
     assertThat(error.userMessage)
-      .isEqualTo("Error creating FMS Monitoring Order for order: ${order.id} with error: Mock Create MO Error")
+      .isEqualTo(
+        "Error creating FMS Monitoring Order for order: ${order.id} with error: Mock Create MO Error",
+      )
   }
 
   @Test
@@ -647,8 +665,16 @@ class OrderControllerTest : IntegrationTestBase() {
     """.trimIndent()
     sercoAuthApi.stubGrantToken()
 
-    sercoApi.stupCreateDeviceWearer(mockDeviceWearerJson, HttpStatus.OK, FmsResponse(result = listOf(FmsResult(message = "", id = "MockDeviceWearerId"))))
-    sercoApi.stupMonitoringOrder(mockOrderJson, HttpStatus.OK, FmsResponse(result = listOf(FmsResult(message = "", id = "MockMonitoringOrderId"))))
+    sercoApi.stupCreateDeviceWearer(
+      mockDeviceWearerJson,
+      HttpStatus.OK,
+      FmsResponse(result = listOf(FmsResult(message = "", id = "MockDeviceWearerId"))),
+    )
+    sercoApi.stupMonitoringOrder(
+      mockOrderJson,
+      HttpStatus.OK,
+      FmsResponse(result = listOf(FmsResult(message = "", id = "MockMonitoringOrderId"))),
+    )
     webTestClient.post()
       .uri("/api/orders/${order.id}/submit")
       .headers(setAuthorisation())
@@ -719,7 +745,7 @@ class OrderControllerTest : IntegrationTestBase() {
       mappaCaseType = "CPPC (Critical Public Protection Case)",
     )
 
-    order.deviceWearerContactDetails = DeviceWearerContactDetails(
+    order.deviceWearerContactDetails = ContactDetails(
       orderId = order.id,
       contactNumber = "07401111111",
     )

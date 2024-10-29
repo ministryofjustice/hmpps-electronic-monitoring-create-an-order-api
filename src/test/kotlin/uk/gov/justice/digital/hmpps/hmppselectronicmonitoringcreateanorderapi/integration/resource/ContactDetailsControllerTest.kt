@@ -8,13 +8,13 @@ import org.springframework.http.MediaType
 import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.DeviceWearerContactDetailsRepository
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.ContactDetailsRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidationError
 
-class DeviceWearerContactDetailsControllerTest : IntegrationTestBase() {
+class ContactDetailsControllerTest : IntegrationTestBase() {
   @Autowired
-  lateinit var contactDetailRepo: DeviceWearerContactDetailsRepository
+  lateinit var contactDetailRepo: ContactDetailsRepository
 
   @Autowired
   lateinit var orderRepo: OrderRepository

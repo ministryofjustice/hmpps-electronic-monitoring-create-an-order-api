@@ -44,7 +44,7 @@ data class Order(
   var responsibleOfficer: ResponsibleOfficer? = null,
 
   @OneToOne(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "order", orphanRemoval = true)
-  var deviceWearerContactDetails: DeviceWearerContactDetails? = null,
+  var deviceWearerContactDetails: ContactDetails? = null,
 
   @OneToMany(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "order", orphanRemoval = true)
   var addresses: MutableList<Address> = mutableListOf(),
@@ -78,5 +78,4 @@ data class Order(
 
   @OneToMany(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "order", orphanRemoval = true)
   var curfewTimeTable: MutableList<CurfewTimeTable> = mutableListOf(),
-
 )

@@ -11,6 +11,7 @@ import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Address
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AlcoholMonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateAlcoholMonitoringConditionsDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringInstallationLocationType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
@@ -18,7 +19,6 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.MonitoringConditionsAlcoholRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.UpdateAlcoholMonitoringConditionsDto
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
@@ -40,7 +40,9 @@ class MonitoringConditionsAlcoholServiceTest {
   private val mockOrderId: UUID = UUID.fromString("da69b6d1-fb7f-4513-aee5-bd762cd8921d")
   private val mockUsername: String = "username"
   private val mockAddressId = UUID.fromString("506fdf2f-7c4e-4bc7-bdb6-e42ccbf2a4f4")
-  private val mockAlcoholMonitoringConditionsId = UUID.fromString("4f174060-6a26-41d3-ad7d-9b28f607a7df")
+  private val mockAlcoholMonitoringConditionsId = UUID.fromString(
+    "4f174060-6a26-41d3-ad7d-9b28f607a7df",
+  )
 
   private val mockStartDate: ZonedDateTime = ZonedDateTime.of(
     LocalDate.of(2025, 1, 1),
@@ -86,7 +88,9 @@ class MonitoringConditionsAlcoholServiceTest {
   inner class WhenCallingCreateOrUpdateAlcoholMonitoringConditions {
     @Test
     fun `gets the address ID from the order ID and address type`() {
-      whenever(orderRepo.findByIdAndUsernameAndStatus(mockOrderId, mockUsername, OrderStatus.IN_PROGRESS)).thenReturn(
+      whenever(
+        orderRepo.findByIdAndUsernameAndStatus(mockOrderId, mockUsername, OrderStatus.IN_PROGRESS),
+      ).thenReturn(
         Optional.of(
           Order(
             id = mockOrderId,
@@ -134,7 +138,9 @@ class MonitoringConditionsAlcoholServiceTest {
         prisonName = null,
         probationOfficeName = "MockProbationOfficeName",
       )
-      whenever(orderRepo.findByIdAndUsernameAndStatus(mockOrderId, mockUsername, OrderStatus.IN_PROGRESS)).thenReturn(
+      whenever(
+        orderRepo.findByIdAndUsernameAndStatus(mockOrderId, mockUsername, OrderStatus.IN_PROGRESS),
+      ).thenReturn(
         Optional.of(
           Order(
             id = mockOrderId,
@@ -152,7 +158,11 @@ class MonitoringConditionsAlcoholServiceTest {
         mockAlcoholMonitoringConditions,
       )
 
-      val result = alcoholMonitoringConditionsService.createOrUpdateAlcoholMonitoringConditions(mockOrderId, mockUsername, mockAlcoholMonitoringConditionsUpdateRecord)
+      val result = alcoholMonitoringConditionsService.createOrUpdateAlcoholMonitoringConditions(
+        mockOrderId,
+        mockUsername,
+        mockAlcoholMonitoringConditionsUpdateRecord,
+      )
 
       assertThat(result).isEqualTo(mockAlcoholMonitoringConditions)
     }
