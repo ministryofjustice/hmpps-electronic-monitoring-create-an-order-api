@@ -178,14 +178,14 @@ data class MonitoringOrder(
     fun fromOrder(order: Order): MonitoringOrder {
       val conditions = order.monitoringConditions!!
       val monitoringOrder = MonitoringOrder(
-        deviceWearer = order.fmsDeviceWearerId,
+        deviceWearer = "${order.deviceWearer!!.firstName}  ${order.deviceWearer!!.lastName}",
         orderType = conditions.orderType,
-        orderTypeDescription = conditions.orderTypeDescription!!.value,
+        orderTypeDescription = conditions.orderTypeDescription?.value,
         deviceType = conditions.devicesRequired?.joinToString { "," },
         orderStart = conditions.startDate?.format(formatter),
         orderEnd = conditions.endDate?.format(formatter),
         serviceEndDate = conditions.endDate?.format(formatter),
-        caseId = conditions.caseId,
+        caseId = order.fmsDeviceWearerId,
         conditionType = conditions.conditionType!!.value,
         orderId = order.id.toString(),
         orderStatus = "Not Started",

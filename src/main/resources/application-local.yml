@@ -8,6 +8,15 @@ spring:
     username: postgres
     password: postgres
 
+hmpps.sqs:
+  provider: localstack
+  localstackUrl: http://localhost:4566
+  useWebToken: false
+  queues:
+    courthearingeventqueue:
+      queueName: court_case_events_queue
+      queueArn: arn:aws:sns:eu-west-2:000000000000:court_case_events_queue
+      dlqName: court_case_events_dead_letter_queue
 services:
   hmppsauth:
     url: http://localhost:9090/auth

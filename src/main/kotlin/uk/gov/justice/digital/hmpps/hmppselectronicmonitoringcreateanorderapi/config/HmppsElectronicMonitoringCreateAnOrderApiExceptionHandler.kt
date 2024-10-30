@@ -146,7 +146,7 @@ class HmppsElectronicMonitoringCreateAnOrderApiExceptionHandler {
     ).also { log.error("Unexpected exception", e) }
 
   @ExceptionHandler(CreateSercoEntityException::class)
-  fun handleCreateSercoDeviceWearerException(e: Exception): ResponseEntity<ErrorResponse> = ResponseEntity
+  fun handleCreateSercoEntityException(e: Exception): ResponseEntity<ErrorResponse> = ResponseEntity
     .status(INTERNAL_SERVER_ERROR)
     .body(
       ErrorResponse(
