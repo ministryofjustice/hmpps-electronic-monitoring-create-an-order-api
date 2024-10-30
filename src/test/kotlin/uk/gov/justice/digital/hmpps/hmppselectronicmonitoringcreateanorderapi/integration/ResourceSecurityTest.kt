@@ -24,7 +24,9 @@ class ResourceSecurityTest : IntegrationTestBase() {
   @Test
   fun `Ensure all endpoints protected with PreAuthorize`() {
     // need to exclude any that are forbidden in helm configuration
-    val exclusions = File("helm_deploy").walk().filter { it.name.equals("values.yaml") }.flatMap { file ->
+    val exclusions = File("helm_deploy").walk().filter {
+      it.name.equals("values.yaml")
+    }.flatMap { file ->
       file.readLines().map { line ->
         line.takeIf { it.contains("location") }?.substringAfter("location ")?.substringBefore(" {")
       }
@@ -50,10 +52,9 @@ class ResourceSecurityTest : IntegrationTestBase() {
   }
 }
 
-private fun RequestMappingInfo.getMappings() =
-  methodsCondition.methods
-    .map { it.name }
-    .ifEmpty { listOf("") } // if no methods defined then match all rather than none
-    .flatMap { method ->
-      pathPatternsCondition?.patternValues?.map { "$method $it" } ?: emptyList()
-    }
+private fun RequestMappingInfo.getMappings() = methodsCondition.methods
+  .map { it.name }
+  .ifEmpty { listOf("") } // if no methods defined then match all rather than none
+  .flatMap { method ->
+    pathPatternsCondition?.patternValues?.map { "$method $it" } ?: emptyList()
+  }

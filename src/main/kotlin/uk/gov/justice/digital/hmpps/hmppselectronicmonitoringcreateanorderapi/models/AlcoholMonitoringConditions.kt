@@ -51,6 +51,11 @@ data class AlcoholMonitoringConditions(
   private val order: Order? = null,
 
   @OneToOne(optional = true)
-  @JoinColumn(name = "INSTALLATION_ADDRESS_ID", updatable = false, insertable = false, nullable = true)
+  @JoinColumn(
+    name = "INSTALLATION_ADDRESS_ID",
+    updatable = false,
+    insertable = false,
+    nullable = true,
+  )
   private val address: Address? = null,
 )

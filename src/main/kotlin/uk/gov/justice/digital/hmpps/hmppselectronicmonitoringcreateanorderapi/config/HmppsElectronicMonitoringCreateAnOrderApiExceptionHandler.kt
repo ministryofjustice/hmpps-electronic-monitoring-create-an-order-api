@@ -88,7 +88,9 @@ class HmppsElectronicMonitoringCreateAnOrderApiExceptionHandler {
   }
 
   @ExceptionHandler(HandlerMethodValidationException::class)
-  fun handleHandlerMethodValidationException(e: HandlerMethodValidationException): ResponseEntity<List<ListItemValidationError>> {
+  fun handleHandlerMethodValidationException(
+    e: HandlerMethodValidationException,
+  ): ResponseEntity<List<ListItemValidationError>> {
     if (e.reason == "Validation failure") {
       val validationResult = e.allValidationResults
       val details: List<ListItemValidationError> = validationResult.stream()
@@ -108,7 +110,9 @@ class HmppsElectronicMonitoringCreateAnOrderApiExceptionHandler {
   }
 
   @ExceptionHandler(MethodArgumentNotValidException::class)
-  fun handleMethodArgumentNotValidException(e: MethodArgumentNotValidException): ResponseEntity<List<ValidationError>> {
+  fun handleMethodArgumentNotValidException(
+    e: MethodArgumentNotValidException,
+  ): ResponseEntity<List<ValidationError>> {
     val fieldErrors = e.bindingResult.fieldErrors.map {
       ValidationError(it.field, it.defaultMessage ?: "")
     }
@@ -123,11 +127,12 @@ class HmppsElectronicMonitoringCreateAnOrderApiExceptionHandler {
   }
 
   @ExceptionHandler(DocumentApiBadRequestException::class)
-  fun handleDocumentApiBadRequestException(e: DocumentApiBadRequestException): ResponseEntity<ErrorResponse> = ResponseEntity
-    .status(BAD_REQUEST)
-    .body(
-      e.error,
-    ).also { log.error("Unexpected exception", e) }
+  fun handleDocumentApiBadRequestException(e: DocumentApiBadRequestException): ResponseEntity<ErrorResponse> =
+    ResponseEntity
+      .status(BAD_REQUEST)
+      .body(
+        e.error,
+      ).also { log.error("Unexpected exception", e) }
 
   @ExceptionHandler(SercoConnectionException::class)
   fun handleSercoAuthenticationException(e: Exception): ResponseEntity<ErrorResponse> = ResponseEntity

@@ -27,7 +27,10 @@ class DeadLetterQueueService(
         .messageAttributes(
           mapOf(
             "Error" to MessageAttributeValue.builder().dataType("String").stringValue(errorMessage).build(),
-            "RetryAttemps" to MessageAttributeValue.builder().dataType("String").stringValue(retryAttempts.toString()).build(),
+            "RetryAttemps" to MessageAttributeValue
+              .builder()
+              .dataType("String")
+              .stringValue(retryAttempts.toString()).build(),
           ),
         )
         .build(),

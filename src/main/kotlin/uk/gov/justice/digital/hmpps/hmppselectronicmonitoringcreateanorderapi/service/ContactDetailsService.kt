@@ -2,18 +2,18 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.s
 
 import jakarta.persistence.EntityNotFoundException
 import org.springframework.stereotype.Service
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearerContactDetails
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ContactDetails
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateContactDetailsDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.DeviceWearerContactDetailsRepository
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.UpdateContactDetailsDto
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.ContactDetailsRepository
 import java.util.*
 
 @Service
-class DeviceWearerContactDetailsService(
-  val repo: DeviceWearerContactDetailsRepository,
+class ContactDetailsService(
+  val repo: ContactDetailsRepository,
 ) {
 
-  fun getContactDetails(orderId: UUID, username: String): DeviceWearerContactDetails {
+  fun getContactDetails(orderId: UUID, username: String): ContactDetails {
     return repo.findByOrderIdAndOrderUsername(
       orderId,
       username,
@@ -26,7 +26,7 @@ class DeviceWearerContactDetailsService(
     orderId: UUID,
     username: String,
     updateContactDetailsRecord: UpdateContactDetailsDto,
-  ): DeviceWearerContactDetails {
+  ): ContactDetails {
     val contactDetails = repo.findByOrderIdAndOrderUsernameAndOrderStatus(
       orderId,
       username,

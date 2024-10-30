@@ -2,13 +2,13 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.s
 
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ResponsibleAdult
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.DeviceWearerResponsibleAdultRepository
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.UpdateDeviceWearerResponsibleAdultDto
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateResponsibleAdultDto
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.ResponsibleAdultRepository
 import java.util.UUID
 
 @Service
-class DeviceWearerResponsibleAdultService(
-  val responsibleAdultRepo: DeviceWearerResponsibleAdultRepository,
+class ResponsibleAdultService(
+  val responsibleAdultRepo: ResponsibleAdultRepository,
 ) : OrderSectionServiceBase() {
   fun getResponsibleAdult(orderId: UUID, username: String): ResponsibleAdult {
     // Verify the order belongs to the user and is in draft state
@@ -29,7 +29,7 @@ class DeviceWearerResponsibleAdultService(
   fun createOrUpdateResponsibleAdult(
     orderId: UUID,
     username: String,
-    deviceWearerResponsibleAdultUpdateRecord: UpdateDeviceWearerResponsibleAdultDto,
+    deviceWearerResponsibleAdultUpdateRecord: UpdateResponsibleAdultDto,
   ): ResponsibleAdult {
     val responsibleAdult = this.getResponsibleAdult(
       orderId,

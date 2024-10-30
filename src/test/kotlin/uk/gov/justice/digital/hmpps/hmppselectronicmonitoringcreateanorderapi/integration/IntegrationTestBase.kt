@@ -15,7 +15,12 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.in
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.hmpps.test.kotlin.auth.JwtAuthorisationHelper
 
-@ExtendWith(HmppsAuthApiExtension::class, HmppsDocumentManagementApiExtension::class, SercoAuthMockServerExtension::class, SercoMockApiExtension::class)
+@ExtendWith(
+  HmppsAuthApiExtension::class,
+  HmppsDocumentManagementApiExtension::class,
+  SercoAuthMockServerExtension::class,
+  SercoMockApiExtension::class,
+)
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @ActiveProfiles("test")
 abstract class IntegrationTestBase {
@@ -30,7 +35,13 @@ abstract class IntegrationTestBase {
     username: String? = "AUTH_ADM",
     roles: List<String> = listOf("ROLE_EM_CEMO__CREATE_ORDER"),
     scopes: List<String> = listOf("read"),
-  ): (HttpHeaders) -> Unit = jwtAuthHelper.setAuthorisationHeader(username = username, scope = scopes, roles = roles)
+  ): (
+    HttpHeaders,
+  ) -> Unit = jwtAuthHelper.setAuthorisationHeader(
+    username = username,
+    scope = scopes,
+    roles = roles,
+  )
 
   internal fun setAuthorisationWithoutUsername(
     roles: List<String> = listOf("ROLE_EM_CEMO__CREATE_ORDER"),
@@ -40,15 +51,12 @@ abstract class IntegrationTestBase {
     hmppsAuth.stubHealthPing(status)
   }
 
-  fun createOrder(
-    username: String? = "AUTH_ADM",
-  ): Order =
-    webTestClient.post()
-      .uri("/api/orders")
-      .headers(setAuthorisation(username))
-      .exchange()
-      .expectStatus()
-      .isOk
-      .returnResult(Order::class.java)
-      .responseBody.blockFirst()!!
+  fun createOrder(username: String? = "AUTH_ADM"): Order = webTestClient.post()
+    .uri("/api/orders")
+    .headers(setAuthorisation(username))
+    .exchange()
+    .expectStatus()
+    .isOk
+    .returnResult(Order::class.java)
+    .responseBody.blockFirst()!!
 }

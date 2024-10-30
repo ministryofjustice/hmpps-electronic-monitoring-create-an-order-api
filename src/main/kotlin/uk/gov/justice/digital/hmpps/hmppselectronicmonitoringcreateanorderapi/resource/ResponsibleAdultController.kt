@@ -11,30 +11,30 @@ import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearerContactDetails
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.DeviceWearerContactDetailsService
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ResponsibleAdult
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateResponsibleAdultDto
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.ResponsibleAdultService
 import java.util.*
 
 @RestController
 @PreAuthorize("hasRole('ROLE_EM_CEMO__CREATE_ORDER')")
 @RequestMapping("/api/")
-class DeviceWearerContactDetailsController(
-  @Autowired val contactDetailsService: DeviceWearerContactDetailsService,
+class ResponsibleAdultController(
+  @Autowired val responsibleAdultService: ResponsibleAdultService,
 ) {
-
-  @PutMapping("/orders/{orderId}/contact-details")
-  fun updateContactDetails(
+  @PutMapping("/orders/{orderId}/device-wearer-responsible-adult")
+  fun updateResponsibleAdult(
     @PathVariable orderId: UUID,
-    @RequestBody @Valid contactDetailsUpdateRecord: UpdateContactDetailsDto,
+    @RequestBody @Valid responsibleAdultUpdateRecord: UpdateResponsibleAdultDto,
     authentication: Authentication,
-  ): ResponseEntity<DeviceWearerContactDetails> {
+  ): ResponseEntity<ResponsibleAdult> {
     val username = authentication.name
-    val contactDetails = contactDetailsService.updateContactDetails(orderId, username, contactDetailsUpdateRecord)
+    val responsibleAdult = responsibleAdultService.createOrUpdateResponsibleAdult(
+      orderId,
+      username,
+      responsibleAdultUpdateRecord,
+    )
 
-    return ResponseEntity(contactDetails, HttpStatus.OK)
+    return ResponseEntity(responsibleAdult, HttpStatus.OK)
   }
 }
-
-data class UpdateContactDetailsDto(
-  val contactNumber: String? = null,
-)

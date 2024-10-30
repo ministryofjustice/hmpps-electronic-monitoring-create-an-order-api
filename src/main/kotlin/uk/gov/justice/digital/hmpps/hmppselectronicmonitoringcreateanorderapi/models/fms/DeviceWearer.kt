@@ -140,7 +140,9 @@ data class DeviceWearer(
       }
 
       val primaryAddress = order.addresses.find { address -> address.addressType == AddressType.PRIMARY }!!
-      val disabilities = order.deviceWearer?.disabilities?.split(',')?.map { disability -> Disability(disability) }?.toList() ?: emptyList()
+      val disabilities = order.deviceWearer?.disabilities?.split(
+        ',',
+      )?.map { disability -> Disability(disability) }?.toList() ?: emptyList()
       val deviceWearer = DeviceWearer(
         firstName = order.deviceWearer?.firstName,
         lastName = order.deviceWearer?.lastName,

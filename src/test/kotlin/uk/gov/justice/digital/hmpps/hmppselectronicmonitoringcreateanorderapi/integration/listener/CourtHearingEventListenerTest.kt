@@ -48,7 +48,10 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
   @Autowired
   lateinit var hmppsQueueService: HmppsQueueService
 
-  val courtHearingEventQueueConfig by lazy { hmppsQueueService.findByQueueId("courthearingeventqueue") ?: throw MissingQueueException("HmppsQueue courthearingeventqueue not found") }
+  val courtHearingEventQueueConfig by lazy {
+    hmppsQueueService.findByQueueId("courthearingeventqueue")
+      ?: throw MissingQueueException("HmppsQueue courthearingeventqueue not found")
+  }
   val courtHearingEventQueueSqsUrl by lazy { courtHearingEventQueueConfig.queueUrl }
   val courtHearingEventQueueSqsClient by lazy { courtHearingEventQueueConfig.sqsClient }
   val courtHearingEventDeadLetterSqsClient by lazy { courtHearingEventQueueConfig.sqsDlqClient as SqsAsyncClient }
@@ -56,8 +59,12 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
 
   @BeforeEach
   fun setup() {
-    courtHearingEventQueueSqsClient.purgeQueue(PurgeQueueRequest.builder().queueUrl(courtHearingEventQueueSqsUrl).build()).get()
-    courtHearingEventDeadLetterSqsClient.purgeQueue(PurgeQueueRequest.builder().queueUrl(courtHearingEventDeadLetterSqsUrl).build()).get()
+    courtHearingEventQueueSqsClient.purgeQueue(
+      PurgeQueueRequest.builder().queueUrl(courtHearingEventQueueSqsUrl).build(),
+    ).get()
+    courtHearingEventDeadLetterSqsClient.purgeQueue(
+      PurgeQueueRequest.builder().queueUrl(courtHearingEventDeadLetterSqsUrl).build(),
+    ).get()
     sercoAuthApi.stubGrantToken()
     repo.deleteAll()
   }
@@ -69,7 +76,9 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
     val deadLetterQueueMessage = geMessagesCurrentlyOnDeadLetterQueue()
     val message = deadLetterQueueMessage.messages().first()
     assertThat(message.body()).isEqualTo("BAD JSON")
-    assertThat(message.messageAttributes()["Error"]!!.stringValue()).isEqualTo("Malformed event received. Could not parse JSON")
+    assertThat(
+      message.messageAttributes()["Error"]!!.stringValue(),
+    ).isEqualTo("Malformed event received. Could not parse JSON")
     val savedEvent = repo.findAll().firstOrNull()
     assertThat(savedEvent).isNull()
     verify(eventHandler, Times(0)).handleHearingEvent(any())
@@ -222,8 +231,16 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
 	"order_status": "Not Started"
 }
     """.trimIndent()
-    sercoApi.stupCreateDeviceWearer(mockDeviceWearerJson, HttpStatus.OK, FmsResponse(result = listOf(FmsResult(message = "", id = "MockDeviceWearerId"))))
-    sercoApi.stupMonitoringOrder(mockOrderJson, HttpStatus.OK, FmsResponse(result = listOf(FmsResult(message = "", id = "MockMonitoringOrderId"))))
+    sercoApi.stupCreateDeviceWearer(
+      mockDeviceWearerJson,
+      HttpStatus.OK,
+      FmsResponse(result = listOf(FmsResult(message = "", id = "MockDeviceWearerId"))),
+    )
+    sercoApi.stupMonitoringOrder(
+      mockOrderJson,
+      HttpStatus.OK,
+      FmsResponse(result = listOf(FmsResult(message = "", id = "MockMonitoringOrderId"))),
+    )
 
     sendDomainSqsMessage(rawMessage)
     await().until { repo.count().toInt() != 0 }
@@ -258,7 +275,9 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
     assertThat(primaryAddress.postcode).isEqualTo("SW11 3TQ")
     // Monitoring Conditions
     assertThat(order.monitoringConditions!!.orderType).isEqualTo("Community")
-    assertThat(order.monitoringConditions!!.conditionType).isEqualTo(MonitoringConditionType.REQUIREMENT_OF_A_COMMUNITY_ORDER)
+    assertThat(
+      order.monitoringConditions!!.conditionType,
+    ).isEqualTo(MonitoringConditionType.REQUIREMENT_OF_A_COMMUNITY_ORDER)
     assertThat(order.monitoringConditions!!.alcohol).isTrue()
     assertThat(order.monitoringConditions!!.startDate).isEqualTo(ZonedDateTime.parse("2024-10-21T00:00:00Z"))
     assertThat(order.monitoringConditions!!.endDate).isEqualTo(ZonedDateTime.parse("2025-12-12T00:00:00Z"))
@@ -287,8 +306,19 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
     """.trimIndent()
   }
 
-  fun getNumberOfMessagesCurrentlyOnEventQueue(): Int = courtHearingEventQueueSqsClient.countAllMessagesOnQueue(courtHearingEventQueueSqsUrl).get()
-  fun getNumberOfMessagesCurrentlyOnDeadLetterQueue(): Int = courtHearingEventDeadLetterSqsClient.countAllMessagesOnQueue(courtHearingEventDeadLetterSqsUrl).get()
-  fun geMessagesCurrentlyOnDeadLetterQueue(): ReceiveMessageResponse = courtHearingEventDeadLetterSqsClient.receiveMessage(ReceiveMessageRequest.builder().queueUrl(courtHearingEventDeadLetterSqsUrl).messageAttributeNames("All").build()).get()
-  fun sendDomainSqsMessage(rawMessage: String): CompletableFuture<SendMessageResponse> = courtHearingEventQueueSqsClient.sendMessage(SendMessageRequest.builder().queueUrl(courtHearingEventQueueSqsUrl).messageBody(rawMessage).build())
+  fun getNumberOfMessagesCurrentlyOnEventQueue(): Int = courtHearingEventQueueSqsClient.countAllMessagesOnQueue(
+    courtHearingEventQueueSqsUrl,
+  ).get()
+  fun getNumberOfMessagesCurrentlyOnDeadLetterQueue(): Int =
+    courtHearingEventDeadLetterSqsClient.countAllMessagesOnQueue(
+      courtHearingEventDeadLetterSqsUrl,
+    ).get()
+  fun geMessagesCurrentlyOnDeadLetterQueue(): ReceiveMessageResponse =
+    courtHearingEventDeadLetterSqsClient.receiveMessage(
+      ReceiveMessageRequest.builder().queueUrl(courtHearingEventDeadLetterSqsUrl).messageAttributeNames("All").build(),
+    ).get()
+  fun sendDomainSqsMessage(rawMessage: String): CompletableFuture<SendMessageResponse> =
+    courtHearingEventQueueSqsClient.sendMessage(
+      SendMessageRequest.builder().queueUrl(courtHearingEventQueueSqsUrl).messageBody(rawMessage).build(),
+    )
 }

@@ -57,7 +57,9 @@ class CurfewReleaseDateControllerTest : IntegrationTestBase() {
       .expectBodyList(ErrorResponse::class.java)
       .returnResult()
     val error = result.responseBody!!.first()
-    Assertions.assertThat(error.developerMessage).isEqualTo("An editable order with ${order.id} does not exist")
+    Assertions.assertThat(
+      error.developerMessage,
+    ).isEqualTo("An editable order with ${order.id} does not exist")
   }
 
   @Test
@@ -80,7 +82,9 @@ class CurfewReleaseDateControllerTest : IntegrationTestBase() {
       .expectBodyList(ErrorResponse::class.java)
       .returnResult()
     val error = result.responseBody!!.first()
-    Assertions.assertThat(error.developerMessage).isEqualTo("An editable order with ${order.id} does not exist")
+    Assertions.assertThat(
+      error.developerMessage,
+    ).isEqualTo("An editable order with ${order.id} does not exist")
   }
 
   @Test
@@ -104,10 +108,14 @@ class CurfewReleaseDateControllerTest : IntegrationTestBase() {
       .returnResult()
     val error = result.responseBody!!
     Assertions.assertThat(result.responseBody).hasSize(4)
-    Assertions.assertThat(error).contains(ValidationError("curfewAddress", "Curfew address is required"))
+    Assertions.assertThat(
+      error,
+    ).contains(ValidationError("curfewAddress", "Curfew address is required"))
     Assertions.assertThat(error).contains(ValidationError("startTime", "Enter start time"))
     Assertions.assertThat(error).contains(ValidationError("endTime", "Enter end time"))
-    Assertions.assertThat(error).contains(ValidationError("releaseDate", "Enter curfew release day"))
+    Assertions.assertThat(
+      error,
+    ).contains(ValidationError("releaseDate", "Enter curfew release day"))
   }
 
   @Test
@@ -120,7 +128,13 @@ class CurfewReleaseDateControllerTest : IntegrationTestBase() {
       .contentType(MediaType.APPLICATION_JSON)
       .body(
         BodyInserters.fromValue(
-          mockRequestBody(order.id, ZonedDateTime.now().plusDays(-3), "19:00:00", "23:00:00", AddressType.PRIMARY),
+          mockRequestBody(
+            order.id,
+            ZonedDateTime.now().plusDays(-3),
+            "19:00:00",
+            "23:00:00",
+            AddressType.PRIMARY,
+          ),
         ),
       )
       .headers(setAuthorisation())
@@ -132,7 +146,9 @@ class CurfewReleaseDateControllerTest : IntegrationTestBase() {
     val error = result.responseBody!!
     Assertions.assertThat(result.responseBody).hasSize(1)
 
-    Assertions.assertThat(error).contains(ValidationError("releaseDate", "Curfew release day must be in the future"))
+    Assertions.assertThat(
+      error,
+    ).contains(ValidationError("releaseDate", "Curfew release day must be in the future"))
   }
 
   @Test
@@ -155,10 +171,16 @@ class CurfewReleaseDateControllerTest : IntegrationTestBase() {
     argumentCaptor<Order>().apply {
       verify(orderRepo, Times(1)).save(capture())
       val updatedOrder = firstValue
-      Assertions.assertThat(updatedOrder.curfewReleaseDateConditions?.releaseDate).isEqualTo(mockReleaseDate)
-      Assertions.assertThat(updatedOrder.curfewReleaseDateConditions?.startTime).isEqualTo("19:00:00")
+      Assertions.assertThat(
+        updatedOrder.curfewReleaseDateConditions?.releaseDate,
+      ).isEqualTo(mockReleaseDate)
+      Assertions.assertThat(
+        updatedOrder.curfewReleaseDateConditions?.startTime,
+      ).isEqualTo("19:00:00")
       Assertions.assertThat(updatedOrder.curfewReleaseDateConditions?.endTime).isEqualTo("23:59:00")
-      Assertions.assertThat(updatedOrder.curfewReleaseDateConditions?.curfewAddress).isEqualTo(AddressType.PRIMARY)
+      Assertions.assertThat(
+        updatedOrder.curfewReleaseDateConditions?.curfewAddress,
+      ).isEqualTo(AddressType.PRIMARY)
     }
   }
 

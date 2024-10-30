@@ -92,11 +92,15 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
     Assertions.assertThat(updateDeviceWearer.responseBody?.pncId).isEqualTo(mockPncId)
     Assertions.assertThat(updateDeviceWearer.responseBody?.deliusId).isEqualTo(mockDeliusId)
     Assertions.assertThat(updateDeviceWearer.responseBody?.prisonNumber).isEqualTo(mockPrisonNumber)
-    Assertions.assertThat(updateDeviceWearer.responseBody?.homeOfficeReferenceNumber).isEqualTo(mockHomeOfficeReferenceNumber)
+    Assertions.assertThat(
+      updateDeviceWearer.responseBody?.homeOfficeReferenceNumber,
+    ).isEqualTo(mockHomeOfficeReferenceNumber)
     Assertions.assertThat(updateDeviceWearer.responseBody?.firstName).isEqualTo(mockFirstName)
     Assertions.assertThat(updateDeviceWearer.responseBody?.lastName).isEqualTo(mockLastName)
     Assertions.assertThat(updateDeviceWearer.responseBody?.alias).isEqualTo(mockAlias)
-    Assertions.assertThat(updateDeviceWearer.responseBody?.adultAtTimeOfInstallation).isEqualTo(false)
+    Assertions.assertThat(
+      updateDeviceWearer.responseBody?.adultAtTimeOfInstallation,
+    ).isEqualTo(false)
     Assertions.assertThat(updateDeviceWearer.responseBody?.sex).isEqualTo(mockSex)
     Assertions.assertThat(updateDeviceWearer.responseBody?.gender).isEqualTo(mockGender)
     Assertions.assertThat(updateDeviceWearer.responseBody?.dateOfBirth).isEqualTo(mockDateOfBirth)
@@ -216,7 +220,10 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
     )
 
     Assertions.assertThat(result.responseBody!!).contains(
-      ValidationError("interpreterRequired", "You must indicate whether the device wearer will require an interpreter on the day of installation"),
+      ValidationError(
+        "interpreterRequired",
+        "You must indicate whether the device wearer will require an interpreter on the day of installation",
+      ),
     )
   }
 
@@ -439,7 +446,10 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
     Assertions.assertThat(result.responseBody).isNotNull
     Assertions.assertThat(result.responseBody).hasSize(1)
     Assertions.assertThat(result.responseBody!!).contains(
-      ValidationError("noFixedAbode", "You must indicate whether the device wearer has a fixed abode"),
+      ValidationError(
+        "noFixedAbode",
+        "You must indicate whether the device wearer has a fixed abode",
+      ),
     )
   }
 }

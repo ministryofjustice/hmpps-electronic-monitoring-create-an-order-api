@@ -7,7 +7,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import java.util.*
 
 @Repository
-interface DeviceWearerResponsibleAdultRepository : JpaRepository<ResponsibleAdult, UUID> {
+interface ResponsibleAdultRepository : JpaRepository<ResponsibleAdult, UUID> {
   fun findByOrderIdAndOrderUsernameAndOrderStatus(
     id: UUID,
     username: String,

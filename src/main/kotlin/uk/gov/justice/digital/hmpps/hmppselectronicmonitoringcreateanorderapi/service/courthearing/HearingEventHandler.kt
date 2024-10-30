@@ -9,8 +9,8 @@ import uk.gov.justice.digital.hmpps.courthearingeventreceiver.model.Jurisdiction
 import uk.gov.justice.digital.hmpps.courthearingeventreceiver.model.Offence
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Address
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AlcoholMonitoringConditions
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ContactDetails
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearerContactDetails
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.MonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ResponsibleOfficer
@@ -77,7 +77,7 @@ class HearingEventHandler(
     val monitoringConditions = MonitoringConditions(orderId = order.id)
     val orderedDate = judicialResults.first().orderedDate
     monitoringConditions.startDate = ZonedDateTime.of(orderedDate, LocalTime.MIDNIGHT, ZoneId.of("GMT"))
-    monitoringConditions.endDate = getJudicialResultPromptValue(prompts, "End Date")?.let {
+    monitoringConditions.endDate = getPromptValue(prompts, "End Date")?.let {
       val localDate = LocalDate.parse(it, formatter)
       ZonedDateTime.of(localDate, LocalTime.MIDNIGHT, ZoneId.of("GMT"))
     }
@@ -100,9 +100,10 @@ class HearingEventHandler(
     } else if (hearing.jurisdictionType == JurisdictionType.CROWN) {
       responsibleOfficer.notifyingOrganisation = "Crown Court"
     }
-    responsibleOfficer.organisation = getResponsibleOrganisation(getJudicialResultPromptValue(prompts, "Responsible officer"))
-    responsibleOfficer.organisationRegion = getJudicialResultPromptValue(prompts, "Probation team to be notified organisation name")
-    responsibleOfficer.organisationEmail = getJudicialResultPromptValue(prompts, "Probation team to be notified email address 1")
+    val organisation = getPromptValue(prompts, "Responsible officer")
+    responsibleOfficer.organisation = getResponsibleOrganisation(organisation)
+    responsibleOfficer.organisationRegion = getPromptValue(prompts, "Probation team to be notified organisation name")
+    responsibleOfficer.organisationEmail = getPromptValue(prompts, "Probation team to be notified email address 1")
     responsibleOfficer.organisationPostCode = hearing.courtCentre.address?.postcode
     order.responsibleOfficer = responsibleOfficer
 
@@ -132,7 +133,8 @@ class HearingEventHandler(
     }
     val contact = person?.contact
     if (contact != null) {
-      val contactDetails = DeviceWearerContactDetails(orderId = order.id, contactNumber = contact.home ?: contact.mobile ?: contact.work)
+      val contactDetails =
+        ContactDetails(orderId = order.id, contactNumber = contact.home ?: contact.mobile ?: contact.work)
       order.deviceWearerContactDetails = contactDetails
     }
     return order
@@ -164,7 +166,7 @@ class HearingEventHandler(
     }
   }
 
-  private fun getJudicialResultPromptValue(prompts: List<JudicialResultsPrompt>, label: String): String? {
+  private fun getPromptValue(prompts: List<JudicialResultsPrompt>, label: String): String? {
     return prompts.firstOrNull { it.label == label }?.value
   }
 }

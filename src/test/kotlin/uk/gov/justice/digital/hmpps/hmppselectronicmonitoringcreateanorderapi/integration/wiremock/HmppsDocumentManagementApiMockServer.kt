@@ -44,6 +44,9 @@ class HmppsDocumentManagementApi : WireMockServer(WIREMOCK_PORT) {
 
   private val mapper: ObjectMapper = jacksonObjectMapper().registerModule(JavaTimeModule())
 
+  @Suppress("ktlint:standard:max-line-length")
+  private val filePath: String = "src/test/kotlin/uk/gov/justice/digital/hmpps/hmppselectronicmonitoringcreateanorderapi/integration/assets/profile.jpeg"
+
   fun stupUploadDocument(result: DocumentUploadResponse?) {
     stubFor(
       post(urlPathTemplate("/documents/CEMO_ATTACHMENT/{uuid}"))
@@ -78,7 +81,13 @@ class HmppsDocumentManagementApi : WireMockServer(WIREMOCK_PORT) {
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "image/jpeg")
-            .withBody(Files.readAllBytes(Paths.get("src/test/kotlin/uk/gov/justice/digital/hmpps/hmppselectronicmonitoringcreateanorderapi/integration/assets/profile.jpeg")))
+            .withBody(
+              Files.readAllBytes(
+                Paths.get(
+                  this.filePath,
+                ),
+              ),
+            )
             .withStatus(200),
         ),
     )
