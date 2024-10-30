@@ -386,4 +386,61 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
       ValidationError("noFixedAbode", "You must indicate whether the device wearer has a fixed abode"),
     )
   }
+
+  @Test
+  fun `The isValid property of the response is true if the mandatory DeviceWearer & NoFixedAbode fields are populated`() {
+    val order = createOrder()
+    val updateDeviceWearer = webTestClient.put()
+      .uri("/api/orders/${order.id}/device-wearer")
+      .contentType(MediaType.APPLICATION_JSON)
+      .body(
+        BodyInserters.fromValue(
+          """
+            {
+              "nomisId": "$mockNomisId",
+              "pncId": "$mockPncId",
+              "deliusId": "$mockDeliusId",
+              "prisonNumber": "$mockPrisonNumber",
+              "firstName": "$mockFirstName",
+              "lastName": "$mockLastName",
+              "alias": "$mockAlias",
+              "adultAtTimeOfInstallation": "false",
+              "sex": "$mockSex",
+              "gender": "$mockGender",
+              "dateOfBirth": "$mockDateOfBirth",
+              "disabilities": "$mockDisabilities"
+            }
+          """.trimIndent(),
+        ),
+      )
+      .headers(setAuthorisation("AUTH_ADM"))
+      .exchange()
+      .expectStatus()
+      .isOk
+      .expectBody(DeviceWearer::class.java)
+      .returnResult()
+
+    Assertions.assertThat(updateDeviceWearer.responseBody?.isValid).isFalse()
+
+    val updateFixedAbode = webTestClient.put()
+      .uri("/api/orders/${order.id}/device-wearer/no-fixed-abode")
+      .contentType(MediaType.APPLICATION_JSON)
+      .body(
+        BodyInserters.fromValue(
+          """
+            {
+              "noFixedAbode": true
+            }
+          """.trimIndent(),
+        ),
+      )
+      .headers(setAuthorisation("AUTH_ADM"))
+      .exchange()
+      .expectStatus()
+      .isOk
+      .expectBody(DeviceWearer::class.java)
+      .returnResult()
+
+    Assertions.assertThat(updateFixedAbode.responseBody?.isValid).isTrue()
+  }
 }
