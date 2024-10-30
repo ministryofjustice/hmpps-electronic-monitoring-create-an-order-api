@@ -1,0 +1,22 @@
+version: "3"
+services:
+  localstack:
+    image: localstack/localstack:3.0
+    container_name: localstack-int
+    networks:
+      - hmpps_int
+    ports:
+      - 4566:4566
+    volumes:
+      - './localstack:/var/lib/localstack'
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    environment:
+      - SERVICES=sqs
+      - DEFAULT_REGION=eu-west-2
+    healthcheck:
+      test: 'curl localhost:4566/_localstack/init | grep -q ''"READY": true'''
+      interval: 60s
+      timeout: 2s
+      retries: 10
+networks:
+  hmpps_int:

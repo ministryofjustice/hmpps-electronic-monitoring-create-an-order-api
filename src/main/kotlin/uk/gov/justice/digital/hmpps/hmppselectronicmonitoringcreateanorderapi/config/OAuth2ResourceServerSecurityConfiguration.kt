@@ -39,7 +39,6 @@ class OAuth2ResourceServerSecurityConfiguration {
           .requestMatchers("/info").permitAll()
           .requestMatchers("/swagger-ui/**").permitAll()
           .requestMatchers("/v3/api-docs/**").permitAll()
-          .requestMatchers("/queue-admin/retry-all-dlqs").permitAll()
           .anyRequest().authenticated()
       }
       .anonymous { anonymous ->

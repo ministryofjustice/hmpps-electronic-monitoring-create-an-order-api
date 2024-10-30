@@ -54,7 +54,7 @@ services:
 
   localstack:
     image: localstack/localstack:3.0
-    container_name: localstack-events
+    container_name: localstack
     networks:
       - hmpps
     ports:
