@@ -44,4 +44,7 @@ data class ResponsibleOfficer(
   @OneToOne
   @JoinColumn(name = "ORDER_ID", updatable = false, insertable = false)
   private val order: Order? = null,
-)
+) {
+  val isValid: Boolean
+    get() = true
+}

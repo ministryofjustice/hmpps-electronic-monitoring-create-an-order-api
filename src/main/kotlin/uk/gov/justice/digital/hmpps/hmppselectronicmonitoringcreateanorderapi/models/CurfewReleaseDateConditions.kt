@@ -48,4 +48,12 @@ data class CurfewReleaseDateConditions(
   @OneToOne
   @JoinColumn(name = "ORDER_ID", updatable = false, insertable = false)
   private val order: Order? = null,
-)
+) {
+  val isValid: Boolean
+    get() = (
+      releaseDate != null &&
+        startTime != null &&
+        endTime != null &&
+        curfewAddress != null
+      )
+}

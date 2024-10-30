@@ -55,4 +55,16 @@ data class MandatoryAttendanceConditions(
   @ManyToOne(optional = true)
   @JoinColumn(name = "ORDER_ID", updatable = false, insertable = false)
   private val order: Order? = null,
-)
+) {
+  val isValid: Boolean
+    get() = (
+      startDate != null &&
+        !purpose.isNullOrEmpty() &&
+        !appointmentDay.isNullOrEmpty() &&
+        startTime != null &&
+        endTime != null &&
+        !addressLine1.isNullOrEmpty() &&
+        !addressLine2.isNullOrEmpty() &&
+        !postcode.isNullOrEmpty()
+      )
+}

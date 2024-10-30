@@ -53,4 +53,12 @@ data class AlcoholMonitoringConditions(
   @OneToOne(optional = true)
   @JoinColumn(name = "INSTALLATION_ADDRESS_ID", updatable = false, insertable = false, nullable = true)
   private val address: Address? = null,
-)
+) {
+  val isValid: Boolean
+    get() = (
+      monitoringType != null &&
+        startDate != null &&
+        installationLocation != null &&
+        installationAddressId != null
+      )
+}

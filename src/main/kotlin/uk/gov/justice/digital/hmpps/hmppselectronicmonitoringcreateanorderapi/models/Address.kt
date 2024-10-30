@@ -58,4 +58,11 @@ data class Address(
   @ManyToOne(optional = true)
   @JoinColumn(name = "ORDER_ID", updatable = false, insertable = false)
   private val order: Order? = null,
-)
+) {
+  val isValid: Boolean
+    get() = (
+      addressLine1.isNotBlank() &&
+        addressLine2.isNotBlank() &&
+        postcode.isNotBlank()
+      )
+}

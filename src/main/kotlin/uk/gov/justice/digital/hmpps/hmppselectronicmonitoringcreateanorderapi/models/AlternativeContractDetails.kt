@@ -34,4 +34,11 @@ data class AlternativeContractDetails(
   @JoinColumn(name = "DEVICE_WEARER_ID", updatable = false, insertable = false)
   private val deviceWearer: DeviceWearer? = null,
 
-)
+) {
+  val isValid: Boolean
+    get() = (
+      !firstName.isNullOrEmpty() &&
+        !lastName.isNullOrEmpty() &&
+        contactNumber != null
+      )
+}
