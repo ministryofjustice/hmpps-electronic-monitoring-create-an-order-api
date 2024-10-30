@@ -152,7 +152,7 @@ There is no need to generate a HMPPS Auth token, as authentication is handled by
 
 #### Running integration test locally
 
-1. For local running, start an API, test db and wiremock instance by:
+1. For running integration tests locally, start localstack of SQS queues by:
 
    `docker compose -f docker-compose-test.yml up`
 2.  Using command line to run integration test:
