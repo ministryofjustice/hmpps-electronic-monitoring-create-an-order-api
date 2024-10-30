@@ -10,14 +10,14 @@ import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ResponsibleAdult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.DeviceWearerResponsibleAdultRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.ResponsibleAdultRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidationError
 import java.util.*
 
-class DeviceWearerResponsibleAdultControllerTest : IntegrationTestBase() {
+class ResponsibleAdultControllerTest : IntegrationTestBase() {
   @Autowired
-  lateinit var responsibleAdultRepo: DeviceWearerResponsibleAdultRepository
+  lateinit var responsibleAdultRepo: ResponsibleAdultRepository
 
   @Autowired
   lateinit var orderRepo: OrderRepository

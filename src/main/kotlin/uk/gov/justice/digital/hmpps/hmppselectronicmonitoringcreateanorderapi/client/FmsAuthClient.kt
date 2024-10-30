@@ -19,8 +19,12 @@ class FmsAuthClient(
   @Value("\${services.serco.username}") val username: String,
   @Value("\${services.serco.password}") val password: String,
 ) {
-  private val webClient: WebClient = WebClient.builder().baseUrl(authUrl).defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE).build()
-  private val encodedCredentials = Base64.getEncoder().encodeToString("$clientId:$clientSecret".toByteArray())
+  private val webClient: WebClient = WebClient.builder().baseUrl(
+    authUrl,
+  ).defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE).build()
+  private val encodedCredentials = Base64.getEncoder().encodeToString(
+    "$clientId:$clientSecret".toByteArray(),
+  )
 
   fun getClientToken(): String {
     val response =
@@ -34,8 +38,12 @@ class FmsAuthClient(
         )
         .header("Authorization", "Basic $encodedCredentials")
         .retrieve()
-        .onStatus({ t -> t.value() == 403 }, { Mono.error(SercoConnectionException("Invalid credentials used.")) })
-        .onStatus({ t -> t.value() == 503 }, { Mono.error(SercoConnectionException("Serco authentication service is unavailable.")) })
+        .onStatus({ t -> t.value() == 403 }, {
+          Mono.error(SercoConnectionException("Invalid credentials used."))
+        })
+        .onStatus({ t -> t.value() == 503 }, {
+          Mono.error(SercoConnectionException("Serco authentication service is unavailable."))
+        })
         .bodyToMono(String::class.java)
         .block()
 

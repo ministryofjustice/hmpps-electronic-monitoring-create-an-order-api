@@ -39,6 +39,9 @@ class AdditionalDocumentsControllerTest : IntegrationTestBase() {
   lateinit var apiCLient: DocumentApiClient
   val order = Order(username = "mockUser", status = OrderStatus.IN_PROGRESS)
 
+  @Suppress("ktlint:standard:max-line-length")
+  private val filePath = "src/test/kotlin/uk/gov/justice/digital/hmpps/hmppselectronicmonitoringcreateanorderapi/integration/assets/profile.jpeg"
+
   @BeforeEach
   fun setup() {
     repo.deleteAll()
@@ -72,7 +75,11 @@ class AdditionalDocumentsControllerTest : IntegrationTestBase() {
       .returnResult()
 
     val error = result.responseBody!!.first()
-    Assertions.assertThat(error.userMessage).isEqualTo("Validation failure: Unsupported or missing file type txt. Supported file types: pdf, png, jpeg, jpg")
+    Assertions.assertThat(
+      error.userMessage,
+    ).isEqualTo(
+      "Validation failure: Unsupported or missing file type txt. Supported file types: pdf, png, jpeg, jpg",
+    )
   }
 
   @Test
@@ -152,7 +159,9 @@ class AdditionalDocumentsControllerTest : IntegrationTestBase() {
       verify(apiCLient, times(1)).createDocument(first.capture(), second.capture())
       val multipartBody = second.firstValue.build()
       Assertions.assertThat(multipartBody["file"]?.get(0)).isNotNull
-      Assertions.assertThat(multipartBody["metadata"]?.get(0)?.body.toString()).isEqualTo("DocumentMetadata(orderId=${order.id}, documentType=PHOTO_ID)")
+      Assertions.assertThat(
+        multipartBody["metadata"]?.get(0)?.body.toString(),
+      ).isEqualTo("DocumentMetadata(orderId=${order.id}, documentType=PHOTO_ID)")
     }
   }
 
@@ -177,7 +186,11 @@ class AdditionalDocumentsControllerTest : IntegrationTestBase() {
     repo.save(order)
 
     documentApi.stupGetDocument(doc.id.toString())
-    val expectedBytes = Files.readAllBytes(Paths.get("src/test/kotlin/uk/gov/justice/digital/hmpps/hmppselectronicmonitoringcreateanorderapi/integration/assets/profile.jpeg"))
+    val expectedBytes = Files.readAllBytes(
+      Paths.get(
+        this.filePath,
+      ),
+    )
     var result = webTestClient.get()
       .uri("/api/orders/${order.id}/document-type/${DocumentType.PHOTO_ID}/raw")
       .headers(setAuthorisation("mockUser"))

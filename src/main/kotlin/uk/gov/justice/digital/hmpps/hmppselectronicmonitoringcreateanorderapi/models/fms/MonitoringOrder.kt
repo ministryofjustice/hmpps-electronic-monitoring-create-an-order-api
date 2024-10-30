@@ -202,9 +202,13 @@ data class MonitoringOrder(
 
       if (conditions.trail != null && conditions.trail!!) {
         if (conditions.devicesRequired!!.contains("Location - fitted")) {
-          monitoringOrder.enforceableCondition!!.add(EnforceableCondition("Location Monitoring (Fitted Device)"))
+          monitoringOrder.enforceableCondition!!.add(
+            EnforceableCondition("Location Monitoring (Fitted Device)"),
+          )
         } else {
-          monitoringOrder.enforceableCondition!!.add(EnforceableCondition("Location Monitoring (using Non-Fitted Device)"))
+          monitoringOrder.enforceableCondition!!.add(
+            EnforceableCondition("Location Monitoring (using Non-Fitted Device)"),
+          )
         }
         monitoringOrder.trailMonitoring = "true"
       }
@@ -260,12 +264,28 @@ data class MonitoringOrder(
 
     private fun getCurfewSchedules(order: Order, curfew: CurfewConditions): MutableList<CurfewSchedule> {
       val schedules = mutableListOf<CurfewSchedule>()
-      val primaryAddressTimeTable = order.curfewTimeTable.filter { it.curfewAddress!!.uppercase().contains("PRIMARY_ADDRESS") }
-      schedules.add(CurfewSchedule(location = "primary", "", primaryAddressTimeTable.map { Schedule.fromCurfewTimeTable(it) }.toMutableList()))
+      val primaryAddressTimeTable = order.curfewTimeTable.filter {
+        it.curfewAddress!!.uppercase().contains("PRIMARY_ADDRESS")
+      }
+      schedules.add(
+        CurfewSchedule(
+          location = "primary",
+          allday = "",
+          primaryAddressTimeTable.map { Schedule.fromCurfewTimeTable(it) }.toMutableList(),
+        ),
+      )
       val secondaryAddress = order.addresses.firstOrNull { it.addressType === AddressType.SECONDARY }
       if (secondaryAddress != null) {
-        val secondaryTimeTable = order.curfewTimeTable.filter { it.curfewAddress!!.uppercase().contains("SECONDARY_ADDRESS") }
-        schedules.add(CurfewSchedule(location = "secondary", "", secondaryTimeTable.map { Schedule.fromCurfewTimeTable(it) }.toMutableList()))
+        val secondaryTimeTable = order.curfewTimeTable.filter {
+          it.curfewAddress!!.uppercase().contains("SECONDARY_ADDRESS")
+        }
+        schedules.add(
+          CurfewSchedule(
+            location = "secondary",
+            allday = "",
+            secondaryTimeTable.map { Schedule.fromCurfewTimeTable(it) }.toMutableList(),
+          ),
+        )
       }
       return schedules
     }

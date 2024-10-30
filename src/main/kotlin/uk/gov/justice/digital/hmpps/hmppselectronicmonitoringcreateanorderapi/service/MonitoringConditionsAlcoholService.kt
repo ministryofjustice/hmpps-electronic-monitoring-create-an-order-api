@@ -2,9 +2,9 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.s
 
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AlcoholMonitoringConditions
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateAlcoholMonitoringConditionsDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.MonitoringConditionsAlcoholRepository
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.UpdateAlcoholMonitoringConditionsDto
 import java.util.*
 
 @Service
@@ -20,13 +20,18 @@ class MonitoringConditionsAlcoholService(
     val order = this.findEditableOrder(orderId, username)
 
     // Find existing alcohol monitoring conditions or create new alcohol monitoring conditions
-    val alcoholMonitoringConditions = order.monitoringConditionsAlcohol ?: AlcoholMonitoringConditions(orderId = orderId)
+    val alcoholMonitoringConditions =
+      order.monitoringConditionsAlcohol ?: AlcoholMonitoringConditions(orderId = orderId)
 
     // Add relevant address ID when installation location is an address
     var alcoholMonitoringAddressId: UUID? = null
     try {
-      val alcoholMonitoringInstallationAddressType: AddressType = AddressType.valueOf(alcoholMonitoringConditionsUpdateRecord.installationLocation.toString())
-      alcoholMonitoringAddressId = order.addresses.find { it.addressType == alcoholMonitoringInstallationAddressType }?.id
+      val alcoholMonitoringInstallationAddressType: AddressType = AddressType.valueOf(
+        alcoholMonitoringConditionsUpdateRecord.installationLocation.toString(),
+      )
+      alcoholMonitoringAddressId = order.addresses.find {
+        it.addressType == alcoholMonitoringInstallationAddressType
+      }?.id
     } catch (_: IllegalArgumentException) {
     }
 

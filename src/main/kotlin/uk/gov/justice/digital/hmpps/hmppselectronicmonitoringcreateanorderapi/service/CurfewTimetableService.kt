@@ -6,7 +6,6 @@ import java.util.*
 
 @Service
 class CurfewTimetableService : OrderSectionServiceBase() {
-
   fun updateCurfewTimetable(orderId: UUID, username: String, timetable: List<CurfewTimeTable>) {
     val order = findEditableOrder(orderId, username)
     order.curfewTimeTable.clear()

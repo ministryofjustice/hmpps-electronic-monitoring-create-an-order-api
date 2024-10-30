@@ -27,7 +27,9 @@ class OrderRepositoryTest {
   private val mockOrderId: UUID = UUID.fromString("da69b6d1-fb7f-4513-aee5-bd762cd8921d")
   private val mockUsername: String = "username"
   private val mockAddressId = UUID.fromString("506fdf2f-7c4e-4bc7-bdb6-e42ccbf2a4f4")
-  private val mockAlcoholMonitoringConditionsId = UUID.fromString("4f174060-6a26-41d3-ad7d-9b28f607a7df")
+  private val mockAlcoholMonitoringConditionsId = UUID.fromString(
+    "4f174060-6a26-41d3-ad7d-9b28f607a7df",
+  )
 
   private val mockStartDate: ZonedDateTime = ZonedDateTime.of(
     LocalDate.of(2025, 1, 1),

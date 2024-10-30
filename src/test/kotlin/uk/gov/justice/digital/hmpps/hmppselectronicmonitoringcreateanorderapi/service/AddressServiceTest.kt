@@ -13,13 +13,13 @@ import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Address
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AlcoholMonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateAddressDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringInstallationLocationType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DeviceWearerAddressUsage
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.UpdateDeviceWearerAddressDto
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
@@ -38,7 +38,9 @@ class AddressServiceTest {
   private val mockOrderId: UUID = UUID.fromString("da69b6d1-fb7f-4513-aee5-bd762cd8921d")
   private val mockUsername: String = "username"
   private val mockAddressId = UUID.fromString("506fdf2f-7c4e-4bc7-bdb6-e42ccbf2a4f4")
-  private val mockAlcoholMonitoringConditionsId = UUID.fromString("4f174060-6a26-41d3-ad7d-9b28f607a7df")
+  private val mockAlcoholMonitoringConditionsId = UUID.fromString(
+    "4f174060-6a26-41d3-ad7d-9b28f607a7df",
+  )
 
   private val mockStartDate: ZonedDateTime = ZonedDateTime.of(
     LocalDate.of(2025, 1, 1),
@@ -63,7 +65,7 @@ class AddressServiceTest {
     postcode = "mockPostcode",
   )
 
-  private val mockAddressUpdateRecord = UpdateDeviceWearerAddressDto(
+  private val mockAddressUpdateRecord = UpdateAddressDto(
     addressType = AddressType.PRIMARY,
     addressLine1 = "updatedMockAddressLine1",
     addressLine2 = "updatedMockAddressLine2",
@@ -131,10 +133,14 @@ class AddressServiceTest {
   inner class WhenCallingUpdateAddress {
     @Test
     fun `updates the existing address record if an address of that type exists for the order`() {
-      whenever(orderRepo.findByIdAndUsernameAndStatus(mockOrderId, mockUsername, OrderStatus.IN_PROGRESS)).thenReturn(
+      whenever(
+        orderRepo.findByIdAndUsernameAndStatus(mockOrderId, mockUsername, OrderStatus.IN_PROGRESS),
+      ).thenReturn(
         Optional.of(orderWithExistingPrimaryAddressAndRelation),
       )
-      val originalPrimaryAddressId = orderWithExistingPrimaryAddressAndRelation.addresses.find { it.addressType == AddressType.PRIMARY }?.id
+      val originalPrimaryAddressId = orderWithExistingPrimaryAddressAndRelation.addresses.find {
+        it.addressType == AddressType.PRIMARY
+      }?.id
 
       val updatedAddress = addressService.updateAddress(
         mockOrderId,
@@ -149,7 +155,9 @@ class AddressServiceTest {
 
     @Test
     fun `creates a new address record if an address of that type does not exist for the order`() {
-      whenever(orderRepo.findByIdAndUsernameAndStatus(mockOrderId, mockUsername, OrderStatus.IN_PROGRESS)).thenReturn(
+      whenever(
+        orderRepo.findByIdAndUsernameAndStatus(mockOrderId, mockUsername, OrderStatus.IN_PROGRESS),
+      ).thenReturn(
         Optional.of(orderWithoutPrimaryAddress),
       )
 
@@ -159,8 +167,12 @@ class AddressServiceTest {
         mockAddressUpdateRecord,
       )
 
-      Assertions.assertThat(addedPrimaryAddress?.addressType).isEqualTo(updatedMockAddress.addressType)
-      Assertions.assertThat(addedPrimaryAddress?.addressLine1).isEqualTo(updatedMockAddress.addressLine1)
+      Assertions.assertThat(
+        addedPrimaryAddress?.addressType,
+      ).isEqualTo(updatedMockAddress.addressType)
+      Assertions.assertThat(
+        addedPrimaryAddress?.addressLine1,
+      ).isEqualTo(updatedMockAddress.addressLine1)
       Assertions.assertThat(addedPrimaryAddress?.postcode).isEqualTo(updatedMockAddress.postcode)
     }
   }

@@ -55,7 +55,9 @@ class CurfewTimetableControllerTest : IntegrationTestBase() {
       .expectBodyList(ErrorResponse::class.java)
       .returnResult()
     val error = result.responseBody!!.first()
-    Assertions.assertThat(error.developerMessage).isEqualTo("An editable order with ${order.id} does not exist")
+    Assertions.assertThat(
+      error.developerMessage,
+    ).isEqualTo("An editable order with ${order.id} does not exist")
   }
 
   @Test
@@ -78,7 +80,9 @@ class CurfewTimetableControllerTest : IntegrationTestBase() {
       .expectBodyList(ErrorResponse::class.java)
       .returnResult()
     val error = result.responseBody!!.first()
-    Assertions.assertThat(error.developerMessage).isEqualTo("An editable order with ${order.id} does not exist")
+    Assertions.assertThat(
+      error.developerMessage,
+    ).isEqualTo("An editable order with ${order.id} does not exist")
   }
 
   @Test
@@ -103,17 +107,31 @@ class CurfewTimetableControllerTest : IntegrationTestBase() {
     val error = result.responseBody!!
     Assertions.assertThat(error.count()).isEqualTo(3)
     Assertions.assertThat(error[0].index).isEqualTo(0)
-    Assertions.assertThat(error[0].errors).contains(ValidationError("curfewAddress", "Curfew address is required"))
+    Assertions.assertThat(
+      error[0].errors,
+    ).contains(ValidationError("curfewAddress", "Curfew address is required"))
     Assertions.assertThat(error[1].index).isEqualTo(2)
-    Assertions.assertThat(error[1].errors).contains(ValidationError("startTime", "Enter start time of curfew"))
+    Assertions.assertThat(
+      error[1].errors,
+    ).contains(ValidationError("startTime", "Enter start time of curfew"))
     Assertions.assertThat(error[2].index).isEqualTo(4)
-    Assertions.assertThat(error[2].errors).contains(ValidationError("endTime", "Enter end time of curfew"))
+    Assertions.assertThat(
+      error[2].errors,
+    ).contains(ValidationError("endTime", "Enter end time of curfew"))
   }
 
   @Test
   fun `Should save order with updated timetable and cleared any previous timetable`() {
     val order = createOrder()
-    val timetable = DayOfWeek.entries.map { day -> CurfewTimeTable(dayOfWeek = day, orderId = order.id, startTime = "00:00:00", endTime = "07:00:00", curfewAddress = "SECONDARY_ADDRESS") }.toList()
+    val timetable = DayOfWeek.entries.map { day ->
+      CurfewTimeTable(
+        dayOfWeek = day,
+        orderId = order.id,
+        startTime = "00:00:00",
+        endTime = "07:00:00",
+        curfewAddress = "SECONDARY_ADDRESS",
+      )
+    }.toList()
     order.curfewTimeTable.addAll(timetable)
     orderRepo.save(order)
     Mockito.reset(orderRepo)
@@ -147,7 +165,15 @@ class CurfewTimetableControllerTest : IntegrationTestBase() {
     endTime: String? = "23:59:00",
     curfewAddress: String? = "PRIMARY_ADDRESS",
   ): String {
-    val body = DayOfWeek.entries.map { day -> CurfewTimeTable(dayOfWeek = day, orderId = orderId, startTime = startTime, endTime = endTime, curfewAddress = curfewAddress) }.toList()
+    val body = DayOfWeek.entries.map { day ->
+      CurfewTimeTable(
+        dayOfWeek = day,
+        orderId = orderId,
+        startTime = startTime,
+        endTime = endTime,
+        curfewAddress = curfewAddress,
+      )
+    }.toList()
     return objectMapper.writeValueAsString(body)
   }
 
