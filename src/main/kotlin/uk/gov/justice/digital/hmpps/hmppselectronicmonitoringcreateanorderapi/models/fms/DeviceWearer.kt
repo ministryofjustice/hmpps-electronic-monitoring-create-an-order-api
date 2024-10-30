@@ -140,7 +140,7 @@ data class DeviceWearer(
       }
 
       val primaryAddress = order.addresses.find { address -> address.addressType == AddressType.PRIMARY }!!
-      val disabilities = order.deviceWearer?.disabilities?.split(',')?.map { disability -> Disability(disability) }?.toList()
+      val disabilities = order.deviceWearer?.disabilities?.split(',')?.map { disability -> Disability(disability) }?.toList() ?: emptyList()
       val deviceWearer = DeviceWearer(
         firstName = order.deviceWearer?.firstName,
         lastName = order.deviceWearer?.lastName,
@@ -164,7 +164,7 @@ data class DeviceWearer(
         responsibleAdultRequired = (order.deviceWearerResponsibleAdult != null).toString(),
         parent = "${order.deviceWearerResponsibleAdult?.fullName}",
         parentPhoneNumber = order.deviceWearerResponsibleAdult?.contactNumber,
-        interpreterRequired = order.deviceWearer?.interpreterRequired!!.toString(),
+        interpreterRequired = order.deviceWearer?.interpreterRequired?.toString(),
         language = order.deviceWearer?.language,
         nomisId = order.deviceWearer?.nomisId,
         pncId = order.deviceWearer?.pncId,

@@ -20,4 +20,6 @@ data class Defendant(
   val pncId: String?,
 
   val croNumber: String?,
+
+  val isYouth: Boolean,
 )

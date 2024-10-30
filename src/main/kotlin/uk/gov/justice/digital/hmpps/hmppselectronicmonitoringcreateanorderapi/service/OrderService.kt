@@ -38,16 +38,21 @@ class OrderService(
 
   fun submitOrder(id: UUID, username: String) {
     val order = getOrder(username, id)!!
+    submitOrder(order)
+  }
+
+  fun submitOrder(order: Order) {
     // create FMS device wearer
     val fmsDeviceWearer = FmsDeviceWearer.fromCemoOrder(order)
-    val createDeviceWearerResult = fmsClient.createDeviceWearer(fmsDeviceWearer, orderId = id)
+    val createDeviceWearerResult = fmsClient.createDeviceWearer(fmsDeviceWearer, orderId = order.id)
     order.fmsDeviceWearerId = createDeviceWearerResult.result.first().id
     // create FMS monitoring order
     val fmsOrder = MonitoringOrder.fromOrder(order)
-    val createOrderResult = fmsClient.createMonitoringOrder(fmsOrder, id)
+    val createOrderResult = fmsClient.createMonitoringOrder(fmsOrder, orderId = order.id)
     order.fmsMonitoringOrderId = createOrderResult.result.first().id
     // TODO: Upload attachments
 
+    order.status = OrderStatus.SUBMITTED
     repo.save(order)
   }
 
