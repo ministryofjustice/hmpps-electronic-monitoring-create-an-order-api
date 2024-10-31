@@ -69,11 +69,4 @@ data class EnforcementZoneConditions(
     }
     return true
   }
-  val isValid: Boolean
-    get() = (
-      zoneType != null &&
-        startDate != null &&
-        !description.isNullOrBlank() &&
-        !duration.isNullOrBlank()
-      )
 }

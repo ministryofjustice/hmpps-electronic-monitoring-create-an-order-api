@@ -49,10 +49,4 @@ data class CurfewConditions(
     }
     return true
   }
-
-  val isValid: Boolean
-    get() = (
-      startDate != null &&
-        curfewAddress != null
-      )
 }

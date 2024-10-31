@@ -25,8 +25,8 @@ data class CurfewReleaseDateConditions(
   @Column(name = "ORDER_ID", nullable = false, unique = true)
   val orderId: UUID,
 
-  @field:NotNull(message = "Enter curfew release day")
-  @field:Future(message = "Curfew release day must be in the future")
+  @field:NotNull(message = "Enter curfew release date")
+  @field:Future(message = "Curfew release date must be in the future")
   @Column(name = "RELEASE_DATE", nullable = true)
   var releaseDate: ZonedDateTime? = null,
 
@@ -48,12 +48,4 @@ data class CurfewReleaseDateConditions(
   @OneToOne
   @JoinColumn(name = "ORDER_ID", updatable = false, insertable = false)
   private val order: Order? = null,
-) {
-  val isValid: Boolean
-    get() = (
-      releaseDate != null &&
-        startTime != null &&
-        endTime != null &&
-        curfewAddress != null
-      )
-}
+)
