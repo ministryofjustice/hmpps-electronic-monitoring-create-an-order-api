@@ -11,9 +11,9 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AlcoholMonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ContactDetails
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InterestedParties
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.MonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ResponsibleOfficer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.courthearing.JudicialResultsPrompt
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
@@ -26,6 +26,7 @@ import java.time.LocalTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
+import java.util.*
 
 @Service
 class HearingEventHandler(
@@ -68,6 +69,47 @@ class HearingEventHandler(
     }
   }
 
+  fun getNotifyingOrganisation(jurisdictionType: JurisdictionType): String {
+    if (jurisdictionType == JurisdictionType.MAGISTRATES) {
+      return "Magistrates Court"
+    } else if (jurisdictionType == JurisdictionType.CROWN) {
+      return "Crown Court"
+    }
+    return ""
+  }
+
+  fun buildInterestedPartiesFromHearing(
+    order: Order,
+    hearing: Hearing,
+    prompts: List<JudicialResultsPrompt>,
+  ): InterestedParties {
+    return InterestedParties(
+      orderId = order.id,
+      responsibleOrganisation = getResponsibleOrganisation(
+        getPromptValue(
+          prompts,
+          "Responsible officer",
+        ),
+      ),
+      responsibleOrganisationRegion = getPromptValue(
+        prompts,
+        "Probation team to be notified organisation name",
+      ) ?: "",
+      responsibleOrganisationEmail = getPromptValue(
+        prompts,
+        "Probation team to be notified email address 1",
+      ) ?: "",
+      notifyingOrganisation = getNotifyingOrganisation(hearing.jurisdictionType),
+      responsibleOrganisationAddressId = order.addresses.first {
+        it.addressType == AddressType.RESPONSIBLE_ORGANISATION
+      }.id,
+      responsibleOfficerName = "",
+      responsibleOfficerPhoneNumber = "",
+      responsibleOrganisationPhoneNumber = "",
+      notifyingOrganisationEmail = "",
+    )
+  }
+
   private fun getOrderForDefendant(hearing: Hearing, defendant: Defendant, offences: List<Offence>): Order {
     val judicialResults = offences.flatMap { it.judicialResults }.toList()
 
@@ -94,18 +136,6 @@ class HearingEventHandler(
     }
 
     order.monitoringConditions = monitoringConditions
-    val responsibleOfficer = ResponsibleOfficer(orderId = order.id)
-    if (hearing.jurisdictionType == JurisdictionType.MAGISTRATES) {
-      responsibleOfficer.notifyingOrganisation = "Magistrates Court"
-    } else if (hearing.jurisdictionType == JurisdictionType.CROWN) {
-      responsibleOfficer.notifyingOrganisation = "Crown Court"
-    }
-    val organisation = getPromptValue(prompts, "Responsible officer")
-    responsibleOfficer.organisation = getResponsibleOrganisation(organisation)
-    responsibleOfficer.organisationRegion = getPromptValue(prompts, "Probation team to be notified organisation name")
-    responsibleOfficer.organisationEmail = getPromptValue(prompts, "Probation team to be notified email address 1")
-    responsibleOfficer.organisationPostCode = hearing.courtCentre.address?.postcode
-    order.responsibleOfficer = responsibleOfficer
 
     val person = defendant.personDefendant?.personDetails
     val deviceWearer = DeviceWearer(orderId = order.id)
@@ -120,23 +150,42 @@ class HearingEventHandler(
     order.deviceWearer = deviceWearer
     val address = person?.address
     if (address != null) {
-      val primaryAddress = Address(
-        orderId = order.id,
-        addressType = AddressType.PRIMARY,
-        addressLine1 = address.address1,
-        addressLine2 = address.address2 ?: "",
-        addressLine3 = address.address3 ?: "",
-        addressLine4 = address.address4 ?: "N/A",
-        postcode = address.postcode ?: "",
+      order.addresses.add(
+        Address(
+          orderId = order.id,
+          addressType = AddressType.PRIMARY,
+          addressLine1 = address.address1,
+          addressLine2 = address.address2 ?: "",
+          addressLine3 = address.address3 ?: "",
+          addressLine4 = address.address4 ?: "N/A",
+          postcode = address.postcode ?: "",
+        ),
       )
-      order.addresses = mutableListOf(primaryAddress)
     }
+
+    order.addresses.add(
+      Address(
+        orderId = order.id,
+        addressType = AddressType.RESPONSIBLE_ORGANISATION,
+        addressLine1 = hearing.courtCentre.address?.address1 ?: "",
+        addressLine2 = hearing.courtCentre.address?.address2 ?: "",
+        addressLine3 = hearing.courtCentre.address?.address3 ?: "",
+        addressLine4 = hearing.courtCentre.address?.address4 ?: "",
+        postcode = hearing.courtCentre.address?.postcode ?: "",
+      ),
+    )
     val contact = person?.contact
     if (contact != null) {
       val contactDetails =
         ContactDetails(orderId = order.id, contactNumber = contact.home ?: contact.mobile ?: contact.work)
       order.deviceWearerContactDetails = contactDetails
     }
+
+    order.interestedParties = buildInterestedPartiesFromHearing(
+      order,
+      hearing,
+      prompts,
+    )
     return order
   }
 

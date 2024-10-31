@@ -17,10 +17,10 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.EnforcementZoneConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationAndRisk
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InterestedParties
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.MonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ResponsibleAdult
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ResponsibleOfficer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringInstallationLocationType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
@@ -716,6 +716,17 @@ class OrderControllerTest : IntegrationTestBase() {
       fullName = "Mark Smith",
       contactNumber = "07401111111",
     )
+
+    val responsibleOrganisationAddress = Address(
+      orderId = order.id,
+      addressLine1 = "Line 1",
+      addressLine2 = "Line 2",
+      addressLine3 = "",
+      addressLine4 = "",
+      postcode = "AB11 1CD",
+      addressType = AddressType.RESPONSIBLE_ORGANISATION,
+    )
+
     order.addresses = mutableListOf(
       Address(
         orderId = order.id,
@@ -735,6 +746,7 @@ class OrderControllerTest : IntegrationTestBase() {
         postcode = "SW11 1NC",
         addressType = AddressType.SECONDARY,
       ),
+      responsibleOrganisationAddress,
     )
     order.installationAndRisk = InstallationAndRisk(
       orderId = order.id,
@@ -750,7 +762,6 @@ class OrderControllerTest : IntegrationTestBase() {
       contactNumber = "07401111111",
     )
     order.monitoringConditions = MonitoringConditions(orderId = order.id)
-    order.responsibleOfficer = ResponsibleOfficer(orderId = order.id)
     order.additionalDocuments = mutableListOf()
     val conditions = MonitoringConditions(
       orderId = order.id,
@@ -822,19 +833,18 @@ class OrderControllerTest : IntegrationTestBase() {
     )
     order.monitoringConditionsAlcohol = alcohol
 
-    val responsibleOfficer = ResponsibleOfficer(
+    order.interestedParties = InterestedParties(
       orderId = order.id,
-      name = "John Smith",
-      phoneNumber = "07401111111",
-      organisation = "Avon and Somerset Constabulary",
-      organisationRegion = "Mock Region",
-      organisationPostCode = "AB11 1CD",
-      organisationPhoneNumber = "07401111111",
-      organisationEmail = "abc@def.com",
+      responsibleOfficerName = "John Smith",
+      responsibleOfficerPhoneNumber = "07401111111",
+      responsibleOrganisation = "Avon and Somerset Constabulary",
+      responsibleOrganisationRegion = "Mock Region",
+      responsibleOrganisationAddressId = responsibleOrganisationAddress.id,
+      responsibleOrganisationPhoneNumber = "07401111111",
+      responsibleOrganisationEmail = "abc@def.com",
       notifyingOrganisation = "Mock Organisation",
+      notifyingOrganisationEmail = "",
     )
-
-    order.responsibleOfficer = responsibleOfficer
 
     order.monitoringConditions = conditions
     repo.save(order)
