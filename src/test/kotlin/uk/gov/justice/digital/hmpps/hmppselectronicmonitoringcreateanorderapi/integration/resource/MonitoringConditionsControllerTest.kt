@@ -72,6 +72,38 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
   }
 
   @Test
+  fun `isValid is false when mandatory fields are not populated`() {
+    val order = createOrder()
+    Assertions.assertThat(order.monitoringConditions?.isValid).isFalse()
+  }
+
+  @Test
+  fun `isValid is true when mandatory fields are populated`() {
+    val order = createOrder()
+    val updateMonitoringConditions = webTestClient.put()
+      .uri("/api/orders/${order.id}/monitoring-conditions")
+      .contentType(MediaType.APPLICATION_JSON)
+      .body(
+        BodyInserters.fromValue(
+          """
+            {
+              "orderType": "$mockOrderType",
+              "curfew": true
+            }
+          """.trimIndent(),
+        ),
+      )
+      .headers(setAuthorisation("AUTH_ADM"))
+      .exchange()
+      .expectStatus()
+      .isOk
+      .expectBody(MonitoringConditions::class.java)
+      .returnResult()
+
+    Assertions.assertThat(updateMonitoringConditions.responseBody?.isValid).isTrue()
+  }
+
+  @Test
   fun `Non-mandatory monitoring conditions can be updated with null values`() {
     val order = createOrder()
     val updateMonitoringConditions = webTestClient.put()

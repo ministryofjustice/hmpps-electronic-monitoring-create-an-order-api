@@ -388,27 +388,28 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `The isValid property of the response is true if the mandatory DeviceWearer & NoFixedAbode fields are populated`() {
+  fun `isValid is false when mandatory fields are not populated`() {
     val order = createOrder()
-    val updateDeviceWearer = webTestClient.put()
+
+    Assertions.assertThat(order.deviceWearer?.isValid).isFalse()
+  }
+
+  @Test
+  fun `isValid is true when mandatory deviceWearer & noFixedAbode fields are populated`() {
+    val order = createOrder()
+    webTestClient.put()
       .uri("/api/orders/${order.id}/device-wearer")
       .contentType(MediaType.APPLICATION_JSON)
       .body(
         BodyInserters.fromValue(
           """
             {
-              "nomisId": "$mockNomisId",
-              "pncId": "$mockPncId",
-              "deliusId": "$mockDeliusId",
-              "prisonNumber": "$mockPrisonNumber",
               "firstName": "$mockFirstName",
               "lastName": "$mockLastName",
-              "alias": "$mockAlias",
               "adultAtTimeOfInstallation": "false",
               "sex": "$mockSex",
               "gender": "$mockGender",
-              "dateOfBirth": "$mockDateOfBirth",
-              "disabilities": "$mockDisabilities"
+              "dateOfBirth": "$mockDateOfBirth"
             }
           """.trimIndent(),
         ),
@@ -417,12 +418,8 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
       .exchange()
       .expectStatus()
       .isOk
-      .expectBody(DeviceWearer::class.java)
-      .returnResult()
 
-    Assertions.assertThat(updateDeviceWearer.responseBody?.isValid).isFalse()
-
-    val updateFixedAbode = webTestClient.put()
+    val updatedOrder = webTestClient.put()
       .uri("/api/orders/${order.id}/device-wearer/no-fixed-abode")
       .contentType(MediaType.APPLICATION_JSON)
       .body(
@@ -441,6 +438,6 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
       .expectBody(DeviceWearer::class.java)
       .returnResult()
 
-    Assertions.assertThat(updateFixedAbode.responseBody?.isValid).isTrue()
+    Assertions.assertThat(updatedOrder.responseBody?.isValid).isTrue()
   }
 }
