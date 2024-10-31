@@ -49,13 +49,9 @@ server:
   error:
     include-message: always
 
-hmpps.sqs:
-  useWebToken: true
-  queues:
-    courthearingeventqueue:
-      queueName: ${COURT_HEARING_EVENT_QUEUE_NAME}
-      queueArn: ${COURT_HEARING_EVENT_QUEUE_ARN}
-      dlqName: ${COURT_HEARING_EVENT_DL_QUEUE_NAME}
+toggle:
+  cp-integration:
+    enabled: ${CP_INTEGRATION_ENABLED}
 
 management:
   endpoints:

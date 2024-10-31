@@ -27,6 +27,7 @@ generic-service:
     SERVER_PORT: "8080"
     APPLICATIONINSIGHTS_CONNECTION_STRING: "InstrumentationKey=$(APPINSIGHTS_INSTRUMENTATIONKEY)"
     APPLICATIONINSIGHTS_CONFIGURATION_FILE: applicationinsights.json
+    HMPPS_SQS_USEWEBTOKEN: true
 
   # Pre-existing kubernetes secrets to load as environment variables in the deployment.
   # namespace_secrets:
@@ -51,10 +52,10 @@ generic-service:
       DB_USER: "database_username"
       DB_PASS: "database_password"
     sqs-court-case-events-secret:
-      COURT_HEARING_EVENT_QUEUE_NAME: "sqs_queue_name"
-      COURT_HEARING_EVENT_QUEUE_ARN: "sqs_queue_arn"
+      HMPPS_SQS_QUEUES_COURTHEARINGEVENTQUEUE_QUEUENAME: "sqs_queue_name"
+      HMPPS_SQS_QUEUES_COURTHEARINGEVENTQUEUE_QUEUEARN: "sqs_queue_arn"
     sqs-court-case-events-dlq-secret:
-      COURT_HEARING_EVENT_DL_QUEUE_NAME: "sqs_queue_name"
+      HMPPS_SQS_QUEUES_COURTHEARINGEVENTQUEUE_DLQNAME: "sqs_queue_name"
   allowlist:
     groups:
       - internal

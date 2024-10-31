@@ -12,7 +12,7 @@ generic-service:
     HMPPS_AUTH_URL: "https://sign-in-preprod.hmpps.service.justice.gov.uk/auth"
     DOCUMENT_MANAGEMENT_URL: "https://document-api-preprod.hmpps.service.justice.gov.uk/"
     SENTRY_ENVIRONMENT: preprod
-
+    CP_INTEGRATION_ENABLED: false
 # CloudPlatform AlertManager receiver to route prometheus alerts to slack
 # See https://user-guide.cloud-platform.service.justice.gov.uk/documentation/monitoring-an-app/how-to-create-alarms.html#creating-your-own-custom-alerts
 generic-prometheus-alerts:
