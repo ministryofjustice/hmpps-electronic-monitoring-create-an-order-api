@@ -18,6 +18,8 @@ spring:
 services:
   hmppsauth:
     url: http://localhost:8091/auth
+
+CP_INTEGRATION_ENABLED: true
 hmpps.sqs:
   provider: localstack
   localstackUrl: http://localhost:4566
