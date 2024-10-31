@@ -107,7 +107,7 @@ class CurfewReleaseDateControllerTest : IntegrationTestBase() {
     Assertions.assertThat(error).contains(ValidationError("curfewAddress", "Curfew address is required"))
     Assertions.assertThat(error).contains(ValidationError("startTime", "Enter start time"))
     Assertions.assertThat(error).contains(ValidationError("endTime", "Enter end time"))
-    Assertions.assertThat(error).contains(ValidationError("releaseDate", "Enter curfew release day"))
+    Assertions.assertThat(error).contains(ValidationError("releaseDate", "Enter curfew release date"))
   }
 
   @Test
@@ -132,7 +132,7 @@ class CurfewReleaseDateControllerTest : IntegrationTestBase() {
     val error = result.responseBody!!
     Assertions.assertThat(result.responseBody).hasSize(1)
 
-    Assertions.assertThat(error).contains(ValidationError("releaseDate", "Curfew release day must be in the future"))
+    Assertions.assertThat(error).contains(ValidationError("releaseDate", "Curfew release date must be in the future"))
   }
 
   @Test
