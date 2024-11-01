@@ -9,7 +9,7 @@ import jakarta.persistence.Table
 import java.util.*
 
 @Entity
-@Table(name = "RESPONSIBLE_OFFICER")
+@Table(name = "INTERESTED_PARTIES")
 data class InterestedParties(
   @Id
   @Column(name = "ID", nullable = false, unique = true)
