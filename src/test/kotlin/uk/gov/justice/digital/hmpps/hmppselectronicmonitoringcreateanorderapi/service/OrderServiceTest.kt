@@ -221,7 +221,7 @@ class OrderServiceTest {
     val mockOrder = createReadyToSubmitOrder()
     mockOrder.status = OrderStatus.SUBMITTED
 
-    whenever(repo.findByUsernameAndId("mockUser", mockOrder.id)).thenReturn(Optional.of(mockOrder))
+    whenever(repo.findByUsernameAndId("mockUser", mockOrder.id)).thenReturn(mockOrder)
 
     val e = org.junit.jupiter.api.Assertions.assertThrows(IllegalStateException::class.java) {
       service.submitOrder(mockOrder.id, "mockUser")
@@ -235,7 +235,7 @@ class OrderServiceTest {
     val mockOrder = createReadyToSubmitOrder()
     mockOrder.status = OrderStatus.ERROR
 
-    whenever(repo.findByUsernameAndId("mockUser", mockOrder.id)).thenReturn(Optional.of(mockOrder))
+    whenever(repo.findByUsernameAndId("mockUser", mockOrder.id)).thenReturn(mockOrder)
 
     val e = org.junit.jupiter.api.Assertions.assertThrows(IllegalStateException::class.java) {
       service.submitOrder(mockOrder.id, "mockUser")
@@ -249,7 +249,7 @@ class OrderServiceTest {
   fun `Should create fms device wearer and monitoring order and save both id to database`() {
     val mockOrder = createReadyToSubmitOrder()
 
-    whenever(repo.findByUsernameAndId("mockUser", mockOrder.id)).thenReturn(Optional.of(mockOrder))
+    whenever(repo.findByUsernameAndId("mockUser", mockOrder.id)).thenReturn(mockOrder)
     whenever(fmsClient.createDeviceWearer(any<fmsDeviceWearer>(), eq(mockOrder.id))).thenReturn(
       FmsResponse(
         result = listOf(

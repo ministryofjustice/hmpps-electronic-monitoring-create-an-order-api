@@ -10,6 +10,7 @@ import jakarta.persistence.Id
 import jakarta.persistence.OneToMany
 import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import java.util.UUID
 
@@ -79,4 +80,79 @@ data class Order(
   @OneToMany(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "order", orphanRemoval = true)
   var curfewTimeTable: MutableList<CurfewTimeTable> = mutableListOf(),
 
-)
+) {
+  private val adultOrHasResponsibleAdult: Boolean
+    get() = (
+      deviceWearer?.adultAtTimeOfInstallation == true ||
+        (deviceWearer?.adultAtTimeOfInstallation == false && deviceWearerResponsibleAdult != null)
+      )
+
+  private val hasPrimaryAddressOrNoFixedAbode: Boolean
+    get() = (
+      (
+        (deviceWearer?.noFixedAbode == false && addresses.any { it.addressType == AddressType.PRIMARY }) ||
+          deviceWearer?.noFixedAbode == true
+        )
+      )
+
+  private val monitoringConditionsAreValid: Boolean
+    get() = (
+      addresses.any { it.addressType == AddressType.INSTALLATION } &&
+        (
+          if (monitoringConditions?.curfew == true) {
+            curfewReleaseDateConditions != null &&
+              curfewConditions != null &&
+              curfewTimeTable.isNotEmpty()
+          } else {
+            (true)
+          }
+          ) &&
+        (
+          if (monitoringConditions?.exclusionZone == true) {
+            enforcementZoneConditions.isNotEmpty()
+          } else {
+            (true)
+          }
+          ) &&
+        (
+          if (monitoringConditions?.trail == true) {
+            monitoringConditionsTrail != null
+          } else {
+            (true)
+          }
+          ) &&
+        (
+          if (monitoringConditions?.mandatoryAttendance == true) {
+            // Mandatory attendance conditions aren't currently persisted. When they are, validate them here. eg:
+            // mandatoryAttendanceConditions != null
+            true
+          } else {
+            (true)
+          }
+          ) &&
+        (
+          if (monitoringConditions?.alcohol == true) {
+            monitoringConditionsAlcohol != null
+          } else {
+            (true)
+          }
+          )
+      )
+
+  private val requiredDocuments: Boolean
+    get() = (
+//      Add additional document validation here, eg:
+//      additionalDocuments.any { it.fileType == DocumentType.LICENCE }
+      true
+      )
+
+  val isValid: Boolean
+    get() = (
+      deviceWearer?.isValid == true &&
+        deviceWearerContactDetails?.isValid == true &&
+        monitoringConditions?.isValid == true &&
+        adultOrHasResponsibleAdult &&
+        hasPrimaryAddressOrNoFixedAbode &&
+        monitoringConditionsAreValid
+      )
+}

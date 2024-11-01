@@ -15,7 +15,7 @@ interface OrderRepository : JpaRepository<Order, UUID> {
   fun findByUsernameAndId(
     username: String,
     id: UUID,
-  ): Optional<Order>
+  ): Order?
 
   fun findByIdAndUsernameAndStatus(
     id: UUID,
