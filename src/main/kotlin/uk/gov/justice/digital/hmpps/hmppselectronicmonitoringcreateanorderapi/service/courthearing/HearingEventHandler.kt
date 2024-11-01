@@ -5,22 +5,24 @@ import uk.gov.justice.digital.hmpps.courthearingeventreceiver.model.Defendant
 import uk.gov.justice.digital.hmpps.courthearingeventreceiver.model.Hearing
 import uk.gov.justice.digital.hmpps.courthearingeventreceiver.model.HearingEvent
 import uk.gov.justice.digital.hmpps.courthearingeventreceiver.model.JudicialResults
-import uk.gov.justice.digital.hmpps.courthearingeventreceiver.model.JurisdictionType
 import uk.gov.justice.digital.hmpps.courthearingeventreceiver.model.Offence
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Address
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AlcoholMonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ContactDetails
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.EnforcementZoneConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.MonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ResponsibleOfficer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.courthearing.JudicialResultsPrompt
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.EnforcementZoneType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MonitoringConditionType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.OrderService
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.SubmitFmdOrderResultRepository
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.FmsService
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
@@ -30,26 +32,36 @@ import java.time.format.DateTimeFormatter
 @Service
 class HearingEventHandler(
   private val orderRepository: OrderRepository,
-  private val orderService: OrderService,
-
+  private val fmsService: FmsService,
+  val submitFmdOrderResultRepository: SubmitFmdOrderResultRepository,
 ) {
   private val commentPlatformUsername = "COMMENT_PLATFORM"
   private val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
   companion object {
     const val ALCOHOL_ABSTAIN_MONITORING_UUID = "d54c3093-6b9b-4b61-80cf-a0bf4ed5d2e8"
 
+    const val EXCLUSION_ZONE_UUID = "091cd45b-4312-476e-a122-18cc02fd1699"
+
     fun isTaggableOffence(offence: Offence): Boolean {
       return offence.judicialResults.any {
           judicialResults ->
         // Community order England_Wales, Alcohol abstinence and monitoring
-        judicialResults.judicialResultTypeId == ALCOHOL_ABSTAIN_MONITORING_UUID
+        judicialResults.judicialResultTypeId == ALCOHOL_ABSTAIN_MONITORING_UUID ||
+          judicialResults.judicialResultTypeId == EXCLUSION_ZONE_UUID
       }
     }
   }
 
   fun handleHearingEvent(event: HearingEvent) {
     val orders = getOrdersFromHearing(event.hearing)
-    orders.forEach { order -> orderService.submitOrder(order) }
+    orders.forEach { order ->
+      run {
+        val result = fmsService.submitOrder(order)
+
+        // TODO log failed requests
+        submitFmdOrderResultRepository.save(result)
+      }
+    }
   }
 
   fun getOrdersFromHearing(hearing: Hearing): List<Order> {
@@ -93,18 +105,40 @@ class HearingEventHandler(
       order.monitoringConditionsAlcohol = alcoholConditions
     }
 
+    if (judicialResults.any { it.judicialResultTypeId == EXCLUSION_ZONE_UUID }) {
+      monitoringConditions.exclusionZone = true
+      val zone = EnforcementZoneConditions(orderId = order.id)
+      zone.zoneType = EnforcementZoneType.EXCLUSION
+      val startTime = getPromptValue(prompts, "Start Time") ?: "00:00"
+
+      val startDate = getPromptValue(prompts, "Start date for tag")?.let {
+        val localDate = LocalDate.parse(it, formatter)
+        ZonedDateTime.of(localDate, LocalTime.parse(startTime), ZoneId.of("GMT"))
+      }
+      monitoringConditions.startDate = startDate
+      zone.startDate = startDate
+      val endTime = getPromptValue(prompts, "End Time") ?: "00:00"
+      val endDate =
+        getPromptValue(prompts, "End date for tag")?.let {
+          val localDate = LocalDate.parse(it, formatter)
+          ZonedDateTime.of(localDate, LocalTime.parse(endTime), ZoneId.of("GMT"))
+        }
+      monitoringConditions.endDate = endDate
+      zone.endDate = endDate
+
+      zone.duration = getPromptValue(prompts, "Exclusion and electronic monitoring period")
+      zone.description = getPromptValue(prompts, "Place / area")
+    }
+
     order.monitoringConditions = monitoringConditions
     val responsibleOfficer = ResponsibleOfficer(orderId = order.id)
-    if (hearing.jurisdictionType == JurisdictionType.MAGISTRATES) {
-      responsibleOfficer.notifyingOrganisation = "Magistrates Court"
-    } else if (hearing.jurisdictionType == JurisdictionType.CROWN) {
-      responsibleOfficer.notifyingOrganisation = "Crown Court"
-    }
+
     val organisation = getPromptValue(prompts, "Responsible officer")
     responsibleOfficer.organisation = getResponsibleOrganisation(organisation)
     responsibleOfficer.organisationRegion = getPromptValue(prompts, "Probation team to be notified organisation name")
     responsibleOfficer.organisationEmail = getPromptValue(prompts, "Probation team to be notified email address 1")
     responsibleOfficer.organisationPostCode = hearing.courtCentre.address?.postcode
+    responsibleOfficer.notifyingOrganisation = hearing.courtCentre.name
     order.responsibleOfficer = responsibleOfficer
 
     val person = defendant.personDefendant?.personDetails

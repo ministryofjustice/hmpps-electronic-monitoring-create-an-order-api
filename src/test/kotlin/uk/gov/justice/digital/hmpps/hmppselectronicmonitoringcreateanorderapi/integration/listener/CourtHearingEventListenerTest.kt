@@ -21,26 +21,21 @@ import software.amazon.awssdk.services.sqs.model.SendMessageResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.SercoAuthMockServerExtension.Companion.sercoAuthApi
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.SercoMockApiExtension.Companion.sercoApi
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MonitoringConditionType
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsResult
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.SubmitFmdOrderResultRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.courthearing.HearingEventHandler
 import uk.gov.justice.hmpps.sqs.HmppsQueueService
 import uk.gov.justice.hmpps.sqs.MissingQueueException
 import uk.gov.justice.hmpps.sqs.countAllMessagesOnQueue
 import java.nio.file.Files
 import java.nio.file.Paths
-import java.time.ZonedDateTime
 import java.util.concurrent.CompletableFuture
 
 @Transactional
 class CourtHearingEventListenerTest : IntegrationTestBase() {
   @SpyBean
-  lateinit var repo: OrderRepository
+  lateinit var repo: SubmitFmdOrderResultRepository
 
   @SpyBean
   lateinit var eventHandler: HearingEventHandler
@@ -91,10 +86,27 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
     await().until { getNumberOfMessagesCurrentlyOnEventQueue() == 0 }
     verify(eventHandler, Times(0)).handleHearingEvent(any())
   }
+  fun String.removeWhitespaceAndNewlines(): String = this.replace("(\"[^\"]*\")|\\s".toRegex(), "\$1")
 
   @Test
   fun `Will map COEW AAR request and submit to FMS`() {
     val rawMessage = generateRawHearingEventMessage("src/test/resources/json/COEW_AAR.json")
+
+    sercoApi.stupCreateDeviceWearer(
+      HttpStatus.OK,
+      FmsResponse(result = listOf(FmsResult(message = "", id = "MockDeviceWearerId"))),
+    )
+    sercoApi.stupMonitoringOrder(
+      HttpStatus.OK,
+      FmsResponse(result = listOf(FmsResult(message = "", id = "MockMonitoringOrderId"))),
+    )
+
+    sendDomainSqsMessage(rawMessage)
+    await().until { repo.count().toInt() != 0 || getNumberOfMessagesCurrentlyOnDeadLetterQueue() != 0 }
+    assertThat(getNumberOfMessagesCurrentlyOnDeadLetterQueue()).isEqualTo(0)
+    val savedResult = repo.findAll().first()
+    assertThat(savedResult).isNotNull
+
     val mockDeviceWearerJson = """
       {
       "title": "",
@@ -145,7 +157,7 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
      """
     val mockOrderJson = """
       {
-	"case_id": "058592391be95e10df36a756b04bcbfb",
+	"case_id": "MockDeviceWearerId",
 	"allday_lockdown": "",
 	"atv_allowance": "",
 	"condition_type": "Requirement of a Community Order",
@@ -153,7 +165,7 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
 	"court_order_email": "",
 	"describe_exclusion": "",
 	"device_type": null,
-	"device_wearer": "Janie  Ernser",
+	"device_wearer": "Janie Ernser",
 	"enforceable_condition": [
 		{
 			"condition": "AAMR"
@@ -166,7 +178,7 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
 	"new_order_received": "",
 	"notifying_officer_email": "",
 	"notifying_officer_name": "",
-	"notifying_organization": "Magistrates Court",
+	"notifying_organization": "Lavender Hill Magistrates' Court",
 	"no_post_code": "",
 	"no_address_1": "",
 	"no_address_2": "",
@@ -178,7 +190,7 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
 	"offence": "",
 	"offence_date": "",
 	"order_end": "2025-12-12",
-	"order_id": "89887689-d357-4e0b-a8ec-e02e34614bcb",
+	"order_id": "${savedResult.id}",
 	"order_request_type": "",
 	"order_start": "2024-10-21",
 	"order_type": "Community",
@@ -231,58 +243,9 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
 	"order_status": "Not Started"
 }
     """.trimIndent()
-    sercoApi.stupCreateDeviceWearer(
-      mockDeviceWearerJson,
-      HttpStatus.OK,
-      FmsResponse(result = listOf(FmsResult(message = "", id = "MockDeviceWearerId"))),
-    )
-    sercoApi.stupMonitoringOrder(
-      mockOrderJson,
-      HttpStatus.OK,
-      FmsResponse(result = listOf(FmsResult(message = "", id = "MockMonitoringOrderId"))),
-    )
-
-    sendDomainSqsMessage(rawMessage)
-    await().until { repo.count().toInt() != 0 }
-    val order = repo.findAll().first()
-    assertThat(order).isNotNull
-    // Order
-    assertThat(order.fmsDeviceWearerId).isEqualTo("MockDeviceWearerId")
-    assertThat(order.fmsMonitoringOrderId).isEqualTo("MockMonitoringOrderId")
-    assertThat(order.username).isEqualTo("COMMENT_PLATFORM")
-    assertThat(order.status).isEqualTo(OrderStatus.SUBMITTED)
-    // DeviceWearer
-    assertThat(order.deviceWearer!!.firstName).isEqualTo("Janie")
-    assertThat(order.deviceWearer!!.lastName).isEqualTo("Ernser")
-    assertThat(order.deviceWearer!!.gender).isEqualTo("MALE")
-    assertThat(order.deviceWearer!!.sex).isEqualTo("MALE")
-    assertThat(order.deviceWearer!!.dateOfBirth).isEqualTo(ZonedDateTime.parse("1991-02-18T00:00:00Z"))
-    // Responsible Officer
-    assertThat(order.responsibleOfficer!!.organisation).isEqualTo("Probation")
-    assertThat(order.responsibleOfficer!!.organisationRegion).isEqualTo("London Division NPS")
-    assertThat(order.responsibleOfficer!!.organisationEmail).isEqualTo("londonnps.court@justice.gov.uk")
-    assertThat(order.responsibleOfficer!!.notifyingOrganisation).isEqualTo("Magistrates Court")
-    assertThat(order.responsibleOfficer!!.organisationPostCode).isEqualTo("SW11 1JU")
-    // Contact Details
-    assertThat(order.deviceWearerContactDetails!!.contactNumber).isEqualTo("01472544375")
-    // Primary Address
-    val primaryAddress = order.addresses.find { it.addressType == AddressType.PRIMARY }
-    assertThat(primaryAddress).isNotNull
-    assertThat(primaryAddress!!.addressLine1).isEqualTo("21")
-    assertThat(primaryAddress.addressLine2).isEqualTo("Furnburry Park Road")
-    assertThat(primaryAddress.addressLine3).isEqualTo("London")
-    assertThat(primaryAddress.addressLine4).isEqualTo("N/A")
-    assertThat(primaryAddress.postcode).isEqualTo("SW11 3TQ")
-    // Monitoring Conditions
-    assertThat(order.monitoringConditions!!.orderType).isEqualTo("Community")
-    assertThat(
-      order.monitoringConditions!!.conditionType,
-    ).isEqualTo(MonitoringConditionType.REQUIREMENT_OF_A_COMMUNITY_ORDER)
-    assertThat(order.monitoringConditions!!.alcohol).isTrue()
-    assertThat(order.monitoringConditions!!.startDate).isEqualTo(ZonedDateTime.parse("2024-10-21T00:00:00Z"))
-    assertThat(order.monitoringConditions!!.endDate).isEqualTo(ZonedDateTime.parse("2025-12-12T00:00:00Z"))
-    // Alcohol Conditions
-    assertThat(order.monitoringConditionsAlcohol!!.monitoringType).isEqualTo(AlcoholMonitoringType.ALCOHOL_ABSTINENCE)
+    assertThat(savedResult.fmsDeviceWearerRequest).isEqualTo(mockDeviceWearerJson.removeWhitespaceAndNewlines())
+    assertThat(savedResult.fmsOrderRequest).isEqualTo(mockOrderJson.removeWhitespaceAndNewlines())
+    assertThat(savedResult.success).isTrue()
   }
 
   fun generateRawHearingEventMessage(path: String): String {
