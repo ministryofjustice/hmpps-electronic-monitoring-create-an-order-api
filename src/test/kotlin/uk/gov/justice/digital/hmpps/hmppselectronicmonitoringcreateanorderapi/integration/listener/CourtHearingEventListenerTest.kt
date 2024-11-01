@@ -258,11 +258,12 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
     assertThat(order.deviceWearer!!.sex).isEqualTo("MALE")
     assertThat(order.deviceWearer!!.dateOfBirth).isEqualTo(ZonedDateTime.parse("1991-02-18T00:00:00Z"))
     // Responsible Officer
-    assertThat(order.responsibleOfficer!!.organisation).isEqualTo("Probation")
-    assertThat(order.responsibleOfficer!!.organisationRegion).isEqualTo("London Division NPS")
-    assertThat(order.responsibleOfficer!!.organisationEmail).isEqualTo("londonnps.court@justice.gov.uk")
-    assertThat(order.responsibleOfficer!!.notifyingOrganisation).isEqualTo("Magistrates Court")
-    assertThat(order.responsibleOfficer!!.organisationPostCode).isEqualTo("SW11 1JU")
+    assertThat(order.interestedParties!!.responsibleOrganisation).isEqualTo("Probation")
+    assertThat(order.interestedParties!!.responsibleOrganisationRegion).isEqualTo("London Division NPS")
+    assertThat(order.interestedParties!!.responsibleOrganisationEmail).isEqualTo("londonnps.court@justice.gov.uk")
+    assertThat(order.interestedParties!!.notifyingOrganisation).isEqualTo("Magistrates Court")
+    val roAddress = order.addresses.first { it.addressType === AddressType.RESPONSIBLE_ORGANISATION }
+    assertThat(roAddress.postcode).isEqualTo("SW11 1JU")
     // Contact Details
     assertThat(order.deviceWearerContactDetails!!.contactNumber).isEqualTo("01472544375")
     // Primary Address

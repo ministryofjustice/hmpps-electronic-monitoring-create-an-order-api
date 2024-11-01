@@ -1,0 +1,3 @@
+package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto
+
+class UpdateInterestedPartiesDto

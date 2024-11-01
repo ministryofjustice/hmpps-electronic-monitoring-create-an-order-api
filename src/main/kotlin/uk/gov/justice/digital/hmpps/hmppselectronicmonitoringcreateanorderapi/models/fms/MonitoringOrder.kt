@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Address
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewTimeTable
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
@@ -247,16 +248,20 @@ data class MonitoringOrder(
         }
       }
 
-      if (order.responsibleOfficer != null) {
-        val responsibleOfficer = order.responsibleOfficer!!
-        monitoringOrder.responsibleOfficerName = responsibleOfficer.name
-        monitoringOrder.responsibleOfficerPhone = responsibleOfficer.phoneNumber
-        monitoringOrder.responsibleOrganization = responsibleOfficer.organisation
-        monitoringOrder.roRegion = responsibleOfficer.organisationRegion
-        monitoringOrder.roPostCode = responsibleOfficer.organisationPostCode
-        monitoringOrder.roPhone = responsibleOfficer.organisationPhoneNumber
-        monitoringOrder.roEmail = responsibleOfficer.organisationEmail
-        monitoringOrder.notifyingOrganization = responsibleOfficer.notifyingOrganisation
+      if (order.interestedParties != null) {
+        val interestedParties = order.interestedParties!!
+        val roAddress = order.addresses.first {
+            address: Address ->
+          address.id == interestedParties.responsibleOrganisationAddressId
+        }
+        monitoringOrder.responsibleOfficerName = interestedParties.responsibleOfficerName
+        monitoringOrder.responsibleOfficerPhone = interestedParties.responsibleOfficerPhoneNumber
+        monitoringOrder.responsibleOrganization = interestedParties.responsibleOrganisation
+        monitoringOrder.roRegion = interestedParties.responsibleOrganisationRegion
+        monitoringOrder.roPostCode = roAddress.postcode
+        monitoringOrder.roPhone = interestedParties.responsibleOrganisationPhoneNumber
+        monitoringOrder.roEmail = interestedParties.responsibleOrganisationEmail
+        monitoringOrder.notifyingOrganization = interestedParties.notifyingOrganisationEmail
       }
 
       return monitoringOrder
