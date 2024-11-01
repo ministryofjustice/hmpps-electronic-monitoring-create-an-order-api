@@ -100,12 +100,12 @@ class HearingEventHandler(
         "Probation team to be notified email address 1",
       ) ?: "",
       notifyingOrganisation = getNotifyingOrganisation(hearing.jurisdictionType),
-      responsibleOrganisationAddressId = order.addresses.first {
+      responsibleOrganisationAddress = order.addresses.first {
         it.addressType == AddressType.RESPONSIBLE_ORGANISATION
-      }.id,
+      },
       responsibleOfficerName = "",
-      responsibleOfficerPhoneNumber = "",
-      responsibleOrganisationPhoneNumber = "",
+      responsibleOfficerPhoneNumber = null,
+      responsibleOrganisationPhoneNumber = null,
       notifyingOrganisationEmail = "",
     )
   }

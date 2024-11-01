@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Address
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewTimeTable
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
@@ -250,15 +249,11 @@ data class MonitoringOrder(
 
       if (order.interestedParties != null) {
         val interestedParties = order.interestedParties!!
-        val roAddress = order.addresses.first {
-            address: Address ->
-          address.id == interestedParties.responsibleOrganisationAddressId
-        }
         monitoringOrder.responsibleOfficerName = interestedParties.responsibleOfficerName
         monitoringOrder.responsibleOfficerPhone = interestedParties.responsibleOfficerPhoneNumber
         monitoringOrder.responsibleOrganization = interestedParties.responsibleOrganisation
         monitoringOrder.roRegion = interestedParties.responsibleOrganisationRegion
-        monitoringOrder.roPostCode = roAddress.postcode
+        monitoringOrder.roPostCode = interestedParties.responsibleOrganisationAddress.postcode
         monitoringOrder.roPhone = interestedParties.responsibleOrganisationPhoneNumber
         monitoringOrder.roEmail = interestedParties.responsibleOrganisationEmail
         monitoringOrder.notifyingOrganization = interestedParties.notifyingOrganisationEmail

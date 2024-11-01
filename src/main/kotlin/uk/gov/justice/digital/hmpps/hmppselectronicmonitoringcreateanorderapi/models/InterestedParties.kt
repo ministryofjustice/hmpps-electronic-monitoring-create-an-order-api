@@ -6,6 +6,7 @@ import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidPhoneNumber
 import java.util.*
 
 @Entity
@@ -20,8 +21,9 @@ data class InterestedParties(
   @Column(name = "RESPONSIBLE_OFFICER_NAME", nullable = false)
   var responsibleOfficerName: String,
 
-  @Column(name = "RESPONSIBLE_OFFICER_PHONE_NUMBER", nullable = false)
-  var responsibleOfficerPhoneNumber: String,
+  @Column(name = "RESPONSIBLE_OFFICER_PHONE_NUMBER", nullable = true)
+  @field:ValidPhoneNumber
+  var responsibleOfficerPhoneNumber: String?,
 
   @Column(name = "RESPONSIBLE_ORGANISATION", nullable = false)
   var responsibleOrganisation: String,
@@ -29,11 +31,9 @@ data class InterestedParties(
   @Column(name = "RESPONSIBLE_ORGANISATION_REGION", nullable = false)
   var responsibleOrganisationRegion: String,
 
-  @Column(name = "RESPONSIBLE_ORGANISATION_ADDRESS_ID", nullable = false)
-  var responsibleOrganisationAddressId: UUID,
-
-  @Column(name = "RESPONSIBLE_ORGANISATION_PHONE_NUMBER", nullable = false)
-  var responsibleOrganisationPhoneNumber: String,
+  @Column(name = "RESPONSIBLE_ORGANISATION_PHONE_NUMBER", nullable = true)
+  @field:ValidPhoneNumber
+  var responsibleOrganisationPhoneNumber: String?,
 
   @Column(name = "RESPONSIBLE_ORGANISATION_EMAIL", nullable = false)
   var responsibleOrganisationEmail: String,
@@ -47,4 +47,8 @@ data class InterestedParties(
   @OneToOne
   @JoinColumn(name = "ORDER_ID", updatable = false, insertable = false)
   private val order: Order? = null,
+
+  @OneToOne
+  @JoinColumn(name = "RESPONSIBLE_ORGANISATION_ADDRESS_ID")
+  val responsibleOrganisationAddress: Address,
 )
