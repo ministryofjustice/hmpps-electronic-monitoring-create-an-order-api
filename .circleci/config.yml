@@ -77,30 +77,27 @@ workflows:
           context:
             - hmpps-common-vars
             - hmpps-ems-cemo-ui-preprod
-          filters:
-            branches:
-              only:
-                - main
+
           requires:
             - validate
             - build_docker
             - helm_lint
           helm_timeout: 5m
-#      - hmpps/deploy_env:
-#          name: deploy_prod
-#          env: "prod"
-#          jira_update: true
-#          jira_env_type: production
-#          pipeline_id: <<pipeline.id>>
-#          pipeline_number: <<pipeline.number>>
-#          slack_notification: true
-#          slack_channel_name: hmpps-ems-cemo-notifications
-#          context:
-#            - hmpps-common-vars
-#            - hmpps-ems-cemo-ui-prod
-#          requires:
-#            - deploy_preprod
-#          helm_timeout: 5m
+      - hmpps/deploy_env:
+          name: deploy_prod
+          env: "prod"
+          jira_update: true
+          jira_env_type: production
+          pipeline_id: <<pipeline.id>>
+          pipeline_number: <<pipeline.number>>
+          slack_notification: true
+          slack_channel_name: hmpps-ems-cemo-notifications
+          context:
+            - hmpps-common-vars
+            - hmpps-ems-cemo-ui-prod
+          requires:
+            - deploy_preprod
+          helm_timeout: 5m
 
   security:
     triggers:
