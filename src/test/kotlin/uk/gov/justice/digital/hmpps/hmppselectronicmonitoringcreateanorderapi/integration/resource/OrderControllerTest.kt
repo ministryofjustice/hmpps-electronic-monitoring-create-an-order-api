@@ -839,7 +839,7 @@ class OrderControllerTest : IntegrationTestBase() {
       responsibleOfficerPhoneNumber = "07401111111",
       responsibleOrganisation = "Avon and Somerset Constabulary",
       responsibleOrganisationRegion = "Mock Region",
-      responsibleOrganisationAddressId = responsibleOrganisationAddress.id,
+      responsibleOrganisationAddress = responsibleOrganisationAddress,
       responsibleOrganisationPhoneNumber = "07401111111",
       responsibleOrganisationEmail = "abc@def.com",
       notifyingOrganisation = "Mock Organisation",
