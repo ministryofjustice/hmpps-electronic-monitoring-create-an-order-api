@@ -9,7 +9,7 @@ import java.util.UUID
 @Service
 class AddressService() : OrderSectionServiceBase() {
   @Transactional
-  fun updateAddress(orderId: UUID, username: String, updateRecord: UpdateAddressDto): Address? {
+  fun updateAddress(orderId: UUID, username: String, updateRecord: UpdateAddressDto): Address {
     // Verify the order belongs to the user and is in draft state
     val order = this.findEditableOrder(orderId, username)
 
@@ -35,6 +35,6 @@ class AddressService() : OrderSectionServiceBase() {
       order.addresses.add(newAddress)
     }
     orderRepo.save(order)
-    return existingAddress ?: newAddress
+    return (existingAddress ?: newAddress)!!
   }
 }

@@ -11,6 +11,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DeviceWearerAddressUsage
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ResponsibleOrganisation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidationError
 import java.util.*
@@ -21,10 +22,10 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
 
   private val mockNotifyingOrganisationEmail: String = "mockNotifyingOrganisationEmail"
   private val mockResponsibleOfficerName: String = "mockResponsibleOfficerName"
-  private val mockResponsibleOfficerPhoneNumber: String = "mockResponsibleOfficerPhoneNumber"
-  private val mockResponsibleOrganisation: String = "mockResponsibleOrganisation"
+  private val mockResponsibleOfficerPhoneNumber: String = "01234567890"
+  private val mockResponsibleOrganisation: String = ResponsibleOrganisation.PROBATION.toString()
   private val mockResponsibleOrganisationRegion: String = "mockResponsibleOrganisationRegion"
-  private val mockResponsibleOrganisationPhoneNumber: String = "mockResponsibleOrganisationPhoneNumber"
+  private val mockResponsibleOrganisationPhoneNumber: String = "01234567890"
   private val mockResponsibleOrganisationEmail: String = "mockResponsibleOrganisationEmail"
   private val mockAddressLine1: String = "mockAddressLine1"
   private val mockAddressLine2: String = "mockAddressLine2"
@@ -149,12 +150,12 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
           """
             {
               "notifyingOrganisationEmail": "$mockNotifyingOrganisationEmail",
-              "responsibleOfficerName": "",
-              "responsibleOfficerPhoneNumber": null,
-              "responsibleOrganisation": null,
-              "responsibleOrganisationRegion": "",
-              "responsibleOrganisationPhoneNumber": null,
-              "responsibleOrganisationEmail": "",
+              "responsibleOfficerName": "$mockResponsibleOfficerName",
+              "responsibleOfficerPhoneNumber": "$mockResponsibleOfficerPhoneNumber",
+              "responsibleOrganisation": "$mockResponsibleOrganisation",
+              "responsibleOrganisationRegion": "$mockResponsibleOrganisationRegion",
+              "responsibleOrganisationPhoneNumber": "$mockResponsibleOrganisationPhoneNumber",
+              "responsibleOrganisationEmail": "$mockResponsibleOrganisationEmail",
               "responsibleOrganisationAddressLine1": "$mockAddressLine1",
               "responsibleOrganisationAddressLine2": "$mockAddressLine2",
               "responsibleOrganisationAddressLine3": "$mockAddressLine3",
