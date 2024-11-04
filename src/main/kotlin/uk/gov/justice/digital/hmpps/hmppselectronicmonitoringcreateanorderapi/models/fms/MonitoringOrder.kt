@@ -175,17 +175,17 @@ data class MonitoringOrder(
 
   companion object {
     private val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-    fun fromOrder(order: Order): MonitoringOrder {
+    fun fromOrder(order: Order, caseId: String?): MonitoringOrder {
       val conditions = order.monitoringConditions!!
       val monitoringOrder = MonitoringOrder(
-        deviceWearer = "${order.deviceWearer!!.firstName}  ${order.deviceWearer!!.lastName}",
+        deviceWearer = "${order.deviceWearer!!.firstName} ${order.deviceWearer!!.lastName}",
         orderType = conditions.orderType,
         orderTypeDescription = conditions.orderTypeDescription?.value,
         deviceType = conditions.devicesRequired?.joinToString { "," },
         orderStart = conditions.startDate?.format(formatter),
         orderEnd = conditions.endDate?.format(formatter),
         serviceEndDate = conditions.endDate?.format(formatter),
-        caseId = order.fmsDeviceWearerId,
+        caseId = caseId,
         conditionType = conditions.conditionType!!.value,
         orderId = order.id.toString(),
         orderStatus = "Not Started",
@@ -219,10 +219,11 @@ data class MonitoringOrder(
         if (condition.zoneType == EnforcementZoneType.EXCLUSION) {
           monitoringOrder.exclusionZones = "true"
           monitoringOrder.describeExclusion = condition.description
+          monitoringOrder.exclusionZonesDuration = condition.duration
         } else if (condition.zoneType == EnforcementZoneType.INCLUSION) {
           monitoringOrder.inclusionZones = "true"
+          monitoringOrder.inclusionZonesDuration = condition.duration
         }
-        monitoringOrder.inclusionZonesDuration = condition.duration
       }
 
       // TODO: wait for confirmation if mandatory attendance is required
@@ -256,7 +257,7 @@ data class MonitoringOrder(
         monitoringOrder.roPostCode = interestedParties.responsibleOrganisationAddress.postcode
         monitoringOrder.roPhone = interestedParties.responsibleOrganisationPhoneNumber
         monitoringOrder.roEmail = interestedParties.responsibleOrganisationEmail
-        monitoringOrder.notifyingOrganization = interestedParties.notifyingOrganisationEmail
+        monitoringOrder.notifyingOrganization = interestedParties.notifyingOrganisation
       }
 
       return monitoringOrder

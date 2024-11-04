@@ -11,46 +11,61 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AlcoholMonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ContactDetails
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.EnforcementZoneConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InterestedParties
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.MonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.courthearing.JudicialResultsPrompt
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.EnforcementZoneType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MonitoringConditionType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.OrderService
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.FmsService
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
-import java.util.*
 
 @Service
 class HearingEventHandler(
-  private val orderRepository: OrderRepository,
-  private val orderService: OrderService,
-
+  private val fmsService: FmsService,
 ) {
   private val commentPlatformUsername = "COMMENT_PLATFORM"
   private val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
   companion object {
     const val ALCOHOL_ABSTAIN_MONITORING_UUID = "d54c3093-6b9b-4b61-80cf-a0bf4ed5d2e8"
 
+    const val EXCLUSION_ZONE_UUID = "091cd45b-4312-476e-a122-18cc02fd1699"
+
     fun isTaggableOffence(offence: Offence): Boolean {
       return offence.judicialResults.any {
           judicialResults ->
         // Community order England_Wales, Alcohol abstinence and monitoring
-        judicialResults.judicialResultTypeId == ALCOHOL_ABSTAIN_MONITORING_UUID
+        judicialResults.judicialResultTypeId == ALCOHOL_ABSTAIN_MONITORING_UUID ||
+          judicialResults.judicialResultTypeId == EXCLUSION_ZONE_UUID
       }
     }
   }
 
-  fun handleHearingEvent(event: HearingEvent) {
+  fun handleHearingEvent(event: HearingEvent): List<String> {
+    val result = mutableListOf<String>()
     val orders = getOrdersFromHearing(event.hearing)
-    orders.forEach { order -> orderService.submitOrder(order) }
+    orders.forEach { order ->
+      run {
+        val submitResult = fmsService.submitOrder(order, FmsOrderSource.COMMENT_PLATFORM)
+        // TODO log failed requests
+        if (!submitResult.success) {
+          val fullName = " ${order.deviceWearer!!.firstName} ${order.deviceWearer!!.lastName}"
+          result.add(
+            "Error create order for $fullName, error: ${submitResult.error} ",
+          )
+        }
+      }
+    }
+    return result
   }
 
   fun getOrdersFromHearing(hearing: Hearing): List<Order> {
@@ -99,7 +114,7 @@ class HearingEventHandler(
         prompts,
         "Probation team to be notified email address 1",
       ) ?: "",
-      notifyingOrganisation = getNotifyingOrganisation(hearing.jurisdictionType),
+      notifyingOrganisation = hearing.courtCentre.name,
       responsibleOrganisationAddress = order.addresses.first {
         it.addressType == AddressType.RESPONSIBLE_ORGANISATION
       },
@@ -133,6 +148,31 @@ class HearingEventHandler(
         monitoringType = AlcoholMonitoringType.ALCOHOL_ABSTINENCE,
       )
       order.monitoringConditionsAlcohol = alcoholConditions
+    }
+
+    if (judicialResults.any { it.judicialResultTypeId == EXCLUSION_ZONE_UUID }) {
+      monitoringConditions.exclusionZone = true
+      val zone = EnforcementZoneConditions(orderId = order.id)
+      zone.zoneType = EnforcementZoneType.EXCLUSION
+      val startTime = getPromptValue(prompts, "Start Time") ?: "00:00"
+
+      val startDate = getPromptValue(prompts, "Start date for tag")?.let {
+        val localDate = LocalDate.parse(it, formatter)
+        ZonedDateTime.of(localDate, LocalTime.parse(startTime), ZoneId.of("GMT"))
+      }
+      monitoringConditions.startDate = startDate
+      zone.startDate = startDate
+      val endTime = getPromptValue(prompts, "End Time") ?: "00:00"
+      val endDate =
+        getPromptValue(prompts, "End date for tag")?.let {
+          val localDate = LocalDate.parse(it, formatter)
+          ZonedDateTime.of(localDate, LocalTime.parse(endTime), ZoneId.of("GMT"))
+        }
+      monitoringConditions.endDate = endDate
+      zone.endDate = endDate
+
+      zone.duration = getPromptValue(prompts, "Exclusion and electronic monitoring period")
+      zone.description = getPromptValue(prompts, "Place / area")
     }
 
     order.monitoringConditions = monitoringConditions
