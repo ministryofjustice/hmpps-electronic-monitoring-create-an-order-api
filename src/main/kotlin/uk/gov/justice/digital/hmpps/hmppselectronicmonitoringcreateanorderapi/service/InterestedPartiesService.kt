@@ -28,7 +28,7 @@ class InterestedPartiesService(
         addressLine2 = updateRecord.responsibleOrganisationAddressLine2,
         addressLine3 = updateRecord.responsibleOrganisationAddressLine3,
         addressLine4 = updateRecord.responsibleOrganisationAddressLine4,
-        postcode = updateRecord.responsibleOrganisationPostcode,
+        postcode = updateRecord.responsibleOrganisationAddressPostcode,
       ),
     )
 

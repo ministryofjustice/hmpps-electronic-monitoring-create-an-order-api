@@ -28,5 +28,5 @@ data class UpdateInterestedPartiesDto(
   val responsibleOrganisationAddressLine4: String = "",
 
   @field:NotBlank(message = "Postcode is required")
-  val responsibleOrganisationPostcode: String = "",
+  val responsibleOrganisationAddressPostcode: String = "",
 )
