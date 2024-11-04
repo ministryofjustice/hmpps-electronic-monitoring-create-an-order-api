@@ -21,6 +21,7 @@ import org.springframework.web.servlet.resource.NoResourceFoundException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.CreateSercoEntityException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.DocumentApiBadRequestException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.SercoConnectionException
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.SubmitOrderException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ListItemValidationError
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidationError
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
@@ -127,6 +128,17 @@ class HmppsElectronicMonitoringCreateAnOrderApiExceptionHandler {
     .status(BAD_REQUEST)
     .body(
       e.error,
+    ).also { log.error("Unexpected exception", e) }
+
+  @ExceptionHandler(SubmitOrderException::class)
+  fun handleSubmitOrderException(e: Exception): ResponseEntity<ErrorResponse> = ResponseEntity
+    .status(BAD_REQUEST)
+    .body(
+      ErrorResponse(
+        status = BAD_REQUEST,
+        userMessage = "Error submitting order: ${e.message}",
+        developerMessage = e.message,
+      ),
     ).also { log.error("Unexpected exception", e) }
 
   @ExceptionHandler(SercoConnectionException::class)

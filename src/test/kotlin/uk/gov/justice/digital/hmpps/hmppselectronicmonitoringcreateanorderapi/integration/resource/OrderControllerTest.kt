@@ -2,7 +2,6 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.i
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
@@ -22,6 +21,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ResponsibleAdult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ResponsibleOfficer
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.TrailMonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringInstallationLocationType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
@@ -136,7 +136,24 @@ class OrderControllerTest : IntegrationTestBase() {
       .isNotFound()
   }
 
-  @Disabled
+  @Test
+  fun `Should return an error if order is incomplete when submitting order`() {
+    val order = createOrder()
+
+    val result = webTestClient.post()
+      .uri("/api/orders/${order.id}/submit")
+      .headers(setAuthorisation())
+      .exchange()
+      .expectStatus()
+      .is4xxClientError
+      .expectBody(ErrorResponse::class.java)
+      .returnResult()
+
+    val error = result.responseBody!!
+    assertThat(error.userMessage)
+      .isEqualTo("Error submitting order: Order ${order.id} for AUTH_ADM is incomplete")
+  }
+
   @Test
   fun `Should return 500 error if serco auth service returned error`() {
     val order = createReadyToSubmitOrder()
@@ -157,7 +174,6 @@ class OrderControllerTest : IntegrationTestBase() {
       .isEqualTo("Error with Serco service Now: Invalid credentials used.")
   }
 
-  @Disabled
   @Test
   fun `Should return 500 error if serco create device wearer service returned error`() {
     val order = createReadyToSubmitOrder()
@@ -230,7 +246,6 @@ class OrderControllerTest : IntegrationTestBase() {
       .isEqualTo("Error creating FMS Device Wearer for order: ${order.id} with error: Mock Create DW Error")
   }
 
-  @Disabled
   @Test
   fun `Should return 500 error if serco create monitoring order service returned error`() {
     val order = createReadyToSubmitOrder()
@@ -444,9 +459,8 @@ class OrderControllerTest : IntegrationTestBase() {
       .isEqualTo("Error creating FMS Monitoring Order for order: ${order.id} with error: Mock Create MO Error")
   }
 
-  @Disabled
   @Test
-  fun `Should update order with serco device wearer id and monitoring Id and return 200`() {
+  fun `Should update order with serco device wearer id, monitoring id & order status, and return 200`() {
     val order = createReadyToSubmitOrder()
     val mockDeviceWearerJson = """
       {
@@ -654,6 +668,7 @@ class OrderControllerTest : IntegrationTestBase() {
     val updatedOrder = repo.findById(order.id).get()
     assertThat(updatedOrder.fmsDeviceWearerId).isEqualTo("MockDeviceWearerId")
     assertThat(updatedOrder.fmsMonitoringOrderId).isEqualTo("MockMonitoringOrderId")
+    assertThat(updatedOrder.status).isEqualTo(OrderStatus.SUBMITTED)
   }
 
   fun createReadyToSubmitOrder(): Order {
@@ -671,6 +686,7 @@ class OrderControllerTest : IntegrationTestBase() {
       sex = "Male",
       gender = "Male",
       disabilities = "Vision,Hearing",
+      noFixedAbode = false,
     )
 
     order.deviceWearerResponsibleAdult = ResponsibleAdult(
@@ -696,6 +712,15 @@ class OrderControllerTest : IntegrationTestBase() {
         addressLine4 = "United Kingdom",
         postcode = "SW11 1NC",
         addressType = AddressType.SECONDARY,
+      ),
+      Address(
+        orderId = order.id,
+        addressLine1 = "20 Somewhere Street",
+        addressLine2 = "Nowhere City",
+        addressLine3 = "Random County",
+        addressLine4 = "United Kingdom",
+        postcode = "SW11 1NC",
+        addressType = AddressType.INSTALLATION,
       ),
     )
     order.installationAndRisk = InstallationAndRisk(
@@ -783,6 +808,13 @@ class OrderControllerTest : IntegrationTestBase() {
       installationLocation = AlcoholMonitoringInstallationLocationType.PRIMARY,
     )
     order.monitoringConditionsAlcohol = alcohol
+
+    val trail = TrailMonitoringConditions(
+      orderId = order.id,
+      startDate = mockStartDate,
+      endDate = mockEndDate,
+    )
+    order.monitoringConditionsTrail = trail
 
     val responsibleOfficer = ResponsibleOfficer(
       orderId = order.id,

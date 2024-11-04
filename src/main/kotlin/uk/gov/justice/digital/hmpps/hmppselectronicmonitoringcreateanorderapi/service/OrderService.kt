@@ -2,22 +2,23 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.s
 
 import jakarta.persistence.EntityNotFoundException
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.FmsClient
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.SubmitOrderException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearerContactDetails
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationAndRisk
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.MonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.MonitoringOrder
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 import java.util.UUID
-// import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.FmsClient
-// import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.MonitoringOrder
-// import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.DeviceWearer as FmsDeviceWearer
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.DeviceWearer as FmsDeviceWearer
 
 @Service
 class OrderService(
   val repo: OrderRepository,
-//  val fmsClient: FmsClient,
+  val fmsClient: FmsClient,
 ) {
 
   fun createOrder(username: String): Order {
@@ -40,26 +41,27 @@ class OrderService(
     val order = getOrder(username, id)!!
 
     if (order.status == OrderStatus.SUBMITTED) {
-      throw IllegalStateException("Order $id for $username has already been submitted")
+      throw SubmitOrderException("Order $id for $username has already been submitted")
     }
 
     if (order.status == OrderStatus.ERROR) {
-      throw IllegalStateException("Order $id for $username has encountered an error and cannot be submitted")
-      // TODO: Determine suitable error message for this condition.
+      throw SubmitOrderException("Order $id for $username has encountered an error and cannot be submitted")
     }
 
-    if (order.status == OrderStatus.IN_PROGRESS) {
-//    TODO: Add form validation. The FMS methods below will fail if they are passed an invalid order.
+    if (order.status == OrderStatus.IN_PROGRESS && !order.isValid) {
+      throw SubmitOrderException("Order $id for $username is incomplete")
+    }
 
+    if (order.status == OrderStatus.IN_PROGRESS && order.isValid) {
 //    create FMS device wearer
-//    val fmsDeviceWearer = FmsDeviceWearer.fromCemoOrder(order)
-//    val createDeviceWearerResult = fmsClient.createDeviceWearer(fmsDeviceWearer, orderId = id)
-//    order.fmsDeviceWearerId = createDeviceWearerResult.result.first().id
+      val fmsDeviceWearer = FmsDeviceWearer.fromCemoOrder(order)
+      val createDeviceWearerResult = fmsClient.createDeviceWearer(fmsDeviceWearer, orderId = id)
+      order.fmsDeviceWearerId = createDeviceWearerResult.result.first().id
 
 //    create FMS monitoring order
-//    val fmsOrder = MonitoringOrder.fromOrder(order)
-//    val createOrderResult = fmsClient.createMonitoringOrder(fmsOrder, id)
-//    order.fmsMonitoringOrderId = createOrderResult.result.first().id
+      val fmsOrder = MonitoringOrder.fromOrder(order)
+      val createOrderResult = fmsClient.createMonitoringOrder(fmsOrder, id)
+      order.fmsMonitoringOrderId = createOrderResult.result.first().id
 
 //    TODO: Upload attachments
 
@@ -80,8 +82,6 @@ class OrderService(
     return repo.findByUsernameAndId(
       username,
       id,
-    ).orElseThrow {
-      EntityNotFoundException("Order ($id) for $username not found")
-    }
+    ) ?: throw EntityNotFoundException("Order ($id) for $username not found")
   }
 }

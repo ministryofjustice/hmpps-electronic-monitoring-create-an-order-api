@@ -141,7 +141,8 @@ data class Order(
 
   private val requiredDocuments: Boolean
     get() = (
-//      Add additional document validation here, eg:
+//      Add additional document validation here
+//      eg. if license is a mandatory attachment:
 //      additionalDocuments.any { it.fileType == DocumentType.LICENCE }
       true
       )

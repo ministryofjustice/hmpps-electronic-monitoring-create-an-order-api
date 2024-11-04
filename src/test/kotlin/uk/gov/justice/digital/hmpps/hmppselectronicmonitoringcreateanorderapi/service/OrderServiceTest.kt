@@ -2,7 +2,6 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.s
 
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
 import org.mockito.kotlin.any
@@ -14,6 +13,7 @@ import org.mockito.kotlin.whenever
 import org.springframework.boot.test.autoconfigure.json.JsonTest
 import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.FmsClient
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.SubmitOrderException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Address
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AlcoholMonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewConditions
@@ -27,6 +27,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ResponsibleAdult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ResponsibleOfficer
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.TrailMonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringInstallationLocationType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
@@ -53,8 +54,7 @@ class OrderServiceTest {
   fun setup() {
     repo = mock(OrderRepository::class.java)
     fmsClient = mock(FmsClient::class.java)
-//    service = OrderService(repo, fmsClient)
-    service = OrderService(repo)
+    service = OrderService(repo, fmsClient)
   }
 
   @Test
@@ -86,6 +86,7 @@ class OrderServiceTest {
       sex = "Male",
       gender = "Male",
       disabilities = "Vision,Hearing",
+      noFixedAbode = false,
     )
 
     order.deviceWearerResponsibleAdult = ResponsibleAdult(
@@ -115,6 +116,15 @@ class OrderServiceTest {
         postcode = "SW11 1NC",
 
         addressType = AddressType.PRIMARY,
+      ),
+      Address(
+        orderId = order.id,
+        addressLine1 = "20 Somewhere Street",
+        addressLine2 = "Nowhere City",
+        addressLine3 = "Random County",
+        addressLine4 = "United Kingdom",
+        postcode = "SW11 1NC",
+        addressType = AddressType.INSTALLATION,
       ),
     )
     order.installationAndRisk = InstallationAndRisk(
@@ -198,6 +208,13 @@ class OrderServiceTest {
     )
     order.monitoringConditionsAlcohol = alcohol
 
+    val trail = TrailMonitoringConditions(
+      orderId = order.id,
+      startDate = ZonedDateTime.of(2100, 1, 1, 1, 1, 1, 1, ZoneId.systemDefault()),
+      endDate = ZonedDateTime.of(2101, 1, 1, 1, 1, 1, 1, ZoneId.systemDefault()),
+    )
+    order.monitoringConditionsTrail = trail
+
     val responsibleOfficer = ResponsibleOfficer(
       orderId = order.id,
       name = "John Smith",
@@ -223,7 +240,7 @@ class OrderServiceTest {
 
     whenever(repo.findByUsernameAndId("mockUser", mockOrder.id)).thenReturn(mockOrder)
 
-    val e = org.junit.jupiter.api.Assertions.assertThrows(IllegalStateException::class.java) {
+    val e = org.junit.jupiter.api.Assertions.assertThrows(SubmitOrderException::class.java) {
       service.submitOrder(mockOrder.id, "mockUser")
     }
 
@@ -237,14 +254,13 @@ class OrderServiceTest {
 
     whenever(repo.findByUsernameAndId("mockUser", mockOrder.id)).thenReturn(mockOrder)
 
-    val e = org.junit.jupiter.api.Assertions.assertThrows(IllegalStateException::class.java) {
+    val e = org.junit.jupiter.api.Assertions.assertThrows(SubmitOrderException::class.java) {
       service.submitOrder(mockOrder.id, "mockUser")
     }
 
     Assertions.assertThat(e.message).isEqualTo("Order ${mockOrder.id} for mockUser has encountered an error and cannot be submitted")
   }
 
-  @Disabled
   @Test
   fun `Should create fms device wearer and monitoring order and save both id to database`() {
     val mockOrder = createReadyToSubmitOrder()
