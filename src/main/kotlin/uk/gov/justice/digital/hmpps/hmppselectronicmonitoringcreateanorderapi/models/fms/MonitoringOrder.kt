@@ -248,16 +248,16 @@ data class MonitoringOrder(
         }
       }
 
-      if (order.responsibleOfficer != null) {
-        val responsibleOfficer = order.responsibleOfficer!!
-        monitoringOrder.responsibleOfficerName = responsibleOfficer.name
-        monitoringOrder.responsibleOfficerPhone = responsibleOfficer.phoneNumber
-        monitoringOrder.responsibleOrganization = responsibleOfficer.organisation
-        monitoringOrder.roRegion = responsibleOfficer.organisationRegion
-        monitoringOrder.roPostCode = responsibleOfficer.organisationPostCode
-        monitoringOrder.roPhone = responsibleOfficer.organisationPhoneNumber
-        monitoringOrder.roEmail = responsibleOfficer.organisationEmail
-        monitoringOrder.notifyingOrganization = responsibleOfficer.notifyingOrganisation
+      if (order.interestedParties != null) {
+        val interestedParties = order.interestedParties!!
+        monitoringOrder.responsibleOfficerName = interestedParties.responsibleOfficerName
+        monitoringOrder.responsibleOfficerPhone = interestedParties.responsibleOfficerPhoneNumber
+        monitoringOrder.responsibleOrganization = interestedParties.responsibleOrganisation
+        monitoringOrder.roRegion = interestedParties.responsibleOrganisationRegion
+        monitoringOrder.roPostCode = interestedParties.responsibleOrganisationAddress.postcode
+        monitoringOrder.roPhone = interestedParties.responsibleOrganisationPhoneNumber
+        monitoringOrder.roEmail = interestedParties.responsibleOrganisationEmail
+        monitoringOrder.notifyingOrganization = interestedParties.notifyingOrganisation
       }
 
       return monitoringOrder

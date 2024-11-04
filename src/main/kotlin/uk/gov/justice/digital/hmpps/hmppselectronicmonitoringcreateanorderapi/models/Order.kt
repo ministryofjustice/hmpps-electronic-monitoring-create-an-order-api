@@ -41,7 +41,7 @@ data class Order(
   var deviceWearerResponsibleAdult: ResponsibleAdult? = null,
 
   @OneToOne(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "order", orphanRemoval = true)
-  var responsibleOfficer: ResponsibleOfficer? = null,
+  var interestedParties: InterestedParties? = null,
 
   @OneToOne(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "order", orphanRemoval = true)
   var deviceWearerContactDetails: ContactDetails? = null,

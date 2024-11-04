@@ -206,7 +206,7 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
 	"responsible_officer_details_received": "",
 	"responsible_officer_email": "",
 	"responsible_officer_phone": null,
-	"responsible_officer_name": null,
+	"responsible_officer_name": "",
 	"responsible_organization": "Probation",
 	"ro_post_code": "SW11 1JU",
 	"ro_address_1": "",
