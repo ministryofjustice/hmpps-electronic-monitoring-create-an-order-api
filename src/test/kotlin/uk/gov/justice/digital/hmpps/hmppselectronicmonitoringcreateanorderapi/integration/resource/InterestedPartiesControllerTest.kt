@@ -60,7 +60,7 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
               "responsibleOrganisationAddressLine2": "$mockAddressLine2",
               "responsibleOrganisationAddressLine3": "$mockAddressLine3",
               "responsibleOrganisationAddressLine4": "$mockAddressLine4",
-              "responsibleOrganisationPostcode": "$mockPostcode"
+              "responsibleOrganisationAddressPostcode": "$mockPostcode"
             }
           """.trimIndent(),
         ),
@@ -91,7 +91,7 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
               "responsibleOrganisationAddressLine2": "$mockAddressLine2",
               "responsibleOrganisationAddressLine3": "$mockAddressLine3",
               "responsibleOrganisationAddressLine4": "$mockAddressLine4",
-              "responsibleOrganisationPostcode": "$mockPostcode"
+              "responsibleOrganisationAddressPostcode": "$mockPostcode"
             }
           """.trimIndent(),
         ),
@@ -127,7 +127,7 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
               "responsibleOrganisationAddressLine2": "$mockAddressLine2",
               "responsibleOrganisationAddressLine3": "$mockAddressLine3",
               "responsibleOrganisationAddressLine4": "$mockAddressLine4",
-              "responsibleOrganisationPostcode": "$mockPostcode"
+              "responsibleOrganisationAddressPostcode": "$mockPostcode"
             }
           """.trimIndent(),
         ),
@@ -160,7 +160,7 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
               "responsibleOrganisationAddressLine2": "$mockAddressLine2",
               "responsibleOrganisationAddressLine3": "$mockAddressLine3",
               "responsibleOrganisationAddressLine4": "$mockAddressLine4",
-              "responsibleOrganisationPostcode": "$mockPostcode"
+              "responsibleOrganisationAddressPostcode": "$mockPostcode"
             }
           """.trimIndent(),
         ),
@@ -218,7 +218,7 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
               "responsibleOrganisationAddressLine2": "",
               "responsibleOrganisationAddressLine3": "",
               "responsibleOrganisationAddressLine4": "",
-              "responsibleOrganisationPostcode": ""
+              "responsibleOrganisationAddressPostcode": ""
             }
           """.trimIndent(),
         ),
@@ -239,7 +239,7 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
       ValidationError("responsibleOrganisationAddressLine2", "Address line 2 is required"),
     )
     Assertions.assertThat(result.responseBody!!).contains(
-      ValidationError("responsibleOrganisationPostcode", "Postcode is required"),
+      ValidationError("responsibleOrganisationAddressPostcode", "Postcode is required"),
     )
   }
 }
