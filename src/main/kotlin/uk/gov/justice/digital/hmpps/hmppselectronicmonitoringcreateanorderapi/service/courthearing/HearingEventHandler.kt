@@ -19,23 +19,19 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.EnforcementZoneType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MonitoringConditionType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.SubmitFmsOrderResultRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.FmsService
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
-import java.util.*
 
 @Service
 class HearingEventHandler(
-  private val orderRepository: OrderRepository,
   private val fmsService: FmsService,
-  val submitFmdOrderResultRepository: SubmitFmsOrderResultRepository,
 ) {
   private val commentPlatformUsername = "COMMENT_PLATFORM"
   private val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
@@ -54,16 +50,22 @@ class HearingEventHandler(
     }
   }
 
-  fun handleHearingEvent(event: HearingEvent) {
+  fun handleHearingEvent(event: HearingEvent): List<String> {
+    val result = mutableListOf<String>()
     val orders = getOrdersFromHearing(event.hearing)
     orders.forEach { order ->
       run {
-        val result = fmsService.submitOrder(order)
-
+        val submitResult = fmsService.submitOrder(order, FmsOrderSource.COMMENT_PLATFORM)
         // TODO log failed requests
-        submitFmdOrderResultRepository.save(result)
+        if (!submitResult.success) {
+          val fullName = " ${order.deviceWearer!!.firstName} ${order.deviceWearer!!.lastName}"
+          result.add(
+            "Error create order for $fullName, error: ${submitResult.error} ",
+          )
+        }
       }
     }
+    return result
   }
 
   fun getOrdersFromHearing(hearing: Hearing): List<Order> {

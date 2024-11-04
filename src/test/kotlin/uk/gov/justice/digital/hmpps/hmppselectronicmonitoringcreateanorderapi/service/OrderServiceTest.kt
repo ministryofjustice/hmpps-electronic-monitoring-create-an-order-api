@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
@@ -13,6 +14,7 @@ import org.springframework.boot.test.autoconfigure.json.JsonTest
 import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.SubmitFmsOrderResult
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 import java.util.*
@@ -51,20 +53,21 @@ class OrderServiceTest {
       username = "mockUser",
       status = OrderStatus.IN_PROGRESS,
     )
-
+    val mockFmsResult = SubmitFmsOrderResult(
+      deviceWearerId = "mockDeviceWearerId",
+      fmsOrderId = "mockMonitoringOrderId",
+      orderSource = FmsOrderSource.CEMO,
+      success = true,
+    )
     whenever(repo.findByUsernameAndId("mockUser", mockOrder.id)).thenReturn(Optional.of(mockOrder))
-    whenever(fmsService.submitOrder(any<Order>())).thenReturn(
-      SubmitFmsOrderResult(
-        deviceWearerId = "mockDeviceWearerId",
-        fmsOrderId = "mockMonitoringOrderId",
-      ),
+    whenever(fmsService.submitOrder(any<Order>(), eq(FmsOrderSource.CEMO))).thenReturn(
+      mockFmsResult,
     )
     service.submitOrder(mockOrder.id, "mockUser")
 
     argumentCaptor<Order>().apply {
       verify(repo, times(1)).save(capture())
-      Assertions.assertThat(firstValue.fmsDeviceWearerId).isEqualTo("mockDeviceWearerId")
-      Assertions.assertThat(firstValue.fmsMonitoringOrderId).isEqualTo("mockMonitoringOrderId")
+      Assertions.assertThat(firstValue.fmsResultId).isEqualTo(mockFmsResult.id)
     }
   }
 }

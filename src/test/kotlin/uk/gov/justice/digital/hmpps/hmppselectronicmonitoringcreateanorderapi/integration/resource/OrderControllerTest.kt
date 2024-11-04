@@ -32,6 +32,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.SubmitFmsOrderResultRepository
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 import java.time.DayOfWeek
 import java.time.ZoneId
@@ -44,6 +45,9 @@ class OrderControllerTest : IntegrationTestBase() {
   @Autowired
   lateinit var repo: OrderRepository
 
+  @Autowired
+  lateinit var fmsResultRepository: SubmitFmsOrderResultRepository
+
   val mockStartDate: ZonedDateTime = ZonedDateTime.now().plusMonths(1)
   val mockEndDate: ZonedDateTime = ZonedDateTime.now().plusMonths(2)
   private val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
@@ -51,6 +55,7 @@ class OrderControllerTest : IntegrationTestBase() {
   @BeforeEach
   fun setup() {
     repo.deleteAll()
+    fmsResultRepository.deleteAll()
   }
 
   @Test
@@ -154,7 +159,7 @@ class OrderControllerTest : IntegrationTestBase() {
 
     val error = result.responseBody!!
     assertThat(error.userMessage)
-      .isEqualTo("Error with Serco service Now: Invalid credentials used.")
+      .isEqualTo("Error with Serco Service Now: Invalid credentials used.")
   }
 
   @Test
@@ -234,9 +239,10 @@ class OrderControllerTest : IntegrationTestBase() {
       .expectStatus()
       .isOk
 
+    val submitResult = fmsResultRepository.findAll().firstOrNull()
+    assertThat(submitResult).isNotNull
     val updatedOrder = repo.findById(order.id).get()
-    assertThat(updatedOrder.fmsDeviceWearerId).isEqualTo("MockDeviceWearerId")
-    assertThat(updatedOrder.fmsMonitoringOrderId).isEqualTo("MockMonitoringOrderId")
+    assertThat(updatedOrder.fmsResultId).isEqualTo(submitResult!!.id)
   }
 
   fun createReadyToSubmitOrder(): Order {

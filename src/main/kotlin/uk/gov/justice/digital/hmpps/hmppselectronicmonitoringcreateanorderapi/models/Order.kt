@@ -28,11 +28,8 @@ data class Order(
   @Column(name = "STATUS", nullable = false)
   var status: OrderStatus,
 
-  @Column(name = "FMS_DEVICE_WEARER_ID", nullable = true)
-  var fmsDeviceWearerId: String? = null,
-
-  @Column(name = "FMS_MONITORING_ORDER_ID", nullable = true)
-  var fmsMonitoringOrderId: String? = null,
+  @Column(name = "FMS_RESULT_ID", nullable = true)
+  var fmsResultId: UUID? = null,
 
   @OneToOne(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "order", orphanRemoval = true)
   var deviceWearer: DeviceWearer? = null,

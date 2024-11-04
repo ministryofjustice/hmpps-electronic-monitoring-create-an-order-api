@@ -26,7 +26,10 @@ class CourtHearingEventListener(
 
       // Process message if contains EM details, else ignore
       if (courtHearing.hearing.isHearingContainsEM()) {
-        eventHandler.handleHearingEvent(courtHearing)
+        val result = eventHandler.handleHearingEvent(courtHearing)
+        if (result.any()) {
+          deadLetterQueueService.sentEvent(rawMessage, result.joinToString(","))
+        }
       }
     } catch (e: Exception) {
       deadLetterQueueService.sentEvent(rawMessage, "Malformed event received. Could not parse JSON")

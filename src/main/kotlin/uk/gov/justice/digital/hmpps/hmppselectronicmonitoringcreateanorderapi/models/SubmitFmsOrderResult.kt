@@ -2,8 +2,11 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.m
 
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
+import jakarta.persistence.EnumType
+import jakarta.persistence.Enumerated
 import jakarta.persistence.Id
 import jakarta.persistence.Table
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
 import java.util.*
 
 @Entity
@@ -14,7 +17,7 @@ data class SubmitFmsOrderResult(
   val id: UUID = UUID.randomUUID(),
   @Column(name = "FMS_DEVICE_WEARER", nullable = true, columnDefinition = "varchar(4096)")
   var fmsDeviceWearerRequest: String? = "",
-  @Column(name = "DEVICE_WEARER_ID", nullable = true)
+  @Column(name = "FMS_DEVICE_WEARER_ID", nullable = true)
   var deviceWearerId: String? = "",
   @Column(name = "FMS_ORDER", nullable = true, columnDefinition = "varchar(4096)")
   var fmsOrderRequest: String? = "",
@@ -22,6 +25,9 @@ data class SubmitFmsOrderResult(
   var fmsOrderId: String? = "",
   @Column(name = "SUCCESS", nullable = true)
   var success: Boolean = false,
+  @Enumerated(EnumType.STRING)
+  @Column(name = "FMS_ORDER_SOURCE", nullable = false)
+  var orderSource: FmsOrderSource,
   @Column(name = "ERROR", nullable = false)
   var error: String? = "",
 )

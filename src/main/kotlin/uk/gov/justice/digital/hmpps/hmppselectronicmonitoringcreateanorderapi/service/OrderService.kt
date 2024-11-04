@@ -1,14 +1,17 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service
 
 import jakarta.persistence.EntityNotFoundException
+import org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ContactDetails
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationAndRisk
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.MonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
+import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 import java.util.UUID
 
 @Service
@@ -34,12 +37,19 @@ class OrderService(
     return order
   }
 
-  fun submitOrder(id: UUID, username: String) {
+  fun submitOrder(id: UUID, username: String): ErrorResponse? {
     val order = getOrder(username, id)!!
-    val result = fmsService.submitOrder(order)
-    order.fmsDeviceWearerId = result.deviceWearerId
-    order.fmsMonitoringOrderId = result.fmsOrderId
+    val result = fmsService.submitOrder(order, FmsOrderSource.CEMO)
+    order.fmsResultId = result.id
     repo.save(order)
+    if (!result.success) {
+      return ErrorResponse(
+        status = INTERNAL_SERVER_ERROR,
+        userMessage = "Error with Serco Service Now: ${result.error}",
+        developerMessage = result.error,
+      )
+    }
+    return null
   }
 
   fun listOrdersForUser(username: String): List<Order> {
