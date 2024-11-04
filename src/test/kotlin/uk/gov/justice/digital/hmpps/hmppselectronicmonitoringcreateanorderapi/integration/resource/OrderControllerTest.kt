@@ -217,6 +217,11 @@ class OrderControllerTest : IntegrationTestBase() {
       .isEqualTo(
         "Error creating FMS Monitoring Order for order: ${order.id} with error: Mock Create MO Error",
       )
+    val submitResult = fmsResultRepository.findAll().firstOrNull()
+    assertThat(submitResult).isNotNull
+    val updatedOrder = repo.findById(order.id).get()
+    assertThat(updatedOrder.fmsResultId).isEqualTo(submitResult!!.id)
+    assertThat(updatedOrder.status).isEqualTo(OrderStatus.ERROR)
   }
 
   @Test
@@ -243,6 +248,7 @@ class OrderControllerTest : IntegrationTestBase() {
     assertThat(submitResult).isNotNull
     val updatedOrder = repo.findById(order.id).get()
     assertThat(updatedOrder.fmsResultId).isEqualTo(submitResult!!.id)
+    assertThat(updatedOrder.status).isEqualTo(OrderStatus.SUBMITTED)
   }
 
   fun createReadyToSubmitOrder(): Order {

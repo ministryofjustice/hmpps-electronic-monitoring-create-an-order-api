@@ -38,18 +38,22 @@ class OrderService(
   }
 
   fun submitOrder(id: UUID, username: String): ErrorResponse? {
+    var result: ErrorResponse? = null
     val order = getOrder(username, id)!!
-    val result = fmsService.submitOrder(order, FmsOrderSource.CEMO)
-    order.fmsResultId = result.id
-    repo.save(order)
-    if (!result.success) {
-      return ErrorResponse(
+    val submitResult = fmsService.submitOrder(order, FmsOrderSource.CEMO)
+    order.fmsResultId = submitResult.id
+    if (!submitResult.success) {
+      order.status = OrderStatus.ERROR
+      result = ErrorResponse(
         status = INTERNAL_SERVER_ERROR,
-        userMessage = "Error with Serco Service Now: ${result.error}",
-        developerMessage = result.error,
+        userMessage = submitResult.error,
+        developerMessage = submitResult.error,
       )
+    } else {
+      order.status = OrderStatus.SUBMITTED
     }
-    return null
+    repo.save(order)
+    return result
   }
 
   fun listOrdersForUser(username: String): List<Order> {
