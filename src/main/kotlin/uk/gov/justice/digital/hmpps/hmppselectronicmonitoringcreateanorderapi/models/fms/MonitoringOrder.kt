@@ -196,7 +196,7 @@ data class MonitoringOrder(
         monitoringOrder.enforceableCondition!!.add(EnforceableCondition("Curfew with EM"))
         monitoringOrder.conditionalReleaseDate = order.curfewReleaseDateConditions!!.releaseDate!!.format(formatter)
         monitoringOrder.curfewStart = curfew.startDate!!.format(formatter)
-        monitoringOrder.curfewEnd = curfew.endDate!!.format(formatter)
+        monitoringOrder.curfewEnd = curfew.endDate?.format(formatter)
         monitoringOrder.curfewDuration = getCurfewSchedules(order, curfew)
       }
 
