@@ -53,18 +53,22 @@ class OrderService(
     }
 
     if (order.status == OrderStatus.IN_PROGRESS && order.isValid) {
+      try {
 //    create FMS device wearer
-      val fmsDeviceWearer = FmsDeviceWearer.fromCemoOrder(order)
-      val createDeviceWearerResult = fmsClient.createDeviceWearer(fmsDeviceWearer, orderId = id)
-      order.fmsDeviceWearerId = createDeviceWearerResult.result.first().id
+        val fmsDeviceWearer = FmsDeviceWearer.fromCemoOrder(order)
+        val createDeviceWearerResult = fmsClient.createDeviceWearer(fmsDeviceWearer, orderId = id)
+        order.fmsDeviceWearerId = createDeviceWearerResult.result.first().id
 
 //    create FMS monitoring order
-      val fmsOrder = MonitoringOrder.fromOrder(order)
-      val createOrderResult = fmsClient.createMonitoringOrder(fmsOrder, id)
-      order.fmsMonitoringOrderId = createOrderResult.result.first().id
-
+        val fmsOrder = MonitoringOrder.fromOrder(order)
+        val createOrderResult = fmsClient.createMonitoringOrder(fmsOrder, id)
+        order.fmsMonitoringOrderId = createOrderResult.result.first().id
 //    TODO: Upload attachments
-
+      } catch (e: Exception) {
+        order.status = OrderStatus.ERROR
+        repo.save(order)
+        throw SubmitOrderException("The order could not be submitted to Serco", e)
+      }
       order.status = OrderStatus.SUBMITTED
       repo.save(order)
     }

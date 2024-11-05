@@ -1,3 +1,11 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception
 
-class SubmitOrderException(msg: String) : RuntimeException(msg)
+class SubmitOrderException : RuntimeException {
+  constructor(
+    message: String,
+  ) : super(message)
+  constructor(
+    message: String,
+    cause: Throwable,
+  ) : super(message, cause)
+}
