@@ -25,8 +25,8 @@ data class InterestedParties(
   @field:ValidPhoneNumber
   var responsibleOfficerPhoneNumber: String?,
 
-  @Column(name = "RESPONSIBLE_ORGANISATION", nullable = false)
-  var responsibleOrganisation: String,
+  @Column(name = "RESPONSIBLE_ORGANISATION", nullable = true)
+  var responsibleOrganisation: String? = null,
 
   @Column(name = "RESPONSIBLE_ORGANISATION_REGION", nullable = false)
   var responsibleOrganisationRegion: String,
