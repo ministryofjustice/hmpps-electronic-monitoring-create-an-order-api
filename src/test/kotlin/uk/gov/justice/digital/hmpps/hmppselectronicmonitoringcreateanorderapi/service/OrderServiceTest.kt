@@ -234,6 +234,19 @@ class OrderServiceTest {
   }
 
   @Test
+  fun `Should throw an error if an incomplete order is submitted`() {
+    val order = service.createOrder("mockUser")
+
+    whenever(repo.findByUsernameAndId("mockUser", order.id)).thenReturn(order)
+
+    val e = org.junit.jupiter.api.Assertions.assertThrows(SubmitOrderException::class.java) {
+      service.submitOrder(order.id, "mockUser")
+    }
+
+    Assertions.assertThat(e.message).isEqualTo("Please complete all mandatory fields before submitting this form")
+  }
+
+  @Test
   fun `Should throw an error if an attempt is made to re-submit a submitted order`() {
     val mockOrder = createReadyToSubmitOrder()
     mockOrder.status = OrderStatus.SUBMITTED
@@ -244,7 +257,7 @@ class OrderServiceTest {
       service.submitOrder(mockOrder.id, "mockUser")
     }
 
-    Assertions.assertThat(e.message).isEqualTo("Order ${mockOrder.id} for mockUser has already been submitted")
+    Assertions.assertThat(e.message).isEqualTo("This order has already been submitted")
   }
 
   @Test
@@ -258,7 +271,7 @@ class OrderServiceTest {
       service.submitOrder(mockOrder.id, "mockUser")
     }
 
-    Assertions.assertThat(e.message).isEqualTo("Order ${mockOrder.id} for mockUser has encountered an error and cannot be submitted")
+    Assertions.assertThat(e.message).isEqualTo("This order has encountered an error and cannot be submitted")
   }
 
   @Test

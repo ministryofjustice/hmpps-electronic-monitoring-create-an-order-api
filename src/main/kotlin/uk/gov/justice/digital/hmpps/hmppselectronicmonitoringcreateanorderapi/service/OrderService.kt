@@ -41,15 +41,15 @@ class OrderService(
     val order = getOrder(username, id)!!
 
     if (order.status == OrderStatus.SUBMITTED) {
-      throw SubmitOrderException("Order $id for $username has already been submitted")
+      throw SubmitOrderException("This order has already been submitted")
     }
 
     if (order.status == OrderStatus.ERROR) {
-      throw SubmitOrderException("Order $id for $username has encountered an error and cannot be submitted")
+      throw SubmitOrderException("This order has encountered an error and cannot be submitted")
     }
 
     if (order.status == OrderStatus.IN_PROGRESS && !order.isValid) {
-      throw SubmitOrderException("Order $id for $username is incomplete")
+      throw SubmitOrderException("Please complete all mandatory fields before submitting this form")
     }
 
     if (order.status == OrderStatus.IN_PROGRESS && order.isValid) {

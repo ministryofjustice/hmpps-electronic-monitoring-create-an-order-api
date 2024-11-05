@@ -137,8 +137,10 @@ class OrderControllerTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `Should return an error if order is incomplete when submitting order`() {
-    val order = createOrder()
+  fun `Should throw an error if an attempt is made to re-submit a submitted order`() {
+    val order = createReadyToSubmitOrder()
+    order.status = OrderStatus.SUBMITTED
+    repo.save(order)
 
     val result = webTestClient.post()
       .uri("/api/orders/${order.id}/submit")
@@ -151,12 +153,51 @@ class OrderControllerTest : IntegrationTestBase() {
 
     val error = result.responseBody!!
     assertThat(error.userMessage)
-      .isEqualTo("Error submitting order: Order ${order.id} for AUTH_ADM is incomplete")
+      .isEqualTo("Error submitting order: This order has already been submitted")
+  }
+
+  @Test
+  fun `Should throw an error if an attempt is made to submit an order with error status`() {
+    val order = createReadyToSubmitOrder()
+    order.status = OrderStatus.ERROR
+    repo.save(order)
+
+    val result = webTestClient.post()
+      .uri("/api/orders/${order.id}/submit")
+      .headers(setAuthorisation())
+      .exchange()
+      .expectStatus()
+      .is4xxClientError
+      .expectBody(ErrorResponse::class.java)
+      .returnResult()
+
+    val error = result.responseBody!!
+    assertThat(error.userMessage)
+      .isEqualTo("Error submitting order: This order has encountered an error and cannot be submitted")
+  }
+
+  @Test
+  fun `Should throw an error if an incomplete order is submitted`() {
+    val order = createOrder()
+    repo.save(order)
+
+    val result = webTestClient.post()
+      .uri("/api/orders/${order.id}/submit")
+      .headers(setAuthorisation())
+      .exchange()
+      .expectStatus()
+      .is4xxClientError
+      .expectBody(ErrorResponse::class.java)
+      .returnResult()
+
+    val error = result.responseBody!!
+    assertThat(error.userMessage)
+      .isEqualTo("Error submitting order: Please complete all mandatory fields before submitting this form")
   }
 
   @Test
   fun `Should return 500 error if serco auth service returned error`() {
-    val order = createReadyToSubmitOrder()
+    val order = createAndPersistReadyToSubmitOrder()
 
     sercoAuthApi.stubError()
 
@@ -176,7 +217,7 @@ class OrderControllerTest : IntegrationTestBase() {
 
   @Test
   fun `Should return 500 error if serco create device wearer service returned error`() {
-    val order = createReadyToSubmitOrder()
+    val order = createAndPersistReadyToSubmitOrder()
     val mockDeviceWearerJson = """
       {
     "title": "",
@@ -248,7 +289,7 @@ class OrderControllerTest : IntegrationTestBase() {
 
   @Test
   fun `Should return 500 error if serco create monitoring order service returned error`() {
-    val order = createReadyToSubmitOrder()
+    val order = createAndPersistReadyToSubmitOrder()
     val mockDeviceWearerJson = """
       {
     "title": "",
@@ -461,7 +502,7 @@ class OrderControllerTest : IntegrationTestBase() {
 
   @Test
   fun `Should update order with serco device wearer id, monitoring id & order status, and return 200`() {
-    val order = createReadyToSubmitOrder()
+    val order = createAndPersistReadyToSubmitOrder()
     val mockDeviceWearerJson = """
       {
     "title": "",
@@ -831,6 +872,12 @@ class OrderControllerTest : IntegrationTestBase() {
     order.responsibleOfficer = responsibleOfficer
 
     order.monitoringConditions = conditions
+    repo.save(order)
+    return order
+  }
+
+  fun createAndPersistReadyToSubmitOrder(): Order {
+    val order = createReadyToSubmitOrder()
     repo.save(order)
     return order
   }
