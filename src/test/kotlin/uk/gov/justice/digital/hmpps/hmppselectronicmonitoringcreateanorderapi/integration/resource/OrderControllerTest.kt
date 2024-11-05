@@ -223,6 +223,7 @@ class OrderControllerTest : IntegrationTestBase() {
     assertThat(updatedOrder.fmsResultId).isEqualTo(submitResult!!.id)
     assertThat(updatedOrder.status).isEqualTo(OrderStatus.ERROR)
   }
+  fun String.removeWhitespaceAndNewlines(): String = this.replace("(\"[^\"]*\")|\\s".toRegex(), "\$1")
 
   @Test
   fun `Should update order with serco device wearer id and monitoring Id and return 200`() {
@@ -246,12 +247,330 @@ class OrderControllerTest : IntegrationTestBase() {
 
     val submitResult = fmsResultRepository.findAll().firstOrNull()
     assertThat(submitResult).isNotNull
+    val expectedDWJson = """
+      {
+      	"title": "",
+      	"first_name": "John",
+      	"middle_name": "",
+      	"last_name": "Smith",
+      	"alias": "Johny",
+      	"date_of_birth": "1990-01-01",
+      	"adult_child": "adult",
+      	"sex": "Male",
+      	"gender_identity": "Male",
+      	"disability": [
+      		{
+      			"disability": "Vision"
+      		},
+      		{
+      			"disability": "Hearing"
+      		}
+      	],
+      	"address_1": "20 Somewhere Street",
+      	"address_2": "Nowhere City",
+      	"address_3": "Random County",
+      	"address_4": "United Kingdom",
+      	"address_post_code": "SW11 1NC",
+      	"secondary_address_1": "",
+      	"secondary_address_2": "",
+      	"secondary_address_3": "",
+      	"secondary_address_4": "",
+      	"secondary_address_post_code": "",
+      	"phone_number": "07401111111",
+      	"risk_serious_harm": "High",
+      	"risk_self_harm": "Low",
+      	"risk_details": "Danger",
+      	"mappa": "MAAPA 1",
+      	"mappa_case_type": "CPPC (Critical Public Protection Case)",
+      	"risk_categories": [],
+      	"responsible_adult_required": "true",
+      	"parent": "Mark Smith",
+      	"guardian": "",
+      	"parent_address_1": "",
+      	"parent_address_2": "",
+      	"parent_address_3": "",
+      	"parent_address_4": "",
+      	"parent_address_post_code": "",
+      	"parent_phone_number": "07401111111",
+      	"parent_dob": "",
+      	"pnc_id": "pncId",
+      	"nomis_id": "nomisId",
+      	"delius_id": "deliusId",
+      	"prison_number": "prisonNumber",
+      	"home_office_case_reference_number": "homeOfficeReferenceNumber",
+      	"interpreter_required": "true",
+      	"language": "British Sign"
+      }
+    """.trimIndent()
+    val expectedOrderJson = """
+      {
+      	"case_id": "MockDeviceWearerId",
+      	"allday_lockdown": "",
+      	"atv_allowance": "",
+      	"condition_type": "Requirement of a Community Order",
+      	"court": "",
+      	"court_order_email": "",
+      	"describe_exclusion": "Mock Exclusion Zone",
+      	"device_type": ",, ,",
+      	"device_wearer": "John Smith",
+      	"enforceable_condition": [
+      		{
+      			"condition": "Curfew with EM"
+      		},
+      		{
+      			"condition": "Location Monitoring (Fitted Device)"
+      		},
+      		{
+      			"condition": "EM Exclusion / Inclusion Zone"
+      		},
+      		{
+      			"condition": "AAMR"
+      		}
+      	],
+      	"exclusion_allday": "",
+      	"interim_court_date": "",
+      	"issuing_organisation": "",
+      	"media_interest": "",
+      	"new_order_received": "",
+      	"notifying_officer_email": "",
+      	"notifying_officer_name": "",
+      	"notifying_organization": "Mock Organisation",
+      	"no_post_code": "",
+      	"no_address_1": "",
+      	"no_address_2": "",
+      	"no_address_3": "",
+      	"no_address_4": "",
+      	"no_email": "",
+      	"no_name": "",
+      	"no_phone_number": "",
+      	"offence": "",
+      	"offence_date": "",
+      	"order_end": "2025-01-05",
+      	"order_id": "${order.id}",
+      	"order_request_type": "",
+      	"order_start": "2024-12-05",
+      	"order_type": "community",
+      	"order_type_description": "DAPOL",
+      	"order_type_detail": "",
+      	"order_variation_date": "",
+      	"order_variation_details": "",
+      	"order_variation_req_received_date": "",
+      	"order_variation_type": "",
+      	"pdu_responsible": "",
+      	"pdu_responsible_email": "",
+      	"planned_order_end_date": "",
+      	"responsible_officer_details_received": "",
+      	"responsible_officer_email": "",
+      	"responsible_officer_phone": "07401111111",
+      	"responsible_officer_name": "John Smith",
+      	"responsible_organization": "Avon and Somerset Constabulary",
+      	"ro_post_code": "AB11 1CD",
+      	"ro_address_1": "",
+      	"ro_address_2": "",
+      	"ro_address_3": "",
+      	"ro_address_4": "",
+      	"ro_email": "abc@def.com",
+      	"ro_phone": "07401111111",
+      	"ro_region": "Mock Region",
+      	"sentence_date": "",
+      	"sentence_expiry": "",
+      	"tag_at_source": "",
+      	"tag_at_source_details": "",
+      	"technical_bail": "",
+      	"trial_date": "",
+      	"trial_outcome": "",
+      	"conditional_release_date": "2024-12-05",
+      	"reason_for_order_ending_early": "",
+      	"business_unit": "",
+      	"service_end_date": "2025-01-05",
+      	"curfew_start": "2024-12-05",
+      	"curfew_end": null,
+      	"curfew_duration": [
+      		{
+      			"location": "primary",
+      			"allday": "",
+      			"schedule": [
+      				{
+      					"day": "Mo",
+      					"start": "17:00",
+      					"end": "09:00"
+      				},
+      				{
+      					"day": "Tu",
+      					"start": "17:00",
+      					"end": "09:00"
+      				},
+      				{
+      					"day": "Wed",
+      					"start": "17:00",
+      					"end": "09:00"
+      				},
+      				{
+      					"day": "Th",
+      					"start": "17:00",
+      					"end": "09:00"
+      				},
+      				{
+      					"day": "Fr",
+      					"start": "17:00",
+      					"end": "09:00"
+      				},
+      				{
+      					"day": "Sa",
+      					"start": "17:00",
+      					"end": "09:00"
+      				},
+      				{
+      					"day": "Su",
+      					"start": "17:00",
+      					"end": "09:00"
+      				}
+      			]
+      		},
+      		{
+      			"location": "secondary",
+      			"allday": "",
+      			"schedule": [
+      				{
+      					"day": "Mo",
+      					"start": "17:00",
+      					"end": "09:00"
+      				},
+      				{
+      					"day": "Tu",
+      					"start": "17:00",
+      					"end": "09:00"
+      				},
+      				{
+      					"day": "Wed",
+      					"start": "17:00",
+      					"end": "09:00"
+      				},
+      				{
+      					"day": "Th",
+      					"start": "17:00",
+      					"end": "09:00"
+      				},
+      				{
+      					"day": "Fr",
+      					"start": "17:00",
+      					"end": "09:00"
+      				},
+      				{
+      					"day": "Sa",
+      					"start": "17:00",
+      					"end": "09:00"
+      				},
+      				{
+      					"day": "Su",
+      					"start": "17:00",
+      					"end": "09:00"
+      				}
+      			]
+      		}
+      	],
+      	"trail_monitoring": "true",
+      	"exclusion_zones": "true",
+      	"exclusion_zones_duration": "Mock Exclusion Duration",
+      	"inclusion_zones": "",
+      	"inclusion_zones_duration": "",
+      	"abstinence": "true",
+      	"schedule": "",
+      	"checkin_schedule": "",
+      	"revocation_date": "",
+      	"revocation_type": "",
+      	"order_status": "Not Started"
+      }
+    """.trimIndent()
+    assertThat(submitResult!!.fmsDeviceWearerRequest).isEqualTo(expectedDWJson.removeWhitespaceAndNewlines())
+    assertThat(submitResult.fmsOrderRequest).isEqualTo(expectedOrderJson.removeWhitespaceAndNewlines())
     val updatedOrder = repo.findById(order.id).get()
-    assertThat(updatedOrder.fmsResultId).isEqualTo(submitResult!!.id)
+    assertThat(updatedOrder.fmsResultId).isEqualTo(submitResult.id)
     assertThat(updatedOrder.status).isEqualTo(OrderStatus.SUBMITTED)
   }
 
-  fun createReadyToSubmitOrder(): Order {
+  @Test
+  fun `Should default address to No Fixed Address if device wearer no fixed Abode is true`() {
+    val order = createReadyToSubmitOrder(true)
+    sercoAuthApi.stubGrantToken()
+
+    sercoApi.stupCreateDeviceWearer(
+      HttpStatus.OK,
+      FmsResponse(result = listOf(FmsResult(message = "", id = "MockDeviceWearerId"))),
+    )
+    sercoApi.stupMonitoringOrder(
+      HttpStatus.OK,
+      FmsResponse(result = listOf(FmsResult(message = "", id = "MockMonitoringOrderId"))),
+    )
+    webTestClient.post()
+      .uri("/api/orders/${order.id}/submit")
+      .headers(setAuthorisation())
+      .exchange()
+      .expectStatus()
+      .isOk
+
+    val submitResult = fmsResultRepository.findAll().firstOrNull()
+    assertThat(submitResult).isNotNull
+    val expectedDWJson = """
+      {
+      	"title": "",
+      	"first_name": "John",
+      	"middle_name": "",
+      	"last_name": "Smith",
+      	"alias": "Johny",
+      	"date_of_birth": "1990-01-01",
+      	"adult_child": "adult",
+      	"sex": "Male",
+      	"gender_identity": "Male",
+      	"disability": [
+      		{
+      			"disability": "Vision"
+      		},
+      		{
+      			"disability": "Hearing"
+      		}
+      	],
+      	"address_1": "No Fixed Address",
+      	"address_2": "No Fixed Address",
+      	"address_3": "No Fixed Address",
+      	"address_4": "No Fixed Address",
+      	"address_post_code": "No Fixed Address",
+      	"secondary_address_1": "",
+      	"secondary_address_2": "",
+      	"secondary_address_3": "",
+      	"secondary_address_4": "",
+      	"secondary_address_post_code": "",
+      	"phone_number": "07401111111",
+      	"risk_serious_harm": "High",
+      	"risk_self_harm": "Low",
+      	"risk_details": "Danger",
+      	"mappa": "MAAPA 1",
+      	"mappa_case_type": "CPPC (Critical Public Protection Case)",
+      	"risk_categories": [],
+      	"responsible_adult_required": "true",
+      	"parent": "Mark Smith",
+      	"guardian": "",
+      	"parent_address_1": "",
+      	"parent_address_2": "",
+      	"parent_address_3": "",
+      	"parent_address_4": "",
+      	"parent_address_post_code": "",
+      	"parent_phone_number": "07401111111",
+      	"parent_dob": "",
+      	"pnc_id": "pncId",
+      	"nomis_id": "nomisId",
+      	"delius_id": "deliusId",
+      	"prison_number": "prisonNumber",
+      	"home_office_case_reference_number": "homeOfficeReferenceNumber",
+      	"interpreter_required": "true",
+      	"language": "British Sign"
+      }
+    """.trimIndent()
+
+    assertThat(submitResult!!.fmsDeviceWearerRequest).isEqualTo(expectedDWJson.removeWhitespaceAndNewlines())
+  }
+
+  fun createReadyToSubmitOrder(noFixedAddress: Boolean = false): Order {
     val order = Order(
       username = "AUTH_ADM",
       status = OrderStatus.IN_PROGRESS,
@@ -273,6 +592,7 @@ class OrderControllerTest : IntegrationTestBase() {
       nomisId = "nomisId",
       prisonNumber = "prisonNumber",
       homeOfficeReferenceNumber = "homeOfficeReferenceNumber",
+      noFixedAbode = noFixedAddress,
     )
 
     order.deviceWearerResponsibleAdult = ResponsibleAdult(
@@ -291,27 +611,32 @@ class OrderControllerTest : IntegrationTestBase() {
       addressType = AddressType.RESPONSIBLE_ORGANISATION,
     )
 
-    order.addresses = mutableListOf(
-      Address(
-        orderId = order.id,
-        addressLine1 = "20 Somewhere Street",
-        addressLine2 = "Nowhere City",
-        addressLine3 = "Random County",
-        addressLine4 = "United Kingdom",
-        postcode = "SW11 1NC",
-        addressType = AddressType.PRIMARY,
-      ),
-      Address(
-        orderId = order.id,
-        addressLine1 = "22 Somewhere Street",
-        addressLine2 = "Nowhere City",
-        addressLine3 = "Random County",
-        addressLine4 = "United Kingdom",
-        postcode = "SW11 1NC",
-        addressType = AddressType.SECONDARY,
-      ),
-      responsibleOrganisationAddress,
-    )
+    if (!noFixedAddress) {
+      order.addresses = mutableListOf(
+        Address(
+          orderId = order.id,
+          addressLine1 = "20 Somewhere Street",
+          addressLine2 = "Nowhere City",
+          addressLine3 = "Random County",
+          addressLine4 = "United Kingdom",
+          postcode = "SW11 1NC",
+          addressType = AddressType.PRIMARY,
+        ),
+        Address(
+          orderId = order.id,
+          addressLine1 = "22 Somewhere Street",
+          addressLine2 = "Nowhere City",
+          addressLine3 = "Random County",
+          addressLine4 = "United Kingdom",
+          postcode = "SW11 1NC",
+          addressType = AddressType.SECONDARY,
+        ),
+        responsibleOrganisationAddress,
+      )
+    } else {
+      order.addresses = mutableListOf(responsibleOrganisationAddress)
+    }
+
     order.installationAndRisk = InstallationAndRisk(
       orderId = order.id,
       riskOfSeriousHarm = "High",
@@ -344,7 +669,6 @@ class OrderControllerTest : IntegrationTestBase() {
     val curfewConditions = CurfewConditions(
       orderId = order.id,
       startDate = mockStartDate,
-      endDate = mockEndDate,
       curfewAddress = "PRIMARY,SECONDARY",
     )
 
