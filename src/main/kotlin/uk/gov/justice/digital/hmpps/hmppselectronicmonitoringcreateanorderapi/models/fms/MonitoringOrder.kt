@@ -210,7 +210,7 @@ data class MonitoringOrder(
             EnforceableCondition("Location Monitoring (using Non-Fitted Device)"),
           )
         }
-        monitoringOrder.trailMonitoring = "true"
+        monitoringOrder.trailMonitoring = "Yes"
       }
 
       if (conditions.exclusionZone != null && conditions.exclusionZone!!) {
@@ -224,6 +224,7 @@ data class MonitoringOrder(
           monitoringOrder.inclusionZones = "true"
           monitoringOrder.inclusionZonesDuration = condition.duration
         }
+        monitoringOrder.trailMonitoring = "Yes"
       }
 
       // TODO: wait for confirmation if mandatory attendance is required
@@ -235,10 +236,10 @@ data class MonitoringOrder(
         val condition = order.monitoringConditionsAlcohol!!
         if (condition.monitoringType == AlcoholMonitoringType.ALCOHOL_ABSTINENCE) {
           monitoringOrder.enforceableCondition!!.add(EnforceableCondition("AAMR"))
-          monitoringOrder.abstinence = "true"
+          monitoringOrder.abstinence = "Yes"
         } else {
           monitoringOrder.enforceableCondition!!.add(EnforceableCondition("AML"))
-          monitoringOrder.abstinence = "false"
+          monitoringOrder.abstinence = "No"
         }
 
         if (!condition.prisonName.isNullOrBlank()) {

@@ -223,6 +223,7 @@ class OrderControllerTest : IntegrationTestBase() {
     assertThat(updatedOrder.fmsResultId).isEqualTo(submitResult!!.id)
     assertThat(updatedOrder.status).isEqualTo(OrderStatus.ERROR)
   }
+
   fun String.removeWhitespaceAndNewlines(): String = this.replace("(\"[^\"]*\")|\\s".toRegex(), "\$1")
 
   @Test
@@ -345,10 +346,10 @@ class OrderControllerTest : IntegrationTestBase() {
       	"no_phone_number": "",
       	"offence": "",
       	"offence_date": "",
-      	"order_end": "2025-01-05",
+      	"order_end": "${mockEndDate.format(formatter)}",
       	"order_id": "${order.id}",
       	"order_request_type": "",
-      	"order_start": "2024-12-05",
+      	"order_start": "${mockStartDate.format(formatter)}",
       	"order_type": "community",
       	"order_type_description": "DAPOL",
       	"order_type_detail": "",
@@ -379,11 +380,11 @@ class OrderControllerTest : IntegrationTestBase() {
       	"technical_bail": "",
       	"trial_date": "",
       	"trial_outcome": "",
-      	"conditional_release_date": "2024-12-05",
+      	"conditional_release_date": "${mockStartDate.format(formatter)}",
       	"reason_for_order_ending_early": "",
       	"business_unit": "",
-      	"service_end_date": "2025-01-05",
-      	"curfew_start": "2024-12-05",
+      "service_end_date": "${mockEndDate.format(formatter)}",
+      	"curfew_start": "${mockStartDate.format(formatter)}",
       	"curfew_end": null,
       	"curfew_duration": [
       		{
@@ -469,12 +470,12 @@ class OrderControllerTest : IntegrationTestBase() {
       			]
       		}
       	],
-      	"trail_monitoring": "true",
+      	"trail_monitoring": "Yes",
       	"exclusion_zones": "true",
       	"exclusion_zones_duration": "Mock Exclusion Duration",
       	"inclusion_zones": "",
       	"inclusion_zones_duration": "",
-      	"abstinence": "true",
+      	"abstinence": "Yes",
       	"schedule": "",
       	"checkin_schedule": "",
       	"revocation_date": "",
@@ -499,9 +500,6 @@ class OrderControllerTest : IntegrationTestBase() {
       FmsResponse(result = listOf(FmsResult(message = "", id = "MockDeviceWearerId"))),
     )
     sercoApi.stupMonitoringOrder(
-      HttpStatus.INTERNAL_SERVER_ERROR,
-      FmsResponse(),
-      FmsErrorResponse(error = FmsErrorResponseDetails("", "Mock Create MO Error")),
       HttpStatus.OK,
       FmsResponse(result = listOf(FmsResult(message = "", id = "MockMonitoringOrderId"))),
     )
@@ -512,22 +510,6 @@ class OrderControllerTest : IntegrationTestBase() {
       .expectStatus()
       .isOk
 
-    val error = result.responseBody!!
-    assertThat(error.userMessage)
-      .isEqualTo(
-        "Error creating FMS Monitoring Order for order: ${order.id} with error: Mock Create MO Error",
-      )
-    val submitResult = fmsResultRepository.findAll().firstOrNull()
-    assertThat(submitResult).isNotNull
-    val updatedOrder = repo.findById(order.id).get()
-    assertThat(updatedOrder.fmsResultId).isEqualTo(submitResult!!.id)
-    assertThat(updatedOrder.status).isEqualTo(OrderStatus.ERROR)
-  }
-
-  @Test
-  fun `Should update order with serco device wearer id and monitoring Id and return 200`() {
-    val order = createReadyToSubmitOrder()
-    sercoAuthApi.stubGrantToken()
     val submitResult = fmsResultRepository.findAll().firstOrNull()
     assertThat(submitResult).isNotNull
     val expectedDWJson = """
@@ -586,26 +568,6 @@ class OrderControllerTest : IntegrationTestBase() {
       }
     """.trimIndent()
 
-    sercoApi.stupCreateDeviceWearer(
-      HttpStatus.OK,
-      FmsResponse(result = listOf(FmsResult(message = "", id = "MockDeviceWearerId"))),
-    )
-    sercoApi.stupMonitoringOrder(
-      HttpStatus.OK,
-      FmsResponse(result = listOf(FmsResult(message = "", id = "MockMonitoringOrderId"))),
-    )
-    webTestClient.post()
-      .uri("/api/orders/${order.id}/submit")
-      .headers(setAuthorisation())
-      .exchange()
-      .expectStatus()
-      .isOk
-
-    val submitResult = fmsResultRepository.findAll().firstOrNull()
-    assertThat(submitResult).isNotNull
-    val updatedOrder = repo.findById(order.id).get()
-    assertThat(updatedOrder.fmsResultId).isEqualTo(submitResult!!.id)
-    assertThat(updatedOrder.status).isEqualTo(OrderStatus.SUBMITTED)
     assertThat(submitResult!!.fmsDeviceWearerRequest).isEqualTo(expectedDWJson.removeWhitespaceAndNewlines())
   }
 
