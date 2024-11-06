@@ -22,6 +22,13 @@ class WebClientConfiguration(
     builder.healthWebClient(hmppsAuthBaseUri, healthTimeout)
 
   @Bean
-  fun documentManagementApiWebClient(authorizedClientManager: OAuth2AuthorizedClientManager, builder: WebClient.Builder): WebClient =
-    builder.authorisedWebClient(authorizedClientManager, registrationId = "document-management-api", url = hmppsDocumentManagementApiUrl, timeout)
+  fun documentManagementApiWebClient(
+    authorizedClientManager: OAuth2AuthorizedClientManager,
+    builder: WebClient.Builder,
+  ): WebClient = builder.authorisedWebClient(
+    authorizedClientManager,
+    registrationId = "document-management-api",
+    url = hmppsDocumentManagementApiUrl,
+    timeout,
+  )
 }

@@ -8,10 +8,7 @@ import java.util.*
 
 @Repository
 interface DeviceWearerRepository : JpaRepository<DeviceWearer, UUID> {
-  fun findByOrderIdAndOrderUsername(
-    id: UUID,
-    username: String,
-  ): Optional<DeviceWearer>
+  fun findByOrderIdAndOrderUsername(id: UUID, username: String): Optional<DeviceWearer>
 
   fun findByOrderIdAndOrderUsernameAndOrderStatus(
     id: UUID,

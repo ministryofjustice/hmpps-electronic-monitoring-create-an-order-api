@@ -1,5 +1,6 @@
 generic-service:
   nameOverride: hmpps-electronic-monitoring-create-an-order-api
+  serviceAccountName: "hmpps-electronic-monitoring-create-an-order-api"
   productId: "HMPPS529" # productId for the product that this belongs too, i.e. DPS001, see README.md for details
 
   replicaCount: 4
@@ -13,6 +14,13 @@ generic-service:
     enabled: true
     host: app-hostname.local # override per environment
     tlsSecretName: hmpps-ems-cemo-ui-cert
+    nginx.ingress.kubernetes.io/server-snippet: |
+      server_tokens off;
+      location /queue-admin/retry-all-dlqs {
+        deny all;
+        return 401;
+      }
+     
 
   # Environment variables to load into the deployment
   env:
@@ -20,6 +28,7 @@ generic-service:
     SERVER_PORT: "8080"
     APPLICATIONINSIGHTS_CONNECTION_STRING: "InstrumentationKey=$(APPINSIGHTS_INSTRUMENTATIONKEY)"
     APPLICATIONINSIGHTS_CONFIGURATION_FILE: applicationinsights.json
+    HMPPS_SQS_USEWEBTOKEN: true
 
   # Pre-existing kubernetes secrets to load as environment variables in the deployment.
   # namespace_secrets:
@@ -43,6 +52,11 @@ generic-service:
       DB_NAME: "database_name"
       DB_USER: "database_username"
       DB_PASS: "database_password"
+    sqs-court-case-events-secret:
+      HMPPS_SQS_QUEUES_COURTHEARINGEVENTQUEUE_QUEUENAME: "sqs_queue_name"
+      HMPPS_SQS_QUEUES_COURTHEARINGEVENTQUEUE_QUEUEARN: "sqs_queue_arn"
+    sqs-court-case-events-dlq-secret:
+      HMPPS_SQS_QUEUES_COURTHEARINGEVENTQUEUE_DLQNAME: "sqs_queue_name"
   allowlist:
     groups:
       - internal

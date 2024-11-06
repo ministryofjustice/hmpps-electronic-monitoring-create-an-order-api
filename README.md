@@ -149,3 +149,12 @@ To interact with the API using the front end, with both running locally:
 3. Run the API locally using the same steps outlined in [get started](#get-started), but replacing the command in step 1 with `docker compose pull && docker compose up --scale hmpps-electronic-monitoring-create-an-order-api=0 --scale hmpps-auth=0` to start a docker instance of the database but not HMPPS Auth.
 
 There is no need to generate a HMPPS Auth token, as authentication is handled by the front end. Valid personal credentials will be needed to sign in via the UI.
+
+#### Running integration test locally
+
+1. For running integration tests locally, start localstack of SQS queues by:
+
+   `docker compose -f docker-compose-test.yml up`
+2.  Using command line to run integration test:
+
+    `./gradlew integration`

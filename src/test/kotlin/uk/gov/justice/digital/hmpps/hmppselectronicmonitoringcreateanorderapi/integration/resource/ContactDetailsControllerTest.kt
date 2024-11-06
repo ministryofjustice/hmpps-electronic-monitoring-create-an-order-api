@@ -7,15 +7,15 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearerContactDetails
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ContactDetails
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.DeviceWearerContactDetailsRepository
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.ContactDetailsRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidationError
 
-class DeviceWearerContactDetailsControllerTest : IntegrationTestBase() {
+class ContactDetailsControllerTest : IntegrationTestBase() {
   @Autowired
-  lateinit var contactDetailRepo: DeviceWearerContactDetailsRepository
+  lateinit var contactDetailRepo: ContactDetailsRepository
 
   @Autowired
   lateinit var orderRepo: OrderRepository
@@ -96,7 +96,7 @@ class DeviceWearerContactDetailsControllerTest : IntegrationTestBase() {
       .exchange()
       .expectStatus()
       .isOk
-      .expectBody(DeviceWearerContactDetails::class.java)
+      .expectBody(ContactDetails::class.java)
       .returnResult()
 
     Assertions.assertThat(updateContactDetails.responseBody?.isValid).isTrue()

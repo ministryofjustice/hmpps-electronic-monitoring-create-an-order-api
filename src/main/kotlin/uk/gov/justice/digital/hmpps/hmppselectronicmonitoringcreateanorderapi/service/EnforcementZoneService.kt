@@ -21,7 +21,7 @@ class EnforcementZoneService(
 
 ) : OrderSectionServiceBase() {
 
-  val allowedFileExtensions: List<String> = listOf("pdf", "jpeg")
+  val allowedFileExtensions: List<String> = listOf("pdf", "jpeg", "jpg")
 
   fun updateEnforcementZone(orderId: UUID, username: String, enforcementZone: EnforcementZoneConditions) {
     val order = findEditableOrder(orderId, username)
@@ -42,7 +42,9 @@ class EnforcementZoneService(
     val order = findEditableOrder(orderId, username)
     val zone = order.enforcementZoneConditions.firstOrNull { it.zoneId == zoneId }
     if (zone == null) {
-      throw EntityNotFoundException("Enforcement zone with  $zoneId does not exist in order with id $orderId")
+      throw EntityNotFoundException(
+        "Enforcement zone with  $zoneId does not exist in order with id $orderId",
+      )
     }
     // clear previous file in document api
     zone.fileId?.let { fileId -> webClient.deleteDocument(fileId.toString()) }

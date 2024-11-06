@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource
 
 import jakarta.validation.Valid
-import jakarta.validation.constraints.NotNull
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -13,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.MonitoringConditions
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.AtLeastOneSelected
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateMonitoringConditionsDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.MonitoringConditionsService
 import java.util.UUID
 
@@ -39,28 +38,3 @@ class MonitoringConditionsController(
     return ResponseEntity(monitoringConditions, HttpStatus.OK)
   }
 }
-
-@AtLeastOneSelected(
-  fieldNames = ["curfew", "exclusionZone", "trail", "mandatoryAttendance", "alcohol"],
-  message = "Select at least one monitoring type.",
-)
-data class UpdateMonitoringConditionsDto(
-  @field:NotNull(message = "Order type is required")
-  val orderType: String? = null,
-
-  val devicesRequired: Array<String>? = null,
-
-  var acquisitiveCrime: Boolean? = null,
-
-  var dapol: Boolean? = null,
-
-  var curfew: Boolean? = null,
-
-  var exclusionZone: Boolean? = null,
-
-  var trail: Boolean? = null,
-
-  var mandatoryAttendance: Boolean? = null,
-
-  var alcohol: Boolean? = null,
-)

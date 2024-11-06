@@ -3,17 +3,13 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.s
 import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Address
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.UpdateDeviceWearerAddressDto
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateAddressDto
 import java.util.UUID
 
 @Service
 class AddressService() : OrderSectionServiceBase() {
   @Transactional
-  fun updateAddress(
-    orderId: UUID,
-    username: String,
-    updateRecord: UpdateDeviceWearerAddressDto,
-  ): Address? {
+  fun updateAddress(orderId: UUID, username: String, updateRecord: UpdateAddressDto): Address {
     // Verify the order belongs to the user and is in draft state
     val order = this.findEditableOrder(orderId, username)
 
@@ -39,6 +35,6 @@ class AddressService() : OrderSectionServiceBase() {
       order.addresses.add(newAddress)
     }
     orderRepo.save(order)
-    return existingAddress ?: newAddress
+    return (existingAddress ?: newAddress)!!
   }
 }

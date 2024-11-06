@@ -12,39 +12,29 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Address
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateAddressDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.AddressService
 import java.util.*
 
 @RestController
 @PreAuthorize("hasRole('ROLE_EM_CEMO__CREATE_ORDER')")
 @RequestMapping("/api/")
-class DeviceWearerAddressController(
+class AddressController(
   @Autowired val addressService: AddressService,
 ) {
-
   @PutMapping("/orders/{orderId}/address")
-  fun updateContactDetails(
+  fun updateAddress(
     @PathVariable orderId: UUID,
-    @RequestBody @Valid deviceWearerAddressUpdateRecord: UpdateDeviceWearerAddressDto,
+    @RequestBody @Valid addressUpdateRecord: UpdateAddressDto,
     authentication: Authentication,
   ): ResponseEntity<Address> {
     val username = authentication.name
     val address = addressService.updateAddress(
       orderId,
       username,
-      deviceWearerAddressUpdateRecord,
+      addressUpdateRecord,
     )
 
     return ResponseEntity(address, HttpStatus.OK)
   }
 }
-
-data class UpdateDeviceWearerAddressDto(
-  val addressType: AddressType,
-  val addressLine1: String = "",
-  val addressLine2: String = "",
-  val addressLine3: String = "",
-  val addressLine4: String = "",
-  val postcode: String = "",
-)

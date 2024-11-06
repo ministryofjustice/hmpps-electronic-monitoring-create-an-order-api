@@ -136,8 +136,12 @@ class MonitoringConditionsAlcoholControllerTest : IntegrationTestBase() {
 
     Assertions.assertThat(alcoholConditions.startDate).isEqualTo(mockStartDate)
     Assertions.assertThat(alcoholConditions.endDate).isEqualTo(mockEndDate)
-    Assertions.assertThat(alcoholConditions.monitoringType).isEqualTo(AlcoholMonitoringType.ALCOHOL_ABSTINENCE)
-    Assertions.assertThat(alcoholConditions.installationLocation).isEqualTo(AlcoholMonitoringInstallationLocationType.PRIMARY)
+    Assertions.assertThat(
+      alcoholConditions.monitoringType,
+    ).isEqualTo(AlcoholMonitoringType.ALCOHOL_ABSTINENCE)
+    Assertions.assertThat(
+      alcoholConditions.installationLocation,
+    ).isEqualTo(AlcoholMonitoringInstallationLocationType.PRIMARY)
     Assertions.assertThat(alcoholConditions.prisonName).isEqualTo(null)
     Assertions.assertThat(alcoholConditions.probationOfficeName).isEqualTo(null)
   }

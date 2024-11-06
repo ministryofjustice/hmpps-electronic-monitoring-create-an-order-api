@@ -121,6 +121,14 @@ data class DeviceWearer(
 
   @JsonProperty("prison_number")
   var prisonNumber: String? = "",
+
+  @JsonProperty("home_office_case_reference_number")
+  var homeOfficeReferenceNumber: String? = "",
+
+  @JsonProperty("interpreter_required")
+  var interpreterRequired: String? = "",
+
+  var language: String? = "",
 ) {
 
   companion object {
@@ -130,8 +138,10 @@ data class DeviceWearer(
       if (!order.deviceWearer?.adultAtTimeOfInstallation!!) {
         adultChild = "child"
       }
-      val primaryAddress = order.addresses.find { address -> address.addressType == AddressType.PRIMARY }!!
-      val disabilities = order.deviceWearer?.disabilities?.split(',')?.map { disability -> Disability(disability) }?.toList()
+
+      val disabilities = order.deviceWearer?.disabilities?.split(
+        ',',
+      )?.map { disability -> Disability(disability) }?.toList() ?: emptyList()
       val deviceWearer = DeviceWearer(
         firstName = order.deviceWearer?.firstName,
         lastName = order.deviceWearer?.lastName,
@@ -141,11 +151,7 @@ data class DeviceWearer(
         sex = order.deviceWearer?.sex,
         genderIdentity = order.deviceWearer?.gender,
         disability = disabilities,
-        address1 = primaryAddress.addressLine1,
-        address2 = primaryAddress.addressLine2,
-        address3 = primaryAddress.addressLine3,
-        address4 = primaryAddress.addressLine4,
-        addressPostCode = primaryAddress.postcode,
+
         phoneNumber = order.deviceWearerContactDetails?.contactNumber,
         riskSeriousHarm = order.installationAndRisk?.riskOfSeriousHarm,
         riskSelfHarm = order.installationAndRisk?.riskOfSelfHarm,
@@ -155,7 +161,29 @@ data class DeviceWearer(
         responsibleAdultRequired = (order.deviceWearerResponsibleAdult != null).toString(),
         parent = "${order.deviceWearerResponsibleAdult?.fullName}",
         parentPhoneNumber = order.deviceWearerResponsibleAdult?.contactNumber,
+        interpreterRequired = order.deviceWearer?.interpreterRequired?.toString(),
+        language = order.deviceWearer?.language,
+        nomisId = order.deviceWearer?.nomisId,
+        pncId = order.deviceWearer?.pncId,
+        deliusId = order.deviceWearer?.deliusId,
+        homeOfficeReferenceNumber = order.deviceWearer?.homeOfficeReferenceNumber,
+        prisonNumber = order.deviceWearer?.prisonNumber,
       )
+      if (order.deviceWearer?.noFixedAbode != null && !order.deviceWearer?.noFixedAbode!!) {
+        val primaryAddress = order.addresses.find { address -> address.addressType == AddressType.PRIMARY }!!
+        deviceWearer.address1 = primaryAddress.addressLine1
+        deviceWearer.address2 = primaryAddress.addressLine2
+        deviceWearer.address3 = primaryAddress.addressLine3
+        deviceWearer.address4 = primaryAddress.addressLine4
+        deviceWearer.addressPostCode = primaryAddress.postcode
+      } else {
+        deviceWearer.address1 = "No Fixed Address"
+        deviceWearer.address2 = "No Fixed Address"
+        deviceWearer.address3 = "No Fixed Address"
+        deviceWearer.address4 = "No Fixed Address"
+        deviceWearer.addressPostCode = "No Fixed Address"
+      }
+
       order.addresses.find { address -> address.addressType == AddressType.SECONDARY }.let { address ->
         {
           if (address != null) {

@@ -32,6 +32,9 @@ data class DeviceWearer(
   @Column(name = "DELIUS_ID", nullable = true)
   var deliusId: String? = null,
 
+  @Column(name = "HOME_OFFICE_REFERENCE_NUMBER", nullable = true)
+  var homeOfficeReferenceNumber: String? = null,
+
   @Column(name = "PRISON_NUMBER", nullable = true)
   var prisonNumber: String? = null,
 
@@ -53,6 +56,12 @@ data class DeviceWearer(
   @Column(name = "GENDER", nullable = true)
   var gender: String? = null,
 
+  @Column(name = "LANGUAGE", nullable = true)
+  var language: String? = null,
+
+  @Column(name = "INTERPRETER_REQUIRED", nullable = true)
+  var interpreterRequired: Boolean? = null,
+
   @Column(name = "DATE_OF_BIRTH", nullable = true)
   @field:Past(message = "Date of birth must be in the past")
   var dateOfBirth: ZonedDateTime? = null,
@@ -67,7 +76,12 @@ data class DeviceWearer(
   @JoinColumn(name = "ORDER_ID", updatable = false, insertable = false)
   private val order: Order? = null,
 
-  @OneToOne(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "deviceWearer", orphanRemoval = true)
+  @OneToOne(
+    fetch = FetchType.LAZY,
+    cascade = [ALL],
+    mappedBy = "deviceWearer",
+    orphanRemoval = true,
+  )
   var alternativeContactDetails: AlternativeContractDetails? = null,
 ) {
   val isValid: Boolean

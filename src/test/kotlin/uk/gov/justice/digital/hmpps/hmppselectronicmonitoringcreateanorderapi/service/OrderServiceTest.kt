@@ -4,6 +4,7 @@ import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
+import org.mockito.Mockito.reset
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.eq
@@ -12,49 +13,47 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.boot.test.autoconfigure.json.JsonTest
 import org.springframework.test.context.ActiveProfiles
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.FmsClient
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.SubmitOrderException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Address
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AlcoholMonitoringConditions
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ContactDetails
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewReleaseDateConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewTimeTable
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearerContactDetails
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.EnforcementZoneConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationAndRisk
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InterestedParties
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.MonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ResponsibleAdult
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ResponsibleOfficer
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.SubmitFmsOrderResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.TrailMonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringInstallationLocationType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.EnforcementZoneType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MonitoringConditionType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsResponse
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsResult
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.MonitoringOrder
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderTypeDescription
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 import java.time.DayOfWeek
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.util.*
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.DeviceWearer as fmsDeviceWearer
 
 @ActiveProfiles("test")
 @JsonTest
 class OrderServiceTest {
   private lateinit var repo: OrderRepository
-  private lateinit var fmsClient: FmsClient
+  private lateinit var fmsService: FmsService
   private lateinit var service: OrderService
 
   @BeforeEach
   fun setup() {
     repo = mock(OrderRepository::class.java)
-    fmsClient = mock(FmsClient::class.java)
-    service = OrderService(repo, fmsClient)
+    fmsService = mock(FmsService::class.java)
+    service = OrderService(repo, fmsService)
   }
 
   @Test
@@ -71,7 +70,32 @@ class OrderServiceTest {
     }
   }
 
-  fun createReadyToSubmitOrder(): Order {
+  @Test
+  fun `Should create fms device wearer and monitoring order and save both id to database`() {
+    val mockOrder = createReadyToSubmitOrder()
+    reset(repo)
+
+    val mockFmsResult = SubmitFmsOrderResult(
+      deviceWearerId = "mockDeviceWearerId",
+      fmsOrderId = "mockMonitoringOrderId",
+      orderSource = FmsOrderSource.CEMO,
+      success = true,
+    )
+    whenever(repo.findByUsernameAndId("mockUser", mockOrder.id)).thenReturn(mockOrder)
+    whenever(fmsService.submitOrder(any<Order>(), eq(FmsOrderSource.CEMO))).thenReturn(
+      mockFmsResult,
+    )
+    service.submitOrder(mockOrder.id, "mockUser")
+
+    argumentCaptor<Order>().apply {
+      verify(repo, times(1)).save(capture())
+      Assertions.assertThat(firstValue.fmsResultId).isEqualTo(mockFmsResult.id)
+    }
+  }
+
+  val mockStartDate: ZonedDateTime = ZonedDateTime.now().plusMonths(1)
+  val mockEndDate: ZonedDateTime = ZonedDateTime.now().plusMonths(2)
+  private fun createReadyToSubmitOrder(noFixedAddress: Boolean = false): Order {
     val order = Order(
       username = "AUTH_ADM",
       status = OrderStatus.IN_PROGRESS,
@@ -97,34 +121,39 @@ class OrderServiceTest {
     order.addresses = mutableListOf(
       Address(
         orderId = order.id,
-
         addressLine1 = "20 Somewhere Street",
         addressLine2 = "Nowhere City",
         addressLine3 = "Random County",
         addressLine4 = "United Kingdom",
         postcode = "SW11 1NC",
-
         addressType = AddressType.PRIMARY,
       ),
       Address(
         orderId = order.id,
-
         addressLine1 = "22 Somewhere Street",
         addressLine2 = "Nowhere City",
         addressLine3 = "Random County",
         addressLine4 = "United Kingdom",
         postcode = "SW11 1NC",
-
-        addressType = AddressType.PRIMARY,
+        addressType = AddressType.SECONDARY,
       ),
       Address(
         orderId = order.id,
-        addressLine1 = "20 Somewhere Street",
+        addressLine1 = "24 Somewhere Street",
         addressLine2 = "Nowhere City",
         addressLine3 = "Random County",
         addressLine4 = "United Kingdom",
         postcode = "SW11 1NC",
         addressType = AddressType.INSTALLATION,
+      ),
+      Address(
+        orderId = order.id,
+        addressLine1 = "Line 1",
+        addressLine2 = "Line 2",
+        addressLine3 = "",
+        addressLine4 = "",
+        postcode = "AB11 1CD",
+        addressType = AddressType.RESPONSIBLE_ORGANISATION,
       ),
     )
     order.installationAndRisk = InstallationAndRisk(
@@ -136,30 +165,30 @@ class OrderServiceTest {
       mappaCaseType = "CPPC (Critical Public Protection Case)",
     )
 
-    order.deviceWearerContactDetails = DeviceWearerContactDetails(
+    order.deviceWearerContactDetails = ContactDetails(
       orderId = order.id,
       contactNumber = "07401111111",
     )
     order.monitoringConditions = MonitoringConditions(orderId = order.id)
-    order.responsibleOfficer = ResponsibleOfficer(orderId = order.id)
     order.additionalDocuments = mutableListOf()
     val conditions = MonitoringConditions(
       orderId = order.id,
       orderType = "community",
+      orderTypeDescription = OrderTypeDescription.DAPOL,
       devicesRequired = arrayOf("Location - fitted,Alcohol (Remote Breath)"),
-      startDate = ZonedDateTime.of(2100, 1, 1, 1, 1, 1, 1, ZoneId.systemDefault()),
-      endDate = ZonedDateTime.of(2101, 1, 1, 1, 1, 1, 1, ZoneId.systemDefault()),
+      startDate = mockStartDate,
+      endDate = mockEndDate,
       curfew = true,
       trail = true,
       exclusionZone = true,
       alcohol = true,
       caseId = "d8ea62e61bb8d610a10c20e0b24bcb85",
-      conditionType = "Requirement of Community Order",
+      conditionType = MonitoringConditionType.REQUIREMENT_OF_A_COMMUNITY_ORDER,
     )
     val curfewConditions = CurfewConditions(
       orderId = order.id,
-      startDate = ZonedDateTime.of(2100, 1, 1, 1, 1, 1, 1, ZoneId.systemDefault()),
-      endDate = ZonedDateTime.of(2101, 1, 1, 1, 1, 1, 1, ZoneId.systemDefault()),
+      startDate = mockStartDate,
+      curfewAddress = "PRIMARY,SECONDARY",
     )
 
     val curfewTimeTables = DayOfWeek.entries.map {
@@ -186,7 +215,10 @@ class OrderServiceTest {
 
     val releaseDay = CurfewReleaseDateConditions(
       orderId = order.id,
-      releaseDate = ZonedDateTime.of(2100, 1, 1, 1, 1, 1, 1, ZoneId.systemDefault()),
+      releaseDate = mockStartDate,
+      startTime = "19:00",
+      endTime = "23:00",
+      curfewAddress = AddressType.PRIMARY,
     )
     order.curfewReleaseDateConditions = releaseDay
 
@@ -195,112 +227,47 @@ class OrderServiceTest {
         orderId = order.id,
         description = "Mock Exclusion Zone",
         duration = "Mock Exclusion Duration",
-        startDate = ZonedDateTime.of(2100, 1, 1, 1, 1, 1, 1, ZoneId.systemDefault()),
-        endDate = ZonedDateTime.of(2101, 1, 1, 1, 1, 1, 1, ZoneId.systemDefault()),
+        startDate = mockStartDate,
+        endDate = mockEndDate,
         zoneType = EnforcementZoneType.EXCLUSION,
       ),
     )
 
-    val alcohol = AlcoholMonitoringConditions(
+    order.monitoringConditionsAlcohol = AlcoholMonitoringConditions(
       orderId = order.id,
       monitoringType = AlcoholMonitoringType.ALCOHOL_ABSTINENCE,
       installationLocation = AlcoholMonitoringInstallationLocationType.PRIMARY,
     )
-    order.monitoringConditionsAlcohol = alcohol
 
-    val trail = TrailMonitoringConditions(
+    order.monitoringConditionsTrail = TrailMonitoringConditions(
       orderId = order.id,
-      startDate = ZonedDateTime.of(2100, 1, 1, 1, 1, 1, 1, ZoneId.systemDefault()),
-      endDate = ZonedDateTime.of(2101, 1, 1, 1, 1, 1, 1, ZoneId.systemDefault()),
+      startDate = mockStartDate,
+      endDate = mockEndDate,
     )
-    order.monitoringConditionsTrail = trail
 
-    val responsibleOfficer = ResponsibleOfficer(
+    order.interestedParties = InterestedParties(
       orderId = order.id,
-      name = "John Smith",
-      phoneNumber = "07401111111",
-      organisation = "Avon and Somerset Constabulary",
-      organisationRegion = "Mock Region",
-      organisationPostCode = "AB11 1CD",
-      organisationPhoneNumber = "07401111111",
-      organisationEmail = "abc@def.com",
+      responsibleOfficerName = "John Smith",
+      responsibleOfficerPhoneNumber = "07401111111",
+      responsibleOrganisation = "Avon and Somerset Constabulary",
+      responsibleOrganisationRegion = "Mock Region",
+      responsibleOrganisationAddress = Address(
+        orderId = order.id,
+        addressLine1 = "Line 1",
+        addressLine2 = "Line 2",
+        addressLine3 = "",
+        addressLine4 = "",
+        postcode = "AB11 1CD",
+        addressType = AddressType.RESPONSIBLE_ORGANISATION,
+      ),
+      responsibleOrganisationPhoneNumber = "07401111111",
+      responsibleOrganisationEmail = "abc@def.com",
       notifyingOrganisation = "Mock Organisation",
+      notifyingOrganisationEmail = "",
     )
-
-    order.responsibleOfficer = responsibleOfficer
 
     order.monitoringConditions = conditions
+    repo.save(order)
     return order
-  }
-
-  @Test
-  fun `Should throw an error if an incomplete order is submitted`() {
-    val order = service.createOrder("mockUser")
-
-    whenever(repo.findByUsernameAndId("mockUser", order.id)).thenReturn(order)
-
-    val e = org.junit.jupiter.api.Assertions.assertThrows(SubmitOrderException::class.java) {
-      service.submitOrder(order.id, "mockUser")
-    }
-
-    Assertions.assertThat(e.message).isEqualTo("Please complete all mandatory fields before submitting this form")
-  }
-
-  @Test
-  fun `Should throw an error if an attempt is made to re-submit a submitted order`() {
-    val mockOrder = createReadyToSubmitOrder()
-    mockOrder.status = OrderStatus.SUBMITTED
-
-    whenever(repo.findByUsernameAndId("mockUser", mockOrder.id)).thenReturn(mockOrder)
-
-    val e = org.junit.jupiter.api.Assertions.assertThrows(SubmitOrderException::class.java) {
-      service.submitOrder(mockOrder.id, "mockUser")
-    }
-
-    Assertions.assertThat(e.message).isEqualTo("This order has already been submitted")
-  }
-
-  @Test
-  fun `Should throw an error if an attempt is made to submit an order with error status`() {
-    val mockOrder = createReadyToSubmitOrder()
-    mockOrder.status = OrderStatus.ERROR
-
-    whenever(repo.findByUsernameAndId("mockUser", mockOrder.id)).thenReturn(mockOrder)
-
-    val e = org.junit.jupiter.api.Assertions.assertThrows(SubmitOrderException::class.java) {
-      service.submitOrder(mockOrder.id, "mockUser")
-    }
-
-    Assertions.assertThat(e.message).isEqualTo("This order has encountered an error and cannot be submitted")
-  }
-
-  @Test
-  fun `Should create fms device wearer and monitoring order and save both id to database`() {
-    val mockOrder = createReadyToSubmitOrder()
-
-    whenever(repo.findByUsernameAndId("mockUser", mockOrder.id)).thenReturn(mockOrder)
-    whenever(fmsClient.createDeviceWearer(any<fmsDeviceWearer>(), eq(mockOrder.id))).thenReturn(
-      FmsResponse(
-        result = listOf(
-          FmsResult("", "mockDeviceWearerId"),
-        ),
-      ),
-    )
-
-    whenever(fmsClient.createMonitoringOrder(any<MonitoringOrder>(), eq(mockOrder.id))).thenReturn(
-      FmsResponse(
-        result = listOf(
-          FmsResult("", "mockMonitoringOrderId"),
-        ),
-      ),
-    )
-
-    service.submitOrder(mockOrder.id, "mockUser")
-
-    argumentCaptor<Order>().apply {
-      verify(repo, times(1)).save(capture())
-      Assertions.assertThat(firstValue.fmsDeviceWearerId).isEqualTo("mockDeviceWearerId")
-      Assertions.assertThat(firstValue.fmsMonitoringOrderId).isEqualTo("mockMonitoringOrderId")
-    }
   }
 }

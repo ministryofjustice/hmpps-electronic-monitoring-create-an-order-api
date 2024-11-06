@@ -8,6 +8,20 @@ spring:
     username: postgres
     password: postgres
 
+# set enabled to false to disable common platform integration feature
+CP_INTEGRATION_ENABLED: false
+
+#Uncomment the below to setup localstack for sqs listener, require localstack running in docker compose
+#hmpps.sqs:
+#  provider: localstack
+#  localstackUrl: http://localhost:4566
+#  useWebToken: false
+#  queues:
+#    courthearingeventqueue:
+#      queueName: court_case_events_queue
+#      queueArn: arn:aws:sns:eu-west-2:000000000000:court_case_events_queue
+#      dlqName: court_case_events_dead_letter_queue
+
 services:
   hmppsauth:
     url: http://localhost:9090/auth

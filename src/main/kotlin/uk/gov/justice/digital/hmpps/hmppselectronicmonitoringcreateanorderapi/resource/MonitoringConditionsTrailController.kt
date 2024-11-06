@@ -1,8 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource
 
 import jakarta.validation.Valid
-import jakarta.validation.constraints.Future
-import jakarta.validation.constraints.NotNull
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -14,8 +12,8 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.TrailMonitoringConditions
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateTrailMonitoringConditionsDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.MonitoringConditionsTrailService
-import java.time.ZonedDateTime
 import java.util.UUID
 
 @RestController
@@ -31,16 +29,12 @@ class MonitoringConditionsTrailController(
     authentication: Authentication,
   ): ResponseEntity<TrailMonitoringConditions> {
     val username = authentication.name
-    val trailMonitoringConditions = monitoringConditionsTrailService.createOrUpdateTrailMonitoringConditions(orderId, username, trailMonitoringConditionsUpdateRecord)
+    val trailMonitoringConditions = monitoringConditionsTrailService.createOrUpdateTrailMonitoringConditions(
+      orderId,
+      username,
+      trailMonitoringConditionsUpdateRecord,
+    )
 
     return ResponseEntity(trailMonitoringConditions, HttpStatus.OK)
   }
 }
-
-data class UpdateTrailMonitoringConditionsDto(
-  @field:NotNull(message = "Start date is required")
-  @field:Future(message = "Start date must be in the future")
-  val startDate: ZonedDateTime? = null,
-  @field:Future(message = "End date must be in the future")
-  val endDate: ZonedDateTime? = null,
-)

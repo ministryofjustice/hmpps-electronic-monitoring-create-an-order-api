@@ -22,7 +22,7 @@ class CurfewConditionController(val service: CurfewConditionService) {
 
   @Validated
   @PutMapping("/orders/{orderId}/monitoring-conditions-curfew-conditions")
-  fun updateDeviceWearer(
+  fun updateCurfewConditions(
     @PathVariable orderId: UUID,
     @RequestBody @Valid conditions: CurfewConditions,
     authentication: Authentication,

@@ -60,7 +60,7 @@ class AddressControllerTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `Address details for an non-existent order are not update-able`() {
+  fun `Address details for a non-existent order are not update-able`() {
     webTestClient.put()
       .uri("/api/orders/${UUID.randomUUID()}/address")
       .contentType(MediaType.APPLICATION_JSON)
@@ -85,7 +85,7 @@ class AddressControllerTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `Address details for an submitted order are not update-able`() {
+  fun `Address details for a submitted order are not update-able`() {
     val order = createOrder()
 
     order.status = OrderStatus.SUBMITTED
@@ -154,7 +154,7 @@ class AddressControllerTest : IntegrationTestBase() {
     Assertions.assertThat(address.addressUsage).isEqualTo(DeviceWearerAddressUsage.NA)
   }
 
-  @ParameterizedTest(name = "Address details can be updated for {0} address type")
+  @ParameterizedTest(name = "Address details are mandatory for {0} address type")
   @ValueSource(strings = ["PRIMARY", "SECONDARY", "TERTIARY", "INSTALLATION"])
   fun `Address details are mandatory`(addressType: String) {
     val order = createOrder()

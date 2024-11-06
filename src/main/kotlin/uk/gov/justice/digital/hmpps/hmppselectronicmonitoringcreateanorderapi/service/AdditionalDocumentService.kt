@@ -24,17 +24,29 @@ class AdditionalDocumentService(
   val webClient: DocumentApiClient,
 ) {
 
-  val allowedFileExtensions: List<String> = listOf("pdf", "jpeg", "png")
+  val allowedFileExtensions: List<String> = listOf("pdf", "png", "jpeg", "jpg")
 
-  fun getDocument(orderId: UUID, username: String, documentType: DocumentType): ResponseEntity<Flux<InputStreamResource>>? {
-    val doc = repo.findAdditionalDocumentsByOrderIdAndOrderUsernameAndFileType(orderId, username, documentType).orElseThrow {
+  fun getDocument(
+    orderId: UUID,
+    username: String,
+    documentType: DocumentType,
+  ): ResponseEntity<Flux<InputStreamResource>>? {
+    val doc = repo.findAdditionalDocumentsByOrderIdAndOrderUsernameAndFileType(
+      orderId,
+      username,
+      documentType,
+    ).orElseThrow {
       EntityNotFoundException("Document for $orderId with type $documentType not found")
     }
     return webClient.getDocument(doc.id.toString())
   }
 
   fun deleteDocument(orderId: UUID, username: String, documentType: DocumentType) {
-    repo.findAdditionalDocumentsByOrderIdAndOrderUsernameAndFileType(orderId, username, documentType).ifPresent {
+    repo.findAdditionalDocumentsByOrderIdAndOrderUsernameAndFileType(
+      orderId,
+      username,
+      documentType,
+    ).ifPresent {
         doc ->
       run {
         repo.deleteById(doc.id)
@@ -49,7 +61,11 @@ class AdditionalDocumentService(
     deleteDocument(orderId, username, documentType)
 
     val document =
-      AdditionalDocument(orderId = orderId, fileType = documentType, fileName = multipartFile.originalFilename)
+      AdditionalDocument(
+        orderId = orderId,
+        fileType = documentType,
+        fileName = multipartFile.originalFilename,
+      )
     val builder = MultipartBodyBuilder()
     builder.part("file", multipartFile.resource)
       .contentType(MediaType.valueOf(multipartFile.contentType!!))

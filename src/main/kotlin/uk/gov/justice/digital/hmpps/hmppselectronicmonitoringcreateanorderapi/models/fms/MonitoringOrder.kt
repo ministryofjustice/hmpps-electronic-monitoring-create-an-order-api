@@ -175,17 +175,18 @@ data class MonitoringOrder(
 
   companion object {
     private val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-    fun fromOrder(order: Order): MonitoringOrder {
+    fun fromOrder(order: Order, caseId: String?): MonitoringOrder {
       val conditions = order.monitoringConditions!!
       val monitoringOrder = MonitoringOrder(
-        deviceWearer = order.fmsDeviceWearerId,
+        deviceWearer = "${order.deviceWearer!!.firstName} ${order.deviceWearer!!.lastName}",
         orderType = conditions.orderType,
+        orderTypeDescription = conditions.orderTypeDescription?.value,
         deviceType = conditions.devicesRequired?.joinToString { "," },
         orderStart = conditions.startDate?.format(formatter),
         orderEnd = conditions.endDate?.format(formatter),
         serviceEndDate = conditions.endDate?.format(formatter),
-        caseId = conditions.caseId,
-        conditionType = conditions.conditionType,
+        caseId = caseId,
+        conditionType = conditions.conditionType!!.value,
         orderId = order.id.toString(),
         orderStatus = "Not Started",
       )
@@ -195,17 +196,21 @@ data class MonitoringOrder(
         monitoringOrder.enforceableCondition!!.add(EnforceableCondition("Curfew with EM"))
         monitoringOrder.conditionalReleaseDate = order.curfewReleaseDateConditions!!.releaseDate!!.format(formatter)
         monitoringOrder.curfewStart = curfew.startDate!!.format(formatter)
-        monitoringOrder.curfewEnd = curfew.endDate!!.format(formatter)
+        monitoringOrder.curfewEnd = curfew.endDate?.format(formatter)
         monitoringOrder.curfewDuration = getCurfewSchedules(order, curfew)
       }
 
       if (conditions.trail != null && conditions.trail!!) {
         if (conditions.devicesRequired!!.contains("Location - fitted")) {
-          monitoringOrder.enforceableCondition!!.add(EnforceableCondition("Location Monitoring (Fitted Device)"))
+          monitoringOrder.enforceableCondition!!.add(
+            EnforceableCondition("Location Monitoring (Fitted Device)"),
+          )
         } else {
-          monitoringOrder.enforceableCondition!!.add(EnforceableCondition("Location Monitoring (using Non-Fitted Device)"))
+          monitoringOrder.enforceableCondition!!.add(
+            EnforceableCondition("Location Monitoring (using Non-Fitted Device)"),
+          )
         }
-        monitoringOrder.trailMonitoring = "true"
+        monitoringOrder.trailMonitoring = "Yes"
       }
 
       if (conditions.exclusionZone != null && conditions.exclusionZone!!) {
@@ -214,10 +219,12 @@ data class MonitoringOrder(
         if (condition.zoneType == EnforcementZoneType.EXCLUSION) {
           monitoringOrder.exclusionZones = "true"
           monitoringOrder.describeExclusion = condition.description
+          monitoringOrder.exclusionZonesDuration = condition.duration
         } else if (condition.zoneType == EnforcementZoneType.INCLUSION) {
           monitoringOrder.inclusionZones = "true"
+          monitoringOrder.inclusionZonesDuration = condition.duration
         }
-        monitoringOrder.inclusionZonesDuration = condition.duration
+        monitoringOrder.trailMonitoring = "Yes"
       }
 
       // TODO: wait for confirmation if mandatory attendance is required
@@ -229,10 +236,10 @@ data class MonitoringOrder(
         val condition = order.monitoringConditionsAlcohol!!
         if (condition.monitoringType == AlcoholMonitoringType.ALCOHOL_ABSTINENCE) {
           monitoringOrder.enforceableCondition!!.add(EnforceableCondition("AAMR"))
-          monitoringOrder.abstinence = "true"
+          monitoringOrder.abstinence = "Yes"
         } else {
           monitoringOrder.enforceableCondition!!.add(EnforceableCondition("AML"))
-          monitoringOrder.abstinence = "false"
+          monitoringOrder.abstinence = "No"
         }
 
         if (!condition.prisonName.isNullOrBlank()) {
@@ -242,16 +249,16 @@ data class MonitoringOrder(
         }
       }
 
-      if (order.responsibleOfficer != null) {
-        val responsibleOfficer = order.responsibleOfficer!!
-        monitoringOrder.responsibleOfficerName = responsibleOfficer.name
-        monitoringOrder.responsibleOfficerPhone = responsibleOfficer.phoneNumber
-        monitoringOrder.responsibleOrganization = responsibleOfficer.organisation
-        monitoringOrder.roRegion = responsibleOfficer.organisationRegion
-        monitoringOrder.roPostCode = responsibleOfficer.organisationPostCode
-        monitoringOrder.roPhone = responsibleOfficer.organisationPhoneNumber
-        monitoringOrder.roEmail = responsibleOfficer.organisationEmail
-        monitoringOrder.notifyingOrganization = responsibleOfficer.notifyingOrganisation
+      if (order.interestedParties != null) {
+        val interestedParties = order.interestedParties!!
+        monitoringOrder.responsibleOfficerName = interestedParties.responsibleOfficerName
+        monitoringOrder.responsibleOfficerPhone = interestedParties.responsibleOfficerPhoneNumber
+        monitoringOrder.responsibleOrganization = interestedParties.responsibleOrganisation
+        monitoringOrder.roRegion = interestedParties.responsibleOrganisationRegion
+        monitoringOrder.roPostCode = interestedParties.responsibleOrganisationAddress.postcode
+        monitoringOrder.roPhone = interestedParties.responsibleOrganisationPhoneNumber
+        monitoringOrder.roEmail = interestedParties.responsibleOrganisationEmail
+        monitoringOrder.notifyingOrganization = interestedParties.notifyingOrganisation
       }
 
       return monitoringOrder
@@ -259,12 +266,28 @@ data class MonitoringOrder(
 
     private fun getCurfewSchedules(order: Order, curfew: CurfewConditions): MutableList<CurfewSchedule> {
       val schedules = mutableListOf<CurfewSchedule>()
-      val primaryAddressTimeTable = order.curfewTimeTable.filter { it.curfewAddress!!.uppercase().contains("PRIMARY_ADDRESS") }
-      schedules.add(CurfewSchedule(location = "primary", "", primaryAddressTimeTable.map { Schedule.fromCurfewTimeTable(it) }.toMutableList()))
+      val primaryAddressTimeTable = order.curfewTimeTable.filter {
+        it.curfewAddress!!.uppercase().contains("PRIMARY_ADDRESS")
+      }
+      schedules.add(
+        CurfewSchedule(
+          location = "primary",
+          allday = "",
+          primaryAddressTimeTable.map { Schedule.fromCurfewTimeTable(it) }.toMutableList(),
+        ),
+      )
       val secondaryAddress = order.addresses.firstOrNull { it.addressType === AddressType.SECONDARY }
       if (secondaryAddress != null) {
-        val secondaryTimeTable = order.curfewTimeTable.filter { it.curfewAddress!!.uppercase().contains("SECONDARY_ADDRESS") }
-        schedules.add(CurfewSchedule(location = "secondary", "", secondaryTimeTable.map { Schedule.fromCurfewTimeTable(it) }.toMutableList()))
+        val secondaryTimeTable = order.curfewTimeTable.filter {
+          it.curfewAddress!!.uppercase().contains("SECONDARY_ADDRESS")
+        }
+        schedules.add(
+          CurfewSchedule(
+            location = "secondary",
+            allday = "",
+            secondaryTimeTable.map { Schedule.fromCurfewTimeTable(it) }.toMutableList(),
+          ),
+        )
       }
       return schedules
     }

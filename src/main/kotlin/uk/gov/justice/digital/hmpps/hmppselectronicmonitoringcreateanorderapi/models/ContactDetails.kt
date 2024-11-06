@@ -11,7 +11,7 @@ import java.util.*
 
 @Entity
 @Table(name = "DEVICE_WEARER_CONTACT_DETAILS")
-data class DeviceWearerContactDetails(
+data class ContactDetails(
   @Id
   @Column(name = "ID", nullable = false, unique = true)
   val id: UUID = UUID.randomUUID(),

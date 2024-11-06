@@ -27,7 +27,10 @@ class AdditionalDocumentsController(
   @Autowired val documentService: AdditionalDocumentService,
 ) {
 
-  @PostMapping("/orders/{orderId}/document-type/{fileType}", produces = [MediaType.APPLICATION_JSON_VALUE])
+  @PostMapping(
+    "/orders/{orderId}/document-type/{fileType}",
+    produces = [MediaType.APPLICATION_JSON_VALUE],
+  )
   fun postAdditionalDocument(
     @PathVariable orderId: UUID,
     @PathVariable fileType: DocumentType,
@@ -50,7 +53,10 @@ class AdditionalDocumentsController(
     val documentResponse = documentService.getDocument(orderId, username, fileType)!!
     val fileStream = documentResponse.body?.blockFirst()
     return ResponseEntity.ok()
-      .header(HttpHeaders.CONTENT_DISPOSITION, documentResponse.headers.contentDisposition.toString())
+      .header(
+        HttpHeaders.CONTENT_DISPOSITION,
+        documentResponse.headers.contentDisposition.toString(),
+      )
       .contentType(documentResponse.headers.contentType!!)
       .contentLength(documentResponse.headers.contentLength)
       .body(fileStream)

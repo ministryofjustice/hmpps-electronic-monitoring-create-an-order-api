@@ -14,8 +14,10 @@ parameters:
 jobs:
   validate:
     executor:
-      name: hmpps/java
-      tag: "21.0"
+      name: hmpps/localstack
+      jdk_tag: "21.0"
+      localstack_tag: "3.0"
+      services: "sqs"
     steps:
       - checkout
       - restore_cache:
@@ -49,22 +51,22 @@ workflows:
             branches:
               only:
                 - main
-#      - hmpps/deploy_env:
-#          name: deploy_dev
-#          env: "dev"
-#          jira_update: true
-#          pipeline_id: <<pipeline.id>>
-#          pipeline_number: <<pipeline.number>>
-#          context: hmpps-common-vars
-#          filters:
-#            branches:
-#              only:
-#                - main
-#          requires:
-#            - validate
-#            - build_docker
-#            - helm_lint
-#          helm_timeout: 5m
+      - hmpps/deploy_env:
+          name: deploy_dev
+          env: "dev"
+          jira_update: true
+          pipeline_id: <<pipeline.id>>
+          pipeline_number: <<pipeline.number>>
+          context: hmpps-common-vars
+          filters:
+            branches:
+              only:
+                - main
+          requires:
+            - validate
+            - build_docker
+            - helm_lint
+          helm_timeout: 5m
       - hmpps/deploy_env:
           name: deploy_preprod
           env: "preprod"
@@ -80,29 +82,23 @@ workflows:
               only:
                 - main
           requires:
-            - validate
-            - build_docker
-            - helm_lint
+            - deploy_dev
           helm_timeout: 5m
-#      - request-prod-approval:
-#          type: approval
-#          requires:
-#            - deploy_preprod
-#      - hmpps/deploy_env:
-#          name: deploy_prod
-#          env: "prod"
-#          jira_update: true
-#          jira_env_type: production
-#          pipeline_id: <<pipeline.id>>
-#          pipeline_number: <<pipeline.number>>
-#          slack_notification: true
-#          slack_channel_name: << pipeline.parameters.releases-slack-channel >>
-#          context:
-#            - hmpps-common-vars
-#            - hmpps-electronic-monitoring-create-an-order-api-prod
-#          requires:
-#            - request-prod-approval
-#          helm_timeout: 5m
+      - hmpps/deploy_env:
+          name: deploy_prod
+          env: "prod"
+          jira_update: true
+          jira_env_type: production
+          pipeline_id: <<pipeline.id>>
+          pipeline_number: <<pipeline.number>>
+          slack_notification: true
+          slack_channel_name: hmpps-ems-cemo-notifications
+          context:
+            - hmpps-common-vars
+            - hmpps-ems-cemo-ui-prod
+          requires:
+            - deploy_preprod
+          helm_timeout: 5m
 
   security:
     triggers:

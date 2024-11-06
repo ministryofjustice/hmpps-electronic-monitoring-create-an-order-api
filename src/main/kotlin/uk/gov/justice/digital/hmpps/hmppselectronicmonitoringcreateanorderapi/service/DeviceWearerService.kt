@@ -3,10 +3,10 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.s
 import jakarta.persistence.EntityNotFoundException
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateDeviceWearerDto
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateNoFixedAbodeDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.DeviceWearerRepository
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.UpdateDeviceWearerDto
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.UpdateNoFixedAbodeDto
 import java.util.*
 
 @Service
@@ -31,6 +31,7 @@ class DeviceWearerService(
       deviceWearer.pncId = pncId
       deviceWearer.deliusId = deliusId
       deviceWearer.prisonNumber = prisonNumber
+      deviceWearer.homeOfficeReferenceNumber = homeOfficeReferenceNumber
       deviceWearer.firstName = firstName
       deviceWearer.lastName = lastName
       deviceWearer.alias = alias
@@ -39,16 +40,14 @@ class DeviceWearerService(
       deviceWearer.gender = gender
       deviceWearer.dateOfBirth = dateOfBirth
       deviceWearer.disabilities = disabilities
+      deviceWearer.language = language
+      deviceWearer.interpreterRequired = interpreterRequired
     }
 
     return repo.save(deviceWearer)
   }
 
-  fun updateNoFixedAbode(
-    orderId: UUID,
-    username: String,
-    updateRecord: UpdateNoFixedAbodeDto,
-  ): DeviceWearer {
+  fun updateNoFixedAbode(orderId: UUID, username: String, updateRecord: UpdateNoFixedAbodeDto): DeviceWearer {
     val deviceWearer = repo.findByOrderIdAndOrderUsernameAndOrderStatus(
       orderId,
       username,
