@@ -235,7 +235,7 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
 	"exclusion_zones_duration": "",
 	"inclusion_zones": "",
 	"inclusion_zones_duration": "",
-	"abstinence": "true",
+	"abstinence": "Yes",
 	"schedule": "",
 	"checkin_schedule": "",
 	"revocation_date": "",
