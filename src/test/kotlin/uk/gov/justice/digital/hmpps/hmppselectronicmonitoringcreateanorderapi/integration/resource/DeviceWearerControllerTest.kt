@@ -475,7 +475,8 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
               "adultAtTimeOfInstallation": "false",
               "sex": "$mockSex",
               "gender": "$mockGender",
-              "dateOfBirth": "$mockDateOfBirth"
+              "dateOfBirth": "$mockDateOfBirth",
+              "interpreterRequired": false
             }
           """.trimIndent(),
         ),

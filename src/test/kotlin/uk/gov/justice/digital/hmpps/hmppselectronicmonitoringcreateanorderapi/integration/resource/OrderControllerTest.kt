@@ -213,13 +213,13 @@ class OrderControllerTest : IntegrationTestBase() {
       .headers(setAuthorisation())
       .exchange()
       .expectStatus()
-      .is4xxClientError
+      .is5xxServerError
       .expectBody(ErrorResponse::class.java)
       .returnResult()
 
     val error = result.responseBody!!
     assertThat(error.userMessage)
-      .isEqualTo("Error submitting order: The order could not be submitted to Serco")
+      .isEqualTo("Error with Serco Service Now: Invalid credentials used.")
   }
 
   @Test
@@ -551,7 +551,7 @@ class OrderControllerTest : IntegrationTestBase() {
 
   @Test
   fun `Should default address to No Fixed Address if device wearer no fixed Abode is true`() {
-    val order = createReadyToSubmitOrder(true)
+    val order = createAndPersistReadyToSubmitOrder(true)
     sercoAuthApi.stubGrantToken()
 
     sercoApi.stupCreateDeviceWearer(
@@ -649,7 +649,14 @@ class OrderControllerTest : IntegrationTestBase() {
       sex = "Male",
       gender = "Male",
       disabilities = "Vision,Hearing",
-      noFixedAbode = false,
+      interpreterRequired = true,
+      language = "British Sign",
+      pncId = "pncId",
+      deliusId = "deliusId",
+      nomisId = "nomisId",
+      prisonNumber = "prisonNumber",
+      homeOfficeReferenceNumber = "homeOfficeReferenceNumber",
+      noFixedAbode = noFixedAddress,
     )
 
     order.deviceWearerResponsibleAdult = ResponsibleAdult(
@@ -657,44 +664,57 @@ class OrderControllerTest : IntegrationTestBase() {
       fullName = "Mark Smith",
       contactNumber = "07401111111",
     )
-    order.addresses = mutableListOf(
-      Address(
-        orderId = order.id,
-        addressLine1 = "20 Somewhere Street",
-        addressLine2 = "Nowhere City",
-        addressLine3 = "Random County",
-        addressLine4 = "United Kingdom",
-        postcode = "SW11 1NC",
-        addressType = AddressType.PRIMARY,
-      ),
-      Address(
-        orderId = order.id,
-        addressLine1 = "22 Somewhere Street",
-        addressLine2 = "Nowhere City",
-        addressLine3 = "Random County",
-        addressLine4 = "United Kingdom",
-        postcode = "SW11 1NC",
-        addressType = AddressType.SECONDARY,
-      ),
-      Address(
-        orderId = order.id,
-        addressLine1 = "24 Somewhere Street",
-        addressLine2 = "Nowhere City",
-        addressLine3 = "Random County",
-        addressLine4 = "United Kingdom",
-        postcode = "SW11 1NC",
-        addressType = AddressType.INSTALLATION,
-      ),
-      Address(
-        orderId = order.id,
-        addressLine1 = "Line 1",
-        addressLine2 = "Line 2",
-        addressLine3 = "",
-        addressLine4 = "",
-        postcode = "AB11 1CD",
-        addressType = AddressType.RESPONSIBLE_ORGANISATION,
-      ),
+
+    val responsibleOrganisationAddress = Address(
+      orderId = order.id,
+      addressLine1 = "Line 1",
+      addressLine2 = "Line 2",
+      addressLine3 = "",
+      addressLine4 = "",
+      postcode = "AB11 1CD",
+      addressType = AddressType.RESPONSIBLE_ORGANISATION,
     )
+
+    val installationAddress = Address(
+      orderId = order.id,
+      addressLine1 = "24 Somewhere Street",
+      addressLine2 = "Nowhere City",
+      addressLine3 = "Random County",
+      addressLine4 = "United Kingdom",
+      postcode = "SW11 1NC",
+      addressType = AddressType.INSTALLATION,
+    )
+
+    if (!noFixedAddress) {
+      order.addresses = mutableListOf(
+        Address(
+          orderId = order.id,
+          addressLine1 = "20 Somewhere Street",
+          addressLine2 = "Nowhere City",
+          addressLine3 = "Random County",
+          addressLine4 = "United Kingdom",
+          postcode = "SW11 1NC",
+          addressType = AddressType.PRIMARY,
+        ),
+        Address(
+          orderId = order.id,
+          addressLine1 = "22 Somewhere Street",
+          addressLine2 = "Nowhere City",
+          addressLine3 = "Random County",
+          addressLine4 = "United Kingdom",
+          postcode = "SW11 1NC",
+          addressType = AddressType.SECONDARY,
+        ),
+        responsibleOrganisationAddress,
+        installationAddress,
+      )
+    } else {
+      order.addresses = mutableListOf(
+        responsibleOrganisationAddress,
+        installationAddress,
+      )
+    }
+
     order.installationAndRisk = InstallationAndRisk(
       orderId = order.id,
       riskOfSeriousHarm = "High",
@@ -708,9 +728,7 @@ class OrderControllerTest : IntegrationTestBase() {
       orderId = order.id,
       contactNumber = "07401111111",
     )
-    order.monitoringConditions = MonitoringConditions(orderId = order.id)
-    order.additionalDocuments = mutableListOf()
-    val conditions = MonitoringConditions(
+    order.monitoringConditions = MonitoringConditions(
       orderId = order.id,
       orderType = "community",
       orderTypeDescription = OrderTypeDescription.DAPOL,
@@ -724,6 +742,7 @@ class OrderControllerTest : IntegrationTestBase() {
       caseId = "d8ea62e61bb8d610a10c20e0b24bcb85",
       conditionType = MonitoringConditionType.REQUIREMENT_OF_A_COMMUNITY_ORDER,
     )
+    order.additionalDocuments = mutableListOf()
     val curfewConditions = CurfewConditions(
       orderId = order.id,
       startDate = mockStartDate,
@@ -752,14 +771,13 @@ class OrderControllerTest : IntegrationTestBase() {
     order.curfewTimeTable.addAll(secondTimeTable)
     order.curfewConditions = curfewConditions
 
-    val releaseDay = CurfewReleaseDateConditions(
+    order.curfewReleaseDateConditions = CurfewReleaseDateConditions(
       orderId = order.id,
       releaseDate = mockStartDate,
       startTime = "19:00",
       endTime = "23:00",
       curfewAddress = AddressType.PRIMARY,
     )
-    order.curfewReleaseDateConditions = releaseDay
 
     order.enforcementZoneConditions.add(
       EnforcementZoneConditions(
@@ -790,28 +808,17 @@ class OrderControllerTest : IntegrationTestBase() {
       responsibleOfficerPhoneNumber = "07401111111",
       responsibleOrganisation = "Avon and Somerset Constabulary",
       responsibleOrganisationRegion = "Mock Region",
-      responsibleOrganisationAddress = Address(
-        orderId = order.id,
-        addressLine1 = "Line 1",
-        addressLine2 = "Line 2",
-        addressLine3 = "",
-        addressLine4 = "",
-        postcode = "AB11 1CD",
-        addressType = AddressType.RESPONSIBLE_ORGANISATION,
-      ),
+      responsibleOrganisationAddress = responsibleOrganisationAddress,
       responsibleOrganisationPhoneNumber = "07401111111",
       responsibleOrganisationEmail = "abc@def.com",
       notifyingOrganisation = "Mock Organisation",
       notifyingOrganisationEmail = "",
     )
-
-    order.monitoringConditions = conditions
-    repo.save(order)
     return order
   }
 
-  fun createAndPersistReadyToSubmitOrder(): Order {
-    val order = createReadyToSubmitOrder()
+  fun createAndPersistReadyToSubmitOrder(noFixedAddress: Boolean = false): Order {
+    val order = createReadyToSubmitOrder(noFixedAddress)
     repo.save(order)
     return order
   }

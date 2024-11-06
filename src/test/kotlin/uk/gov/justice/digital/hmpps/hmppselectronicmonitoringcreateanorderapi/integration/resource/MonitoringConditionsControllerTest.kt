@@ -111,7 +111,10 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
           """
             {
               "orderType": "$mockOrderType",
-              "curfew": true
+              "curfew": true,
+              "orderTypeDescription": "$mockOrderTypeDescription",
+              "conditionType": "$mockConditionType",
+              "startDate": "$mockStartDate"
             }
           """.trimIndent(),
         ),
