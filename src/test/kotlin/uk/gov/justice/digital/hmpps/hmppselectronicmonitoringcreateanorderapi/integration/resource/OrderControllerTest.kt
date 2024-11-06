@@ -196,7 +196,7 @@ class OrderControllerTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `Should return 500 error if serco auth service returned error`() {
+  fun `Should return an error if serco auth service returned error`() {
     val order = createAndPersistReadyToSubmitOrder()
 
     sercoAuthApi.stubError()
@@ -206,17 +206,17 @@ class OrderControllerTest : IntegrationTestBase() {
       .headers(setAuthorisation())
       .exchange()
       .expectStatus()
-      .is5xxServerError
+      .is4xxClientError
       .expectBody(ErrorResponse::class.java)
       .returnResult()
 
     val error = result.responseBody!!
     assertThat(error.userMessage)
-      .isEqualTo("Error with Serco service Now: Invalid credentials used.")
+      .isEqualTo("Error submitting order: The order could not be submitted to Serco")
   }
 
   @Test
-  fun `Should return 500 error if serco create device wearer service returned error`() {
+  fun `Should return an error if serco create device wearer service returned error`() {
     val order = createAndPersistReadyToSubmitOrder()
     val mockDeviceWearerJson = """
       {
@@ -278,17 +278,17 @@ class OrderControllerTest : IntegrationTestBase() {
       .headers(setAuthorisation())
       .exchange()
       .expectStatus()
-      .is5xxServerError
+      .is4xxClientError
       .expectBody(ErrorResponse::class.java)
       .returnResult()
 
     val error = result.responseBody!!
     assertThat(error.userMessage)
-      .isEqualTo("Error creating FMS Device Wearer for order: ${order.id} with error: Mock Create DW Error")
+      .isEqualTo("Error submitting order: The order could not be submitted to Serco")
   }
 
   @Test
-  fun `Should return 500 error if serco create monitoring order service returned error`() {
+  fun `Should return an error if serco create monitoring order service returned error`() {
     val order = createAndPersistReadyToSubmitOrder()
     val mockDeviceWearerJson = """
       {
@@ -491,13 +491,13 @@ class OrderControllerTest : IntegrationTestBase() {
       .headers(setAuthorisation())
       .exchange()
       .expectStatus()
-      .is5xxServerError
+      .is4xxClientError
       .expectBody(ErrorResponse::class.java)
       .returnResult()
 
     val error = result.responseBody!!
     assertThat(error.userMessage)
-      .isEqualTo("Error creating FMS Monitoring Order for order: ${order.id} with error: Mock Create MO Error")
+      .isEqualTo("Error submitting order: The order could not be submitted to Serco")
   }
 
   @Test
