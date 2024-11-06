@@ -28,7 +28,7 @@ class InterestedPartiesService(
         addressLine2 = updateRecord.responsibleOrganisationAddressLine2,
         addressLine3 = updateRecord.responsibleOrganisationAddressLine3,
         addressLine4 = updateRecord.responsibleOrganisationAddressLine4,
-        postcode = updateRecord.responsibleOrganisationPostcode,
+        postcode = updateRecord.responsibleOrganisationAddressPostcode,
       ),
     )
 
@@ -38,7 +38,7 @@ class InterestedPartiesService(
       notifyingOrganisationEmail = updateRecord.notifyingOrganisationEmail,
       responsibleOfficerName = updateRecord.responsibleOfficerName,
       responsibleOfficerPhoneNumber = updateRecord.responsibleOfficerPhoneNumber,
-      responsibleOrganisation = updateRecord.responsibleOrganisation.toString(),
+      responsibleOrganisation = updateRecord.responsibleOrganisation?.toString(),
       responsibleOrganisationRegion = updateRecord.responsibleOrganisationRegion,
       responsibleOrganisationPhoneNumber = updateRecord.responsibleOrganisationPhoneNumber,
       responsibleOrganisationEmail = updateRecord.responsibleOrganisationEmail,

@@ -187,9 +187,9 @@ class HearingEventHandler(
     deviceWearer.adultAtTimeOfInstallation = !defendant.isYouth
     deviceWearer.sex = person?.gender?.name
 
-    order.deviceWearer = deviceWearer
     val address = person?.address
     if (address != null) {
+      deviceWearer.noFixedAbode = false
       order.addresses.add(
         Address(
           orderId = order.id,
@@ -202,7 +202,7 @@ class HearingEventHandler(
         ),
       )
     }
-
+    order.deviceWearer = deviceWearer
     order.addresses.add(
       Address(
         orderId = order.id,

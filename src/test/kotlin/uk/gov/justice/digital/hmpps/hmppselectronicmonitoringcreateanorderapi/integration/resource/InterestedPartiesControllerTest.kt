@@ -60,7 +60,7 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
               "responsibleOrganisationAddressLine2": "$mockAddressLine2",
               "responsibleOrganisationAddressLine3": "$mockAddressLine3",
               "responsibleOrganisationAddressLine4": "$mockAddressLine4",
-              "responsibleOrganisationPostcode": "$mockPostcode"
+              "responsibleOrganisationAddressPostcode": "$mockPostcode"
             }
           """.trimIndent(),
         ),
@@ -91,7 +91,7 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
               "responsibleOrganisationAddressLine2": "$mockAddressLine2",
               "responsibleOrganisationAddressLine3": "$mockAddressLine3",
               "responsibleOrganisationAddressLine4": "$mockAddressLine4",
-              "responsibleOrganisationPostcode": "$mockPostcode"
+              "responsibleOrganisationAddressPostcode": "$mockPostcode"
             }
           """.trimIndent(),
         ),
@@ -127,7 +127,7 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
               "responsibleOrganisationAddressLine2": "$mockAddressLine2",
               "responsibleOrganisationAddressLine3": "$mockAddressLine3",
               "responsibleOrganisationAddressLine4": "$mockAddressLine4",
-              "responsibleOrganisationPostcode": "$mockPostcode"
+              "responsibleOrganisationAddressPostcode": "$mockPostcode"
             }
           """.trimIndent(),
         ),
@@ -160,7 +160,7 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
               "responsibleOrganisationAddressLine2": "$mockAddressLine2",
               "responsibleOrganisationAddressLine3": "$mockAddressLine3",
               "responsibleOrganisationAddressLine4": "$mockAddressLine4",
-              "responsibleOrganisationPostcode": "$mockPostcode"
+              "responsibleOrganisationAddressPostcode": "$mockPostcode"
             }
           """.trimIndent(),
         ),
@@ -178,6 +178,64 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
     Assertions.assertThat(interestedParties.responsibleOfficerName).isEqualTo(mockResponsibleOfficerName)
     Assertions.assertThat(interestedParties.responsibleOfficerPhoneNumber).isEqualTo(mockResponsibleOfficerPhoneNumber)
     Assertions.assertThat(interestedParties.responsibleOrganisation).isEqualTo(mockResponsibleOrganisation)
+    Assertions.assertThat(interestedParties.responsibleOrganisationRegion).isEqualTo(mockResponsibleOrganisationRegion)
+    Assertions.assertThat(
+      interestedParties.responsibleOrganisationPhoneNumber,
+    ).isEqualTo(mockResponsibleOrganisationPhoneNumber)
+    Assertions.assertThat(interestedParties.responsibleOrganisationEmail).isEqualTo(mockResponsibleOrganisationEmail)
+    Assertions.assertThat(
+      interestedParties.responsibleOrganisationAddress.addressType,
+    ).isEqualTo(AddressType.RESPONSIBLE_ORGANISATION)
+    Assertions.assertThat(interestedParties.responsibleOrganisationAddress.addressLine1).isEqualTo(mockAddressLine1)
+    Assertions.assertThat(interestedParties.responsibleOrganisationAddress.addressLine2).isEqualTo(mockAddressLine2)
+    Assertions.assertThat(interestedParties.responsibleOrganisationAddress.addressLine3).isEqualTo(mockAddressLine3)
+    Assertions.assertThat(interestedParties.responsibleOrganisationAddress.addressLine4).isEqualTo(mockAddressLine4)
+    Assertions.assertThat(interestedParties.responsibleOrganisationAddress.postcode).isEqualTo(mockPostcode)
+    Assertions.assertThat(
+      interestedParties.responsibleOrganisationAddress.addressUsage,
+    ).isEqualTo(DeviceWearerAddressUsage.NA)
+  }
+
+  @Test
+  fun `Interested parties details can be updated with a null responsible organisation`() {
+    val order = createOrder()
+
+    val result = webTestClient.put()
+      .uri("/api/orders/${order.id}/interested-parties")
+      .contentType(MediaType.APPLICATION_JSON)
+      .body(
+        BodyInserters.fromValue(
+          """
+            {
+              "notifyingOrganisationEmail": "$mockNotifyingOrganisationEmail",
+              "responsibleOfficerName": "$mockResponsibleOfficerName",
+              "responsibleOfficerPhoneNumber": "$mockResponsibleOfficerPhoneNumber",
+              "responsibleOrganisation": null,
+              "responsibleOrganisationRegion": "$mockResponsibleOrganisationRegion",
+              "responsibleOrganisationPhoneNumber": "$mockResponsibleOrganisationPhoneNumber",
+              "responsibleOrganisationEmail": "$mockResponsibleOrganisationEmail",
+              "responsibleOrganisationAddressLine1": "$mockAddressLine1",
+              "responsibleOrganisationAddressLine2": "$mockAddressLine2",
+              "responsibleOrganisationAddressLine3": "$mockAddressLine3",
+              "responsibleOrganisationAddressLine4": "$mockAddressLine4",
+              "responsibleOrganisationAddressPostcode": "$mockPostcode"
+            }
+          """.trimIndent(),
+        ),
+      )
+      .headers(setAuthorisation("AUTH_ADM"))
+      .exchange()
+      .expectStatus()
+      .isOk
+      .expectBody(InterestedParties::class.java)
+      .returnResult()
+
+    val interestedParties = result.responseBody!!
+
+    Assertions.assertThat(interestedParties.notifyingOrganisationEmail).isEqualTo(mockNotifyingOrganisationEmail)
+    Assertions.assertThat(interestedParties.responsibleOfficerName).isEqualTo(mockResponsibleOfficerName)
+    Assertions.assertThat(interestedParties.responsibleOfficerPhoneNumber).isEqualTo(mockResponsibleOfficerPhoneNumber)
+    Assertions.assertThat(interestedParties.responsibleOrganisation).isEqualTo(null)
     Assertions.assertThat(interestedParties.responsibleOrganisationRegion).isEqualTo(mockResponsibleOrganisationRegion)
     Assertions.assertThat(
       interestedParties.responsibleOrganisationPhoneNumber,
@@ -218,7 +276,7 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
               "responsibleOrganisationAddressLine2": "",
               "responsibleOrganisationAddressLine3": "",
               "responsibleOrganisationAddressLine4": "",
-              "responsibleOrganisationPostcode": ""
+              "responsibleOrganisationAddressPostcode": ""
             }
           """.trimIndent(),
         ),
@@ -239,7 +297,7 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
       ValidationError("responsibleOrganisationAddressLine2", "Address line 2 is required"),
     )
     Assertions.assertThat(result.responseBody!!).contains(
-      ValidationError("responsibleOrganisationPostcode", "Postcode is required"),
+      ValidationError("responsibleOrganisationAddressPostcode", "Postcode is required"),
     )
   }
 }

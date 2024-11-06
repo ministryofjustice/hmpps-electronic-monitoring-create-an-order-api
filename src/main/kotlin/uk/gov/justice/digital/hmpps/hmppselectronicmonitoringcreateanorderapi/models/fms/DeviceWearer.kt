@@ -139,7 +139,6 @@ data class DeviceWearer(
         adultChild = "child"
       }
 
-      val primaryAddress = order.addresses.find { address -> address.addressType == AddressType.PRIMARY }!!
       val disabilities = order.deviceWearer?.disabilities?.split(
         ',',
       )?.map { disability -> Disability(disability) }?.toList() ?: emptyList()
@@ -152,11 +151,7 @@ data class DeviceWearer(
         sex = order.deviceWearer?.sex,
         genderIdentity = order.deviceWearer?.gender,
         disability = disabilities,
-        address1 = primaryAddress.addressLine1,
-        address2 = primaryAddress.addressLine2,
-        address3 = primaryAddress.addressLine3,
-        address4 = primaryAddress.addressLine4,
-        addressPostCode = primaryAddress.postcode,
+
         phoneNumber = order.deviceWearerContactDetails?.contactNumber,
         riskSeriousHarm = order.installationAndRisk?.riskOfSeriousHarm,
         riskSelfHarm = order.installationAndRisk?.riskOfSelfHarm,
@@ -174,6 +169,21 @@ data class DeviceWearer(
         homeOfficeReferenceNumber = order.deviceWearer?.homeOfficeReferenceNumber,
         prisonNumber = order.deviceWearer?.prisonNumber,
       )
+      if (order.deviceWearer?.noFixedAbode != null && !order.deviceWearer?.noFixedAbode!!) {
+        val primaryAddress = order.addresses.find { address -> address.addressType == AddressType.PRIMARY }!!
+        deviceWearer.address1 = primaryAddress.addressLine1
+        deviceWearer.address2 = primaryAddress.addressLine2
+        deviceWearer.address3 = primaryAddress.addressLine3
+        deviceWearer.address4 = primaryAddress.addressLine4
+        deviceWearer.addressPostCode = primaryAddress.postcode
+      } else {
+        deviceWearer.address1 = "No Fixed Address"
+        deviceWearer.address2 = "No Fixed Address"
+        deviceWearer.address3 = "No Fixed Address"
+        deviceWearer.address4 = "No Fixed Address"
+        deviceWearer.addressPostCode = "No Fixed Address"
+      }
+
       order.addresses.find { address -> address.addressType == AddressType.SECONDARY }.let { address ->
         {
           if (address != null) {
