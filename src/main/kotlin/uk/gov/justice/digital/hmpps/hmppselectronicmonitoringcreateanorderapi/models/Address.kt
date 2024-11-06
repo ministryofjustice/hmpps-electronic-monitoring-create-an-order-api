@@ -9,7 +9,6 @@ import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
 import jakarta.persistence.UniqueConstraint
-import jakarta.validation.constraints.NotBlank
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DeviceWearerAddressUsage
 import java.util.*
@@ -38,11 +37,9 @@ data class Address(
   var addressUsage: DeviceWearerAddressUsage = DeviceWearerAddressUsage.NA,
 
   @Column(name = "ADDRESS_LINE_1", nullable = false)
-  @field:NotBlank(message = "Address line 1 is required")
   var addressLine1: String,
 
   @Column(name = "ADDRESS_LINE_2", nullable = false)
-  @field:NotBlank(message = "Address line 2 is required")
   var addressLine2: String,
 
   @Column(name = "ADDRESS_LINE_3", nullable = false)
@@ -52,7 +49,6 @@ data class Address(
   var addressLine4: String = "",
 
   @Column(name = "POSTCODE", nullable = false)
-  @field:NotBlank(message = "Postcode is required")
   var postcode: String,
 
   @ManyToOne(optional = true)

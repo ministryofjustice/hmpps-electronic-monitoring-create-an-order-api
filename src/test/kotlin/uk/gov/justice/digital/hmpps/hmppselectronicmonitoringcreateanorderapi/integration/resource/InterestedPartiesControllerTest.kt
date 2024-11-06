@@ -13,7 +13,6 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ResponsibleOrganisation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidationError
 import java.util.*
 
 class InterestedPartiesControllerTest : IntegrationTestBase() {
@@ -255,7 +254,7 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `Interested parties details mandatory fields must contain valid values`() {
+  fun `Interested parties fields are all optional`() {
     val order = createOrder()
 
     val result = webTestClient.put()
@@ -264,40 +263,38 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
       .body(
         BodyInserters.fromValue(
           """
-            {
-              "notifyingOrganisationEmail": "",
-              "responsibleOfficerName": "",
-              "responsibleOfficerPhoneNumber": null,
-              "responsibleOrganisation": null,
-              "responsibleOrganisationRegion": "",
-              "responsibleOrganisationPhoneNumber": null,
-              "responsibleOrganisationEmail": "",
-              "responsibleOrganisationAddressLine1": "",
-              "responsibleOrganisationAddressLine2": "",
-              "responsibleOrganisationAddressLine3": "",
-              "responsibleOrganisationAddressLine4": "",
-              "responsibleOrganisationAddressPostcode": ""
-            }
+            {}
           """.trimIndent(),
         ),
       )
       .headers(setAuthorisation("AUTH_ADM"))
       .exchange()
       .expectStatus()
-      .isBadRequest
-      .expectBodyList(ValidationError::class.java)
+      .isOk
+      .expectBody(InterestedParties::class.java)
       .returnResult()
 
-    Assertions.assertThat(result.responseBody).isNotNull
-    Assertions.assertThat(result.responseBody).hasSize(3)
-    Assertions.assertThat(result.responseBody!!).contains(
-      ValidationError("responsibleOrganisationAddressLine1", "Address line 1 is required"),
-    )
-    Assertions.assertThat(result.responseBody!!).contains(
-      ValidationError("responsibleOrganisationAddressLine2", "Address line 2 is required"),
-    )
-    Assertions.assertThat(result.responseBody!!).contains(
-      ValidationError("responsibleOrganisationAddressPostcode", "Postcode is required"),
-    )
+    val interestedParties = result.responseBody!!
+
+    Assertions.assertThat(interestedParties.notifyingOrganisationEmail).isEqualTo("")
+    Assertions.assertThat(interestedParties.responsibleOfficerName).isEqualTo("")
+    Assertions.assertThat(interestedParties.responsibleOfficerPhoneNumber).isEqualTo(null)
+    Assertions.assertThat(interestedParties.responsibleOrganisation).isEqualTo(null)
+    Assertions.assertThat(interestedParties.responsibleOrganisationRegion).isEqualTo("")
+    Assertions.assertThat(
+      interestedParties.responsibleOrganisationPhoneNumber,
+    ).isEqualTo(null)
+    Assertions.assertThat(interestedParties.responsibleOrganisationEmail).isEqualTo("")
+    Assertions.assertThat(
+      interestedParties.responsibleOrganisationAddress.addressType,
+    ).isEqualTo(AddressType.RESPONSIBLE_ORGANISATION)
+    Assertions.assertThat(interestedParties.responsibleOrganisationAddress.addressLine1).isEqualTo("")
+    Assertions.assertThat(interestedParties.responsibleOrganisationAddress.addressLine2).isEqualTo("")
+    Assertions.assertThat(interestedParties.responsibleOrganisationAddress.addressLine3).isEqualTo("")
+    Assertions.assertThat(interestedParties.responsibleOrganisationAddress.addressLine4).isEqualTo("")
+    Assertions.assertThat(interestedParties.responsibleOrganisationAddress.postcode).isEqualTo("")
+    Assertions.assertThat(
+      interestedParties.responsibleOrganisationAddress.addressUsage,
+    ).isEqualTo(DeviceWearerAddressUsage.NA)
   }
 }
