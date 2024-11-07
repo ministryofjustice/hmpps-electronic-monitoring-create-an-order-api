@@ -190,7 +190,7 @@ class EnforcementZoneControllerTest : IntegrationTestBase() {
   fun `Should not return error when enforcement zone start date is in the past`() {
     val order = createOrder()
 
-    val result = webTestClient.put()
+    webTestClient.put()
       .uri("/api/orders/${order.id}/enforcementZone")
       .contentType(MediaType.APPLICATION_JSON)
       .body(
@@ -206,7 +206,6 @@ class EnforcementZoneControllerTest : IntegrationTestBase() {
       .expectStatus()
       .isOk()
       .expectBody(EnforcementZoneConditions::class.java)
-      .returnResult()
   }
 
   @Test
