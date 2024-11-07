@@ -8,7 +8,6 @@ import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
-import jakarta.validation.constraints.Future
 import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Size
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
@@ -26,7 +25,6 @@ data class CurfewReleaseDateConditions(
   val orderId: UUID,
 
   @field:NotNull(message = "Enter curfew release date")
-  @field:Future(message = "Curfew release date must be in the future")
   @Column(name = "RELEASE_DATE", nullable = true)
   var releaseDate: ZonedDateTime? = null,
 

@@ -24,7 +24,6 @@ data class CurfewConditions(
   val orderId: UUID,
 
   @field:NotNull(message = "Enter curfew start day")
-  @field:Future(message = "Curfew start day must be in the future")
   @Column(name = "START_DATE", nullable = true)
   var startDate: ZonedDateTime? = null,
 

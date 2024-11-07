@@ -252,8 +252,14 @@ class MonitoringConditionsAlcoholControllerTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `Alcohol monitoring conditions cannot be updated if startDate is in the past`() {
+  fun `Alcohol monitoring conditions can be updated with a startDate in the past`() {
+    val mockPastStartDate: ZonedDateTime = ZonedDateTime.of(
+      LocalDate.of(1990, 1, 1),
+      LocalTime.NOON,
+      ZoneId.of("UTC"),
+    )
     val order = createOrder()
+
     val result = webTestClient.put()
       .uri("/api/orders/${order.id}/monitoring-conditions-alcohol")
       .contentType(MediaType.APPLICATION_JSON)
@@ -262,7 +268,7 @@ class MonitoringConditionsAlcoholControllerTest : IntegrationTestBase() {
           """
             {
               "monitoringType": "ALCOHOL_ABSTINENCE",
-              "startDate": "${ZonedDateTime.parse("1990-01-01T00:00:00.000Z")}",
+              "startDate": "$mockPastStartDate",
               "endDate": "$mockEndDate",
               "installationLocation": "PRIMARY",
               "prisonName": null,
@@ -274,15 +280,12 @@ class MonitoringConditionsAlcoholControllerTest : IntegrationTestBase() {
       .headers(setAuthorisation("AUTH_ADM"))
       .exchange()
       .expectStatus()
-      .isBadRequest
-      .expectBodyList(ValidationError::class.java)
+      .isOk()
+      .expectBody(AlcoholMonitoringConditions::class.java)
       .returnResult()
+    val alcoholConditions = result.responseBody!!
 
-    Assertions.assertThat(result.responseBody).isNotNull
-    Assertions.assertThat(result.responseBody).hasSize(1)
-    Assertions.assertThat(result.responseBody!!).contains(
-      ValidationError("startDate", "Start date must be in the future"),
-    )
+    Assertions.assertThat(alcoholConditions.startDate).isEqualTo(mockPastStartDate)
   }
 
   @Test
