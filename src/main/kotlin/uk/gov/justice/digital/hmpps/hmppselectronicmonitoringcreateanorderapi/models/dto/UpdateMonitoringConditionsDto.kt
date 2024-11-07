@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto
 
 import jakarta.validation.constraints.AssertTrue
-import jakarta.validation.constraints.Future
 import jakarta.validation.constraints.NotNull
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MonitoringConditionType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderTypeDescription
@@ -25,7 +24,6 @@ data class UpdateMonitoringConditionsDto(
   var curfew: Boolean? = null,
 
   @field:NotNull(message = "Monitoring conditions start date is required")
-  @field:Future(message = "Monitoring conditions start date must be in the future")
   var startDate: ZonedDateTime? = null,
 
   var endDate: ZonedDateTime? = null,
