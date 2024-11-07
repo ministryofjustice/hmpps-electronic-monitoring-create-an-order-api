@@ -185,7 +185,8 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `Update monitoring conditions returns 400 if start is in the past`() {
+  fun `Update monitoring conditions allows start date in the past`() {
+    val mockPastStartDate = ZonedDateTime.now(ZoneId.of("UTC")).minusMonths(1)
     val order = createOrder()
     val result = webTestClient.put()
       .uri("/api/orders/${order.id}/monitoring-conditions")
@@ -205,7 +206,7 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
               "trail": "true",
               "mandatoryAttendance": "true",
               "alcohol": "true",
-              "startDate": "${mockStartDate.plusYears(-10)}",
+              "startDate": "$mockPastStartDate",
               "endDate": null
             }
           """.trimIndent(),
@@ -214,15 +215,8 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
       .headers(setAuthorisation("AUTH_ADM"))
       .exchange()
       .expectStatus()
-      .isBadRequest
-      .expectBodyList(ValidationError::class.java)
-      .returnResult()
-
-    Assertions.assertThat(result.responseBody).isNotNull
-    Assertions.assertThat(result.responseBody).hasSize(1)
-    Assertions.assertThat(result.responseBody!!).contains(
-      ValidationError("startDate", "Monitoring conditions start date must be in the future"),
-    )
+      .isOk
+      .expectBodyList(MonitoringConditions::class.java)
   }
 
   @Test
