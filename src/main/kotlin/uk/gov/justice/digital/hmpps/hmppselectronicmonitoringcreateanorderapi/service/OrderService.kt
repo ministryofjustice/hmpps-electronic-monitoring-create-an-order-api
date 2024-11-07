@@ -1,8 +1,8 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service
 
 import jakarta.persistence.EntityNotFoundException
-import org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.SubmitOrderException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ContactDetails
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationAndRisk
@@ -11,7 +11,6 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
-import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 import java.util.UUID
 
 @Service
@@ -20,7 +19,6 @@ class OrderService(
   val fmsService: FmsService,
 
 ) {
-
   fun createOrder(username: String): Order {
     val order = Order(
       username = username,
@@ -37,23 +35,35 @@ class OrderService(
     return order
   }
 
-  fun submitOrder(id: UUID, username: String): ErrorResponse? {
-    var result: ErrorResponse? = null
+  fun submitOrder(id: UUID, username: String): Order {
     val order = getOrder(username, id)!!
-    val submitResult = fmsService.submitOrder(order, FmsOrderSource.CEMO)
-    order.fmsResultId = submitResult.id
-    if (!submitResult.success) {
-      order.status = OrderStatus.ERROR
-      result = ErrorResponse(
-        status = INTERNAL_SERVER_ERROR,
-        userMessage = submitResult.error,
-        developerMessage = submitResult.error,
-      )
-    } else {
-      order.status = OrderStatus.SUBMITTED
+
+    if (order.status == OrderStatus.SUBMITTED) {
+      throw SubmitOrderException("This order has already been submitted")
     }
-    repo.save(order)
-    return result
+
+    if (order.status == OrderStatus.ERROR) {
+      throw SubmitOrderException("This order has encountered an error and cannot be submitted")
+    }
+
+    if (order.status == OrderStatus.IN_PROGRESS && !order.isValid) {
+      throw SubmitOrderException("Please complete all mandatory fields before submitting this form")
+    }
+
+    if (order.status == OrderStatus.IN_PROGRESS && order.isValid) {
+      val submitResult = fmsService.submitOrder(order, FmsOrderSource.CEMO)
+      order.fmsResultId = submitResult.id
+
+      if (!submitResult.success) {
+        order.status = OrderStatus.ERROR
+        repo.save(order)
+        throw SubmitOrderException("The order could not be submitted to Serco")
+      } else {
+        order.status = OrderStatus.SUBMITTED
+        repo.save(order)
+      }
+    }
+    return order
   }
 
   fun listOrdersForUser(username: String): List<Order> {
@@ -66,8 +76,6 @@ class OrderService(
     return repo.findByUsernameAndId(
       username,
       id,
-    ).orElseThrow {
-      EntityNotFoundException("Order ($id) for $username not found")
-    }
+    ) ?: throw EntityNotFoundException("Order ($id) for $username not found")
   }
 }

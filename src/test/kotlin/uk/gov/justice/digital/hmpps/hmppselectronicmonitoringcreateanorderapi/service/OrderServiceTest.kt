@@ -4,6 +4,7 @@ import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
+import org.mockito.Mockito.reset
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.eq
@@ -12,11 +13,33 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.boot.test.autoconfigure.json.JsonTest
 import org.springframework.test.context.ActiveProfiles
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Address
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AlcoholMonitoringConditions
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ContactDetails
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewConditions
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewReleaseDateConditions
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewTimeTable
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.EnforcementZoneConditions
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationAndRisk
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InterestedParties
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.MonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ResponsibleAdult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.SubmitFmsOrderResult
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.TrailMonitoringConditions
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringInstallationLocationType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.EnforcementZoneType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MonitoringConditionType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderTypeDescription
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
+import java.time.DayOfWeek
+import java.time.ZoneId
+import java.time.ZonedDateTime
 import java.util.*
 
 @ActiveProfiles("test")
@@ -49,17 +72,16 @@ class OrderServiceTest {
 
   @Test
   fun `Should create fms device wearer and monitoring order and save both id to database`() {
-    val mockOrder = Order(
-      username = "mockUser",
-      status = OrderStatus.IN_PROGRESS,
-    )
+    val mockOrder = createReadyToSubmitOrder()
+    reset(repo)
+
     val mockFmsResult = SubmitFmsOrderResult(
       deviceWearerId = "mockDeviceWearerId",
       fmsOrderId = "mockMonitoringOrderId",
       orderSource = FmsOrderSource.CEMO,
       success = true,
     )
-    whenever(repo.findByUsernameAndId("mockUser", mockOrder.id)).thenReturn(Optional.of(mockOrder))
+    whenever(repo.findByUsernameAndId("mockUser", mockOrder.id)).thenReturn(mockOrder)
     whenever(fmsService.submitOrder(any<Order>(), eq(FmsOrderSource.CEMO))).thenReturn(
       mockFmsResult,
     )
@@ -69,5 +91,183 @@ class OrderServiceTest {
       verify(repo, times(1)).save(capture())
       Assertions.assertThat(firstValue.fmsResultId).isEqualTo(mockFmsResult.id)
     }
+  }
+
+  val mockStartDate: ZonedDateTime = ZonedDateTime.now().plusMonths(1)
+  val mockEndDate: ZonedDateTime = ZonedDateTime.now().plusMonths(2)
+  private fun createReadyToSubmitOrder(noFixedAddress: Boolean = false): Order {
+    val order = Order(
+      username = "AUTH_ADM",
+      status = OrderStatus.IN_PROGRESS,
+    )
+    order.deviceWearer = DeviceWearer(
+      orderId = order.id,
+      firstName = "John",
+      lastName = "Smith",
+      alias = "Johny",
+      dateOfBirth = ZonedDateTime.of(1990, 1, 1, 1, 1, 1, 1, ZoneId.systemDefault()),
+      adultAtTimeOfInstallation = true,
+      sex = "Male",
+      gender = "Male",
+      disabilities = "Vision,Hearing",
+      noFixedAbode = false,
+    )
+
+    order.deviceWearerResponsibleAdult = ResponsibleAdult(
+      orderId = order.id,
+      fullName = "Mark Smith",
+      contactNumber = "07401111111",
+    )
+    order.addresses = mutableListOf(
+      Address(
+        orderId = order.id,
+        addressLine1 = "20 Somewhere Street",
+        addressLine2 = "Nowhere City",
+        addressLine3 = "Random County",
+        addressLine4 = "United Kingdom",
+        postcode = "SW11 1NC",
+        addressType = AddressType.PRIMARY,
+      ),
+      Address(
+        orderId = order.id,
+        addressLine1 = "22 Somewhere Street",
+        addressLine2 = "Nowhere City",
+        addressLine3 = "Random County",
+        addressLine4 = "United Kingdom",
+        postcode = "SW11 1NC",
+        addressType = AddressType.SECONDARY,
+      ),
+      Address(
+        orderId = order.id,
+        addressLine1 = "24 Somewhere Street",
+        addressLine2 = "Nowhere City",
+        addressLine3 = "Random County",
+        addressLine4 = "United Kingdom",
+        postcode = "SW11 1NC",
+        addressType = AddressType.INSTALLATION,
+      ),
+      Address(
+        orderId = order.id,
+        addressLine1 = "Line 1",
+        addressLine2 = "Line 2",
+        addressLine3 = "",
+        addressLine4 = "",
+        postcode = "AB11 1CD",
+        addressType = AddressType.RESPONSIBLE_ORGANISATION,
+      ),
+    )
+    order.installationAndRisk = InstallationAndRisk(
+      orderId = order.id,
+      riskOfSeriousHarm = "High",
+      riskOfSelfHarm = "Low",
+      riskDetails = "Danger",
+      mappaLevel = "MAAPA 1",
+      mappaCaseType = "CPPC (Critical Public Protection Case)",
+    )
+
+    order.deviceWearerContactDetails = ContactDetails(
+      orderId = order.id,
+      contactNumber = "07401111111",
+    )
+    order.monitoringConditions = MonitoringConditions(orderId = order.id)
+    order.additionalDocuments = mutableListOf()
+    val conditions = MonitoringConditions(
+      orderId = order.id,
+      orderType = "community",
+      orderTypeDescription = OrderTypeDescription.DAPOL,
+      devicesRequired = arrayOf("Location - fitted,Alcohol (Remote Breath)"),
+      startDate = mockStartDate,
+      endDate = mockEndDate,
+      curfew = true,
+      trail = true,
+      exclusionZone = true,
+      alcohol = true,
+      caseId = "d8ea62e61bb8d610a10c20e0b24bcb85",
+      conditionType = MonitoringConditionType.REQUIREMENT_OF_A_COMMUNITY_ORDER,
+    )
+    val curfewConditions = CurfewConditions(
+      orderId = order.id,
+      startDate = mockStartDate,
+      curfewAddress = "PRIMARY,SECONDARY",
+    )
+
+    val curfewTimeTables = DayOfWeek.entries.map {
+      CurfewTimeTable(
+        orderId = order.id,
+        dayOfWeek = it,
+        startTime = "17:00",
+        endTime = "09:00",
+        curfewAddress = "PRIMARY_ADDRESS",
+      )
+    }
+    order.curfewTimeTable.addAll(curfewTimeTables)
+    val secondTimeTable = DayOfWeek.entries.map {
+      CurfewTimeTable(
+        orderId = order.id,
+        dayOfWeek = it,
+        startTime = "17:00",
+        endTime = "09:00",
+        curfewAddress = "SECONDARY_ADDRESS",
+      )
+    }
+    order.curfewTimeTable.addAll(secondTimeTable)
+    order.curfewConditions = curfewConditions
+
+    val releaseDay = CurfewReleaseDateConditions(
+      orderId = order.id,
+      releaseDate = mockStartDate,
+      startTime = "19:00",
+      endTime = "23:00",
+      curfewAddress = AddressType.PRIMARY,
+    )
+    order.curfewReleaseDateConditions = releaseDay
+
+    order.enforcementZoneConditions.add(
+      EnforcementZoneConditions(
+        orderId = order.id,
+        description = "Mock Exclusion Zone",
+        duration = "Mock Exclusion Duration",
+        startDate = mockStartDate,
+        endDate = mockEndDate,
+        zoneType = EnforcementZoneType.EXCLUSION,
+      ),
+    )
+
+    order.monitoringConditionsAlcohol = AlcoholMonitoringConditions(
+      orderId = order.id,
+      monitoringType = AlcoholMonitoringType.ALCOHOL_ABSTINENCE,
+      installationLocation = AlcoholMonitoringInstallationLocationType.PRIMARY,
+    )
+
+    order.monitoringConditionsTrail = TrailMonitoringConditions(
+      orderId = order.id,
+      startDate = mockStartDate,
+      endDate = mockEndDate,
+    )
+
+    order.interestedParties = InterestedParties(
+      orderId = order.id,
+      responsibleOfficerName = "John Smith",
+      responsibleOfficerPhoneNumber = "07401111111",
+      responsibleOrganisation = "Avon and Somerset Constabulary",
+      responsibleOrganisationRegion = "Mock Region",
+      responsibleOrganisationAddress = Address(
+        orderId = order.id,
+        addressLine1 = "Line 1",
+        addressLine2 = "Line 2",
+        addressLine3 = "",
+        addressLine4 = "",
+        postcode = "AB11 1CD",
+        addressType = AddressType.RESPONSIBLE_ORGANISATION,
+      ),
+      responsibleOrganisationPhoneNumber = "07401111111",
+      responsibleOrganisationEmail = "abc@def.com",
+      notifyingOrganisation = "Mock Organisation",
+      notifyingOrganisationEmail = "",
+    )
+
+    order.monitoringConditions = conditions
+    repo.save(order)
+    return order
   }
 }

@@ -24,7 +24,7 @@ data class CurfewReleaseDateConditions(
   @Column(name = "ORDER_ID", nullable = false, unique = true)
   val orderId: UUID,
 
-  @field:NotNull(message = "Enter curfew release day")
+  @field:NotNull(message = "Enter curfew release date")
   @Column(name = "RELEASE_DATE", nullable = true)
   var releaseDate: ZonedDateTime? = null,
 

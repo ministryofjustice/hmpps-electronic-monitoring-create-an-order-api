@@ -2,7 +2,6 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.r
 
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
-import org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.Authentication
@@ -13,7 +12,6 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.OrderService
-import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 import java.util.UUID
 
 @RestController
@@ -32,13 +30,10 @@ class OrderController(
   }
 
   @PostMapping("/orders/{orderId}/submit")
-  fun submitOrder(@PathVariable orderId: UUID, authentication: Authentication): ResponseEntity<ErrorResponse> {
+  fun submitOrder(@PathVariable orderId: UUID, authentication: Authentication): ResponseEntity<Order> {
     val username = authentication.name
-    val result = orderService.submitOrder(orderId, username)
-    if (result != null) {
-      return ResponseEntity.status(INTERNAL_SERVER_ERROR).body(result)
-    }
-    return ResponseEntity(HttpStatus.OK)
+    val order = orderService.submitOrder(orderId, username)
+    return ResponseEntity(order, HttpStatus.OK)
   }
 
   @GetMapping("/orders/{orderId}")

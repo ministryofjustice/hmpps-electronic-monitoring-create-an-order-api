@@ -115,7 +115,7 @@ class CurfewReleaseDateControllerTest : IntegrationTestBase() {
     Assertions.assertThat(error).contains(ValidationError("endTime", "Enter end time"))
     Assertions.assertThat(
       error,
-    ).contains(ValidationError("releaseDate", "Enter curfew release day"))
+    ).contains(ValidationError("releaseDate", "Enter curfew release date"))
   }
 
   @Test
