@@ -174,8 +174,14 @@ class MonitoringConditionsTrailControllerTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `Trail monitoring conditions cannot be updated if startDate is in the past`() {
+  fun `Trail monitoring conditions can be updated with a startDate in the past`() {
+    val mockPastStartDate: ZonedDateTime = ZonedDateTime.of(
+      LocalDate.of(1990, 1, 1),
+      LocalTime.NOON,
+      ZoneId.of("UTC"),
+    )
     val order = createOrder()
+
     val result = webTestClient.put()
       .uri("/api/orders/${order.id}/monitoring-conditions-trail")
       .contentType(MediaType.APPLICATION_JSON)
@@ -183,7 +189,7 @@ class MonitoringConditionsTrailControllerTest : IntegrationTestBase() {
         BodyInserters.fromValue(
           """
             {
-              "startDate": "${ZonedDateTime.parse("1990-01-01T00:00:00.000Z")}",
+              "startDate": "$mockPastStartDate",
               "endDate": "$mockEndDate"
             }
           """.trimIndent(),
@@ -192,15 +198,13 @@ class MonitoringConditionsTrailControllerTest : IntegrationTestBase() {
       .headers(setAuthorisation("AUTH_ADM"))
       .exchange()
       .expectStatus()
-      .isBadRequest
-      .expectBodyList(ValidationError::class.java)
+      .isOk
+      .expectBody(TrailMonitoringConditions::class.java)
       .returnResult()
+    val trailConditions = result.responseBody!!
 
-    Assertions.assertThat(result.responseBody).isNotNull
-    Assertions.assertThat(result.responseBody).hasSize(1)
-    Assertions.assertThat(result.responseBody!!).contains(
-      ValidationError("startDate", "Start date must be in the future"),
-    )
+    Assertions.assertThat(trailConditions.startDate).isEqualTo(mockPastStartDate)
+    Assertions.assertThat(trailConditions.endDate).isEqualTo(mockEndDate)
   }
 
   @Test
