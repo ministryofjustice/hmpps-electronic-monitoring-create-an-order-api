@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service
 
 import jakarta.persistence.EntityNotFoundException
-import org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.SubmitOrderException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ContactDetails
@@ -12,7 +11,6 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
-import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 import java.util.UUID
 
 @Service
@@ -21,7 +19,6 @@ class OrderService(
   val fmsService: FmsService,
 
 ) {
-
   fun createOrder(username: String): Order {
     val order = Order(
       username = username,
@@ -54,27 +51,18 @@ class OrderService(
     }
 
     if (order.status == OrderStatus.IN_PROGRESS && order.isValid) {
-      // try {
-
       val submitResult = fmsService.submitOrder(order, FmsOrderSource.CEMO)
       order.fmsResultId = submitResult.id
 
       if (!submitResult.success) {
         order.status = OrderStatus.ERROR
         repo.save(order)
-
-        val error = ErrorResponse(
-          status = INTERNAL_SERVER_ERROR,
-          userMessage = submitResult.error,
-          developerMessage = submitResult.error,
-        )
-        throw SubmitOrderException("The order could not be submitted to Serco", Throwable(error.userMessage))
+        throw SubmitOrderException("The order could not be submitted to Serco")
       } else {
         order.status = OrderStatus.SUBMITTED
         repo.save(order)
       }
     }
-
     return order
   }
 
