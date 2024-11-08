@@ -213,13 +213,13 @@ class OrderControllerTest : IntegrationTestBase() {
       .headers(setAuthorisation())
       .exchange()
       .expectStatus()
-      .is5xxServerError
+      .is4xxClientError()
       .expectBody(ErrorResponse::class.java)
       .returnResult()
 
     val error = result.responseBody!!
     assertThat(error.userMessage)
-      .isEqualTo("Error with Serco Service Now: Invalid credentials used.")
+      .isEqualTo("Error submitting order: The order could not be submitted to Serco")
   }
 
   @Test
