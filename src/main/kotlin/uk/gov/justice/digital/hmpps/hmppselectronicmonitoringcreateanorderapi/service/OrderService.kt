@@ -51,16 +51,22 @@ class OrderService(
     }
 
     if (order.status == OrderStatus.IN_PROGRESS && order.isValid) {
-      val submitResult = fmsService.submitOrder(order, FmsOrderSource.CEMO)
-      order.fmsResultId = submitResult.id
+      try {
+        val submitResult = fmsService.submitOrder(order, FmsOrderSource.CEMO)
+        order.fmsResultId = submitResult.id
 
-      if (!submitResult.success) {
+        if (!submitResult.success) {
+          order.status = OrderStatus.ERROR
+          repo.save(order)
+          throw SubmitOrderException("The order could not be submitted to Serco")
+        } else {
+          order.status = OrderStatus.SUBMITTED
+          repo.save(order)
+        }
+      } catch (e: Exception) {
         order.status = OrderStatus.ERROR
         repo.save(order)
-        throw SubmitOrderException("The order could not be submitted to Serco")
-      } else {
-        order.status = OrderStatus.SUBMITTED
-        repo.save(order)
+        throw SubmitOrderException("The order could not be submitted to Serco", e)
       }
     }
     return order
