@@ -181,7 +181,6 @@ data class MonitoringOrder(
         deviceWearer = "${order.deviceWearer!!.firstName} ${order.deviceWearer!!.lastName}",
         orderType = conditions.orderType,
         orderTypeDescription = conditions.orderTypeDescription?.value,
-        deviceType = conditions.devicesRequired?.joinToString { "," },
         orderStart = conditions.startDate?.format(formatter),
         orderEnd = conditions.endDate?.format(formatter),
         serviceEndDate = conditions.endDate?.format(formatter),
@@ -201,15 +200,9 @@ data class MonitoringOrder(
       }
 
       if (conditions.trail != null && conditions.trail!!) {
-        if (conditions.devicesRequired!!.contains("Location - fitted")) {
-          monitoringOrder.enforceableCondition!!.add(
-            EnforceableCondition("Location Monitoring (Fitted Device)"),
-          )
-        } else {
-          monitoringOrder.enforceableCondition!!.add(
-            EnforceableCondition("Location Monitoring (using Non-Fitted Device)"),
-          )
-        }
+        monitoringOrder.enforceableCondition!!.add(
+          EnforceableCondition("Location Monitoring (Fitted Device)"),
+        )
         monitoringOrder.trailMonitoring = "Yes"
       }
 

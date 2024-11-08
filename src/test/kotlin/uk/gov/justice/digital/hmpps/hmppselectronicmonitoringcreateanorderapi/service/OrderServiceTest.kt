@@ -175,7 +175,6 @@ class OrderServiceTest {
       orderId = order.id,
       orderType = "community",
       orderTypeDescription = OrderTypeDescription.DAPOL,
-      devicesRequired = arrayOf("Location - fitted,Alcohol (Remote Breath)"),
       startDate = mockStartDate,
       endDate = mockEndDate,
       curfew = true,
