@@ -1,5 +1,4 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto
-import jakarta.validation.constraints.NotBlank
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ResponsibleOrganisation
 
 data class UpdateInterestedPartiesDto(
@@ -17,16 +16,13 @@ data class UpdateInterestedPartiesDto(
 
   val responsibleOrganisationEmail: String = "",
 
-  @field:NotBlank(message = "Address line 1 is required")
   val responsibleOrganisationAddressLine1: String = "",
 
-  @field:NotBlank(message = "Address line 2 is required")
   val responsibleOrganisationAddressLine2: String = "",
 
   val responsibleOrganisationAddressLine3: String = "",
 
   val responsibleOrganisationAddressLine4: String = "",
 
-  @field:NotBlank(message = "Postcode is required")
   val responsibleOrganisationAddressPostcode: String = "",
 )

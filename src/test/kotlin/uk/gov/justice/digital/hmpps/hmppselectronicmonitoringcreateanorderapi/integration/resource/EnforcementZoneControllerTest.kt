@@ -44,6 +44,12 @@ class EnforcementZoneControllerTest : IntegrationTestBase() {
 
   private val mockStartDate = ZonedDateTime.now(ZoneId.of("UTC")).plusMonths(1)
   private val mockEndDate = ZonedDateTime.now(ZoneId.of("UTC")).plusMonths(2)
+  private val mockPastStartDate = ZonedDateTime.of(
+    LocalDate.of(1970, 2, 1),
+    LocalTime.NOON,
+    ZoneId.of("UTC"),
+  )
+  private val mockPastEndDate = mockPastStartDate.plusDays(1)
   private final val mockUser = "AUTH_ADM"
   private final val mockOrder = Order(username = mockUser, status = OrderStatus.IN_PROGRESS)
 
@@ -151,7 +157,7 @@ class EnforcementZoneControllerTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `Should return error when enforcement zone start date and end date is in the past`() {
+  fun `Should return error when enforcement zone end date is in the past`() {
     val order = createOrder()
 
     val result = webTestClient.put()
@@ -161,11 +167,8 @@ class EnforcementZoneControllerTest : IntegrationTestBase() {
         BodyInserters.fromValue(
           mockRequestBody(
             order.id,
-            startDate = ZonedDateTime.of(
-              LocalDate.of(1970, 2, 1),
-              LocalTime.NOON,
-              ZoneId.of("UTC"),
-            ),
+            startDate = mockPastStartDate,
+            endDate = mockPastEndDate,
           ),
         ),
       )
@@ -179,8 +182,30 @@ class EnforcementZoneControllerTest : IntegrationTestBase() {
     Assertions.assertThat(result.responseBody).hasSize(1)
 
     Assertions.assertThat(result.responseBody!!).contains(
-      ValidationError("startDate", "Enforcement zone start date must be in the future"),
+      ValidationError("endDate", "Enforcement zone end date must be in the future"),
     )
+  }
+
+  @Test
+  fun `Should not return error when enforcement zone start date is in the past`() {
+    val order = createOrder()
+
+    webTestClient.put()
+      .uri("/api/orders/${order.id}/enforcementZone")
+      .contentType(MediaType.APPLICATION_JSON)
+      .body(
+        BodyInserters.fromValue(
+          mockRequestBody(
+            order.id,
+            startDate = mockPastStartDate,
+          ),
+        ),
+      )
+      .headers(setAuthorisation(mockUser))
+      .exchange()
+      .expectStatus()
+      .isOk()
+      .expectBody(EnforcementZoneConditions::class.java)
   }
 
   @Test
@@ -194,11 +219,8 @@ class EnforcementZoneControllerTest : IntegrationTestBase() {
         BodyInserters.fromValue(
           mockRequestBody(
             order.id,
-            endDate = ZonedDateTime.of(
-              LocalDate.of(1970, 2, 1),
-              LocalTime.NOON,
-              ZoneId.of("UTC"),
-            ),
+            startDate = mockStartDate,
+            endDate = mockStartDate.minusDays(1),
           ),
         ),
       )

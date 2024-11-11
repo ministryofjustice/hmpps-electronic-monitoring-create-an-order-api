@@ -452,4 +452,59 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
       ),
     )
   }
+
+  @Test
+  fun `isValid is false when mandatory fields are not populated`() {
+    val order = createOrder()
+
+    Assertions.assertThat(order.deviceWearer?.isValid).isFalse()
+  }
+
+  @Test
+  fun `isValid is true when mandatory deviceWearer & noFixedAbode fields are populated`() {
+    val order = createOrder()
+    webTestClient.put()
+      .uri("/api/orders/${order.id}/device-wearer")
+      .contentType(MediaType.APPLICATION_JSON)
+      .body(
+        BodyInserters.fromValue(
+          """
+            {
+              "firstName": "$mockFirstName",
+              "lastName": "$mockLastName",
+              "adultAtTimeOfInstallation": "false",
+              "sex": "$mockSex",
+              "gender": "$mockGender",
+              "dateOfBirth": "$mockDateOfBirth",
+              "interpreterRequired": false
+            }
+          """.trimIndent(),
+        ),
+      )
+      .headers(setAuthorisation("AUTH_ADM"))
+      .exchange()
+      .expectStatus()
+      .isOk
+
+    val updatedOrder = webTestClient.put()
+      .uri("/api/orders/${order.id}/device-wearer/no-fixed-abode")
+      .contentType(MediaType.APPLICATION_JSON)
+      .body(
+        BodyInserters.fromValue(
+          """
+            {
+              "noFixedAbode": true
+            }
+          """.trimIndent(),
+        ),
+      )
+      .headers(setAuthorisation("AUTH_ADM"))
+      .exchange()
+      .expectStatus()
+      .isOk
+      .expectBody(DeviceWearer::class.java)
+      .returnResult()
+
+    Assertions.assertThat(updatedOrder.responseBody?.isValid).isTrue()
+  }
 }

@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ContactDetails
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.ContactDetailsRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
@@ -67,6 +68,38 @@ class ContactDetailsControllerTest : IntegrationTestBase() {
       .exchange()
       .expectStatus()
       .isOk
+  }
+
+  @Test
+  fun `IsValid is false when mandatory fields are not populated`() {
+    val order = createOrder()
+
+    Assertions.assertThat(order.deviceWearerContactDetails?.isValid).isFalse()
+  }
+
+  @Test
+  fun `IsValid is true when mandatory fields are populated`() {
+    val order = createOrder()
+    val updateContactDetails = webTestClient.put()
+      .uri("/api/orders/${order.id}/contact-details")
+      .contentType(MediaType.APPLICATION_JSON)
+      .body(
+        BodyInserters.fromValue(
+          """
+            {
+              "contactNumber": "01234567890"
+            }
+          """.trimIndent(),
+        ),
+      )
+      .headers(setAuthorisation("AUTH_ADM"))
+      .exchange()
+      .expectStatus()
+      .isOk
+      .expectBody(ContactDetails::class.java)
+      .returnResult()
+
+    Assertions.assertThat(updateContactDetails.responseBody?.isValid).isTrue()
   }
 
   @Test

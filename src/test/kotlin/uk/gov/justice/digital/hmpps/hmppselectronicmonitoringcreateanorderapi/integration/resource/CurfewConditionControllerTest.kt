@@ -19,6 +19,9 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidationError
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
+import java.time.LocalDate
+import java.time.LocalTime
+import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.util.*
 
@@ -31,6 +34,12 @@ class CurfewConditionControllerTest : IntegrationTestBase() {
 
   val mockStartDate: ZonedDateTime = ZonedDateTime.now().plusDays(1)
   val mockEndDate: ZonedDateTime = ZonedDateTime.now().plusDays(3)
+  private val mockPastStartDate = ZonedDateTime.of(
+    LocalDate.of(1970, 2, 1),
+    LocalTime.NOON,
+    ZoneId.of("UTC"),
+  )
+  private val mockPastEndDate = mockPastStartDate.plusDays(1)
 
   @BeforeEach
   fun setup() {
@@ -115,7 +124,7 @@ class CurfewConditionControllerTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `Should return errors when start date and end date is in the past`() {
+  fun `Should return errors when end date is in the past`() {
     val order = createOrder()
     order.status = OrderStatus.SUBMITTED
     orderRepo.save(order)
@@ -126,8 +135,8 @@ class CurfewConditionControllerTest : IntegrationTestBase() {
         BodyInserters.fromValue(
           mockRequestBody(
             order.id,
-            ZonedDateTime.now().plusDays(-3),
-            ZonedDateTime.now().plusDays(-2),
+            startDate = mockPastStartDate,
+            endDate = mockPastEndDate,
             "PRIMARY",
           ),
         ),
@@ -139,14 +148,35 @@ class CurfewConditionControllerTest : IntegrationTestBase() {
       .expectBodyList(ValidationError::class.java)
       .returnResult()
     val error = result.responseBody!!
-    Assertions.assertThat(result.responseBody).hasSize(2)
 
-    Assertions.assertThat(
-      error,
-    ).contains(ValidationError("startDate", "Curfew start day must be in the future"))
+    Assertions.assertThat(result.responseBody).hasSize(1)
     Assertions.assertThat(
       error,
     ).contains(ValidationError("endDate", "Curfew end day must be in the future"))
+  }
+
+  @Test
+  fun `Should not return error when curfew conditions start date is in the past`() {
+    val order = createOrder()
+
+    webTestClient.put()
+      .uri("/api/orders/${order.id}/monitoring-conditions-curfew-conditions")
+      .contentType(MediaType.APPLICATION_JSON)
+      .body(
+        BodyInserters.fromValue(
+          mockRequestBody(
+            order.id,
+            startDate = mockPastStartDate,
+            endDate = mockEndDate,
+            "PRIMARY",
+          ),
+        ),
+      )
+      .headers(setAuthorisation())
+      .exchange()
+      .expectStatus()
+      .isOk()
+      .expectBody(CurfewConditions::class.java)
   }
 
   @Test

@@ -32,10 +32,10 @@ data class EnforcementZoneConditions(
   var zoneType: EnforcementZoneType? = null,
 
   @field:NotNull(message = "Enforcement zone start date is required")
-  @field:Future(message = "Enforcement zone start date must be in the future")
   @Column(name = "START_DATE", nullable = false)
   var startDate: ZonedDateTime? = null,
 
+  @field:Future(message = "Enforcement zone end date must be in the future")
   @Column(name = "END_DATE", nullable = true)
   var endDate: ZonedDateTime? = null,
 

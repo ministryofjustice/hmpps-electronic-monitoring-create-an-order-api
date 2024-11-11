@@ -21,6 +21,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.MonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ResponsibleAdult
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.TrailMonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringInstallationLocationType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
@@ -143,8 +144,67 @@ class OrderControllerTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `Should return 500 error if serco auth service returned error`() {
+  fun `Should throw an error if an attempt is made to re-submit a submitted order`() {
     val order = createReadyToSubmitOrder()
+    order.status = OrderStatus.SUBMITTED
+    repo.save(order)
+
+    val result = webTestClient.post()
+      .uri("/api/orders/${order.id}/submit")
+      .headers(setAuthorisation())
+      .exchange()
+      .expectStatus()
+      .is4xxClientError
+      .expectBody(ErrorResponse::class.java)
+      .returnResult()
+
+    val error = result.responseBody!!
+    assertThat(error.userMessage)
+      .isEqualTo("Error submitting order: This order has already been submitted")
+  }
+
+  @Test
+  fun `Should throw an error if an attempt is made to submit an order with error status`() {
+    val order = createReadyToSubmitOrder()
+    order.status = OrderStatus.ERROR
+    repo.save(order)
+
+    val result = webTestClient.post()
+      .uri("/api/orders/${order.id}/submit")
+      .headers(setAuthorisation())
+      .exchange()
+      .expectStatus()
+      .is4xxClientError
+      .expectBody(ErrorResponse::class.java)
+      .returnResult()
+
+    val error = result.responseBody!!
+    assertThat(error.userMessage)
+      .isEqualTo("Error submitting order: This order has encountered an error and cannot be submitted")
+  }
+
+  @Test
+  fun `Should throw an error if an incomplete order is submitted`() {
+    val order = createOrder()
+    repo.save(order)
+
+    val result = webTestClient.post()
+      .uri("/api/orders/${order.id}/submit")
+      .headers(setAuthorisation())
+      .exchange()
+      .expectStatus()
+      .is4xxClientError
+      .expectBody(ErrorResponse::class.java)
+      .returnResult()
+
+    val error = result.responseBody!!
+    assertThat(error.userMessage)
+      .isEqualTo("Error submitting order: Please complete all mandatory fields before submitting this form")
+  }
+
+  @Test
+  fun `Should return an error if serco auth service returned error`() {
+    val order = createAndPersistReadyToSubmitOrder()
 
     sercoAuthApi.stubError()
 
@@ -153,22 +213,21 @@ class OrderControllerTest : IntegrationTestBase() {
       .headers(setAuthorisation())
       .exchange()
       .expectStatus()
-      .is5xxServerError
+      .is4xxClientError()
       .expectBody(ErrorResponse::class.java)
       .returnResult()
 
     val error = result.responseBody!!
     assertThat(error.userMessage)
-      .isEqualTo("Error with Serco Service Now: Invalid credentials used.")
+      .isEqualTo("Error submitting order: The order could not be submitted to Serco")
   }
 
   @Test
-  fun `Should return 500 error if serco create device wearer service returned error`() {
-    val order = createReadyToSubmitOrder()
+  fun `Should return an error if serco create device wearer service returned error`() {
+    val order = createAndPersistReadyToSubmitOrder()
+
     sercoAuthApi.stubGrantToken()
-
     sercoApi.stupCreateDeviceWearer(
-
       HttpStatus.INTERNAL_SERVER_ERROR,
       FmsResponse(),
       FmsErrorResponse(error = FmsErrorResponseDetails("", "Mock Create DW Error")),
@@ -178,20 +237,18 @@ class OrderControllerTest : IntegrationTestBase() {
       .headers(setAuthorisation())
       .exchange()
       .expectStatus()
-      .is5xxServerError
+      .is4xxClientError
       .expectBody(ErrorResponse::class.java)
       .returnResult()
 
     val error = result.responseBody!!
     assertThat(error.userMessage)
-      .isEqualTo(
-        "Error creating FMS Device Wearer for order: ${order.id} with error: Mock Create DW Error",
-      )
+      .isEqualTo("Error submitting order: The order could not be submitted to Serco")
   }
 
   @Test
-  fun `Should return 500 error if serco create monitoring order service returned error`() {
-    val order = createReadyToSubmitOrder()
+  fun `Should return an error if serco create monitoring order service returned error`() {
+    val order = createAndPersistReadyToSubmitOrder()
     sercoAuthApi.stubGrantToken()
 
     sercoApi.stupCreateDeviceWearer(
@@ -208,17 +265,17 @@ class OrderControllerTest : IntegrationTestBase() {
       .headers(setAuthorisation())
       .exchange()
       .expectStatus()
-      .is5xxServerError
+      .is4xxClientError
       .expectBody(ErrorResponse::class.java)
       .returnResult()
 
     val error = result.responseBody!!
     assertThat(error.userMessage)
-      .isEqualTo(
-        "Error creating FMS Monitoring Order for order: ${order.id} with error: Mock Create MO Error",
-      )
+      .isEqualTo("Error submitting order: The order could not be submitted to Serco")
+
     val submitResult = fmsResultRepository.findAll().firstOrNull()
     assertThat(submitResult).isNotNull
+
     val updatedOrder = repo.findById(order.id).get()
     assertThat(updatedOrder.fmsResultId).isEqualTo(submitResult!!.id)
     assertThat(updatedOrder.status).isEqualTo(OrderStatus.ERROR)
@@ -227,8 +284,8 @@ class OrderControllerTest : IntegrationTestBase() {
   fun String.removeWhitespaceAndNewlines(): String = this.replace("(\"[^\"]*\")|\\s".toRegex(), "\$1")
 
   @Test
-  fun `Should update order with serco device wearer id and monitoring Id and return 200`() {
-    val order = createReadyToSubmitOrder()
+  fun `Should update order with serco device wearer id, monitoring id & order status, and return 200`() {
+    val order = createAndPersistReadyToSubmitOrder()
     sercoAuthApi.stubGrantToken()
 
     sercoApi.stupCreateDeviceWearer(
@@ -248,6 +305,7 @@ class OrderControllerTest : IntegrationTestBase() {
 
     val submitResult = fmsResultRepository.findAll().firstOrNull()
     assertThat(submitResult).isNotNull
+
     val expectedDWJson = """
       {
       	"title": "",
@@ -483,6 +541,7 @@ class OrderControllerTest : IntegrationTestBase() {
       	"order_status": "Not Started"
       }
     """.trimIndent()
+
     assertThat(submitResult!!.fmsDeviceWearerRequest).isEqualTo(expectedDWJson.removeWhitespaceAndNewlines())
     assertThat(submitResult.fmsOrderRequest).isEqualTo(expectedOrderJson.removeWhitespaceAndNewlines())
     val updatedOrder = repo.findById(order.id).get()
@@ -492,7 +551,7 @@ class OrderControllerTest : IntegrationTestBase() {
 
   @Test
   fun `Should default address to No Fixed Address if device wearer no fixed Abode is true`() {
-    val order = createReadyToSubmitOrder(true)
+    val order = createAndPersistReadyToSubmitOrder(true)
     sercoAuthApi.stubGrantToken()
 
     sercoApi.stupCreateDeviceWearer(
@@ -512,6 +571,7 @@ class OrderControllerTest : IntegrationTestBase() {
 
     val submitResult = fmsResultRepository.findAll().firstOrNull()
     assertThat(submitResult).isNotNull
+
     val expectedDWJson = """
       {
       	"title": "",
@@ -569,6 +629,9 @@ class OrderControllerTest : IntegrationTestBase() {
     """.trimIndent()
 
     assertThat(submitResult!!.fmsDeviceWearerRequest).isEqualTo(expectedDWJson.removeWhitespaceAndNewlines())
+
+    val updatedOrder = repo.findById(order.id).get()
+    assertThat(updatedOrder.fmsResultId).isEqualTo(submitResult.id)
   }
 
   fun createReadyToSubmitOrder(noFixedAddress: Boolean = false): Order {
@@ -612,6 +675,16 @@ class OrderControllerTest : IntegrationTestBase() {
       addressType = AddressType.RESPONSIBLE_ORGANISATION,
     )
 
+    val installationAddress = Address(
+      orderId = order.id,
+      addressLine1 = "24 Somewhere Street",
+      addressLine2 = "Nowhere City",
+      addressLine3 = "Random County",
+      addressLine4 = "United Kingdom",
+      postcode = "SW11 1NC",
+      addressType = AddressType.INSTALLATION,
+    )
+
     if (!noFixedAddress) {
       order.addresses = mutableListOf(
         Address(
@@ -633,9 +706,13 @@ class OrderControllerTest : IntegrationTestBase() {
           addressType = AddressType.SECONDARY,
         ),
         responsibleOrganisationAddress,
+        installationAddress,
       )
     } else {
-      order.addresses = mutableListOf(responsibleOrganisationAddress)
+      order.addresses = mutableListOf(
+        responsibleOrganisationAddress,
+        installationAddress,
+      )
     }
 
     order.installationAndRisk = InstallationAndRisk(
@@ -650,9 +727,7 @@ class OrderControllerTest : IntegrationTestBase() {
       orderId = order.id,
       contactNumber = "07401111111",
     )
-    order.monitoringConditions = MonitoringConditions(orderId = order.id)
-    order.additionalDocuments = mutableListOf()
-    val conditions = MonitoringConditions(
+    order.monitoringConditions = MonitoringConditions(
       orderId = order.id,
       orderType = "community",
       orderTypeDescription = OrderTypeDescription.DAPOL,
@@ -666,6 +741,7 @@ class OrderControllerTest : IntegrationTestBase() {
       caseId = "d8ea62e61bb8d610a10c20e0b24bcb85",
       conditionType = MonitoringConditionType.REQUIREMENT_OF_A_COMMUNITY_ORDER,
     )
+    order.additionalDocuments = mutableListOf()
     val curfewConditions = CurfewConditions(
       orderId = order.id,
       startDate = mockStartDate,
@@ -694,14 +770,13 @@ class OrderControllerTest : IntegrationTestBase() {
     order.curfewTimeTable.addAll(secondTimeTable)
     order.curfewConditions = curfewConditions
 
-    val releaseDay = CurfewReleaseDateConditions(
+    order.curfewReleaseDateConditions = CurfewReleaseDateConditions(
       orderId = order.id,
       releaseDate = mockStartDate,
       startTime = "19:00",
       endTime = "23:00",
       curfewAddress = AddressType.PRIMARY,
     )
-    order.curfewReleaseDateConditions = releaseDay
 
     order.enforcementZoneConditions.add(
       EnforcementZoneConditions(
@@ -714,12 +789,17 @@ class OrderControllerTest : IntegrationTestBase() {
       ),
     )
 
-    val alcohol = AlcoholMonitoringConditions(
+    order.monitoringConditionsAlcohol = AlcoholMonitoringConditions(
       orderId = order.id,
       monitoringType = AlcoholMonitoringType.ALCOHOL_ABSTINENCE,
       installationLocation = AlcoholMonitoringInstallationLocationType.PRIMARY,
     )
-    order.monitoringConditionsAlcohol = alcohol
+
+    order.monitoringConditionsTrail = TrailMonitoringConditions(
+      orderId = order.id,
+      startDate = mockStartDate,
+      endDate = mockEndDate,
+    )
 
     order.interestedParties = InterestedParties(
       orderId = order.id,
@@ -733,8 +813,11 @@ class OrderControllerTest : IntegrationTestBase() {
       notifyingOrganisation = "Mock Organisation",
       notifyingOrganisationEmail = "",
     )
+    return order
+  }
 
-    order.monitoringConditions = conditions
+  fun createAndPersistReadyToSubmitOrder(noFixedAddress: Boolean = false): Order {
+    val order = createReadyToSubmitOrder(noFixedAddress)
     repo.save(order)
     return order
   }

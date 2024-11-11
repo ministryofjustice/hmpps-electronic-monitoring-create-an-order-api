@@ -115,22 +115,21 @@ class CurfewReleaseDateControllerTest : IntegrationTestBase() {
     Assertions.assertThat(error).contains(ValidationError("endTime", "Enter end time"))
     Assertions.assertThat(
       error,
-    ).contains(ValidationError("releaseDate", "Enter curfew release day"))
+    ).contains(ValidationError("releaseDate", "Enter curfew release date"))
   }
 
   @Test
-  fun `Should return errors when release date is in the past`() {
+  fun `Should not return errors when release date is in the past`() {
     val order = createOrder()
-    order.status = OrderStatus.SUBMITTED
     orderRepo.save(order)
-    val result = webTestClient.put()
+    webTestClient.put()
       .uri("/api/orders/${order.id}/monitoring-conditions-curfew-release-date")
       .contentType(MediaType.APPLICATION_JSON)
       .body(
         BodyInserters.fromValue(
           mockRequestBody(
             order.id,
-            ZonedDateTime.now().plusDays(-3),
+            ZonedDateTime.now().minusDays(1),
             "19:00:00",
             "23:00:00",
             AddressType.PRIMARY,
@@ -140,15 +139,8 @@ class CurfewReleaseDateControllerTest : IntegrationTestBase() {
       .headers(setAuthorisation())
       .exchange()
       .expectStatus()
-      .isBadRequest
-      .expectBodyList(ValidationError::class.java)
-      .returnResult()
-    val error = result.responseBody!!
-    Assertions.assertThat(result.responseBody).hasSize(1)
-
-    Assertions.assertThat(
-      error,
-    ).contains(ValidationError("releaseDate", "Curfew release day must be in the future"))
+      .isOk
+      .expectBody(CurfewReleaseDateConditions::class.java)
   }
 
   @Test

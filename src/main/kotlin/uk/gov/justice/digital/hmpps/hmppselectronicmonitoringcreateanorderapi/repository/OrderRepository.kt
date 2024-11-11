@@ -10,7 +10,7 @@ import java.util.*
 interface OrderRepository : JpaRepository<Order, UUID> {
   fun findByUsername(username: String): List<Order>
 
-  fun findByUsernameAndId(username: String, id: UUID): Optional<Order>
+  fun findByUsernameAndId(username: String, id: UUID): Order?
 
   fun findByIdAndUsernameAndStatus(id: UUID, username: String, status: OrderStatus): Optional<Order>
 }

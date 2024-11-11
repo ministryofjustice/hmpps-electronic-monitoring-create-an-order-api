@@ -95,6 +95,41 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
   }
 
   @Test
+  fun `isValid is false when mandatory fields are not populated`() {
+    val order = createOrder()
+    Assertions.assertThat(order.monitoringConditions?.isValid).isFalse()
+  }
+
+  @Test
+  fun `isValid is true when mandatory fields are populated`() {
+    val order = createOrder()
+    val updateMonitoringConditions = webTestClient.put()
+      .uri("/api/orders/${order.id}/monitoring-conditions")
+      .contentType(MediaType.APPLICATION_JSON)
+      .body(
+        BodyInserters.fromValue(
+          """
+            {
+              "orderType": "$mockOrderType",
+              "curfew": true,
+              "orderTypeDescription": "$mockOrderTypeDescription",
+              "conditionType": "$mockConditionType",
+              "startDate": "$mockStartDate"
+            }
+          """.trimIndent(),
+        ),
+      )
+      .headers(setAuthorisation("AUTH_ADM"))
+      .exchange()
+      .expectStatus()
+      .isOk
+      .expectBody(MonitoringConditions::class.java)
+      .returnResult()
+
+    Assertions.assertThat(updateMonitoringConditions.responseBody?.isValid).isTrue()
+  }
+
+  @Test
   fun `Non-mandatory monitoring conditions can be updated with null values`() {
     val order = createOrder()
     val updateMonitoringConditions = webTestClient.put()
@@ -185,7 +220,8 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `Update monitoring conditions returns 400 if start is in the past`() {
+  fun `Update monitoring conditions allows start date in the past`() {
+    val mockPastStartDate = ZonedDateTime.now(ZoneId.of("UTC")).minusMonths(1)
     val order = createOrder()
     val result = webTestClient.put()
       .uri("/api/orders/${order.id}/monitoring-conditions")
@@ -205,7 +241,7 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
               "trail": "true",
               "mandatoryAttendance": "true",
               "alcohol": "true",
-              "startDate": "${mockStartDate.plusYears(-10)}",
+              "startDate": "$mockPastStartDate",
               "endDate": null
             }
           """.trimIndent(),
@@ -214,15 +250,8 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
       .headers(setAuthorisation("AUTH_ADM"))
       .exchange()
       .expectStatus()
-      .isBadRequest
-      .expectBodyList(ValidationError::class.java)
-      .returnResult()
-
-    Assertions.assertThat(result.responseBody).isNotNull
-    Assertions.assertThat(result.responseBody).hasSize(1)
-    Assertions.assertThat(result.responseBody!!).contains(
-      ValidationError("startDate", "Monitoring conditions start date must be in the future"),
-    )
+      .isOk
+      .expectBodyList(MonitoringConditions::class.java)
   }
 
   @Test
