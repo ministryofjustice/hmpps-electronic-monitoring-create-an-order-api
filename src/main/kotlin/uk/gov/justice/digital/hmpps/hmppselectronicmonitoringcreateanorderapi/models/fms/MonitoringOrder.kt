@@ -189,6 +189,7 @@ data class MonitoringOrder(
         conditionType = conditions.conditionType!!.value,
         orderId = order.id.toString(),
         orderStatus = "Not Started",
+        offence = order.installationAndRisk?.offence,
       )
 
       if (conditions.curfew != null && conditions.curfew!!) {

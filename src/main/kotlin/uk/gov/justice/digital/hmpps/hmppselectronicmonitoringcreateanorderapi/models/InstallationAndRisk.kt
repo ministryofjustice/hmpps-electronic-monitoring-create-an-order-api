@@ -18,26 +18,23 @@ data class InstallationAndRisk(
   val id: UUID = UUID.randomUUID(),
 
   @Column(name = "ORDER_ID", nullable = false, unique = true)
-  val orderId: UUID,
+  val orderId: UUID? = null,
 
-  @Column(name = "RISK_OF_SERIOUS_HARM", nullable = true)
-  val riskOfSeriousHarm: String? = "",
-
-  @Column(name = "RISK_OF_SELF_HARM", nullable = true)
-  val riskOfSelfHarm: String? = "",
+  @Column(name = "OFFENCE", nullable = true)
+  var offence: String? = "",
 
   @Convert(converter = ArrayToStringConverter::class)
   @Column(name = "RISK_CATEGORY", nullable = true)
-  val riskCategory: Array<String>? = null,
+  var riskCategory: Array<String>? = null,
 
   @Column(name = "RISK_DETAILS", nullable = true)
-  val riskDetails: String? = "",
+  var riskDetails: String? = "",
 
   @Column(name = "MAPPA_LEVEL", nullable = true)
-  val mappaLevel: String? = "",
+  var mappaLevel: String? = "",
 
   @Column(name = "MAPPA_CASE_TYPE", nullable = true)
-  val mappaCaseType: String? = "",
+  var mappaCaseType: String? = "",
 
   @OneToOne
   @JoinColumn(name = "ORDER_ID", updatable = false, insertable = false)
