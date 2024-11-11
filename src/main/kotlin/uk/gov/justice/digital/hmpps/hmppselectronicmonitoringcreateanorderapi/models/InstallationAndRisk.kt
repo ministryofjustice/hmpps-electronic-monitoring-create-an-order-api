@@ -18,7 +18,7 @@ data class InstallationAndRisk(
   val id: UUID = UUID.randomUUID(),
 
   @Column(name = "ORDER_ID", nullable = false, unique = true)
-  val orderId: UUID? = null,
+  var orderId: UUID? = null,
 
   @Column(name = "OFFENCE", nullable = true)
   var offence: String? = "",

@@ -12,6 +12,7 @@ class InstallationAndRiskService() : OrderSectionServiceBase() {
     installationAndRisk: InstallationAndRisk,
   ): InstallationAndRisk {
     val order = findEditableOrder(orderId, username)
+    installationAndRisk.orderId = order.id
     order.installationAndRisk = installationAndRisk
     return orderRepo.save(order).installationAndRisk!!
   }

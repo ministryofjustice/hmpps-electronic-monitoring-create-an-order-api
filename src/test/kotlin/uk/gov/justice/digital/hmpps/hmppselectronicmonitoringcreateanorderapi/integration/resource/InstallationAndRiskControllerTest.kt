@@ -110,6 +110,7 @@ class InstallationAndRiskControllerTest : IntegrationTestBase() {
     argumentCaptor<Order>().apply {
       verify(orderRepo, Times(1)).save(capture())
       val updatedOrder = firstValue
+      Assertions.assertThat(updatedOrder.installationAndRisk?.orderId).isEqualTo(order.id)
       Assertions.assertThat(updatedOrder.installationAndRisk?.offence).isEqualTo("MockOffence")
       Assertions.assertThat(updatedOrder.installationAndRisk?.riskCategory?.first()).isEqualTo("MockCategory")
       Assertions.assertThat(updatedOrder.installationAndRisk?.riskDetails).isEqualTo("mockRisk")
@@ -141,6 +142,7 @@ class InstallationAndRiskControllerTest : IntegrationTestBase() {
     argumentCaptor<Order>().apply {
       verify(orderRepo, Times(1)).save(capture())
       val updatedOrder = firstValue
+      Assertions.assertThat(updatedOrder.installationAndRisk?.orderId).isEqualTo(order.id)
       Assertions.assertThat(updatedOrder.installationAndRisk?.offence).isNull()
       Assertions.assertThat(updatedOrder.installationAndRisk?.riskCategory).isNull()
       Assertions.assertThat(updatedOrder.installationAndRisk?.riskDetails).isNull()
