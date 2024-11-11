@@ -158,8 +158,7 @@ class OrderServiceTest {
     )
     order.installationAndRisk = InstallationAndRisk(
       orderId = order.id,
-      riskOfSeriousHarm = "High",
-      riskOfSelfHarm = "Low",
+      offence = "Robbery",
       riskDetails = "Danger",
       mappaLevel = "MAAPA 1",
       mappaCaseType = "CPPC (Critical Public Protection Case)",
