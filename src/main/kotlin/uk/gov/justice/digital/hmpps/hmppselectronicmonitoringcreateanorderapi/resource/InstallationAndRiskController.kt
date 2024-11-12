@@ -23,7 +23,7 @@ class InstallationAndRiskController(
 ) {
 
   @PutMapping("/orders/{orderId}/installation-and-risk")
-  fun updateContactDetails(
+  fun updateInstallationAndRisk(
     @PathVariable orderId: UUID,
     @RequestBody @Valid installationAndRisk: InstallationAndRisk,
     authentication: Authentication,
