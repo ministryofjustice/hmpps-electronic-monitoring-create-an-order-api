@@ -42,7 +42,7 @@ data class Order(
   var interestedParties: InterestedParties? = null,
 
   @OneToOne(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "order", orphanRemoval = true)
-  var deviceWearerContactDetails: ContactDetails? = null,
+  var contactDetails: ContactDetails? = null,
 
   @OneToMany(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "order", orphanRemoval = true)
   var addresses: MutableList<Address> = mutableListOf(),

@@ -20,7 +20,7 @@ class ContactDetailsService() : OrderSectionServiceBase() {
       contactNumber = updateContactDetailsRecord.contactNumber,
     )
 
-    order.deviceWearerContactDetails = contactDetails
+    order.contactDetails = contactDetails
     orderRepo.save(order)
     return contactDetails
   }

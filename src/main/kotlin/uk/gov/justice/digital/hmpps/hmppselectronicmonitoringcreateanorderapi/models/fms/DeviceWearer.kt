@@ -152,7 +152,7 @@ data class DeviceWearer(
         genderIdentity = order.deviceWearer?.gender,
         disability = disabilities,
 
-        phoneNumber = order.deviceWearerContactDetails?.contactNumber,
+        phoneNumber = order.contactDetails?.contactNumber,
         riskSeriousHarm = order.installationAndRisk?.riskOfSeriousHarm,
         riskSelfHarm = order.installationAndRisk?.riskOfSelfHarm,
         riskDetails = order.installationAndRisk?.riskDetails,

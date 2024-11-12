@@ -724,7 +724,7 @@ class OrderControllerTest : IntegrationTestBase() {
       mappaCaseType = "CPPC (Critical Public Protection Case)",
     )
 
-    order.deviceWearerContactDetails = ContactDetails(
+    order.contactDetails = ContactDetails(
       orderId = order.id,
       contactNumber = "07401111111",
     )
