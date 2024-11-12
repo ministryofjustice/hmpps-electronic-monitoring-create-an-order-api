@@ -4,7 +4,6 @@ import jakarta.persistence.EntityNotFoundException
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.SubmitOrderException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationAndRisk
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.MonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
@@ -28,7 +27,6 @@ class OrderService(
     order.monitoringConditions = MonitoringConditions(orderId = order.id)
     order.additionalDocuments = mutableListOf()
     order.enforcementZoneConditions = mutableListOf()
-    order.installationAndRisk = InstallationAndRisk(orderId = order.id)
     repo.save(order)
     return order
   }

@@ -31,7 +31,6 @@ class MonitoringConditionsService(
       monitoringConditions.endDate = endDate
       monitoringConditions.orderTypeDescription = orderTypeDescription
       monitoringConditions.conditionType = conditionType
-      monitoringConditions.devicesRequired = devicesRequired
       monitoringConditions.curfew = curfew
       monitoringConditions.exclusionZone = exclusionZone
       monitoringConditions.trail = trail

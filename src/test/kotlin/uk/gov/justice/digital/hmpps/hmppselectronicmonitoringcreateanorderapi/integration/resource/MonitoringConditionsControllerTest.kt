@@ -26,7 +26,6 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
   lateinit var orderRepo: OrderRepository
 
   private val mockOrderType: String = "mockOrderType"
-  private val mockDevicesRequired: String = """["device1", "device2"]"""
   private val mockOrderTypeDescription = OrderTypeDescription.DAPOL
   private val mockConditionType = MonitoringConditionType.LICENSE_CONDITION_OF_A_CUSTODIAL_ORDER
   private val mockStartDate = ZonedDateTime.now(ZoneId.of("UTC")).plusMonths(1)
@@ -50,7 +49,6 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
               "orderType": "$mockOrderType",
               "orderTypeDescription": "$mockOrderTypeDescription",
               "conditionType": "$mockConditionType",
-              "devicesRequired": $mockDevicesRequired,
               "acquisitiveCrime": "true",
               "dapol": "true",
               "curfew": "true",
@@ -81,9 +79,6 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
     Assertions.assertThat(
       updateMonitoringConditions.responseBody?.conditionType,
     ).isEqualTo(mockConditionType)
-    Assertions.assertThat(
-      updateMonitoringConditions.responseBody?.devicesRequired,
-    ).isEqualTo(arrayOf("device1", "device2"))
     Assertions.assertThat(updateMonitoringConditions.responseBody?.curfew).isTrue()
     Assertions.assertThat(updateMonitoringConditions.responseBody?.exclusionZone).isTrue()
     Assertions.assertThat(updateMonitoringConditions.responseBody?.trail).isTrue()
@@ -140,7 +135,6 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
               "orderType": "$mockOrderType",
               "orderTypeDescription": "$mockOrderTypeDescription",
               "conditionType": "$mockConditionType",
-              "devicesRequired": null,
               "acquisitiveCrime": null,
               "dapol": null,
               "curfew": "true",
@@ -162,7 +156,6 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
       .returnResult()
 
     Assertions.assertThat(updateMonitoringConditions.responseBody?.orderId).isEqualTo(order.id)
-    Assertions.assertThat(updateMonitoringConditions.responseBody?.devicesRequired).isNull()
   }
 
   @Test
@@ -178,7 +171,6 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
               "orderType": null,
               "orderTypeDescription": null,
               "conditionType": null,
-              "devicesRequired": null,
               "acquisitiveCrime": null,
               "dapol": null,
               "curfew": "true",
@@ -226,7 +218,6 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
               "orderType": "$mockOrderType",
               "orderTypeDescription": "$mockOrderTypeDescription",
               "conditionType": "$mockConditionType",
-              "devicesRequired": $mockDevicesRequired,
               "acquisitiveCrime": "true",
               "dapol": "true",
               "curfew": "true",
@@ -260,7 +251,6 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
               "orderType": "$mockOrderType",
               "orderTypeDescription": "$mockOrderTypeDescription",
               "conditionType": "$mockConditionType",
-              "devicesRequired": $mockDevicesRequired,
               "acquisitiveCrime": "true",
               "dapol": "true",
               "curfew": "true",
@@ -301,7 +291,6 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
               "orderType": "$mockOrderType",
               "orderTypeDescription": "$mockOrderTypeDescription",
               "conditionType": "$mockConditionType",
-              "devicesRequired": null,
               "acquisitiveCrime": null,
               "dapol": null,
               "curfew": null,
@@ -334,7 +323,6 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
               "orderType": "$mockOrderType",
               "orderTypeDescription": "$mockOrderTypeDescription",
               "conditionType": "$mockConditionType",
-              "devicesRequired": null,
               "acquisitiveCrime": null,
               "dapol": null,
               "curfew": "true",
@@ -356,7 +344,6 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
       .returnResult()
 
     Assertions.assertThat(updateMonitoringConditions.responseBody?.orderId).isEqualTo(order.id)
-    Assertions.assertThat(updateMonitoringConditions.responseBody?.devicesRequired).isNull()
     Assertions.assertThat(updateMonitoringConditions.responseBody?.curfew).isTrue()
     Assertions.assertThat(updateMonitoringConditions.responseBody?.exclusionZone).isNull()
     Assertions.assertThat(updateMonitoringConditions.responseBody?.trail).isNull()
@@ -377,7 +364,6 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
               "orderType": "$mockOrderType",
               "orderTypeDescription": "$mockOrderTypeDescription",
               "conditionType": "$mockConditionType",
-              "devicesRequired": $mockDevicesRequired,
               "acquisitiveCrime": "true",
               "dapol": "true",
               "curfew": "true",
@@ -414,7 +400,6 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
               "orderType": "$mockOrderType",
               "orderTypeDescription": "$mockOrderTypeDescription",
               "conditionType": "$mockConditionType",
-              "devicesRequired": $mockDevicesRequired,
               "acquisitiveCrime": "true",
               "dapol": "true",
               "curfew": "true",
@@ -447,7 +432,6 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
               "orderType": "$mockOrderType",
               "orderTypeDescription": "$mockOrderTypeDescription",
               "conditionType": "$mockConditionType",
-              "devicesRequired": $mockDevicesRequired,
               "acquisitiveCrime": "true",
               "dapol": "true",
               "curfew": "true",
