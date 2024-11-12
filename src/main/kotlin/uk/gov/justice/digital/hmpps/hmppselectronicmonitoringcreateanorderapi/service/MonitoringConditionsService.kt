@@ -32,8 +32,6 @@ class MonitoringConditionsService(
       monitoringConditions.orderTypeDescription = orderTypeDescription
       monitoringConditions.conditionType = conditionType
       monitoringConditions.devicesRequired = devicesRequired
-      monitoringConditions.acquisitiveCrime = acquisitiveCrime
-      monitoringConditions.dapol = dapol
       monitoringConditions.curfew = curfew
       monitoringConditions.exclusionZone = exclusionZone
       monitoringConditions.trail = trail
