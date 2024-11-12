@@ -218,7 +218,7 @@ class HearingEventHandler(
     if (contact != null) {
       val contactDetails =
         ContactDetails(orderId = order.id, contactNumber = contact.home ?: contact.mobile ?: contact.work)
-      order.deviceWearerContactDetails = contactDetails
+      order.contactDetails = contactDetails
     }
 
     order.interestedParties = buildInterestedPartiesFromHearing(

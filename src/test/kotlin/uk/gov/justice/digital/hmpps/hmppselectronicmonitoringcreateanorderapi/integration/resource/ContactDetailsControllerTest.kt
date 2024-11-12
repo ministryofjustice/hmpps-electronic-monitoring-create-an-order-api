@@ -7,27 +7,21 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ContactDetails
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.ContactDetailsRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidationError
 
 class ContactDetailsControllerTest : IntegrationTestBase() {
   @Autowired
-  lateinit var contactDetailRepo: ContactDetailsRepository
-
-  @Autowired
   lateinit var orderRepo: OrderRepository
 
   @BeforeEach
   fun setup() {
-    contactDetailRepo.deleteAll()
     orderRepo.deleteAll()
   }
 
   @Test
-  fun `Contact details can be updated with a null contactNumber`() {
+  fun `Contact details can be updated with a null contact number`() {
     val order = createOrder()
 
     webTestClient.put()
@@ -71,38 +65,6 @@ class ContactDetailsControllerTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `IsValid is false when mandatory fields are not populated`() {
-    val order = createOrder()
-
-    Assertions.assertThat(order.deviceWearerContactDetails?.isValid).isFalse()
-  }
-
-  @Test
-  fun `IsValid is true when mandatory fields are populated`() {
-    val order = createOrder()
-    val updateContactDetails = webTestClient.put()
-      .uri("/api/orders/${order.id}/contact-details")
-      .contentType(MediaType.APPLICATION_JSON)
-      .body(
-        BodyInserters.fromValue(
-          """
-            {
-              "contactNumber": "01234567890"
-            }
-          """.trimIndent(),
-        ),
-      )
-      .headers(setAuthorisation("AUTH_ADM"))
-      .exchange()
-      .expectStatus()
-      .isOk
-      .expectBody(ContactDetails::class.java)
-      .returnResult()
-
-    Assertions.assertThat(updateContactDetails.responseBody?.isValid).isTrue()
-  }
-
-  @Test
   fun `Contact details cannot be updated with an invalid contact number`() {
     val order = createOrder()
     val result = webTestClient.put()
@@ -126,18 +88,16 @@ class ContactDetailsControllerTest : IntegrationTestBase() {
 
     Assertions.assertThat(result.responseBody).isNotNull
     Assertions.assertThat(result.responseBody).hasSize(1)
-    Assertions.assertThat(result.responseBody).first().isNotNull
-
-    val validationError = result.responseBody!!.first()
-
-    Assertions.assertThat(validationError.field).isEqualTo("contactNumber")
-    Assertions.assertThat(validationError.error).isEqualTo("Phone number is in an incorrect format")
+    Assertions.assertThat(result.responseBody!!).contains(
+      ValidationError("contactNumber", "Phone number is in an incorrect format"),
+    )
   }
 
   @Test
   fun `Contact details cannot be updated by a different user`() {
     val order = createOrder()
-    val contactDetails = webTestClient.put()
+
+    webTestClient.put()
       .uri("/api/orders/${order.id}/contact-details")
       .contentType(MediaType.APPLICATION_JSON)
       .body(
@@ -162,7 +122,7 @@ class ContactDetailsControllerTest : IntegrationTestBase() {
     order.status = OrderStatus.SUBMITTED
     orderRepo.save(order)
 
-    val contactDetails = webTestClient.put()
+    webTestClient.put()
       .uri("/api/orders/${order.id}/contact-details")
       .contentType(MediaType.APPLICATION_JSON)
       .body(
