@@ -151,10 +151,7 @@ data class DeviceWearer(
         sex = order.deviceWearer?.sex,
         genderIdentity = order.deviceWearer?.gender,
         disability = disabilities,
-
         phoneNumber = order.contactDetails?.contactNumber,
-        riskSeriousHarm = order.installationAndRisk?.riskOfSeriousHarm,
-        riskSelfHarm = order.installationAndRisk?.riskOfSelfHarm,
         riskDetails = order.installationAndRisk?.riskDetails,
         mappa = order.installationAndRisk?.mappaLevel,
         mappaCaseType = order.installationAndRisk?.mappaCaseType,
