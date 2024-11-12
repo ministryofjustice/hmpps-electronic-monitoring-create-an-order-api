@@ -147,7 +147,6 @@ data class Order(
   val isValid: Boolean
     get() = (
       deviceWearer?.isValid == true &&
-        deviceWearerContactDetails?.isValid == true &&
         monitoringConditions?.isValid == true &&
         adultOrHasResponsibleAdult &&
         hasPrimaryAddressOrNoFixedAbode &&
