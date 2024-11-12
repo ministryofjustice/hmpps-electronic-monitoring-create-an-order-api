@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models
 
 import jakarta.persistence.Column
-import jakarta.persistence.Convert
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
@@ -9,7 +8,6 @@ import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.converter.ArrayToStringConverter
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MonitoringConditionType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderTypeDescription
 import java.time.ZonedDateTime
@@ -37,10 +35,6 @@ data class MonitoringConditions(
   @Enumerated(EnumType.STRING)
   @Column(name = "ORDER_TYPE_DESCRIPTION", nullable = true)
   var orderTypeDescription: OrderTypeDescription? = null,
-
-  @Convert(converter = ArrayToStringConverter::class)
-  @Column(name = "DEVICES_REQUIRED", nullable = true)
-  var devicesRequired: Array<String>? = null,
 
   @Column(name = "CASE_ID", nullable = true)
   var caseId: String? = null,

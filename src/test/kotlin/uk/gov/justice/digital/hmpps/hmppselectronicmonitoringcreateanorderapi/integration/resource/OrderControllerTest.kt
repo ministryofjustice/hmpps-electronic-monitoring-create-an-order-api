@@ -370,7 +370,7 @@ class OrderControllerTest : IntegrationTestBase() {
       	"court": "",
       	"court_order_email": "",
       	"describe_exclusion": "Mock Exclusion Zone",
-      	"device_type": ",, ,",
+      	"device_type": "",
       	"device_wearer": "John Smith",
       	"enforceable_condition": [
       		{
@@ -731,7 +731,6 @@ class OrderControllerTest : IntegrationTestBase() {
       orderId = order.id,
       orderType = "community",
       orderTypeDescription = OrderTypeDescription.DAPOL,
-      devicesRequired = arrayOf("Location - fitted,Alcohol (Remote Breath)"),
       startDate = mockStartDate,
       endDate = mockEndDate,
       curfew = true,
