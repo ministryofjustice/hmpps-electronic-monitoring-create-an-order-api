@@ -26,7 +26,7 @@ data class Hearing(
           defendant ->
         defendant.offences.any {
             offence ->
-          HearingEventHandler.isTaggableOffence(offence)
+          HearingEventHandler.isEnglandAdnWalesEMRequest(offence)
         }
       }
     }

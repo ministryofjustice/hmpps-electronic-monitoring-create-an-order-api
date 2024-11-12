@@ -5,11 +5,11 @@ import uk.gov.justice.digital.hmpps.courthearingeventreceiver.model.Defendant
 import uk.gov.justice.digital.hmpps.courthearingeventreceiver.model.Hearing
 import uk.gov.justice.digital.hmpps.courthearingeventreceiver.model.HearingEvent
 import uk.gov.justice.digital.hmpps.courthearingeventreceiver.model.JudicialResults
-import uk.gov.justice.digital.hmpps.courthearingeventreceiver.model.JurisdictionType
 import uk.gov.justice.digital.hmpps.courthearingeventreceiver.model.Offence
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Address
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AlcoholMonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ContactDetails
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.EnforcementZoneConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InterestedParties
@@ -28,6 +28,7 @@ import java.time.LocalTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
+import java.util.*
 
 @Service
 class HearingEventHandler(
@@ -40,12 +41,18 @@ class HearingEventHandler(
 
     const val EXCLUSION_ZONE_UUID = "091cd45b-4312-476e-a122-18cc02fd1699"
 
-    fun isTaggableOffence(offence: Offence): Boolean {
+    const val INCLUSION_ZONE_UUID = "9b216a08-4df8-41c2-a947-66506cd1e1b5"
+
+    const val CURFEW_UUID = "06b4c31d-1b3d-4850-b64c-4cad870b3a25"
+
+    fun isEnglandAdnWalesEMRequest(offence: Offence): Boolean {
       return offence.judicialResults.any {
           judicialResults ->
         // Community order England_Wales, Alcohol abstinence and monitoring
         judicialResults.judicialResultTypeId == ALCOHOL_ABSTAIN_MONITORING_UUID ||
-          judicialResults.judicialResultTypeId == EXCLUSION_ZONE_UUID
+          judicialResults.judicialResultTypeId == EXCLUSION_ZONE_UUID ||
+          judicialResults.judicialResultTypeId == INCLUSION_ZONE_UUID ||
+          judicialResults.judicialResultTypeId == CURFEW_UUID
       }
     }
   }
@@ -72,25 +79,16 @@ class HearingEventHandler(
     // Get defendant that has taggable offences
     val defendantOffences = hearing.prosecutionCases
       .flatMap { it.defendants }
-      .filter { defendant -> defendant.offences.any { isTaggableOffence(it) } }
+      .filter { defendant -> defendant.offences.any { isEnglandAdnWalesEMRequest(it) } }
       .groupBy { it }
       .mapValues { (_, defendants) ->
-        defendants.flatMap { it.offences }.filter { isTaggableOffence(it) }.toMutableList()
+        defendants.flatMap { it.offences }.filter { isEnglandAdnWalesEMRequest(it) }.toMutableList()
       }.toMap()
 
     // map each defendant to Order
     return defendantOffences.map { (defendant, offences) ->
       getOrderForDefendant(hearing, defendant, offences)
     }
-  }
-
-  fun getNotifyingOrganisation(jurisdictionType: JurisdictionType): String {
-    if (jurisdictionType == JurisdictionType.MAGISTRATES) {
-      return "Magistrates Court"
-    } else if (jurisdictionType == JurisdictionType.CROWN) {
-      return "Crown Court"
-    }
-    return ""
   }
 
   fun buildInterestedPartiesFromHearing(
@@ -152,27 +150,31 @@ class HearingEventHandler(
 
     if (judicialResults.any { it.judicialResultTypeId == EXCLUSION_ZONE_UUID }) {
       monitoringConditions.exclusionZone = true
-      val zone = EnforcementZoneConditions(orderId = order.id)
-      zone.zoneType = EnforcementZoneType.EXCLUSION
-      val startTime = getPromptValue(prompts, "Start Time") ?: "00:00"
+      val zone = getEnforcementZone(order.id, prompts, EnforcementZoneType.EXCLUSION)
+      monitoringConditions.startDate = zone.startDate
+      monitoringConditions.endDate = zone.endDate
+      order.enforcementZoneConditions.add(zone)
+    }
 
-      val startDate = getPromptValue(prompts, "Start date for tag")?.let {
+    if (judicialResults.any { it.judicialResultTypeId == INCLUSION_ZONE_UUID }) {
+      monitoringConditions.exclusionZone = true
+      val zone = getEnforcementZone(order.id, prompts, EnforcementZoneType.INCLUSION)
+      monitoringConditions.startDate = zone.startDate
+      monitoringConditions.endDate = zone.endDate
+      order.enforcementZoneConditions.add(zone)
+    }
+
+    if (judicialResults.any { it.judicialResultTypeId == CURFEW_UUID }) {
+      monitoringConditions.curfew = true
+      val condition = CurfewConditions(orderId = order.id)
+      condition.startDate = getPromptValue(prompts, "Start date for tag")?.let {
         val localDate = LocalDate.parse(it, formatter)
-        ZonedDateTime.of(localDate, LocalTime.parse(startTime), ZoneId.of("GMT"))
+        ZonedDateTime.of(localDate, LocalTime.MIDNIGHT, ZoneId.of("GMT"))
       }
-      monitoringConditions.startDate = startDate
-      zone.startDate = startDate
-      val endTime = getPromptValue(prompts, "End Time") ?: "00:00"
-      val endDate =
-        getPromptValue(prompts, "End date for tag")?.let {
-          val localDate = LocalDate.parse(it, formatter)
-          ZonedDateTime.of(localDate, LocalTime.parse(endTime), ZoneId.of("GMT"))
-        }
-      monitoringConditions.endDate = endDate
-      zone.endDate = endDate
-
-      zone.duration = getPromptValue(prompts, "Exclusion and electronic monitoring period")
-      zone.description = getPromptValue(prompts, "Place / area")
+      condition.endDate = getPromptValue(prompts, "End date of tagging")?.let {
+        val localDate = LocalDate.parse(it, formatter)
+        ZonedDateTime.of(localDate, LocalTime.MIDNIGHT, ZoneId.of("GMT"))
+      }
     }
 
     order.monitoringConditions = monitoringConditions
@@ -229,6 +231,36 @@ class HearingEventHandler(
     return order
   }
 
+  private fun getEnforcementZone(
+    orderId: UUID,
+    prompts: List<JudicialResultsPrompt>,
+    zoneType: EnforcementZoneType,
+  ): EnforcementZoneConditions {
+    val zone = EnforcementZoneConditions(orderId = orderId)
+    zone.zoneType = zoneType
+    val startTime = getPromptValue(prompts, "Start Time") ?: "00:00"
+
+    val startDate = getPromptValue(prompts, "Start date for tag")?.let {
+      val localDate = LocalDate.parse(it, formatter)
+      ZonedDateTime.of(localDate, LocalTime.parse(startTime), ZoneId.of("GMT"))
+    }
+
+    zone.startDate = startDate
+    val endTime = getPromptValue(prompts, "End Time") ?: "00:00"
+    val endDate =
+      getPromptValue(prompts, "End date for tag")?.let {
+        val localDate = LocalDate.parse(it, formatter)
+        ZonedDateTime.of(localDate, LocalTime.parse(endTime), ZoneId.of("GMT"))
+      }
+
+    zone.endDate = endDate
+
+    zone.duration = getPromptValue(prompts, "Exclusion and electronic monitoring period")
+    zone.description = getPromptValue(prompts, "Place / area")
+
+    return zone
+  }
+
   private fun getOrderType(results: List<JudicialResults>): String? {
     if (results.any { it.resultText?.contains("COEW") == true }) {
       return "Community"
@@ -236,6 +268,7 @@ class HearingEventHandler(
 
     return null
   }
+
   private fun getConditionType(results: List<JudicialResults>): MonitoringConditionType? {
     if (results.any { it.resultText?.contains("COEW") == true }) {
       return MonitoringConditionType.REQUIREMENT_OF_A_COMMUNITY_ORDER
