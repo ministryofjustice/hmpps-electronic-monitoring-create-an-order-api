@@ -15,10 +15,6 @@ data class UpdateMonitoringConditionsDto(
   @field:NotNull(message = "Order type is required")
   val orderType: String? = null,
 
-  var acquisitiveCrime: Boolean? = null,
-
-  var dapol: Boolean? = null,
-
   var curfew: Boolean? = null,
 
   @field:NotNull(message = "Monitoring conditions start date is required")
@@ -37,7 +33,6 @@ data class UpdateMonitoringConditionsDto(
   @field:NotNull(message = "Condition type is required")
   var conditionType: MonitoringConditionType? = null,
 
-  @field:NotNull(message = "Order type description type is required")
   val orderTypeDescription: OrderTypeDescription? = null,
 ) {
   @AssertTrue(message = "End date must be after start date")

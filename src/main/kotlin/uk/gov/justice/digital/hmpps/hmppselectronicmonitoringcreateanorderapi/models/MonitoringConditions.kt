@@ -43,12 +43,6 @@ data class MonitoringConditions(
   @Column(name = "CONDITION_TYPE", nullable = true)
   var conditionType: MonitoringConditionType? = null,
 
-  @Column(name = "ACQUISITIVE_CRIME", nullable = true)
-  var acquisitiveCrime: Boolean? = null,
-
-  @Column(name = "DAPOL", nullable = true)
-  var dapol: Boolean? = null,
-
   @Column(name = "CURFEW", nullable = true)
   var curfew: Boolean? = null,
 
