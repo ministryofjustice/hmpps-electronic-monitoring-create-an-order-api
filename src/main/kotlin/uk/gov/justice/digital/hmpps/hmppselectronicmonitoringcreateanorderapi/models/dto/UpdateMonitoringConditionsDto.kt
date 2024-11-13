@@ -15,8 +15,6 @@ data class UpdateMonitoringConditionsDto(
   @field:NotNull(message = "Order type is required")
   val orderType: String? = null,
 
-  val devicesRequired: Array<String>? = null,
-
   var acquisitiveCrime: Boolean? = null,
 
   var dapol: Boolean? = null,

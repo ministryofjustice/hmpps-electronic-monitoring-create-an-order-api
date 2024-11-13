@@ -164,7 +164,7 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
 	"court": "",
 	"court_order_email": "",
 	"describe_exclusion": "",
-	"device_type": null,
+	"device_type": "",
 	"device_wearer": "Janie Ernser",
 	"enforceable_condition": [
 		{
