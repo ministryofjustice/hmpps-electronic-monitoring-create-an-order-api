@@ -56,6 +56,9 @@ data class DeviceWearer(
   @Column(name = "GENDER", nullable = true)
   var gender: String? = null,
 
+  @Column(name = "SELF_IDENTIFY_GENDER", nullable = true)
+  var selfIdentifyGender: String? = null,
+
   @Column(name = "LANGUAGE", nullable = true)
   var language: String? = null,
 
@@ -68,6 +71,9 @@ data class DeviceWearer(
 
   @Column(name = "DISABILITIES", nullable = true)
   var disabilities: String? = null,
+
+  @Column(name = "OTHER_DISABILITIES", nullable = true)
+  var otherDisabilities: String? = null,
 
   @Column(name = "NO_FIXED_ABODE", nullable = true)
   var noFixedAbode: Boolean? = null,

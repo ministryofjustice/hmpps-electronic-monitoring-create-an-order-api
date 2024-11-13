@@ -38,8 +38,10 @@ class DeviceWearerService(
       deviceWearer.adultAtTimeOfInstallation = adultAtTimeOfInstallation
       deviceWearer.sex = sex
       deviceWearer.gender = gender
+      deviceWearer.selfIdentifyGender = selfIdentifyGender
       deviceWearer.dateOfBirth = dateOfBirth
       deviceWearer.disabilities = disabilities
+      deviceWearer.otherDisabilities = otherDisabilities
       deviceWearer.language = language
       deviceWearer.interpreterRequired = interpreterRequired
     }

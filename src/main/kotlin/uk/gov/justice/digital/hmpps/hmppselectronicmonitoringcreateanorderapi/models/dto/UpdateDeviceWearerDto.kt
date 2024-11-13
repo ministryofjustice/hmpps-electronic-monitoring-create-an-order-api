@@ -36,11 +36,15 @@ data class UpdateDeviceWearerDto(
   @field:Size(min = 1, message = "Gender is required")
   val gender: String? = null,
 
+  val selfIdentifyGender: String? = null,
+
   @field:NotNull(message = "Date of birth is required")
   @field:Past(message = "Date of birth must be in the past")
   val dateOfBirth: ZonedDateTime? = null,
 
   val disabilities: String? = null,
+
+  val otherDisabilities: String? = null,
 
   val language: String? = null,
 
@@ -49,12 +53,21 @@ data class UpdateDeviceWearerDto(
   )
   val interpreterRequired: Boolean? = null,
 ) {
-
   @AssertTrue(message = "Device wearer's main language is required")
   fun isLanguage(): Boolean {
     if (this.interpreterRequired != null && this.interpreterRequired) {
       return this.language != null && this.language != ""
     }
     return true
+  }
+
+  @AssertTrue(message = "Enter the self-identified gender of the device wearer or select a different option")
+  fun isSelfIdentifyGender(): Boolean {
+    return !(this.gender == "self-identify" && this.selfIdentifyGender.isNullOrBlank())
+  }
+
+  @AssertTrue(message = "Enter the device wearer's other disabilities or deselect 'other'")
+  fun isOtherDisabilities(): Boolean {
+    return !(this.disabilities?.contains("Other") == true && this.otherDisabilities.isNullOrBlank())
   }
 }
