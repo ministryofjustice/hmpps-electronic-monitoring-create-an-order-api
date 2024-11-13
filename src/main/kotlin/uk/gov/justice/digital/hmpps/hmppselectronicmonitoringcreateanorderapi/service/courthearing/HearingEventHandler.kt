@@ -45,15 +45,27 @@ class HearingEventHandler(
 
     const val CURFEW_UUID = "06b4c31d-1b3d-4850-b64c-4cad870b3a25"
 
+    const val COMMUNITY_ORDER_ENGLAND_AND_WALES_UUID = "418b3aa7-65ab-4a4a-bab9-2f96b698118c"
+
+    private const val COMMUNITY_ORDER_SCOTLAND_UUID = "ae617390-b41e-46ac-bd63-68a28512676a"
+
+    // Suspended sentence order - detention in a young offender institution
+    const val SSO_YOUNG_OFFENDER_INSTITUTION_DETENTION_UUID = "5679e5b7-0ca8-4d2a-ba80-7a50025fb589"
+
+    const val SSO_INPRISONMENT_UUID = "8b1cff00-a456-40da-9ce4-f11c20959084"
+
     fun isEnglandAdnWalesEMRequest(offence: Offence): Boolean {
       return offence.judicialResults.any {
           judicialResults ->
-        // Community order England_Wales, Alcohol abstinence and monitoring
         judicialResults.judicialResultTypeId == ALCOHOL_ABSTAIN_MONITORING_UUID ||
           judicialResults.judicialResultTypeId == EXCLUSION_ZONE_UUID ||
           judicialResults.judicialResultTypeId == INCLUSION_ZONE_UUID ||
           judicialResults.judicialResultTypeId == CURFEW_UUID
-      }
+      } &&
+        !offence.judicialResults.any {
+            judicialResults ->
+          judicialResults.judicialResultTypeId== COMMUNITY_ORDER_SCOTLAND_UUID
+        }
     }
   }
 
@@ -113,9 +125,7 @@ class HearingEventHandler(
         "Probation team to be notified email address 1",
       ) ?: "",
       notifyingOrganisation = hearing.courtCentre.name,
-      responsibleOrganisationAddress = order.addresses.first {
-        it.addressType == AddressType.RESPONSIBLE_ORGANISATION
-      },
+      responsibleOrganisationAddress = order.addresses.first { it.addressType == AddressType.RESPONSIBLE_ORGANISATION },
       responsibleOfficerName = "",
       responsibleOfficerPhoneNumber = null,
       responsibleOrganisationPhoneNumber = null,
@@ -132,7 +142,7 @@ class HearingEventHandler(
     val monitoringConditions = MonitoringConditions(orderId = order.id)
     val orderedDate = judicialResults.first().orderedDate
     monitoringConditions.startDate = ZonedDateTime.of(orderedDate, LocalTime.MIDNIGHT, ZoneId.of("GMT"))
-    monitoringConditions.endDate = getPromptValue(prompts, "End Date")?.let {
+    monitoringConditions.endDate = getPromptValue(prompts, "Until")?.let {
       val localDate = LocalDate.parse(it, formatter)
       ZonedDateTime.of(localDate, LocalTime.MIDNIGHT, ZoneId.of("GMT"))
     }
@@ -148,17 +158,19 @@ class HearingEventHandler(
       order.monitoringConditionsAlcohol = alcoholConditions
     }
 
-    if (judicialResults.any { it.judicialResultTypeId == EXCLUSION_ZONE_UUID }) {
+    val exclusionZoneJudicialResult = judicialResults.firstOrNull { it.judicialResultTypeId == EXCLUSION_ZONE_UUID }
+    if (exclusionZoneJudicialResult != null) {
       monitoringConditions.exclusionZone = true
-      val zone = getEnforcementZone(order.id, prompts, EnforcementZoneType.EXCLUSION)
+      val zone = getEnforcementZone(order.id, exclusionZoneJudicialResult, prompts, EnforcementZoneType.EXCLUSION)
       monitoringConditions.startDate = zone.startDate
       monitoringConditions.endDate = zone.endDate
       order.enforcementZoneConditions.add(zone)
     }
 
-    if (judicialResults.any { it.judicialResultTypeId == INCLUSION_ZONE_UUID }) {
+    val inclusionZoneJudicialResults = judicialResults.firstOrNull { it.judicialResultTypeId == INCLUSION_ZONE_UUID }
+    if (inclusionZoneJudicialResults != null) {
       monitoringConditions.exclusionZone = true
-      val zone = getEnforcementZone(order.id, prompts, EnforcementZoneType.INCLUSION)
+      val zone = getEnforcementZone(order.id, inclusionZoneJudicialResults, prompts, EnforcementZoneType.INCLUSION)
       monitoringConditions.startDate = zone.startDate
       monitoringConditions.endDate = zone.endDate
       order.enforcementZoneConditions.add(zone)
@@ -209,17 +221,15 @@ class HearingEventHandler(
       Address(
         orderId = order.id,
         addressType = AddressType.RESPONSIBLE_ORGANISATION,
-        addressLine1 = hearing.courtCentre.address?.address1 ?: "",
-        addressLine2 = hearing.courtCentre.address?.address2 ?: "",
-        addressLine3 = hearing.courtCentre.address?.address3 ?: "",
-        addressLine4 = hearing.courtCentre.address?.address4 ?: "",
-        postcode = hearing.courtCentre.address?.postcode ?: "",
+        addressLine1 = "N/A",
+        addressLine2 = "N/A",
+        postcode = "N/A",
       ),
     )
     val contact = person?.contact
     if (contact != null) {
       val contactDetails =
-        ContactDetails(orderId = order.id, contactNumber = contact.home ?: contact.mobile ?: contact.work)
+        ContactDetails(orderId = order.id, contactNumber = contact.mobile ?: contact.home ?: contact.work)
       order.contactDetails = contactDetails
     }
 
@@ -233,12 +243,13 @@ class HearingEventHandler(
 
   private fun getEnforcementZone(
     orderId: UUID,
+    judicialResult: JudicialResults,
     prompts: List<JudicialResultsPrompt>,
     zoneType: EnforcementZoneType,
   ): EnforcementZoneConditions {
     val zone = EnforcementZoneConditions(orderId = orderId)
     zone.zoneType = zoneType
-    val startTime = getPromptValue(prompts, "Start Time") ?: "00:00"
+    val startTime = getPromptValue(prompts, "Start time for tag") ?: "00:00"
 
     val startDate = getPromptValue(prompts, "Start date for tag")?.let {
       val localDate = LocalDate.parse(it, formatter)
@@ -246,7 +257,7 @@ class HearingEventHandler(
     }
 
     zone.startDate = startDate
-    val endTime = getPromptValue(prompts, "End Time") ?: "00:00"
+    val endTime = getPromptValue(prompts, "End time for tag") ?: "00:00"
     val endDate =
       getPromptValue(prompts, "End date for tag")?.let {
         val localDate = LocalDate.parse(it, formatter)
@@ -254,23 +265,31 @@ class HearingEventHandler(
       }
 
     zone.endDate = endDate
-
     zone.duration = getPromptValue(prompts, "Exclusion and electronic monitoring period")
-    zone.description = getPromptValue(prompts, "Place / area")
+    zone.description = judicialResult.resultText
 
     return zone
   }
 
   private fun getOrderType(results: List<JudicialResults>): String? {
-    if (results.any { it.resultText?.contains("COEW") == true }) {
+    if (results.any {
+        it.judicialResultTypeId == COMMUNITY_ORDER_ENGLAND_AND_WALES_UUID ||
+          it.judicialResultTypeId == SSO_YOUNG_OFFENDER_INSTITUTION_DETENTION_UUID ||
+          it.judicialResultTypeId == SSO_INPRISONMENT_UUID
+      }
+    ) {
       return "Community"
     }
-
     return null
   }
 
   private fun getConditionType(results: List<JudicialResults>): MonitoringConditionType? {
-    if (results.any { it.resultText?.contains("COEW") == true }) {
+    if (results.any {
+        it.judicialResultTypeId == COMMUNITY_ORDER_ENGLAND_AND_WALES_UUID ||
+          it.judicialResultTypeId == SSO_YOUNG_OFFENDER_INSTITUTION_DETENTION_UUID ||
+          it.judicialResultTypeId == SSO_INPRISONMENT_UUID
+      }
+    ) {
       return MonitoringConditionType.REQUIREMENT_OF_A_COMMUNITY_ORDER
     }
 

@@ -174,16 +174,17 @@ data class MonitoringOrder(
 ) {
 
   companion object {
-    private val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+    private val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+    private val dateTimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
     fun fromOrder(order: Order, caseId: String?): MonitoringOrder {
       val conditions = order.monitoringConditions!!
       val monitoringOrder = MonitoringOrder(
         deviceWearer = "${order.deviceWearer!!.firstName} ${order.deviceWearer!!.lastName}",
         orderType = conditions.orderType,
         orderTypeDescription = conditions.orderTypeDescription?.value,
-        orderStart = conditions.startDate?.format(formatter),
-        orderEnd = conditions.endDate?.format(formatter),
-        serviceEndDate = conditions.endDate?.format(formatter),
+        orderStart = conditions.startDate?.format(dateTimeFormatter),
+        orderEnd = conditions.endDate?.format(dateTimeFormatter),
+        serviceEndDate = conditions.endDate?.format(dateFormatter),
         caseId = caseId,
         conditionType = conditions.conditionType!!.value,
         orderId = order.id.toString(),
@@ -194,9 +195,9 @@ data class MonitoringOrder(
       if (conditions.curfew != null && conditions.curfew!!) {
         val curfew = order.curfewConditions!!
         monitoringOrder.enforceableCondition!!.add(EnforceableCondition("Curfew with EM"))
-        monitoringOrder.conditionalReleaseDate = order.curfewReleaseDateConditions!!.releaseDate!!.format(formatter)
-        monitoringOrder.curfewStart = curfew.startDate!!.format(formatter)
-        monitoringOrder.curfewEnd = curfew.endDate?.format(formatter)
+        monitoringOrder.conditionalReleaseDate = order.curfewReleaseDateConditions?.releaseDate?.format(dateFormatter)
+        monitoringOrder.curfewStart = curfew.startDate!!.format(dateFormatter)
+        monitoringOrder.curfewEnd = curfew.endDate?.format(dateFormatter)
         monitoringOrder.curfewDuration = getCurfewSchedules(order, curfew)
       }
 
@@ -211,11 +212,11 @@ data class MonitoringOrder(
         monitoringOrder.enforceableCondition!!.add(EnforceableCondition("EM Exclusion / Inclusion Zone"))
         val condition = order.enforcementZoneConditions.first()
         if (condition.zoneType == EnforcementZoneType.EXCLUSION) {
-          monitoringOrder.exclusionZones = "true"
+          monitoringOrder.exclusionZones = "Yes"
           monitoringOrder.describeExclusion = condition.description
           monitoringOrder.exclusionZonesDuration = condition.duration
         } else if (condition.zoneType == EnforcementZoneType.INCLUSION) {
-          monitoringOrder.inclusionZones = "true"
+          monitoringOrder.inclusionZones = "Yes"
           monitoringOrder.inclusionZonesDuration = condition.duration
         }
         monitoringOrder.trailMonitoring = "Yes"
@@ -249,10 +250,17 @@ data class MonitoringOrder(
         monitoringOrder.responsibleOfficerPhone = interestedParties.responsibleOfficerPhoneNumber
         monitoringOrder.responsibleOrganization = interestedParties.responsibleOrganisation
         monitoringOrder.roRegion = interestedParties.responsibleOrganisationRegion
-        monitoringOrder.roPostCode = interestedParties.responsibleOrganisationAddress.postcode
         monitoringOrder.roPhone = interestedParties.responsibleOrganisationPhoneNumber
         monitoringOrder.roEmail = interestedParties.responsibleOrganisationEmail
         monitoringOrder.notifyingOrganization = interestedParties.notifyingOrganisation
+        val address = order.addresses.firstOrNull { it.addressType == AddressType.RESPONSIBLE_ORGANISATION }
+        if (address != null) {
+          monitoringOrder.roAddress1 = address.addressLine1
+          monitoringOrder.roAddress2 = address.addressLine2
+          monitoringOrder.roAddress3 = address.addressLine3
+          monitoringOrder.roAddress4 = address.addressLine4
+          monitoringOrder.roPostCode = address.postcode
+        }
       }
 
       return monitoringOrder
