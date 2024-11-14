@@ -81,7 +81,7 @@ class OrderServiceTest {
       orderSource = FmsOrderSource.CEMO,
       success = true,
     )
-    whenever(repo.findByUsernameAndId("mockUser", mockOrder.id)).thenReturn(mockOrder)
+    whenever(repo.findByUsernameAndId("mockUser", mockOrder.id)).thenReturn(Optional.of(mockOrder))
     whenever(fmsService.submitOrder(any<Order>(), eq(FmsOrderSource.CEMO))).thenReturn(
       mockFmsResult,
     )

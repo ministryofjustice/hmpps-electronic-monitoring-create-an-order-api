@@ -134,6 +134,111 @@ class OrderControllerTest : IntegrationTestBase() {
   }
 
   @Test
+  fun `DELETE should return an error if the order does not exist`() {
+    val id = UUID.randomUUID()
+    val result = webTestClient.delete()
+      .uri("/api/orders/$id")
+      .headers(setAuthorisation("AUTH_ADM"))
+      .exchange()
+      .expectStatus()
+      .isNotFound()
+      .expectBodyList(ErrorResponse::class.java)
+      .returnResult()
+
+    val error = result.responseBody!!.first()
+
+    assertThat(
+      error.developerMessage,
+    ).isEqualTo("An order with id $id does not exist")
+  }
+
+  @Test
+  fun `DELETE should return an error if the order belongs to another user`() {
+    val order = createOrder()
+    val result = webTestClient.delete()
+      .uri("/api/orders/${order.id}")
+      .headers(setAuthorisation("AUTH_ADM_2"))
+      .exchange()
+      .expectStatus()
+      .isNotFound()
+      .expectBodyList(ErrorResponse::class.java)
+      .returnResult()
+
+    val error = result.responseBody!!.first()
+
+    assertThat(
+      error.developerMessage,
+    ).isEqualTo("An order with id ${order.id} does not exist")
+  }
+
+  @Test
+  fun `DELETE should return an error if the order is in an error state`() {
+    val order = createOrder()
+
+    order.status = OrderStatus.ERROR
+    repo.save(order)
+
+    val result = webTestClient.delete()
+      .uri("/api/orders/${order.id}")
+      .headers(setAuthorisation("AUTH_ADM"))
+      .exchange()
+      .expectStatus()
+      .is5xxServerError()
+      .expectBodyList(ErrorResponse::class.java)
+      .returnResult()
+
+    val error = result.responseBody!!.first()
+
+    assertThat(
+      error.developerMessage,
+    ).isEqualTo("Order with id ${order.id} cannot be deleted because it is in an invalid state")
+  }
+
+  @Test
+  fun `DELETE should return an error if the order is in a submitted state`() {
+    val order = createOrder()
+
+    order.status = OrderStatus.SUBMITTED
+    repo.save(order)
+
+    val result = webTestClient.delete()
+      .uri("/api/orders/${order.id}")
+      .headers(setAuthorisation("AUTH_ADM"))
+      .exchange()
+      .expectStatus()
+      .is5xxServerError()
+      .expectBodyList(ErrorResponse::class.java)
+      .returnResult()
+
+    val error = result.responseBody!!.first()
+
+    assertThat(
+      error.developerMessage,
+    ).isEqualTo("Order with id ${order.id} cannot be deleted because it has already been submitted")
+  }
+
+  @Test
+  fun `DELETE should delete an in progress order`() {
+    val order = createOrder()
+
+    // Delete the order
+    webTestClient.delete()
+      .uri("/api/orders/${order.id}")
+      .headers(setAuthorisation("AUTH_ADM"))
+      .exchange()
+      .expectStatus()
+      .isNoContent
+
+    // Getting the order should return a not found
+    webTestClient.get()
+      .uri("/api/orders/${order.id}")
+      .headers(setAuthorisation("AUTH_ADM"))
+      .exchange()
+      .expectStatus()
+      .isNotFound
+  }
+
+  @Test
   fun `Should return not found if order does not exist when submitting order`() {
     webTestClient.post()
       .uri("/api/orders/${UUID.randomUUID()}/submit")
@@ -441,7 +546,7 @@ class OrderControllerTest : IntegrationTestBase() {
       	"conditional_release_date": "${mockStartDate.format(formatter)}",
       	"reason_for_order_ending_early": "",
       	"business_unit": "",
-      "service_end_date": "${mockEndDate.format(formatter)}",
+        "service_end_date": "${mockEndDate.format(formatter)}",
       	"curfew_start": "${mockStartDate.format(formatter)}",
       	"curfew_end": null,
       	"curfew_duration": [
