@@ -172,29 +172,6 @@ class OrderControllerTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `DELETE should return an error if the order is in an error state`() {
-    val order = createOrder()
-
-    order.status = OrderStatus.ERROR
-    repo.save(order)
-
-    val result = webTestClient.delete()
-      .uri("/api/orders/${order.id}")
-      .headers(setAuthorisation("AUTH_ADM"))
-      .exchange()
-      .expectStatus()
-      .is5xxServerError()
-      .expectBodyList(ErrorResponse::class.java)
-      .returnResult()
-
-    val error = result.responseBody!!.first()
-
-    assertThat(
-      error.developerMessage,
-    ).isEqualTo("Order with id ${order.id} cannot be deleted because it is in an invalid state")
-  }
-
-  @Test
   fun `DELETE should return an error if the order is in a submitted state`() {
     val order = createOrder()
 
