@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.Authentication
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -42,6 +43,15 @@ class OrderController(
     val order = orderService.getOrder(username, orderId)
 
     return ResponseEntity(order, HttpStatus.OK)
+  }
+
+  @DeleteMapping("/orders/{orderId}")
+  fun deleteOrder(@PathVariable orderId: UUID, authentication: Authentication): ResponseEntity<Void> {
+    val username = authentication.name
+
+    orderService.deleteOrder(orderId, username)
+
+    return ResponseEntity(HttpStatus.NO_CONTENT)
   }
 
   @GetMapping("/orders")
