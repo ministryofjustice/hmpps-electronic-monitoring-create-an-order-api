@@ -78,14 +78,118 @@ class OrderControllerTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `Only orders belonging to user returned from database`() {
+  fun `SEARCH should return orders when no searchTerm is provided`() {
+    createOrder("AUTH_ADM")
+
+    webTestClient.get()
+      .uri("/api/orders")
+      .headers(setAuthorisation("AUTH_ADM"))
+      .exchange()
+      .expectStatus()
+      .isOk
+      .expectBodyList(Order::class.java)
+      .hasSize(1)
+  }
+
+  @Test
+  fun `SEARCH should return orders when an empty searchTerm is provided`() {
+    createOrder("AUTH_ADM")
+
+    webTestClient.get()
+      .uri("/api/orders?searchTerm=")
+      .headers(setAuthorisation("AUTH_ADM"))
+      .exchange()
+      .expectStatus()
+      .isOk
+      .expectBodyList(Order::class.java)
+      .hasSize(1)
+  }
+
+  @Test
+  fun `SEARCH should return orders where the firstName matches the searchTerm`() {
+    val order = createOrder("AUTH_ADM")
+
+    order.deviceWearer = DeviceWearer(
+      orderId = order.id,
+      firstName = "John",
+    )
+    repo.save(order)
+
+    webTestClient.get()
+      .uri("/api/orders?searchTerm=John")
+      .headers(setAuthorisation("AUTH_ADM"))
+      .exchange()
+      .expectStatus()
+      .isOk
+      .expectBodyList(Order::class.java)
+      .hasSize(1)
+  }
+
+  @Test
+  fun `SEARCH should return orders where the lastName matches the searchTerm`() {
+    val order = createOrder("AUTH_ADM")
+
+    order.deviceWearer = DeviceWearer(
+      orderId = order.id,
+      lastName = "Smith",
+    )
+    repo.save(order)
+
+    webTestClient.get()
+      .uri("/api/orders?searchTerm=Smith")
+      .headers(setAuthorisation("AUTH_ADM"))
+      .exchange()
+      .expectStatus()
+      .isOk
+      .expectBodyList(Order::class.java)
+      .hasSize(1)
+  }
+
+  @Test
+  fun `SEARCH should return orders where the firstName matches the searchTerm with different casing`() {
+    val order = createOrder("AUTH_ADM")
+
+    order.deviceWearer = DeviceWearer(
+      orderId = order.id,
+      firstName = "John",
+    )
+    repo.save(order)
+
+    webTestClient.get()
+      .uri("/api/orders?searchTerm=john")
+      .headers(setAuthorisation("AUTH_ADM"))
+      .exchange()
+      .expectStatus()
+      .isOk
+      .expectBodyList(Order::class.java)
+      .hasSize(1)
+  }
+
+  @Test
+  fun `SEARCH should return orders where the lastName matches the searchTerm with different casing`() {
+    val order = createOrder("AUTH_ADM")
+
+    order.deviceWearer = DeviceWearer(
+      orderId = order.id,
+      lastName = "Smith",
+    )
+    repo.save(order)
+
+    webTestClient.get()
+      .uri("/api/orders?searchTerm=smith")
+      .headers(setAuthorisation("AUTH_ADM"))
+      .exchange()
+      .expectStatus()
+      .isOk
+      .expectBodyList(Order::class.java)
+      .hasSize(1)
+  }
+
+  @Test
+  fun `SEARCH should only return orders belonging to user`() {
     createOrder("AUTH_ADM")
     createOrder("AUTH_ADM")
     createOrder("AUTH_ADM_2")
-
-    // Verify the database is set up correctly
-    val allOrders = repo.findAll()
-    assertThat(allOrders).hasSize(3)
 
     webTestClient.get()
       .uri("/api/orders")
