@@ -212,12 +212,13 @@ data class MonitoringOrder(
         monitoringOrder.enforceableCondition!!.add(EnforceableCondition("EM Exclusion / Inclusion Zone"))
         val condition = order.enforcementZoneConditions.first()
         if (condition.zoneType == EnforcementZoneType.EXCLUSION) {
-          monitoringOrder.exclusionZones = "Yes"
+          monitoringOrder.exclusionZones = condition.zoneLocation
           monitoringOrder.describeExclusion = condition.description
           monitoringOrder.exclusionZonesDuration = condition.duration
         } else if (condition.zoneType == EnforcementZoneType.INCLUSION) {
-          monitoringOrder.inclusionZones = "Yes"
+          monitoringOrder.inclusionZones = condition.zoneLocation
           monitoringOrder.inclusionZonesDuration = condition.duration
+          monitoringOrder.describeExclusion = condition.description
         }
         monitoringOrder.trailMonitoring = "Yes"
       }

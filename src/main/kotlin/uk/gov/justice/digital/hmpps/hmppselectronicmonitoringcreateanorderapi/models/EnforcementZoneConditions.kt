@@ -12,6 +12,7 @@ import jakarta.validation.constraints.AssertTrue
 import jakarta.validation.constraints.Future
 import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Size
+import net.minidev.json.annotate.JsonIgnore
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.EnforcementZoneType
 import java.time.ZonedDateTime
 import java.util.*
@@ -57,6 +58,9 @@ data class EnforcementZoneConditions(
 
   @Column(name = "ZONE_ID", nullable = true)
   var zoneId: Int? = null,
+
+  @JsonIgnore
+  var zoneLocation: String? = "",
 
   @ManyToOne(optional = true)
   @JoinColumn(name = "ORDER_ID", updatable = false, insertable = false)

@@ -125,7 +125,14 @@ class HearingEventHandler(
         "Probation team to be notified email address 1",
       ) ?: "",
       notifyingOrganisation = hearing.courtCentre.name,
-      responsibleOrganisationAddress = order.addresses.first { it.addressType == AddressType.RESPONSIBLE_ORGANISATION },
+      responsibleOrganisationAddress =
+      Address(
+        orderId = order.id,
+        addressType = AddressType.RESPONSIBLE_ORGANISATION,
+        addressLine1 = "",
+        addressLine2 = "",
+        postcode = "",
+      ),
       responsibleOfficerName = "",
       responsibleOfficerPhoneNumber = null,
       responsibleOrganisationPhoneNumber = null,
@@ -217,15 +224,7 @@ class HearingEventHandler(
       )
     }
     order.deviceWearer = deviceWearer
-    order.addresses.add(
-      Address(
-        orderId = order.id,
-        addressType = AddressType.RESPONSIBLE_ORGANISATION,
-        addressLine1 = "N/A",
-        addressLine2 = "N/A",
-        postcode = "N/A",
-      ),
-    )
+
     val contact = person?.contact
     if (contact != null) {
       val contactDetails =
@@ -266,6 +265,7 @@ class HearingEventHandler(
 
     zone.endDate = endDate
     zone.duration = getPromptValue(prompts, "Exclusion and electronic monitoring period")
+    zone.zoneLocation = getPromptValue(prompts, "Place / area")
     zone.description = judicialResult.resultText
 
     return zone

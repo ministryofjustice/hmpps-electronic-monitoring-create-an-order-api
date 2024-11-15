@@ -86,6 +86,15 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
     await().until { getNumberOfMessagesCurrentlyOnEventQueue() == 0 }
     verify(eventHandler, Times(0)).handleHearingEvent(any())
   }
+
+  @Test
+  fun `Will not process a Scotland community order hearing event`() {
+    val rawMessage = generateRawHearingEventMessage("src/test/resources/json/Community_order_Scotland.json")
+    sendDomainSqsMessage(rawMessage)
+    await().until { getNumberOfMessagesCurrentlyOnEventQueue() == 0 }
+    verify(eventHandler, Times(0)).handleHearingEvent(any())
+  }
+
   fun String.removeWhitespaceAndNewlines(): String = this.replace("(\"[^\"]*\")|\\s".toRegex(), "\$1")
 
   @Test
@@ -97,6 +106,12 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
   @Test
   fun `Will map SSO_YOUNG_OFFENDER_INSTITUTION_DETENTION request and submit to FMS`() {
     val rootFilePath = "src/test/resources/json/SSO_YOUNG_OFFENDER_INSTITUTION_DETENTION"
+    runPayloadTest(rootFilePath)
+  }
+
+  @Test
+  fun `Will map SSO_INPRISONMENT request and submit to FMS`() {
+    val rootFilePath = "src/test/resources/json/SSO_INPRISONMENT"
     runPayloadTest(rootFilePath)
   }
 
