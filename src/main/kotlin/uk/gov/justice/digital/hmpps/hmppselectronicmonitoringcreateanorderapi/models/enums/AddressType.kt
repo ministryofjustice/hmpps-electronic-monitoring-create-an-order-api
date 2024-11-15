@@ -1,7 +1,5 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums
 
-import java.util.*
-
 enum class AddressType {
   PRIMARY,
   SECONDARY,

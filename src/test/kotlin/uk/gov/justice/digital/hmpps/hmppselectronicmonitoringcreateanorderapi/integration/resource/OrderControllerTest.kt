@@ -52,6 +52,7 @@ class OrderControllerTest : IntegrationTestBase() {
   val mockStartDate: ZonedDateTime = ZonedDateTime.now().plusMonths(1)
   val mockEndDate: ZonedDateTime = ZonedDateTime.now().plusMonths(2)
   private val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+  private val dateTimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
 
   @BeforeEach
   fun setup() {
@@ -590,10 +591,10 @@ class OrderControllerTest : IntegrationTestBase() {
       	"no_phone_number": "",
       	"offence": "Fraud Offences",
       	"offence_date": "",
-      	"order_end": "${mockEndDate.format(formatter)}",
+      	"order_end": "${mockEndDate.format(dateTimeFormatter)}",
       	"order_id": "${order.id}",
       	"order_request_type": "",
-      	"order_start": "${mockStartDate.format(formatter)}",
+      	"order_start": "${mockStartDate.format(dateTimeFormatter)}",
       	"order_type": "community",
       	"order_type_description": "DAPOL",
       	"order_type_detail": "",
@@ -610,8 +611,8 @@ class OrderControllerTest : IntegrationTestBase() {
       	"responsible_officer_name": "John Smith",
       	"responsible_organization": "Avon and Somerset Constabulary",
       	"ro_post_code": "AB11 1CD",
-      	"ro_address_1": "",
-      	"ro_address_2": "",
+      	"ro_address_1": "Line 1",
+      	"ro_address_2": "Line 2",
       	"ro_address_3": "",
       	"ro_address_4": "",
       	"ro_email": "abc@def.com",
@@ -715,7 +716,7 @@ class OrderControllerTest : IntegrationTestBase() {
       		}
       	],
       	"trail_monitoring": "Yes",
-      	"exclusion_zones": "true",
+      	"exclusion_zones": "",
       	"exclusion_zones_duration": "Mock Exclusion Duration",
       	"inclusion_zones": "",
       	"inclusion_zones_duration": "",
