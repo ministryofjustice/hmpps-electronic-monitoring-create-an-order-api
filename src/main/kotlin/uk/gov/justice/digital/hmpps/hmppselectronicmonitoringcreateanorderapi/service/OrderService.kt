@@ -95,9 +95,5 @@ class OrderService(
     return repo.findAll(
       OrderSpecification(searchCriteria),
     )
-
-//    return repo.findByUsername(
-//      username,
-//    )
   }
 }
