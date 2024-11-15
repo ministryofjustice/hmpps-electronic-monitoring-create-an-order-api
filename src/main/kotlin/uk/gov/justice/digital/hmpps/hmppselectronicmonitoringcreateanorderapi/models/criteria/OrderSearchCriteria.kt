@@ -1,5 +1,6 @@
-package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto
+package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria
 
-data class SearchOrdersDto(
+data class OrderSearchCriteria(
   val searchTerm: String = "",
+  val username: String,
 )
