@@ -79,8 +79,6 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
     Assertions.assertThat(
       updateMonitoringConditions.responseBody?.conditionType,
     ).isEqualTo(mockConditionType)
-    Assertions.assertThat(updateMonitoringConditions.responseBody?.acquisitiveCrime).isTrue()
-    Assertions.assertThat(updateMonitoringConditions.responseBody?.dapol).isTrue()
     Assertions.assertThat(updateMonitoringConditions.responseBody?.curfew).isTrue()
     Assertions.assertThat(updateMonitoringConditions.responseBody?.exclusionZone).isTrue()
     Assertions.assertThat(updateMonitoringConditions.responseBody?.trail).isTrue()
@@ -158,8 +156,6 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
       .returnResult()
 
     Assertions.assertThat(updateMonitoringConditions.responseBody?.orderId).isEqualTo(order.id)
-    Assertions.assertThat(updateMonitoringConditions.responseBody?.acquisitiveCrime).isNull()
-    Assertions.assertThat(updateMonitoringConditions.responseBody?.dapol).isNull()
   }
 
   @Test
@@ -196,15 +192,12 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
       .returnResult()
 
     Assertions.assertThat(result.responseBody).isNotNull
-    Assertions.assertThat(result.responseBody).hasSize(4)
+    Assertions.assertThat(result.responseBody).hasSize(3)
     Assertions.assertThat(result.responseBody!!).contains(
       ValidationError("orderType", "Order type is required"),
     )
     Assertions.assertThat(result.responseBody!!).contains(
       ValidationError("conditionType", "Condition type is required"),
-    )
-    Assertions.assertThat(result.responseBody!!).contains(
-      ValidationError("orderTypeDescription", "Order type description type is required"),
     )
     Assertions.assertThat(result.responseBody!!).contains(
       ValidationError("startDate", "Monitoring conditions start date is required"),
@@ -351,8 +344,6 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
       .returnResult()
 
     Assertions.assertThat(updateMonitoringConditions.responseBody?.orderId).isEqualTo(order.id)
-    Assertions.assertThat(updateMonitoringConditions.responseBody?.acquisitiveCrime).isNull()
-    Assertions.assertThat(updateMonitoringConditions.responseBody?.dapol).isNull()
     Assertions.assertThat(updateMonitoringConditions.responseBody?.curfew).isTrue()
     Assertions.assertThat(updateMonitoringConditions.responseBody?.exclusionZone).isNull()
     Assertions.assertThat(updateMonitoringConditions.responseBody?.trail).isNull()

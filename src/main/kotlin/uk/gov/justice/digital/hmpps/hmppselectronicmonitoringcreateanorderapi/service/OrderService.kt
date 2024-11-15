@@ -31,6 +31,27 @@ class OrderService(
     return order
   }
 
+  fun deleteOrder(id: UUID, username: String) {
+    val order = repo.findByUsernameAndId(username, id).orElseThrow {
+      EntityNotFoundException("An order with id $id does not exist")
+    }
+
+    if (order.status == OrderStatus.SUBMITTED) {
+      throw Exception("Order with id $id cannot be deleted because it has already been submitted")
+    }
+
+    repo.delete(order)
+  }
+
+  fun getOrder(username: String, id: UUID): Order? {
+    return repo.findByUsernameAndId(
+      username,
+      id,
+    ).orElseThrow {
+      EntityNotFoundException("Order ($id) for $username not found")
+    }
+  }
+
   fun submitOrder(id: UUID, username: String): Order {
     val order = getOrder(username, id)!!
 
@@ -72,12 +93,5 @@ class OrderService(
     return repo.findByUsername(
       username,
     )
-  }
-
-  fun getOrder(username: String, id: UUID): Order? {
-    return repo.findByUsernameAndId(
-      username,
-      id,
-    ) ?: throw EntityNotFoundException("Order ($id) for $username not found")
   }
 }
