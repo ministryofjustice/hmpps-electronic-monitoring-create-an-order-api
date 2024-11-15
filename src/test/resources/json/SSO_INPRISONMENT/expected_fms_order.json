@@ -7,7 +7,7 @@
   "court_order_email": "",
   "describe_exclusion": "ERLPEM - Exclusion not to leave a place for a period with electronic monitoring\nExclusion Requirement with Electronic Monitoring: Not to leave 11 Copperfields Avenue\nSE30 5MJ. This exclusion with electronic monitoring lasts for 5 Months. Start date 10/11/2024. Start time 10:00. End date 10/05/2025. End time 10:00. ",
   "device_type": "",
-  "device_wearer": "Madaline Hayes",
+  "device_wearer": "Person Mock",
   "enforceable_condition": [
     {
       "condition": "EM Exclusion / Inclusion Zone"

@@ -323,7 +323,7 @@
                             "personDetails": {
                                 "address": {
                                     "address1": "21",
-                                    "address2": "Furnburry Park Road",
+                                    "address2": "Test Road",
                                     "address3": "London",
                                     "postcode": "SW11 3TQ"
                                 },
@@ -340,10 +340,10 @@
                                     "selfDefinedEthnicityDescription": "British",
                                     "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
                                 },
-                                "firstName": "Janie",
+                                "firstName": "Person",
                                 "gender": "MALE",
                                 "hearingLanguageNeeds": "ENGLISH",
-                                "lastName": "Ernser",
+                                "lastName": "Mock",
                                 "occupation": "Accountant",
                                 "occupationCode": "2201",
                                 "title": "MR"
