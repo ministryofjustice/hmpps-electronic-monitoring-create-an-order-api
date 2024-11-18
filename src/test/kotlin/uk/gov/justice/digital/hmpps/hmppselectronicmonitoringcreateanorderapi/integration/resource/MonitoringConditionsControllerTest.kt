@@ -30,6 +30,8 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
   private val mockConditionType = MonitoringConditionType.LICENSE_CONDITION_OF_A_CUSTODIAL_ORDER
   private val mockStartDate = ZonedDateTime.now(ZoneId.of("UTC")).plusMonths(1)
   private val mockEndDate = ZonedDateTime.now(ZoneId.of("UTC")).plusMonths(2)
+  private val mockStartTime = "18:00:00"
+  private val mockEndTime = "07:00:00"
 
   @BeforeEach
   fun setup() {
@@ -57,7 +59,9 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
               "mandatoryAttendance": "true",
               "alcohol": "true",
               "startDate": "$mockStartDate",
-              "endDate": "$mockEndDate"
+              "startTime": "$mockStartTime",
+              "endDate": "$mockEndDate",
+              "endTime": "$mockEndTime"
             }
           """.trimIndent(),
         ),
@@ -107,7 +111,8 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
               "curfew": true,
               "orderTypeDescription": "$mockOrderTypeDescription",
               "conditionType": "$mockConditionType",
-              "startDate": "$mockStartDate"
+              "startDate": "$mockStartDate",
+              "startTime": "$mockStartTime"
             }
           """.trimIndent(),
         ),
@@ -143,7 +148,9 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
               "mandatoryAttendance": "true",
               "alcohol": "true",
               "startDate": "$mockStartDate",
-              "endDate": "$mockEndDate"
+              "startTime": "$mockStartTime",
+              "endDate": null,
+              "endTime": null
             }
           """.trimIndent(),
         ),
@@ -179,7 +186,9 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
               "mandatoryAttendance": "true",
               "alcohol": "true",
               "startDate": null,
-              "endDate": null
+              "startTime": null,
+              "endDate": null,
+              "endTime": null
             }
           """.trimIndent(),
         ),
@@ -192,7 +201,7 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
       .returnResult()
 
     Assertions.assertThat(result.responseBody).isNotNull
-    Assertions.assertThat(result.responseBody).hasSize(3)
+    Assertions.assertThat(result.responseBody).hasSize(4)
     Assertions.assertThat(result.responseBody!!).contains(
       ValidationError("orderType", "Order type is required"),
     )
@@ -201,6 +210,9 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
     )
     Assertions.assertThat(result.responseBody!!).contains(
       ValidationError("startDate", "Monitoring conditions start date is required"),
+    )
+    Assertions.assertThat(result.responseBody!!).contains(
+      ValidationError("startTime", "Monitoring conditions start time is required"),
     )
   }
 
@@ -226,7 +238,9 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
               "mandatoryAttendance": "true",
               "alcohol": "true",
               "startDate": "$mockPastStartDate",
-              "endDate": null
+              "startTime": "$mockStartTime",
+              "endDate": null,
+              "endTime": null
             }
           """.trimIndent(),
         ),
@@ -259,7 +273,9 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
               "mandatoryAttendance": "true",
               "alcohol": "true",
               "startDate": "$mockStartDate",
-              "endDate": "${mockStartDate.plusDays(-10)}"
+              "startTime": "$mockStartTime",
+              "endDate": "${mockStartDate.plusDays(-10)}",
+              "endTime": "$mockEndTime"
             }
           """.trimIndent(),
         ),
@@ -299,7 +315,9 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
               "mandatoryAttendance": null,
               "alcohol": null,
               "startDate": "$mockStartDate",
-              "endDate": "$mockEndDate"
+              "startTime": "$mockStartTime",
+              "endDate": "$mockEndDate",
+              "endTime": "$mockEndTime"
             }
           """.trimIndent(),
         ),
@@ -331,7 +349,9 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
               "mandatoryAttendance": null,
               "alcohol": null,
               "startDate": "$mockStartDate",
-              "endDate": "$mockEndDate"
+              "startTime": "$mockStartTime",
+              "endDate": "$mockEndDate",
+              "endTime": "$mockEndTime"
             }
           """.trimIndent(),
         ),
@@ -372,7 +392,9 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
               "mandatoryAttendance": "true",
               "alcohol": "true",
               "startDate": "$mockStartDate",
-              "endDate": "$mockEndDate"
+              "startTime": "$mockStartTime",
+              "endDate": "$mockEndDate",
+              "endTime": "$mockEndTime"
             }
           """.trimIndent(),
         ),
@@ -408,7 +430,9 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
               "mandatoryAttendance": "true",
               "alcohol": "true",
               "startDate": "$mockStartDate",
-              "endDate": "$mockEndDate"
+              "startTime": "$mockStartTime",
+              "endDate": "$mockEndDate",
+              "endTime": "$mockEndTime"
             }
           """.trimIndent(),
         ),
@@ -440,7 +464,9 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
               "mandatoryAttendance": "true",
               "alcohol": "true",
               "startDate": "$mockStartDate",
-              "endDate": "$mockEndDate"
+              "startTime": "$mockStartTime",
+              "endDate": "$mockEndDate",
+              "endTime": "$mockEndTime"
             }
           """.trimIndent(),
         ),

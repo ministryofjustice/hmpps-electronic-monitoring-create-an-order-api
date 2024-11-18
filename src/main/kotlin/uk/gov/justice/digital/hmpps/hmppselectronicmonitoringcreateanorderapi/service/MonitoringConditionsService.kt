@@ -28,7 +28,9 @@ class MonitoringConditionsService(
     with(monitoringConditionsUpdateRecord) {
       monitoringConditions.orderType = orderType
       monitoringConditions.startDate = startDate
+      monitoringConditions.startTime = startTime
       monitoringConditions.endDate = endDate
+      monitoringConditions.endTime = endTime
       monitoringConditions.orderTypeDescription = orderTypeDescription
       monitoringConditions.conditionType = conditionType
       monitoringConditions.curfew = curfew

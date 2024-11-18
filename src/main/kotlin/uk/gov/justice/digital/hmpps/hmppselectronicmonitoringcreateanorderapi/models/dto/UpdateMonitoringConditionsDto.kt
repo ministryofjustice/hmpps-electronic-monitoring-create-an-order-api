@@ -20,7 +20,12 @@ data class UpdateMonitoringConditionsDto(
   @field:NotNull(message = "Monitoring conditions start date is required")
   var startDate: ZonedDateTime? = null,
 
+  @field:NotNull(message = "Monitoring conditions start time is required")
+  var startTime: String? = null,
+
   var endDate: ZonedDateTime? = null,
+
+  var endTime: String? = null,
 
   var exclusionZone: Boolean? = null,
 

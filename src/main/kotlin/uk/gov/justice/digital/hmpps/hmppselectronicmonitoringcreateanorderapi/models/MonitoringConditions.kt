@@ -26,8 +26,14 @@ data class MonitoringConditions(
   @Column(name = "START_DATE", nullable = true)
   var startDate: ZonedDateTime? = null,
 
+  @Column(name = "START_TIME", nullable = true)
+  var startTime: String? = null,
+
   @Column(name = "END_DATE", nullable = true)
   var endDate: ZonedDateTime? = null,
+
+  @Column(name = "END_TIME", nullable = true)
+  var endTime: String? = null,
 
   @Column(name = "ORDER_TYPE", nullable = true)
   var orderType: String? = null,
