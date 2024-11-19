@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models
 
+import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.persistence.Column
 import jakarta.persistence.Convert
 import jakarta.persistence.Entity
@@ -36,6 +37,7 @@ data class InstallationAndRisk(
   @Column(name = "MAPPA_CASE_TYPE", nullable = true)
   var mappaCaseType: String? = "",
 
+  @Schema(hidden = true)
   @OneToOne
   @JoinColumn(name = "ORDER_ID", updatable = false, insertable = false)
   private val order: Order? = null,
