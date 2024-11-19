@@ -177,12 +177,21 @@ data class MonitoringOrder(
     private val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
     fun fromOrder(order: Order, caseId: String?): MonitoringOrder {
       val conditions = order.monitoringConditions!!
+
+      fun dateTime(date: String?, time: String?): String? {
+        return if (date.isNullOrEmpty() || time.isNullOrEmpty()) {
+          date
+        } else {
+          "$date $time"
+        }
+      }
+
       val monitoringOrder = MonitoringOrder(
         deviceWearer = "${order.deviceWearer!!.firstName} ${order.deviceWearer!!.lastName}",
         orderType = conditions.orderType,
         orderTypeDescription = conditions.orderTypeDescription?.value,
-        orderStart = conditions.startDate?.format(formatter),
-        orderEnd = conditions.endDate?.format(formatter),
+        orderStart = dateTime(conditions.startDate?.format(formatter), conditions.startTime),
+        orderEnd = dateTime(conditions.endDate?.format(formatter), conditions.endTime),
         serviceEndDate = conditions.endDate?.format(formatter),
         caseId = caseId,
         conditionType = conditions.conditionType!!.value,
