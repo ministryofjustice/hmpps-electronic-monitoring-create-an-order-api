@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models
 
+import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
@@ -50,6 +51,7 @@ data class AlcoholMonitoringConditions(
   @JoinColumn(name = "ORDER_ID", updatable = false, insertable = false)
   private val order: Order? = null,
 
+  @Schema(hidden = true)
   @OneToOne(optional = true)
   @JoinColumn(
     name = "INSTALLATION_ADDRESS_ID",
