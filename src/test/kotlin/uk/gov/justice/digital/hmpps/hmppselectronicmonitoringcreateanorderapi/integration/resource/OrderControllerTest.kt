@@ -52,6 +52,8 @@ class OrderControllerTest : IntegrationTestBase() {
   val mockStartDate: ZonedDateTime = ZonedDateTime.now().plusMonths(1)
   val mockEndDate: ZonedDateTime = ZonedDateTime.now().plusMonths(2)
   private val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+  val mockStartTime: String = "12:30"
+  val mockEndTime: String = "07:00"
 
   @BeforeEach
   fun setup() {
@@ -486,10 +488,10 @@ class OrderControllerTest : IntegrationTestBase() {
       	"no_phone_number": "",
       	"offence": "Fraud Offences",
       	"offence_date": "",
-      	"order_end": "${mockEndDate.format(formatter)}",
+      	"order_end": "${mockEndDate.format(formatter)} $mockEndTime",
       	"order_id": "${order.id}",
       	"order_request_type": "",
-      	"order_start": "${mockStartDate.format(formatter)}",
+      	"order_start": "${mockStartDate.format(formatter)} $mockStartTime",
       	"order_type": "community",
       	"order_type_description": "DAPOL",
       	"order_type_detail": "",
@@ -814,7 +816,9 @@ class OrderControllerTest : IntegrationTestBase() {
       orderType = "community",
       orderTypeDescription = OrderTypeDescription.DAPOL,
       startDate = mockStartDate,
+      startTime = mockStartTime,
       endDate = mockEndDate,
+      endTime = mockEndTime,
       curfew = true,
       trail = true,
       exclusionZone = true,

@@ -95,6 +95,8 @@ class OrderServiceTest {
 
   val mockStartDate: ZonedDateTime = ZonedDateTime.now().plusMonths(1)
   val mockEndDate: ZonedDateTime = ZonedDateTime.now().plusMonths(2)
+  val mockStartTime = "11:30:00"
+  val mockEndTime = "07:00:00"
   private fun createReadyToSubmitOrder(noFixedAddress: Boolean = false): Order {
     val order = Order(
       username = "AUTH_ADM",
@@ -175,7 +177,9 @@ class OrderServiceTest {
       orderType = "community",
       orderTypeDescription = OrderTypeDescription.DAPOL,
       startDate = mockStartDate,
+      startTime = mockStartTime,
       endDate = mockEndDate,
+      endTime = mockEndTime,
       curfew = true,
       trail = true,
       exclusionZone = true,
