@@ -86,12 +86,37 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
     await().until { getNumberOfMessagesCurrentlyOnEventQueue() == 0 }
     verify(eventHandler, Times(0)).handleHearingEvent(any())
   }
+
+  @Test
+  fun `Will not process a Scotland community order hearing event`() {
+    val rawMessage = generateRawHearingEventMessage("src/test/resources/json/Community_order_Scotland.json")
+    sendDomainSqsMessage(rawMessage)
+    await().until { getNumberOfMessagesCurrentlyOnEventQueue() == 0 }
+    verify(eventHandler, Times(0)).handleHearingEvent(any())
+  }
+
   fun String.removeWhitespaceAndNewlines(): String = this.replace("(\"[^\"]*\")|\\s".toRegex(), "\$1")
 
   @Test
   fun `Will map COEW AAR request and submit to FMS`() {
-    val rawMessage = generateRawHearingEventMessage("src/test/resources/json/COEW_AAR.json")
+    val rootFilePath = "src/test/resources/json/COEW_AAR"
+    runPayloadTest(rootFilePath)
+  }
 
+  @Test
+  fun `Will map SSO_YOUNG_OFFENDER_INSTITUTION_DETENTION request and submit to FMS`() {
+    val rootFilePath = "src/test/resources/json/SSO_YOUNG_OFFENDER_INSTITUTION_DETENTION"
+    runPayloadTest(rootFilePath)
+  }
+
+  @Test
+  fun `Will map SSO_INPRISONMENT request and submit to FMS`() {
+    val rootFilePath = "src/test/resources/json/SSO_INPRISONMENT"
+    runPayloadTest(rootFilePath)
+  }
+
+  fun runPayloadTest(rootFilePath: String) {
+    val rawMessage = generateRawHearingEventMessage("$rootFilePath/cp_payload.json")
     sercoApi.stupCreateDeviceWearer(
       HttpStatus.OK,
       FmsResponse(result = listOf(FmsResult(message = "", id = "MockDeviceWearerId"))),
@@ -100,149 +125,15 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
       HttpStatus.OK,
       FmsResponse(result = listOf(FmsResult(message = "", id = "MockMonitoringOrderId"))),
     )
-
     sendDomainSqsMessage(rawMessage)
     await().until { repo.count().toInt() != 0 || getNumberOfMessagesCurrentlyOnDeadLetterQueue() != 0 }
     assertThat(getNumberOfMessagesCurrentlyOnDeadLetterQueue()).isEqualTo(0)
     val savedResult = repo.findAll().first()
     assertThat(savedResult).isNotNull
-
-    val mockDeviceWearerJson = """
-      {
-      "title": "",
-      "first_name": "Janie",
-      "middle_name": "",
-      "last_name": "Ernser",
-      "alias": null,
-      "date_of_birth": "1991-02-18",
-      "adult_child": "adult",
-      "sex": "MALE",
-      "gender_identity": "MALE",
-      "disability": [],
-      "address_1": "21",
-      "address_2": "Furnburry Park Road",
-      "address_3": "London",
-      "address_4": "N/A",
-      "address_post_code": "SW11 3TQ",
-      "secondary_address_1": "",
-      "secondary_address_2": "",
-      "secondary_address_3": "",
-      "secondary_address_4": "",
-      "secondary_address_post_code": "",
-      "phone_number": "01472544375",
-      "risk_serious_harm": "",
-      "risk_self_harm": "",
-      "risk_details": null,
-      "mappa": null,
-      "mappa_case_type": null,
-      "risk_categories": [],
-      "responsible_adult_required": "false",
-      "parent": "null",
-      "guardian": "",
-      "parent_address_1": "",
-      "parent_address_2": "",
-      "parent_address_3": "",
-      "parent_address_4": "",
-      "parent_address_post_code": "",
-      "parent_phone_number": null,
-      "parent_dob": "",
-      "pnc_id": null,
-      "nomis_id": null,
-      "delius_id": null,
-      "prison_number": null,
-      "home_office_case_reference_number": null,
-      "interpreter_required": null,
-      "language": null
-    }
-     """
-    val mockOrderJson = """
-      {
-	"case_id": "MockDeviceWearerId",
-	"allday_lockdown": "",
-	"atv_allowance": "",
-	"condition_type": "Requirement of a Community Order",
-	"court": "",
-	"court_order_email": "",
-	"describe_exclusion": "",
-	"device_type": "",
-	"device_wearer": "Janie Ernser",
-	"enforceable_condition": [
-		{
-			"condition": "AAMR"
-		}
-	],
-	"exclusion_allday": "",
-	"interim_court_date": "",
-	"issuing_organisation": "",
-	"media_interest": "",
-	"new_order_received": "",
-	"notifying_officer_email": "",
-	"notifying_officer_name": "",
-	"notifying_organization": "Lavender Hill Magistrates' Court",
-	"no_post_code": "",
-	"no_address_1": "",
-	"no_address_2": "",
-	"no_address_3": "",
-	"no_address_4": "",
-	"no_email": "",
-	"no_name": "",
-	"no_phone_number": "",
-	"offence": null,
-	"offence_date": "",
-	"order_end": "2025-12-12",
-	"order_id": "${savedResult.id}",
-	"order_request_type": "",
-	"order_start": "2024-10-21",
-	"order_type": "Community",
-	"order_type_description": null,
-	"order_type_detail": "",
-	"order_variation_date": "",
-	"order_variation_details": "",
-	"order_variation_req_received_date": "",
-	"order_variation_type": "",
-	"pdu_responsible": "",
-	"pdu_responsible_email": "",
-	"planned_order_end_date": "",
-	"responsible_officer_details_received": "",
-	"responsible_officer_email": "",
-	"responsible_officer_phone": null,
-	"responsible_officer_name": "",
-	"responsible_organization": "Probation",
-	"ro_post_code": "SW11 1JU",
-	"ro_address_1": "",
-	"ro_address_2": "",
-	"ro_address_3": "",
-	"ro_address_4": "",
-	"ro_email": "londonnps.court@justice.gov.uk",
-	"ro_phone": null,
-	"ro_region": "London Division NPS",
-	"sentence_date": "",
-	"sentence_expiry": "",
-	"tag_at_source": "",
-	"tag_at_source_details": "",
-	"technical_bail": "",
-	"trial_date": "",
-	"trial_outcome": "",
-	"conditional_release_date": "",
-	"reason_for_order_ending_early": "",
-	"business_unit": "",
-	"service_end_date": "2025-12-12",
-	"curfew_start": "",
-	"curfew_end": "",
-	"curfew_duration": [],
-	"trail_monitoring": "",
-	"exclusion_zones": "",
-	"exclusion_zones_duration": "",
-	"inclusion_zones": "",
-	"inclusion_zones_duration": "",
-	"abstinence": "Yes",
-	"schedule": "",
-	"checkin_schedule": "",
-	"revocation_date": "",
-	"revocation_type": "",
-	"order_status": "Not Started"
-}
-    """.trimIndent()
+    val mockDeviceWearerJson = Files.readString(Paths.get("$rootFilePath/expected_fms_device_wearer.json"))
+    val mockOrderJson = Files.readString(
+      Paths.get("$rootFilePath/expected_fms_order.json"),
+    ).replace("{expectedOderId}", savedResult.id.toString())
     assertThat(savedResult.fmsDeviceWearerRequest).isEqualTo(mockDeviceWearerJson.removeWhitespaceAndNewlines())
     assertThat(savedResult.fmsOrderRequest).isEqualTo(mockOrderJson.removeWhitespaceAndNewlines())
     assertThat(savedResult.success).isTrue()

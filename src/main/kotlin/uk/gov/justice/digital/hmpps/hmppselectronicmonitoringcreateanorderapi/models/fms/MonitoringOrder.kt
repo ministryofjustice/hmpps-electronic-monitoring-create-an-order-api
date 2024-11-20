@@ -174,13 +174,14 @@ data class MonitoringOrder(
 ) {
 
   companion object {
-    private val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+    private val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+    private val dateTimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
     fun fromOrder(order: Order, caseId: String?): MonitoringOrder {
       val conditions = order.monitoringConditions!!
 
       fun dateTime(date: String?, time: String?): String? {
         return if (date.isNullOrEmpty() || time.isNullOrEmpty()) {
-          date
+          "$date 00:00:00"
         } else {
           "$date $time"
         }
@@ -190,9 +191,12 @@ data class MonitoringOrder(
         deviceWearer = "${order.deviceWearer!!.firstName} ${order.deviceWearer!!.lastName}",
         orderType = conditions.orderType,
         orderTypeDescription = conditions.orderTypeDescription?.value,
-        orderStart = dateTime(conditions.startDate?.format(formatter), conditions.startTime),
-        orderEnd = dateTime(conditions.endDate?.format(formatter), conditions.endTime),
-        serviceEndDate = conditions.endDate?.format(formatter),
+        orderStart = dateTime(conditions.startDate?.format(dateFormatter), conditions.startTime),
+        orderEnd = dateTime(conditions.endDate?.format(dateFormatter), conditions.endTime),
+        serviceEndDate = conditions.endDate?.format(dateFormatter),
+        // orderStart = conditions.startDate?.format(dateTimeFormatter),
+        // orderEnd = conditions.endDate?.format(dateTimeFormatter),
+        // serviceEndDate = conditions.endDate?.format(dateFormatter),
         caseId = caseId,
         conditionType = conditions.conditionType!!.value,
         orderId = order.id.toString(),
@@ -203,9 +207,9 @@ data class MonitoringOrder(
       if (conditions.curfew != null && conditions.curfew!!) {
         val curfew = order.curfewConditions!!
         monitoringOrder.enforceableCondition!!.add(EnforceableCondition("Curfew with EM"))
-        monitoringOrder.conditionalReleaseDate = order.curfewReleaseDateConditions!!.releaseDate!!.format(formatter)
-        monitoringOrder.curfewStart = curfew.startDate!!.format(formatter)
-        monitoringOrder.curfewEnd = curfew.endDate?.format(formatter)
+        monitoringOrder.conditionalReleaseDate = order.curfewReleaseDateConditions?.releaseDate?.format(dateFormatter)
+        monitoringOrder.curfewStart = curfew.startDate!!.format(dateFormatter)
+        monitoringOrder.curfewEnd = curfew.endDate?.format(dateFormatter)
         monitoringOrder.curfewDuration = getCurfewSchedules(order, curfew)
       }
 
@@ -220,12 +224,13 @@ data class MonitoringOrder(
         monitoringOrder.enforceableCondition!!.add(EnforceableCondition("EM Exclusion / Inclusion Zone"))
         val condition = order.enforcementZoneConditions.first()
         if (condition.zoneType == EnforcementZoneType.EXCLUSION) {
-          monitoringOrder.exclusionZones = "true"
+          monitoringOrder.exclusionZones = condition.zoneLocation
           monitoringOrder.describeExclusion = condition.description
           monitoringOrder.exclusionZonesDuration = condition.duration
         } else if (condition.zoneType == EnforcementZoneType.INCLUSION) {
-          monitoringOrder.inclusionZones = "true"
+          monitoringOrder.inclusionZones = condition.zoneLocation
           monitoringOrder.inclusionZonesDuration = condition.duration
+          monitoringOrder.describeExclusion = condition.description
         }
         monitoringOrder.trailMonitoring = "Yes"
       }
@@ -258,10 +263,17 @@ data class MonitoringOrder(
         monitoringOrder.responsibleOfficerPhone = interestedParties.responsibleOfficerPhoneNumber
         monitoringOrder.responsibleOrganization = interestedParties.responsibleOrganisation
         monitoringOrder.roRegion = interestedParties.responsibleOrganisationRegion
-        monitoringOrder.roPostCode = interestedParties.responsibleOrganisationAddress.postcode
         monitoringOrder.roPhone = interestedParties.responsibleOrganisationPhoneNumber
         monitoringOrder.roEmail = interestedParties.responsibleOrganisationEmail
         monitoringOrder.notifyingOrganization = interestedParties.notifyingOrganisation
+        val address = order.addresses.firstOrNull { it.addressType == AddressType.RESPONSIBLE_ORGANISATION }
+        if (address != null) {
+          monitoringOrder.roAddress1 = address.addressLine1
+          monitoringOrder.roAddress2 = address.addressLine2
+          monitoringOrder.roAddress3 = address.addressLine3
+          monitoringOrder.roAddress4 = address.addressLine4
+          monitoringOrder.roPostCode = address.postcode
+        }
       }
 
       return monitoringOrder

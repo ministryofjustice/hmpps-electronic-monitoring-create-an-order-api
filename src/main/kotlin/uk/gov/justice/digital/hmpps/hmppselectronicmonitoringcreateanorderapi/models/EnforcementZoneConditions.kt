@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models
 
+import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
@@ -12,6 +13,7 @@ import jakarta.validation.constraints.AssertTrue
 import jakarta.validation.constraints.Future
 import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Size
+import net.minidev.json.annotate.JsonIgnore
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.EnforcementZoneType
 import java.time.ZonedDateTime
 import java.util.*
@@ -58,6 +60,10 @@ data class EnforcementZoneConditions(
   @Column(name = "ZONE_ID", nullable = true)
   var zoneId: Int? = null,
 
+  @JsonIgnore
+  var zoneLocation: String? = "",
+
+  @Schema(hidden = true)
   @ManyToOne(optional = true)
   @JoinColumn(name = "ORDER_ID", updatable = false, insertable = false)
   private val order: Order? = null,

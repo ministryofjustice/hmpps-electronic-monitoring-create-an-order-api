@@ -52,6 +52,7 @@ class OrderControllerTest : IntegrationTestBase() {
   val mockStartDate: ZonedDateTime = ZonedDateTime.now().plusMonths(1)
   val mockEndDate: ZonedDateTime = ZonedDateTime.now().plusMonths(2)
   private val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+  private val dateTimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
   val mockStartTime: String = "12:30"
   val mockEndTime: String = "07:00"
 
@@ -80,14 +81,118 @@ class OrderControllerTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `Only orders belonging to user returned from database`() {
+  fun `SEARCH should return orders when no searchTerm is provided`() {
+    createOrder("AUTH_ADM")
+
+    webTestClient.get()
+      .uri("/api/orders")
+      .headers(setAuthorisation("AUTH_ADM"))
+      .exchange()
+      .expectStatus()
+      .isOk
+      .expectBodyList(Order::class.java)
+      .hasSize(1)
+  }
+
+  @Test
+  fun `SEARCH should return orders when an empty searchTerm is provided`() {
+    createOrder("AUTH_ADM")
+
+    webTestClient.get()
+      .uri("/api/orders?searchTerm=")
+      .headers(setAuthorisation("AUTH_ADM"))
+      .exchange()
+      .expectStatus()
+      .isOk
+      .expectBodyList(Order::class.java)
+      .hasSize(1)
+  }
+
+  @Test
+  fun `SEARCH should return orders where the firstName matches the searchTerm`() {
+    val order = createOrder("AUTH_ADM")
+
+    order.deviceWearer = DeviceWearer(
+      orderId = order.id,
+      firstName = "John",
+    )
+    repo.save(order)
+
+    webTestClient.get()
+      .uri("/api/orders?searchTerm=John")
+      .headers(setAuthorisation("AUTH_ADM"))
+      .exchange()
+      .expectStatus()
+      .isOk
+      .expectBodyList(Order::class.java)
+      .hasSize(1)
+  }
+
+  @Test
+  fun `SEARCH should return orders where the lastName matches the searchTerm`() {
+    val order = createOrder("AUTH_ADM")
+
+    order.deviceWearer = DeviceWearer(
+      orderId = order.id,
+      lastName = "Smith",
+    )
+    repo.save(order)
+
+    webTestClient.get()
+      .uri("/api/orders?searchTerm=Smith")
+      .headers(setAuthorisation("AUTH_ADM"))
+      .exchange()
+      .expectStatus()
+      .isOk
+      .expectBodyList(Order::class.java)
+      .hasSize(1)
+  }
+
+  @Test
+  fun `SEARCH should return orders where the firstName matches the searchTerm with different casing`() {
+    val order = createOrder("AUTH_ADM")
+
+    order.deviceWearer = DeviceWearer(
+      orderId = order.id,
+      firstName = "John",
+    )
+    repo.save(order)
+
+    webTestClient.get()
+      .uri("/api/orders?searchTerm=john")
+      .headers(setAuthorisation("AUTH_ADM"))
+      .exchange()
+      .expectStatus()
+      .isOk
+      .expectBodyList(Order::class.java)
+      .hasSize(1)
+  }
+
+  @Test
+  fun `SEARCH should return orders where the lastName matches the searchTerm with different casing`() {
+    val order = createOrder("AUTH_ADM")
+
+    order.deviceWearer = DeviceWearer(
+      orderId = order.id,
+      lastName = "Smith",
+    )
+    repo.save(order)
+
+    webTestClient.get()
+      .uri("/api/orders?searchTerm=smith")
+      .headers(setAuthorisation("AUTH_ADM"))
+      .exchange()
+      .expectStatus()
+      .isOk
+      .expectBodyList(Order::class.java)
+      .hasSize(1)
+  }
+
+  @Test
+  fun `SEARCH should only return orders belonging to user`() {
     createOrder("AUTH_ADM")
     createOrder("AUTH_ADM")
     createOrder("AUTH_ADM_2")
-
-    // Verify the database is set up correctly
-    val allOrders = repo.findAll()
-    assertThat(allOrders).hasSize(3)
 
     webTestClient.get()
       .uri("/api/orders")
@@ -508,8 +613,8 @@ class OrderControllerTest : IntegrationTestBase() {
       	"responsible_officer_name": "John Smith",
       	"responsible_organization": "Avon and Somerset Constabulary",
       	"ro_post_code": "AB11 1CD",
-      	"ro_address_1": "",
-      	"ro_address_2": "",
+      	"ro_address_1": "Line 1",
+      	"ro_address_2": "Line 2",
       	"ro_address_3": "",
       	"ro_address_4": "",
       	"ro_email": "abc@def.com",
@@ -613,7 +718,7 @@ class OrderControllerTest : IntegrationTestBase() {
       		}
       	],
       	"trail_monitoring": "Yes",
-      	"exclusion_zones": "true",
+      	"exclusion_zones": "",
       	"exclusion_zones_duration": "Mock Exclusion Duration",
       	"inclusion_zones": "",
       	"inclusion_zones_duration": "",

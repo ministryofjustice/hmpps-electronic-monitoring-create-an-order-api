@@ -24,6 +24,7 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
   implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:5.1.1")
   implementation("io.sentry:sentry-spring-boot-starter-jakarta:7.17.0")
+  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0")
   runtimeOnly("org.flywaydb:flyway-database-postgresql")
   runtimeOnly("org.postgresql:postgresql:42.7.4")
   testImplementation("com.h2database:h2:2.3.232")

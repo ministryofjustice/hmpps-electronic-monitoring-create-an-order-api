@@ -9,6 +9,7 @@ import org.springframework.boot.test.autoconfigure.json.JsonTest
 import org.springframework.security.core.Authentication
 import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.OrderSearchCriteria
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.OrderController
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.OrderService
@@ -58,10 +59,10 @@ class OrderControllerTest {
       Order(username = "mockUser", status = OrderStatus.IN_PROGRESS),
     )
 
-    `when`(orderService.listOrdersForUser("mockUser")).thenReturn(orders)
+    `when`(orderService.listOrders(OrderSearchCriteria(username = "mockUser"))).thenReturn(orders)
     `when`(authentication.name).thenReturn("mockUser")
 
-    val result = controller.listOrders(authentication)
+    val result = controller.listOrders("", authentication)
     Assertions.assertThat(result.body).isEqualTo(orders)
   }
 }
