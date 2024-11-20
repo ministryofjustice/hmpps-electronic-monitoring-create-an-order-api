@@ -8,6 +8,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.EnforcementZoneType
 import java.time.DayOfWeek
+import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
 data class MonitoringOrder(
@@ -179,11 +180,11 @@ data class MonitoringOrder(
     fun fromOrder(order: Order, caseId: String?): MonitoringOrder {
       val conditions = order.monitoringConditions!!
 
-      fun dateTime(date: String?, time: String?): String? {
-        return if (date.isNullOrEmpty() || time.isNullOrEmpty()) {
-          "$date 00:00:00"
+      fun dateTime(date: ZonedDateTime?, time: String?): String? {
+        return if (time != null) {
+          "${date?.format(dateFormatter)} $time"
         } else {
-          "$date $time"
+          date?.format(dateTimeFormatter)
         }
       }
 
@@ -191,12 +192,9 @@ data class MonitoringOrder(
         deviceWearer = "${order.deviceWearer!!.firstName} ${order.deviceWearer!!.lastName}",
         orderType = conditions.orderType,
         orderTypeDescription = conditions.orderTypeDescription?.value,
-        orderStart = dateTime(conditions.startDate?.format(dateFormatter), conditions.startTime),
-        orderEnd = dateTime(conditions.endDate?.format(dateFormatter), conditions.endTime),
+        orderStart = dateTime(conditions.startDate, conditions.startTime),
+        orderEnd = dateTime(conditions.endDate, conditions.endTime),
         serviceEndDate = conditions.endDate?.format(dateFormatter),
-        // orderStart = conditions.startDate?.format(dateTimeFormatter),
-        // orderEnd = conditions.endDate?.format(dateTimeFormatter),
-        // serviceEndDate = conditions.endDate?.format(dateFormatter),
         caseId = caseId,
         conditionType = conditions.conditionType!!.value,
         orderId = order.id.toString(),
