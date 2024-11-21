@@ -8,6 +8,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.EnforcementZoneType
 import java.time.DayOfWeek
+import java.time.LocalTime
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
@@ -180,9 +181,9 @@ data class MonitoringOrder(
     fun fromOrder(order: Order, caseId: String?): MonitoringOrder {
       val conditions = order.monitoringConditions!!
 
-      fun dateTime(date: ZonedDateTime?, time: String?): String? {
+      fun dateTime(date: ZonedDateTime?, time: LocalTime?): String? {
         return if (time != null) {
-          "${date?.format(dateFormatter)} $time"
+          date?.toLocalDate()?.atTime(time)?.atZone(date.zone)?.format(dateTimeFormatter)
         } else {
           date?.format(dateTimeFormatter)
         }

@@ -36,6 +36,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.re
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.SubmitFmsOrderResultRepository
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 import java.time.DayOfWeek
+import java.time.LocalTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
@@ -51,10 +52,10 @@ class OrderControllerTest : IntegrationTestBase() {
 
   val mockStartDate: ZonedDateTime = ZonedDateTime.now().plusMonths(1)
   val mockEndDate: ZonedDateTime = ZonedDateTime.now().plusMonths(2)
-  private val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+  val mockStartTime: LocalTime = LocalTime.of(18, 30)
+  val mockEndTime: LocalTime = LocalTime.of(7, 0)
+  private val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
   private val dateTimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
-  val mockStartTime: String = "12:30"
-  val mockEndTime: String = "07:00"
 
   @BeforeEach
   fun setup() {
@@ -593,10 +594,14 @@ class OrderControllerTest : IntegrationTestBase() {
       	"no_phone_number": "",
       	"offence": "Fraud Offences",
       	"offence_date": "",
-      	"order_end": "${mockEndDate.format(formatter)} $mockEndTime",
+      	"order_end": "${mockEndDate.toLocalDate()?.atTime(
+      mockEndTime,
+    )?.atZone(mockEndDate.zone)?.format(dateTimeFormatter)}",
       	"order_id": "${order.id}",
       	"order_request_type": "",
-      	"order_start": "${mockStartDate.format(formatter)} $mockStartTime",
+      	"order_start": "${mockStartDate.toLocalDate()?.atTime(
+      mockStartTime,
+    )?.atZone(mockStartDate.zone)?.format(dateTimeFormatter)}",
       	"order_type": "community",
       	"order_type_description": "DAPOL",
       	"order_type_detail": "",
@@ -627,11 +632,11 @@ class OrderControllerTest : IntegrationTestBase() {
       	"technical_bail": "",
       	"trial_date": "",
       	"trial_outcome": "",
-      	"conditional_release_date": "${mockStartDate.format(formatter)}",
+      	"conditional_release_date": "${mockStartDate.format(dateFormatter)}",
       	"reason_for_order_ending_early": "",
       	"business_unit": "",
-        "service_end_date": "${mockEndDate.format(formatter)}",
-      	"curfew_start": "${mockStartDate.format(formatter)}",
+        "service_end_date": "${mockEndDate.format(dateFormatter)}",
+      	"curfew_start": "${mockStartDate.format(dateFormatter)}",
       	"curfew_end": null,
       	"curfew_duration": [
       		{

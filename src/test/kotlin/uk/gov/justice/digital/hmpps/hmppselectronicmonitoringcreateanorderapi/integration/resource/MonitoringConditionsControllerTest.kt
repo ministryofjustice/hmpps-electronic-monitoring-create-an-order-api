@@ -14,6 +14,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.MonitoringConditionsRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidationError
+import java.time.LocalTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.util.*
@@ -30,8 +31,8 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
   private val mockConditionType = MonitoringConditionType.LICENSE_CONDITION_OF_A_CUSTODIAL_ORDER
   private val mockStartDate = ZonedDateTime.now(ZoneId.of("UTC")).plusMonths(1)
   private val mockEndDate = ZonedDateTime.now(ZoneId.of("UTC")).plusMonths(2)
-  private val mockStartTime = "18:00:00"
-  private val mockEndTime = "07:00:00"
+  private val mockStartTime = LocalTime.of(18, 30)
+  private val mockEndTime = LocalTime.of(7, 0)
 
   @BeforeEach
   fun setup() {
