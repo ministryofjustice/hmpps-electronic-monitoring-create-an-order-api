@@ -509,7 +509,7 @@ class OrderControllerTest : IntegrationTestBase() {
       			"disability": "Vision"
       		},
       		{
-      			"disability": "Hearing"
+      			"disability": "Learning, understanding or concentrating"
       		}
       	],
       	"address_1": "20 Somewhere Street",
@@ -775,7 +775,7 @@ class OrderControllerTest : IntegrationTestBase() {
       			"disability": "Vision"
       		},
       		{
-      			"disability": "Hearing"
+      			"disability": "Learning, understanding or concentrating"
       		}
       	],
       	"address_1": "No Fixed Address",
@@ -835,7 +835,7 @@ class OrderControllerTest : IntegrationTestBase() {
       adultAtTimeOfInstallation = true,
       sex = "Male",
       gender = "Male",
-      disabilities = "Vision,Hearing",
+      disabilities = "VISION,LEARNING_UNDERSTANDING_CONCENTRATING",
       interpreterRequired = true,
       language = "British Sign",
       pncId = "pncId",
