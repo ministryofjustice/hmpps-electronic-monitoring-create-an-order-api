@@ -249,11 +249,19 @@ data class MonitoringOrder(
         val interestedParties = order.interestedParties!!
         monitoringOrder.responsibleOfficerName = interestedParties.responsibleOfficerName
         monitoringOrder.responsibleOfficerPhone = interestedParties.responsibleOfficerPhoneNumber
-        monitoringOrder.responsibleOrganization = interestedParties.responsibleOrganisation
+        monitoringOrder.responsibleOrganization = if (interestedParties.responsibleOrganisation == "") {
+          "N/A"
+        } else {
+          interestedParties.responsibleOrganisation
+        }
         monitoringOrder.roRegion = interestedParties.responsibleOrganisationRegion
         monitoringOrder.roPhone = interestedParties.responsibleOrganisationPhoneNumber
         monitoringOrder.roEmail = interestedParties.responsibleOrganisationEmail
-        monitoringOrder.notifyingOrganization = interestedParties.notifyingOrganisation
+        monitoringOrder.notifyingOrganization = if (interestedParties.notifyingOrganisation == "") {
+          "N/A"
+        } else {
+          interestedParties.notifyingOrganisation
+        }
         val address = order.addresses.firstOrNull { it.addressType == AddressType.RESPONSIBLE_ORGANISATION }
         if (address != null) {
           monitoringOrder.roAddress1 = address.addressLine1
