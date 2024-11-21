@@ -296,6 +296,90 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
   }
 
   @Test
+  fun `Update monitoring conditions returns 400 if end date is provided without an end time`() {
+    val order = createOrder()
+    val result = webTestClient.put()
+      .uri("/api/orders/${order.id}/monitoring-conditions")
+      .contentType(MediaType.APPLICATION_JSON)
+      .body(
+        BodyInserters.fromValue(
+          """
+            {
+              "orderType": "$mockOrderType",
+              "orderTypeDescription": "$mockOrderTypeDescription",
+              "conditionType": "$mockConditionType",
+              "acquisitiveCrime": "true",
+              "dapol": "true",
+              "curfew": "true",
+              "exclusionZone": "true",
+              "trail": "true",
+              "mandatoryAttendance": "true",
+              "alcohol": "true",
+              "startDate": "$mockStartDate",
+              "startTime": "$mockStartTime",
+              "endDate": "$mockEndDate",
+              "endTime": null
+            }
+          """.trimIndent(),
+        ),
+      )
+      .headers(setAuthorisation("AUTH_ADM"))
+      .exchange()
+      .expectStatus()
+      .isBadRequest
+      .expectBodyList(ValidationError::class.java)
+      .returnResult()
+
+    Assertions.assertThat(result.responseBody).isNotNull
+    Assertions.assertThat(result.responseBody).hasSize(1)
+    Assertions.assertThat(result.responseBody!!).contains(
+      ValidationError("endTime", "Enter an end date and an end time, or leave both blank."),
+    )
+  }
+
+  @Test
+  fun `Update monitoring conditions returns 400 if end time is provided without an end date`() {
+    val order = createOrder()
+    val result = webTestClient.put()
+      .uri("/api/orders/${order.id}/monitoring-conditions")
+      .contentType(MediaType.APPLICATION_JSON)
+      .body(
+        BodyInserters.fromValue(
+          """
+            {
+              "orderType": "$mockOrderType",
+              "orderTypeDescription": "$mockOrderTypeDescription",
+              "conditionType": "$mockConditionType",
+              "acquisitiveCrime": "true",
+              "dapol": "true",
+              "curfew": "true",
+              "exclusionZone": "true",
+              "trail": "true",
+              "mandatoryAttendance": "true",
+              "alcohol": "true",
+              "startDate": "$mockStartDate",
+              "startTime": "$mockStartTime",
+              "endDate": null,
+              "endTime": "$mockEndTime"
+            }
+          """.trimIndent(),
+        ),
+      )
+      .headers(setAuthorisation("AUTH_ADM"))
+      .exchange()
+      .expectStatus()
+      .isBadRequest
+      .expectBodyList(ValidationError::class.java)
+      .returnResult()
+
+    Assertions.assertThat(result.responseBody).isNotNull
+    Assertions.assertThat(result.responseBody).hasSize(1)
+    Assertions.assertThat(result.responseBody!!).contains(
+      ValidationError("endTime", "Enter an end date and an end time, or leave both blank."),
+    )
+  }
+
+  @Test
   fun `Form cannot be submitted if no Monitoring Types are selected`() {
     val order = createOrder()
     val updateMonitoringConditions = webTestClient.put()

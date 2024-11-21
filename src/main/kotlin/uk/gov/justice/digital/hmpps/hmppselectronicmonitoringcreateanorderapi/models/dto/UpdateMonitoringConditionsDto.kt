@@ -49,7 +49,7 @@ data class UpdateMonitoringConditionsDto(
     return true
   }
 
-  @AssertTrue(message = "Please provide an end date and an end time, or leave both blank.")
+  @AssertTrue(message = "Enter an end date and an end time, or leave both blank.")
   fun isEndTime(): Boolean {
     return (this.endDate == null) == (this.endTime == null)
   }
