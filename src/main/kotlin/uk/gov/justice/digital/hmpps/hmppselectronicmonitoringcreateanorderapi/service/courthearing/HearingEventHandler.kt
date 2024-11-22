@@ -33,34 +33,45 @@ import java.util.*
 @Service
 class HearingEventHandler(
   private val fmsService: FmsService,
+  private val deadLetterQueueService: DeadLetterQueueService,
 ) {
   private val commentPlatformUsername = "COMMENT_PLATFORM"
   private val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
   companion object {
+    //region order condition type
     const val ALCOHOL_ABSTAIN_MONITORING_UUID = "d54c3093-6b9b-4b61-80cf-a0bf4ed5d2e8"
 
     const val EXCLUSION_ZONE_UUID = "091cd45b-4312-476e-a122-18cc02fd1699"
 
     const val INCLUSION_ZONE_UUID = "9b216a08-4df8-41c2-a947-66506cd1e1b5"
 
-    const val CURFEW_UUID = "06b4c31d-1b3d-4850-b64c-4cad870b3a25"
+    const val COMMUNITY_ORDER_CURFEW_UUID = "06b4c31d-1b3d-4850-b64c-4cad870b3a25"
+
+    const val BAIL_ORDER_CURFEW = "629f6897-a46f-492e-9691-5226ee7810b7"
+    //endregion
+
+    //region Common platform order types
 
     const val COMMUNITY_ORDER_ENGLAND_AND_WALES_UUID = "418b3aa7-65ab-4a4a-bab9-2f96b698118c"
 
     private const val COMMUNITY_ORDER_SCOTLAND_UUID = "ae617390-b41e-46ac-bd63-68a28512676a"
+
+    const val ADULT_REMITTAL_FOR_SENTENCE_ON_CONDITIONAL_BAIL = "f917ba0c-1faf-4945-83a8-50be9049f9b4"
 
     // Suspended sentence order - detention in a young offender institution
     const val SSO_YOUNG_OFFENDER_INSTITUTION_DETENTION_UUID = "5679e5b7-0ca8-4d2a-ba80-7a50025fb589"
 
     const val SSO_INPRISONMENT_UUID = "8b1cff00-a456-40da-9ce4-f11c20959084"
 
+    // end region
     fun isEnglandAdnWalesEMRequest(offence: Offence): Boolean {
       return offence.judicialResults.any {
           judicialResults ->
         judicialResults.judicialResultTypeId == ALCOHOL_ABSTAIN_MONITORING_UUID ||
           judicialResults.judicialResultTypeId == EXCLUSION_ZONE_UUID ||
           judicialResults.judicialResultTypeId == INCLUSION_ZONE_UUID ||
-          judicialResults.judicialResultTypeId == CURFEW_UUID
+          judicialResults.judicialResultTypeId == COMMUNITY_ORDER_CURFEW_UUID ||
+          judicialResults.judicialResultPrompts.any { it.judicialResultPromptTypeId == BAIL_ORDER_CURFEW }
       } &&
         !offence.judicialResults.any {
             judicialResults ->
@@ -182,8 +193,8 @@ class HearingEventHandler(
       monitoringConditions.endDate = zone.endDate
       order.enforcementZoneConditions.add(zone)
     }
-
-    if (judicialResults.any { it.judicialResultTypeId == CURFEW_UUID }) {
+    //region Curfew Condition
+    if (judicialResults.any { it.judicialResultTypeId == COMMUNITY_ORDER_CURFEW_UUID }) {
       monitoringConditions.curfew = true
       val condition = CurfewConditions(orderId = order.id)
       condition.startDate = getPromptValue(prompts, "Start date for tag")?.let {
@@ -194,8 +205,19 @@ class HearingEventHandler(
         val localDate = LocalDate.parse(it, formatter)
         ZonedDateTime.of(localDate, LocalTime.MIDNIGHT, ZoneId.of("GMT"))
       }
+      order.curfewConditions = condition
     }
 
+    if (prompts.any { it.judicialResultPromptTypeId == BAIL_ORDER_CURFEW }) {
+      monitoringConditions.curfew = true
+      val condition = CurfewConditions(orderId = order.id)
+      val judicialResultWithEm = judicialResults.first {
+        it.judicialResultPrompts.any { prompts -> prompts.judicialResultPromptTypeId == BAIL_ORDER_CURFEW }
+      }
+      condition.startDate = ZonedDateTime.of(judicialResultWithEm.orderedDate, LocalTime.MIDNIGHT, ZoneId.of("GMT"))
+      order.curfewConditions = condition
+    }
+    //endregion
     order.monitoringConditions = monitoringConditions
 
     val person = defendant.personDefendant?.personDetails
@@ -279,6 +301,8 @@ class HearingEventHandler(
       }
     ) {
       return "Community"
+    } else if (results.any { it.judicialResultTypeId == ADULT_REMITTAL_FOR_SENTENCE_ON_CONDITIONAL_BAIL }) {
+      return "Pre-Trial"
     }
     return null
   }
@@ -291,8 +315,9 @@ class HearingEventHandler(
       }
     ) {
       return MonitoringConditionType.REQUIREMENT_OF_A_COMMUNITY_ORDER
+    } else if (results.any { it.judicialResultTypeId == ADULT_REMITTAL_FOR_SENTENCE_ON_CONDITIONAL_BAIL }) {
+      return MonitoringConditionType.BAIL_ORDER
     }
-
     return null
   }
 

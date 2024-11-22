@@ -115,6 +115,12 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
     runPayloadTest(rootFilePath)
   }
 
+  @Test
+  fun `Will map REMCB_BAIL_CURFEW request and submit to FMS`() {
+    val rootFilePath = "src/test/resources/json/REMCB_BAIL_CURFEW"
+    runPayloadTest(rootFilePath)
+  }
+
   fun runPayloadTest(rootFilePath: String) {
     val rawMessage = generateRawHearingEventMessage("$rootFilePath/cp_payload.json")
     sercoApi.stupCreateDeviceWearer(
@@ -136,6 +142,7 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
     ).replace("{expectedOderId}", savedResult.id.toString())
     assertThat(savedResult.fmsDeviceWearerRequest).isEqualTo(mockDeviceWearerJson.removeWhitespaceAndNewlines())
     assertThat(savedResult.fmsOrderRequest).isEqualTo(mockOrderJson.removeWhitespaceAndNewlines())
+    assertThat(savedResult.error).isEqualTo("")
     assertThat(savedResult.success).isTrue()
   }
 

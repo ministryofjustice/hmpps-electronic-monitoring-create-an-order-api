@@ -156,7 +156,7 @@ data class DeviceWearer(
         mappa = order.installationAndRisk?.mappaLevel,
         mappaCaseType = order.installationAndRisk?.mappaCaseType,
         responsibleAdultRequired = (order.deviceWearerResponsibleAdult != null).toString(),
-        parent = "${order.deviceWearerResponsibleAdult?.fullName}",
+        parent = order.deviceWearerResponsibleAdult?.fullName ?: "",
         parentPhoneNumber = order.deviceWearerResponsibleAdult?.contactNumber,
         interpreterRequired = order.deviceWearer?.interpreterRequired?.toString(),
         language = order.deviceWearer?.language,

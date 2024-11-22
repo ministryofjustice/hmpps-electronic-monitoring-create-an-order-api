@@ -280,13 +280,16 @@ data class MonitoringOrder(
       val primaryAddressTimeTable = order.curfewTimeTable.filter {
         it.curfewAddress!!.uppercase().contains("PRIMARY_ADDRESS")
       }
-      schedules.add(
-        CurfewSchedule(
-          location = "primary",
-          allday = "",
-          primaryAddressTimeTable.map { Schedule.fromCurfewTimeTable(it) }.toMutableList(),
-        ),
-      )
+      if (primaryAddressTimeTable.any()) {
+        schedules.add(
+          CurfewSchedule(
+            location = "primary",
+            allday = "",
+            primaryAddressTimeTable.map { Schedule.fromCurfewTimeTable(it) }.toMutableList(),
+          ),
+        )
+      }
+
       val secondaryAddress = order.addresses.firstOrNull { it.addressType === AddressType.SECONDARY }
       if (secondaryAddress != null) {
         val secondaryTimeTable = order.curfewTimeTable.filter {
