@@ -1,7 +1,9 @@
 version: 2.1
 
 orbs:
-  hmpps: ministryofjustice/hmpps@10
+  hmpps: ministryofjustice/hmpps@10.1.1
+  docker: circleci/docker@2.8.1
+  mem: circleci/rememborb@0.0.2
 
 parameters:
   alerts-slack-channel:
@@ -35,22 +37,75 @@ jobs:
       - store_artifacts:
           path: build/reports/tests
 
+  tag_docker:
+    executor:
+      name: hmpps/localstack
+      jdk_tag: "21.0"
+      localstack_tag: "3.0"
+    parameters:
+      tag:
+        type: string
+        description: docker tag to be added to the image
+    steps:
+      - attach_workspace:
+          at: ~/app
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - mem/recall:
+          env_var: APP_VERSION
+      - mem/recall:
+          env_var: IMAGE_NAME
+      - run:
+          name: login to container repository
+          command: docker login -u="${QUAYIO_USERNAME}" -p="${QUAYIO_PASSWORD}" quay.io
+      - run:
+          name: pull correct container image
+          command: docker pull ${IMAGE_NAME}:${APP_VERSION}
+      - run:
+          name: tag container image and publish
+          command: |
+            docker image tag ${IMAGE_NAME}:${APP_VERSION} ${IMAGE_NAME}:${APP_VERSION}-<< parameters.tag >>
+            docker push ${IMAGE_NAME}:${APP_VERSION}-<< parameters.tag >>
+
 workflows:
   version: 2
   build-test-and-deploy:
     jobs:
+      - hmpps/helm_lint:
+          name: helm_lint
+      - docker/hadolint:
+          name: docker_lint
+          trusted-registries: docker.io,quay.io
       - validate:
           filters:
             tags:
               ignore: /.*/
-      - hmpps/helm_lint:
-          name: helm_lint
       - hmpps/build_multiplatform_docker:
           name: build_docker
+          snyk-scan: true
           filters:
             branches:
               only:
                 - main
+          requires:
+            - validate
+            - docker_lint
+      - hmpps/publish_docker:
+          name: publish_docker
+          publish_latest_tag: false
+          requires:
+            - build_docker
+      - hmpps/trivy_pipeline_scan:
+          name: vulnerability_scan
+          fail_build: false
+          requires:
+            - build_docker
+      - tag_docker:
+          name: tag_verified_container
+          tag: verified
+          requires:
+            - publish_docker
+            - vulnerability_scan
       - hmpps/deploy_env:
           name: deploy_dev
           env: "dev"
@@ -63,10 +118,14 @@ workflows:
               only:
                 - main
           requires:
-            - validate
             - build_docker
             - helm_lint
           helm_timeout: 5m
+      - tag_docker:
+          name: tag_dev_container
+          tag: deployed-dev
+          requires:
+            - deploy_dev
       - hmpps/deploy_env:
           name: deploy_preprod
           env: "preprod"
@@ -84,6 +143,11 @@ workflows:
           requires:
             - deploy_dev
           helm_timeout: 5m
+      - tag_docker:
+          name: tag_preprod_container
+          tag: deployed-preprod
+          requires:
+            - deploy_preprod
       - hmpps/deploy_env:
           name: deploy_prod
           env: "prod"
@@ -99,6 +163,11 @@ workflows:
           requires:
             - deploy_preprod
           helm_timeout: 5m
+      - tag_docker:
+          name: tag_prod_container
+          tag: deployed-prod
+          requires:
+            - deploy_prod
 
   security:
     triggers:
