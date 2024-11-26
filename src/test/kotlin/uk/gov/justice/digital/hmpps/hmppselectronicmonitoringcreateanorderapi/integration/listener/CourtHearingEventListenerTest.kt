@@ -121,6 +121,12 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
     runPayloadTest(rootFilePath)
   }
 
+  @Test
+  fun `Will map CCSIB_BAIL_EXCLUSION request and submit to FMS`() {
+    val rootFilePath = "src/test/resources/json/CCSIB_BAIL_EXCLUSION"
+    runPayloadTest(rootFilePath)
+  }
+
   fun runPayloadTest(rootFilePath: String) {
     val rawMessage = generateRawHearingEventMessage("$rootFilePath/cp_payload.json")
     sercoApi.stupCreateDeviceWearer(

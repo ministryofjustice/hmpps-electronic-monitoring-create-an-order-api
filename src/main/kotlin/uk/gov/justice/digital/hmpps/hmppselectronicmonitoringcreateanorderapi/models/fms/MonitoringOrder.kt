@@ -220,7 +220,7 @@ data class MonitoringOrder(
           monitoringOrder.inclusionZonesDuration = condition.duration
           monitoringOrder.describeExclusion = condition.description
         }
-        monitoringOrder.trailMonitoring = "Yes"
+        monitoringOrder.trailMonitoring = "No"
       }
 
       // TODO: wait for confirmation if mandatory attendance is required
