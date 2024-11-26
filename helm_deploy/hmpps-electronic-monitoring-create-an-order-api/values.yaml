@@ -59,7 +59,7 @@ generic-service:
       HMPPS_SQS_QUEUES_COURTHEARINGEVENTQUEUE_DLQNAME: "sqs_queue_name"
   allowlist:
     groups:
-      - internal
+      - digital_staff_and_mojo
 
 generic-prometheus-alerts:
   targetApplication: hmpps-electronic-monitoring-create-an-order-api
