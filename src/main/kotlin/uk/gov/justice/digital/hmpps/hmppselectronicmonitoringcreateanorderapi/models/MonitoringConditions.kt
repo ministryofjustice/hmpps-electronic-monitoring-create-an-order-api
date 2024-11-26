@@ -11,7 +11,6 @@ import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MonitoringConditionType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderTypeDescription
-import java.time.LocalTime
 import java.time.ZonedDateTime
 import java.util.*
 
@@ -28,14 +27,8 @@ data class MonitoringConditions(
   @Column(name = "START_DATE", nullable = true)
   var startDate: ZonedDateTime? = null,
 
-  @Column(name = "START_TIME", nullable = true)
-  var startTime: LocalTime? = null,
-
   @Column(name = "END_DATE", nullable = true)
   var endDate: ZonedDateTime? = null,
-
-  @Column(name = "END_TIME", nullable = true)
-  var endTime: LocalTime? = null,
 
   @Column(name = "ORDER_TYPE", nullable = true)
   var orderType: String? = null,
