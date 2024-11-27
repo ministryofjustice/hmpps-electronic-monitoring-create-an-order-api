@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.s
 
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.courthearingeventreceiver.model.Defendant
+import uk.gov.justice.digital.hmpps.courthearingeventreceiver.model.Gender
 import uk.gov.justice.digital.hmpps.courthearingeventreceiver.model.Hearing
 import uk.gov.justice.digital.hmpps.courthearingeventreceiver.model.HearingEvent
 import uk.gov.justice.digital.hmpps.courthearingeventreceiver.model.JudicialResults
@@ -50,6 +51,8 @@ class HearingEventHandler(
     const val BAIL_ORDER_CURFEW = "629f6897-a46f-492e-9691-5226ee7810b7"
 
     const val BAIL_ORDER_EXCLUSION_NOT_ENTER_A_PLACE = "c1d490ed-1754-43b8-a485-fdab1a25f8cb"
+
+    const val BAIL_ORDER_INCLUSION_SPECIFIED_RADIUS = "c9ae30f1-3c3b-4edf-a7d4-49bd027977c3"
     //endregion
 
     //region Common platform order types
@@ -58,9 +61,11 @@ class HearingEventHandler(
 
     private const val COMMUNITY_ORDER_SCOTLAND_UUID = "ae617390-b41e-46ac-bd63-68a28512676a"
 
-    const val ADULT_REMITTAL_FOR_SENTENCE_ON_CONDITIONAL_BAIL = "f917ba0c-1faf-4945-83a8-50be9049f9b4"
+    const val BAIL_ADULT_REMITTAL_FOR_SENTENCE_ON_CONDITIONAL = "f917ba0c-1faf-4945-83a8-50be9049f9b4"
 
-    const val CROWN_COURT_SENTENCE_IN_CUSTODY_WITH_BAIL_DIRECTION = "35430208-3705-44ce-b5d5-153c0337f6ab"
+    const val BAIL_CROWN_COURT_SENTENCE_IN_CUSTODY_WITH_BAIL_DIRECTION = "35430208-3705-44ce-b5d5-153c0337f6ab"
+
+    const val BAIL_REMAND_IN_CARE_OF_LOCAL_AUTHORITY = "f666fd58-36c5-493f-aa11-89714faee6e6"
 
     // Suspended sentence order - detention in a young offender institution
     const val SSO_YOUNG_OFFENDER_INSTITUTION_DETENTION_UUID = "5679e5b7-0ca8-4d2a-ba80-7a50025fb589"
@@ -81,7 +86,8 @@ class HearingEventHandler(
             judicialResults.judicialResultTypeId == COMMUNITY_ORDER_CURFEW_UUID ||
             judicialResults.judicialResultPrompts.any {
               it.judicialResultPromptTypeId == BAIL_ORDER_CURFEW ||
-                it.judicialResultPromptTypeId == BAIL_ORDER_EXCLUSION_NOT_ENTER_A_PLACE
+                it.judicialResultPromptTypeId == BAIL_ORDER_EXCLUSION_NOT_ENTER_A_PLACE ||
+                it.judicialResultPromptTypeId == BAIL_ORDER_INCLUSION_SPECIFIED_RADIUS
             }
         }
     }
@@ -179,9 +185,8 @@ class HearingEventHandler(
     deviceWearer.dateOfBirth = ZonedDateTime.of(person?.dateOfBirth, LocalTime.MIDNIGHT, ZoneId.of("GMT"))
     deviceWearer.firstName = person?.firstName
     deviceWearer.lastName = person?.lastName
-    deviceWearer.gender = person?.gender?.name
+    deviceWearer.gender = getGender(person?.gender)
     deviceWearer.adultAtTimeOfInstallation = !defendant.isYouth
-    deviceWearer.sex = person?.gender?.name
 
     val address = person?.address
     if (address != null) {
@@ -191,8 +196,8 @@ class HearingEventHandler(
           orderId = order.id,
           addressType = AddressType.PRIMARY,
           addressLine1 = address.address1,
-          addressLine2 = address.address2 ?: "",
-          addressLine3 = address.address3 ?: "",
+          addressLine2 = address.address2 ?: "N/A",
+          addressLine3 = address.address3 ?: "N/A",
           addressLine4 = address.address4 ?: "N/A",
           postcode = address.postcode ?: "",
         ),
@@ -203,7 +208,7 @@ class HearingEventHandler(
     val contact = person?.contact
     if (contact != null) {
       val contactDetails =
-        ContactDetails(orderId = order.id, contactNumber = contact.mobile ?: contact.home ?: contact.work)
+        ContactDetails(orderId = order.id, contactNumber = contact.mobile ?: contact.home ?: contact.work ?: "")
       order.contactDetails = contactDetails
     }
 
@@ -314,6 +319,23 @@ class HearingEventHandler(
       order.enforcementZoneConditions.add(condition)
     }
 
+    judicialResults.firstOrNull {
+      it.judicialResultPrompts.any { prompts ->
+        prompts.judicialResultPromptTypeId == BAIL_ORDER_INCLUSION_SPECIFIED_RADIUS
+      }
+    }?.let {
+      monitoringConditions.exclusionZone = true
+      val condition = EnforcementZoneConditions(orderId = order.id)
+      condition.zoneType = EnforcementZoneType.INCLUSION
+      condition.zoneLocation = getPromptValue(
+        prompts,
+        "Exclusion - not to go more than a specified radius from a specified place",
+      )
+      condition.description = "Exclusion - not to go more than a specified radius from a specified place"
+      condition.startDate = ZonedDateTime.of(it.orderedDate, LocalTime.MIDNIGHT, ZoneId.of("GMT"))
+      order.enforcementZoneConditions.add(condition)
+    }
+
     //region InterestedParties
     val responsibleOrganisation = getPromptValue(
       prompts,
@@ -377,9 +399,13 @@ class HearingEventHandler(
       }
     ) {
       return "Community"
-    } else if (results.any { it.judicialResultTypeId == ADULT_REMITTAL_FOR_SENTENCE_ON_CONDITIONAL_BAIL }) {
+    } else if (results.any {
+        it.judicialResultTypeId == BAIL_ADULT_REMITTAL_FOR_SENTENCE_ON_CONDITIONAL ||
+          it.judicialResultTypeId == BAIL_REMAND_IN_CARE_OF_LOCAL_AUTHORITY
+      }
+    ) {
       return "Pre-Trial"
-    } else if (results.any { it.judicialResultTypeId == CROWN_COURT_SENTENCE_IN_CUSTODY_WITH_BAIL_DIRECTION }) {
+    } else if (results.any { it.judicialResultTypeId == BAIL_CROWN_COURT_SENTENCE_IN_CUSTODY_WITH_BAIL_DIRECTION }) {
       return "Post Release"
     }
     return null
@@ -394,13 +420,24 @@ class HearingEventHandler(
     ) {
       return MonitoringConditionType.REQUIREMENT_OF_A_COMMUNITY_ORDER
     } else if (results.any {
-        it.judicialResultTypeId == ADULT_REMITTAL_FOR_SENTENCE_ON_CONDITIONAL_BAIL ||
-          it.judicialResultTypeId == CROWN_COURT_SENTENCE_IN_CUSTODY_WITH_BAIL_DIRECTION
+        it.judicialResultTypeId == BAIL_ADULT_REMITTAL_FOR_SENTENCE_ON_CONDITIONAL ||
+          it.judicialResultTypeId == BAIL_CROWN_COURT_SENTENCE_IN_CUSTODY_WITH_BAIL_DIRECTION ||
+          it.judicialResultTypeId == BAIL_REMAND_IN_CARE_OF_LOCAL_AUTHORITY
       }
     ) {
       return MonitoringConditionType.BAIL_ORDER
     }
     return null
+  }
+
+  private fun getGender(gender: Gender?): String {
+    return when (gender) {
+      Gender.MALE -> "male"
+      Gender.FEMALE -> "female"
+      Gender.NOT_KNOWN -> "unknown"
+      Gender.NOT_SPECIFIED -> "prefer not to say"
+      null -> ""
+    }
   }
 
   private fun getResponsibleOrganisation(responsibleOfficer: String?): String {

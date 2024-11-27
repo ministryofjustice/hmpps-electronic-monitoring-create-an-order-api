@@ -148,7 +148,7 @@ data class DeviceWearer(
         alias = order.deviceWearer?.alias,
         dateOfBirth = order.deviceWearer?.dateOfBirth!!.format(formatter),
         adultChild = adultChild,
-        sex = order.deviceWearer?.sex,
+        sex = order.deviceWearer?.sex ?: "",
         genderIdentity = order.deviceWearer?.gender,
         disability = disabilities,
         phoneNumber = order.contactDetails?.contactNumber,

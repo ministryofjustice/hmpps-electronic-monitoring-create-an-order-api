@@ -8,5 +8,5 @@ data class ProsecutionCaseIdentifier(
 
   val prosecutionAuthorityId: String,
 
-  val caseURN: String,
+  val caseURN: String?,
 )
