@@ -47,7 +47,7 @@ class HmppsDocumentManagementApi : WireMockServer(WIREMOCK_PORT) {
   @Suppress("ktlint:standard:max-line-length")
   private val filePath: String = "src/test/kotlin/uk/gov/justice/digital/hmpps/hmppselectronicmonitoringcreateanorderapi/integration/assets/profile.jpeg"
 
-  fun stupUploadDocument(result: DocumentUploadResponse?) {
+  fun stubUploadDocument(result: DocumentUploadResponse?) {
     stubFor(
       post(urlPathTemplate("/documents/CEMO_ATTACHMENT/{uuid}"))
         .willReturn(
@@ -61,7 +61,7 @@ class HmppsDocumentManagementApi : WireMockServer(WIREMOCK_PORT) {
     )
   }
 
-  fun stupUploadDocumentBadRequest(error: ErrorResponse?) {
+  fun stubUploadDocumentBadRequest(error: ErrorResponse?) {
     stubFor(
       post(urlPathTemplate("/documents/CEMO_ATTACHMENT/{uuid}"))
         .willReturn(
@@ -75,7 +75,7 @@ class HmppsDocumentManagementApi : WireMockServer(WIREMOCK_PORT) {
     )
   }
 
-  fun stupGetDocument(uuid: String = "xxx") {
+  fun stubGetDocument(uuid: String = "xxx") {
     stubFor(
       get("/documents/$uuid/file")
         .willReturn(
@@ -93,7 +93,7 @@ class HmppsDocumentManagementApi : WireMockServer(WIREMOCK_PORT) {
     )
   }
 
-  fun stupDeleteDocument(uuid: String = "xxx") {
+  fun stubDeleteDocument(uuid: String = "xxx") {
     stubFor(
       delete("/documents/$uuid")
         .willReturn(
