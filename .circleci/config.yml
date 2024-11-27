@@ -2,6 +2,7 @@ version: 2.1
 
 orbs:
   hmpps: ministryofjustice/hmpps@10
+  docker: circleci/docker@2
 
 parameters:
   alerts-slack-channel:
@@ -39,18 +40,24 @@ workflows:
   version: 2
   build-test-and-deploy:
     jobs:
+      - hmpps/helm_lint:
+          name: helm_lint
+      - docker/hadolint:
+          name: docker_lint
+          trusted-registries: docker.io,quay.io
       - validate:
           filters:
             tags:
               ignore: /.*/
-      - hmpps/helm_lint:
-          name: helm_lint
       - hmpps/build_multiplatform_docker:
           name: build_docker
           filters:
             branches:
               only:
                 - main
+          requires:
+            - validate
+            - docker_lint
       - hmpps/deploy_env:
           name: deploy_dev
           env: "dev"
@@ -63,7 +70,6 @@ workflows:
               only:
                 - main
           requires:
-            - validate
             - build_docker
             - helm_lint
           helm_timeout: 5m
