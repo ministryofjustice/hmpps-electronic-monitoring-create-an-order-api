@@ -82,7 +82,6 @@ workflows:
               ignore: /.*/
       - hmpps/build_multiplatform_docker:
           name: build_docker
-          snyk-scan: true
           filters:
             branches:
               only:
