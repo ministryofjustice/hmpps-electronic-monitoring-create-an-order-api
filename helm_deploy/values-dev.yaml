@@ -14,26 +14,10 @@ generic-service:
     CP_INTEGRATION_ENABLED: true
 
   namespace_secrets:
-    hmpps-electronic-monitoring-create-an-order-api:
-      APPINSIGHTS_INSTRUMENTATIONKEY: "APPINSIGHTS_INSTRUMENTATIONKEY"
-      CLIENT_ID: "API_CLIENT_ID"
-      CLIENT_SECRET: "API_CLIENT_SECRET"
-    serco-secret:
-      SERCO_AUTH_URL: "SERCO_AUTH_URL"
-      SERCO_CLIENT_ID: "SERCO_CLIENT_ID"
-      SERCO_CLIENT_SECRET: "SERCO_CLIENT_SECRET"
-      SERCO_USERNAME: "SERCO_USERNAME"
-      SERCO_PASSWORD: "SERCO_PASSWORD"
-      SERCO_URL: "SERCO_URL"
-    rds-postgresql-instance-output:
-      DB_SERVER: "rds_instance_endpoint"
-      DB_NAME: "database_name"
-      DB_USER: "database_username"
-      DB_PASS: "database_password"
-    sqs-court-case-events-fifo-secret:
+    sqs-court-case-events-secret:
       HMPPS_SQS_QUEUES_COURTHEARINGEVENTQUEUE_QUEUENAME: "sqs_queue_name"
       HMPPS_SQS_QUEUES_COURTHEARINGEVENTQUEUE_QUEUEARN: "sqs_queue_arn"
-    sqs-court-case-events-fifo-dlq-secret:
+    sqs-court-case-events-dlq-secret:
       HMPPS_SQS_QUEUES_COURTHEARINGEVENTQUEUE_DLQNAME: "sqs_queue_name"
 # CloudPlatform AlertManager receiver to route prometheus alerts to slack
 # See https://user-guide.cloud-platform.service.justice.gov.uk/documentation/monitoring-an-app/how-to-create-alarms.html#creating-your-own-custom-alerts
