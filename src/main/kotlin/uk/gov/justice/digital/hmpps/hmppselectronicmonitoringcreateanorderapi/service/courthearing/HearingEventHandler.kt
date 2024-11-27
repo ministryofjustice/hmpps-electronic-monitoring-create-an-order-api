@@ -17,6 +17,8 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.MonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.courthearing.JudicialResultsPrompt
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.courthearing.enums.BailOrderType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.courthearing.enums.CommunityOrderType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.EnforcementZoneType
@@ -39,21 +41,6 @@ class HearingEventHandler(
   private val commentPlatformUsername = "COMMENT_PLATFORM"
   private val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
   companion object {
-    //region order condition type
-    const val ALCOHOL_ABSTAIN_MONITORING_UUID = "d54c3093-6b9b-4b61-80cf-a0bf4ed5d2e8"
-
-    const val EXCLUSION_ZONE_UUID = "091cd45b-4312-476e-a122-18cc02fd1699"
-
-    const val INCLUSION_ZONE_UUID = "9b216a08-4df8-41c2-a947-66506cd1e1b5"
-
-    const val COMMUNITY_ORDER_CURFEW_UUID = "06b4c31d-1b3d-4850-b64c-4cad870b3a25"
-
-    const val BAIL_ORDER_CURFEW = "629f6897-a46f-492e-9691-5226ee7810b7"
-
-    const val BAIL_ORDER_EXCLUSION_NOT_ENTER_A_PLACE = "c1d490ed-1754-43b8-a485-fdab1a25f8cb"
-
-    const val BAIL_ORDER_INCLUSION_SPECIFIED_RADIUS = "c9ae30f1-3c3b-4edf-a7d4-49bd027977c3"
-    //endregion
 
     //region Common platform order types
 
@@ -67,10 +54,12 @@ class HearingEventHandler(
 
     const val BAIL_REMAND_IN_CARE_OF_LOCAL_AUTHORITY = "f666fd58-36c5-493f-aa11-89714faee6e6"
 
-    // Suspended sentence order - detention in a young offender institution
+    const val BAIL_REMANDED_IN_CUSTODY_WITH_BAIL_DIRECTION = "e26940b7-2534-42f2-9c44-c70072bf6ad2"
+
+    // Suspended sentence order
     const val SSO_YOUNG_OFFENDER_INSTITUTION_DETENTION_UUID = "5679e5b7-0ca8-4d2a-ba80-7a50025fb589"
 
-    const val SSO_INPRISONMENT_UUID = "8b1cff00-a456-40da-9ce4-f11c20959084"
+    const val SSO_IMPRISONMENT_UUID = "8b1cff00-a456-40da-9ce4-f11c20959084"
 
     // end region
     fun isEnglandAdnWalesEMRequest(offence: Offence): Boolean {
@@ -80,14 +69,9 @@ class HearingEventHandler(
       } &&
         offence.judicialResults.any {
             judicialResults ->
-          judicialResults.judicialResultTypeId == ALCOHOL_ABSTAIN_MONITORING_UUID ||
-            judicialResults.judicialResultTypeId == EXCLUSION_ZONE_UUID ||
-            judicialResults.judicialResultTypeId == INCLUSION_ZONE_UUID ||
-            judicialResults.judicialResultTypeId == COMMUNITY_ORDER_CURFEW_UUID ||
+          CommunityOrderType.from(judicialResults.judicialResultTypeId) != null ||
             judicialResults.judicialResultPrompts.any {
-              it.judicialResultPromptTypeId == BAIL_ORDER_CURFEW ||
-                it.judicialResultPromptTypeId == BAIL_ORDER_EXCLUSION_NOT_ENTER_A_PLACE ||
-                it.judicialResultPromptTypeId == BAIL_ORDER_INCLUSION_SPECIFIED_RADIUS
+              BailOrderType.from(it.judicialResultPromptTypeId) != null
             }
         }
     }
@@ -222,7 +206,7 @@ class HearingEventHandler(
     prompts: List<JudicialResultsPrompt>,
     hearing: Hearing,
   ) {
-    if (judicialResults.any { it.judicialResultTypeId == ALCOHOL_ABSTAIN_MONITORING_UUID }) {
+    if (judicialResults.any { it.judicialResultTypeId == CommunityOrderType.ALCOHOL_ABSTAIN_MONITORING.uuid }) {
       monitoringConditions.alcohol = true
       val alcoholConditions = AlcoholMonitoringConditions(
         orderId = order.id,
@@ -231,25 +215,31 @@ class HearingEventHandler(
       order.monitoringConditionsAlcohol = alcoholConditions
     }
 
-    val exclusionZoneJudicialResult = judicialResults.firstOrNull { it.judicialResultTypeId == EXCLUSION_ZONE_UUID }
+    val exclusionZoneJudicialResult = judicialResults.firstOrNull {
+      it.judicialResultTypeId == CommunityOrderType.EXCLUSION_ZONE.uuid
+    }
     if (exclusionZoneJudicialResult != null) {
       monitoringConditions.exclusionZone = true
-      val zone = getEnforcementZone(order.id, exclusionZoneJudicialResult, prompts, EnforcementZoneType.EXCLUSION)
+      val zone =
+        getCommunityOrderEnforcementZone(order.id, exclusionZoneJudicialResult, prompts, EnforcementZoneType.EXCLUSION)
       monitoringConditions.startDate = zone.startDate
       monitoringConditions.endDate = zone.endDate
       order.enforcementZoneConditions.add(zone)
     }
 
-    val inclusionZoneJudicialResults = judicialResults.firstOrNull { it.judicialResultTypeId == INCLUSION_ZONE_UUID }
+    val inclusionZoneJudicialResults = judicialResults.firstOrNull {
+      it.judicialResultTypeId == CommunityOrderType.INCLUSION_ZONE.uuid
+    }
     if (inclusionZoneJudicialResults != null) {
       monitoringConditions.exclusionZone = true
-      val zone = getEnforcementZone(order.id, inclusionZoneJudicialResults, prompts, EnforcementZoneType.INCLUSION)
+      val zone =
+        getCommunityOrderEnforcementZone(order.id, inclusionZoneJudicialResults, prompts, EnforcementZoneType.INCLUSION)
       monitoringConditions.startDate = zone.startDate
       monitoringConditions.endDate = zone.endDate
       order.enforcementZoneConditions.add(zone)
     }
 
-    if (judicialResults.any { it.judicialResultTypeId == COMMUNITY_ORDER_CURFEW_UUID }) {
+    if (judicialResults.any { it.judicialResultTypeId == CommunityOrderType.COMMUNITY_ORDER_CURFEW.uuid }) {
       monitoringConditions.curfew = true
       val condition = CurfewConditions(orderId = order.id)
       condition.startDate = getPromptValue(prompts, "Start date for tag")?.let {
@@ -297,7 +287,7 @@ class HearingEventHandler(
     hearing: Hearing,
   ) {
     judicialResults.firstOrNull {
-      it.judicialResultPrompts.any { prompts -> prompts.judicialResultPromptTypeId == BAIL_ORDER_CURFEW }
+      it.judicialResultPrompts.any { prompts -> prompts.judicialResultPromptTypeId == BailOrderType.CURFEW.uuid }
     }?.let {
       monitoringConditions.curfew = true
       val condition = CurfewConditions(orderId = order.id)
@@ -307,32 +297,43 @@ class HearingEventHandler(
 
     judicialResults.firstOrNull {
       it.judicialResultPrompts.any { prompts ->
-        prompts.judicialResultPromptTypeId == BAIL_ORDER_EXCLUSION_NOT_ENTER_A_PLACE
+        prompts.judicialResultPromptTypeId == BailOrderType.EXCLUSION_NOT_ENTER_A_PLACE.uuid
       }
     }?.let {
+      val conditionPrompt = it.judicialResultPrompts.first { prompts ->
+        prompts.judicialResultPromptTypeId == BailOrderType.EXCLUSION_NOT_ENTER_A_PLACE.uuid
+      }
       monitoringConditions.exclusionZone = true
-      val condition = EnforcementZoneConditions(orderId = order.id)
-      condition.zoneType = EnforcementZoneType.EXCLUSION
-      condition.zoneLocation = getPromptValue(prompts, "Exclusion - not to enter a place")
-      condition.description = "Exclusion - not to enter a place"
-      condition.startDate = ZonedDateTime.of(it.orderedDate, LocalTime.MIDNIGHT, ZoneId.of("GMT"))
+      val condition =
+        getBailOrderEnforcementZone(conditionPrompt, it.orderedDate, EnforcementZoneType.EXCLUSION, order.id)
       order.enforcementZoneConditions.add(condition)
     }
 
     judicialResults.firstOrNull {
       it.judicialResultPrompts.any { prompts ->
-        prompts.judicialResultPromptTypeId == BAIL_ORDER_INCLUSION_SPECIFIED_RADIUS
+        prompts.judicialResultPromptTypeId == BailOrderType.EXCLUSION_EXCEPT_COURT_OR_APPOINTMENT.uuid
       }
     }?.let {
+      val conditionPrompt = it.judicialResultPrompts.first { prompts ->
+        prompts.judicialResultPromptTypeId == BailOrderType.EXCLUSION_EXCEPT_COURT_OR_APPOINTMENT.uuid
+      }
       monitoringConditions.exclusionZone = true
-      val condition = EnforcementZoneConditions(orderId = order.id)
-      condition.zoneType = EnforcementZoneType.INCLUSION
-      condition.zoneLocation = getPromptValue(
-        prompts,
-        "Exclusion - not to go more than a specified radius from a specified place",
-      )
-      condition.description = "Exclusion - not to go more than a specified radius from a specified place"
-      condition.startDate = ZonedDateTime.of(it.orderedDate, LocalTime.MIDNIGHT, ZoneId.of("GMT"))
+      val condition =
+        getBailOrderEnforcementZone(conditionPrompt, it.orderedDate, EnforcementZoneType.EXCLUSION, order.id)
+      order.enforcementZoneConditions.add(condition)
+    }
+
+    judicialResults.firstOrNull {
+      it.judicialResultPrompts.any { prompts ->
+        prompts.judicialResultPromptTypeId == BailOrderType.INCLUSION_SPECIFIED_RADIUS.uuid
+      }
+    }?.let {
+      val conditionPrompt = it.judicialResultPrompts.first { prompts ->
+        prompts.judicialResultPromptTypeId == BailOrderType.INCLUSION_SPECIFIED_RADIUS.uuid
+      }
+      monitoringConditions.exclusionZone = true
+      val condition =
+        getBailOrderEnforcementZone(conditionPrompt, it.orderedDate, EnforcementZoneType.INCLUSION, order.id)
       order.enforcementZoneConditions.add(condition)
     }
 
@@ -340,6 +341,9 @@ class HearingEventHandler(
     val responsibleOrganisation = getPromptValue(
       prompts,
       "Probation / YOT to be notified organisation name",
+    ) ?: getPromptValue(
+      prompts,
+      "Prison organisation name",
     ) ?: ""
     val responsibleOrganisationRegion = getPromptValue(
       prompts,
@@ -348,6 +352,9 @@ class HearingEventHandler(
     val responsibleOrganisationEmail = getPromptValue(
       prompts,
       "Probation / YOT to be notified email address 1",
+    ) ?: getPromptValue(
+      prompts,
+      "Prison email address 1",
     ) ?: ""
 
     order.interestedParties = buildInterestedPartiesFromHearing(
@@ -360,7 +367,21 @@ class HearingEventHandler(
     //endregion
   }
 
-  private fun getEnforcementZone(
+  private fun getBailOrderEnforcementZone(
+    conditionPrompt: JudicialResultsPrompt,
+    startDate: LocalDate?,
+    zoneType: EnforcementZoneType,
+    orderId: UUID,
+  ): EnforcementZoneConditions {
+    val condition = EnforcementZoneConditions(orderId = orderId)
+    condition.zoneType = zoneType
+    condition.zoneLocation = conditionPrompt.value
+    condition.description = conditionPrompt.label
+    condition.startDate = ZonedDateTime.of(startDate, LocalTime.MIDNIGHT, ZoneId.of("GMT"))
+    return condition
+  }
+
+  private fun getCommunityOrderEnforcementZone(
     orderId: UUID,
     judicialResult: JudicialResults,
     prompts: List<JudicialResultsPrompt>,
@@ -395,7 +416,7 @@ class HearingEventHandler(
     if (results.any {
         it.judicialResultTypeId == COMMUNITY_ORDER_ENGLAND_AND_WALES_UUID ||
           it.judicialResultTypeId == SSO_YOUNG_OFFENDER_INSTITUTION_DETENTION_UUID ||
-          it.judicialResultTypeId == SSO_INPRISONMENT_UUID
+          it.judicialResultTypeId == SSO_IMPRISONMENT_UUID
       }
     ) {
       return "Community"
@@ -405,7 +426,11 @@ class HearingEventHandler(
       }
     ) {
       return "Pre-Trial"
-    } else if (results.any { it.judicialResultTypeId == BAIL_CROWN_COURT_SENTENCE_IN_CUSTODY_WITH_BAIL_DIRECTION }) {
+    } else if (results.any {
+        it.judicialResultTypeId == BAIL_CROWN_COURT_SENTENCE_IN_CUSTODY_WITH_BAIL_DIRECTION ||
+          it.judicialResultTypeId == BAIL_REMANDED_IN_CUSTODY_WITH_BAIL_DIRECTION
+      }
+    ) {
       return "Post Release"
     }
     return null
@@ -415,13 +440,14 @@ class HearingEventHandler(
     if (results.any {
         it.judicialResultTypeId == COMMUNITY_ORDER_ENGLAND_AND_WALES_UUID ||
           it.judicialResultTypeId == SSO_YOUNG_OFFENDER_INSTITUTION_DETENTION_UUID ||
-          it.judicialResultTypeId == SSO_INPRISONMENT_UUID
+          it.judicialResultTypeId == SSO_IMPRISONMENT_UUID
       }
     ) {
       return MonitoringConditionType.REQUIREMENT_OF_A_COMMUNITY_ORDER
     } else if (results.any {
         it.judicialResultTypeId == BAIL_ADULT_REMITTAL_FOR_SENTENCE_ON_CONDITIONAL ||
           it.judicialResultTypeId == BAIL_CROWN_COURT_SENTENCE_IN_CUSTODY_WITH_BAIL_DIRECTION ||
+          it.judicialResultTypeId == BAIL_REMANDED_IN_CUSTODY_WITH_BAIL_DIRECTION ||
           it.judicialResultTypeId == BAIL_REMAND_IN_CARE_OF_LOCAL_AUTHORITY
       }
     ) {
