@@ -65,7 +65,7 @@ workflows:
           pipeline_id: <<pipeline.id>>
           pipeline_number: <<pipeline.number>>
           context: hmpps-common-vars
-          filters:
+#          filters:
 #            branches:
 #              only:
 #                - main
