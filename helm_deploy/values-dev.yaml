@@ -14,10 +14,10 @@ generic-service:
     CP_INTEGRATION_ENABLED: true
 
   namespace_secrets:
-    sqs-court-case-events-secret:
+    sqs-court-case-events-fifo-secret:
       HMPPS_SQS_QUEUES_COURTHEARINGEVENTQUEUE_QUEUENAME: "sqs_queue_name"
       HMPPS_SQS_QUEUES_COURTHEARINGEVENTQUEUE_QUEUEARN: "sqs_queue_arn"
-    sqs-court-case-events-dlq-secret:
+    sqs-court-case-events-fifo-dlq-secret:
       HMPPS_SQS_QUEUES_COURTHEARINGEVENTQUEUE_DLQNAME: "sqs_queue_name"
 # CloudPlatform AlertManager receiver to route prometheus alerts to slack
 # See https://user-guide.cloud-platform.service.justice.gov.uk/documentation/monitoring-an-app/how-to-create-alarms.html#creating-your-own-custom-alerts
