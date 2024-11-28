@@ -7,16 +7,6 @@ import jakarta.validation.constraints.Size
 import java.time.ZonedDateTime
 
 data class UpdateDeviceWearerDto(
-  val nomisId: String? = null,
-
-  val pncId: String? = null,
-
-  val deliusId: String? = null,
-
-  val prisonNumber: String? = null,
-
-  var homeOfficeReferenceNumber: String? = null,
-
   @field:Size(min = 1, message = "First name is required")
   val firstName: String? = null,
 

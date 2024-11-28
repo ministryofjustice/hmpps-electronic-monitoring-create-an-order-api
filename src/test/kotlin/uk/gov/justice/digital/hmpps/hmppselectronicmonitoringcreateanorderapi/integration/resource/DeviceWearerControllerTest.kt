@@ -61,11 +61,6 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
         BodyInserters.fromValue(
           """
             {
-              "nomisId": "$mockNomisId",
-              "pncId": "$mockPncId",
-              "deliusId": "$mockDeliusId",
-              "prisonNumber": "$mockPrisonNumber",
-              "homeOfficeReferenceNumber": "$mockHomeOfficeReferenceNumber",
               "firstName": "$mockFirstName",
               "lastName": "$mockLastName",
               "alias": "$mockAlias",
@@ -87,14 +82,6 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
       .expectBody(DeviceWearer::class.java)
       .returnResult()
 
-    Assertions.assertThat(updateDeviceWearer.responseBody?.orderId).isEqualTo(order.id)
-    Assertions.assertThat(updateDeviceWearer.responseBody?.nomisId).isEqualTo(mockNomisId)
-    Assertions.assertThat(updateDeviceWearer.responseBody?.pncId).isEqualTo(mockPncId)
-    Assertions.assertThat(updateDeviceWearer.responseBody?.deliusId).isEqualTo(mockDeliusId)
-    Assertions.assertThat(updateDeviceWearer.responseBody?.prisonNumber).isEqualTo(mockPrisonNumber)
-    Assertions.assertThat(
-      updateDeviceWearer.responseBody?.homeOfficeReferenceNumber,
-    ).isEqualTo(mockHomeOfficeReferenceNumber)
     Assertions.assertThat(updateDeviceWearer.responseBody?.firstName).isEqualTo(mockFirstName)
     Assertions.assertThat(updateDeviceWearer.responseBody?.lastName).isEqualTo(mockLastName)
     Assertions.assertThat(updateDeviceWearer.responseBody?.alias).isEqualTo(mockAlias)
