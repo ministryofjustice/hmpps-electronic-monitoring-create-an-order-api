@@ -4,6 +4,7 @@ import jakarta.persistence.EntityNotFoundException
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateDeviceWearerDto
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateIdentityNumbersDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateNoFixedAbodeDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.DeviceWearerRepository
@@ -27,11 +28,6 @@ class DeviceWearerService(
     }
 
     with(deviceWearerUpdateRecord) {
-      deviceWearer.nomisId = nomisId
-      deviceWearer.pncId = pncId
-      deviceWearer.deliusId = deliusId
-      deviceWearer.prisonNumber = prisonNumber
-      deviceWearer.homeOfficeReferenceNumber = homeOfficeReferenceNumber
       deviceWearer.firstName = firstName
       deviceWearer.lastName = lastName
       deviceWearer.alias = alias
@@ -58,6 +54,26 @@ class DeviceWearerService(
 
     with(updateRecord) {
       deviceWearer.noFixedAbode = noFixedAbode
+    }
+
+    return repo.save(deviceWearer)
+  }
+
+  fun updateIdentityNumbers(orderId: UUID, username: String, updateRecord: UpdateIdentityNumbersDto): DeviceWearer {
+    val deviceWearer = repo.findByOrderIdAndOrderUsernameAndOrderStatus(
+      orderId,
+      username,
+      OrderStatus.IN_PROGRESS,
+    ).orElseThrow {
+      EntityNotFoundException("An editable device wearer for $orderId could not be found")
+    }
+
+    with(updateRecord) {
+      deviceWearer.nomisId = nomisId
+      deviceWearer.pncId = pncId
+      deviceWearer.deliusId = deliusId
+      deviceWearer.prisonNumber = prisonNumber
+      deviceWearer.homeOfficeReferenceNumber = homeOfficeReferenceNumber
     }
 
     return repo.save(deviceWearer)
