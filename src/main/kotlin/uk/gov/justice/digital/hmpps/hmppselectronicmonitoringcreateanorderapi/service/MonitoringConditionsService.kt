@@ -6,9 +6,6 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateMonitoringConditionsDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.MonitoringConditionsRepository
-import java.time.LocalTime
-import java.time.ZoneId
-import java.time.ZonedDateTime
 import java.util.*
 
 @Service
@@ -30,8 +27,8 @@ class MonitoringConditionsService(
 
     with(monitoringConditionsUpdateRecord) {
       monitoringConditions.orderType = orderType
-      monitoringConditions.startDate = dateTime(startDate, startTime)
-      monitoringConditions.endDate = dateTime(endDate, endTime)
+      monitoringConditions.startDate = startDate
+      monitoringConditions.endDate = endDate
       monitoringConditions.orderTypeDescription = orderTypeDescription
       monitoringConditions.conditionType = conditionType
       monitoringConditions.curfew = curfew
@@ -42,13 +39,5 @@ class MonitoringConditionsService(
     }
 
     return repo.save(monitoringConditions)
-  }
-
-  fun dateTime(date: ZonedDateTime?, time: LocalTime?): ZonedDateTime? {
-    return if (date == null || time == null) {
-      null
-    } else {
-      return date.toLocalDate().atTime(time).atZone(ZoneId.of("UTC"))
-    }
   }
 }

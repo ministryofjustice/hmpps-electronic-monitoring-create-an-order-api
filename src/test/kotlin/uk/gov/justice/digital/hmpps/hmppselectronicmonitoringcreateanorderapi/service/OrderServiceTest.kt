@@ -38,7 +38,6 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderTypeDescription
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 import java.time.DayOfWeek
-import java.time.LocalTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.util.*
@@ -96,8 +95,6 @@ class OrderServiceTest {
 
   val mockStartDate: ZonedDateTime = ZonedDateTime.now().plusMonths(1)
   val mockEndDate: ZonedDateTime = ZonedDateTime.now().plusMonths(2)
-  private val mockStartTime: LocalTime = LocalTime.of(18, 30)
-  private val mockEndTime: LocalTime = LocalTime.of(7, 0)
   private fun createReadyToSubmitOrder(noFixedAddress: Boolean = false): Order {
     val order = Order(
       username = "AUTH_ADM",
