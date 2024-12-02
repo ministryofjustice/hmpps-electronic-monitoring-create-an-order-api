@@ -185,7 +185,7 @@ class ResponsibleAdultControllerTest : IntegrationTestBase() {
             {
               "fullName": "",
               "relationship": "",
-              "contactNumber": ""
+              "contactNumber": null
             }
           """.trimIndent(),
         ),
@@ -198,15 +198,12 @@ class ResponsibleAdultControllerTest : IntegrationTestBase() {
       .returnResult()
 
     Assertions.assertThat(result.responseBody).isNotNull
-    Assertions.assertThat(result.responseBody).hasSize(3)
+    Assertions.assertThat(result.responseBody).hasSize(2)
     Assertions.assertThat(result.responseBody!!).contains(
       ValidationError("fullName", "Full name is required"),
     )
     Assertions.assertThat(result.responseBody!!).contains(
       ValidationError("relationship", "Relationship is required"),
-    )
-    Assertions.assertThat(result.responseBody!!).contains(
-      ValidationError("contactNumber", "Phone number is in an incorrect format"),
     )
   }
 
