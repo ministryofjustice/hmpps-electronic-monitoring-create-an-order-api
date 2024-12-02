@@ -7,11 +7,14 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.re
 data class UpdateResponsibleAdultDto(
   @field:NotBlank(message = "Full name is required")
   val fullName: String,
+
   @field:NotBlank(message = "Relationship is required")
   val relationship: String,
+
   val otherRelationshipDetails: String?,
+
   @field:ValidPhoneNumber
-  val contactNumber: String,
+  val contactNumber: String? = null,
 ) {
   @AssertTrue(message = "You must provide details of the responsible adult to the device wearer")
   fun isOtherRelationshipDetails(): Boolean {
