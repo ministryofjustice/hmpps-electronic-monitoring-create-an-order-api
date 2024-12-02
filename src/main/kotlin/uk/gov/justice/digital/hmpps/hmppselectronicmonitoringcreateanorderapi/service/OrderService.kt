@@ -39,7 +39,7 @@ class OrderService(
     }
 
     if (order.status == OrderStatus.SUBMITTED) {
-      throw Exception("Order with id $id cannot be deleted because it has already been submitted")
+      throw IllegalStateException("Order with id $id cannot be deleted because it has already been submitted")
     }
 
     repo.delete(order)
