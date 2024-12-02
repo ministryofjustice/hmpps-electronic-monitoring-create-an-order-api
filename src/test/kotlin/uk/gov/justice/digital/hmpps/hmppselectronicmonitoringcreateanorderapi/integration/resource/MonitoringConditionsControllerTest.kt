@@ -14,6 +14,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.MonitoringConditionsRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidationError
+import java.time.LocalTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.util.*
@@ -30,6 +31,8 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
   private val mockConditionType = MonitoringConditionType.LICENSE_CONDITION_OF_A_CUSTODIAL_ORDER
   private val mockStartDate = ZonedDateTime.now(ZoneId.of("UTC")).plusMonths(1)
   private val mockEndDate = ZonedDateTime.now(ZoneId.of("UTC")).plusMonths(2)
+  private val mockStartTime = LocalTime.of(18, 30)
+  private val mockEndTime = LocalTime.of(7, 0)
 
   @BeforeEach
   fun setup() {
@@ -57,7 +60,9 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
               "mandatoryAttendance": "true",
               "alcohol": "true",
               "startDate": "$mockStartDate",
-              "endDate": "$mockEndDate"
+              "startTime": "$mockStartTime",
+              "endDate": "$mockEndDate",
+              "endTime": "$mockEndTime"
             }
           """.trimIndent(),
         ),
@@ -107,7 +112,8 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
               "curfew": true,
               "orderTypeDescription": "$mockOrderTypeDescription",
               "conditionType": "$mockConditionType",
-              "startDate": "$mockStartDate"
+              "startDate": "$mockStartDate",
+              "startTime": "$mockStartTime"
             }
           """.trimIndent(),
         ),
@@ -143,7 +149,9 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
               "mandatoryAttendance": "true",
               "alcohol": "true",
               "startDate": "$mockStartDate",
-              "endDate": "$mockEndDate"
+              "startTime": "$mockStartTime",
+              "endDate": null,
+              "endTime": null
             }
           """.trimIndent(),
         ),
@@ -179,7 +187,9 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
               "mandatoryAttendance": "true",
               "alcohol": "true",
               "startDate": null,
-              "endDate": null
+              "startTime": null,
+              "endDate": null,
+              "endTime": null
             }
           """.trimIndent(),
         ),
@@ -192,7 +202,7 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
       .returnResult()
 
     Assertions.assertThat(result.responseBody).isNotNull
-    Assertions.assertThat(result.responseBody).hasSize(3)
+    Assertions.assertThat(result.responseBody).hasSize(4)
     Assertions.assertThat(result.responseBody!!).contains(
       ValidationError("orderType", "Order type is required"),
     )
@@ -201,6 +211,9 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
     )
     Assertions.assertThat(result.responseBody!!).contains(
       ValidationError("startDate", "Monitoring conditions start date is required"),
+    )
+    Assertions.assertThat(result.responseBody!!).contains(
+      ValidationError("startTime", "Monitoring conditions start time is required"),
     )
   }
 
@@ -226,7 +239,9 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
               "mandatoryAttendance": "true",
               "alcohol": "true",
               "startDate": "$mockPastStartDate",
-              "endDate": null
+              "startTime": "$mockStartTime",
+              "endDate": null,
+              "endTime": null
             }
           """.trimIndent(),
         ),
@@ -259,7 +274,9 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
               "mandatoryAttendance": "true",
               "alcohol": "true",
               "startDate": "$mockStartDate",
-              "endDate": "${mockStartDate.plusDays(-10)}"
+              "startTime": "$mockStartTime",
+              "endDate": "${mockStartDate.plusDays(-10)}",
+              "endTime": "$mockEndTime"
             }
           """.trimIndent(),
         ),
@@ -275,6 +292,90 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
     Assertions.assertThat(result.responseBody).hasSize(1)
     Assertions.assertThat(result.responseBody!!).contains(
       ValidationError("endDate", "End date must be after start date"),
+    )
+  }
+
+  @Test
+  fun `Update monitoring conditions returns 400 if end date is provided without an end time`() {
+    val order = createOrder()
+    val result = webTestClient.put()
+      .uri("/api/orders/${order.id}/monitoring-conditions")
+      .contentType(MediaType.APPLICATION_JSON)
+      .body(
+        BodyInserters.fromValue(
+          """
+            {
+              "orderType": "$mockOrderType",
+              "orderTypeDescription": "$mockOrderTypeDescription",
+              "conditionType": "$mockConditionType",
+              "acquisitiveCrime": "true",
+              "dapol": "true",
+              "curfew": "true",
+              "exclusionZone": "true",
+              "trail": "true",
+              "mandatoryAttendance": "true",
+              "alcohol": "true",
+              "startDate": "$mockStartDate",
+              "startTime": "$mockStartTime",
+              "endDate": "$mockEndDate",
+              "endTime": null
+            }
+          """.trimIndent(),
+        ),
+      )
+      .headers(setAuthorisation("AUTH_ADM"))
+      .exchange()
+      .expectStatus()
+      .isBadRequest
+      .expectBodyList(ValidationError::class.java)
+      .returnResult()
+
+    Assertions.assertThat(result.responseBody).isNotNull
+    Assertions.assertThat(result.responseBody).hasSize(1)
+    Assertions.assertThat(result.responseBody!!).contains(
+      ValidationError("endTime", "Enter an end date and an end time, or leave both blank."),
+    )
+  }
+
+  @Test
+  fun `Update monitoring conditions returns 400 if end time is provided without an end date`() {
+    val order = createOrder()
+    val result = webTestClient.put()
+      .uri("/api/orders/${order.id}/monitoring-conditions")
+      .contentType(MediaType.APPLICATION_JSON)
+      .body(
+        BodyInserters.fromValue(
+          """
+            {
+              "orderType": "$mockOrderType",
+              "orderTypeDescription": "$mockOrderTypeDescription",
+              "conditionType": "$mockConditionType",
+              "acquisitiveCrime": "true",
+              "dapol": "true",
+              "curfew": "true",
+              "exclusionZone": "true",
+              "trail": "true",
+              "mandatoryAttendance": "true",
+              "alcohol": "true",
+              "startDate": "$mockStartDate",
+              "startTime": "$mockStartTime",
+              "endDate": null,
+              "endTime": "$mockEndTime"
+            }
+          """.trimIndent(),
+        ),
+      )
+      .headers(setAuthorisation("AUTH_ADM"))
+      .exchange()
+      .expectStatus()
+      .isBadRequest
+      .expectBodyList(ValidationError::class.java)
+      .returnResult()
+
+    Assertions.assertThat(result.responseBody).isNotNull
+    Assertions.assertThat(result.responseBody).hasSize(1)
+    Assertions.assertThat(result.responseBody!!).contains(
+      ValidationError("endTime", "Enter an end date and an end time, or leave both blank."),
     )
   }
 
@@ -299,7 +400,9 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
               "mandatoryAttendance": null,
               "alcohol": null,
               "startDate": "$mockStartDate",
-              "endDate": "$mockEndDate"
+              "startTime": "$mockStartTime",
+              "endDate": "$mockEndDate",
+              "endTime": "$mockEndTime"
             }
           """.trimIndent(),
         ),
@@ -331,7 +434,9 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
               "mandatoryAttendance": null,
               "alcohol": null,
               "startDate": "$mockStartDate",
-              "endDate": "$mockEndDate"
+              "startTime": "$mockStartTime",
+              "endDate": "$mockEndDate",
+              "endTime": "$mockEndTime"
             }
           """.trimIndent(),
         ),
@@ -372,7 +477,9 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
               "mandatoryAttendance": "true",
               "alcohol": "true",
               "startDate": "$mockStartDate",
-              "endDate": "$mockEndDate"
+              "startTime": "$mockStartTime",
+              "endDate": "$mockEndDate",
+              "endTime": "$mockEndTime"
             }
           """.trimIndent(),
         ),
@@ -408,7 +515,9 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
               "mandatoryAttendance": "true",
               "alcohol": "true",
               "startDate": "$mockStartDate",
-              "endDate": "$mockEndDate"
+              "startTime": "$mockStartTime",
+              "endDate": "$mockEndDate",
+              "endTime": "$mockEndTime"
             }
           """.trimIndent(),
         ),
@@ -440,7 +549,9 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
               "mandatoryAttendance": "true",
               "alcohol": "true",
               "startDate": "$mockStartDate",
-              "endDate": "$mockEndDate"
+              "startTime": "$mockStartTime",
+              "endDate": "$mockEndDate",
+              "endTime": "$mockEndTime"
             }
           """.trimIndent(),
         ),
