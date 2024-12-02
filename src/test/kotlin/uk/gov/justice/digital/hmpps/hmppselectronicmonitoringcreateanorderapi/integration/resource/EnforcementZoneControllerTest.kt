@@ -252,7 +252,7 @@ class EnforcementZoneControllerTest : IntegrationTestBase() {
     )
     mockOrder.enforcementZoneConditions.add(zone)
     orderRepo.save(mockOrder)
-    documentApi.stupDeleteDocument(zone.fileId.toString())
+    documentApi.stubDeleteDocument(zone.fileId.toString())
 
     webTestClient.put()
       .uri("/api/orders/${mockOrder.id}/enforcementZone")
@@ -322,7 +322,7 @@ class EnforcementZoneControllerTest : IntegrationTestBase() {
     val bodyBuilder = MultipartBodyBuilder()
     bodyBuilder.part("file", ByteArrayResource(mockFile().bytes))
       .header("Content-Disposition", "form-data; name=file; filename=file-name.jpeg")
-    documentApi.stupUploadDocumentBadRequest(
+    documentApi.stubUploadDocumentBadRequest(
       ErrorResponse(
         status = BAD_REQUEST,
         userMessage = "mock document api error",
@@ -364,8 +364,8 @@ class EnforcementZoneControllerTest : IntegrationTestBase() {
     bodyBuilder.part("file", ByteArrayResource(mockFile().bytes))
       .header("Content-Disposition", "form-data; name=file; filename=filename2.jpeg")
 
-    documentApi.stupDeleteDocument(zone.fileId.toString())
-    documentApi.stupUploadDocument(DocumentUploadResponse())
+    documentApi.stubDeleteDocument(zone.fileId.toString())
+    documentApi.stubUploadDocument(DocumentUploadResponse())
     webTestClient.post()
       .uri("/api/orders/${mockOrder.id}/enforcementZone/0/attachment")
       .bodyValue(bodyBuilder.build())
