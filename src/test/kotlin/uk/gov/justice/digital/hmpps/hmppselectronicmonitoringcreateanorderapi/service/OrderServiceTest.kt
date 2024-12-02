@@ -104,7 +104,7 @@ class OrderServiceTest {
       orderId = order.id,
       firstName = "John",
       lastName = "Smith",
-      alias = "Johny",
+      alias = "Johnny",
       dateOfBirth = ZonedDateTime.of(1990, 1, 1, 1, 1, 1, 1, ZoneId.systemDefault()),
       adultAtTimeOfInstallation = true,
       sex = "Male",

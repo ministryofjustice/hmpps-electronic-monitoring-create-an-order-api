@@ -414,7 +414,7 @@ class OrderControllerTest : IntegrationTestBase() {
     val order = createAndPersistReadyToSubmitOrder()
 
     sercoAuthApi.stubGrantToken()
-    sercoApi.stupCreateDeviceWearer(
+    sercoApi.stubCreateDeviceWearer(
       HttpStatus.INTERNAL_SERVER_ERROR,
       FmsResponse(),
       FmsErrorResponse(error = FmsErrorResponseDetails("", "Mock Create DW Error")),
@@ -438,11 +438,11 @@ class OrderControllerTest : IntegrationTestBase() {
     val order = createAndPersistReadyToSubmitOrder()
     sercoAuthApi.stubGrantToken()
 
-    sercoApi.stupCreateDeviceWearer(
+    sercoApi.stubCreateDeviceWearer(
       HttpStatus.OK,
       FmsResponse(result = listOf(FmsResult(message = "", id = "MockDeviceWearerId"))),
     )
-    sercoApi.stupMonitoringOrder(
+    sercoApi.stubMonitoringOrder(
       HttpStatus.INTERNAL_SERVER_ERROR,
       FmsResponse(),
       FmsErrorResponse(error = FmsErrorResponseDetails("", "Mock Create MO Error")),
@@ -475,11 +475,11 @@ class OrderControllerTest : IntegrationTestBase() {
     val order = createAndPersistReadyToSubmitOrder()
     sercoAuthApi.stubGrantToken()
 
-    sercoApi.stupCreateDeviceWearer(
+    sercoApi.stubCreateDeviceWearer(
       HttpStatus.OK,
       FmsResponse(result = listOf(FmsResult(message = "", id = "MockDeviceWearerId"))),
     )
-    sercoApi.stupMonitoringOrder(
+    sercoApi.stubMonitoringOrder(
       HttpStatus.OK,
       FmsResponse(result = listOf(FmsResult(message = "", id = "MockMonitoringOrderId"))),
     )
@@ -499,7 +499,7 @@ class OrderControllerTest : IntegrationTestBase() {
       	"first_name": "John",
       	"middle_name": "",
       	"last_name": "Smith",
-      	"alias": "Johny",
+      	"alias": "Johnny",
       	"date_of_birth": "1990-01-01",
       	"adult_child": "adult",
       	"sex": "Male",
@@ -741,11 +741,11 @@ class OrderControllerTest : IntegrationTestBase() {
     val order = createAndPersistReadyToSubmitOrder(true)
     sercoAuthApi.stubGrantToken()
 
-    sercoApi.stupCreateDeviceWearer(
+    sercoApi.stubCreateDeviceWearer(
       HttpStatus.OK,
       FmsResponse(result = listOf(FmsResult(message = "", id = "MockDeviceWearerId"))),
     )
-    sercoApi.stupMonitoringOrder(
+    sercoApi.stubMonitoringOrder(
       HttpStatus.OK,
       FmsResponse(result = listOf(FmsResult(message = "", id = "MockMonitoringOrderId"))),
     )
@@ -765,7 +765,7 @@ class OrderControllerTest : IntegrationTestBase() {
       	"first_name": "John",
       	"middle_name": "",
       	"last_name": "Smith",
-      	"alias": "Johny",
+      	"alias": "Johnny",
       	"date_of_birth": "1990-01-01",
       	"adult_child": "adult",
       	"sex": "Male",
@@ -830,7 +830,7 @@ class OrderControllerTest : IntegrationTestBase() {
       orderId = order.id,
       firstName = "John",
       lastName = "Smith",
-      alias = "Johny",
+      alias = "Johnny",
       dateOfBirth = ZonedDateTime.of(1990, 1, 1, 1, 1, 1, 1, ZoneId.systemDefault()),
       adultAtTimeOfInstallation = true,
       sex = "Male",

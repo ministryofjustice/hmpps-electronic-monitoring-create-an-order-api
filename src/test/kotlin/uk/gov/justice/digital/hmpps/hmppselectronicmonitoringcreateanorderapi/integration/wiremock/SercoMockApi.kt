@@ -39,7 +39,7 @@ class SercoMockApiServer : WireMockServer(WIREMOCK_PORT) {
   }
 
   private val objectMapper: ObjectMapper = ObjectMapper()
-  fun stupCreateDeviceWearer(status: HttpStatus, result: FmsResponse, errorResponse: FmsErrorResponse? = null) {
+  fun stubCreateDeviceWearer(status: HttpStatus, result: FmsResponse, errorResponse: FmsErrorResponse? = null) {
     val body: String
     if (errorResponse != null) {
       body = objectMapper.writeValueAsString(errorResponse)
@@ -59,7 +59,7 @@ class SercoMockApiServer : WireMockServer(WIREMOCK_PORT) {
     )
   }
 
-  fun stupMonitoringOrder(status: HttpStatus, result: FmsResponse, errorResponse: FmsErrorResponse? = null) {
+  fun stubMonitoringOrder(status: HttpStatus, result: FmsResponse, errorResponse: FmsErrorResponse? = null) {
     val body: String
     if (errorResponse != null) {
       body = objectMapper.writeValueAsString(errorResponse)

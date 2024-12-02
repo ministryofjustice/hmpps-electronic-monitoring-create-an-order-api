@@ -20,7 +20,7 @@ class OrderSpecification(private val criteria: OrderSearchCriteria) : Specificat
     return criteriaBuilder.equal(root.get<String>(Order::username.name), username)
   }
 
-  private fun isLikeFirstname(
+  private fun isLikeFirstName(
     deviceWearer: Join<Order, DeviceWearer>,
     criteriaBuilder: CriteriaBuilder,
     keyword: String,
@@ -33,7 +33,7 @@ class OrderSpecification(private val criteria: OrderSearchCriteria) : Specificat
     )
   }
 
-  private fun isLikeLastname(
+  private fun isLikeLastName(
     deviceWearer: Join<Order, DeviceWearer>,
     criteriaBuilder: CriteriaBuilder,
     keyword: String,
@@ -55,8 +55,8 @@ class OrderSpecification(private val criteria: OrderSearchCriteria) : Specificat
     val deviceWearer: Join<Order, DeviceWearer> = root.join("deviceWearer")
 
     if (this.criteria.searchTerm.isNotEmpty()) {
-      predicates.add(isLikeFirstname(deviceWearer, criteriaBuilder, this.criteria.searchTerm))
-      predicates.add(isLikeLastname(deviceWearer, criteriaBuilder, this.criteria.searchTerm))
+      predicates.add(isLikeFirstName(deviceWearer, criteriaBuilder, this.criteria.searchTerm))
+      predicates.add(isLikeLastName(deviceWearer, criteriaBuilder, this.criteria.searchTerm))
     }
 
     if (predicates.isNotEmpty()) {

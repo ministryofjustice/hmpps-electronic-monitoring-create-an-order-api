@@ -87,7 +87,7 @@ class AdditionalDocumentsControllerTest : IntegrationTestBase() {
     val bodyBuilder = MultipartBodyBuilder()
     bodyBuilder.part("file", ByteArrayResource(mockFile().bytes))
       .header("Content-Disposition", "form-data; name=file; filename=file-name.jpeg")
-    documentApi.stupUploadDocumentBadRequest(
+    documentApi.stubUploadDocumentBadRequest(
       ErrorResponse(
         status = BAD_REQUEST,
         userMessage = "mock document api error",
@@ -123,7 +123,7 @@ class AdditionalDocumentsControllerTest : IntegrationTestBase() {
     bodyBuilder.part("file", ByteArrayResource(mockFile().bytes))
       .header("Content-Disposition", "form-data; name=file; filename=filename2.jpeg")
 
-    documentApi.stupDeleteDocument(doc.id.toString())
+    documentApi.stubDeleteDocument(doc.id.toString())
     webTestClient.post()
       .uri("/api/orders/${order.id}/document-type/${DocumentType.PHOTO_ID}")
       .bodyValue(bodyBuilder.build())
@@ -139,7 +139,7 @@ class AdditionalDocumentsControllerTest : IntegrationTestBase() {
     val bodyBuilder = MultipartBodyBuilder()
     bodyBuilder.part("file", ByteArrayResource(mockFile().bytes))
       .header("Content-Disposition", "form-data; name=file; filename=file-name.jpeg")
-    documentApi.stupUploadDocument(DocumentUploadResponse())
+    documentApi.stubUploadDocument(DocumentUploadResponse())
 
     webTestClient.post()
       .uri("/api/orders/${order.id}/document-type/${DocumentType.PHOTO_ID}")
@@ -185,7 +185,7 @@ class AdditionalDocumentsControllerTest : IntegrationTestBase() {
     order.additionalDocuments.add(doc)
     repo.save(order)
 
-    documentApi.stupGetDocument(doc.id.toString())
+    documentApi.stubGetDocument(doc.id.toString())
     val expectedBytes = Files.readAllBytes(
       Paths.get(
         this.filePath,

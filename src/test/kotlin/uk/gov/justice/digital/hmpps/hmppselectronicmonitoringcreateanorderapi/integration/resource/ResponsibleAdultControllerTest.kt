@@ -138,7 +138,7 @@ class ResponsibleAdultControllerTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `Reponsible adult cannot be updated with an invalid contact number`() {
+  fun `Responsible adult cannot be updated with an invalid contact number`() {
     val order = createOrder()
 
     val result = webTestClient.put()
