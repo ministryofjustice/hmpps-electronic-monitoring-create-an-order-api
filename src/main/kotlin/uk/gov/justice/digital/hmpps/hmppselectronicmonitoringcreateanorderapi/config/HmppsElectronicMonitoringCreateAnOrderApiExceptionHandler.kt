@@ -74,7 +74,7 @@ class HmppsElectronicMonitoringCreateAnOrderApiExceptionHandler {
     ).also { log.info("Entity not found exception: {}", e.message) }
 
   @ExceptionHandler(TransactionSystemException::class)
-  fun handleConstrainException(e: TransactionSystemException): ResponseEntity<List<ValidationError>> {
+  fun handleConstraintException(e: TransactionSystemException): ResponseEntity<List<ValidationError>> {
     if (e.rootCause is ConstraintViolationException) {
       val constraintViolationException = e.rootCause as ConstraintViolationException
       val details: List<ValidationError> = constraintViolationException.constraintViolations
@@ -156,27 +156,44 @@ class HmppsElectronicMonitoringCreateAnOrderApiExceptionHandler {
       ),
     ).also { log.error("Unexpected exception", e) }
 
-  @ExceptionHandler(Exception::class)
-  fun handleException(e: Exception): ResponseEntity<ErrorResponse> {
-    if (e is MaxUploadSizeExceededException) {
-      return ResponseEntity
-        .status(BAD_REQUEST)
-        .body(
-          ErrorResponse(
-            status = BAD_REQUEST,
-            userMessage = "File uploaded exceed max file size limit of 10MB",
-            developerMessage = e.message,
-          ),
-        ).also { log.error("Unexpected exception", e) }
-    }
-
+  @ExceptionHandler(IllegalStateException::class)
+  fun handleIllegalStateException(e: Exception): ResponseEntity<ErrorResponse> {
     return ResponseEntity
       .status(INTERNAL_SERVER_ERROR)
       .body(
         ErrorResponse(
           status = INTERNAL_SERVER_ERROR,
-          userMessage = "Unexpected error: ${e.message}",
+          userMessage = e.message,
           developerMessage = e.message,
+        ),
+      ).also { log.error("Illegal state exception", e) }
+  }
+
+  @ExceptionHandler(MaxUploadSizeExceededException::class)
+  fun handleMaxUploadSizeExceededException(e: Exception): ResponseEntity<ErrorResponse> {
+    return ResponseEntity
+      .status(BAD_REQUEST)
+      .body(
+        ErrorResponse(
+          status = BAD_REQUEST,
+          userMessage = "File uploaded exceed max file size limit of 10MB",
+          developerMessage = e.message,
+        ),
+      ).also { log.error("Unexpected exception", e) }
+  }
+
+  // The default exception handler returns a fixed text response to avoid leaking internal implementation
+  // details. If you want to return a more sensible error,
+  // generate a custom error type with a bespoke ExceptionHandler
+  @ExceptionHandler(Exception::class)
+  fun handleException(e: Exception): ResponseEntity<ErrorResponse> {
+    return ResponseEntity
+      .status(INTERNAL_SERVER_ERROR)
+      .body(
+        ErrorResponse(
+          status = INTERNAL_SERVER_ERROR,
+          userMessage = "500 Internal Server Error",
+          developerMessage = "500 Internal Server Error",
         ),
       ).also { log.error("Unexpected exception", e) }
   }
