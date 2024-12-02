@@ -110,18 +110,18 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `Will map SSO_INPRISONMENT request and submit to FMS`() {
-    val rootFilePath = "src/test/resources/json/SSO_INPRISONMENT"
+  fun `Will map SSO_IMPRISONMENT request and submit to FMS`() {
+    val rootFilePath = "src/test/resources/json/SSO_IMPRISONMENT"
     runPayloadTest(rootFilePath)
   }
 
   fun runPayloadTest(rootFilePath: String) {
     val rawMessage = generateRawHearingEventMessage("$rootFilePath/cp_payload.json")
-    sercoApi.stupCreateDeviceWearer(
+    sercoApi.stubCreateDeviceWearer(
       HttpStatus.OK,
       FmsResponse(result = listOf(FmsResult(message = "", id = "MockDeviceWearerId"))),
     )
-    sercoApi.stupMonitoringOrder(
+    sercoApi.stubMonitoringOrder(
       HttpStatus.OK,
       FmsResponse(result = listOf(FmsResult(message = "", id = "MockMonitoringOrderId"))),
     )

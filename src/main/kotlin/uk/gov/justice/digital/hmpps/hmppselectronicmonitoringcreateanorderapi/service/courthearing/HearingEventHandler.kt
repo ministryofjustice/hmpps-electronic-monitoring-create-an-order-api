@@ -52,7 +52,7 @@ class HearingEventHandler(
     // Suspended sentence order - detention in a young offender institution
     const val SSO_YOUNG_OFFENDER_INSTITUTION_DETENTION_UUID = "5679e5b7-0ca8-4d2a-ba80-7a50025fb589"
 
-    const val SSO_INPRISONMENT_UUID = "8b1cff00-a456-40da-9ce4-f11c20959084"
+    const val SSO_IMPRISONMENT_UUID = "8b1cff00-a456-40da-9ce4-f11c20959084"
 
     fun isEnglandAdnWalesEMRequest(offence: Offence): Boolean {
       return offence.judicialResults.any {
@@ -74,7 +74,7 @@ class HearingEventHandler(
     val orders = getOrdersFromHearing(event.hearing)
     orders.forEach { order ->
       run {
-        val submitResult = fmsService.submitOrder(order, FmsOrderSource.COMMENT_PLATFORM)
+        val submitResult = fmsService.submitOrder(order, FmsOrderSource.COMMON_PLATFORM)
         // TODO log failed requests
         if (!submitResult.success) {
           val fullName = " ${order.deviceWearer!!.firstName} ${order.deviceWearer!!.lastName}"
@@ -275,7 +275,7 @@ class HearingEventHandler(
     if (results.any {
         it.judicialResultTypeId == COMMUNITY_ORDER_ENGLAND_AND_WALES_UUID ||
           it.judicialResultTypeId == SSO_YOUNG_OFFENDER_INSTITUTION_DETENTION_UUID ||
-          it.judicialResultTypeId == SSO_INPRISONMENT_UUID
+          it.judicialResultTypeId == SSO_IMPRISONMENT_UUID
       }
     ) {
       return "Community"
@@ -287,7 +287,7 @@ class HearingEventHandler(
     if (results.any {
         it.judicialResultTypeId == COMMUNITY_ORDER_ENGLAND_AND_WALES_UUID ||
           it.judicialResultTypeId == SSO_YOUNG_OFFENDER_INSTITUTION_DETENTION_UUID ||
-          it.judicialResultTypeId == SSO_INPRISONMENT_UUID
+          it.judicialResultTypeId == SSO_IMPRISONMENT_UUID
       }
     ) {
       return MonitoringConditionType.REQUIREMENT_OF_A_COMMUNITY_ORDER

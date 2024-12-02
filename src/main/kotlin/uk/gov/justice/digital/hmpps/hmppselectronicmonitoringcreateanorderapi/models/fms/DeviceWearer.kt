@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import java.time.format.DateTimeFormatter
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Disability as DisablityEnum
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Disability as DisabilityEnum
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.Disability as FmsDisability
 
 data class DeviceWearer(
@@ -143,7 +143,7 @@ data class DeviceWearer(
 
       var disabilities = emptyList<FmsDisability>()
       if (!order.deviceWearer?.disabilities.isNullOrBlank()) {
-        disabilities = DisablityEnum.getValuesFromEnumString(order.deviceWearer!!.disabilities!!)
+        disabilities = DisabilityEnum.getValuesFromEnumString(order.deviceWearer!!.disabilities!!)
           .map { disability -> FmsDisability(disability) }
       }
 

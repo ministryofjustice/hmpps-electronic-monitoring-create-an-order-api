@@ -2,5 +2,5 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.m
 
 enum class FmsOrderSource {
   CEMO,
-  COMMENT_PLATFORM,
+  COMMON_PLATFORM,
 }
