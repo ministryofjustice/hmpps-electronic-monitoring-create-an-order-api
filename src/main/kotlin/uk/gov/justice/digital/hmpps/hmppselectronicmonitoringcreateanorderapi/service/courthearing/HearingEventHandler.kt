@@ -74,7 +74,7 @@ class HearingEventHandler(
     val orders = getOrdersFromHearing(event.hearing)
     orders.forEach { order ->
       run {
-        val submitResult = fmsService.submitOrder(order, FmsOrderSource.COMMENT_PLATFORM)
+        val submitResult = fmsService.submitOrder(order, FmsOrderSource.COMMON_PLATFORM)
         // TODO log failed requests
         if (!submitResult.success) {
           val fullName = " ${order.deviceWearer!!.firstName} ${order.deviceWearer!!.lastName}"
