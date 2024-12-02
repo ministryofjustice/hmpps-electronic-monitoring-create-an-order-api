@@ -13,7 +13,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import java.util.*
 
 @Entity
-@Table(name = "ADDITIONAL_DOCUMENTIONS")
+@Table(name = "ADDITIONAL_DOCUMENTS")
 data class AdditionalDocument(
   @Id
   @Column(name = "ID", nullable = false, unique = true)
