@@ -56,6 +56,8 @@ class HearingEventHandler(
 
     const val BAIL_REMANDED_IN_CUSTODY_WITH_BAIL_DIRECTION = "e26940b7-2534-42f2-9c44-c70072bf6ad2"
 
+    const val BAIL_REMANDED_ON_CONDITIONAL_BAIL = "3a529001-2f43-45ba-a0a8-d3ced7e9e7ad"
+
     // Suspended sentence order
     const val SSO_YOUNG_OFFENDER_INSTITUTION_DETENTION_UUID = "5679e5b7-0ca8-4d2a-ba80-7a50025fb589"
 
@@ -183,7 +185,7 @@ class HearingEventHandler(
           addressLine2 = address.address2 ?: "N/A",
           addressLine3 = address.address3 ?: "N/A",
           addressLine4 = address.address4 ?: "N/A",
-          postcode = address.postcode ?: "",
+          postcode = address.postcode ?: "N/A",
         ),
       )
     }
@@ -337,6 +339,20 @@ class HearingEventHandler(
       order.enforcementZoneConditions.add(condition)
     }
 
+    judicialResults.firstOrNull {
+      it.judicialResultPrompts.any { prompts ->
+        prompts.judicialResultPromptTypeId == BailOrderType.INCLUSION_NOT_TO_LEAVE.uuid
+      }
+    }?.let {
+      val conditionPrompt = it.judicialResultPrompts.first { prompts ->
+        prompts.judicialResultPromptTypeId == BailOrderType.INCLUSION_NOT_TO_LEAVE.uuid
+      }
+      monitoringConditions.exclusionZone = true
+      val condition =
+        getBailOrderEnforcementZone(conditionPrompt, it.orderedDate, EnforcementZoneType.INCLUSION, order.id)
+      order.enforcementZoneConditions.add(condition)
+    }
+
     //region InterestedParties
     val responsibleOrganisation = getPromptValue(
       prompts,
@@ -345,10 +361,12 @@ class HearingEventHandler(
       prompts,
       "Prison organisation name",
     ) ?: ""
+
     val responsibleOrganisationRegion = getPromptValue(
       prompts,
       "Probation / YOT to be notified organisation name",
     ) ?: ""
+
     val responsibleOrganisationEmail = getPromptValue(
       prompts,
       "Probation / YOT to be notified email address 1",
@@ -422,7 +440,8 @@ class HearingEventHandler(
       return "Community"
     } else if (results.any {
         it.judicialResultTypeId == BAIL_ADULT_REMITTAL_FOR_SENTENCE_ON_CONDITIONAL ||
-          it.judicialResultTypeId == BAIL_REMAND_IN_CARE_OF_LOCAL_AUTHORITY
+          it.judicialResultTypeId == BAIL_REMAND_IN_CARE_OF_LOCAL_AUTHORITY ||
+          it.judicialResultTypeId == BAIL_REMANDED_ON_CONDITIONAL_BAIL
       }
     ) {
       return "Pre-Trial"
@@ -448,7 +467,8 @@ class HearingEventHandler(
         it.judicialResultTypeId == BAIL_ADULT_REMITTAL_FOR_SENTENCE_ON_CONDITIONAL ||
           it.judicialResultTypeId == BAIL_CROWN_COURT_SENTENCE_IN_CUSTODY_WITH_BAIL_DIRECTION ||
           it.judicialResultTypeId == BAIL_REMANDED_IN_CUSTODY_WITH_BAIL_DIRECTION ||
-          it.judicialResultTypeId == BAIL_REMAND_IN_CARE_OF_LOCAL_AUTHORITY
+          it.judicialResultTypeId == BAIL_REMAND_IN_CARE_OF_LOCAL_AUTHORITY ||
+          it.judicialResultTypeId == BAIL_REMANDED_ON_CONDITIONAL_BAIL
       }
     ) {
       return MonitoringConditionType.BAIL_ORDER

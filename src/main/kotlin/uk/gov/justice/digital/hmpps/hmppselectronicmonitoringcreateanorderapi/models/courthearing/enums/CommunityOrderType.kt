@@ -24,6 +24,8 @@ enum class BailOrderType(val uuid: String) {
   EXCLUSION_EXCEPT_COURT_OR_APPOINTMENT("dfa19118-e944-43f4-93b2-2ed49df5553f"),
 
   INCLUSION_SPECIFIED_RADIUS("c9ae30f1-3c3b-4edf-a7d4-49bd027977c3"),
+
+  INCLUSION_NOT_TO_LEAVE("ac44c4ed-c77c-4552-aed7-b4f05f1dc9db"),
   ;
 
   companion object {
