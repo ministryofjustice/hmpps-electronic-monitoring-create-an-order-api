@@ -81,9 +81,7 @@ class AdditionalDocumentServiceTest {
 
   @Test
   fun `delete document in repo and in document management api`() {
-    `when`(
-      repo.findAdditionalDocumentsByOrderIdAndOrderUsernameAndFileType(orderId, username, docType),
-    ).thenReturn(Optional.of(doc))
+    order.additionalDocuments.add(doc)
 
     service.deleteDocument(orderId, username, docType)
 
@@ -120,9 +118,7 @@ class AdditionalDocumentServiceTest {
 
   @Test
   fun `document with same type already exist, remove old document`() {
-    `when`(
-      repo.findAdditionalDocumentsByOrderIdAndOrderUsernameAndFileType(orderId, username, docType),
-    ).thenReturn(Optional.of(doc))
+    order.additionalDocuments.add(doc)
 
     service.uploadDocument(
       orderId,
