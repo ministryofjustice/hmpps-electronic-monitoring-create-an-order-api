@@ -61,11 +61,6 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
         BodyInserters.fromValue(
           """
             {
-              "nomisId": "$mockNomisId",
-              "pncId": "$mockPncId",
-              "deliusId": "$mockDeliusId",
-              "prisonNumber": "$mockPrisonNumber",
-              "homeOfficeReferenceNumber": "$mockHomeOfficeReferenceNumber",
               "firstName": "$mockFirstName",
               "lastName": "$mockLastName",
               "alias": "$mockAlias",
@@ -87,14 +82,6 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
       .expectBody(DeviceWearer::class.java)
       .returnResult()
 
-    Assertions.assertThat(updateDeviceWearer.responseBody?.orderId).isEqualTo(order.id)
-    Assertions.assertThat(updateDeviceWearer.responseBody?.nomisId).isEqualTo(mockNomisId)
-    Assertions.assertThat(updateDeviceWearer.responseBody?.pncId).isEqualTo(mockPncId)
-    Assertions.assertThat(updateDeviceWearer.responseBody?.deliusId).isEqualTo(mockDeliusId)
-    Assertions.assertThat(updateDeviceWearer.responseBody?.prisonNumber).isEqualTo(mockPrisonNumber)
-    Assertions.assertThat(
-      updateDeviceWearer.responseBody?.homeOfficeReferenceNumber,
-    ).isEqualTo(mockHomeOfficeReferenceNumber)
     Assertions.assertThat(updateDeviceWearer.responseBody?.firstName).isEqualTo(mockFirstName)
     Assertions.assertThat(updateDeviceWearer.responseBody?.lastName).isEqualTo(mockLastName)
     Assertions.assertThat(updateDeviceWearer.responseBody?.alias).isEqualTo(mockAlias)
@@ -506,5 +493,117 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
       .returnResult()
 
     Assertions.assertThat(updatedOrder.responseBody?.isValid).isTrue()
+  }
+
+  @Test
+  fun `Identity numbers cannot be updated if the order doesn't exist`() {
+    webTestClient.put()
+      .uri("/api/orders/${UUID.randomUUID()}/device-wearer/identity-numbers")
+      .contentType(MediaType.APPLICATION_JSON)
+      .body(
+        BodyInserters.fromValue(
+          """
+            {
+              "nomisId": "$mockNomisId",
+              "pncId": "$mockPncId",
+              "deliusId": "$mockDeliusId",
+              "prisonNumber": "$mockPrisonNumber",
+              "homeOfficeReferenceNumber": "$mockHomeOfficeReferenceNumber"
+            }
+          """.trimIndent(),
+        ),
+      )
+      .headers(setAuthorisation("AUTH_ADM"))
+      .exchange()
+      .expectStatus()
+      .isNotFound()
+  }
+
+  @Test
+  fun `Identity numbers cannot be updated if the order is submitted`() {
+    val order = createOrder()
+
+    order.status = OrderStatus.SUBMITTED
+    orderRepo.save(order)
+
+    webTestClient.put()
+      .uri("/api/orders/${order.id}/device-wearer/identity-numbers")
+      .contentType(MediaType.APPLICATION_JSON)
+      .body(
+        BodyInserters.fromValue(
+          """
+            {
+              "nomisId": "$mockNomisId",
+              "pncId": "$mockPncId",
+              "deliusId": "$mockDeliusId",
+              "prisonNumber": "$mockPrisonNumber",
+              "homeOfficeReferenceNumber": "$mockHomeOfficeReferenceNumber"
+            }
+          """.trimIndent(),
+        ),
+      )
+      .headers(setAuthorisation("AUTH_ADM"))
+      .exchange()
+      .expectStatus()
+      .isNotFound()
+  }
+
+  @Test
+  fun `Identity numbers cannot be updated if the order belongs to another user`() {
+    val order = createOrder()
+    webTestClient.put()
+      .uri("/api/orders/${order.id}/device-wearer/identity-numbers")
+      .contentType(MediaType.APPLICATION_JSON)
+      .body(
+        BodyInserters.fromValue(
+          """
+            {
+              "nomisId": "$mockNomisId",
+              "pncId": "$mockPncId",
+              "deliusId": "$mockDeliusId",
+              "prisonNumber": "$mockPrisonNumber",
+              "homeOfficeReferenceNumber": "$mockHomeOfficeReferenceNumber"
+            }
+          """.trimIndent(),
+        ),
+      )
+      .headers(setAuthorisation("AUTH_ADM_2"))
+      .exchange()
+      .expectStatus()
+      .isNotFound()
+  }
+
+  @Test
+  fun `Identity numbers can be updated`() {
+    val order = createOrder()
+    val result = webTestClient.put()
+      .uri("/api/orders/${order.id}/device-wearer/identity-numbers")
+      .contentType(MediaType.APPLICATION_JSON)
+      .body(
+        BodyInserters.fromValue(
+          """
+            {
+              "nomisId": "$mockNomisId",
+              "pncId": "$mockPncId",
+              "deliusId": "$mockDeliusId",
+              "prisonNumber": "$mockPrisonNumber",
+              "homeOfficeReferenceNumber": "$mockHomeOfficeReferenceNumber"
+            }
+          """.trimIndent(),
+        ),
+      )
+      .headers(setAuthorisation("AUTH_ADM"))
+      .exchange()
+      .expectStatus()
+      .isOk
+      .expectBody(DeviceWearer::class.java)
+      .returnResult()
+
+    val deviceWearer = result.responseBody!!
+    Assertions.assertThat(deviceWearer.nomisId).isEqualTo(mockNomisId)
+    Assertions.assertThat(deviceWearer.deliusId).isEqualTo(mockDeliusId)
+    Assertions.assertThat(deviceWearer.pncId).isEqualTo(mockPncId)
+    Assertions.assertThat(deviceWearer.prisonNumber).isEqualTo(mockPrisonNumber)
+    Assertions.assertThat(deviceWearer.homeOfficeReferenceNumber).isEqualTo(mockHomeOfficeReferenceNumber)
   }
 }

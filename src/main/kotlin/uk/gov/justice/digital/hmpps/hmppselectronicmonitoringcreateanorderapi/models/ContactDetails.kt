@@ -11,7 +11,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.re
 import java.util.*
 
 @Entity
-@Table(name = "DEVICE_WEARER_CONTACT_DETAILS")
+@Table(name = "CONTACT_DETAILS")
 data class ContactDetails(
   @Id
   @Column(name = "ID", nullable = false, unique = true)
