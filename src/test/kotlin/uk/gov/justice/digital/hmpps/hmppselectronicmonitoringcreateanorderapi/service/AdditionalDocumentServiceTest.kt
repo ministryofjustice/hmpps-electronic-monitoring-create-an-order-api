@@ -22,8 +22,11 @@ import org.springframework.test.context.ActiveProfiles
 import reactor.core.publisher.Flux
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.DocumentApiClient
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AdditionalDocument
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DocumentType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.AdditionalDocumentRepository
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 import java.io.ByteArrayInputStream
 import java.util.*
 
@@ -33,16 +36,25 @@ class AdditionalDocumentServiceTest {
   private lateinit var service: AdditionalDocumentService
   private lateinit var client: DocumentApiClient
   private lateinit var repo: AdditionalDocumentRepository
-  val orderId: UUID = UUID.randomUUID()
+  private lateinit var orderRepop: OrderRepository
+
   val username: String = "username"
+  val order = Order(username = username, status = OrderStatus.IN_PROGRESS)
+  val orderId = order.id
   val docType: DocumentType = DocumentType.LICENCE
   val doc: AdditionalDocument = AdditionalDocument(orderId = orderId, fileType = docType)
 
   @BeforeEach
   fun setup() {
+    orderRepop = mock(OrderRepository::class.java)
     repo = mock(AdditionalDocumentRepository::class.java)
     client = mock(DocumentApiClient::class.java)
     service = AdditionalDocumentService(repo, client)
+    service.orderRepo = orderRepop
+
+    `when`(
+      orderRepop.findByIdAndUsernameAndStatus(orderId, username, OrderStatus.IN_PROGRESS),
+    ).thenReturn(Optional.of(order))
   }
 
   @Test

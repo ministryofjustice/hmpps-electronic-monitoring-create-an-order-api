@@ -20,9 +20,9 @@ import java.util.*
 
 @Service
 class AdditionalDocumentService(
-  val repo: AdditionalDocumentRepository,
+  val attachmentRepo: AdditionalDocumentRepository,
   val webClient: DocumentApiClient,
-) {
+) : OrderSectionServiceBase() {
 
   val allowedFileExtensions: List<String> = listOf("pdf", "png", "jpeg", "jpg")
 
@@ -31,7 +31,7 @@ class AdditionalDocumentService(
     username: String,
     documentType: DocumentType,
   ): ResponseEntity<Flux<InputStreamResource>>? {
-    val doc = repo.findAdditionalDocumentsByOrderIdAndOrderUsernameAndFileType(
+    val doc = attachmentRepo.findAdditionalDocumentsByOrderIdAndOrderUsernameAndFileType(
       orderId,
       username,
       documentType,
@@ -42,14 +42,15 @@ class AdditionalDocumentService(
   }
 
   fun deleteDocument(orderId: UUID, username: String, documentType: DocumentType) {
-    repo.findAdditionalDocumentsByOrderIdAndOrderUsernameAndFileType(
+    findEditableOrder(orderId, username)
+    attachmentRepo.findAdditionalDocumentsByOrderIdAndOrderUsernameAndFileType(
       orderId,
       username,
       documentType,
     ).ifPresent {
         doc ->
       run {
-        repo.deleteById(doc.id)
+        attachmentRepo.deleteById(doc.id)
         webClient.deleteDocument(doc.id.toString())
       }
     }
@@ -72,7 +73,7 @@ class AdditionalDocumentService(
       .filename(multipartFile.originalFilename!!)
     builder.part("metadata", DocumentMetadata(orderId, documentType))
     webClient.createDocument(document.id.toString(), builder)
-    repo.save(document)
+    attachmentRepo.save(document)
   }
 
   private fun validateFileExtension(multipartFile: MultipartFile) {
