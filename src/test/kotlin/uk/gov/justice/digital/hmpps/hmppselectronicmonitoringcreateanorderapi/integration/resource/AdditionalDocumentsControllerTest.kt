@@ -340,7 +340,7 @@ class AdditionalDocumentsControllerTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `delete document deletes document`() {
+  fun `Delete document should remove document from database and from document management api`() {
     val doc = AdditionalDocument(
       orderId = order.id,
       fileName = "mockFile1",
