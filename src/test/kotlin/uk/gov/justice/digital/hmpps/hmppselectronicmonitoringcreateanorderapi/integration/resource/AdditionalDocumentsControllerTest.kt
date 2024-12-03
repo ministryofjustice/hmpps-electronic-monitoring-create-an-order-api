@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.resource
 
 import org.assertj.core.api.Assertions
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.internal.verification.Times
@@ -135,6 +136,57 @@ class AdditionalDocumentsControllerTest : IntegrationTestBase() {
   }
 
   @Test
+  fun `Upload attachment should return an error if the order is in a submitted state`() {
+    order.status = OrderStatus.SUBMITTED
+    repo.save(order)
+
+    val bodyBuilder = MultipartBodyBuilder()
+    bodyBuilder.part("file", ByteArrayResource(mockFile().bytes))
+      .header("Content-Disposition", "form-data; name=file; filename=filename2.jpeg")
+    val result = webTestClient.post()
+      .uri("/api/orders/${order.id}/document-type/${DocumentType.PHOTO_ID}")
+      .bodyValue(bodyBuilder.build())
+      .headers(setAuthorisation("mockUser"))
+      .exchange()
+      .expectStatus()
+      .isNotFound
+      .expectBodyList(ErrorResponse::class.java)
+      .returnResult()
+
+    val error = result.responseBody!!.first()
+
+    assertThat(
+      error.developerMessage,
+    ).isEqualTo("An editable order with ${order.id} does not exist")
+  }
+
+  @Test
+  fun `Upload attachment should return an error if the order is not created by the user`() {
+    order.status = OrderStatus.IN_PROGRESS
+    order.username = "Not Mock User"
+    repo.save(order)
+
+    val bodyBuilder = MultipartBodyBuilder()
+    bodyBuilder.part("file", ByteArrayResource(mockFile().bytes))
+      .header("Content-Disposition", "form-data; name=file; filename=filename2.jpeg")
+    val result = webTestClient.post()
+      .uri("/api/orders/${order.id}/document-type/${DocumentType.PHOTO_ID}")
+      .bodyValue(bodyBuilder.build())
+      .headers(setAuthorisation("mockUser"))
+      .exchange()
+      .expectStatus()
+      .isNotFound
+      .expectBodyList(ErrorResponse::class.java)
+      .returnResult()
+
+    val error = result.responseBody!!.first()
+
+    assertThat(
+      error.developerMessage,
+    ).isEqualTo("An editable order with ${order.id} does not exist")
+  }
+
+  @Test
   fun `Save new document to db and document management api`() {
     val bodyBuilder = MultipartBodyBuilder()
     bodyBuilder.part("file", ByteArrayResource(mockFile().bytes))
@@ -176,6 +228,34 @@ class AdditionalDocumentsControllerTest : IntegrationTestBase() {
   }
 
   @Test
+  fun `Get document should return not found if the order is not created by the user`() {
+    val doc = AdditionalDocument(
+      orderId = order.id,
+      fileName = "mockFile1",
+      fileType = DocumentType.PHOTO_ID,
+    )
+    order.username = "Not Mock user"
+    order.additionalDocuments.add(doc)
+    repo.save(order)
+
+    documentApi.stubGetDocument(doc.id.toString())
+    val result = webTestClient.get()
+      .uri("/api/orders/${order.id}/document-type/${DocumentType.PHOTO_ID}/raw")
+      .headers(setAuthorisation("mockUser"))
+      .exchange()
+      .expectStatus()
+      .isNotFound
+      .expectBodyList(ErrorResponse::class.java)
+      .returnResult()
+
+    val error = result.responseBody!!.first()
+
+    assertThat(
+      error.developerMessage,
+    ).isEqualTo("Document for ${order.id} with type ${DocumentType.PHOTO_ID} not found")
+  }
+
+  @Test
   fun `get raw document, return document from document management api`() {
     val doc = AdditionalDocument(
       orderId = order.id,
@@ -191,7 +271,7 @@ class AdditionalDocumentsControllerTest : IntegrationTestBase() {
         this.filePath,
       ),
     )
-    var result = webTestClient.get()
+    webTestClient.get()
       .uri("/api/orders/${order.id}/document-type/${DocumentType.PHOTO_ID}/raw")
       .headers(setAuthorisation("mockUser"))
       .exchange()
@@ -201,7 +281,83 @@ class AdditionalDocumentsControllerTest : IntegrationTestBase() {
       .expectBody()
       .returnResult()
       .responseBody?.let { actualBytes ->
-        Assertions.assertThat(actualBytes).isEqualTo(expectedBytes)
+        assertThat(actualBytes).isEqualTo(expectedBytes)
       }
+  }
+
+  @Test
+  fun `Delete document should fail if order is in submitted state`() {
+    val doc = AdditionalDocument(
+      orderId = order.id,
+      fileName = "mockFile1",
+      fileType = DocumentType.PHOTO_ID,
+    )
+    order.status = OrderStatus.SUBMITTED
+    repo.save(order)
+
+    documentApi.stubDeleteDocument(doc.id.toString())
+    val result = webTestClient.delete()
+      .uri("/api/orders/${order.id}/document-type/${DocumentType.PHOTO_ID}")
+      .headers(setAuthorisation("mockUser"))
+      .exchange()
+      .expectStatus()
+      .isNotFound
+      .expectBodyList(ErrorResponse::class.java)
+      .returnResult()
+
+    val error = result.responseBody!!.first()
+
+    assertThat(
+      error.developerMessage,
+    ).isEqualTo("An editable order with ${order.id} does not exist")
+  }
+
+  @Test
+  fun `Delete document should fail if order is not created by the user`() {
+    val doc = AdditionalDocument(
+      orderId = order.id,
+      fileName = "mockFile1",
+      fileType = DocumentType.PHOTO_ID,
+    )
+    order.username = "Not Mock User"
+    repo.save(order)
+
+    documentApi.stubDeleteDocument(doc.id.toString())
+    val result = webTestClient.delete()
+      .uri("/api/orders/${order.id}/document-type/${DocumentType.PHOTO_ID}")
+      .headers(setAuthorisation("mockUser"))
+      .exchange()
+      .expectStatus()
+      .isNotFound
+      .expectBodyList(ErrorResponse::class.java)
+      .returnResult()
+
+    val error = result.responseBody!!.first()
+
+    assertThat(
+      error.developerMessage,
+    ).isEqualTo("An editable order with ${order.id} does not exist")
+  }
+
+  @Test
+  fun `Delete document should remove document from database and from document management api`() {
+    val doc = AdditionalDocument(
+      orderId = order.id,
+      fileName = "mockFile1",
+      fileType = DocumentType.PHOTO_ID,
+    )
+    order.additionalDocuments.add(doc)
+    repo.save(order)
+
+    documentApi.stubDeleteDocument(doc.id.toString())
+    webTestClient.delete()
+      .uri("/api/orders/${order.id}/document-type/${DocumentType.PHOTO_ID}")
+      .headers(setAuthorisation("mockUser"))
+      .exchange()
+      .expectStatus()
+      .isNoContent
+
+    verify(documentRepo, Times(1)).deleteById(doc.id)
+    verify(apiCLient, Times(1)).deleteDocument(doc.id.toString())
   }
 }
