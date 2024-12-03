@@ -42,17 +42,11 @@ class AdditionalDocumentService(
   }
 
   fun deleteDocument(orderId: UUID, username: String, documentType: DocumentType) {
-    findEditableOrder(orderId, username)
-    attachmentRepo.findAdditionalDocumentsByOrderIdAndOrderUsernameAndFileType(
-      orderId,
-      username,
-      documentType,
-    ).ifPresent {
-        doc ->
-      run {
-        attachmentRepo.deleteById(doc.id)
-        webClient.deleteDocument(doc.id.toString())
-      }
+    val order = findEditableOrder(orderId, username)
+    val doc = order.additionalDocuments.firstOrNull { it.fileType == documentType }
+    if (doc != null) {
+      attachmentRepo.deleteById(doc.id)
+      webClient.deleteDocument(doc.id.toString())
     }
   }
 
