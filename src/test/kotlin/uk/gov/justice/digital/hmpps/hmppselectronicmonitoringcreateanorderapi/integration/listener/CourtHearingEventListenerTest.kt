@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.listener
 
+import com.microsoft.applicationinsights.TelemetryClient
 import io.micrometer.core.instrument.util.StringEscapeUtils
 import org.assertj.core.api.Assertions.assertThat
 import org.awaitility.Awaitility.await
@@ -7,6 +8,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.internal.verification.Times
 import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.verify
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.mock.mockito.SpyBean
@@ -21,6 +23,7 @@ import software.amazon.awssdk.services.sqs.model.SendMessageResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.SercoAuthMockServerExtension.Companion.sercoAuthApi
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.SercoMockApiExtension.Companion.sercoApi
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.listener.CourtHearingEventListener
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.SubmitFmsOrderResultRepository
@@ -42,6 +45,12 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
 
   @Autowired
   lateinit var hmppsQueueService: HmppsQueueService
+
+  @Autowired
+  lateinit var courtHearingEventListener: CourtHearingEventListener
+
+  @SpyBean
+  lateinit var telemetryClient: TelemetryClient
 
   val courtHearingEventQueueConfig by lazy {
     hmppsQueueService.findByQueueId("courthearingeventqueue")
@@ -136,6 +145,35 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
     assertThat(savedResult.fmsDeviceWearerRequest).isEqualTo(mockDeviceWearerJson.removeWhitespaceAndNewlines())
     assertThat(savedResult.fmsOrderRequest).isEqualTo(mockOrderJson.removeWhitespaceAndNewlines())
     assertThat(savedResult.success).isTrue()
+  }
+
+  @Test
+  fun `Will log event for malformed payload`() {
+    courtHearingEventListener.onDomainEvent("BAD JSON")
+
+    verify(telemetryClient, Times(1)).trackEvent(eq("Common_Platform_Exception"), any(), any())
+    verify(telemetryClient, Times(1)).trackEvent(eq("Common_Platform_Request"), any(), any())
+  }
+
+  @Test
+  fun `Will only log request event has no EM request`() {
+    val rawMessage = generateRawHearingEventMessage("src/test/resources/json/No_EM_Payload.json")
+    courtHearingEventListener.onDomainEvent(rawMessage)
+    verify(telemetryClient, Times(0)).trackEvent(eq("Common_Platform_Success_Request"), any(), any())
+    verify(telemetryClient, Times(0)).trackEvent(eq("Common_Platform_Failed_Request"), any(), any())
+    verify(telemetryClient, Times(0)).trackEvent(eq("Common_Platform_Exception"), any(), any())
+    verify(telemetryClient, Times(1)).trackEvent(eq("Common_Platform_Request"), any(), any())
+  }
+
+  @Test
+  fun `Will log success and request event for valid em payload`() {
+    val rawMessage = generateRawHearingEventMessage("src/test/resources/json/COEW_AAR/cp_payload.json")
+    courtHearingEventListener.onDomainEvent(rawMessage)
+
+    verify(telemetryClient, Times(1)).trackEvent(eq("Common_Platform_Success_Request"), any(), any())
+    verify(telemetryClient, Times(0)).trackEvent(eq("Common_Platform_Failed_Request"), any(), any())
+    verify(telemetryClient, Times(0)).trackEvent(eq("Common_Platform_Exception"), any(), any())
+    verify(telemetryClient, Times(1)).trackEvent(eq("Common_Platform_Request"), any(), any())
   }
 
   fun generateRawHearingEventMessage(path: String): String {
