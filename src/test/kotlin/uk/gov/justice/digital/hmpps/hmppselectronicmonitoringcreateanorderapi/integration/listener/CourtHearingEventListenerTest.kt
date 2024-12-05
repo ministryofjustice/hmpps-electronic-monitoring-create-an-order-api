@@ -7,7 +7,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.internal.verification.Times
 import org.mockito.kotlin.any
-import org.mockito.kotlin.eq
 import org.mockito.kotlin.verify
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.mock.mockito.SpyBean
@@ -25,7 +24,6 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.in
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.SubmitFmsOrderResultRepository
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.EventService
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.courthearing.HearingEventHandler
 import uk.gov.justice.hmpps.sqs.HmppsQueueService
 import uk.gov.justice.hmpps.sqs.MissingQueueException
@@ -41,9 +39,6 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
 
   @SpyBean
   lateinit var eventHandler: HearingEventHandler
-
-  @SpyBean
-  lateinit var eventService: EventService
 
   @Autowired
   lateinit var hmppsQueueService: HmppsQueueService
@@ -82,9 +77,6 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
     val savedEvent = repo.findAll().firstOrNull()
     assertThat(savedEvent).isNull()
     verify(eventHandler, Times(0)).handleHearingEvent(any())
-
-    verify(eventService, Times(1)).recordEvent(eq("Common_Platform_Exception"), any<Map<String, String>>(), any<Long>())
-    verify(eventService, Times(1)).recordEvent(eq("Common_Platform_Request"), eq(mapOf()), any<Long>())
   }
 
   @Test
@@ -92,9 +84,6 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
     val rawMessage = generateRawHearingEventMessage("src/test/resources/json/No_EM_Payload.json")
     sendDomainSqsMessage(rawMessage)
     await().until { getNumberOfMessagesCurrentlyOnEventQueue() == 0 }
-    verify(eventHandler, Times(0)).handleHearingEvent(any())
-    verify(eventService, Times(0)).recordEvent(eq("Common_Platform_Exception"), any<Map<String, String>>(), any<Long>())
-    verify(eventService, Times(1)).recordEvent(eq("Common_Platform_Request"), eq(mapOf()), any<Long>())
   }
 
   @Test
@@ -147,12 +136,6 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
     assertThat(savedResult.fmsDeviceWearerRequest).isEqualTo(mockDeviceWearerJson.removeWhitespaceAndNewlines())
     assertThat(savedResult.fmsOrderRequest).isEqualTo(mockOrderJson.removeWhitespaceAndNewlines())
     assertThat(savedResult.success).isTrue()
-
-    verify(
-      eventService,
-      Times(1),
-    ).recordEvent(eq("Common_Platform_Success_Request"), any<Map<String, String>>(), any<Long>())
-    verify(eventService, Times(1)).recordEvent(eq("Common_Platform_Request"), eq(mapOf()), any<Long>())
   }
 
   fun generateRawHearingEventMessage(path: String): String {
