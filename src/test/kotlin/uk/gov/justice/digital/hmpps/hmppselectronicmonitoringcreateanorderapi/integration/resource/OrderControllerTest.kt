@@ -427,7 +427,6 @@ class OrderControllerTest : IntegrationTestBase() {
     @Test
     fun `It should throw an error if an incomplete order is submitted`() {
       val order = createOrder()
-      repo.save(order)
 
       val result = webTestClient.post()
         .uri("/api/orders/${order.id}/submit")
@@ -441,6 +440,25 @@ class OrderControllerTest : IntegrationTestBase() {
       val error = result.responseBody!!
       assertThat(error.userMessage)
         .isEqualTo("Error submitting order: Please complete all mandatory fields before submitting this form")
+    }
+
+    @Test
+    fun `It should throw an error if a variation is submitted`() {
+      // Temporary test to ensure that variations can't be submitted
+      val order = createVariation()
+
+      val result = webTestClient.post()
+        .uri("/api/orders/${order.id}/submit")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .is4xxClientError
+        .expectBody(ErrorResponse::class.java)
+        .returnResult()
+
+      val error = result.responseBody!!
+      assertThat(error.userMessage)
+        .isEqualTo("Error submitting order: A variation cannot be submitted yet!")
     }
 
     @Test

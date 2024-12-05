@@ -7,6 +7,7 @@ import org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDO
 import org.springframework.http.HttpHeaders
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.reactive.server.WebTestClient
+import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.HmppsAuthApiExtension
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.HmppsAuthApiExtension.Companion.hmppsAuth
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.HmppsDocumentManagementApiExtension
@@ -53,6 +54,24 @@ abstract class IntegrationTestBase {
 
   fun createOrder(username: String? = "AUTH_ADM"): Order = webTestClient.post()
     .uri("/api/orders")
+    .headers(setAuthorisation(username))
+    .exchange()
+    .expectStatus()
+    .isOk
+    .returnResult(Order::class.java)
+    .responseBody.blockFirst()!!
+
+  fun createVariation(username: String? = "AUTH_ADM"): Order = webTestClient.post()
+    .uri("/api/orders")
+    .body(
+      BodyInserters.fromValue(
+        """
+            {
+              "type": "VARIATION"
+            }
+        """.trimIndent(),
+      ),
+    )
     .headers(setAuthorisation(username))
     .exchange()
     .expectStatus()
