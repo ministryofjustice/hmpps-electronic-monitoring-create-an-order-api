@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 import org.springframework.http.HttpHeaders
+import org.springframework.http.MediaType
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.web.reactive.function.BodyInserters
@@ -63,6 +64,7 @@ abstract class IntegrationTestBase {
 
   fun createVariation(username: String? = "AUTH_ADM"): Order = webTestClient.post()
     .uri("/api/orders")
+    .contentType(MediaType.APPLICATION_JSON)
     .body(
       BodyInserters.fromValue(
         """

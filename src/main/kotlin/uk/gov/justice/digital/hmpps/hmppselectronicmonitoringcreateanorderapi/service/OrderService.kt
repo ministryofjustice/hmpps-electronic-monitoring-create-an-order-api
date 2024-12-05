@@ -10,6 +10,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.CreateOrderDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.specification.OrderSpecification
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 import java.util.UUID
@@ -60,6 +61,10 @@ class OrderService(
 
   fun submitOrder(id: UUID, username: String): Order {
     val order = getOrder(username, id)!!
+
+    if (order.type == OrderType.VARIATION) {
+      throw SubmitOrderException("A variation cannot be submitted yet!")
+    }
 
     if (order.status == OrderStatus.SUBMITTED) {
       throw SubmitOrderException("This order has already been submitted")
