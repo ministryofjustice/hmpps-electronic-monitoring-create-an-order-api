@@ -7,6 +7,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.courthearingeventreceiver.model.HearingEvent
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.HmppsSqsEventMessage
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.EventService
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.courthearing.DeadLetterQueueService
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.courthearing.HearingEventHandler
 
@@ -16,10 +17,12 @@ class CourtHearingEventListener(
   private val eventHandler: HearingEventHandler,
   private val deadLetterQueueService: DeadLetterQueueService,
   private val objectMapper: ObjectMapper,
+  private val eventService: EventService,
 ) {
 
   @SqsListener("courthearingeventqueue", factory = "hmppsQueueContainerFactoryProxy")
   fun onDomainEvent(rawMessage: String) {
+    val startTimeInMs = System.currentTimeMillis()
     try {
       val eventMessage: HmppsSqsEventMessage = objectMapper.readValue(rawMessage)
       val courtHearing: HearingEvent = objectMapper.readValue(eventMessage.message)
@@ -34,6 +37,13 @@ class CourtHearingEventListener(
     } catch (e: Exception) {
       deadLetterQueueService.sentEvent(rawMessage, "Malformed event received. Could not parse JSON")
       // TODO Handle messages in dead letter queue
+      val error = e.message ?: ""
+      eventService.recordEvent(
+        "Common_Platform_Exception",
+        mapOf("exception" to error, "stacktrace" to e.stackTraceToString()),
+        System.currentTimeMillis() - startTimeInMs,
+      )
     }
+    eventService.recordEvent("Common_Platform_Request", mapOf(), System.currentTimeMillis() - startTimeInMs)
   }
 }

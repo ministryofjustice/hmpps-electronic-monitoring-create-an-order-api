@@ -22,6 +22,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MonitoringConditionType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.EventService
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.FmsService
 import java.time.LocalDate
 import java.time.LocalTime
@@ -33,6 +34,7 @@ import java.util.*
 @Service
 class HearingEventHandler(
   private val fmsService: FmsService,
+  private val eventService: EventService,
 ) {
   private val commentPlatformUsername = "COMMENT_PLATFORM"
   private val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
@@ -75,11 +77,17 @@ class HearingEventHandler(
     orders.forEach { order ->
       run {
         val submitResult = fmsService.submitOrder(order, FmsOrderSource.COMMON_PLATFORM)
-        // TODO log failed requests
+
         if (!submitResult.success) {
           val fullName = " ${order.deviceWearer!!.firstName} ${order.deviceWearer!!.lastName}"
           result.add(
             "Error create order for $fullName, error: ${submitResult.error} ",
+          )
+          eventService.recordEvent("Common_Platform_Failed_Request", mapOf("Error" to submitResult.error!!))
+        } else {
+          eventService.recordEvent(
+            "Common_Platform_Success_Request",
+            mapOf("OrderType" to order.monitoringConditions!!.orderType!!),
           )
         }
       }
