@@ -22,6 +22,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MonitoringConditionType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.FmsService
 import java.time.LocalDate
 import java.time.LocalTime
@@ -144,7 +145,7 @@ class HearingEventHandler(
     val judicialResults = offences.flatMap { it.judicialResults }.toList()
 
     val prompts = judicialResults.flatMap { it.judicialResultPrompts }.toList()
-    val order = Order(username = commentPlatformUsername, status = OrderStatus.IN_PROGRESS)
+    val order = Order(username = commentPlatformUsername, status = OrderStatus.IN_PROGRESS, type = OrderType.REQUEST)
 
     val monitoringConditions = MonitoringConditions(orderId = order.id)
     val orderedDate = judicialResults.first().orderedDate

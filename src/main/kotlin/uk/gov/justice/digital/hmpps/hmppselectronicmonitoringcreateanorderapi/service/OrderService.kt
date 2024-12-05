@@ -7,6 +7,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.MonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.OrderSearchCriteria
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.CreateOrderDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.specification.OrderSpecification
@@ -19,16 +20,19 @@ class OrderService(
   val fmsService: FmsService,
 
 ) {
-  fun createOrder(username: String): Order {
+  fun createOrder(username: String, createRecord: CreateOrderDto): Order {
     val order = Order(
       username = username,
       status = OrderStatus.IN_PROGRESS,
+      type = createRecord.type,
     )
+
     order.deviceWearer = DeviceWearer(orderId = order.id)
     order.addresses = mutableListOf()
     order.monitoringConditions = MonitoringConditions(orderId = order.id)
     order.additionalDocuments = mutableListOf()
     order.enforcementZoneConditions = mutableListOf()
+
     repo.save(order)
     return order
   }

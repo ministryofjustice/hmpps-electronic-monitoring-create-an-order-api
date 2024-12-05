@@ -25,6 +25,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DocumentType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.AdditionalDocumentRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 import java.io.ByteArrayInputStream
@@ -39,7 +40,7 @@ class AdditionalDocumentServiceTest {
   private lateinit var orderRepop: OrderRepository
 
   val username: String = "username"
-  val order = Order(username = username, status = OrderStatus.IN_PROGRESS)
+  val order = Order(username = username, status = OrderStatus.IN_PROGRESS, type = OrderType.REQUEST)
   val orderId = order.id
   val docType: DocumentType = DocumentType.LICENCE
   val doc: AdditionalDocument = AdditionalDocument(orderId = orderId, fileType = docType)

@@ -98,7 +98,7 @@ class OrderControllerTest : IntegrationTestBase() {
             {
               "type": "VARIATION"
             }
-          """.trimIndent(),
+            """.trimIndent(),
           ),
         )
         .headers(setAuthorisation())
@@ -601,7 +601,7 @@ class OrderControllerTest : IntegrationTestBase() {
       	"interpreter_required": "true",
       	"language": "British Sign"
       }
-    """.trimIndent()
+      """.trimIndent()
       val expectedOrderJson = """
       {
       	"case_id": "MockDeviceWearerId",
@@ -781,7 +781,7 @@ class OrderControllerTest : IntegrationTestBase() {
       	"revocation_type": "",
       	"order_status": "Not Started"
       }
-    """.trimIndent()
+      """.trimIndent()
 
       assertThat(submitResult!!.fmsDeviceWearerRequest).isEqualTo(expectedDWJson.removeWhitespaceAndNewlines())
       assertThat(submitResult.fmsOrderRequest).isEqualTo(expectedOrderJson.removeWhitespaceAndNewlines())
@@ -867,24 +867,20 @@ class OrderControllerTest : IntegrationTestBase() {
       	"interpreter_required": "true",
       	"language": "British Sign"
       }
-    """.trimIndent()
+      """.trimIndent()
 
       assertThat(submitResult!!.fmsDeviceWearerRequest).isEqualTo(expectedDWJson.removeWhitespaceAndNewlines())
 
       val updatedOrder = repo.findById(order.id).get()
       assertThat(updatedOrder.fmsResultId).isEqualTo(submitResult.id)
     }
-
   }
-
-
-
-
 
   fun createReadyToSubmitOrder(noFixedAddress: Boolean = false): Order {
     val order = Order(
       username = "AUTH_ADM",
       status = OrderStatus.IN_PROGRESS,
+      type = OrderType.REQUEST,
     )
     order.deviceWearer = DeviceWearer(
       orderId = order.id,

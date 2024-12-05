@@ -32,7 +32,7 @@ data class Order(
 
   @Enumerated(EnumType.STRING)
   @Column(name = "TYPE", nullable = false)
-  var type: OrderType = OrderType.REQUEST,
+  var type: OrderType,
 
   @Column(name = "FMS_RESULT_ID", nullable = true)
   var fmsResultId: UUID? = null,
