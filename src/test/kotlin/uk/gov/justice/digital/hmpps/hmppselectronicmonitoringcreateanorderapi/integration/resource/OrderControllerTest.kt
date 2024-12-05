@@ -2,9 +2,13 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.i
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
+import org.springframework.http.MediaType
+import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.SercoAuthMockServerExtension.Companion.sercoAuthApi
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.SercoMockApiExtension.Companion.sercoApi
@@ -28,6 +32,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.EnforcementZoneType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MonitoringConditionType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderTypeDescription
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsErrorResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsResponse
@@ -60,440 +65,489 @@ class OrderControllerTest : IntegrationTestBase() {
     fmsResultRepository.deleteAll()
   }
 
-  @Test
-  fun `Order created and saved in database`() {
-    webTestClient.post()
-      .uri("/api/orders")
-      .headers(setAuthorisation())
-      .exchange()
-      .expectStatus()
-      .isOk
-      .expectBody(Order::class.java)
+  @Nested
+  @DisplayName("POST /api/orders")
+  inner class PostOrders {
+    @Test
+    fun `It should should create an order with type REQUEST if no type provided`() {
+      webTestClient.post()
+        .uri("/api/orders")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody(Order::class.java)
 
-    val orders = repo.findAll()
-    assertThat(orders).hasSize(1)
-    assertThat(orders[0].username).isEqualTo("AUTH_ADM")
-    assertThat(orders[0].status).isEqualTo(OrderStatus.IN_PROGRESS)
-    assertThat(orders[0].id).isNotNull()
-    assertThat(UUID.fromString(orders[0].id.toString())).isEqualTo(orders[0].id)
+      val orders = repo.findAll()
+      assertThat(orders).hasSize(1)
+      assertThat(orders[0].username).isEqualTo("AUTH_ADM")
+      assertThat(orders[0].status).isEqualTo(OrderStatus.IN_PROGRESS)
+      assertThat(orders[0].type).isEqualTo(OrderType.REQUEST)
+      assertThat(orders[0].id).isNotNull()
+      assertThat(UUID.fromString(orders[0].id.toString())).isEqualTo(orders[0].id)
+    }
+
+    @Test
+    fun `It should create an order with type VARIATION`() {
+      webTestClient.post()
+        .uri("/api/orders")
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(
+          BodyInserters.fromValue(
+            """
+            {
+              "type": "VARIATION"
+            }
+          """.trimIndent(),
+          ),
+        )
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody(Order::class.java)
+
+      val orders = repo.findAll()
+      assertThat(orders).hasSize(1)
+      assertThat(orders[0].username).isEqualTo("AUTH_ADM")
+      assertThat(orders[0].status).isEqualTo(OrderStatus.IN_PROGRESS)
+      assertThat(orders[0].type).isEqualTo(OrderType.VARIATION)
+      assertThat(orders[0].id).isNotNull()
+      assertThat(UUID.fromString(orders[0].id.toString())).isEqualTo(orders[0].id)
+    }
   }
 
-  @Test
-  fun `SEARCH should return orders when no searchTerm is provided`() {
-    createOrder("AUTH_ADM")
+  @Nested
+  @DisplayName("GET /api/orders")
+  inner class GetOrders {
+    @Test
+    fun `It should return orders when no searchTerm is provided`() {
+      createOrder("AUTH_ADM")
 
-    webTestClient.get()
-      .uri("/api/orders")
-      .headers(setAuthorisation("AUTH_ADM"))
-      .exchange()
-      .expectStatus()
-      .isOk
-      .expectBodyList(Order::class.java)
-      .hasSize(1)
+      webTestClient.get()
+        .uri("/api/orders")
+        .headers(setAuthorisation("AUTH_ADM"))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBodyList(Order::class.java)
+        .hasSize(1)
+    }
+
+    @Test
+    fun `It should return orders when an empty searchTerm is provided`() {
+      createOrder("AUTH_ADM")
+
+      webTestClient.get()
+        .uri("/api/orders?searchTerm=")
+        .headers(setAuthorisation("AUTH_ADM"))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBodyList(Order::class.java)
+        .hasSize(1)
+    }
+
+    @Test
+    fun `It should return orders where the firstName matches the searchTerm`() {
+      val order = createOrder("AUTH_ADM")
+
+      order.deviceWearer = DeviceWearer(
+        orderId = order.id,
+        firstName = "John",
+      )
+      repo.save(order)
+
+      webTestClient.get()
+        .uri("/api/orders?searchTerm=John")
+        .headers(setAuthorisation("AUTH_ADM"))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBodyList(Order::class.java)
+        .hasSize(1)
+    }
+
+    @Test
+    fun `It should return orders where the lastName matches the searchTerm`() {
+      val order = createOrder("AUTH_ADM")
+
+      order.deviceWearer = DeviceWearer(
+        orderId = order.id,
+        lastName = "Smith",
+      )
+      repo.save(order)
+
+      webTestClient.get()
+        .uri("/api/orders?searchTerm=Smith")
+        .headers(setAuthorisation("AUTH_ADM"))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBodyList(Order::class.java)
+        .hasSize(1)
+    }
+
+    @Test
+    fun `It should return orders where the firstName matches the searchTerm with different casing`() {
+      val order = createOrder("AUTH_ADM")
+
+      order.deviceWearer = DeviceWearer(
+        orderId = order.id,
+        firstName = "John",
+      )
+      repo.save(order)
+
+      webTestClient.get()
+        .uri("/api/orders?searchTerm=john")
+        .headers(setAuthorisation("AUTH_ADM"))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBodyList(Order::class.java)
+        .hasSize(1)
+    }
+
+    @Test
+    fun `It should return orders where the lastName matches the searchTerm with different casing`() {
+      val order = createOrder("AUTH_ADM")
+
+      order.deviceWearer = DeviceWearer(
+        orderId = order.id,
+        lastName = "Smith",
+      )
+      repo.save(order)
+
+      webTestClient.get()
+        .uri("/api/orders?searchTerm=smith")
+        .headers(setAuthorisation("AUTH_ADM"))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBodyList(Order::class.java)
+        .hasSize(1)
+    }
+
+    @Test
+    fun `It should only return orders belonging to user`() {
+      createOrder("AUTH_ADM")
+      createOrder("AUTH_ADM")
+      createOrder("AUTH_ADM_2")
+
+      webTestClient.get()
+        .uri("/api/orders")
+        .headers(setAuthorisation("AUTH_ADM"))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBodyList(Order::class.java)
+        .hasSize(2)
+    }
   }
 
-  @Test
-  fun `SEARCH should return orders when an empty searchTerm is provided`() {
-    createOrder("AUTH_ADM")
+  @Nested
+  @DisplayName("GET /api/orders/{orderId}")
+  inner class GetOrder {
+    @Test
+    fun `It should return the order if owned by the user`() {
+      val order = createOrder()
 
-    webTestClient.get()
-      .uri("/api/orders?searchTerm=")
-      .headers(setAuthorisation("AUTH_ADM"))
-      .exchange()
-      .expectStatus()
-      .isOk
-      .expectBodyList(Order::class.java)
-      .hasSize(1)
+      webTestClient.get()
+        .uri("/api/orders/${order.id}")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody(Order::class.java)
+        .isEqualTo(order)
+    }
+
+    @Test
+    fun `It should return not found if order does not exist`() {
+      webTestClient.get()
+        .uri("/api/orders/${UUID.randomUUID()}")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .isNotFound()
+    }
+
+    @Test
+    fun `It should return not found if order belongs to another user`() {
+      val order = createOrder("AUTH_ADM")
+
+      webTestClient.get()
+        .uri("/api/orders/${order.id}")
+        .headers(setAuthorisation("AUTH_ADM_2"))
+        .exchange()
+        .expectStatus()
+        .isNotFound()
+    }
   }
 
-  @Test
-  fun `SEARCH should return orders where the firstName matches the searchTerm`() {
-    val order = createOrder("AUTH_ADM")
+  @Nested
+  @DisplayName("DELETE /api/orders/{orderId}")
+  inner class DeleteOrder {
+    @Test
+    fun `It should return an error if the order does not exist`() {
+      val id = UUID.randomUUID()
+      val result = webTestClient.delete()
+        .uri("/api/orders/$id")
+        .headers(setAuthorisation("AUTH_ADM"))
+        .exchange()
+        .expectStatus()
+        .isNotFound()
+        .expectBodyList(ErrorResponse::class.java)
+        .returnResult()
 
-    order.deviceWearer = DeviceWearer(
-      orderId = order.id,
-      firstName = "John",
-    )
-    repo.save(order)
+      val error = result.responseBody!!.first()
 
-    webTestClient.get()
-      .uri("/api/orders?searchTerm=John")
-      .headers(setAuthorisation("AUTH_ADM"))
-      .exchange()
-      .expectStatus()
-      .isOk
-      .expectBodyList(Order::class.java)
-      .hasSize(1)
+      assertThat(
+        error.developerMessage,
+      ).isEqualTo("An order with id $id does not exist")
+    }
+
+    @Test
+    fun `It should return an error if the order belongs to another user`() {
+      val order = createOrder()
+      val result = webTestClient.delete()
+        .uri("/api/orders/${order.id}")
+        .headers(setAuthorisation("AUTH_ADM_2"))
+        .exchange()
+        .expectStatus()
+        .isNotFound()
+        .expectBodyList(ErrorResponse::class.java)
+        .returnResult()
+
+      val error = result.responseBody!!.first()
+
+      assertThat(
+        error.developerMessage,
+      ).isEqualTo("An order with id ${order.id} does not exist")
+    }
+
+    @Test
+    fun `It should return an error if the order is in a submitted state`() {
+      val order = createOrder()
+
+      order.status = OrderStatus.SUBMITTED
+      repo.save(order)
+
+      val result = webTestClient.delete()
+        .uri("/api/orders/${order.id}")
+        .headers(setAuthorisation("AUTH_ADM"))
+        .exchange()
+        .expectStatus()
+        .is5xxServerError()
+        .expectBodyList(ErrorResponse::class.java)
+        .returnResult()
+
+      val error = result.responseBody!!.first()
+
+      assertThat(
+        error.developerMessage,
+      ).isEqualTo("Order with id ${order.id} cannot be deleted because it has already been submitted")
+    }
+
+    @Test
+    fun `It should delete an in progress order`() {
+      val order = createOrder()
+
+      // Delete the order
+      webTestClient.delete()
+        .uri("/api/orders/${order.id}")
+        .headers(setAuthorisation("AUTH_ADM"))
+        .exchange()
+        .expectStatus()
+        .isNoContent
+
+      // Getting the order should return a not found
+      webTestClient.get()
+        .uri("/api/orders/${order.id}")
+        .headers(setAuthorisation("AUTH_ADM"))
+        .exchange()
+        .expectStatus()
+        .isNotFound
+    }
   }
 
-  @Test
-  fun `SEARCH should return orders where the lastName matches the searchTerm`() {
-    val order = createOrder("AUTH_ADM")
+  @Nested
+  @DisplayName("POST /api/orders/{orderId}/submit")
+  inner class SubmitOrder {
+    @Test
+    fun `It should return not found if order does not exist when submitting order`() {
+      webTestClient.post()
+        .uri("/api/orders/${UUID.randomUUID()}/submit")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .isNotFound()
+    }
 
-    order.deviceWearer = DeviceWearer(
-      orderId = order.id,
-      lastName = "Smith",
-    )
-    repo.save(order)
+    @Test
+    fun `It should throw an error if an attempt is made to re-submit a submitted order`() {
+      val order = createReadyToSubmitOrder()
+      order.status = OrderStatus.SUBMITTED
+      repo.save(order)
 
-    webTestClient.get()
-      .uri("/api/orders?searchTerm=Smith")
-      .headers(setAuthorisation("AUTH_ADM"))
-      .exchange()
-      .expectStatus()
-      .isOk
-      .expectBodyList(Order::class.java)
-      .hasSize(1)
-  }
+      val result = webTestClient.post()
+        .uri("/api/orders/${order.id}/submit")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .is4xxClientError
+        .expectBody(ErrorResponse::class.java)
+        .returnResult()
 
-  @Test
-  fun `SEARCH should return orders where the firstName matches the searchTerm with different casing`() {
-    val order = createOrder("AUTH_ADM")
+      val error = result.responseBody!!
+      assertThat(error.userMessage)
+        .isEqualTo("Error submitting order: This order has already been submitted")
+    }
 
-    order.deviceWearer = DeviceWearer(
-      orderId = order.id,
-      firstName = "John",
-    )
-    repo.save(order)
+    @Test
+    fun `It should throw an error if an attempt is made to submit an order with error status`() {
+      val order = createReadyToSubmitOrder()
+      order.status = OrderStatus.ERROR
+      repo.save(order)
 
-    webTestClient.get()
-      .uri("/api/orders?searchTerm=john")
-      .headers(setAuthorisation("AUTH_ADM"))
-      .exchange()
-      .expectStatus()
-      .isOk
-      .expectBodyList(Order::class.java)
-      .hasSize(1)
-  }
+      val result = webTestClient.post()
+        .uri("/api/orders/${order.id}/submit")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .is4xxClientError
+        .expectBody(ErrorResponse::class.java)
+        .returnResult()
 
-  @Test
-  fun `SEARCH should return orders where the lastName matches the searchTerm with different casing`() {
-    val order = createOrder("AUTH_ADM")
+      val error = result.responseBody!!
+      assertThat(error.userMessage)
+        .isEqualTo("Error submitting order: This order has encountered an error and cannot be submitted")
+    }
 
-    order.deviceWearer = DeviceWearer(
-      orderId = order.id,
-      lastName = "Smith",
-    )
-    repo.save(order)
+    @Test
+    fun `It should throw an error if an incomplete order is submitted`() {
+      val order = createOrder()
+      repo.save(order)
 
-    webTestClient.get()
-      .uri("/api/orders?searchTerm=smith")
-      .headers(setAuthorisation("AUTH_ADM"))
-      .exchange()
-      .expectStatus()
-      .isOk
-      .expectBodyList(Order::class.java)
-      .hasSize(1)
-  }
+      val result = webTestClient.post()
+        .uri("/api/orders/${order.id}/submit")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .is4xxClientError
+        .expectBody(ErrorResponse::class.java)
+        .returnResult()
 
-  @Test
-  fun `SEARCH should only return orders belonging to user`() {
-    createOrder("AUTH_ADM")
-    createOrder("AUTH_ADM")
-    createOrder("AUTH_ADM_2")
+      val error = result.responseBody!!
+      assertThat(error.userMessage)
+        .isEqualTo("Error submitting order: Please complete all mandatory fields before submitting this form")
+    }
 
-    webTestClient.get()
-      .uri("/api/orders")
-      .headers(setAuthorisation("AUTH_ADM"))
-      .exchange()
-      .expectStatus()
-      .isOk
-      .expectBodyList(Order::class.java)
-      .hasSize(2)
-  }
+    @Test
+    fun `It should return an error if serco auth service returned error`() {
+      val order = createAndPersistReadyToSubmitOrder()
 
-  @Test
-  fun `Should return order if owned by the user`() {
-    val order = createOrder()
+      sercoAuthApi.stubError()
 
-    webTestClient.get()
-      .uri("/api/orders/${order.id}")
-      .headers(setAuthorisation())
-      .exchange()
-      .expectStatus()
-      .isOk
-      .expectBody(Order::class.java)
-      .isEqualTo(order)
-  }
+      val result = webTestClient.post()
+        .uri("/api/orders/${order.id}/submit")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .is4xxClientError()
+        .expectBody(ErrorResponse::class.java)
+        .returnResult()
 
-  @Test
-  fun `Should return not found if order does not exist`() {
-    webTestClient.get()
-      .uri("/api/orders/${UUID.randomUUID()}")
-      .headers(setAuthorisation())
-      .exchange()
-      .expectStatus()
-      .isNotFound()
-  }
+      val error = result.responseBody!!
+      assertThat(error.userMessage)
+        .isEqualTo("Error submitting order: The order could not be submitted to Serco")
+    }
 
-  @Test
-  fun `Should return not found if order belongs to another user`() {
-    val order = createOrder("AUTH_ADM")
+    @Test
+    fun `It should return an error if serco create device wearer service returned error`() {
+      val order = createAndPersistReadyToSubmitOrder()
 
-    webTestClient.get()
-      .uri("/api/orders/${order.id}")
-      .headers(setAuthorisation("AUTH_ADM_2"))
-      .exchange()
-      .expectStatus()
-      .isNotFound()
-  }
+      sercoAuthApi.stubGrantToken()
+      sercoApi.stubCreateDeviceWearer(
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        FmsResponse(),
+        FmsErrorResponse(error = FmsErrorResponseDetails("", "Mock Create DW Error")),
+      )
+      val result = webTestClient.post()
+        .uri("/api/orders/${order.id}/submit")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .is4xxClientError
+        .expectBody(ErrorResponse::class.java)
+        .returnResult()
 
-  @Test
-  fun `DELETE should return an error if the order does not exist`() {
-    val id = UUID.randomUUID()
-    val result = webTestClient.delete()
-      .uri("/api/orders/$id")
-      .headers(setAuthorisation("AUTH_ADM"))
-      .exchange()
-      .expectStatus()
-      .isNotFound()
-      .expectBodyList(ErrorResponse::class.java)
-      .returnResult()
+      val error = result.responseBody!!
+      assertThat(error.userMessage)
+        .isEqualTo("Error submitting order: The order could not be submitted to Serco")
+    }
 
-    val error = result.responseBody!!.first()
+    @Test
+    fun `It should return an error if serco create monitoring order service returned error`() {
+      val order = createAndPersistReadyToSubmitOrder()
+      sercoAuthApi.stubGrantToken()
 
-    assertThat(
-      error.developerMessage,
-    ).isEqualTo("An order with id $id does not exist")
-  }
+      sercoApi.stubCreateDeviceWearer(
+        HttpStatus.OK,
+        FmsResponse(result = listOf(FmsResult(message = "", id = "MockDeviceWearerId"))),
+      )
+      sercoApi.stubMonitoringOrder(
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        FmsResponse(),
+        FmsErrorResponse(error = FmsErrorResponseDetails("", "Mock Create MO Error")),
+      )
+      var result = webTestClient.post()
+        .uri("/api/orders/${order.id}/submit")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .is4xxClientError
+        .expectBody(ErrorResponse::class.java)
+        .returnResult()
 
-  @Test
-  fun `DELETE should return an error if the order belongs to another user`() {
-    val order = createOrder()
-    val result = webTestClient.delete()
-      .uri("/api/orders/${order.id}")
-      .headers(setAuthorisation("AUTH_ADM_2"))
-      .exchange()
-      .expectStatus()
-      .isNotFound()
-      .expectBodyList(ErrorResponse::class.java)
-      .returnResult()
+      val error = result.responseBody!!
+      assertThat(error.userMessage)
+        .isEqualTo("Error submitting order: The order could not be submitted to Serco")
 
-    val error = result.responseBody!!.first()
+      val submitResult = fmsResultRepository.findAll().firstOrNull()
+      assertThat(submitResult).isNotNull
 
-    assertThat(
-      error.developerMessage,
-    ).isEqualTo("An order with id ${order.id} does not exist")
-  }
+      val updatedOrder = repo.findById(order.id).get()
+      assertThat(updatedOrder.fmsResultId).isEqualTo(submitResult!!.id)
+      assertThat(updatedOrder.status).isEqualTo(OrderStatus.ERROR)
+    }
 
-  @Test
-  fun `DELETE should return an error if the order is in a submitted state`() {
-    val order = createOrder()
+    fun String.removeWhitespaceAndNewlines(): String = this.replace("(\"[^\"]*\")|\\s".toRegex(), "\$1")
 
-    order.status = OrderStatus.SUBMITTED
-    repo.save(order)
+    @Test
+    fun `It should update order with serco device wearer id, monitoring id & order status, and return 200`() {
+      val order = createAndPersistReadyToSubmitOrder()
+      sercoAuthApi.stubGrantToken()
 
-    val result = webTestClient.delete()
-      .uri("/api/orders/${order.id}")
-      .headers(setAuthorisation("AUTH_ADM"))
-      .exchange()
-      .expectStatus()
-      .is5xxServerError()
-      .expectBodyList(ErrorResponse::class.java)
-      .returnResult()
+      sercoApi.stubCreateDeviceWearer(
+        HttpStatus.OK,
+        FmsResponse(result = listOf(FmsResult(message = "", id = "MockDeviceWearerId"))),
+      )
+      sercoApi.stubMonitoringOrder(
+        HttpStatus.OK,
+        FmsResponse(result = listOf(FmsResult(message = "", id = "MockMonitoringOrderId"))),
+      )
+      webTestClient.post()
+        .uri("/api/orders/${order.id}/submit")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .isOk
 
-    val error = result.responseBody!!.first()
+      val submitResult = fmsResultRepository.findAll().firstOrNull()
+      assertThat(submitResult).isNotNull
 
-    assertThat(
-      error.developerMessage,
-    ).isEqualTo("Order with id ${order.id} cannot be deleted because it has already been submitted")
-  }
-
-  @Test
-  fun `DELETE should delete an in progress order`() {
-    val order = createOrder()
-
-    // Delete the order
-    webTestClient.delete()
-      .uri("/api/orders/${order.id}")
-      .headers(setAuthorisation("AUTH_ADM"))
-      .exchange()
-      .expectStatus()
-      .isNoContent
-
-    // Getting the order should return a not found
-    webTestClient.get()
-      .uri("/api/orders/${order.id}")
-      .headers(setAuthorisation("AUTH_ADM"))
-      .exchange()
-      .expectStatus()
-      .isNotFound
-  }
-
-  @Test
-  fun `Should return not found if order does not exist when submitting order`() {
-    webTestClient.post()
-      .uri("/api/orders/${UUID.randomUUID()}/submit")
-      .headers(setAuthorisation())
-      .exchange()
-      .expectStatus()
-      .isNotFound()
-  }
-
-  @Test
-  fun `Should throw an error if an attempt is made to re-submit a submitted order`() {
-    val order = createReadyToSubmitOrder()
-    order.status = OrderStatus.SUBMITTED
-    repo.save(order)
-
-    val result = webTestClient.post()
-      .uri("/api/orders/${order.id}/submit")
-      .headers(setAuthorisation())
-      .exchange()
-      .expectStatus()
-      .is4xxClientError
-      .expectBody(ErrorResponse::class.java)
-      .returnResult()
-
-    val error = result.responseBody!!
-    assertThat(error.userMessage)
-      .isEqualTo("Error submitting order: This order has already been submitted")
-  }
-
-  @Test
-  fun `Should throw an error if an attempt is made to submit an order with error status`() {
-    val order = createReadyToSubmitOrder()
-    order.status = OrderStatus.ERROR
-    repo.save(order)
-
-    val result = webTestClient.post()
-      .uri("/api/orders/${order.id}/submit")
-      .headers(setAuthorisation())
-      .exchange()
-      .expectStatus()
-      .is4xxClientError
-      .expectBody(ErrorResponse::class.java)
-      .returnResult()
-
-    val error = result.responseBody!!
-    assertThat(error.userMessage)
-      .isEqualTo("Error submitting order: This order has encountered an error and cannot be submitted")
-  }
-
-  @Test
-  fun `Should throw an error if an incomplete order is submitted`() {
-    val order = createOrder()
-    repo.save(order)
-
-    val result = webTestClient.post()
-      .uri("/api/orders/${order.id}/submit")
-      .headers(setAuthorisation())
-      .exchange()
-      .expectStatus()
-      .is4xxClientError
-      .expectBody(ErrorResponse::class.java)
-      .returnResult()
-
-    val error = result.responseBody!!
-    assertThat(error.userMessage)
-      .isEqualTo("Error submitting order: Please complete all mandatory fields before submitting this form")
-  }
-
-  @Test
-  fun `Should return an error if serco auth service returned error`() {
-    val order = createAndPersistReadyToSubmitOrder()
-
-    sercoAuthApi.stubError()
-
-    val result = webTestClient.post()
-      .uri("/api/orders/${order.id}/submit")
-      .headers(setAuthorisation())
-      .exchange()
-      .expectStatus()
-      .is4xxClientError()
-      .expectBody(ErrorResponse::class.java)
-      .returnResult()
-
-    val error = result.responseBody!!
-    assertThat(error.userMessage)
-      .isEqualTo("Error submitting order: The order could not be submitted to Serco")
-  }
-
-  @Test
-  fun `Should return an error if serco create device wearer service returned error`() {
-    val order = createAndPersistReadyToSubmitOrder()
-
-    sercoAuthApi.stubGrantToken()
-    sercoApi.stubCreateDeviceWearer(
-      HttpStatus.INTERNAL_SERVER_ERROR,
-      FmsResponse(),
-      FmsErrorResponse(error = FmsErrorResponseDetails("", "Mock Create DW Error")),
-    )
-    val result = webTestClient.post()
-      .uri("/api/orders/${order.id}/submit")
-      .headers(setAuthorisation())
-      .exchange()
-      .expectStatus()
-      .is4xxClientError
-      .expectBody(ErrorResponse::class.java)
-      .returnResult()
-
-    val error = result.responseBody!!
-    assertThat(error.userMessage)
-      .isEqualTo("Error submitting order: The order could not be submitted to Serco")
-  }
-
-  @Test
-  fun `Should return an error if serco create monitoring order service returned error`() {
-    val order = createAndPersistReadyToSubmitOrder()
-    sercoAuthApi.stubGrantToken()
-
-    sercoApi.stubCreateDeviceWearer(
-      HttpStatus.OK,
-      FmsResponse(result = listOf(FmsResult(message = "", id = "MockDeviceWearerId"))),
-    )
-    sercoApi.stubMonitoringOrder(
-      HttpStatus.INTERNAL_SERVER_ERROR,
-      FmsResponse(),
-      FmsErrorResponse(error = FmsErrorResponseDetails("", "Mock Create MO Error")),
-    )
-    var result = webTestClient.post()
-      .uri("/api/orders/${order.id}/submit")
-      .headers(setAuthorisation())
-      .exchange()
-      .expectStatus()
-      .is4xxClientError
-      .expectBody(ErrorResponse::class.java)
-      .returnResult()
-
-    val error = result.responseBody!!
-    assertThat(error.userMessage)
-      .isEqualTo("Error submitting order: The order could not be submitted to Serco")
-
-    val submitResult = fmsResultRepository.findAll().firstOrNull()
-    assertThat(submitResult).isNotNull
-
-    val updatedOrder = repo.findById(order.id).get()
-    assertThat(updatedOrder.fmsResultId).isEqualTo(submitResult!!.id)
-    assertThat(updatedOrder.status).isEqualTo(OrderStatus.ERROR)
-  }
-
-  fun String.removeWhitespaceAndNewlines(): String = this.replace("(\"[^\"]*\")|\\s".toRegex(), "\$1")
-
-  @Test
-  fun `Should update order with serco device wearer id, monitoring id & order status, and return 200`() {
-    val order = createAndPersistReadyToSubmitOrder()
-    sercoAuthApi.stubGrantToken()
-
-    sercoApi.stubCreateDeviceWearer(
-      HttpStatus.OK,
-      FmsResponse(result = listOf(FmsResult(message = "", id = "MockDeviceWearerId"))),
-    )
-    sercoApi.stubMonitoringOrder(
-      HttpStatus.OK,
-      FmsResponse(result = listOf(FmsResult(message = "", id = "MockMonitoringOrderId"))),
-    )
-    webTestClient.post()
-      .uri("/api/orders/${order.id}/submit")
-      .headers(setAuthorisation())
-      .exchange()
-      .expectStatus()
-      .isOk
-
-    val submitResult = fmsResultRepository.findAll().firstOrNull()
-    assertThat(submitResult).isNotNull
-
-    val expectedDWJson = """
+      val expectedDWJson = """
       {
       	"title": "",
       	"first_name": "John",
@@ -548,7 +602,7 @@ class OrderControllerTest : IntegrationTestBase() {
       	"language": "British Sign"
       }
     """.trimIndent()
-    val expectedOrderJson = """
+      val expectedOrderJson = """
       {
       	"case_id": "MockDeviceWearerId",
       	"allday_lockdown": "",
@@ -729,37 +783,37 @@ class OrderControllerTest : IntegrationTestBase() {
       }
     """.trimIndent()
 
-    assertThat(submitResult!!.fmsDeviceWearerRequest).isEqualTo(expectedDWJson.removeWhitespaceAndNewlines())
-    assertThat(submitResult.fmsOrderRequest).isEqualTo(expectedOrderJson.removeWhitespaceAndNewlines())
-    val updatedOrder = repo.findById(order.id).get()
-    assertThat(updatedOrder.fmsResultId).isEqualTo(submitResult.id)
-    assertThat(updatedOrder.status).isEqualTo(OrderStatus.SUBMITTED)
-  }
+      assertThat(submitResult!!.fmsDeviceWearerRequest).isEqualTo(expectedDWJson.removeWhitespaceAndNewlines())
+      assertThat(submitResult.fmsOrderRequest).isEqualTo(expectedOrderJson.removeWhitespaceAndNewlines())
+      val updatedOrder = repo.findById(order.id).get()
+      assertThat(updatedOrder.fmsResultId).isEqualTo(submitResult.id)
+      assertThat(updatedOrder.status).isEqualTo(OrderStatus.SUBMITTED)
+    }
 
-  @Test
-  fun `Should default address to No Fixed Address if device wearer no fixed Abode is true`() {
-    val order = createAndPersistReadyToSubmitOrder(true)
-    sercoAuthApi.stubGrantToken()
+    @Test
+    fun `It should default address to No Fixed Address if device wearer no fixed Abode is true`() {
+      val order = createAndPersistReadyToSubmitOrder(true)
+      sercoAuthApi.stubGrantToken()
 
-    sercoApi.stubCreateDeviceWearer(
-      HttpStatus.OK,
-      FmsResponse(result = listOf(FmsResult(message = "", id = "MockDeviceWearerId"))),
-    )
-    sercoApi.stubMonitoringOrder(
-      HttpStatus.OK,
-      FmsResponse(result = listOf(FmsResult(message = "", id = "MockMonitoringOrderId"))),
-    )
-    webTestClient.post()
-      .uri("/api/orders/${order.id}/submit")
-      .headers(setAuthorisation())
-      .exchange()
-      .expectStatus()
-      .isOk
+      sercoApi.stubCreateDeviceWearer(
+        HttpStatus.OK,
+        FmsResponse(result = listOf(FmsResult(message = "", id = "MockDeviceWearerId"))),
+      )
+      sercoApi.stubMonitoringOrder(
+        HttpStatus.OK,
+        FmsResponse(result = listOf(FmsResult(message = "", id = "MockMonitoringOrderId"))),
+      )
+      webTestClient.post()
+        .uri("/api/orders/${order.id}/submit")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .isOk
 
-    val submitResult = fmsResultRepository.findAll().firstOrNull()
-    assertThat(submitResult).isNotNull
+      val submitResult = fmsResultRepository.findAll().firstOrNull()
+      assertThat(submitResult).isNotNull
 
-    val expectedDWJson = """
+      val expectedDWJson = """
       {
       	"title": "",
       	"first_name": "John",
@@ -815,11 +869,17 @@ class OrderControllerTest : IntegrationTestBase() {
       }
     """.trimIndent()
 
-    assertThat(submitResult!!.fmsDeviceWearerRequest).isEqualTo(expectedDWJson.removeWhitespaceAndNewlines())
+      assertThat(submitResult!!.fmsDeviceWearerRequest).isEqualTo(expectedDWJson.removeWhitespaceAndNewlines())
 
-    val updatedOrder = repo.findById(order.id).get()
-    assertThat(updatedOrder.fmsResultId).isEqualTo(submitResult.id)
+      val updatedOrder = repo.findById(order.id).get()
+      assertThat(updatedOrder.fmsResultId).isEqualTo(submitResult.id)
+    }
+
   }
+
+
+
+
 
   fun createReadyToSubmitOrder(noFixedAddress: Boolean = false): Order {
     val order = Order(
