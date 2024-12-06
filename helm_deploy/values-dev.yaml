@@ -12,6 +12,7 @@ generic-service:
     HMPPS_AUTH_URL: "https://sign-in-dev.hmpps.service.justice.gov.uk/auth"
     DOCUMENT_MANAGEMENT_URL: "https://document-api-dev.hmpps.service.justice.gov.uk/"
     CP_INTEGRATION_ENABLED: true
+    FMS_INTEGRATION_ENABLED: true
 
   namespace_secrets:
     sqs-court-case-events-fifo-secret:
