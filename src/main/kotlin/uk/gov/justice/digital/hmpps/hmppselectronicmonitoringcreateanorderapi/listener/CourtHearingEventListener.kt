@@ -29,10 +29,17 @@ class CourtHearingEventListener(
 
       // Process message if contains EM details, else ignore
       if (courtHearing.hearing.isHearingContainsEM()) {
-        val result = eventHandler.handleHearingEvent(courtHearing)
-        if (result.any()) {
-          deadLetterQueueService.sentEvent(rawMessage, result.joinToString(","))
+        val handlingErrors = eventHandler.handleHearingEvent(courtHearing)
+        if (handlingErrors.any()) {
+          deadLetterQueueService.sentEvent(rawMessage, handlingErrors.joinToString(","))
         }
+      } else {
+        val containsEmLabel = rawMessage.contains("Notification of electronic monitoring order")
+        eventService.recordEvent(
+          "Common_Platform_Ignored_Request",
+          mapOf("Contain notification of electronic monitoring order label" to containsEmLabel.toString()),
+          System.currentTimeMillis() - startTimeInMs,
+        )
       }
     } catch (e: Exception) {
       deadLetterQueueService.sentEvent(rawMessage, "Malformed event received. Could not parse JSON")
@@ -44,6 +51,5 @@ class CourtHearingEventListener(
         System.currentTimeMillis() - startTimeInMs,
       )
     }
-    eventService.recordEvent("Common_Platform_Request", mapOf(), System.currentTimeMillis() - startTimeInMs)
   }
 }

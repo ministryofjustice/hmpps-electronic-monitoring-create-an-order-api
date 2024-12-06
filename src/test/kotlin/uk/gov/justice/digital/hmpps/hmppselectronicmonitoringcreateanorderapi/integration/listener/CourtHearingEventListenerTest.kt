@@ -8,6 +8,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.internal.verification.Times
 import org.mockito.kotlin.any
+import org.mockito.kotlin.argThat
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.verify
 import org.springframework.beans.factory.annotation.Autowired
@@ -151,18 +152,22 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
   fun `Will log event for malformed payload`() {
     courtHearingEventListener.onDomainEvent("BAD JSON")
 
-    verify(telemetryClient, Times(1)).trackEvent(eq("Common_Platform_Exception"), any(), any())
-    verify(telemetryClient, Times(1)).trackEvent(eq("Common_Platform_Request"), any(), any())
+    verify(telemetryClient, Times(1)).trackEvent(
+      eq("Common_Platform_Exception"),
+      argThat { it -> it.containsKey("exception") && it.containsKey("stacktrace") },
+      argThat { it -> it.containsKey("eventTimeMs") },
+    )
   }
 
   @Test
-  fun `Will only log request event has no EM request`() {
+  fun `Will log ignored request event has no EM request`() {
     val rawMessage = generateRawHearingEventMessage("src/test/resources/json/No_EM_Payload.json")
     courtHearingEventListener.onDomainEvent(rawMessage)
-    verify(telemetryClient, Times(0)).trackEvent(eq("Common_Platform_Success_Request"), any(), any())
-    verify(telemetryClient, Times(0)).trackEvent(eq("Common_Platform_Failed_Request"), any(), any())
-    verify(telemetryClient, Times(0)).trackEvent(eq("Common_Platform_Exception"), any(), any())
-    verify(telemetryClient, Times(1)).trackEvent(eq("Common_Platform_Request"), any(), any())
+    verify(telemetryClient, Times(1)).trackEvent(
+      eq("Common_Platform_Ignored_Request"),
+      argThat { it -> it.containsKey("Contain notification of electronic monitoring order label") },
+      argThat { it -> it.containsKey("eventTimeMs") },
+    )
   }
 
   @Test
@@ -170,10 +175,11 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
     val rawMessage = generateRawHearingEventMessage("src/test/resources/json/COEW_AAR/cp_payload.json")
     courtHearingEventListener.onDomainEvent(rawMessage)
 
-    verify(telemetryClient, Times(1)).trackEvent(eq("Common_Platform_Success_Request"), any(), any())
-    verify(telemetryClient, Times(0)).trackEvent(eq("Common_Platform_Failed_Request"), any(), any())
-    verify(telemetryClient, Times(0)).trackEvent(eq("Common_Platform_Exception"), any(), any())
-    verify(telemetryClient, Times(1)).trackEvent(eq("Common_Platform_Request"), any(), any())
+    verify(telemetryClient, Times(1)).trackEvent(
+      eq("Common_Platform_Success_Request"),
+      argThat { it -> it.containsKey("OrderType") },
+      argThat { it -> it.containsKey("eventTimeMs") },
+    )
   }
 
   fun generateRawHearingEventMessage(path: String): String {

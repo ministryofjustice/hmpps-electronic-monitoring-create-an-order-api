@@ -74,6 +74,7 @@ class HearingEventHandler(
   fun handleHearingEvent(event: HearingEvent): List<String> {
     val result = mutableListOf<String>()
     val orders = getOrdersFromHearing(event.hearing)
+    val startTimeInMs = System.currentTimeMillis()
     orders.forEach { order ->
       run {
         val submitResult = fmsService.submitOrder(order, FmsOrderSource.COMMON_PLATFORM)
@@ -83,11 +84,16 @@ class HearingEventHandler(
           result.add(
             "Error create order for $fullName, error: ${submitResult.error} ",
           )
-          eventService.recordEvent("Common_Platform_Failed_Request", mapOf("Error" to submitResult.error!!))
+          eventService.recordEvent(
+            "Common_Platform_Failed_Request",
+            mapOf("Error" to "${submitResult.error}"),
+            System.currentTimeMillis() - startTimeInMs,
+          )
         } else {
           eventService.recordEvent(
             "Common_Platform_Success_Request",
             mapOf("OrderType" to order.monitoringConditions!!.orderType!!),
+            System.currentTimeMillis() - startTimeInMs,
           )
         }
       }
