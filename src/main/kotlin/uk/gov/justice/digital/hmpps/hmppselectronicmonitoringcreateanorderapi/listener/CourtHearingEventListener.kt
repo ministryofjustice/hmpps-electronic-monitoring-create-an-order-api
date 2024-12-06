@@ -10,6 +10,9 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.EventService
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.courthearing.DeadLetterQueueService
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.courthearing.HearingEventHandler
+import java.time.ZoneId
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 
 @Service
 @ConditionalOnExpression("\${toggle.cp-integration.enabled:false}")
@@ -19,10 +22,12 @@ class CourtHearingEventListener(
   private val objectMapper: ObjectMapper,
   private val eventService: EventService,
 ) {
+  private val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy hh:mm:ss")
 
   @SqsListener("courthearingeventqueue", factory = "hmppsQueueContainerFactoryProxy")
   fun onDomainEvent(rawMessage: String) {
     val startTimeInMs = System.currentTimeMillis()
+    val startDateTime = ZonedDateTime.now(ZoneId.of("GMT"))
     try {
       val eventMessage: HmppsSqsEventMessage = objectMapper.readValue(rawMessage)
       val courtHearing: HearingEvent = objectMapper.readValue(eventMessage.message)
@@ -37,7 +42,10 @@ class CourtHearingEventListener(
         val containsEmLabel = rawMessage.contains("Notification of electronic monitoring order")
         eventService.recordEvent(
           "Common_Platform_Ignored_Request",
-          mapOf("Contain notification of electronic monitoring order label" to containsEmLabel.toString()),
+          mapOf(
+            "Contain notification of electronic monitoring order label" to containsEmLabel.toString(),
+            "Start Date And Time" to startDateTime.format(formatter),
+          ),
           System.currentTimeMillis() - startTimeInMs,
         )
       }
@@ -47,8 +55,9 @@ class CourtHearingEventListener(
       val error = e.message ?: ""
       eventService.recordEvent(
         "Common_Platform_Exception",
-        mapOf("exception" to error, "stacktrace" to e.stackTraceToString()),
+        mapOf("Start Date And Time" to startDateTime.format(formatter)),
         System.currentTimeMillis() - startTimeInMs,
+
       )
     }
   }

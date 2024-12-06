@@ -154,7 +154,7 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
 
     verify(telemetryClient, Times(1)).trackEvent(
       eq("Common_Platform_Exception"),
-      argThat { it -> it.containsKey("exception") && it.containsKey("stacktrace") },
+      argThat { it -> it.containsKey("Start Date And Time") },
       argThat { it -> it.containsKey("eventTimeMs") },
     )
   }
@@ -165,7 +165,10 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
     courtHearingEventListener.onDomainEvent(rawMessage)
     verify(telemetryClient, Times(1)).trackEvent(
       eq("Common_Platform_Ignored_Request"),
-      argThat { it -> it.containsKey("Contain notification of electronic monitoring order label") },
+      argThat { it ->
+        it.containsKey("Contain notification of electronic monitoring order label") &&
+          it.containsKey("Start Date And Time")
+      },
       argThat { it -> it.containsKey("eventTimeMs") },
     )
   }
@@ -177,7 +180,10 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
 
     verify(telemetryClient, Times(1)).trackEvent(
       eq("Common_Platform_Success_Request"),
-      argThat { it -> it.containsKey("OrderType") },
+      argThat { it ->
+        it.containsKey("OrderType") &&
+          it.containsKey("Start Date And Time")
+      },
       argThat { it -> it.containsKey("eventTimeMs") },
     )
   }

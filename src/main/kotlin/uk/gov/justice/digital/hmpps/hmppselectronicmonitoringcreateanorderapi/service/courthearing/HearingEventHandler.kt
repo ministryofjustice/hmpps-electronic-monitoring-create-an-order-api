@@ -38,6 +38,7 @@ class HearingEventHandler(
 ) {
   private val commentPlatformUsername = "COMMENT_PLATFORM"
   private val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
+  private val dateTimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
   companion object {
     const val ALCOHOL_ABSTAIN_MONITORING_UUID = "d54c3093-6b9b-4b61-80cf-a0bf4ed5d2e8"
 
@@ -75,24 +76,29 @@ class HearingEventHandler(
     val result = mutableListOf<String>()
     val orders = getOrdersFromHearing(event.hearing)
     val startTimeInMs = System.currentTimeMillis()
+    val startDateTime = ZonedDateTime.now(ZoneId.of("GMT"))
     orders.forEach { order ->
       run {
         val submitResult = fmsService.submitOrder(order, FmsOrderSource.COMMON_PLATFORM)
 
         if (!submitResult.success) {
           val fullName = " ${order.deviceWearer!!.firstName} ${order.deviceWearer!!.lastName}"
-          result.add(
-            "Error create order for $fullName, error: ${submitResult.error} ",
-          )
+          result.add("Error create order for $fullName, error: ${submitResult.error} ")
           eventService.recordEvent(
             "Common_Platform_Failed_Request",
-            mapOf("Error" to "${submitResult.error}"),
+            mapOf(
+              "Error" to "${submitResult.error}",
+              "Start Date And Time" to startDateTime.format(formatter),
+            ),
             System.currentTimeMillis() - startTimeInMs,
           )
         } else {
           eventService.recordEvent(
             "Common_Platform_Success_Request",
-            mapOf("OrderType" to order.monitoringConditions!!.orderType!!),
+            mapOf(
+              "OrderType" to order.monitoringConditions!!.orderType!!,
+              "Start Date And Time" to startDateTime.format(formatter),
+            ),
             System.currentTimeMillis() - startTimeInMs,
           )
         }
