@@ -9,7 +9,6 @@ import uk.gov.justice.digital.hmpps.courthearingeventreceiver.model.Offence
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Address
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AlcoholMonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ContactDetails
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.EnforcementZoneConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InterestedParties
@@ -63,8 +62,9 @@ class HearingEventHandler(
           judicialResults ->
         judicialResults.judicialResultTypeId == ALCOHOL_ABSTAIN_MONITORING_UUID ||
           judicialResults.judicialResultTypeId == EXCLUSION_ZONE_UUID ||
-          judicialResults.judicialResultTypeId == INCLUSION_ZONE_UUID ||
-          judicialResults.judicialResultTypeId == CURFEW_UUID
+          judicialResults.judicialResultTypeId == INCLUSION_ZONE_UUID
+// TODO:  Ignore curfew mapping until solution for curfew duration is determined
+        // judicialResults.judicialResultTypeId == CURFEW_UUID
       } &&
         !offence.judicialResults.any {
             judicialResults ->
@@ -204,18 +204,21 @@ class HearingEventHandler(
       order.enforcementZoneConditions.add(zone)
     }
 
-    if (judicialResults.any { it.judicialResultTypeId == CURFEW_UUID }) {
-      monitoringConditions.curfew = true
-      val condition = CurfewConditions(orderId = order.id)
-      condition.startDate = getPromptValue(prompts, "Start date for tag")?.let {
-        val localDate = LocalDate.parse(it, formatter)
-        ZonedDateTime.of(localDate, LocalTime.MIDNIGHT, ZoneId.of("GMT"))
-      }
-      condition.endDate = getPromptValue(prompts, "End date of tagging")?.let {
-        val localDate = LocalDate.parse(it, formatter)
-        ZonedDateTime.of(localDate, LocalTime.MIDNIGHT, ZoneId.of("GMT"))
-      }
-    }
+// TODO:  Ignore curfew mapping until solution for curfew duration is determined
+
+//    if (judicialResults.any { it.judicialResultTypeId == CURFEW_UUID }) {
+//      monitoringConditions.curfew = true
+//      val condition = CurfewConditions(orderId = order.id)
+//      condition.startDate = getPromptValue(prompts, "Start date for tag")?.let {
+//        val localDate = LocalDate.parse(it, formatter)
+//        ZonedDateTime.of(localDate, LocalTime.MIDNIGHT, ZoneId.of("GMT"))
+//      }
+//      condition.endDate = getPromptValue(prompts, "End date of tagging")?.let {
+//        val localDate = LocalDate.parse(it, formatter)
+//        ZonedDateTime.of(localDate, LocalTime.MIDNIGHT, ZoneId.of("GMT"))
+//      }
+//      order.curfewConditions= condition
+//    }
 
     order.monitoringConditions = monitoringConditions
 

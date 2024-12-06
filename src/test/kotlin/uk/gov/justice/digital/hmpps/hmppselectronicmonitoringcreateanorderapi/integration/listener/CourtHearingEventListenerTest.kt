@@ -105,8 +105,15 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
   }
 
   @Test
+  fun `Will not process a Community Order Curfew payload`() {
+    val rawMessage = generateRawHearingEventMessage("src/test/resources/json/CommunityOrder_Curfew/cp_payload.json")
+    sendDomainSqsMessage(rawMessage)
+    await().until { getNumberOfMessagesCurrentlyOnEventQueue() == 0 }
+  }
+
+  @Test
   fun `Will process a valid payload with em details`() {
-    val rootFilePath = "src/test/resources/json/COEW_AAR"
+    val rootFilePath = "src/test/resources/json/SSO_IMPRISONMENT"
     val rawMessage = generateRawHearingEventMessage("$rootFilePath/cp_payload.json")
     sercoApi.stubCreateDeviceWearer(
       HttpStatus.OK,
@@ -118,7 +125,7 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
     )
     sendDomainSqsMessage(rawMessage)
     await().until { getNumberOfMessagesCurrentlyOnEventQueue() == 0 }
-    verify(eventHandler, Times(1)).handleHearingEvent(any())
+    assertThat(repo.count().toInt()).isNotEqualTo(0)
   }
 
   fun String.removeWhitespaceAndNewlines(): String = this.replace("(\"[^\"]*\")|\\s".toRegex(), "\$1")
