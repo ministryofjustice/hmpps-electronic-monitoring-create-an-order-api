@@ -104,6 +104,23 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
     verify(eventHandler, Times(0)).handleHearingEvent(any())
   }
 
+  @Test
+  fun `Will process a valid payload with em details`() {
+    val rootFilePath = "src/test/resources/json/COEW_AAR"
+    val rawMessage = generateRawHearingEventMessage("$rootFilePath/cp_payload.json")
+    sercoApi.stubCreateDeviceWearer(
+      HttpStatus.OK,
+      FmsResponse(result = listOf(FmsResult(message = "", id = "MockDeviceWearerId"))),
+    )
+    sercoApi.stubMonitoringOrder(
+      HttpStatus.OK,
+      FmsResponse(result = listOf(FmsResult(message = "", id = "MockMonitoringOrderId"))),
+    )
+    sendDomainSqsMessage(rawMessage)
+    await().until { getNumberOfMessagesCurrentlyOnEventQueue() == 0 }
+    verify(eventHandler, Times(1)).handleHearingEvent(any())
+  }
+
   fun String.removeWhitespaceAndNewlines(): String = this.replace("(\"[^\"]*\")|\\s".toRegex(), "\$1")
 
   @Test
@@ -134,8 +151,7 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
       HttpStatus.OK,
       FmsResponse(result = listOf(FmsResult(message = "", id = "MockMonitoringOrderId"))),
     )
-    sendDomainSqsMessage(rawMessage)
-    await().until { repo.count().toInt() != 0 || getNumberOfMessagesCurrentlyOnDeadLetterQueue() != 0 }
+    courtHearingEventListener.onDomainEvent(rawMessage)
     assertThat(getNumberOfMessagesCurrentlyOnDeadLetterQueue()).isEqualTo(0)
     val savedResult = repo.findAll().first()
     assertThat(savedResult).isNotNull
