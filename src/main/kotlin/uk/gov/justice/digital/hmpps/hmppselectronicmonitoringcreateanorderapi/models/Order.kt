@@ -12,6 +12,7 @@ import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderType
 import java.util.UUID
 
 @Entity
@@ -28,6 +29,10 @@ data class Order(
   @Enumerated(EnumType.STRING)
   @Column(name = "STATUS", nullable = false)
   var status: OrderStatus,
+
+  @Enumerated(EnumType.STRING)
+  @Column(name = "TYPE", nullable = false)
+  var type: OrderType,
 
   @Column(name = "FMS_RESULT_ID", nullable = true)
   var fmsResultId: UUID? = null,
