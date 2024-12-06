@@ -9,7 +9,7 @@ generic-service:
     HMPPS_AUTH_URL: "https://sign-in.hmpps.service.justice.gov.uk/auth"
     DOCUMENT_MANAGEMENT_URL: "https://document-api.hmpps.service.justice.gov.uk/"
     SENTRY_ENVIRONMENT: prod
-    CP_INTEGRATION_ENABLED: false
+    CP_INTEGRATION_ENABLED: true
     FMS_INTEGRATION_ENABLED: false
 
   namespace_secrets:
