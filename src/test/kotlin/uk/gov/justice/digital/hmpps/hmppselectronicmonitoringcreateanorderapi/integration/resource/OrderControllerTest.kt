@@ -41,6 +41,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.re
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.SubmitFmsOrderResultRepository
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 import java.time.DayOfWeek
+import java.time.LocalTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
@@ -56,7 +57,9 @@ class OrderControllerTest : IntegrationTestBase() {
 
   val mockStartDate: ZonedDateTime = ZonedDateTime.now().plusMonths(1)
   val mockEndDate: ZonedDateTime = ZonedDateTime.now().plusMonths(2)
-  private val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+  val mockStartTime: LocalTime = LocalTime.of(18, 30)
+  val mockEndTime: LocalTime = LocalTime.of(7, 0)
+  private val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
   private val dateTimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
 
   @BeforeEach
@@ -697,11 +700,11 @@ class OrderControllerTest : IntegrationTestBase() {
       	"technical_bail": "",
       	"trial_date": "",
       	"trial_outcome": "",
-      	"conditional_release_date": "${mockStartDate.format(formatter)}",
+      	"conditional_release_date": "${mockStartDate.format(dateFormatter)}",
       	"reason_for_order_ending_early": "",
       	"business_unit": "",
-        "service_end_date": "${mockEndDate.format(formatter)}",
-      	"curfew_start": "${mockStartDate.format(formatter)}",
+        "service_end_date": "${mockEndDate.format(dateFormatter)}",
+      	"curfew_start": "${mockStartDate.format(dateFormatter)}",
       	"curfew_end": null,
       	"curfew_duration": [
       		{

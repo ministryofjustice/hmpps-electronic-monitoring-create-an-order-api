@@ -178,18 +178,19 @@ data class MonitoringOrder(
     private val dateTimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
     fun fromOrder(order: Order, caseId: String?): MonitoringOrder {
       val conditions = order.monitoringConditions!!
+
       val monitoringOrder = MonitoringOrder(
         deviceWearer = "${order.deviceWearer!!.firstName} ${order.deviceWearer!!.lastName}",
         orderType = conditions.orderType,
         orderTypeDescription = conditions.orderTypeDescription?.value,
         orderStart = conditions.startDate?.format(dateTimeFormatter),
         orderEnd = conditions.endDate?.format(dateTimeFormatter),
-        serviceEndDate = conditions.endDate?.format(dateFormatter),
         caseId = caseId,
         conditionType = conditions.conditionType!!.value,
         orderId = order.id.toString(),
         orderStatus = "Not Started",
         offence = order.installationAndRisk?.offence,
+        serviceEndDate = conditions.endDate?.format(dateFormatter),
       )
 
       if (conditions.curfew != null && conditions.curfew!!) {
