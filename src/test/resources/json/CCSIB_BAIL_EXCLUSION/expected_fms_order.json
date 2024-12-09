@@ -10,7 +10,7 @@
   "device_wearer": "Person Mock",
   "enforceable_condition": [
     {
-      "condition": "EM Exclusion/ Inclusion Zone"
+      "condition": "EM Exclusion / Inclusion Zone"
     }
   ],
   "exclusion_allday": "",
@@ -70,13 +70,13 @@
   "business_unit": "",
   "service_end_date": null,
   "curfew_start": "",
-  "curfew_end": null,
+  "curfew_end": "",
   "curfew_duration": [],
   "trail_monitoring": "No",
-  "exclusion_zones": "",
-  "exclusion_zones_duration": "",
-  "inclusion_zones": "Radius:2 miles\\nPlace or area:Mitcham avenue",
-  "inclusion_zones_duration": null,
+  "exclusion_zones": "Place or area:London Mayfair",
+  "exclusion_zones_duration": null,
+  "inclusion_zones": "",
+  "inclusion_zones_duration": "",
   "abstinence": "",
   "schedule": "",
   "checkin_schedule": "",

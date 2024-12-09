@@ -17,7 +17,7 @@ enum class CommunityOrderType(val uuid: String) {
 }
 
 enum class BailOrderType(val uuid: String) {
-  CURFEW("629f6897-a46f-492e-9691-5226ee7810b7"),
+  CURFEW("fa49f99a-a2f1-4d4a-bd14-d18ab1c9eca5"),
 
   EXCLUSION_NOT_ENTER_A_PLACE("c1d490ed-1754-43b8-a485-fdab1a25f8cb"),
 
