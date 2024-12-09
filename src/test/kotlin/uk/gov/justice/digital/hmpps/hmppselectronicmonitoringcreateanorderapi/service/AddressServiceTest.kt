@@ -19,6 +19,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DeviceWearerAddressUsage
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 import java.time.LocalDate
 import java.time.LocalTime
@@ -90,6 +91,7 @@ class AddressServiceTest {
     id = mockOrderId,
     username = mockUsername,
     status = OrderStatus.IN_PROGRESS,
+    type = OrderType.REQUEST,
     monitoringConditionsAlcohol = AlcoholMonitoringConditions(
       id = mockAlcoholMonitoringConditionsId,
       orderId = mockOrderId,
@@ -108,6 +110,7 @@ class AddressServiceTest {
     id = mockOrderId,
     username = mockUsername,
     status = OrderStatus.IN_PROGRESS,
+    type = OrderType.REQUEST,
     monitoringConditionsAlcohol = AlcoholMonitoringConditions(
       id = mockAlcoholMonitoringConditionsId,
       orderId = mockOrderId,
@@ -126,6 +129,7 @@ class AddressServiceTest {
     id = mockOrderId,
     username = mockUsername,
     status = OrderStatus.IN_PROGRESS,
+    type = OrderType.REQUEST,
     addresses = mutableListOf(),
   )
 

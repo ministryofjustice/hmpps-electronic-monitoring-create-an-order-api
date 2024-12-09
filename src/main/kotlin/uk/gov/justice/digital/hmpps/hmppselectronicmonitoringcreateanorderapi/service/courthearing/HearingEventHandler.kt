@@ -10,7 +10,6 @@ import uk.gov.justice.digital.hmpps.courthearingeventreceiver.model.Offence
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Address
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AlcoholMonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ContactDetails
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.EnforcementZoneConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InterestedParties
@@ -25,6 +24,8 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MonitoringConditionType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.EventService
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.FmsService
 import java.time.LocalDate
 import java.time.LocalTime
@@ -36,10 +37,12 @@ import java.util.*
 @Service
 class HearingEventHandler(
   private val fmsService: FmsService,
+  private val eventService: EventService,
   private val deadLetterQueueService: DeadLetterQueueService,
 ) {
   private val commentPlatformUsername = "COMMENT_PLATFORM"
   private val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
+  private val dateTimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
   companion object {
 
     //region Common platform order types
@@ -82,14 +85,31 @@ class HearingEventHandler(
   fun handleHearingEvent(event: HearingEvent): List<String> {
     val result = mutableListOf<String>()
     val orders = getOrdersFromHearing(event.hearing)
+    val startTimeInMs = System.currentTimeMillis()
+    val startDateTime = ZonedDateTime.now(ZoneId.of("GMT"))
     orders.forEach { order ->
       run {
-        val submitResult = fmsService.submitOrder(order, FmsOrderSource.COMMENT_PLATFORM)
-        // TODO log failed requests
+        val submitResult = fmsService.submitOrder(order, FmsOrderSource.COMMON_PLATFORM)
+
         if (!submitResult.success) {
           val fullName = " ${order.deviceWearer!!.firstName} ${order.deviceWearer!!.lastName}"
-          result.add(
-            "Error create order for $fullName, error: ${submitResult.error} ",
+          result.add("Error create order for $fullName, error: ${submitResult.error} ")
+          eventService.recordEvent(
+            "Common_Platform_Failed_Request",
+            mapOf(
+              "Error" to "${submitResult.error}",
+              "Start Date And Time" to startDateTime.format(formatter),
+            ),
+            System.currentTimeMillis() - startTimeInMs,
+          )
+        } else {
+          eventService.recordEvent(
+            "Common_Platform_Success_Request",
+            mapOf(
+              "OrderType" to order.monitoringConditions!!.orderType!!,
+              "Start Date And Time" to startDateTime.format(formatter),
+            ),
+            System.currentTimeMillis() - startTimeInMs,
           )
         }
       }
@@ -145,7 +165,7 @@ class HearingEventHandler(
     val judicialResults = offences.flatMap { it.judicialResults }.toList()
 
     val prompts = judicialResults.flatMap { it.judicialResultPrompts }.toList()
-    val order = Order(username = commentPlatformUsername, status = OrderStatus.IN_PROGRESS)
+    val order = Order(username = commentPlatformUsername, status = OrderStatus.IN_PROGRESS, type = OrderType.REQUEST)
 
     val monitoringConditions = MonitoringConditions(orderId = order.id)
     val orderedDate = judicialResults.first().orderedDate
@@ -240,20 +260,21 @@ class HearingEventHandler(
       monitoringConditions.endDate = zone.endDate
       order.enforcementZoneConditions.add(zone)
     }
+    // TODO:  Ignore curfew mapping until solution for curfew duration is determined
 
-    if (judicialResults.any { it.judicialResultTypeId == CommunityOrderType.COMMUNITY_ORDER_CURFEW.uuid }) {
-      monitoringConditions.curfew = true
-      val condition = CurfewConditions(orderId = order.id)
-      condition.startDate = getPromptValue(prompts, "Start date for tag")?.let {
-        val localDate = LocalDate.parse(it, formatter)
-        ZonedDateTime.of(localDate, LocalTime.MIDNIGHT, ZoneId.of("GMT"))
-      }
-      condition.endDate = getPromptValue(prompts, "End date of tagging")?.let {
-        val localDate = LocalDate.parse(it, formatter)
-        ZonedDateTime.of(localDate, LocalTime.MIDNIGHT, ZoneId.of("GMT"))
-      }
-      order.curfewConditions = condition
-    }
+//    if (judicialResults.any { it.judicialResultTypeId == CommunityOrderType.COMMUNITY_ORDER_CURFEW.uuid }) {
+//      monitoringConditions.curfew = true
+//      val condition = CurfewConditions(orderId = order.id)
+//      condition.startDate = getPromptValue(prompts, "Start date for tag")?.let {
+//        val localDate = LocalDate.parse(it, formatter)
+//        ZonedDateTime.of(localDate, LocalTime.MIDNIGHT, ZoneId.of("GMT"))
+//      }
+//      condition.endDate = getPromptValue(prompts, "End date of tagging")?.let {
+//        val localDate = LocalDate.parse(it, formatter)
+//        ZonedDateTime.of(localDate, LocalTime.MIDNIGHT, ZoneId.of("GMT"))
+//      }
+//      order.curfewConditions = condition
+//    }
 
     //region InterestedParties
     val responsibleOrganisation = getResponsibleOrganisation(
@@ -473,6 +494,7 @@ class HearingEventHandler(
     ) {
       return MonitoringConditionType.BAIL_ORDER
     }
+
     return null
   }
 

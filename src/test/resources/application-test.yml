@@ -20,6 +20,7 @@ services:
     url: http://localhost:8091/auth
 
 CP_INTEGRATION_ENABLED: true
+FMS_INTEGRATION_ENABLED: true
 hmpps.sqs:
   provider: localstack
   localstackUrl: http://localhost:4566
@@ -32,11 +33,11 @@ hmpps.sqs:
 
 DOCUMENT_MANAGEMENT_URL:  http://localhost:8092/
 CLIENT_ID: mockClient
-CLIENT_SECRET: clientsecre
+CLIENT_SECRET: clientsecret
 
 
 SERCO_AUTH_URL: http://localhost:8093/
-SERCO_CLIENT_ID: cliendId
+SERCO_CLIENT_ID: clientId
 SERCO_CLIENT_SECRET: clientSecret
 SERCO_USERNAME: username
 SERCO_PASSWORD: password

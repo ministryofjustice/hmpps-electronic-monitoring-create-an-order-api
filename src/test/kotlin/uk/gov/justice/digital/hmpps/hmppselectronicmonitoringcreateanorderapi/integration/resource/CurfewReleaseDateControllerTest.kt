@@ -10,6 +10,7 @@ import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.verify
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.mock.mockito.SpyBean
+import org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR
 import org.springframework.http.MediaType
 import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
@@ -174,6 +175,36 @@ class CurfewReleaseDateControllerTest : IntegrationTestBase() {
         updatedOrder.curfewReleaseDateConditions?.curfewAddress,
       ).isEqualTo(AddressType.PRIMARY)
     }
+  }
+
+  @Test
+  fun `Should not expose sql statements if an invalid request is sent`() {
+    val order = createOrder()
+    orderRepo.save(order)
+    Mockito.reset(orderRepo)
+
+    val result = webTestClient.put()
+      .uri("/api/orders/${order.id}/monitoring-conditions-curfew-release-date")
+      .contentType(MediaType.APPLICATION_JSON)
+      .body(
+        BodyInserters.fromValue(
+          mockValidRequestBody(UUID.randomUUID()),
+        ),
+      )
+      .headers(setAuthorisation())
+      .exchange()
+      .expectStatus()
+      .is5xxServerError
+      .expectBody(ErrorResponse::class.java)
+      .returnResult()
+
+    Assertions.assertThat(result.responseBody!!).isEqualTo(
+      ErrorResponse(
+        status = INTERNAL_SERVER_ERROR,
+        userMessage = "500 Internal Server Error",
+        developerMessage = "500 Internal Server Error",
+      ),
+    )
   }
 
   fun mockValidRequestBody(

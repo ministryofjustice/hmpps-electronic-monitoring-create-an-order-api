@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateDeviceWearerDto
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateIdentityNumbersDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateNoFixedAbodeDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.DeviceWearerService
 import java.util.UUID
@@ -48,6 +49,22 @@ class DeviceWearerController(
   ): ResponseEntity<DeviceWearer> {
     val username = authentication.name
     val deviceWearer = deviceWearerService.updateNoFixedAbode(
+      orderId,
+      username,
+      updateRecord,
+    )
+
+    return ResponseEntity(deviceWearer, HttpStatus.OK)
+  }
+
+  @PutMapping("/orders/{orderId}/device-wearer/identity-numbers")
+  fun updateIdentityNumbers(
+    @PathVariable orderId: UUID,
+    @RequestBody @Valid updateRecord: UpdateIdentityNumbersDto,
+    authentication: Authentication,
+  ): ResponseEntity<DeviceWearer> {
+    val username = authentication.name
+    val deviceWearer = deviceWearerService.updateIdentityNumbers(
       orderId,
       username,
       updateRecord,

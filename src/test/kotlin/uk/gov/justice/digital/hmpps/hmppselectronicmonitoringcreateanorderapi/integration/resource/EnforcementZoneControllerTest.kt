@@ -22,6 +22,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.documentmanagement.DocumentUploadResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.EnforcementZoneType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.EnforcementZoneRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidationError
@@ -51,7 +52,7 @@ class EnforcementZoneControllerTest : IntegrationTestBase() {
   )
   private val mockPastEndDate = mockPastStartDate.plusDays(1)
   private final val mockUser = "AUTH_ADM"
-  private final val mockOrder = Order(username = mockUser, status = OrderStatus.IN_PROGRESS)
+  private final val mockOrder = Order(username = mockUser, status = OrderStatus.IN_PROGRESS, type = OrderType.REQUEST)
 
   @BeforeEach
   fun setup() {
@@ -252,7 +253,7 @@ class EnforcementZoneControllerTest : IntegrationTestBase() {
     )
     mockOrder.enforcementZoneConditions.add(zone)
     orderRepo.save(mockOrder)
-    documentApi.stupDeleteDocument(zone.fileId.toString())
+    documentApi.stubDeleteDocument(zone.fileId.toString())
 
     webTestClient.put()
       .uri("/api/orders/${mockOrder.id}/enforcementZone")
@@ -322,7 +323,7 @@ class EnforcementZoneControllerTest : IntegrationTestBase() {
     val bodyBuilder = MultipartBodyBuilder()
     bodyBuilder.part("file", ByteArrayResource(mockFile().bytes))
       .header("Content-Disposition", "form-data; name=file; filename=file-name.jpeg")
-    documentApi.stupUploadDocumentBadRequest(
+    documentApi.stubUploadDocumentBadRequest(
       ErrorResponse(
         status = BAD_REQUEST,
         userMessage = "mock document api error",
@@ -364,8 +365,8 @@ class EnforcementZoneControllerTest : IntegrationTestBase() {
     bodyBuilder.part("file", ByteArrayResource(mockFile().bytes))
       .header("Content-Disposition", "form-data; name=file; filename=filename2.jpeg")
 
-    documentApi.stupDeleteDocument(zone.fileId.toString())
-    documentApi.stupUploadDocument(DocumentUploadResponse())
+    documentApi.stubDeleteDocument(zone.fileId.toString())
+    documentApi.stubUploadDocument(DocumentUploadResponse())
     webTestClient.post()
       .uri("/api/orders/${mockOrder.id}/enforcementZone/0/attachment")
       .bodyValue(bodyBuilder.build())

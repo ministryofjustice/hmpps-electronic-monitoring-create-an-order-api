@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import java.time.format.DateTimeFormatter
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Disability as DisabilityEnum
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.Disability as FmsDisability
 
 data class DeviceWearer(
   var title: String? = "",
@@ -30,7 +32,7 @@ data class DeviceWearer(
   @JsonProperty("gender_identity")
   var genderIdentity: String? = "",
 
-  var disability: List<Disability>? = emptyList(),
+  var disability: List<FmsDisability>? = emptyList(),
 
   @JsonProperty("address_1")
   var address1: String? = "",
@@ -139,9 +141,12 @@ data class DeviceWearer(
         adultChild = "child"
       }
 
-      val disabilities = order.deviceWearer?.disabilities?.split(
-        ',',
-      )?.filter { it != "" }?.map { disability -> Disability(disability) }?.toList() ?: emptyList()
+      var disabilities = emptyList<FmsDisability>()
+      if (!order.deviceWearer?.disabilities.isNullOrBlank()) {
+        disabilities = DisabilityEnum.getValuesFromEnumString(order.deviceWearer!!.disabilities!!)
+          .map { disability -> FmsDisability(disability) }
+      }
+
       val deviceWearer = DeviceWearer(
         firstName = order.deviceWearer?.firstName,
         lastName = order.deviceWearer?.lastName,
