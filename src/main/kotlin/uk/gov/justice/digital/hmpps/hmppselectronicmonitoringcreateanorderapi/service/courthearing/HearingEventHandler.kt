@@ -16,6 +16,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InterestedParties
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.MonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.TrailMonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.courthearing.JudicialResultsPrompt
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.courthearing.enums.BailOrderType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.courthearing.enums.CommunityOrderType
@@ -259,6 +260,32 @@ class HearingEventHandler(
       monitoringConditions.startDate = zone.startDate
       monitoringConditions.endDate = zone.endDate
       order.enforcementZoneConditions.add(zone)
+    }
+
+    if (judicialResults.any { it.judicialResultTypeId == CommunityOrderType.TRAIL_MONITORING.uuid }) {
+      monitoringConditions.trail = true
+      val trailCondition = TrailMonitoringConditions(orderId = order.id)
+      val startTime = getPromptValue(prompts, "Start time of tagging") ?: "00:00"
+
+      val startDate = getPromptValue(
+        prompts,
+        "The defendant's whereabouts are to be electronically monitored. Start date",
+      )?.let {
+        val localDate = LocalDate.parse(it, formatter)
+        ZonedDateTime.of(localDate, LocalTime.parse(startTime), ZoneId.of("GMT"))
+      }
+
+      trailCondition.startDate = startDate
+      monitoringConditions.startDate = startDate
+      val endTime = getPromptValue(prompts, "End time of tagging") ?: "00:00"
+      val endDate =
+        getPromptValue(prompts, "End date of tagging")?.let {
+          val localDate = LocalDate.parse(it, formatter)
+          ZonedDateTime.of(localDate, LocalTime.parse(endTime), ZoneId.of("GMT"))
+        }
+      trailCondition.endDate = endDate
+      monitoringConditions.endDate = endDate
+      order.monitoringConditionsTrail = trailCondition
     }
     // TODO:  Ignore curfew mapping until solution for curfew duration is determined
 

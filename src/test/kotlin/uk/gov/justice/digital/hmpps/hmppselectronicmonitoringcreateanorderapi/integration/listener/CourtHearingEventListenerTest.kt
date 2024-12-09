@@ -149,6 +149,12 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
   }
 
   @Test
+  fun `Will map COV_Community_Order_Trail and submit to FMS`() {
+    val rootFilePath = "src/test/resources/json/COV_Community_Order_Trail"
+    runPayloadTest(rootFilePath)
+  }
+
+  @Test
   fun `Will map REMCB_BAIL_CURFEW request and submit to FMS`() {
     val rootFilePath = "src/test/resources/json/REMCB_BAIL_CURFEW"
     runPayloadTest(rootFilePath)
