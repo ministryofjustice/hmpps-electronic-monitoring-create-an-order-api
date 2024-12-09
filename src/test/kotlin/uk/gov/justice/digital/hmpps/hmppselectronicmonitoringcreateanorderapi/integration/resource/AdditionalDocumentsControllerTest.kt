@@ -358,7 +358,13 @@ class AdditionalDocumentsControllerTest : IntegrationTestBase() {
       .expectStatus()
       .isNoContent
 
-    verify(documentRepo, Times(1)).deleteById(doc.id)
-    verify(apiCLient, Times(1)).deleteDocument(doc.id.toString())
+    val latestOrder = webTestClient.get()
+      .uri("/api/orders/${order.id}")
+      .headers(setAuthorisation("mockUser"))
+      .exchange()
+      .expectBody(Order::class.java)
+      .returnResult()
+
+    assertThat(latestOrder.responseBody?.additionalDocuments?.count()).isEqualTo(0)
   }
 }
