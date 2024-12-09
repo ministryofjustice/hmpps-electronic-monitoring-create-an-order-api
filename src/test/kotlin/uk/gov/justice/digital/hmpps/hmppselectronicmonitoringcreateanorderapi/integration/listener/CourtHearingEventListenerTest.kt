@@ -148,6 +148,42 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
     runPayloadTest(rootFilePath)
   }
 
+  @Test
+  fun `Will map COV_Community_Order_Trail and submit to FMS`() {
+    val rootFilePath = "src/test/resources/json/COV_Community_Order_Trail"
+    runPayloadTest(rootFilePath)
+  }
+
+  @Test
+  fun `Will map REMCB_BAIL_CURFEW request and submit to FMS`() {
+    val rootFilePath = "src/test/resources/json/REMCB_BAIL_CURFEW"
+    runPayloadTest(rootFilePath)
+  }
+
+  @Test
+  fun `Will map CCSIB_BAIL_EXCLUSION request and submit to FMS`() {
+    val rootFilePath = "src/test/resources/json/CCSIB_BAIL_EXCLUSION"
+    runPayloadTest(rootFilePath)
+  }
+
+  @Test
+  fun `Will map RILAB_BAIL_INCLUSION request and submit to FMS`() {
+    val rootFilePath = "src/test/resources/json/RILAB_BAIL_INCLUSION"
+    runPayloadTest(rootFilePath)
+  }
+
+  @Test
+  fun `Will map RIB_BAIL_EXCLUSION_EXCEPT_COURT_OR_APPOINTMENT request and submit to FMS`() {
+    val rootFilePath = "src/test/resources/json/RIB_BAIL_EXCLUSION_EXCEPT_COURT_OR_APPOINTMENT"
+    runPayloadTest(rootFilePath)
+  }
+
+  @Test
+  fun `Will map RC_BAIL_INCLUSION request and submit to FMS`() {
+    val rootFilePath = "src/test/resources/json/RC_BAIL_INCLUSION"
+    runPayloadTest(rootFilePath)
+  }
+
   fun runPayloadTest(rootFilePath: String) {
     val rawMessage = generateRawHearingEventMessage("$rootFilePath/cp_payload.json")
     sercoApi.stubCreateDeviceWearer(
@@ -168,6 +204,7 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
     ).replace("{expectedOderId}", savedResult.id.toString())
     assertThat(savedResult.fmsDeviceWearerRequest).isEqualTo(mockDeviceWearerJson.removeWhitespaceAndNewlines())
     assertThat(savedResult.fmsOrderRequest).isEqualTo(mockOrderJson.removeWhitespaceAndNewlines())
+    assertThat(savedResult.error).isEqualTo("")
     assertThat(savedResult.success).isTrue()
   }
 

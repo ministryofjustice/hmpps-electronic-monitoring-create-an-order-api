@@ -787,7 +787,7 @@ class OrderControllerTest : IntegrationTestBase() {
       			]
       		}
       	],
-      	"trail_monitoring": "Yes",
+      	"trail_monitoring": "No",
       	"exclusion_zones": "",
       	"exclusion_zones_duration": "Mock Exclusion Duration",
       	"inclusion_zones": "",

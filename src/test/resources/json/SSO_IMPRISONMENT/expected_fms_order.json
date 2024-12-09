@@ -72,7 +72,7 @@
   "curfew_start": "",
   "curfew_end": "",
   "curfew_duration": [],
-  "trail_monitoring": "Yes",
+  "trail_monitoring": "No",
   "exclusion_zones": "",
   "exclusion_zones_duration": "",
   "inclusion_zones": "11 Copperfields Avenue\nSE30 5MJ",
