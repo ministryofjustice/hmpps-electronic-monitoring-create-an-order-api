@@ -62,6 +62,14 @@ class HearingEventHandler(
 
     const val BAIL_REMANDED_ON_CONDITIONAL_BAIL = "3a529001-2f43-45ba-a0a8-d3ced7e9e7ad"
 
+    val BAIL_CONDITION_UUIDs = arrayOf(
+      BAIL_ADULT_REMITTAL_FOR_SENTENCE_ON_CONDITIONAL,
+      BAIL_CROWN_COURT_SENTENCE_IN_CUSTODY_WITH_BAIL_DIRECTION,
+      BAIL_REMAND_IN_CARE_OF_LOCAL_AUTHORITY,
+      BAIL_REMANDED_IN_CUSTODY_WITH_BAIL_DIRECTION,
+      BAIL_REMANDED_ON_CONDITIONAL_BAIL,
+    )
+
     // Suspended sentence order
     const val SSO_YOUNG_OFFENDER_INSTITUTION_DETENTION_UUID = "5679e5b7-0ca8-4d2a-ba80-7a50025fb589"
 
@@ -76,9 +84,12 @@ class HearingEventHandler(
         offence.judicialResults.any {
             judicialResults ->
           CommunityOrderType.from(judicialResults.judicialResultTypeId) != null ||
-            judicialResults.judicialResultPrompts.any {
-              BailOrderType.from(it.judicialResultPromptTypeId) != null
-            }
+            (
+              BAIL_CONDITION_UUIDs.contains(judicialResults.judicialResultTypeId) &&
+                judicialResults.judicialResultPrompts.any {
+                  BailOrderType.from(it.judicialResultPromptTypeId) != null
+                }
+              )
         }
     }
   }
@@ -383,18 +394,16 @@ class HearingEventHandler(
     }
 
     //region InterestedParties
-    val responsibleOrganisation = getPromptValue(
-      prompts,
-      "Probation / YOT to be notified organisation name",
-    ) ?: getPromptValue(
-      prompts,
-      "Prison organisation name",
-    ) ?: ""
 
+    var responsibleOrganisation = ""
     val responsibleOrganisationRegion = getPromptValue(
       prompts,
       "Probation / YOT to be notified organisation name",
     ) ?: ""
+
+    if (responsibleOrganisationRegion != "") {
+      responsibleOrganisation = "Probation"
+    }
 
     val responsibleOrganisationEmail = getPromptValue(
       prompts,
@@ -415,13 +424,21 @@ class HearingEventHandler(
   }
 
   private fun getNextCourtHearingDate(prompts: List<JudicialResultsPrompt>): ZonedDateTime {
-    val nextHearingDetails = getPromptValue(prompts, "Next hearing in magistrates' court") ?: ""
+    var nextHearingDetails: String = ""
+    var nextHearingDateKey = ""
+    if (prompts.any { it.label == "Next hearing in magistrates' court" }) {
+      nextHearingDetails = getPromptValue(prompts, "Next hearing in magistrates' court") ?: ""
+      nextHearingDateKey = "Date of hearing"
+    } else if (prompts.any { it.label == "Next hearing in Crown Court" }) {
+      nextHearingDetails = getPromptValue(prompts, "Next hearing in Crown Court") ?: ""
+      nextHearingDateKey = "Fixed Date"
+    }
     val nextHearingDetailsAsMap = nextHearingDetails.split("\n").associate {
       val parts = it.split(":", limit = 2)
       parts[0] to parts[1]
     }
     val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
-    val localDate = LocalDate.parse(nextHearingDetailsAsMap["Date of hearing"] ?: "", formatter)
+    val localDate = LocalDate.parse(nextHearingDetailsAsMap[nextHearingDateKey] ?: "", formatter)
     return ZonedDateTime.of(
       localDate,
       LocalTime.parse(nextHearingDetailsAsMap["Time of hearing"] ?: ""),
@@ -507,13 +524,8 @@ class HearingEventHandler(
       }
     ) {
       return MonitoringConditionType.REQUIREMENT_OF_A_COMMUNITY_ORDER
-    } else if (results.any {
-        it.judicialResultTypeId == BAIL_ADULT_REMITTAL_FOR_SENTENCE_ON_CONDITIONAL ||
-          it.judicialResultTypeId == BAIL_CROWN_COURT_SENTENCE_IN_CUSTODY_WITH_BAIL_DIRECTION ||
-          it.judicialResultTypeId == BAIL_REMANDED_IN_CUSTODY_WITH_BAIL_DIRECTION ||
-          it.judicialResultTypeId == BAIL_REMAND_IN_CARE_OF_LOCAL_AUTHORITY ||
-          it.judicialResultTypeId == BAIL_REMANDED_ON_CONDITIONAL_BAIL
-      }
+    } else if (results.any { BAIL_CONDITION_UUIDs.contains(it.judicialResultTypeId) }
+
     ) {
       return MonitoringConditionType.BAIL_ORDER
     }
