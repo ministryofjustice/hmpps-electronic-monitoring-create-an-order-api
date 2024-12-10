@@ -105,13 +105,6 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `Will not process a Community Order Curfew payload`() {
-    val rawMessage = generateRawHearingEventMessage("src/test/resources/json/CommunityOrder_Curfew/cp_payload.json")
-    sendDomainSqsMessage(rawMessage)
-    await().until { getNumberOfMessagesCurrentlyOnEventQueue() == 0 }
-  }
-
-  @Test
   fun `Will process a valid payload with em details`() {
     val rootFilePath = "src/test/resources/json/SSO_IMPRISONMENT"
     val rawMessage = generateRawHearingEventMessage("$rootFilePath/cp_payload.json")
@@ -131,6 +124,12 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
   fun String.removeWhitespaceAndNewlines(): String = this.replace("(\"[^\"]*\")|\\s".toRegex(), "\$1")
 
   @Test
+  fun `Will map Community Order Curfew request and submit to FMS`() {
+    val rootFilePath = "src/test/resources/json/CommunityOrder_Curfew"
+    runPayloadTest(rootFilePath)
+  }
+
+  @Test
   fun `Will map COEW AAR request and submit to FMS`() {
     val rootFilePath = "src/test/resources/json/COEW_AAR"
     runPayloadTest(rootFilePath)
@@ -145,6 +144,42 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
   @Test
   fun `Will map SSO_IMPRISONMENT request and submit to FMS`() {
     val rootFilePath = "src/test/resources/json/SSO_IMPRISONMENT"
+    runPayloadTest(rootFilePath)
+  }
+
+  @Test
+  fun `Will map COV_Community_Order_Trail and submit to FMS`() {
+    val rootFilePath = "src/test/resources/json/COV_Community_Order_Trail"
+    runPayloadTest(rootFilePath)
+  }
+
+  @Test
+  fun `Will map REMCB_BAIL_CURFEW request and submit to FMS`() {
+    val rootFilePath = "src/test/resources/json/REMCB_BAIL_CURFEW"
+    runPayloadTest(rootFilePath)
+  }
+
+  @Test
+  fun `Will map CCSIB_BAIL_EXCLUSION request and submit to FMS`() {
+    val rootFilePath = "src/test/resources/json/CCSIB_BAIL_EXCLUSION"
+    runPayloadTest(rootFilePath)
+  }
+
+  @Test
+  fun `Will map RILAB_BAIL_INCLUSION request and submit to FMS`() {
+    val rootFilePath = "src/test/resources/json/RILAB_BAIL_INCLUSION"
+    runPayloadTest(rootFilePath)
+  }
+
+  @Test
+  fun `Will map RIB_BAIL_EXCLUSION_EXCEPT_COURT_OR_APPOINTMENT request and submit to FMS`() {
+    val rootFilePath = "src/test/resources/json/RIB_BAIL_EXCLUSION_EXCEPT_COURT_OR_APPOINTMENT"
+    runPayloadTest(rootFilePath)
+  }
+
+  @Test
+  fun `Will map RC_BAIL_INCLUSION request and submit to FMS`() {
+    val rootFilePath = "src/test/resources/json/RC_BAIL_INCLUSION"
     runPayloadTest(rootFilePath)
   }
 
@@ -168,6 +203,7 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
     ).replace("{expectedOderId}", savedResult.id.toString())
     assertThat(savedResult.fmsDeviceWearerRequest).isEqualTo(mockDeviceWearerJson.removeWhitespaceAndNewlines())
     assertThat(savedResult.fmsOrderRequest).isEqualTo(mockOrderJson.removeWhitespaceAndNewlines())
+    assertThat(savedResult.error).isEqualTo("")
     assertThat(savedResult.success).isTrue()
   }
 

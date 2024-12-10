@@ -196,8 +196,8 @@ data class MonitoringOrder(
         val curfew = order.curfewConditions!!
         monitoringOrder.enforceableCondition!!.add(EnforceableCondition("Curfew with EM"))
         monitoringOrder.conditionalReleaseDate = order.curfewReleaseDateConditions?.releaseDate?.format(dateFormatter)
-        monitoringOrder.curfewStart = curfew.startDate!!.format(dateFormatter)
-        monitoringOrder.curfewEnd = curfew.endDate?.format(dateFormatter)
+        monitoringOrder.curfewStart = curfew.startDate!!.format(dateTimeFormatter)
+        monitoringOrder.curfewEnd = curfew.endDate?.format(dateTimeFormatter)
         monitoringOrder.curfewDuration = getCurfewSchedules(order, curfew)
       }
 
@@ -220,7 +220,7 @@ data class MonitoringOrder(
           monitoringOrder.inclusionZonesDuration = condition.duration
           monitoringOrder.describeExclusion = condition.description
         }
-        monitoringOrder.trailMonitoring = "Yes"
+        monitoringOrder.trailMonitoring = "No"
       }
 
       // TODO: wait for confirmation if mandatory attendance is required
@@ -280,13 +280,16 @@ data class MonitoringOrder(
       val primaryAddressTimeTable = order.curfewTimeTable.filter {
         it.curfewAddress!!.uppercase().contains("PRIMARY_ADDRESS")
       }
-      schedules.add(
-        CurfewSchedule(
-          location = "primary",
-          allday = "",
-          primaryAddressTimeTable.map { Schedule.fromCurfewTimeTable(it) }.toMutableList(),
-        ),
-      )
+      if (primaryAddressTimeTable.any()) {
+        schedules.add(
+          CurfewSchedule(
+            location = "primary",
+            allday = "",
+            primaryAddressTimeTable.map { Schedule.fromCurfewTimeTable(it) }.toMutableList(),
+          ),
+        )
+      }
+
       val secondaryAddress = order.addresses.firstOrNull { it.addressType === AddressType.SECONDARY }
       if (secondaryAddress != null) {
         val secondaryTimeTable = order.curfewTimeTable.filter {

@@ -701,7 +701,7 @@ class OrderControllerTest : IntegrationTestBase() {
       	"reason_for_order_ending_early": "",
       	"business_unit": "",
         "service_end_date": "${mockEndDate.format(formatter)}",
-      	"curfew_start": "${mockStartDate.format(formatter)}",
+      	"curfew_start": "${mockStartDate.format(dateTimeFormatter)}",
       	"curfew_end": null,
       	"curfew_duration": [
       		{
@@ -787,7 +787,7 @@ class OrderControllerTest : IntegrationTestBase() {
       			]
       		}
       	],
-      	"trail_monitoring": "Yes",
+      	"trail_monitoring": "No",
       	"exclusion_zones": "",
       	"exclusion_zones_duration": "Mock Exclusion Duration",
       	"inclusion_zones": "",
