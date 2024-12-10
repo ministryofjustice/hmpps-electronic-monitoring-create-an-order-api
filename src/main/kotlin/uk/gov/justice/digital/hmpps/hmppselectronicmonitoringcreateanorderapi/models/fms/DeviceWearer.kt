@@ -154,7 +154,7 @@ data class DeviceWearer(
         dateOfBirth = order.deviceWearer?.dateOfBirth!!.format(formatter),
         adultChild = adultChild,
         sex = order.deviceWearer?.sex ?: "",
-        genderIdentity = order.deviceWearer?.gender,
+        genderIdentity = order.deviceWearer?.gender ?: "",
         disability = disabilities,
         phoneNumber = order.contactDetails?.contactNumber,
         riskDetails = order.installationAndRisk?.riskDetails,

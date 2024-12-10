@@ -196,8 +196,8 @@ data class MonitoringOrder(
         val curfew = order.curfewConditions!!
         monitoringOrder.enforceableCondition!!.add(EnforceableCondition("Curfew with EM"))
         monitoringOrder.conditionalReleaseDate = order.curfewReleaseDateConditions?.releaseDate?.format(dateFormatter)
-        monitoringOrder.curfewStart = curfew.startDate!!.format(dateFormatter)
-        monitoringOrder.curfewEnd = curfew.endDate?.format(dateFormatter)
+        monitoringOrder.curfewStart = curfew.startDate!!.format(dateTimeFormatter)
+        monitoringOrder.curfewEnd = curfew.endDate?.format(dateTimeFormatter)
         monitoringOrder.curfewDuration = getCurfewSchedules(order, curfew)
       }
 

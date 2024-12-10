@@ -134,34 +134,6 @@ class HearingEventHandler(
     }
   }
 
-  fun buildInterestedPartiesFromHearing(
-    orderId: UUID,
-    responsibleOfficer: String,
-    responsibleOrganisationRegion: String,
-    responsibleOrganisationId: String,
-    notifyingOrganisation: String,
-  ): InterestedParties {
-    return InterestedParties(
-      orderId = orderId,
-      responsibleOrganisation = responsibleOfficer,
-      responsibleOrganisationRegion = responsibleOrganisationRegion,
-      responsibleOrganisationEmail = responsibleOrganisationId,
-      notifyingOrganisation = notifyingOrganisation,
-      responsibleOrganisationAddress =
-      Address(
-        orderId = orderId,
-        addressType = AddressType.RESPONSIBLE_ORGANISATION,
-        addressLine1 = "",
-        addressLine2 = "",
-        postcode = "",
-      ),
-      responsibleOfficerName = "",
-      responsibleOfficerPhoneNumber = null,
-      responsibleOrganisationPhoneNumber = null,
-      notifyingOrganisationEmail = "",
-    )
-  }
-
   private fun getOrderForDefendant(hearing: Hearing, defendant: Defendant, offences: List<Offence>): Order {
     val judicialResults = offences.flatMap { it.judicialResults }.toList()
 
@@ -171,10 +143,7 @@ class HearingEventHandler(
     val monitoringConditions = MonitoringConditions(orderId = order.id)
     val orderedDate = judicialResults.first().orderedDate
     monitoringConditions.startDate = ZonedDateTime.of(orderedDate, LocalTime.MIDNIGHT, ZoneId.of("GMT"))
-    monitoringConditions.endDate = getPromptValue(prompts, "Until")?.let {
-      val localDate = LocalDate.parse(it, formatter)
-      ZonedDateTime.of(localDate, LocalTime.MIDNIGHT, ZoneId.of("GMT"))
-    }
+
     monitoringConditions.conditionType = getConditionType(judicialResults)
     monitoringConditions.orderType = getOrderType(judicialResults)
 
@@ -192,7 +161,7 @@ class HearingEventHandler(
     deviceWearer.dateOfBirth = ZonedDateTime.of(person?.dateOfBirth, LocalTime.MIDNIGHT, ZoneId.of("GMT"))
     deviceWearer.firstName = person?.firstName
     deviceWearer.lastName = person?.lastName
-    deviceWearer.gender = getGender(person?.gender)
+    deviceWearer.sex = getSex(person?.gender)
     deviceWearer.adultAtTimeOfInstallation = !defendant.isYouth
 
     val address = person?.address
@@ -235,6 +204,11 @@ class HearingEventHandler(
         orderId = order.id,
         monitoringType = AlcoholMonitoringType.ALCOHOL_ABSTINENCE,
       )
+
+      monitoringConditions.endDate = getPromptValue(prompts, "Until")?.let {
+        val localDate = LocalDate.parse(it, formatter)
+        ZonedDateTime.of(localDate, LocalTime.MIDNIGHT, ZoneId.of("GMT"))
+      }
       order.monitoringConditionsAlcohol = alcoholConditions
     }
 
@@ -287,21 +261,22 @@ class HearingEventHandler(
       monitoringConditions.endDate = endDate
       order.monitoringConditionsTrail = trailCondition
     }
-    // TODO:  Ignore curfew mapping until solution for curfew duration is determined
 
-//    if (judicialResults.any { it.judicialResultTypeId == CommunityOrderType.COMMUNITY_ORDER_CURFEW.uuid }) {
-//      monitoringConditions.curfew = true
-//      val condition = CurfewConditions(orderId = order.id)
-//      condition.startDate = getPromptValue(prompts, "Start date for tag")?.let {
-//        val localDate = LocalDate.parse(it, formatter)
-//        ZonedDateTime.of(localDate, LocalTime.MIDNIGHT, ZoneId.of("GMT"))
-//      }
-//      condition.endDate = getPromptValue(prompts, "End date of tagging")?.let {
-//        val localDate = LocalDate.parse(it, formatter)
-//        ZonedDateTime.of(localDate, LocalTime.MIDNIGHT, ZoneId.of("GMT"))
-//      }
-//      order.curfewConditions = condition
-//    }
+    if (judicialResults.any { it.judicialResultTypeId == CommunityOrderType.COMMUNITY_ORDER_CURFEW.uuid }) {
+      monitoringConditions.curfew = true
+      val condition = CurfewConditions(orderId = order.id)
+      val startTime = getPromptValue(prompts, "Start time of tagging") ?: "00:00"
+      condition.startDate = getPromptValue(prompts, "Start date of tagging")?.let {
+        val localDate = LocalDate.parse(it, formatter)
+        ZonedDateTime.of(localDate, LocalTime.parse(startTime), ZoneId.of("GMT"))
+      }
+      val endTime = getPromptValue(prompts, "End time of tagging") ?: "00:00"
+      condition.endDate = getPromptValue(prompts, "End date of tagging")?.let {
+        val localDate = LocalDate.parse(it, formatter)
+        ZonedDateTime.of(localDate, LocalTime.parse(endTime), ZoneId.of("GMT"))
+      }
+      order.curfewConditions = condition
+    }
 
     //region InterestedParties
     val responsibleOrganisation = getResponsibleOrganisation(
@@ -336,12 +311,14 @@ class HearingEventHandler(
     prompts: List<JudicialResultsPrompt>,
     hearing: Hearing,
   ) {
+    monitoringConditions.endDate = getNextCourtHearingDate(prompts)
     judicialResults.firstOrNull {
       it.judicialResultPrompts.any { prompts -> prompts.judicialResultPromptTypeId == BailOrderType.CURFEW.uuid }
     }?.let {
       monitoringConditions.curfew = true
       val condition = CurfewConditions(orderId = order.id)
       condition.startDate = ZonedDateTime.of(it.orderedDate, LocalTime.MIDNIGHT, ZoneId.of("GMT"))
+      condition.endDate = monitoringConditions.endDate
       order.curfewConditions = condition
     }
 
@@ -356,6 +333,7 @@ class HearingEventHandler(
       monitoringConditions.exclusionZone = true
       val condition =
         getBailOrderEnforcementZone(conditionPrompt, it.orderedDate, EnforcementZoneType.EXCLUSION, order.id)
+      condition.endDate = monitoringConditions.endDate
       order.enforcementZoneConditions.add(condition)
     }
 
@@ -370,6 +348,7 @@ class HearingEventHandler(
       monitoringConditions.exclusionZone = true
       val condition =
         getBailOrderEnforcementZone(conditionPrompt, it.orderedDate, EnforcementZoneType.EXCLUSION, order.id)
+      condition.endDate = monitoringConditions.endDate
       order.enforcementZoneConditions.add(condition)
     }
 
@@ -384,6 +363,7 @@ class HearingEventHandler(
       monitoringConditions.exclusionZone = true
       val condition =
         getBailOrderEnforcementZone(conditionPrompt, it.orderedDate, EnforcementZoneType.INCLUSION, order.id)
+      condition.endDate = monitoringConditions.endDate
       order.enforcementZoneConditions.add(condition)
     }
 
@@ -398,6 +378,7 @@ class HearingEventHandler(
       monitoringConditions.exclusionZone = true
       val condition =
         getBailOrderEnforcementZone(conditionPrompt, it.orderedDate, EnforcementZoneType.INCLUSION, order.id)
+      condition.endDate = monitoringConditions.endDate
       order.enforcementZoneConditions.add(condition)
     }
 
@@ -431,6 +412,21 @@ class HearingEventHandler(
       hearing.courtCentre.name,
     )
     //endregion
+  }
+
+  private fun getNextCourtHearingDate(prompts: List<JudicialResultsPrompt>): ZonedDateTime {
+    val nextHearingDetails = getPromptValue(prompts, "Next hearing in magistrates' court") ?: ""
+    val nextHearingDetailsAsMap = nextHearingDetails.split("\n").associate {
+      val parts = it.split(":", limit = 2)
+      parts[0] to parts[1]
+    }
+    val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
+    val localDate = LocalDate.parse(nextHearingDetailsAsMap["Date of hearing"] ?: "", formatter)
+    return ZonedDateTime.of(
+      localDate,
+      LocalTime.parse(nextHearingDetailsAsMap["Time of hearing"] ?: ""),
+      ZoneId.of("GMT"),
+    )
   }
 
   private fun getBailOrderEnforcementZone(
@@ -525,7 +521,7 @@ class HearingEventHandler(
     return null
   }
 
-  private fun getGender(gender: Gender?): String {
+  private fun getSex(gender: Gender?): String {
     return when (gender) {
       Gender.MALE -> "male"
       Gender.FEMALE -> "female"
@@ -548,5 +544,33 @@ class HearingEventHandler(
 
   private fun getPromptValue(prompts: List<JudicialResultsPrompt>, label: String): String? {
     return prompts.firstOrNull { it.label == label }?.value
+  }
+
+  private fun buildInterestedPartiesFromHearing(
+    orderId: UUID,
+    responsibleOfficer: String,
+    responsibleOrganisationRegion: String,
+    responsibleOrganisationId: String,
+    notifyingOrganisation: String,
+  ): InterestedParties {
+    return InterestedParties(
+      orderId = orderId,
+      responsibleOrganisation = responsibleOfficer,
+      responsibleOrganisationRegion = responsibleOrganisationRegion,
+      responsibleOrganisationEmail = responsibleOrganisationId,
+      notifyingOrganisation = notifyingOrganisation,
+      responsibleOrganisationAddress =
+      Address(
+        orderId = orderId,
+        addressType = AddressType.RESPONSIBLE_ORGANISATION,
+        addressLine1 = "",
+        addressLine2 = "",
+        postcode = "",
+      ),
+      responsibleOfficerName = "",
+      responsibleOfficerPhoneNumber = null,
+      responsibleOrganisationPhoneNumber = null,
+      notifyingOrganisationEmail = "",
+    )
   }
 }

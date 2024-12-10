@@ -105,13 +105,6 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `Will not process a Community Order Curfew payload`() {
-    val rawMessage = generateRawHearingEventMessage("src/test/resources/json/CommunityOrder_Curfew/cp_payload.json")
-    sendDomainSqsMessage(rawMessage)
-    await().until { getNumberOfMessagesCurrentlyOnEventQueue() == 0 }
-  }
-
-  @Test
   fun `Will process a valid payload with em details`() {
     val rootFilePath = "src/test/resources/json/SSO_IMPRISONMENT"
     val rawMessage = generateRawHearingEventMessage("$rootFilePath/cp_payload.json")
@@ -129,6 +122,12 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
   }
 
   fun String.removeWhitespaceAndNewlines(): String = this.replace("(\"[^\"]*\")|\\s".toRegex(), "\$1")
+
+  @Test
+  fun `Will map Community Order Curfew request and submit to FMS`() {
+    val rootFilePath = "src/test/resources/json/CommunityOrder_Curfew"
+    runPayloadTest(rootFilePath)
+  }
 
   @Test
   fun `Will map COEW AAR request and submit to FMS`() {
