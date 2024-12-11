@@ -165,6 +165,20 @@ data class MonitoringOrder(
   var revocationDate: String? = "",
   @JsonProperty("revocation_type")
   var revocationType: String? = "",
+  @JsonProperty("installation_address_1")
+  var installationAddress1: String? = "",
+  @JsonProperty("installation_address_2")
+  var installationAddress2: String? = "",
+  @JsonProperty("installation_address_3")
+  var installationAddress3: String? = "",
+  @JsonProperty("installation_address_4")
+  var installationAddress4: String? = "",
+  @JsonProperty("installation_address_post_code")
+  var installationAddressPostcode: String? = "",
+  @JsonProperty("crown_court_case_reference_number")
+  var crownCourtCaseReferenceNumber: String? = "",
+  @JsonProperty("magistrate_court_case_reference_number")
+  var magistrateCourtCaseReferenceNumber: String? = "",
   @JsonProperty("order_status")
   var orderStatus: String? = "",
 ) {
@@ -308,6 +322,14 @@ data class MonitoringOrder(
           monitoringOrder.roAddress4 = address.addressLine4
           monitoringOrder.roPostCode = address.postcode
         }
+      }
+
+      order.addresses.firstOrNull { it.addressType == AddressType.INSTALLATION }?.let {
+        monitoringOrder.installationAddress1 = it.addressLine1
+        monitoringOrder.installationAddress2 = it.addressLine2
+        monitoringOrder.installationAddress3 = it.addressLine3
+        monitoringOrder.installationAddress4 = it.addressLine4
+        monitoringOrder.installationAddressPostcode = it.postcode
       }
 
       return monitoringOrder

@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
+import org.springframework.test.util.JsonPathExpectationsHelper
 import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.SercoAuthMockServerExtension.Companion.sercoAuthApi
@@ -823,6 +824,8 @@ class OrderControllerTest : IntegrationTestBase() {
       	"checkin_schedule": [],
       	"revocation_date": "",
       	"revocation_type": "",
+        "crown_court_case_reference_number": "",
+        "magistrate_court_case_reference_number": "",
       	"order_status": "Not Started"
       }
       """.trimIndent()
@@ -880,7 +883,7 @@ class OrderControllerTest : IntegrationTestBase() {
       	"address_2": "",
       	"address_3": "",
       	"address_4": "",
-      	"address_post_code": "No Fixed Address",
+      	"address_post_code": "",
       	"secondary_address_1": "",
       	"secondary_address_2": "",
       	"secondary_address_3": "",
@@ -914,7 +917,13 @@ class OrderControllerTest : IntegrationTestBase() {
       """.trimIndent()
 
       assertThat(submitResult!!.fmsDeviceWearerRequest).isEqualTo(expectedDWJson.removeWhitespaceAndNewlines())
+      val fmsOrderRequest = submitResult.fmsOrderRequest!!
 
+      JsonPathExpectationsHelper("installation_address_1").assertValue(fmsOrderRequest, "24 Somewhere Street")
+      JsonPathExpectationsHelper("installation_address_2").assertValue(fmsOrderRequest, "Nowhere City")
+      JsonPathExpectationsHelper("installation_address_3").assertValue(fmsOrderRequest, "Random County")
+      JsonPathExpectationsHelper("installation_address_4").assertValue(fmsOrderRequest, "United Kingdom")
+      JsonPathExpectationsHelper("installation_address_post_code").assertValue(fmsOrderRequest, "SW11 1NC")
       val updatedOrder = repo.findById(order.id).get()
       assertThat(updatedOrder.fmsResultId).isEqualTo(submitResult.id)
     }
