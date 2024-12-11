@@ -11,6 +11,7 @@ import jakarta.validation.constraints.AssertTrue
 import jakarta.validation.constraints.Future
 import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Size
+import net.minidev.json.annotate.JsonIgnore
 import java.time.ZonedDateTime
 import java.util.*
 
@@ -36,6 +37,9 @@ data class CurfewConditions(
   @Column(name = "CURFEW_ADDRESS", nullable = true)
   @field:Size(min = 1, message = "Curfew address is required")
   var curfewAddress: String? = null,
+
+  @JsonIgnore
+  var curfewDescription: String? = "",
 
   @Schema(hidden = true)
   @OneToOne

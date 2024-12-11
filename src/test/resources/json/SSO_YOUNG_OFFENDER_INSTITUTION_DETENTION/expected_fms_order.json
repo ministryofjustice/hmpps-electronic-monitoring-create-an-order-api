@@ -5,12 +5,13 @@
   "condition_type": "Requirement of a Community Order",
   "court": "",
   "court_order_email": "",
-  "describe_exclusion": "ERPEM - Exclusion not to enter for a period with electronic monitoring\nExclusion Requirement with Electronic Monitoring: Not to enter 11 Mayfair\nLONDON. This exclusion with electronic monitoring lasts for 6 Months. Start date 10/11/2024. Start time 10:00. End date 10/11/2025. End time 10:00. ",
   "device_type": "",
   "device_wearer": "Person Mock",
   "enforceable_condition": [
     {
-      "condition": "EM Exclusion / Inclusion Zone"
+      "condition": "EM Exclusion / Inclusion Zone",
+      "start_date": "2024-11-10 10:00:00",
+      "end_date": "2025-11-10 10:00:00"
     }
   ],
   "exclusion_allday": "",
@@ -69,18 +70,31 @@
   "reason_for_order_ending_early": "",
   "business_unit": "",
   "service_end_date": "2025-11-10",
+  "curfew_description": "",
   "curfew_start": "",
   "curfew_end": "",
   "curfew_duration": [],
   "trail_monitoring": "No",
-  "exclusion_zones": "11 Mayfair\nLONDON",
-  "exclusion_zones_duration": "6 Months",
-  "inclusion_zones": "",
-  "inclusion_zones_duration": "",
+  "exclusion_zones": [
+    {
+      "description": "ERPEM - Exclusion not to enter for a period with electronic monitoring\nExclusion Requirement with Electronic Monitoring: Not to enter 11 Mayfair\nLONDON. This exclusion with electronic monitoring lasts for 6 Months. Start date 10/11/2024. Start time 10:00. End date 10/11/2025. End time 10:00. ",
+      "duration": "6 Months",
+      "start": "2024-11-10",
+      "end": "2025-11-10"
+    }
+  ],
+  "inclusion_zones": [],
   "abstinence": "",
   "schedule": "",
-  "checkin_schedule": "",
+  "checkin_schedule": [],
   "revocation_date": "",
   "revocation_type": "",
+  "installation_address_1": "",
+  "installation_address_2": "",
+  "installation_address_3": "",
+  "installation_address_4": "",
+  "installation_address_post_code": "",
+  "crown_court_case_reference_number": "",
+  "magistrate_court_case_reference_number": "",
   "order_status": "Not Started"
 }
