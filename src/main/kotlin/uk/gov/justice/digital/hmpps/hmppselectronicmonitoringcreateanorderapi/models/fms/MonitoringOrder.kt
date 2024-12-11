@@ -23,8 +23,6 @@ data class MonitoringOrder(
   var court: String? = "",
   @JsonProperty("court_order_email")
   var courtOrderEmail: String? = "",
-  @JsonProperty("describe_exclusion")
-  var describeExclusion: String? = "",
   @JsonProperty("device_type")
   var deviceType: String? = "",
   @JsonProperty("device_wearer")
@@ -143,6 +141,8 @@ data class MonitoringOrder(
   var businessUnit: String? = "",
   @JsonProperty("service_end_date")
   var serviceEndDate: String? = "",
+  @JsonProperty("curfew_description")
+  var curfewDescription: String? = "",
   @JsonProperty("curfew_start")
   var curfewStart: String? = "",
   @JsonProperty("curfew_end")
@@ -152,19 +152,15 @@ data class MonitoringOrder(
   @JsonProperty("trail_monitoring")
   var trailMonitoring: String? = "",
   @JsonProperty("exclusion_zones")
-  var exclusionZones: String? = "",
-  @JsonProperty("exclusion_zones_duration")
-  var exclusionZonesDuration: String? = "",
+  var exclusionZones: MutableList<Zone> = mutableListOf(),
   @JsonProperty("inclusion_zones")
-  var inclusionZones: String? = "",
-  @JsonProperty("inclusion_zones_duration")
-  var inclusionZonesDuration: String? = "",
+  var inclusionZones: MutableList<Zone> = mutableListOf(),
   @JsonProperty("abstinence")
   var abstinence: String? = "",
   @JsonProperty("schedule")
   var schedule: String? = "",
   @JsonProperty("checkin_schedule")
-  var checkinSchedule: String? = "",
+  var checkinSchedule: MutableList<Schedule>? = mutableListOf(),
   @JsonProperty("revocation_date")
   var revocationDate: String? = "",
   @JsonProperty("revocation_type")
@@ -194,7 +190,13 @@ data class MonitoringOrder(
 
       if (conditions.curfew != null && conditions.curfew!!) {
         val curfew = order.curfewConditions!!
-        monitoringOrder.enforceableCondition!!.add(EnforceableCondition("Curfew with EM"))
+        monitoringOrder.enforceableCondition!!.add(
+          EnforceableCondition(
+            "Curfew with EM",
+            startDate = curfew.startDate?.format(dateTimeFormatter),
+            endDate = curfew.endDate?.format(dateTimeFormatter),
+          ),
+        )
         monitoringOrder.conditionalReleaseDate = order.curfewReleaseDateConditions?.releaseDate?.format(dateFormatter)
         monitoringOrder.curfewStart = curfew.startDate!!.format(dateTimeFormatter)
         monitoringOrder.curfewEnd = curfew.endDate?.format(dateTimeFormatter)
@@ -203,23 +205,47 @@ data class MonitoringOrder(
 
       if (conditions.trail != null && conditions.trail!!) {
         monitoringOrder.enforceableCondition!!.add(
-          EnforceableCondition("Location Monitoring (Fitted Device)"),
+          EnforceableCondition(
+            "Location Monitoring (Fitted Device)",
+            startDate = order.monitoringConditionsTrail!!.startDate?.format(dateTimeFormatter),
+            endDate = order.monitoringConditionsTrail!!.endDate?.format(dateTimeFormatter),
+          ),
+
         )
         monitoringOrder.trailMonitoring = "Yes"
       }
 
       if (conditions.exclusionZone != null && conditions.exclusionZone!!) {
-        monitoringOrder.enforceableCondition!!.add(EnforceableCondition("EM Exclusion / Inclusion Zone"))
-        val condition = order.enforcementZoneConditions.first()
-        if (condition.zoneType == EnforcementZoneType.EXCLUSION) {
-          monitoringOrder.exclusionZones = condition.zoneLocation
-          monitoringOrder.describeExclusion = condition.description
-          monitoringOrder.exclusionZonesDuration = condition.duration
-        } else if (condition.zoneType == EnforcementZoneType.INCLUSION) {
-          monitoringOrder.inclusionZones = condition.zoneLocation
-          monitoringOrder.inclusionZonesDuration = condition.duration
-          monitoringOrder.describeExclusion = condition.description
+        order.enforcementZoneConditions.forEach { it ->
+          monitoringOrder.enforceableCondition!!.add(
+            EnforceableCondition(
+              "EM Exclusion / Inclusion Zone",
+              startDate = it.startDate?.format(dateTimeFormatter),
+              endDate = it.startDate?.format(dateTimeFormatter),
+            ),
+          )
+
+          if (it.zoneType == EnforcementZoneType.EXCLUSION) {
+            monitoringOrder.exclusionZones.add(
+              Zone(
+                description = it.description,
+                duration = it.duration,
+                start = it.startDate?.format(dateFormatter),
+                end = it.endDate?.format(dateFormatter),
+              ),
+            )
+          } else if (it.zoneType == EnforcementZoneType.INCLUSION) {
+            monitoringOrder.inclusionZones.add(
+              Zone(
+                description = it.description,
+                duration = it.duration,
+                start = it.startDate?.format(dateFormatter),
+                end = it.endDate?.format(dateFormatter),
+              ),
+            )
+          }
         }
+
         monitoringOrder.trailMonitoring = "No"
       }
 
@@ -231,10 +257,22 @@ data class MonitoringOrder(
       if (conditions.alcohol != null && conditions.alcohol!!) {
         val condition = order.monitoringConditionsAlcohol!!
         if (condition.monitoringType == AlcoholMonitoringType.ALCOHOL_ABSTINENCE) {
-          monitoringOrder.enforceableCondition!!.add(EnforceableCondition("AAMR"))
+          monitoringOrder.enforceableCondition!!.add(
+            EnforceableCondition(
+              "AAMR",
+              startDate = condition.startDate?.format(dateTimeFormatter),
+              endDate = condition.endDate?.format(dateTimeFormatter),
+            ),
+          )
           monitoringOrder.abstinence = "Yes"
         } else {
-          monitoringOrder.enforceableCondition!!.add(EnforceableCondition("AML"))
+          monitoringOrder.enforceableCondition!!.add(
+            EnforceableCondition(
+              "AML",
+              startDate = condition.startDate?.format(dateTimeFormatter),
+              endDate = condition.endDate?.format(dateTimeFormatter),
+            ),
+          )
           monitoringOrder.abstinence = "No"
         }
 
@@ -310,12 +348,23 @@ data class MonitoringOrder(
 
 data class EnforceableCondition(
   val condition: String? = "",
+  @JsonProperty("start_date")
+  val startDate: String? = "",
+  @JsonProperty("end_date")
+  val endDate: String? = null,
 )
 
 data class CurfewSchedule(
   val location: String? = "",
   val allday: String? = "",
   val schedule: MutableList<Schedule>? = mutableListOf(),
+)
+
+data class Zone(
+  val description: String? = "",
+  val duration: String? = "",
+  val start: String? = "",
+  val end: String? = "",
 )
 
 data class Schedule(

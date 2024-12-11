@@ -627,22 +627,34 @@ class OrderControllerTest : IntegrationTestBase() {
       	"atv_allowance": "",
       	"condition_type": "Requirement of a Community Order",
       	"court": "",
-      	"court_order_email": "",
-      	"describe_exclusion": "Mock Exclusion Zone",
+      	"court_order_email": "",      	
       	"device_type": "",
       	"device_wearer": "John Smith",
       	"enforceable_condition": [
       		{
-      			"condition": "Curfew with EM"
+      			"condition": "Curfew with EM",
+            "start_date": "${mockStartDate.format(dateTimeFormatter)}",
+            "end_date": "${mockEndDate.format(dateTimeFormatter)}"
       		},
       		{
-      			"condition": "Location Monitoring (Fitted Device)"
+      			"condition": "Location Monitoring (Fitted Device)",
+            "start_date": "${mockStartDate.format(dateTimeFormatter)}",
+            "end_date": "${mockEndDate.format(dateTimeFormatter)}"
       		},
       		{
-      			"condition": "EM Exclusion / Inclusion Zone"
+      			"condition": "EM Exclusion / Inclusion Zone",
+            "start_date": "${mockStartDate.format(dateTimeFormatter)}",
+            "end_date": "${mockEndDate.format(dateTimeFormatter)}"
+      		},
+          {
+      			"condition": "EM Exclusion / Inclusion Zone",
+            "start_date": "${mockStartDate.format(dateTimeFormatter)}",
+            "end_date": "${mockEndDate.format(dateTimeFormatter)}"
       		},
       		{
-      			"condition": "AAMR"
+      			"condition": "AAMR",
+            "start_date": "${mockStartDate.format(dateTimeFormatter)}",
+            "end_date": "${mockEndDate.format(dateTimeFormatter)}"
       		}
       	],
       	"exclusion_allday": "",
@@ -701,8 +713,9 @@ class OrderControllerTest : IntegrationTestBase() {
       	"reason_for_order_ending_early": "",
       	"business_unit": "",
         "service_end_date": "${mockEndDate.format(formatter)}",
+        "curfew_description": "",
       	"curfew_start": "${mockStartDate.format(dateTimeFormatter)}",
-      	"curfew_end": null,
+      	"curfew_end": "${mockEndDate.format(dateTimeFormatter)}",
       	"curfew_duration": [
       		{
       			"location": "primary",
@@ -788,13 +801,26 @@ class OrderControllerTest : IntegrationTestBase() {
       		}
       	],
       	"trail_monitoring": "No",
-      	"exclusion_zones": "",
-      	"exclusion_zones_duration": "Mock Exclusion Duration",
-      	"inclusion_zones": "",
-      	"inclusion_zones_duration": "",
+      	"exclusion_zones": [
+          {
+            "description": "Mock Exclusion Zone",
+            "duration": "Mock Exclusion Duration",
+            "start": "${mockStartDate.format(formatter)}",
+            "end": "${mockEndDate.format(formatter)}"
+          }
+          ],      	
+      	"inclusion_zones": [
+          {
+            "description": "Mock Inclusion Zone",
+            "duration": "Mock Inclusion Duration",
+            "start": "${mockStartDate.format(formatter)}",
+            "end": "${mockEndDate.format(formatter)}"
+          }
+          ],
+      	
       	"abstinence": "Yes",
       	"schedule": "",
-      	"checkin_schedule": "",
+      	"checkin_schedule": [],
       	"revocation_date": "",
       	"revocation_type": "",
       	"order_status": "Not Started"
@@ -809,7 +835,7 @@ class OrderControllerTest : IntegrationTestBase() {
     }
 
     @Test
-    fun `It should default address to No Fixed Address if device wearer no fixed Abode is true`() {
+    fun `It should map installation address if device wearer no fixed Abode is true`() {
       val order = createAndPersistReadyToSubmitOrder(true)
       sercoAuthApi.stubGrantToken()
 
@@ -850,10 +876,10 @@ class OrderControllerTest : IntegrationTestBase() {
       			"disability": "Learning, understanding or concentrating"
       		}
       	],
-      	"address_1": "No Fixed Address",
-      	"address_2": "No Fixed Address",
-      	"address_3": "No Fixed Address",
-      	"address_4": "No Fixed Address",
+      	"address_1": "",
+      	"address_2": "",
+      	"address_3": "",
+      	"address_4": "",
       	"address_post_code": "No Fixed Address",
       	"secondary_address_1": "",
       	"secondary_address_2": "",
@@ -1005,6 +1031,7 @@ class OrderControllerTest : IntegrationTestBase() {
     val curfewConditions = CurfewConditions(
       orderId = order.id,
       startDate = mockStartDate,
+      endDate = mockEndDate,
       curfewAddress = "PRIMARY,SECONDARY",
     )
 
@@ -1049,8 +1076,21 @@ class OrderControllerTest : IntegrationTestBase() {
       ),
     )
 
+    order.enforcementZoneConditions.add(
+      EnforcementZoneConditions(
+        orderId = order.id,
+        description = "Mock Inclusion Zone",
+        duration = "Mock Inclusion Duration",
+        startDate = mockStartDate,
+        endDate = mockEndDate,
+        zoneType = EnforcementZoneType.INCLUSION,
+      ),
+    )
+
     order.monitoringConditionsAlcohol = AlcoholMonitoringConditions(
       orderId = order.id,
+      startDate = mockStartDate,
+      endDate = mockEndDate,
       monitoringType = AlcoholMonitoringType.ALCOHOL_ABSTINENCE,
       installationLocation = AlcoholMonitoringInstallationLocationType.PRIMARY,
     )
