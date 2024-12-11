@@ -45,6 +45,7 @@ class AdditionalDocumentService(
     val order = findEditableOrder(orderId, username)
     val doc = order.additionalDocuments.firstOrNull { it.fileType == documentType }
     if (doc != null) {
+      order.additionalDocuments.remove(doc)
       attachmentRepo.deleteById(doc.id)
       webClient.deleteDocument(doc.id.toString())
     }
