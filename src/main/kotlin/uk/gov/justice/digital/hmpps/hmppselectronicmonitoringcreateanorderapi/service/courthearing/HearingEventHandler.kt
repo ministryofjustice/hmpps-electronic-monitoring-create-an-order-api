@@ -456,8 +456,8 @@ class HearingEventHandler(
   ): EnforcementZoneConditions {
     val condition = EnforcementZoneConditions(orderId = orderId)
     condition.zoneType = zoneType
-    condition.zoneLocation = conditionPrompt.value
-    condition.description = conditionPrompt.label
+
+    condition.description = "${conditionPrompt.label} ${conditionPrompt.value}"
     condition.startDate = ZonedDateTime.of(startDate, LocalTime.MIDNIGHT, ZoneId.of("GMT"))
     return condition
   }

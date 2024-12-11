@@ -78,7 +78,7 @@
   "exclusion_zones": [],
   "inclusion_zones": [
     {
-      "description": "Exclusion - not to go more than a specified radius from a specified place",
+      "description": "Exclusion - not to go more than a specified radius from a specified place Radius:2 miles\nPlace or area:Mitcham avenue",
       "duration": null,
       "start": "2024-10-25",
       "end": "2024-10-30"
