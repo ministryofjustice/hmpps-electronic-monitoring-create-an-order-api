@@ -214,12 +214,14 @@ class HearingEventHandler(
       val alcoholConditions = AlcoholMonitoringConditions(
         orderId = order.id,
         monitoringType = AlcoholMonitoringType.ALCOHOL_ABSTINENCE,
+        startDate = monitoringConditions.startDate,
+        endDate = getPromptValue(prompts, "Until")?.let {
+          val localDate = LocalDate.parse(it, formatter)
+          ZonedDateTime.of(localDate, LocalTime.MIDNIGHT, ZoneId.of("GMT"))
+        },
       )
 
-      monitoringConditions.endDate = getPromptValue(prompts, "Until")?.let {
-        val localDate = LocalDate.parse(it, formatter)
-        ZonedDateTime.of(localDate, LocalTime.MIDNIGHT, ZoneId.of("GMT"))
-      }
+      monitoringConditions.endDate = alcoholConditions.endDate
       order.monitoringConditionsAlcohol = alcoholConditions
     }
 

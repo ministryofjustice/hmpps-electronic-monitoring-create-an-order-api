@@ -175,8 +175,8 @@ data class DeviceWearer(
         val primaryAddress = order.addresses.find { address -> address.addressType == AddressType.PRIMARY }!!
         deviceWearer.address1 = primaryAddress.addressLine1
         deviceWearer.address2 = primaryAddress.addressLine2
-        deviceWearer.address3 = if (deviceWearer.address3 == "") "N/A" else primaryAddress.addressLine3
-        deviceWearer.address4 = if (deviceWearer.address4 == "") "N/A" else primaryAddress.addressLine4
+        deviceWearer.address3 = if (primaryAddress.addressLine3 == "") "N/A" else primaryAddress.addressLine3
+        deviceWearer.address4 = if (primaryAddress.addressLine4 == "") "N/A" else primaryAddress.addressLine4
         deviceWearer.addressPostCode = primaryAddress.postcode
       }
 

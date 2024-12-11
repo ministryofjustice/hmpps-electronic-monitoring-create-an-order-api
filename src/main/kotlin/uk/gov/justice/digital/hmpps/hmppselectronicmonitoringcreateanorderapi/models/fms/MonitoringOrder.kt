@@ -235,7 +235,7 @@ data class MonitoringOrder(
             EnforceableCondition(
               "EM Exclusion / Inclusion Zone",
               startDate = it.startDate?.format(dateTimeFormatter),
-              endDate = it.startDate?.format(dateTimeFormatter),
+              endDate = it.endDate?.format(dateTimeFormatter),
             ),
           )
 

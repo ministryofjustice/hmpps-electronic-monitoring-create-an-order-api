@@ -824,6 +824,11 @@ class OrderControllerTest : IntegrationTestBase() {
       	"checkin_schedule": [],
       	"revocation_date": "",
       	"revocation_type": "",
+        "installation_address_1": "24 Somewhere Street",
+        "installation_address_2": "Nowhere City",
+        "installation_address_3": "Random County",
+        "installation_address_4": "United Kingdom",
+        "installation_address_post_code": "SW11 1NC",
         "crown_court_case_reference_number": "",
         "magistrate_court_case_reference_number": "",
       	"order_status": "Not Started"

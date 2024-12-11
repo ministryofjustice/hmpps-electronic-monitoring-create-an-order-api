@@ -5,12 +5,13 @@
   "condition_type": "Bail Order",
   "court": "",
   "court_order_email": "",
-  "describe_exclusion": "Exclusion - not to enter a place except to attend court or pre-arranged appointment with solicitor",
   "device_type": "",
   "device_wearer": "Person Mock",
   "enforceable_condition": [
     {
-      "condition": "EM Exclusion / Inclusion Zone"
+      "condition": "EM Exclusion / Inclusion Zone",
+      "start_date": "2024-10-25 00:00:00",
+      "end_date": "2024-10-30 10:00:00"
     }
   ],
   "exclusion_allday": "",
@@ -69,18 +70,31 @@
   "reason_for_order_ending_early": "",
   "business_unit": "",
   "service_end_date": "2024-10-30",
+  "curfew_description": "",
   "curfew_start": "",
   "curfew_end": "",
   "curfew_duration": [],
   "trail_monitoring": "No",
-  "exclusion_zones": "Place or area:London Mayfair",
-  "exclusion_zones_duration": null,
-  "inclusion_zones": "",
-  "inclusion_zones_duration": "",
+  "exclusion_zones": [
+    {
+      "description": "Exclusion - not to enter a place except to attend court or pre-arranged appointment with solicitor",
+      "duration": null,
+      "start": "2024-10-25",
+      "end": "2024-10-30"
+    }
+  ],
+  "inclusion_zones": [],
   "abstinence": "",
   "schedule": "",
-  "checkin_schedule": "",
+  "checkin_schedule": [],
   "revocation_date": "",
   "revocation_type": "",
+  "installation_address_1": "",
+  "installation_address_2": "",
+  "installation_address_3": "",
+  "installation_address_4": "",
+  "installation_address_post_code": "",
+  "crown_court_case_reference_number": "",
+  "magistrate_court_case_reference_number": "",
   "order_status": "Not Started"
 }
