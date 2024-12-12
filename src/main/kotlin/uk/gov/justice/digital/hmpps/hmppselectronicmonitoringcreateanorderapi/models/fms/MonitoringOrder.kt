@@ -230,15 +230,14 @@ data class MonitoringOrder(
       }
 
       if (conditions.exclusionZone != null && conditions.exclusionZone!!) {
-        order.enforcementZoneConditions.forEach { it ->
-          monitoringOrder.enforceableCondition!!.add(
-            EnforceableCondition(
-              "EM Exclusion / Inclusion Zone",
-              startDate = it.startDate?.format(dateTimeFormatter),
-              endDate = it.endDate?.format(dateTimeFormatter),
-            ),
-          )
-
+        monitoringOrder.enforceableCondition!!.add(
+          EnforceableCondition(
+            "EM Exclusion / Inclusion Zone",
+            startDate = conditions.startDate?.format(dateTimeFormatter),
+            endDate = conditions.endDate?.format(dateTimeFormatter),
+          ),
+        )
+        order.enforcementZoneConditions.forEach {
           if (it.zoneType == EnforcementZoneType.EXCLUSION) {
             monitoringOrder.exclusionZones.add(
               Zone(

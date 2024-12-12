@@ -646,12 +646,7 @@ class OrderControllerTest : IntegrationTestBase() {
       			"condition": "EM Exclusion / Inclusion Zone",
             "start_date": "${mockStartDate.format(dateTimeFormatter)}",
             "end_date": "${mockEndDate.format(dateTimeFormatter)}"
-      		},
-          {
-      			"condition": "EM Exclusion / Inclusion Zone",
-            "start_date": "${mockStartDate.format(dateTimeFormatter)}",
-            "end_date": "${mockEndDate.format(dateTimeFormatter)}"
-      		},
+      		},          
       		{
       			"condition": "AAMR",
             "start_date": "${mockStartDate.format(dateTimeFormatter)}",
