@@ -172,6 +172,18 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
   }
 
   @Test
+  fun `Will map CCSIB_Crown_Court_WC_Next_Hearing_Date request and submit to FMS`() {
+    val rootFilePath = "src/test/resources/json/CCSIB_Crown_Court_BAIL_EXCLUSION"
+    runPayloadTest(rootFilePath)
+  }
+
+  @Test
+  fun `Will map CCSIB_Crown_Court_No_Fixed_Next_Hearing_Date request and submit to FMS`() {
+    val rootFilePath = "src/test/resources/json/CCSIB_Crown_Court_BAIL_EXCLUSION"
+    runPayloadTest(rootFilePath)
+  }
+
+  @Test
   fun `Will map RILAB_BAIL_INCLUSION request and submit to FMS`() {
     val rootFilePath = "src/test/resources/json/RILAB_BAIL_INCLUSION"
     runPayloadTest(rootFilePath)
