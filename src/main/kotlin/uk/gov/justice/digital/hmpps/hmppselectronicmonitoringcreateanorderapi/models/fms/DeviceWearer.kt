@@ -175,19 +175,10 @@ data class DeviceWearer(
         val primaryAddress = order.addresses.find { address -> address.addressType == AddressType.PRIMARY }!!
         deviceWearer.address1 = primaryAddress.addressLine1
         deviceWearer.address2 = primaryAddress.addressLine2
-        deviceWearer.address3 = primaryAddress.addressLine3
-        deviceWearer.address4 = primaryAddress.addressLine4
+        deviceWearer.address3 = if (primaryAddress.addressLine3 == "") "N/A" else primaryAddress.addressLine3
+        deviceWearer.address4 = if (primaryAddress.addressLine4 == "") "N/A" else primaryAddress.addressLine4
         deviceWearer.addressPostCode = primaryAddress.postcode
-      } else {
-        deviceWearer.address1 = "No Fixed Address"
-        deviceWearer.address2 = "No Fixed Address"
-        deviceWearer.address3 = "No Fixed Address"
-        deviceWearer.address4 = "No Fixed Address"
-        deviceWearer.addressPostCode = "No Fixed Address"
       }
-
-      if (deviceWearer.address3 == "") deviceWearer.address3 = "N/A"
-      if (deviceWearer.address4 == "") deviceWearer.address4 = "N/A"
 
       order.addresses.find { address -> address.addressType == AddressType.SECONDARY }.let { address ->
         {
