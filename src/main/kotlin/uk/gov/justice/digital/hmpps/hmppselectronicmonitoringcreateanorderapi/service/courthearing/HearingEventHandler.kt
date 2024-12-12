@@ -425,7 +425,7 @@ class HearingEventHandler(
     //endregion
   }
 
-  private fun getNextCourtHearingDate(prompts: List<JudicialResultsPrompt>): ZonedDateTime {
+  private fun getNextCourtHearingDate(prompts: List<JudicialResultsPrompt>): ZonedDateTime? {
     var nextHearingDetails: String = ""
     var nextHearingDateKey = ""
     if (prompts.any { it.label == "Next hearing in magistrates' court" }) {
@@ -440,7 +440,17 @@ class HearingEventHandler(
       parts[0] to parts[1]
     }
     val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
-    val localDate = LocalDate.parse(nextHearingDetailsAsMap[nextHearingDateKey] ?: "", formatter)
+    var localDate: LocalDate? = null
+    if (nextHearingDetailsAsMap.containsKey(nextHearingDateKey)) {
+      localDate = LocalDate.parse(nextHearingDetailsAsMap[nextHearingDateKey]!!, formatter)
+    } else if (nextHearingDetailsAsMap.containsKey("Week Commencing")) {
+      localDate = LocalDate.parse(nextHearingDetailsAsMap["Week Commencing"]!!, formatter)
+    }
+
+    if (localDate == null) {
+      return null
+    }
+
     return ZonedDateTime.of(
       localDate,
       LocalTime.parse(nextHearingDetailsAsMap["Time of hearing"] ?: ""),
