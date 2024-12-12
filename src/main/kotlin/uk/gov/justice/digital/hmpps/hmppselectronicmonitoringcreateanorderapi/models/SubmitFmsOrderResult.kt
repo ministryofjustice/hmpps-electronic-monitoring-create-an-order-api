@@ -15,11 +15,11 @@ data class SubmitFmsOrderResult(
   @Id
   @Column(name = "ID", nullable = false, unique = true)
   val id: UUID = UUID.randomUUID(),
-  @Column(name = "FMS_DEVICE_WEARER", nullable = true, columnDefinition = "varchar(4096)")
+  @Column(name = "FMS_DEVICE_WEARER", nullable = true, columnDefinition = "varchar(409600)")
   var fmsDeviceWearerRequest: String? = "",
   @Column(name = "FMS_DEVICE_WEARER_ID", nullable = true)
   var deviceWearerId: String? = "",
-  @Column(name = "FMS_ORDER", nullable = true, columnDefinition = "varchar(4096)")
+  @Column(name = "FMS_ORDER", nullable = true, columnDefinition = "varchar(409600)")
   var fmsOrderRequest: String? = "",
   @Column(name = "FMS_ORDER_ID", nullable = true)
   var fmsOrderId: String? = "",
