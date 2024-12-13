@@ -225,7 +225,6 @@ data class MonitoringOrder(
             startDate = order.monitoringConditionsTrail!!.startDate?.format(dateTimeFormatter),
             endDate = order.monitoringConditionsTrail!!.endDate?.format(dateTimeFormatter),
           ),
-
         )
         monitoringOrder.trailMonitoring = "Yes"
       }
