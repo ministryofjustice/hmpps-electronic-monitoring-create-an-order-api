@@ -36,7 +36,7 @@
   "order_id": "{expectedOderId}",
   "order_request_type": "",
   "order_start": "2024-10-25 00:00:00",
-  "order_type": "Post Release",
+  "order_type": "Pre-Trial",
   "order_type_description": null,
   "order_type_detail": "",
   "order_variation_date": "",

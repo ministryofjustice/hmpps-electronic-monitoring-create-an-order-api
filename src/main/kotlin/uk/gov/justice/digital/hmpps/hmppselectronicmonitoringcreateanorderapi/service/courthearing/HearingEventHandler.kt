@@ -512,18 +512,10 @@ class HearingEventHandler(
     ) {
       return "Community"
     } else if (results.any {
-        it.judicialResultTypeId == BAIL_ADULT_REMITTAL_FOR_SENTENCE_ON_CONDITIONAL ||
-          it.judicialResultTypeId == BAIL_REMAND_IN_CARE_OF_LOCAL_AUTHORITY ||
-          it.judicialResultTypeId == BAIL_REMANDED_ON_CONDITIONAL_BAIL
+        BAIL_CONDITION_UUIDs.contains(it.judicialResultTypeId)
       }
     ) {
       return "Pre-Trial"
-    } else if (results.any {
-        it.judicialResultTypeId == BAIL_CROWN_COURT_SENTENCE_IN_CUSTODY_WITH_BAIL_DIRECTION ||
-          it.judicialResultTypeId == BAIL_REMANDED_IN_CUSTODY_WITH_BAIL_DIRECTION
-      }
-    ) {
-      return "Post Release"
     }
     return null
   }
