@@ -1,9 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto
 
-import jakarta.validation.GroupSequence
 import jakarta.validation.constraints.AssertTrue
 import jakarta.validation.constraints.NotEmpty
-import jakarta.validation.constraints.Pattern
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.VariationType
 import java.time.ZonedDateTime
 import java.time.format.DateTimeParseException
