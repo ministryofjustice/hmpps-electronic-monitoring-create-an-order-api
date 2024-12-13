@@ -557,6 +557,11 @@ class OrderControllerTest : IntegrationTestBase() {
         HttpStatus.OK,
         FmsResponse(result = listOf(FmsResult(message = "", id = "MockMonitoringOrderId"))),
       )
+      sercoApi.stubSubmitAttachment(
+        HttpStatus.OK,
+        FmsResponse(result = listOf(FmsResult(message = "", id = "MockAttachmentId"))),
+      )
+
       webTestClient.post()
         .uri("/api/orders/${order.id}/submit")
         .headers(setAuthorisation())
@@ -830,9 +835,37 @@ class OrderControllerTest : IntegrationTestBase() {
       	"order_status": "Not Started"
       }
       """.trimIndent()
+      val expectedAttachmentJson = """
+      {
+        "size_bytes": "54699",
+        "file_name": "profile.png",
+        "sys_mod_count": "2",
+        "average_image_color": "",
+        "image_width": "427",
+        "sys_updated_on": "2024-12-13 13:20:04",
+        "sys_tags": "",
+        "created_by_name": "CEMO Integration",
+        "table_name": "x_serg2_ems_csm_sr_mo_new",
+        "sys_id": "f35399881b2e1a10df36a756b04bcbf4",
+        "updated_by_name": "CEMO Integration",
+        "image_height": "570",
+        "sys_updated_by": "cemo.integration",
+        "download_link": "https://sercoemdev.service-now.com/api/now/v1/attachment_csm/f35399881b2e1a10df36a756b04bcbf4/file",
+        "content_type": "image/png",
+        "sys_created_on": "2024-12-13 13:20:03",
+        "size_compressed": "53529",
+        "compressed": "true",
+        "state": "available",
+        "table_sys_id": "7cea136c1b595e10a10c20e0b24bcb21",
+        "chunk_size_bytes": "700000",
+        "hash": "71f6b03584aadf63d324e3f4ecc91f6c7bd4ceb5d1dabd1040d12635ce0372b5",
+        "sys_created_by": "cemo.integration"
+    }
+      """.trimIndent()
 
       assertThat(submitResult!!.fmsDeviceWearerRequest).isEqualTo(expectedDWJson.removeWhitespaceAndNewlines())
       assertThat(submitResult.fmsOrderRequest).isEqualTo(expectedOrderJson.removeWhitespaceAndNewlines())
+      assertThat(submitResult.fmsAttachmentRequest).isEqualTo(expectedAttachmentJson.removeWhitespaceAndNewlines()) // ATTACHMENT
       val updatedOrder = repo.findById(order.id).get()
       assertThat(updatedOrder.fmsResultId).isEqualTo(submitResult.id)
       assertThat(updatedOrder.status).isEqualTo(OrderStatus.SUBMITTED)

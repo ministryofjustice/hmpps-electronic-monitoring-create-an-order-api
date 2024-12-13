@@ -4,6 +4,7 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.i
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
+import com.github.tomakehurst.wiremock.client.WireMock.equalTo
 import com.github.tomakehurst.wiremock.client.WireMock.post
 import com.github.tomakehurst.wiremock.client.WireMock.urlPathTemplate
 import org.junit.jupiter.api.extension.AfterAllCallback
@@ -98,4 +99,30 @@ class SercoMockApiServer : WireMockServer(WIREMOCK_PORT) {
         ),
     )
   }
+
+  fun stubSubmitAttachment(status: HttpStatus, result: FmsAttachmentResponse, errorResponse: FmsErrorResponse? = null) {
+    val body: String
+
+    if (errorResponse != null) {
+      body = objectMapper.writeValueAsString(errorResponse)
+    } else {
+      body = objectMapper.writeValueAsString(result)
+    }
+
+    stubFor(
+      post(urlPathTemplate("/attachment_csm/file"))
+        .withQueryParam("table_name", equalTo(result.result.tableName))
+        .withQueryParam("table_sys_id", equalTo(result.result.tableSysId))
+        .withQueryParam("file_name", equalTo(result.result.fileName))
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withBody(
+              body,
+            )
+            .withStatus(status.value()),
+        ),
+    )
+  }
 }
+
