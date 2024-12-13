@@ -82,6 +82,9 @@ data class Order(
   @OneToMany(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "order", orphanRemoval = true)
   var curfewTimeTable: MutableList<CurfewTimeTable> = mutableListOf(),
 
+  @OneToOne(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "order", orphanRemoval = true)
+  var variationDetails: VariationDetails? = null,
+
 ) {
   private val adultOrHasResponsibleAdult: Boolean
     get() = (
