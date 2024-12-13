@@ -8,7 +8,6 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import java.time.ZonedDateTime
 import java.time.format.DateTimeParseException
 
-@GroupSequence(NotEmpty::class, Pattern::class, UpdateVariationDetailsDto::class)
 data class UpdateVariationDetailsDto(
   @field:NotEmpty(message = "Variation type is required")
   val variationType: String = "",
@@ -23,8 +22,8 @@ data class UpdateVariationDetailsDto(
       return true
     }
 
-    for (v in VariationType.entries) {
-      if (v.name == variationType) {
+    for (entry in VariationType.entries) {
+      if (entry.name == variationType) {
         return true
       }
     }
