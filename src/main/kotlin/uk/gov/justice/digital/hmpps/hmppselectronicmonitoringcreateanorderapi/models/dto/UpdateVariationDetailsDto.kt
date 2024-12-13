@@ -1,0 +1,49 @@
+package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto
+
+import jakarta.validation.GroupSequence
+import jakarta.validation.constraints.AssertTrue
+import jakarta.validation.constraints.NotEmpty
+import jakarta.validation.constraints.Pattern
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.VariationType
+import java.time.ZonedDateTime
+import java.time.format.DateTimeParseException
+
+@GroupSequence(NotEmpty::class, Pattern::class, UpdateVariationDetailsDto::class)
+data class UpdateVariationDetailsDto(
+  @field:NotEmpty(message = "Variation type is required")
+  val variationType: String = "",
+
+  @field:NotEmpty(message = "Variation date is required")
+  val variationDate: String = "",
+) {
+  @AssertTrue(message = "Variation type must be a valid variation type")
+  fun isVariationType(): Boolean {
+    // Prevent additional error being generated for empty string
+    if (variationType == "") {
+      return true
+    }
+
+    for (v in VariationType.entries) {
+      if (v.name == variationType) {
+        return true
+      }
+    }
+
+    return false
+  }
+
+  @AssertTrue(message = "Variation date must be a valid date")
+  fun isVariationDate(): Boolean {
+    // Prevent additional error being generated for empty string
+    if (variationDate == "") {
+      return true
+    }
+
+    try {
+      ZonedDateTime.parse(variationDate)
+      return true
+    } catch (e: DateTimeParseException) {
+      return false
+    }
+  }
+}
