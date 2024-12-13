@@ -211,6 +211,7 @@ data class MonitoringOrder(
             endDate = curfew.endDate?.format(dateTimeFormatter),
           ),
         )
+        monitoringOrder.curfewDescription = curfew.curfewDescription
         monitoringOrder.conditionalReleaseDate = order.curfewReleaseDateConditions?.releaseDate?.format(dateFormatter)
         monitoringOrder.curfewStart = curfew.startDate!!.format(dateTimeFormatter)
         monitoringOrder.curfewEnd = curfew.endDate?.format(dateTimeFormatter)

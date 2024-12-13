@@ -62,12 +62,18 @@ class HearingEventHandler(
 
     const val BAIL_REMANDED_ON_CONDITIONAL_BAIL = "3a529001-2f43-45ba-a0a8-d3ced7e9e7ad"
 
+    const val BAIL_REMITTED_FROM_CROWN_COURT_TO_MAGISTRATES_COURT = "9fd1849f-f91f-4fa7-adfd-ef24f64654eb"
+
+    const val BAIL_SENT_TO_CROWN_COURT_WITH_BAIL_DIRECTION = "062373fb-ada8-49a1-b7de-659426ba6b88"
+
     val BAIL_CONDITION_UUIDs = arrayOf(
       BAIL_ADULT_REMITTAL_FOR_SENTENCE_ON_CONDITIONAL,
       BAIL_CROWN_COURT_SENTENCE_IN_CUSTODY_WITH_BAIL_DIRECTION,
       BAIL_REMAND_IN_CARE_OF_LOCAL_AUTHORITY,
       BAIL_REMANDED_IN_CUSTODY_WITH_BAIL_DIRECTION,
       BAIL_REMANDED_ON_CONDITIONAL_BAIL,
+      BAIL_REMITTED_FROM_CROWN_COURT_TO_MAGISTRATES_COURT,
+      BAIL_SENT_TO_CROWN_COURT_WITH_BAIL_DIRECTION,
     )
 
     // Suspended sentence order
@@ -169,7 +175,9 @@ class HearingEventHandler(
     val person = defendant.personDefendant?.personDetails
     val deviceWearer = DeviceWearer(orderId = order.id)
 
-    deviceWearer.dateOfBirth = ZonedDateTime.of(person?.dateOfBirth, LocalTime.MIDNIGHT, ZoneId.of("GMT"))
+    if (person?.dateOfBirth != null) {
+      deviceWearer.dateOfBirth = ZonedDateTime.of(person.dateOfBirth, LocalTime.MIDNIGHT, ZoneId.of("GMT"))
+    }
     deviceWearer.firstName = person?.firstName
     deviceWearer.lastName = person?.lastName
     deviceWearer.sex = getSex(person?.gender)
@@ -193,11 +201,10 @@ class HearingEventHandler(
     order.deviceWearer = deviceWearer
 
     val contact = person?.contact
-    if (contact != null) {
-      val contactDetails =
-        ContactDetails(orderId = order.id, contactNumber = contact.mobile ?: contact.home ?: contact.work ?: "")
-      order.contactDetails = contactDetails
-    }
+
+    val contactDetails =
+      ContactDetails(orderId = order.id, contactNumber = contact?.mobile ?: contact?.home ?: contact?.work ?: "")
+    order.contactDetails = contactDetails
 
     return order
   }
@@ -328,71 +335,32 @@ class HearingEventHandler(
     judicialResults.firstOrNull {
       it.judicialResultPrompts.any { prompts -> prompts.judicialResultPromptTypeId == BailOrderType.CURFEW.uuid }
     }?.let {
+      val conditionPrompt = it.judicialResultPrompts.first { prompts ->
+        prompts.judicialResultPromptTypeId == BailOrderType.CURFEW.uuid
+      }
       monitoringConditions.curfew = true
       val condition = CurfewConditions(orderId = order.id)
       condition.startDate = ZonedDateTime.of(it.orderedDate, LocalTime.MIDNIGHT, ZoneId.of("GMT"))
       condition.endDate = monitoringConditions.endDate
+      condition.curfewDescription = conditionPrompt.value
       order.curfewConditions = condition
     }
 
-    judicialResults.firstOrNull {
-      it.judicialResultPrompts.any { prompts ->
-        prompts.judicialResultPromptTypeId == BailOrderType.EXCLUSION_NOT_ENTER_A_PLACE.uuid
+    BailOrderType.ENFORCEMENT_ZONE_IDS.forEach { bailOrderTypeZoneTypeEntry ->
+      judicialResults.firstOrNull {
+        it.judicialResultPrompts.any { prompts ->
+          prompts.judicialResultPromptTypeId == bailOrderTypeZoneTypeEntry.key.uuid
+        }
+      }?.let {
+        val conditionPrompt = it.judicialResultPrompts.first { prompts ->
+          prompts.judicialResultPromptTypeId == bailOrderTypeZoneTypeEntry.key.uuid
+        }
+        monitoringConditions.exclusionZone = true
+        val condition =
+          getBailOrderEnforcementZone(conditionPrompt, it.orderedDate, bailOrderTypeZoneTypeEntry.value, order.id)
+        condition.endDate = monitoringConditions.endDate
+        order.enforcementZoneConditions.add(condition)
       }
-    }?.let {
-      val conditionPrompt = it.judicialResultPrompts.first { prompts ->
-        prompts.judicialResultPromptTypeId == BailOrderType.EXCLUSION_NOT_ENTER_A_PLACE.uuid
-      }
-      monitoringConditions.exclusionZone = true
-      val condition =
-        getBailOrderEnforcementZone(conditionPrompt, it.orderedDate, EnforcementZoneType.EXCLUSION, order.id)
-      condition.endDate = monitoringConditions.endDate
-      order.enforcementZoneConditions.add(condition)
-    }
-
-    judicialResults.firstOrNull {
-      it.judicialResultPrompts.any { prompts ->
-        prompts.judicialResultPromptTypeId == BailOrderType.EXCLUSION_EXCEPT_COURT_OR_APPOINTMENT.uuid
-      }
-    }?.let {
-      val conditionPrompt = it.judicialResultPrompts.first { prompts ->
-        prompts.judicialResultPromptTypeId == BailOrderType.EXCLUSION_EXCEPT_COURT_OR_APPOINTMENT.uuid
-      }
-      monitoringConditions.exclusionZone = true
-      val condition =
-        getBailOrderEnforcementZone(conditionPrompt, it.orderedDate, EnforcementZoneType.EXCLUSION, order.id)
-      condition.endDate = monitoringConditions.endDate
-      order.enforcementZoneConditions.add(condition)
-    }
-
-    judicialResults.firstOrNull {
-      it.judicialResultPrompts.any { prompts ->
-        prompts.judicialResultPromptTypeId == BailOrderType.INCLUSION_SPECIFIED_RADIUS.uuid
-      }
-    }?.let {
-      val conditionPrompt = it.judicialResultPrompts.first { prompts ->
-        prompts.judicialResultPromptTypeId == BailOrderType.INCLUSION_SPECIFIED_RADIUS.uuid
-      }
-      monitoringConditions.exclusionZone = true
-      val condition =
-        getBailOrderEnforcementZone(conditionPrompt, it.orderedDate, EnforcementZoneType.INCLUSION, order.id)
-      condition.endDate = monitoringConditions.endDate
-      order.enforcementZoneConditions.add(condition)
-    }
-
-    judicialResults.firstOrNull {
-      it.judicialResultPrompts.any { prompts ->
-        prompts.judicialResultPromptTypeId == BailOrderType.INCLUSION_NOT_TO_LEAVE.uuid
-      }
-    }?.let {
-      val conditionPrompt = it.judicialResultPrompts.first { prompts ->
-        prompts.judicialResultPromptTypeId == BailOrderType.INCLUSION_NOT_TO_LEAVE.uuid
-      }
-      monitoringConditions.exclusionZone = true
-      val condition =
-        getBailOrderEnforcementZone(conditionPrompt, it.orderedDate, EnforcementZoneType.INCLUSION, order.id)
-      condition.endDate = monitoringConditions.endDate
-      order.enforcementZoneConditions.add(condition)
     }
 
     //region InterestedParties

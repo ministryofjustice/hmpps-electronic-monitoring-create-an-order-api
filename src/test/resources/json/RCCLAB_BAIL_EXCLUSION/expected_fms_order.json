@@ -9,9 +9,9 @@
   "device_wearer": "Person Mock",
   "enforceable_condition": [
     {
-      "condition": "Curfew with EM",
+      "condition": "EM Exclusion / Inclusion Zone",
       "start_date": "2024-10-25 00:00:00",
-      "end_date": "2024-10-30 10:00:00"
+      "end_date": "2024-10-31 10:00:00"
     }
   ],
   "exclusion_allday": "",
@@ -32,7 +32,7 @@
   "no_phone_number": "",
   "offence": null,
   "offence_date": "",
-  "order_end": "2024-10-30 10:00:00",
+  "order_end": "2024-10-31 10:00:00",
   "order_id": "{expectedOderId}",
   "order_request_type": "",
   "order_start": "2024-10-25 00:00:00",
@@ -66,16 +66,23 @@
   "technical_bail": "",
   "trial_date": "",
   "trial_outcome": "",
-  "conditional_release_date": null,
+  "conditional_release_date": "",
   "reason_for_order_ending_early": "",
   "business_unit": "",
-  "service_end_date": "2024-10-30",
-  "curfew_description":"Between:21:00\nAnd:06:00\nFrequency:Every day",
-  "curfew_start": "2024-10-25 00:00:00",
-  "curfew_end": "2024-10-30 10:00:00",
+  "service_end_date": "2024-10-31",
+  "curfew_description": "",
+  "curfew_start": "",
+  "curfew_end": "",
   "curfew_duration": [],
-  "trail_monitoring": "",
-  "exclusion_zones": [],
+  "trail_monitoring": "No",
+  "exclusion_zones": [
+    {
+      "description": "Exclusion - not go within a radius unless accompanied by a police officer Within:5 miles radius\nOf:Mitcham",
+      "duration": null,
+      "start": "2024-10-25",
+      "end": "2024-10-31"
+    }
+  ],
   "inclusion_zones": [],
   "abstinence": "",
   "schedule": "",
