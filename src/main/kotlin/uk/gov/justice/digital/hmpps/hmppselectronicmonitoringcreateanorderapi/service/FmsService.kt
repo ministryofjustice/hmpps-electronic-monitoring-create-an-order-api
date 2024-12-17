@@ -20,7 +20,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.se
 class FmsService(
   val fmsClient: FmsClient,
   val objectMapper: ObjectMapper,
-  val submitFmdOrderResultRepository: SubmitFmsOrderResultRepository,
+  val submitFmsOrderResultRepository: SubmitFmsOrderResultRepository,
   @Value("\${toggle.fms-integration.enabled:false}") val fmsIntegrationEnabled: Boolean,
 ) {
   private fun getSubmissionStrategy(order: Order): FmsSubmissionStrategy {
@@ -39,7 +39,7 @@ class FmsService(
     val strategy = this.getSubmissionStrategy(order)
     val submissionResult = strategy.submitOrder(order, orderSource)
 
-    submitFmdOrderResultRepository.save(submissionResult)
+    submitFmsOrderResultRepository.save(submissionResult)
 
     return submissionResult
   }
