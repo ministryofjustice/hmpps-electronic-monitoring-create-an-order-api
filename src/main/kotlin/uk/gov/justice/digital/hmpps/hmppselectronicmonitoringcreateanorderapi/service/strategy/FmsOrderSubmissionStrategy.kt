@@ -62,7 +62,6 @@ class FmsOrderSubmissionStrategy(
       return FmsRequestResult(
         success = false,
         error = serialiseResult.error.toString(),
-        id = "",
       )
     }
 
@@ -72,7 +71,6 @@ class FmsOrderSubmissionStrategy(
       return FmsRequestResult(
         success = false,
         error = submissionResult.error.toString(),
-        id = "",
         payload = submissionResult.data!!,
       )
     }
@@ -101,7 +99,6 @@ class FmsOrderSubmissionStrategy(
       return FmsRequestResult(
         success = false,
         error = serialiseResult.error.toString(),
-        id = "",
       )
     }
 
@@ -111,7 +108,6 @@ class FmsOrderSubmissionStrategy(
       return FmsRequestResult(
         success = false,
         error = submissionResult.error.toString(),
-        id = "",
         payload = serialiseResult.data!!,
       )
     }

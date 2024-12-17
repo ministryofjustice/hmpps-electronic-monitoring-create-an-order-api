@@ -28,13 +28,11 @@ class FmsDummySubmissionStrategy(
       return FmsRequestResult(
         success = false,
         error = serialiseResult.error.toString(),
-        id = "Fake Id",
       )
     }
 
     return FmsRequestResult(
       success = true,
-      id = "Fake Id",
       payload = serialiseResult.data!!,
     )
   }
@@ -56,13 +54,11 @@ class FmsDummySubmissionStrategy(
       return FmsRequestResult(
         success = false,
         error = serialiseResult.error.toString(),
-        id = "Fake Id",
       )
     }
 
     return FmsRequestResult(
       success = true,
-      id = "Fake Id",
       payload = serialiseResult.data!!,
     )
   }
