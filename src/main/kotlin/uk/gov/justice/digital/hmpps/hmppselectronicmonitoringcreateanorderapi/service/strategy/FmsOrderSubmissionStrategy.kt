@@ -33,11 +33,9 @@ class FmsOrderSubmissionStrategy(
 
   private fun submitCreateMonitoringOrderRequest(monitoringOrder: MonitoringOrder, orderId: UUID): Result<String> {
     return try {
-      val r = fmsClient.createMonitoringOrder(monitoringOrder, orderId)
-      val id = r.result.first().id
       Result(
         success = true,
-        data = id,
+        data = fmsClient.createMonitoringOrder(monitoringOrder, orderId).result.first().id,
       )
     } catch (e: Exception) {
       Result(
