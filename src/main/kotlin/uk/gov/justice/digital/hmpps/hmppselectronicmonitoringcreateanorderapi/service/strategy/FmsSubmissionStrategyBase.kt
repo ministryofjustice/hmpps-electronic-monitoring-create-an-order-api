@@ -1,18 +1,14 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.strategy
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.stereotype.Component
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.DeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.MonitoringOrder
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.Result
 
-@Component
-abstract class FmsSubmissionStrategyBase : FmsSubmissionStrategy {
-
-  @Autowired
-  private lateinit var objectMapper: ObjectMapper
+abstract class FmsSubmissionStrategyBase(
+  val objectMapper: ObjectMapper,
+) : FmsSubmissionStrategy {
 
   protected fun getDeviceWearer(order: Order): Result<DeviceWearer> {
     return try {

@@ -25,14 +25,14 @@ class FmsService(
 ) {
   private fun getSubmissionStrategy(order: Order): FmsSubmissionStrategy {
     if (!fmsIntegrationEnabled) {
-      return FmsDummySubmissionStrategy()
+      return FmsDummySubmissionStrategy(this.objectMapper)
     }
 
     if (order.type === OrderType.VARIATION) {
       return FmsVariationSubmissionStrategy()
     }
 
-    return FmsOrderSubmissionStrategy()
+    return FmsOrderSubmissionStrategy(this.objectMapper, this.fmsClient)
   }
 
   fun submitOrder(order: Order, orderSource: FmsOrderSource): SubmitFmsOrderResult {

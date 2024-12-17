@@ -1,14 +1,15 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.strategy
 
-import org.springframework.stereotype.Component
+import com.fasterxml.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.SubmitFmsOrderResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsRequestResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsSubmissionStrategyKind
 
-@Component
-class FmsDummySubmissionStrategy : FmsSubmissionStrategyBase() {
+class FmsDummySubmissionStrategy(
+  objectMapper: ObjectMapper,
+) : FmsSubmissionStrategyBase(objectMapper) {
 
   private fun createDeviceWearer(order: Order): FmsRequestResult {
     val deviceWearerResult = this.getDeviceWearer(order)
@@ -73,6 +74,7 @@ class FmsDummySubmissionStrategy : FmsSubmissionStrategyBase() {
 
     if (!createDeviceWearerResult.success) {
       return SubmitFmsOrderResult(
+        id = order.id,
         success = false,
         strategy = FmsSubmissionStrategyKind.DUMMY,
         error = createDeviceWearerResult.error,
@@ -88,6 +90,7 @@ class FmsDummySubmissionStrategy : FmsSubmissionStrategyBase() {
 
     if (!createMonitoringOrderResult.success) {
       return SubmitFmsOrderResult(
+        id = order.id,
         success = false,
         strategy = FmsSubmissionStrategyKind.DUMMY,
         error = createMonitoringOrderResult.error,
@@ -100,6 +103,7 @@ class FmsDummySubmissionStrategy : FmsSubmissionStrategyBase() {
     }
 
     return SubmitFmsOrderResult(
+      id = order.id,
       success = true,
       strategy = FmsSubmissionStrategyKind.DUMMY,
       deviceWearerId = deviceWearerId,
