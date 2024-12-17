@@ -8,6 +8,7 @@ enum class CommunityOrderType(val uuid: String) {
   INCLUSION_ZONE("9b216a08-4df8-41c2-a947-66506cd1e1b5"),
   COMMUNITY_ORDER_CURFEW("06b4c31d-1b3d-4850-b64c-4cad870b3a25"),
   TRAIL_MONITORING("45ea2d9f-ddd8-4c39-9585-780746ee6a8d"),
+  YOUTH_CURFEW("d79c92bb-c301-491a-b4d2-cb86e473b5af"),
   ;
 
   companion object {

@@ -46,11 +46,16 @@ class HearingEventHandler(
   private val dateTimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
   companion object {
 
-    //region Common platform order types
+    //region Comment Platform UUIDs
+    const val COMMUNITY_ORDER_ENGLAND_AND_WALES = "418b3aa7-65ab-4a4a-bab9-2f96b698118c"
 
-    const val COMMUNITY_ORDER_ENGLAND_AND_WALES_UUID = "418b3aa7-65ab-4a4a-bab9-2f96b698118c"
+    const val YOUTH_REHABILITATION_ENGLAND_AND_WALES = "73a4f6a2-b768-45de-beb7-3f4d2f933e11"
 
-    private const val COMMUNITY_ORDER_SCOTLAND_UUID = "ae617390-b41e-46ac-bd63-68a28512676a"
+    const val SSO_YOUNG_OFFENDER_INSTITUTION_DETENTION = "5679e5b7-0ca8-4d2a-ba80-7a50025fb589"
+
+    const val SSO_IMPRISONMENT = "8b1cff00-a456-40da-9ce4-f11c20959084"
+
+    private const val COMMUNITY_ORDER_SCOTLAND = "ae617390-b41e-46ac-bd63-68a28512676a"
 
     const val BAIL_ADULT_REMITTAL_FOR_SENTENCE_ON_CONDITIONAL = "f917ba0c-1faf-4945-83a8-50be9049f9b4"
 
@@ -79,16 +84,18 @@ class HearingEventHandler(
       BAIL_SENT_TO_CROWN_COURT_ON_BAIL_CONDITION,
     )
 
-    // Suspended sentence order
-    const val SSO_YOUNG_OFFENDER_INSTITUTION_DETENTION_UUID = "5679e5b7-0ca8-4d2a-ba80-7a50025fb589"
+    val COMMUNITY_ORDER_UUIDS = arrayOf(
+      COMMUNITY_ORDER_ENGLAND_AND_WALES,
+      SSO_YOUNG_OFFENDER_INSTITUTION_DETENTION,
+      SSO_IMPRISONMENT,
+      YOUTH_REHABILITATION_ENGLAND_AND_WALES,
+    )
 
-    const val SSO_IMPRISONMENT_UUID = "8b1cff00-a456-40da-9ce4-f11c20959084"
-
-    // end region
+    //endregion
     fun isEnglandAdnWalesEMRequest(offence: Offence): Boolean {
       return !offence.judicialResults.any {
           judicialResults ->
-        judicialResults.judicialResultTypeId== COMMUNITY_ORDER_SCOTLAND_UUID
+        judicialResults.judicialResultTypeId== COMMUNITY_ORDER_SCOTLAND
       } &&
         offence.judicialResults.any {
             judicialResults ->
@@ -285,7 +292,11 @@ class HearingEventHandler(
       order.monitoringConditionsTrail = trailCondition
     }
 
-    if (judicialResults.any { it.judicialResultTypeId == CommunityOrderType.COMMUNITY_ORDER_CURFEW.uuid }) {
+    if (judicialResults.any {
+        it.judicialResultTypeId == CommunityOrderType.COMMUNITY_ORDER_CURFEW.uuid ||
+          it.judicialResultTypeId == CommunityOrderType.YOUTH_CURFEW.uuid
+      }
+    ) {
       monitoringConditions.curfew = true
       val condition = CurfewConditions(orderId = order.id)
       val startTime = getPromptValue(prompts, "Start time of tagging") ?: "00:00"
@@ -298,7 +309,11 @@ class HearingEventHandler(
         val localDate = LocalDate.parse(it, formatter)
         ZonedDateTime.of(localDate, LocalTime.parse(endTime), ZoneId.of("GMT"))
       }
+      val defendantRemainAt = getPromptValue(prompts, "Defendant to remain at")
+      val detailsAndTiming = getPromptValue(prompts, "Details and timings")
+      condition.curfewDescription = "$defendantRemainAt $detailsAndTiming"
       order.curfewConditions = condition
+      monitoringConditions.endDate = condition.endDate
     }
 
     //region InterestedParties
@@ -308,14 +323,25 @@ class HearingEventHandler(
         "Responsible officer",
       ),
     )
-    val responsibleOrganisationRegion = getPromptValue(
+    var responsibleOrganisationRegion = getPromptValue(
       prompts,
       "Probation team to be notified organisation name",
     ) ?: ""
-    val responsibleOrganisationEmail = getPromptValue(
+    var responsibleOrganisationEmail = getPromptValue(
       prompts,
       "Probation team to be notified email address 1",
     ) ?: ""
+
+    if (responsibleOrganisation == "YJS") {
+      responsibleOrganisationRegion = getPromptValue(
+        prompts,
+        "Youth offending team to be notified organisation name",
+      ) ?: ""
+      responsibleOrganisationEmail = getPromptValue(
+        prompts,
+        "Youth offending team to be notified email address 1",
+      ) ?: ""
+    }
 
     order.interestedParties = buildInterestedPartiesFromHearing(
       order.id,
@@ -397,7 +423,7 @@ class HearingEventHandler(
   }
 
   private fun getNextCourtHearingDate(prompts: List<JudicialResultsPrompt>): ZonedDateTime? {
-    var nextHearingDetails: String = ""
+    var nextHearingDetails = ""
     var nextHearingDateKey = ""
     if (prompts.any { it.label == "Next hearing in magistrates' court" }) {
       nextHearingDetails = getPromptValue(prompts, "Next hearing in magistrates' court") ?: ""
@@ -476,9 +502,7 @@ class HearingEventHandler(
 
   private fun getOrderType(results: List<JudicialResults>): String? {
     if (results.any {
-        it.judicialResultTypeId == COMMUNITY_ORDER_ENGLAND_AND_WALES_UUID ||
-          it.judicialResultTypeId == SSO_YOUNG_OFFENDER_INSTITUTION_DETENTION_UUID ||
-          it.judicialResultTypeId == SSO_IMPRISONMENT_UUID
+        COMMUNITY_ORDER_UUIDS.contains(it.judicialResultTypeId)
       }
     ) {
       return "Community"
@@ -492,16 +516,9 @@ class HearingEventHandler(
   }
 
   private fun getConditionType(results: List<JudicialResults>): MonitoringConditionType? {
-    if (results.any {
-        it.judicialResultTypeId == COMMUNITY_ORDER_ENGLAND_AND_WALES_UUID ||
-          it.judicialResultTypeId == SSO_YOUNG_OFFENDER_INSTITUTION_DETENTION_UUID ||
-          it.judicialResultTypeId == SSO_IMPRISONMENT_UUID
-      }
-    ) {
+    if (results.any { COMMUNITY_ORDER_UUIDS.contains(it.judicialResultTypeId) }) {
       return MonitoringConditionType.REQUIREMENT_OF_A_COMMUNITY_ORDER
-    } else if (results.any { BAIL_CONDITION_UUIDs.contains(it.judicialResultTypeId) }
-
-    ) {
+    } else if (results.any { BAIL_CONDITION_UUIDs.contains(it.judicialResultTypeId) }) {
       return MonitoringConditionType.BAIL_ORDER
     }
 
@@ -522,7 +539,7 @@ class HearingEventHandler(
     return when (responsibleOfficer) {
       "an officer of a provider of probation services" -> "Probation"
       "a probation officer" -> "Probation"
-      "a member of the youth offending team" -> "YJB"
+      "a member of the youth offending team" -> "YJS"
       "the electronic monitoring supervisor" -> "Field Monitoring Service"
       "the officer in charge of the Attendance Centre" -> "Policy/youth attendance"
       else -> ""
