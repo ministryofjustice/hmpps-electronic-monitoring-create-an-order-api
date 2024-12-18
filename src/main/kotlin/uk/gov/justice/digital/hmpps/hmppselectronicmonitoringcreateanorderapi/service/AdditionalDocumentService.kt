@@ -41,6 +41,25 @@ class AdditionalDocumentService(
     return webClient.getDocument(doc.id.toString())
   }
 
+  // NOTE: Actually, I'm not sure we need this; the order passed to the FMSServce contains a mutableListOf(additionalDocument)! Retaining it for now.
+
+//  fun getDocumentsByOrderId(
+//    orderId: UUID
+//  ): List<ResponseEntity<Flux<InputStreamResource>>>? {
+//    // Get all doc records associated with an order
+//    val docs = attachmentRepo.findAdditionalDocumentsByOrderId(
+//      orderId,
+//    ).orElseThrow {
+//      EntityNotFoundException("Documents for $orderId not found")
+//    }
+//    // Iterate over the doc records, using the existing getDocument() method to create a list of docs
+//    return docs.map { doc ->
+//      webClient.getDocument(doc.id.toString())!!
+//    }
+//
+//    // This list will be processed. Each doc will be sent to FMS.
+//  }
+
   fun deleteDocument(orderId: UUID, username: String, documentType: DocumentType) {
     val order = findEditableOrder(orderId, username)
     val doc = order.additionalDocuments.firstOrNull { it.fileType == documentType }
