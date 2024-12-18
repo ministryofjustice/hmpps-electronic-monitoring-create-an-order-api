@@ -40,7 +40,7 @@ class FmsOrderSubmissionStrategy(
     } catch (e: Exception) {
       Result(
         success = false,
-        error = Exception("Failed to submit FMS Device Wearer", e),
+        error = Exception("Failed to submit FMS Monitoring Order", e),
       )
     }
   }
