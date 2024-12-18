@@ -545,7 +545,7 @@ class OrderControllerTest : IntegrationTestBase() {
     fun String.removeWhitespaceAndNewlines(): String = this.replace("(\"[^\"]*\")|\\s".toRegex(), "\$1")
 
     @Test
-    fun `It should update order with serco device wearer id, monitoring id & order status, and return 200`() {
+    fun `It should update order with serco device wearer id, monitoring id, order status & attachment data, and return 200`() {
       val order = createAndPersistReadyToSubmitOrder()
       sercoAuthApi.stubGrantToken()
 
@@ -865,7 +865,7 @@ class OrderControllerTest : IntegrationTestBase() {
 
       assertThat(submitResult!!.fmsDeviceWearerRequest).isEqualTo(expectedDWJson.removeWhitespaceAndNewlines())
       assertThat(submitResult.fmsOrderRequest).isEqualTo(expectedOrderJson.removeWhitespaceAndNewlines())
-      assertThat(submitResult.fmsAttachmentRequest).isEqualTo(expectedAttachmentJson.removeWhitespaceAndNewlines()) // ATTACHMENT
+      assertThat(submitResult.fmsAttachment).isEqualTo(expectedAttachmentJson.removeWhitespaceAndNewlines()) // ATTACHMENT
       val updatedOrder = repo.findById(order.id).get()
       assertThat(updatedOrder.fmsResultId).isEqualTo(submitResult.id)
       assertThat(updatedOrder.status).isEqualTo(OrderStatus.SUBMITTED)
