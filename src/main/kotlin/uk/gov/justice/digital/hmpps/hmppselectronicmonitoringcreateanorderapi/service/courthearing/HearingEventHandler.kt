@@ -57,6 +57,8 @@ class HearingEventHandler(
 
     const val SSO_IMPRISONMENT = "8b1cff00-a456-40da-9ce4-f11c20959084"
 
+    const val SUPERVISION_DEFAULT_ORDER = "fd391847-f640-402e-a958-f33a014e6684"
+
     private const val COMMUNITY_ORDER_SCOTLAND = "ae617390-b41e-46ac-bd63-68a28512676a"
 
     const val BAIL_ADULT_REMITTAL_FOR_SENTENCE_ON_CONDITIONAL = "f917ba0c-1faf-4945-83a8-50be9049f9b4"
@@ -92,6 +94,7 @@ class HearingEventHandler(
       SSO_IMPRISONMENT,
       YOUTH_REHABILITATION_ENGLAND_AND_WALES,
       YOUTH_REHABILITATION_WITH_FOSTERING,
+      SUPERVISION_DEFAULT_ORDER,
     )
 
     //endregion
@@ -301,7 +304,8 @@ class HearingEventHandler(
 
     if (judicialResults.any {
         it.judicialResultTypeId == CommunityOrderType.COMMUNITY_ORDER_CURFEW.uuid ||
-          it.judicialResultTypeId == CommunityOrderType.YOUTH_CURFEW.uuid
+          it.judicialResultTypeId == CommunityOrderType.YOUTH_CURFEW.uuid ||
+          it.judicialResultTypeId == CommunityOrderType.SUPERVISION_CURFEW.uuid
       }
     ) {
       monitoringConditions.curfew = true
@@ -316,8 +320,8 @@ class HearingEventHandler(
         val localDate = LocalDate.parse(it, formatter)
         ZonedDateTime.of(localDate, LocalTime.parse(endTime), ZoneId.of("GMT"))
       }
-      val defendantRemainAt = getPromptValue(prompts, "Defendant to remain at")
-      val detailsAndTiming = getPromptValue(prompts, "Details and timings")
+      val defendantRemainAt = getPromptValue(prompts, "Defendant to remain at") ?: ""
+      val detailsAndTiming = getPromptValue(prompts, "Details and timings") ?: ""
       condition.curfewDescription = "$defendantRemainAt $detailsAndTiming"
       order.curfewConditions = condition
       monitoringConditions.endDate = condition.endDate

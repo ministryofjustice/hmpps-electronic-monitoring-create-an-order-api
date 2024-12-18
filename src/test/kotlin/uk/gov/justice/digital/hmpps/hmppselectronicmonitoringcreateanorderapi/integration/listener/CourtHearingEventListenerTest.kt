@@ -231,6 +231,12 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
     runPayloadTest(rootFilePath)
   }
 
+  @Test
+  fun `Will map SDO_supervision_curfew request and submit to FMS`() {
+    val rootFilePath = "src/test/resources/json/SDO_supervision_curfew"
+    runPayloadTest(rootFilePath)
+  }
+
   fun runPayloadTest(rootFilePath: String) {
     val rawMessage = generateRawHearingEventMessage("$rootFilePath/cp_payload.json")
     sercoApi.stubCreateDeviceWearer(
