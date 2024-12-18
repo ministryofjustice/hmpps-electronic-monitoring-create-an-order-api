@@ -128,7 +128,7 @@ class FmsOrderSubmissionStrategy(
       return SubmitFmsOrderResult(
         id = order.id,
         success = false,
-        strategy = FmsSubmissionStrategyKind.DUMMY,
+        strategy = FmsSubmissionStrategyKind.ORDER,
         error = createDeviceWearerResult.error,
         deviceWearerId = deviceWearerId,
         fmsDeviceWearerRequest = deviceWearerRequest,
@@ -144,7 +144,7 @@ class FmsOrderSubmissionStrategy(
       return SubmitFmsOrderResult(
         id = order.id,
         success = false,
-        strategy = FmsSubmissionStrategyKind.DUMMY,
+        strategy = FmsSubmissionStrategyKind.ORDER,
         error = createMonitoringOrderResult.error,
         deviceWearerId = deviceWearerId,
         fmsDeviceWearerRequest = deviceWearerRequest,
@@ -157,7 +157,7 @@ class FmsOrderSubmissionStrategy(
     return SubmitFmsOrderResult(
       id = order.id,
       success = true,
-      strategy = FmsSubmissionStrategyKind.DUMMY,
+      strategy = FmsSubmissionStrategyKind.ORDER,
       deviceWearerId = deviceWearerId,
       fmsDeviceWearerRequest = deviceWearerRequest,
       fmsOrderId = monitoringOrderId,
