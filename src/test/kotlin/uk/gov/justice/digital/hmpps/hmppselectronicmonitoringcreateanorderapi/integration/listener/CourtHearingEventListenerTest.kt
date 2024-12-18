@@ -232,6 +232,12 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
   }
 
   @Test
+  fun `Will map YROISS_youth_exclusion request and submit to FMS`() {
+    val rootFilePath = "src/test/resources/json/YROISS_youth_exclusion"
+    runPayloadTest(rootFilePath)
+  }
+
+  @Test
   fun `Will map SDO_supervision_curfew request and submit to FMS`() {
     val rootFilePath = "src/test/resources/json/SDO_supervision_curfew"
     runPayloadTest(rootFilePath)

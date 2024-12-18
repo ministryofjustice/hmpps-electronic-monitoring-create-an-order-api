@@ -49,9 +49,10 @@ class HearingEventHandler(
     //region Comment Platform UUIDs
     const val COMMUNITY_ORDER_ENGLAND_AND_WALES = "418b3aa7-65ab-4a4a-bab9-2f96b698118c"
 
-    const val YOUTH_REHABILITATION_ENGLAND_AND_WALES = "73a4f6a2-b768-45de-beb7-3f4d2f933e11"
+    const val YOUTH_REHAB_ENGLAND_AND_WALES = "73a4f6a2-b768-45de-beb7-3f4d2f933e11"
 
-    const val YOUTH_REHABILITATION_WITH_FOSTERING = "ae8c21a9-cf2a-487b-8fae-58d50c7104f0"
+    const val YOUTH_REHAB_WITH_FOSTERING = "ae8c21a9-cf2a-487b-8fae-58d50c7104f0"
+    const val YOUTH_REHAB_WITH_INTENSIVE_SUPERVISION_AND_SURVEILLANCE = "0b5ce679-b262-436d-8f94-aa78de85022a"
 
     const val SSO_YOUNG_OFFENDER_INSTITUTION_DETENTION = "5679e5b7-0ca8-4d2a-ba80-7a50025fb589"
 
@@ -92,9 +93,10 @@ class HearingEventHandler(
       COMMUNITY_ORDER_ENGLAND_AND_WALES,
       SSO_YOUNG_OFFENDER_INSTITUTION_DETENTION,
       SSO_IMPRISONMENT,
-      YOUTH_REHABILITATION_ENGLAND_AND_WALES,
-      YOUTH_REHABILITATION_WITH_FOSTERING,
+      YOUTH_REHAB_ENGLAND_AND_WALES,
+      YOUTH_REHAB_WITH_FOSTERING,
       SUPERVISION_DEFAULT_ORDER,
+      YOUTH_REHAB_WITH_INTENSIVE_SUPERVISION_AND_SURVEILLANCE,
     )
 
     //endregion
@@ -249,7 +251,8 @@ class HearingEventHandler(
     }
 
     val exclusionZoneJudicialResult = judicialResults.firstOrNull {
-      it.judicialResultTypeId == CommunityOrderType.EXCLUSION_ZONE.uuid
+      it.judicialResultTypeId == CommunityOrderType.EXCLUSION_ZONE.uuid ||
+        it.judicialResultTypeId == CommunityOrderType.YOUTH_EXCLUSION.uuid
     }
     if (exclusionZoneJudicialResult != null) {
       monitoringConditions.exclusionZone = true
