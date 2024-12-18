@@ -2,7 +2,7 @@
   "case_id": "MockDeviceWearerId",
   "allday_lockdown": "",
   "atv_allowance": "",
-  "condition_type": "Bail Order",
+  "condition_type": "Requirement of a Community Order",
   "court": "",
   "court_order_email": "",
   "device_type": "",
@@ -10,8 +10,8 @@
   "enforceable_condition": [
     {
       "condition": "EM Exclusion / Inclusion Zone",
-      "start_date": "2024-10-25 00:00:00",
-      "end_date": ""
+      "start_date": "2024-11-10 10:00:00",
+      "end_date": "2025-05-10 10:00:00"
     }
   ],
   "exclusion_allday": "",
@@ -32,11 +32,11 @@
   "no_phone_number": "",
   "offence": null,
   "offence_date": "",
-  "order_end": "",
+  "order_end": "2025-05-10 10:00:00",
   "order_id": "{expectedOderId}",
   "order_request_type": "",
-  "order_start": "2024-10-25 00:00:00",
-  "order_type": "Post Release",
+  "order_start": "2024-11-10 10:00:00",
+  "order_type": "Community",
   "order_type_description": null,
   "order_type_detail": "",
   "order_variation_date": "",
@@ -50,15 +50,15 @@
   "responsible_officer_email": "",
   "responsible_officer_phone": null,
   "responsible_officer_name": "",
-  "responsible_organization": "Probation",
+  "responsible_organization": "YJS",
   "ro_post_code": "",
   "ro_address_1": "",
   "ro_address_2": "",
   "ro_address_3": "",
   "ro_address_4": "",
-  "ro_email": "midlandsnps.court@justice.gov.uk",
+  "ro_email": "yjs@bridgend.gov.uk",
   "ro_phone": null,
-  "ro_region": "Midlands Division NPS",
+  "ro_region": "Bridgend YOT",
   "sentence_date": "",
   "sentence_expiry": "",
   "tag_at_source": "",
@@ -69,7 +69,7 @@
   "conditional_release_date": "",
   "reason_for_order_ending_early": "",
   "business_unit": "",
-  "service_end_date": "",
+  "service_end_date": "2025-05-10",
   "curfew_description": "",
   "curfew_start": "",
   "curfew_end": "",
@@ -77,10 +77,10 @@
   "trail_monitoring": "No",
   "exclusion_zones": [
     {
-      "description": "Exclusion - not to enter a place Place or area:London Mayfair",
-      "duration": null,
-      "start": "2024-10-25",
-      "end": "2024-10-29"
+      "description": "YREX3 - Youth rehabilitation requirement: Exclusion not to enter for a period with electronic monitoring\nYouth rehabilitation requirement: Exclusion with Electronic Monitoring. Not to enter 11 Copperfield Avenue,\nMitcham. This exclusion with electronic monitoring lasts for 6 Months. Start date 10/11/2024. Start time 10:00. End date 10/05/2025. End time 10:00. ",
+      "duration": "6 Months",
+      "start": "2024-11-10",
+      "end": "2025-05-10"
     }
   ],
   "inclusion_zones": [],

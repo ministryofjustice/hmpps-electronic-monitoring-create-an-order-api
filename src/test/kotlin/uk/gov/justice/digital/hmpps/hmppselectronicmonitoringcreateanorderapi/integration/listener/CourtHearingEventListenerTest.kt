@@ -106,7 +106,7 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
 
   @Test
   fun `Will process a valid payload with em details`() {
-    val rootFilePath = "src/test/resources/json/SSO_IMPRISONMENT"
+    val rootFilePath = "src/test/resources/json/SUSPS_community_order_inclusion"
     val rawMessage = generateRawHearingEventMessage("$rootFilePath/cp_payload.json")
     sercoApi.stubCreateDeviceWearer(
       HttpStatus.OK,
@@ -124,80 +124,122 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
   fun String.removeWhitespaceAndNewlines(): String = this.replace("(\"[^\"]*\")|\\s".toRegex(), "\$1")
 
   @Test
-  fun `Will map Community Order Curfew request and submit to FMS`() {
-    val rootFilePath = "src/test/resources/json/CommunityOrder_Curfew"
+  fun `Will map COEW_community_order_curfew request and submit to FMS`() {
+    val rootFilePath = "src/test/resources/json/COEW_community_order_curfew"
     runPayloadTest(rootFilePath)
   }
 
   @Test
-  fun `Will map COEW AAR request and submit to FMS`() {
-    val rootFilePath = "src/test/resources/json/COEW_AAR"
+  fun `Will map COEW_community_order_alcohol request and submit to FMS`() {
+    val rootFilePath = "src/test/resources/json/COEW_community_order_alcohol"
     runPayloadTest(rootFilePath)
   }
 
   @Test
-  fun `Will map SSO_YOUNG_OFFENDER_INSTITUTION_DETENTION request and submit to FMS`() {
-    val rootFilePath = "src/test/resources/json/SSO_YOUNG_OFFENDER_INSTITUTION_DETENTION"
+  fun `Will map SUSPSD_community_order_exclusion request and submit to FMS`() {
+    val rootFilePath = "src/test/resources/json/SUSPSD_community_order_exclusion"
     runPayloadTest(rootFilePath)
   }
 
   @Test
-  fun `Will map SSO_IMPRISONMENT request and submit to FMS`() {
-    val rootFilePath = "src/test/resources/json/SSO_IMPRISONMENT"
+  fun `Will map SUSPS_community_order_inclusion request and submit to FMS`() {
+    val rootFilePath = "src/test/resources/json/SUSPS_community_order_inclusion"
     runPayloadTest(rootFilePath)
   }
 
   @Test
-  fun `Will map COV_Community_Order_Trail and submit to FMS`() {
-    val rootFilePath = "src/test/resources/json/COV_Community_Order_Trail"
+  fun `Will map COV_community_order_trail and submit to FMS`() {
+    val rootFilePath = "src/test/resources/json/COV_community_order_trail"
     runPayloadTest(rootFilePath)
   }
 
   @Test
-  fun `Will map REMCB_BAIL_CURFEW request and submit to FMS`() {
-    val rootFilePath = "src/test/resources/json/REMCB_BAIL_CURFEW"
+  fun `Will map REMCB_bail_curfew request and submit to FMS`() {
+    val rootFilePath = "src/test/resources/json/REMCB_bail_curfew"
     runPayloadTest(rootFilePath)
   }
 
   @Test
-  fun `Will map CCSIB_BAIL_EXCLUSION request and submit to FMS`() {
-    val rootFilePath = "src/test/resources/json/CCSIB_BAIL_EXCLUSION"
+  fun `Will map CCSIB_bail_exclusion request and submit to FMS`() {
+    val rootFilePath = "src/test/resources/json/CCSIB_bail_exclusion"
     runPayloadTest(rootFilePath)
   }
 
   @Test
-  fun `Will map CCSIB_Crown_Court_BAIL_EXCLUSION request and submit to FMS`() {
-    val rootFilePath = "src/test/resources/json/CCSIB_Crown_Court_BAIL_EXCLUSION"
+  fun `Will map CCSIB_crown_court_bail_exclusion request and submit to FMS`() {
+    val rootFilePath = "src/test/resources/json/CCSIB_crown_court_bail_exclusion"
     runPayloadTest(rootFilePath)
   }
 
   @Test
-  fun `Will map CCSIB_Crown_Court_WC_Next_Hearing_Date request and submit to FMS`() {
-    val rootFilePath = "src/test/resources/json/CCSIB_Crown_Court_BAIL_EXCLUSION"
+  fun `Will map CCSIB_crown_court_week_commencing_next_hearing_date request and submit to FMS`() {
+    val rootFilePath = "src/test/resources/json/CCSIB_crown_court_week_commencing_next_hearing_date"
     runPayloadTest(rootFilePath)
   }
 
   @Test
-  fun `Will map CCSIB_Crown_Court_No_Fixed_Next_Hearing_Date request and submit to FMS`() {
-    val rootFilePath = "src/test/resources/json/CCSIB_Crown_Court_BAIL_EXCLUSION"
+  fun `Will map CCSIB_crown_court_no_fixed_next_hearing_date request and submit to FMS`() {
+    val rootFilePath = "src/test/resources/json/CCSIB_crown_court_no_fixed_next_hearing_date"
     runPayloadTest(rootFilePath)
   }
 
   @Test
-  fun `Will map RILAB_BAIL_INCLUSION request and submit to FMS`() {
-    val rootFilePath = "src/test/resources/json/RILAB_BAIL_INCLUSION"
+  fun `Will map RILAB_bail_inclusion request and submit to FMS`() {
+    val rootFilePath = "src/test/resources/json/RILAB_bail_inclusion"
     runPayloadTest(rootFilePath)
   }
 
   @Test
-  fun `Will map RIB_BAIL_EXCLUSION_EXCEPT_COURT_OR_APPOINTMENT request and submit to FMS`() {
-    val rootFilePath = "src/test/resources/json/RIB_BAIL_EXCLUSION_EXCEPT_COURT_OR_APPOINTMENT"
+  fun `Will map RIB_bail_exclusion_except_court_or_appointment request and submit to FMS`() {
+    val rootFilePath = "src/test/resources/json/RIB_bail_exclusion_except_court_or_appointment"
     runPayloadTest(rootFilePath)
   }
 
   @Test
-  fun `Will map RC_BAIL_INCLUSION request and submit to FMS`() {
-    val rootFilePath = "src/test/resources/json/RC_BAIL_INCLUSION"
+  fun `Will map RC_bail_inclusion request and submit to FMS`() {
+    val rootFilePath = "src/test/resources/json/RC_bail_inclusion"
+    runPayloadTest(rootFilePath)
+  }
+
+  @Test
+  fun `Will map RCCLAB_bail_exclusion request and submit to FMS`() {
+    val rootFilePath = "src/test/resources/json/RCCLAB_bail_exclusion"
+    runPayloadTest(rootFilePath)
+  }
+
+  @Test
+  fun `Will map CCIB_bail_curfew request and submit to FMS`() {
+    val rootFilePath = "src/test/resources/json/CCIB_bail_curfew"
+    runPayloadTest(rootFilePath)
+  }
+
+  @Test
+  fun `Will map CCIC_bail_curfew request and submit to FMS`() {
+    val rootFilePath = "src/test/resources/json/CCIC_bail_curfew"
+    runPayloadTest(rootFilePath)
+  }
+
+  @Test
+  fun `Will map YROEW_youth_curfew request and submit to FMS`() {
+    val rootFilePath = "src/test/resources/json/YROEW_youth_curfew"
+    runPayloadTest(rootFilePath)
+  }
+
+  @Test
+  fun `Will map YROFEW_youth_trail request and submit to FMS`() {
+    val rootFilePath = "src/test/resources/json/YROFEW_youth_trail"
+    runPayloadTest(rootFilePath)
+  }
+
+  @Test
+  fun `Will map YROISS_youth_exclusion request and submit to FMS`() {
+    val rootFilePath = "src/test/resources/json/YROISS_youth_exclusion"
+    runPayloadTest(rootFilePath)
+  }
+
+  @Test
+  fun `Will map SDO_supervision_curfew request and submit to FMS`() {
+    val rootFilePath = "src/test/resources/json/SDO_supervision_curfew"
     runPayloadTest(rootFilePath)
   }
 
@@ -252,7 +294,8 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
 
   @Test
   fun `Will log success and request event for valid em payload`() {
-    val rawMessage = generateRawHearingEventMessage("src/test/resources/json/COEW_AAR/cp_payload.json")
+    val rawMessage =
+      generateRawHearingEventMessage("src/test/resources/json/COEW_community_order_alcohol/cp_payload.json")
     courtHearingEventListener.onDomainEvent(rawMessage)
 
     verify(telemetryClient, Times(1)).trackEvent(
@@ -289,14 +332,17 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
   fun getNumberOfMessagesCurrentlyOnEventQueue(): Int = courtHearingEventQueueSqsClient.countAllMessagesOnQueue(
     courtHearingEventQueueSqsUrl,
   ).get()
+
   fun getNumberOfMessagesCurrentlyOnDeadLetterQueue(): Int =
     courtHearingEventDeadLetterSqsClient.countAllMessagesOnQueue(
       courtHearingEventDeadLetterSqsUrl,
     ).get()
+
   fun geMessagesCurrentlyOnDeadLetterQueue(): ReceiveMessageResponse =
     courtHearingEventDeadLetterSqsClient.receiveMessage(
       ReceiveMessageRequest.builder().queueUrl(courtHearingEventDeadLetterSqsUrl).messageAttributeNames("All").build(),
     ).get()
+
   fun sendDomainSqsMessage(rawMessage: String): CompletableFuture<SendMessageResponse> =
     courtHearingEventQueueSqsClient.sendMessage(
       SendMessageRequest.builder().queueUrl(courtHearingEventQueueSqsUrl).messageBody(rawMessage).build(),

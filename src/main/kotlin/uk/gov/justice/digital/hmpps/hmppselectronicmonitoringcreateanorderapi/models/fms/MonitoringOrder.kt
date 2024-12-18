@@ -193,8 +193,8 @@ data class MonitoringOrder(
         orderType = conditions.orderType,
         orderTypeDescription = conditions.orderTypeDescription?.value,
         orderStart = conditions.startDate?.format(dateTimeFormatter),
-        orderEnd = conditions.endDate?.format(dateTimeFormatter),
-        serviceEndDate = conditions.endDate?.format(dateFormatter),
+        orderEnd = conditions.endDate?.format(dateTimeFormatter) ?: "",
+        serviceEndDate = conditions.endDate?.format(dateFormatter) ?: "",
         caseId = caseId,
         conditionType = conditions.conditionType!!.value,
         orderId = order.id.toString(),
@@ -208,9 +208,10 @@ data class MonitoringOrder(
           EnforceableCondition(
             "Curfew with EM",
             startDate = curfew.startDate?.format(dateTimeFormatter),
-            endDate = curfew.endDate?.format(dateTimeFormatter),
+            endDate = curfew.endDate?.format(dateTimeFormatter) ?: "",
           ),
         )
+        monitoringOrder.curfewDescription = curfew.curfewDescription
         monitoringOrder.conditionalReleaseDate = order.curfewReleaseDateConditions?.releaseDate?.format(dateFormatter)
         monitoringOrder.curfewStart = curfew.startDate!!.format(dateTimeFormatter)
         monitoringOrder.curfewEnd = curfew.endDate?.format(dateTimeFormatter)
@@ -234,7 +235,7 @@ data class MonitoringOrder(
           EnforceableCondition(
             "EM Exclusion / Inclusion Zone",
             startDate = conditions.startDate?.format(dateTimeFormatter),
-            endDate = conditions.endDate?.format(dateTimeFormatter),
+            endDate = conditions.endDate?.format(dateTimeFormatter) ?: "",
           ),
         )
         order.enforcementZoneConditions.forEach {
@@ -244,7 +245,7 @@ data class MonitoringOrder(
                 description = it.description,
                 duration = it.duration,
                 start = it.startDate?.format(dateFormatter),
-                end = it.endDate?.format(dateFormatter),
+                end = it.endDate?.format(dateFormatter) ?: "",
               ),
             )
           } else if (it.zoneType == EnforcementZoneType.INCLUSION) {
@@ -253,7 +254,7 @@ data class MonitoringOrder(
                 description = it.description,
                 duration = it.duration,
                 start = it.startDate?.format(dateFormatter),
-                end = it.endDate?.format(dateFormatter),
+                end = it.endDate?.format(dateFormatter) ?: "",
               ),
             )
           }
@@ -274,7 +275,7 @@ data class MonitoringOrder(
             EnforceableCondition(
               "AAMR",
               startDate = condition.startDate?.format(dateTimeFormatter),
-              endDate = condition.endDate?.format(dateTimeFormatter),
+              endDate = condition.endDate?.format(dateTimeFormatter) ?: "",
             ),
           )
           monitoringOrder.abstinence = "Yes"
@@ -283,7 +284,7 @@ data class MonitoringOrder(
             EnforceableCondition(
               "AML",
               startDate = condition.startDate?.format(dateTimeFormatter),
-              endDate = condition.endDate?.format(dateTimeFormatter),
+              endDate = condition.endDate?.format(dateTimeFormatter) ?: "",
             ),
           )
           monitoringOrder.abstinence = "No"
