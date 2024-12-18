@@ -51,6 +51,8 @@ class HearingEventHandler(
 
     const val YOUTH_REHABILITATION_ENGLAND_AND_WALES = "73a4f6a2-b768-45de-beb7-3f4d2f933e11"
 
+    const val YOUTH_REHABILITATION_WITH_FOSTERING = "ae8c21a9-cf2a-487b-8fae-58d50c7104f0"
+
     const val SSO_YOUNG_OFFENDER_INSTITUTION_DETENTION = "5679e5b7-0ca8-4d2a-ba80-7a50025fb589"
 
     const val SSO_IMPRISONMENT = "8b1cff00-a456-40da-9ce4-f11c20959084"
@@ -89,6 +91,7 @@ class HearingEventHandler(
       SSO_YOUNG_OFFENDER_INSTITUTION_DETENTION,
       SSO_IMPRISONMENT,
       YOUTH_REHABILITATION_ENGLAND_AND_WALES,
+      YOUTH_REHABILITATION_WITH_FOSTERING,
     )
 
     //endregion
@@ -266,7 +269,11 @@ class HearingEventHandler(
       order.enforcementZoneConditions.add(zone)
     }
 
-    if (judicialResults.any { it.judicialResultTypeId == CommunityOrderType.TRAIL_MONITORING.uuid }) {
+    if (judicialResults.any {
+        it.judicialResultTypeId == CommunityOrderType.TRAIL_MONITORING.uuid ||
+          it.judicialResultTypeId == CommunityOrderType.YOUTH_TRAIL.uuid
+      }
+    ) {
       monitoringConditions.trail = true
       val trailCondition = TrailMonitoringConditions(orderId = order.id)
       val startTime = getPromptValue(prompts, "Start time of tagging") ?: "00:00"
