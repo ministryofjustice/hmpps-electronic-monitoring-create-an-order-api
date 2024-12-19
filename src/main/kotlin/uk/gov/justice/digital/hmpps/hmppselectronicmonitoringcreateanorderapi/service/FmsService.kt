@@ -23,8 +23,8 @@ class FmsService(
   val submitFmsOrderResultRepository: SubmitFmsOrderResultRepository,
   @Value("\${toggle.fms-integration.enabled:false}") val fmsIntegrationEnabled: Boolean,
 ) {
-  private fun getSubmissionStrategy(order: Order): FmsSubmissionStrategy {
-    if (!fmsIntegrationEnabled) {
+  private fun getSubmissionStrategy(order: Order, orderSource: FmsOrderSource): FmsSubmissionStrategy {
+    if (!fmsIntegrationEnabled || orderSource === FmsOrderSource.COMMON_PLATFORM) {
       return FmsDummySubmissionStrategy(this.objectMapper)
     }
 
@@ -36,7 +36,7 @@ class FmsService(
   }
 
   fun submitOrder(order: Order, orderSource: FmsOrderSource): SubmitFmsOrderResult {
-    val strategy = this.getSubmissionStrategy(order)
+    val strategy = this.getSubmissionStrategy(order, orderSource)
     val submissionResult = strategy.submitOrder(order, orderSource)
 
     submitFmsOrderResultRepository.save(submissionResult)
