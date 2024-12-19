@@ -144,6 +144,11 @@ data class Order(
           )
       )
 
+  private val isOrderOrHasVariationDetails: Boolean
+    get() = (
+      type === OrderType.REQUEST || variationDetails != null
+      )
+
   private val requiredDocuments: Boolean
     get() = (
 //      Add additional document validation here
@@ -158,6 +163,7 @@ data class Order(
         monitoringConditions?.isValid == true &&
         adultOrHasResponsibleAdult &&
         hasPrimaryAddressOrNoFixedAbode &&
-        monitoringConditionsAreValid
+        monitoringConditionsAreValid &&
+        isOrderOrHasVariationDetails
       )
 }

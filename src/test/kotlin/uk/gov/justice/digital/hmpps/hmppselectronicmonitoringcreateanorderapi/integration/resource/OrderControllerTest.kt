@@ -446,6 +446,24 @@ class OrderControllerTest : IntegrationTestBase() {
     }
 
     @Test
+    fun `It should throw an error if an incomplete variation is submitted`() {
+      val order = createVariation()
+
+      val result = webTestClient.post()
+        .uri("/api/orders/${order.id}/submit")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .is4xxClientError
+        .expectBody(ErrorResponse::class.java)
+        .returnResult()
+
+      val error = result.responseBody!!
+      assertThat(error.userMessage)
+        .isEqualTo("Error submitting order: Please complete all mandatory fields before submitting this form")
+    }
+
+    @Test
     fun `It should return an error if serco auth service returned error`() {
       val order = createAndPersistReadyToSubmitOrder()
 
