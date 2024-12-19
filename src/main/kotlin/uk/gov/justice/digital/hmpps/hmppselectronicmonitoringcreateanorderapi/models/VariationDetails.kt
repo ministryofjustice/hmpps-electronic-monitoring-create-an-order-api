@@ -27,8 +27,8 @@ data class VariationDetails(
   @Column(name = "VARIATION_TYPE", nullable = false)
   val variationType: VariationType,
 
-  @Column(name = "VARIATION_DATE", nullable = true)
-  var variationDate: ZonedDateTime? = null,
+  @Column(name = "VARIATION_DATE", nullable = false)
+  var variationDate: ZonedDateTime,
 
   @Schema(hidden = true)
   @OneToOne

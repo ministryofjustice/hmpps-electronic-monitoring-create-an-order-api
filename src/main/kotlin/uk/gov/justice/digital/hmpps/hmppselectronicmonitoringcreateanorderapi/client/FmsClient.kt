@@ -22,6 +22,7 @@ class FmsClient(
   private val objectMapper: ObjectMapper,
 ) {
   private val webClient: WebClient = WebClient.builder().baseUrl(url).build()
+
   fun createDeviceWearer(deviceWearer: DeviceWearer, orderId: UUID): FmsResponse {
     val token = fmsAuthClient.getClientToken()
     val result = webClient.post().uri("/device_wearer/createDW")
@@ -56,6 +57,28 @@ class FmsClient(
           Mono.error(
             CreateSercoEntityException(
               "Error creating FMS Monitoring Order for order: $orderId with error: ${error?.error?.detail}",
+            ),
+          )
+        }
+      })
+      .bodyToMono(FmsResponse::class.java)
+      .onErrorResume(WebClientResponseException::class.java) { Mono.empty() }
+      .block()!!
+    return result
+  }
+
+  fun updateMonitoringOrder(order: MonitoringOrder, orderId: UUID): FmsResponse {
+    val token = fmsAuthClient.getClientToken()
+    val result = webClient.post().uri("/monitoring_order/updateMO")
+      .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+      .contentType(MediaType.APPLICATION_JSON)
+      .bodyValue(order)
+      .retrieve()
+      .onStatus({ t -> t.is5xxServerError }, {
+        it.bodyToMono(FmsErrorResponse::class.java).flatMap { error ->
+          Mono.error(
+            CreateSercoEntityException(
+              "Error updating FMS Monitoring Order for order: $orderId with error: ${error?.error?.detail}",
             ),
           )
         }
