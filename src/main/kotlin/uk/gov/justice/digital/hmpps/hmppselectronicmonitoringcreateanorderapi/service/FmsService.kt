@@ -20,7 +20,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.se
 @Configuration
 class FmsService(
   val fmsClient: FmsClient,
-  val webClient: DocumentApiClient,
+  val documentApiWebClient: DocumentApiClient,
   val objectMapper: ObjectMapper,
   val submitFmsOrderResultRepository: SubmitFmsOrderResultRepository,
   @Value("\${toggle.cemo.fms-integration.enabled:false}") val cemoFmsIntegrationEnabled: Boolean,

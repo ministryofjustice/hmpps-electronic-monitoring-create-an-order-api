@@ -29,7 +29,6 @@ data class SubmitFmsOrderResult(
 
   @Column(name = "FMS_ORDER", nullable = true, columnDefinition = "varchar(409600)")
   var fmsOrderRequest: String? = "",
-
   // TODO: Remove this orderID field. There is no distinct order ID from Serco there will just be a device wearer ID, and the order is stored against that device wearer ID.
   @Column(name = "FMS_ORDER_ID", nullable = true)
   var fmsOrderId: String? = "",
