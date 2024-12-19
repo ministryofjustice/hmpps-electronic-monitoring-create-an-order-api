@@ -15,16 +15,17 @@ data class SubmitFmsOrderResult(
   @Id
   @Column(name = "ID", nullable = false, unique = true)
   val id: UUID = UUID.randomUUID(),
+
   @Column(name = "FMS_DEVICE_WEARER", nullable = true, columnDefinition = "varchar(409600)")
   var fmsDeviceWearerRequest: String? = "",
   @Column(name = "FMS_DEVICE_WEARER_ID", nullable = true)
   var deviceWearerId: String? = "",
+
   @Column(name = "FMS_ORDER", nullable = true, columnDefinition = "varchar(409600)")
   var fmsOrderRequest: String? = "",
-
   // TODO: Remove this orderID field. There is no distinct order ID from Serco there will just be a device wearer ID, and the order is stored against that device wearer ID.
-    @Column(name = "FMS_ORDER_ID", nullable = true)
-    var fmsOrderId: String? = "",
+  @Column(name = "FMS_ORDER_ID", nullable = true)
+  var fmsOrderId: String? = "",
 
   // FMS_ADDITIONAL_DOCUMENT field. (Will become FMS_ADDITIONAL_DOCUMENTS)
   //  Q: We expect one order and one device wearer, but there can be multiple attachments (device wearer ID, license, maps). Should these be in a different table? Or multiple columns in this table?

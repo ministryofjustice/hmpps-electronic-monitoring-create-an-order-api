@@ -10,17 +10,15 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.ex
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.SubmitFmsOrderResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AdditionalDocument
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.DeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.MonitoringOrder
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.SubmitFmsOrderResultRepository
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.AdditionalDocumentService
 
 @Service
 @Configuration
 class FmsService(
   val fmsClient: FmsClient,
-  val webClient: DocumentApiClient,
+  val documentApiWebClient: DocumentApiClient,
   val objectMapper: ObjectMapper,
   val submitFmsOrderResultRepository: SubmitFmsOrderResultRepository,
   @Value("\${toggle.fms-integration.enabled:false}") val fmsIntegrationEnabled: Boolean,
@@ -29,35 +27,41 @@ class FmsService(
   fun submitOrder(order: Order, orderSource: FmsOrderSource): SubmitFmsOrderResult {
     val result = SubmitFmsOrderResult(id = order.id, orderSource = orderSource)
 
-
     if (fmsIntegrationEnabled) {
       try {
         // create FMS device wearer
-        val fmsDeviceWearer = DeviceWearer.fromCemoOrder(order)
-        result.fmsDeviceWearerRequest = objectMapper.writeValueAsString(fmsDeviceWearer)
-        val createDeviceWearerResult = fmsClient.createDeviceWearer(fmsDeviceWearer, orderId = order.id)
-        result.deviceWearerId = createDeviceWearerResult.result.first().id
+        val fmsDeviceWearer = DeviceWearer.fromCemoOrder(order) // 1. prepare FMS request - convert DW info to FMS DW request
+        result.fmsDeviceWearerRequest = objectMapper.writeValueAsString(fmsDeviceWearer) // 2. prepare our result object - add the request to the FMS result object
+        val createDeviceWearerResult = fmsClient.createDeviceWearer(fmsDeviceWearer, orderId = order.id) // 3. make FMS request - send request to create
+        result.deviceWearerId = createDeviceWearerResult.result.first().id // 4. update our result object - add fms id to result object
 
         // create FMS monitoring order
         val fmsOrder = MonitoringOrder.fromOrder(order, result.deviceWearerId)
         result.fmsOrderRequest = objectMapper.writeValueAsString(fmsOrder)
         val createOrderResult = fmsClient.createMonitoringOrder(fmsOrder, orderId = order.id)
         result.fmsOrderId = createOrderResult.result.first().id
-        // TODO: Upload attachments
 
-        // Create attachment/s
+        // -------------------------
+        // TODO: CREATE FMS ATTACHMENTS
+        // 1. Prepare FMS Attachment request - Get first document metadata and file itself related to order
+          val firstAttachmentMetadata = order.additionalDocuments.first()
+          val firstAttachmentFileStream = documentApiWebClient.getDocument(firstAttachmentMetadata.id.toString())?.body?.blockFirst() // TODO: handle case where it's null
 
-        // 1. Get a list of the documents related to this order.
-        val additionalDocuments = order.additionalDocuments.map { document ->
-          webClient.getDocument(document.id.toString())
-        }
+        // 2. Prepare result object - TODO: is this necessary?
 
-        // 2. For each document in the list,
-          // b. Convert it to binary data (if required; may already be appropriate format?)
-          // c. Submit it to the Serco API endpoint
-          // d, e. Handle SUCCESS & FAILURE:
-            // i. SUCCESS: Update CEMO DB
-            // ii. FAILURE: Define path for this: Throw suitable error, which is caught by the existing catch (below).
+        // 3. Make FMS request - send request to create - TODO: change caseId to relevant ID
+          val createAttachmentResult = fmsClient.createAttachment(fileName = firstAttachmentMetadata.fileName!!, caseId = order.id, file = firstAttachmentFileStream!!, documentType = firstAttachmentMetadata.fileType.toString())
+
+        // 4.
+
+
+          // for full list:
+          //   val additionalDocuments = order.additionalDocuments.map { document ->
+          //   webClient.getDocument(document.id.toString())
+          // }
+
+        // combine all responses into a json string
+
 
         result.success = true
       } catch (e: CreateSercoEntityException) {
