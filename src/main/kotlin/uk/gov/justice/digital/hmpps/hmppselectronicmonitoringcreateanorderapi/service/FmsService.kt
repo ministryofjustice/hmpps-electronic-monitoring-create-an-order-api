@@ -29,7 +29,7 @@ class FmsService(
     }
 
     if (order.type === OrderType.VARIATION) {
-      return FmsVariationSubmissionStrategy()
+      return FmsVariationSubmissionStrategy(this.objectMapper, this.fmsClient)
     }
 
     return FmsOrderSubmissionStrategy(this.objectMapper, this.fmsClient)

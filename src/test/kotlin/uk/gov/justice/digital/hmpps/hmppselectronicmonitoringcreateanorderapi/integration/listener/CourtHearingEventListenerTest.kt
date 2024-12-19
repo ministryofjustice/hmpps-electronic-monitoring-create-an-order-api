@@ -112,7 +112,7 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
       HttpStatus.OK,
       FmsResponse(result = listOf(FmsResult(message = "", id = "MockDeviceWearerId"))),
     )
-    sercoApi.stubMonitoringOrder(
+    sercoApi.stubCreateMonitoringOrder(
       HttpStatus.OK,
       FmsResponse(result = listOf(FmsResult(message = "", id = "MockMonitoringOrderId"))),
     )
@@ -249,7 +249,7 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
       HttpStatus.OK,
       FmsResponse(result = listOf(FmsResult(message = "", id = "MockDeviceWearerId"))),
     )
-    sercoApi.stubMonitoringOrder(
+    sercoApi.stubCreateMonitoringOrder(
       HttpStatus.OK,
       FmsResponse(result = listOf(FmsResult(message = "", id = "MockMonitoringOrderId"))),
     )

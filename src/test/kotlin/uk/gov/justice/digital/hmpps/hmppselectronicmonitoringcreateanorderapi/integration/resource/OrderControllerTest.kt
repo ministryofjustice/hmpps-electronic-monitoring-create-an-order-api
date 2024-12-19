@@ -27,6 +27,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ResponsibleAdult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.TrailMonitoringConditions
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.VariationDetails
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringInstallationLocationType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
@@ -35,6 +36,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderTypeDescription
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.VariationType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsErrorResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsResult
@@ -444,25 +446,6 @@ class OrderControllerTest : IntegrationTestBase() {
     }
 
     @Test
-    fun `It should throw an error if a variation is submitted`() {
-      // Temporary test to ensure that variations can't be submitted
-      val order = createVariation()
-
-      val result = webTestClient.post()
-        .uri("/api/orders/${order.id}/submit")
-        .headers(setAuthorisation())
-        .exchange()
-        .expectStatus()
-        .is4xxClientError
-        .expectBody(ErrorResponse::class.java)
-        .returnResult()
-
-      val error = result.responseBody!!
-      assertThat(error.userMessage)
-        .isEqualTo("Error submitting order: A variation cannot be submitted yet!")
-    }
-
-    @Test
     fun `It should return an error if serco auth service returned error`() {
       val order = createAndPersistReadyToSubmitOrder()
 
@@ -515,7 +498,7 @@ class OrderControllerTest : IntegrationTestBase() {
         HttpStatus.OK,
         FmsResponse(result = listOf(FmsResult(message = "", id = "MockDeviceWearerId"))),
       )
-      sercoApi.stubMonitoringOrder(
+      sercoApi.stubCreateMonitoringOrder(
         HttpStatus.INTERNAL_SERVER_ERROR,
         FmsResponse(),
         FmsErrorResponse(error = FmsErrorResponseDetails("", "Mock Create MO Error")),
@@ -552,7 +535,7 @@ class OrderControllerTest : IntegrationTestBase() {
         HttpStatus.OK,
         FmsResponse(result = listOf(FmsResult(message = "", id = "MockDeviceWearerId"))),
       )
-      sercoApi.stubMonitoringOrder(
+      sercoApi.stubCreateMonitoringOrder(
         HttpStatus.OK,
         FmsResponse(result = listOf(FmsResult(message = "", id = "MockMonitoringOrderId"))),
       )
@@ -673,7 +656,7 @@ class OrderControllerTest : IntegrationTestBase() {
       	"offence_date": "",
       	"order_end": "${mockEndDate.format(dateTimeFormatter)}",
       	"order_id": "${order.id}",
-      	"order_request_type": "",
+      	"order_request_type": "New Order",
       	"order_start": "${mockStartDate.format(dateTimeFormatter)}",
       	"order_type": "community",
       	"order_type_description": "DAPOL",
@@ -838,6 +821,300 @@ class OrderControllerTest : IntegrationTestBase() {
     }
 
     @Test
+    fun `It should update order with device wearer id, monitoring id & order status, and return 200 for a variation`() {
+      val order = createAndPersistReadyToSubmitOrder(false, OrderType.VARIATION)
+      sercoAuthApi.stubGrantToken()
+
+      sercoApi.stubCreateDeviceWearer(
+        HttpStatus.OK,
+        FmsResponse(result = listOf(FmsResult(message = "", id = "MockDeviceWearerId"))),
+      )
+      sercoApi.stubUpdateMonitoringOrder(
+        HttpStatus.OK,
+        FmsResponse(result = listOf(FmsResult(message = "", id = "MockMonitoringOrderId"))),
+      )
+      webTestClient.post()
+        .uri("/api/orders/${order.id}/submit")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .isOk
+
+      val submitResult = fmsResultRepository.findAll().firstOrNull()
+      assertThat(submitResult).isNotNull
+
+      val expectedDWJson = """
+      {
+      	"title": "",
+      	"first_name": "John",
+      	"middle_name": "",
+      	"last_name": "Smith",
+      	"alias": "Johnny",
+      	"date_of_birth": "1990-01-01",
+      	"adult_child": "adult",
+      	"sex": "Male",
+      	"gender_identity": "Male",
+      	"disability": [
+      		{
+      			"disability": "Vision"
+      		},
+      		{
+      			"disability": "Learning, understanding or concentrating"
+      		}
+      	],
+      	"address_1": "20 Somewhere Street",
+      	"address_2": "Nowhere City",
+      	"address_3": "Random County",
+      	"address_4": "United Kingdom",
+      	"address_post_code": "SW11 1NC",
+      	"secondary_address_1": "",
+      	"secondary_address_2": "",
+      	"secondary_address_3": "",
+      	"secondary_address_4": "",
+      	"secondary_address_post_code": "",
+      	"phone_number": "07401111111",
+      	"risk_serious_harm": "",
+      	"risk_self_harm": "",
+      	"risk_details": "Danger",
+      	"mappa": "MAAPA 1",
+      	"mappa_case_type": "CPPC (Critical Public Protection Case)",
+      	"risk_categories": [],
+      	"responsible_adult_required": "true",
+      	"parent": "Mark Smith",
+      	"guardian": "",
+      	"parent_address_1": "",
+      	"parent_address_2": "",
+      	"parent_address_3": "",
+      	"parent_address_4": "",
+      	"parent_address_post_code": "",
+      	"parent_phone_number": "07401111111",
+      	"parent_dob": "",
+      	"pnc_id": "pncId",
+      	"nomis_id": "nomisId",
+      	"delius_id": "deliusId",
+      	"prison_number": "prisonNumber",
+      	"home_office_case_reference_number": "homeOfficeReferenceNumber",
+      	"interpreter_required": "true",
+      	"language": "British Sign"
+      }
+      """.trimIndent()
+      val expectedOrderJson = """
+      {
+      	"case_id": "MockDeviceWearerId",
+      	"allday_lockdown": "",
+      	"atv_allowance": "",
+      	"condition_type": "Requirement of a Community Order",
+      	"court": "",
+      	"court_order_email": "",      	
+      	"device_type": "",
+      	"device_wearer": "John Smith",
+      	"enforceable_condition": [
+      		{
+      			"condition": "Curfew with EM",
+            "start_date": "${mockStartDate.format(dateTimeFormatter)}",
+            "end_date": "${mockEndDate.format(dateTimeFormatter)}"
+      		},
+      		{
+      			"condition": "Location Monitoring (Fitted Device)",
+            "start_date": "${mockStartDate.format(dateTimeFormatter)}",
+            "end_date": "${mockEndDate.format(dateTimeFormatter)}"
+      		},
+      		{
+      			"condition": "EM Exclusion / Inclusion Zone",
+            "start_date": "${mockStartDate.format(dateTimeFormatter)}",
+            "end_date": "${mockEndDate.format(dateTimeFormatter)}"
+      		},          
+      		{
+      			"condition": "AAMR",
+            "start_date": "${mockStartDate.format(dateTimeFormatter)}",
+            "end_date": "${mockEndDate.format(dateTimeFormatter)}"
+      		}
+      	],
+      	"exclusion_allday": "",
+      	"interim_court_date": "",
+      	"issuing_organisation": "",
+      	"media_interest": "",
+      	"new_order_received": "",
+      	"notifying_officer_email": "",
+      	"notifying_officer_name": "",
+      	"notifying_organization": "Mock Organisation",
+      	"no_post_code": "",
+      	"no_address_1": "",
+      	"no_address_2": "",
+      	"no_address_3": "",
+      	"no_address_4": "",
+      	"no_email": "",
+      	"no_name": "",
+      	"no_phone_number": "",
+      	"offence": "Fraud Offences",
+      	"offence_date": "",
+      	"order_end": "${mockEndDate.format(dateTimeFormatter)}",
+      	"order_id": "${order.id}",
+      	"order_request_type": "Variation",
+      	"order_start": "${mockStartDate.format(dateTimeFormatter)}",
+      	"order_type": "community",
+      	"order_type_description": "DAPOL",
+      	"order_type_detail": "",
+      	"order_variation_date": "${mockStartDate.format(dateTimeFormatter)}",
+      	"order_variation_details": "",
+      	"order_variation_req_received_date": "",
+      	"order_variation_type": "Change of address",
+      	"pdu_responsible": "",
+      	"pdu_responsible_email": "",
+      	"planned_order_end_date": "",
+      	"responsible_officer_details_received": "",
+      	"responsible_officer_email": "",
+      	"responsible_officer_phone": "07401111111",
+      	"responsible_officer_name": "John Smith",
+      	"responsible_organization": "Avon and Somerset Constabulary",
+      	"ro_post_code": "AB11 1CD",
+      	"ro_address_1": "Line 1",
+      	"ro_address_2": "Line 2",
+      	"ro_address_3": "",
+      	"ro_address_4": "",
+      	"ro_email": "abc@def.com",
+      	"ro_phone": "07401111111",
+      	"ro_region": "Mock Region",
+      	"sentence_date": "",
+      	"sentence_expiry": "",
+      	"tag_at_source": "",
+      	"tag_at_source_details": "",
+      	"technical_bail": "",
+      	"trial_date": "",
+      	"trial_outcome": "",
+      	"conditional_release_date": "${mockStartDate.format(formatter)}",
+      	"reason_for_order_ending_early": "",
+      	"business_unit": "",
+        "service_end_date": "${mockEndDate.format(formatter)}",
+        "curfew_description": "",
+      	"curfew_start": "${mockStartDate.format(dateTimeFormatter)}",
+      	"curfew_end": "${mockEndDate.format(dateTimeFormatter)}",
+      	"curfew_duration": [
+      		{
+      			"location": "primary",
+      			"allday": "",
+      			"schedule": [
+      				{
+      					"day": "Mo",
+      					"start": "17:00",
+      					"end": "09:00"
+      				},
+      				{
+      					"day": "Tu",
+      					"start": "17:00",
+      					"end": "09:00"
+      				},
+      				{
+      					"day": "Wed",
+      					"start": "17:00",
+      					"end": "09:00"
+      				},
+      				{
+      					"day": "Th",
+      					"start": "17:00",
+      					"end": "09:00"
+      				},
+      				{
+      					"day": "Fr",
+      					"start": "17:00",
+      					"end": "09:00"
+      				},
+      				{
+      					"day": "Sa",
+      					"start": "17:00",
+      					"end": "09:00"
+      				},
+      				{
+      					"day": "Su",
+      					"start": "17:00",
+      					"end": "09:00"
+      				}
+      			]
+      		},
+      		{
+      			"location": "secondary",
+      			"allday": "",
+      			"schedule": [
+      				{
+      					"day": "Mo",
+      					"start": "17:00",
+      					"end": "09:00"
+      				},
+      				{
+      					"day": "Tu",
+      					"start": "17:00",
+      					"end": "09:00"
+      				},
+      				{
+      					"day": "Wed",
+      					"start": "17:00",
+      					"end": "09:00"
+      				},
+      				{
+      					"day": "Th",
+      					"start": "17:00",
+      					"end": "09:00"
+      				},
+      				{
+      					"day": "Fr",
+      					"start": "17:00",
+      					"end": "09:00"
+      				},
+      				{
+      					"day": "Sa",
+      					"start": "17:00",
+      					"end": "09:00"
+      				},
+      				{
+      					"day": "Su",
+      					"start": "17:00",
+      					"end": "09:00"
+      				}
+      			]
+      		}
+      	],
+      	"trail_monitoring": "No",
+      	"exclusion_zones": [
+          {
+            "description": "Mock Exclusion Zone",
+            "duration": "Mock Exclusion Duration",
+            "start": "${mockStartDate.format(formatter)}",
+            "end": "${mockEndDate.format(formatter)}"
+          }
+          ],      	
+      	"inclusion_zones": [
+          {
+            "description": "Mock Inclusion Zone",
+            "duration": "Mock Inclusion Duration",
+            "start": "${mockStartDate.format(formatter)}",
+            "end": "${mockEndDate.format(formatter)}"
+          }
+          ],
+      	
+      	"abstinence": "Yes",
+      	"schedule": "",
+      	"checkin_schedule": [],
+      	"revocation_date": "",
+      	"revocation_type": "",
+        "installation_address_1": "24 Somewhere Street",
+        "installation_address_2": "Nowhere City",
+        "installation_address_3": "Random County",
+        "installation_address_4": "United Kingdom",
+        "installation_address_post_code": "SW11 1NC",
+        "crown_court_case_reference_number": "",
+        "magistrate_court_case_reference_number": "",
+      	"order_status": "Not Started"
+      }
+      """.trimIndent()
+
+      assertThat(submitResult!!.fmsDeviceWearerRequest).isEqualTo(expectedDWJson.removeWhitespaceAndNewlines())
+      assertThat(submitResult.fmsOrderRequest).isEqualTo(expectedOrderJson.removeWhitespaceAndNewlines())
+      val updatedOrder = repo.findById(order.id).get()
+      assertThat(updatedOrder.fmsResultId).isEqualTo(submitResult.id)
+      assertThat(updatedOrder.status).isEqualTo(OrderStatus.SUBMITTED)
+    }
+
+    @Test
     fun `It should map installation address if device wearer no fixed Abode is true`() {
       val order = createAndPersistReadyToSubmitOrder(true)
       sercoAuthApi.stubGrantToken()
@@ -846,7 +1123,7 @@ class OrderControllerTest : IntegrationTestBase() {
         HttpStatus.OK,
         FmsResponse(result = listOf(FmsResult(message = "", id = "MockDeviceWearerId"))),
       )
-      sercoApi.stubMonitoringOrder(
+      sercoApi.stubCreateMonitoringOrder(
         HttpStatus.OK,
         FmsResponse(result = listOf(FmsResult(message = "", id = "MockMonitoringOrderId"))),
       )
@@ -929,12 +1206,13 @@ class OrderControllerTest : IntegrationTestBase() {
     }
   }
 
-  fun createReadyToSubmitOrder(noFixedAddress: Boolean = false): Order {
+  fun createReadyToSubmitOrder(noFixedAddress: Boolean = false, orderType: OrderType = OrderType.REQUEST): Order {
     val order = Order(
       username = "AUTH_ADM",
       status = OrderStatus.IN_PROGRESS,
-      type = OrderType.REQUEST,
+      type = orderType,
     )
+
     order.deviceWearer = DeviceWearer(
       orderId = order.id,
       firstName = "John",
@@ -1023,6 +1301,7 @@ class OrderControllerTest : IntegrationTestBase() {
       orderId = order.id,
       contactNumber = "07401111111",
     )
+
     order.monitoringConditions = MonitoringConditions(
       orderId = order.id,
       orderType = "community",
@@ -1122,11 +1401,23 @@ class OrderControllerTest : IntegrationTestBase() {
       notifyingOrganisation = "Mock Organisation",
       notifyingOrganisationEmail = "",
     )
+
+    if (order.type === OrderType.VARIATION) {
+      order.variationDetails = VariationDetails(
+        orderId = order.id,
+        variationType = VariationType.ADDRESS,
+        variationDate = mockStartDate,
+      )
+    }
+
     return order
   }
 
-  fun createAndPersistReadyToSubmitOrder(noFixedAddress: Boolean = false): Order {
-    val order = createReadyToSubmitOrder(noFixedAddress)
+  fun createAndPersistReadyToSubmitOrder(
+    noFixedAddress: Boolean = false,
+    orderType: OrderType = OrderType.REQUEST,
+  ): Order {
+    val order = createReadyToSubmitOrder(noFixedAddress, orderType)
     repo.save(order)
     return order
   }

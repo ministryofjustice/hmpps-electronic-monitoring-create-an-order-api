@@ -59,7 +59,7 @@ class SercoMockApiServer : WireMockServer(WIREMOCK_PORT) {
     )
   }
 
-  fun stubMonitoringOrder(status: HttpStatus, result: FmsResponse, errorResponse: FmsErrorResponse? = null) {
+  fun stubCreateMonitoringOrder(status: HttpStatus, result: FmsResponse, errorResponse: FmsErrorResponse? = null) {
     val body: String
     if (errorResponse != null) {
       body = objectMapper.writeValueAsString(errorResponse)
@@ -68,6 +68,26 @@ class SercoMockApiServer : WireMockServer(WIREMOCK_PORT) {
     }
     stubFor(
       post(urlPathTemplate("/monitoring_order/createMO"))
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withBody(
+              body,
+            )
+            .withStatus(status.value()),
+        ),
+    )
+  }
+
+  fun stubUpdateMonitoringOrder(status: HttpStatus, result: FmsResponse, errorResponse: FmsErrorResponse? = null) {
+    val body: String
+    if (errorResponse != null) {
+      body = objectMapper.writeValueAsString(errorResponse)
+    } else {
+      body = objectMapper.writeValueAsString(result)
+    }
+    stubFor(
+      post(urlPathTemplate("/monitoring_order/updateMO"))
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")

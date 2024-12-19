@@ -34,7 +34,7 @@
   "offence_date": "",
   "order_end": "2024-10-25 10:00:00",
   "order_id": "{expectedOderId}",
-  "order_request_type": "",
+  "order_request_type": "New Order",
   "order_start": "2024-10-24 00:00:00",
   "order_type": "Pre-Trial",
   "order_type_description": null,

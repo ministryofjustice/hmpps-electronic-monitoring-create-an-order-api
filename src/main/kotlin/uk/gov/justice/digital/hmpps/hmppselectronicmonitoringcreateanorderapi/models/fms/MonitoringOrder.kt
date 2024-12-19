@@ -7,6 +7,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.EnforcementZoneType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderType
 import java.time.DayOfWeek
 import java.time.format.DateTimeFormatter
 
@@ -191,6 +192,7 @@ data class MonitoringOrder(
       val monitoringOrder = MonitoringOrder(
         deviceWearer = "${order.deviceWearer!!.firstName} ${order.deviceWearer!!.lastName}",
         orderType = conditions.orderType,
+        orderRequestType = order.type.value,
         orderTypeDescription = conditions.orderTypeDescription?.value,
         orderStart = conditions.startDate?.format(dateTimeFormatter),
         orderEnd = conditions.endDate?.format(dateTimeFormatter) ?: "",
@@ -330,6 +332,11 @@ data class MonitoringOrder(
         monitoringOrder.installationAddress3 = it.addressLine3
         monitoringOrder.installationAddress4 = it.addressLine4
         monitoringOrder.installationAddressPostcode = it.postcode
+      }
+
+      if (order.type === OrderType.VARIATION) {
+        monitoringOrder.orderVariationType = order.variationDetails!!.variationType.value
+        monitoringOrder.orderVariationDate = order.variationDetails!!.variationDate.format(dateTimeFormatter)
       }
 
       return monitoringOrder
