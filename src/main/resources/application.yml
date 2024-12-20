@@ -50,10 +50,14 @@ server:
     include-message: always
 
 toggle:
-  cp-integration:
-    enabled: ${CP_INTEGRATION_ENABLED}
-  fms-integration:
-    enabled: ${FMS_INTEGRATION_ENABLED}
+  common-platform:
+    processing:
+      enabled: ${CP_PROCESSING_ENABLED:false}
+    fms-integration:
+      enabled: ${CP_FMS_INTEGRATION_ENABLED:false}
+  cemo:
+    fms-integration:
+      enabled: ${CEMO_FMS_INTEGRATION_ENABLED:false}
 
 management:
   endpoints:

@@ -21,22 +21,27 @@ class FmsService(
   val fmsClient: FmsClient,
   val objectMapper: ObjectMapper,
   val submitFmsOrderResultRepository: SubmitFmsOrderResultRepository,
-  @Value("\${toggle.fms-integration.enabled:false}") val fmsIntegrationEnabled: Boolean,
+  @Value("\${toggle.cemo.fms-integration.enabled:false}") val cemoFmsIntegrationEnabled: Boolean,
+  @Value("\${toggle.common-platform.fms-integration.enabled:false}") val cpFmsIntegrationEnabled: Boolean,
 ) {
-  private fun getSubmissionStrategy(order: Order): FmsSubmissionStrategy {
-    if (!fmsIntegrationEnabled) {
-      return FmsDummySubmissionStrategy(this.objectMapper)
+  private fun getSubmissionStrategy(order: Order, orderSource: FmsOrderSource): FmsSubmissionStrategy {
+    if (orderSource === FmsOrderSource.COMMON_PLATFORM && cpFmsIntegrationEnabled) {
+      return FmsOrderSubmissionStrategy(this.objectMapper, this.fmsClient)
     }
 
-    if (order.type === OrderType.VARIATION) {
-      return FmsVariationSubmissionStrategy(this.objectMapper, this.fmsClient)
+    if (orderSource === FmsOrderSource.CEMO && cemoFmsIntegrationEnabled) {
+      if (order.type === OrderType.VARIATION) {
+        return FmsVariationSubmissionStrategy(this.objectMapper, this.fmsClient)
+      }
+
+      return FmsOrderSubmissionStrategy(this.objectMapper, this.fmsClient)
     }
 
-    return FmsOrderSubmissionStrategy(this.objectMapper, this.fmsClient)
+    return FmsDummySubmissionStrategy(this.objectMapper)
   }
 
   fun submitOrder(order: Order, orderSource: FmsOrderSource): SubmitFmsOrderResult {
-    val strategy = this.getSubmissionStrategy(order)
+    val strategy = this.getSubmissionStrategy(order, orderSource)
     val submissionResult = strategy.submitOrder(order, orderSource)
 
     submitFmsOrderResultRepository.save(submissionResult)

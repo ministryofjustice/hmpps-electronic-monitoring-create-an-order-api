@@ -15,7 +15,7 @@ import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
 @Service
-@ConditionalOnExpression("\${toggle.cp-integration.enabled:false}")
+@ConditionalOnExpression("\${toggle.common-platform.processing.enabled:false}")
 class CourtHearingEventListener(
   private val eventHandler: HearingEventHandler,
   private val deadLetterQueueService: DeadLetterQueueService,
