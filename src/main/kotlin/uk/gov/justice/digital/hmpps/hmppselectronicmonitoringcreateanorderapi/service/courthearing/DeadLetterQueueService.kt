@@ -9,7 +9,7 @@ import uk.gov.justice.hmpps.sqs.HmppsQueue
 import uk.gov.justice.hmpps.sqs.HmppsQueueService
 
 @Service
-@ConditionalOnExpression("\${toggle.cp-integration.enabled:false}")
+@ConditionalOnExpression("\${toggle.common-platform.processing.enabled:false}")
 class DeadLetterQueueService(
   private val hmppsQueueService: HmppsQueueService,
   private val objectMapper: ObjectMapper,
