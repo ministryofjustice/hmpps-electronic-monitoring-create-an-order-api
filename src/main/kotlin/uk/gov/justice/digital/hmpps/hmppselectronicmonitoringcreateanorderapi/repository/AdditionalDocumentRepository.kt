@@ -9,9 +9,7 @@ import java.util.*
 @Repository
 interface AdditionalDocumentRepository : JpaRepository<AdditionalDocument, UUID> {
 
-  fun findAdditionalDocumentsByOrderId(
-    orderId: UUID,
-  ): Optional<List<AdditionalDocument>>
+  fun findAdditionalDocumentsByOrderId(orderId: UUID): Optional<List<AdditionalDocument>>
 
   fun findAdditionalDocumentsByOrderIdAndOrderUsernameAndFileType(
     orderId: UUID,

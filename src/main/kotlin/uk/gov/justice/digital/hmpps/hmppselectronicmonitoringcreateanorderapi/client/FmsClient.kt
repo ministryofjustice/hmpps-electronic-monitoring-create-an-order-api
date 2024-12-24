@@ -1,16 +1,13 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import jakarta.websocket.Encoder.BinaryStream
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.core.io.InputStreamResource
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
-import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.WebClientResponseException
-import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.CreateSercoEntityException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.DeviceWearer
@@ -132,4 +129,3 @@ class FmsClient(
     return result
   }
 }
-

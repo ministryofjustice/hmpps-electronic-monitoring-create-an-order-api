@@ -6,13 +6,17 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.mock.mockito.SpyBean
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.util.JsonPathExpectationsHelper
 import org.springframework.web.reactive.function.BodyInserters
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.DocumentApiClient
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.HmppsDocumentManagementApiExtension.Companion.documentApi
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.SercoAuthMockServerExtension.Companion.sercoAuthApi
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.SercoMockApiExtension.Companion.sercoApi
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AdditionalDocument
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Address
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AlcoholMonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ContactDetails
@@ -31,6 +35,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringInstallationLocationType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DocumentType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.EnforcementZoneType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MonitoringConditionType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
@@ -57,10 +62,14 @@ class OrderControllerTest : IntegrationTestBase() {
   @Autowired
   lateinit var fmsResultRepository: SubmitFmsOrderResultRepository
 
+  @SpyBean
+  lateinit var apiCLient: DocumentApiClient
+
   val mockStartDate: ZonedDateTime = ZonedDateTime.now().plusMonths(1)
   val mockEndDate: ZonedDateTime = ZonedDateTime.now().plusMonths(2)
   private val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
   private val dateTimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+  private lateinit var documentApiClient: DocumentApiClient
 
   @BeforeEach
   fun setup() {
@@ -545,8 +554,9 @@ class OrderControllerTest : IntegrationTestBase() {
     fun String.removeWhitespaceAndNewlines(): String = this.replace("(\"[^\"]*\")|\\s".toRegex(), "\$1")
 
     @Test
-    fun `It should update order with serco device wearer id, monitoring id, order status & attachment data, and return 200`() {
+    fun `It updates order with serco device wearer id, monitoring id, order status & attachments, and return 200`() {
       val order = createAndPersistReadyToSubmitOrder()
+
       sercoAuthApi.stubGrantToken()
 
       sercoApi.stubCreateDeviceWearer(
@@ -559,8 +569,36 @@ class OrderControllerTest : IntegrationTestBase() {
       )
       sercoApi.stubSubmitAttachment(
         HttpStatus.OK,
-        FmsResponse(result = listOf(FmsResult(message = "", id = "MockAttachmentId"))),
+        FmsAttachmentResponse(
+          result = FmsAttachmentResult(
+            sizeBytes = "",
+            fileName = order.additionalDocuments.first().fileName!!,
+            sysModCount = "",
+            averageImageColor = "",
+            imageWidth = "",
+            sysUpdatedOn = "",
+            sysTags = "",
+            createdByName = "",
+            tableName = "x_serg2_ems_csm_sr_mo_new",
+            sysId = "MockSysId",
+            updatedByName = "",
+            imageHeight = "",
+            sysUpdatedBy = "",
+            downloadLink = "",
+            contentType = "",
+            sysCreatedOn = "",
+            sizeCompressed = "",
+            compressed = "",
+            state = "",
+            tableSysId = "MockDeviceWearerId",
+            chunkSizeBytes = "",
+            hash = "",
+            sysCreatedBy = "",
+          ),
+        ),
       )
+
+      documentApi.stubGetDocument(order.additionalDocuments.first().id.toString())
 
       webTestClient.post()
         .uri("/api/orders/${order.id}/submit")
@@ -837,35 +875,16 @@ class OrderControllerTest : IntegrationTestBase() {
       """.trimIndent()
       val expectedAttachmentJson = """
       {
-        "size_bytes": "54699",
-        "file_name": "profile.png",
-        "sys_mod_count": "2",
-        "average_image_color": "",
-        "image_width": "427",
-        "sys_updated_on": "2024-12-13 13:20:04",
-        "sys_tags": "",
-        "created_by_name": "CEMO Integration",
-        "table_name": "x_serg2_ems_csm_sr_mo_new",
-        "sys_id": "f35399881b2e1a10df36a756b04bcbf4",
-        "updated_by_name": "CEMO Integration",
-        "image_height": "570",
-        "sys_updated_by": "cemo.integration",
-        "download_link": "https://sercoemdev.service-now.com/api/now/v1/attachment_csm/f35399881b2e1a10df36a756b04bcbf4/file",
-        "content_type": "image/png",
-        "sys_created_on": "2024-12-13 13:20:03",
-        "size_compressed": "53529",
-        "compressed": "true",
-        "state": "available",
-        "table_sys_id": "7cea136c1b595e10a10c20e0b24bcb21",
-        "chunk_size_bytes": "700000",
-        "hash": "71f6b03584aadf63d324e3f4ecc91f6c7bd4ceb5d1dabd1040d12635ce0372b5",
-        "sys_created_by": "cemo.integration"
+        "fmsSysId": "MockSysId",
+        "fileType": "${order.additionalDocuments.first().fileType}",
+        "cemoAttachmentId": "${order.additionalDocuments.first().id}"
+        
     }
       """.trimIndent()
 
       assertThat(submitResult!!.fmsDeviceWearerRequest).isEqualTo(expectedDWJson.removeWhitespaceAndNewlines())
       assertThat(submitResult.fmsOrderRequest).isEqualTo(expectedOrderJson.removeWhitespaceAndNewlines())
-      assertThat(submitResult.fmsAttachment).isEqualTo(expectedAttachmentJson.removeWhitespaceAndNewlines()) // ATTACHMENT
+      assertThat(submitResult.fmsAdditionalDocument).isEqualTo(expectedAttachmentJson.removeWhitespaceAndNewlines())
       val updatedOrder = repo.findById(order.id).get()
       assertThat(updatedOrder.fmsResultId).isEqualTo(submitResult.id)
       assertThat(updatedOrder.status).isEqualTo(OrderStatus.SUBMITTED)
@@ -1366,7 +1385,15 @@ class OrderControllerTest : IntegrationTestBase() {
       caseId = "d8ea62e61bb8d610a10c20e0b24bcb85",
       conditionType = MonitoringConditionType.REQUIREMENT_OF_A_COMMUNITY_ORDER,
     )
-    order.additionalDocuments = mutableListOf()
+    order.additionalDocuments = mutableListOf(
+      AdditionalDocument(
+        id = UUID.fromString("550e8400-e29b-41d4-a716-446655440000"),
+        orderId = order.id,
+        fileType = DocumentType.LICENCE,
+        fileName = "mockFile",
+      ),
+    )
+
     val curfewConditions = CurfewConditions(
       orderId = order.id,
       startDate = mockStartDate,
