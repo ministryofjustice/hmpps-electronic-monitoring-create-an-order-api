@@ -89,7 +89,7 @@ setup environment variables:
 
 run setup script
 ```bash
-./scripts/setup.sh
+./scripts/create-env.sh
 ```
 and then
 ```bash
