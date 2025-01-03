@@ -661,6 +661,7 @@ class OrderControllerTest : IntegrationTestBase() {
       	"language": "British Sign"
       }
       """.trimIndent()
+
       val expectedOrderJson = """
       {
       	"case_id": "MockDeviceWearerId",
@@ -869,13 +870,13 @@ class OrderControllerTest : IntegrationTestBase() {
       	"order_status": "Not Started"
       }
       """.trimIndent()
+
       val expectedAttachmentJson = """
-      {
+      [{
         "fmsSysId": "MockSysId",
         "fileType": "${order.additionalDocuments.first().fileType}",
-        "cemoAttachmentId": "${order.additionalDocuments.first().id}"
-        
-    }
+        "cemoAttachmentId": "${order.additionalDocuments.first().id}" 
+      }]
       """.trimIndent()
 
       assertThat(submitResult!!.fmsDeviceWearerRequest).isEqualTo(expectedDWJson.removeWhitespaceAndNewlines())
