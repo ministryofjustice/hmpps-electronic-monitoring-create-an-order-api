@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Configuration
 import org.springframework.stereotype.Service
@@ -50,10 +49,5 @@ class FmsService(
     submitFmsOrderResultRepository.save(submissionResult)
 
     return submissionResult
-  }
-
-  private fun mapToJson(map: Map<String, Any>): String {
-    val objectMapper = jacksonObjectMapper()
-    return objectMapper.writeValueAsString(map)
   }
 }
