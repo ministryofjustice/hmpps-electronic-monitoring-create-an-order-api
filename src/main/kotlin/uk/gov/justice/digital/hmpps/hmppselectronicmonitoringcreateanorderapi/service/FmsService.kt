@@ -21,7 +21,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.se
 @Configuration
 class FmsService(
   val fmsClient: FmsClient,
-  val documentApiWebClient: DocumentApiClient,
+  val documentApiClient: DocumentApiClient,
   val objectMapper: ObjectMapper,
   val submitFmsOrderResultRepository: SubmitFmsOrderResultRepository,
   @Value("\${toggle.cemo.fms-integration.enabled:false}") val cemoFmsIntegrationEnabled: Boolean,
@@ -29,7 +29,7 @@ class FmsService(
 ) {
   private fun getSubmissionStrategy(order: Order, orderSource: FmsOrderSource): FmsSubmissionStrategy {
     if (orderSource === FmsOrderSource.COMMON_PLATFORM && cpFmsIntegrationEnabled) {
-      return FmsOrderSubmissionStrategy(this.objectMapper, this.fmsClient)
+      return FmsOrderSubmissionStrategy(this.objectMapper, this.fmsClient, this.documentApiClient)
     }
 
     if (orderSource === FmsOrderSource.CEMO && cemoFmsIntegrationEnabled) {
@@ -37,7 +37,7 @@ class FmsService(
         return FmsVariationSubmissionStrategy(this.objectMapper, this.fmsClient)
       }
 
-      return FmsOrderSubmissionStrategy(this.objectMapper, this.fmsClient)
+      return FmsOrderSubmissionStrategy(this.objectMapper, this.fmsClient, this.documentApiClient)
     }
 
     return FmsDummySubmissionStrategy(this.objectMapper)

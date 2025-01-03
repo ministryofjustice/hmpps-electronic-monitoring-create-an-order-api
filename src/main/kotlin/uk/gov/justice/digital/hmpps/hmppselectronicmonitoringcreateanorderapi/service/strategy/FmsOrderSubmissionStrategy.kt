@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.strategy
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.DocumentApiClient
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.FmsClient
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.SubmitFmsOrderResult
@@ -15,6 +16,7 @@ import java.util.*
 class FmsOrderSubmissionStrategy(
   objectMapper: ObjectMapper,
   val fmsClient: FmsClient,
+  val documentApiClient: DocumentApiClient,
 ) : FmsSubmissionStrategyBase(objectMapper) {
 
   private fun submitCreateDeviceWearerRequest(deviceWearer: DeviceWearer, orderId: UUID): Result<String> {
@@ -43,6 +45,47 @@ class FmsOrderSubmissionStrategy(
         error = Exception("Failed to submit FMS Monitoring Order", e),
       )
     }
+  }
+
+  private fun createAttachments(order: Order, deviceWearerId: String): Result<String> {
+    if (order.additionalDocuments.size > 0) {
+      // 1. Prepare results variable, to store attachment IDs
+      // var attachmentResults = mutableListOf<Map<UUID, String>>()
+
+      // 2. Prepare FMS Attachment request - Get first document metadata and file itself related to order
+      val firstAttachmentMetadata = order.additionalDocuments.first()
+      val firstAttachmentFileStream = documentApiClient.getDocument(
+        firstAttachmentMetadata.id.toString(),
+      )?.body?.blockFirst()
+
+      // 3. Make FMS request - send request to create
+      // TODO: check what is expected for case ID - currently using FMS device wearer ID
+      val createAttachmentResult = fmsClient.createAttachment(
+        fileName = firstAttachmentMetadata.fileName!!,
+        caseId = deviceWearerId,
+        file = firstAttachmentFileStream!!,
+        documentType = firstAttachmentMetadata.fileType.toString(),
+      )
+
+      val attachmentResult = mapOf(
+        "fmsSysId" to createAttachmentResult.result.sysId,
+        "fileType" to firstAttachmentMetadata.fileType,
+        "cemoAttachmentId" to firstAttachmentMetadata.id,
+      )
+
+      // 5. combine all responses into a json string
+      val attachmentResultString = objectMapper.writeValueAsString(attachmentResult)
+
+      return Result(
+        success = true,
+        data = attachmentResultString,
+      )
+    }
+
+    return Result(
+      success = true,
+      data = "No attachments submitted",
+    )
   }
 
   private fun createDeviceWearer(order: Order): FmsRequestResult {
@@ -154,6 +197,22 @@ class FmsOrderSubmissionStrategy(
       )
     }
 
+    val createAttachmentsResult = this.createAttachments(order, deviceWearerId)
+
+    if (!createAttachmentsResult.success) {
+      return SubmitFmsOrderResult(
+        id = order.id,
+        success = false,
+        strategy = FmsSubmissionStrategyKind.ORDER,
+        error = createMonitoringOrderResult.error,
+        deviceWearerId = deviceWearerId,
+        fmsDeviceWearerRequest = deviceWearerRequest,
+        fmsOrderId = monitoringOrderId,
+        fmsOrderRequest = monitoringOrderRequest,
+        orderSource = orderSource,
+      )
+    }
+
     return SubmitFmsOrderResult(
       id = order.id,
       success = true,
@@ -163,6 +222,7 @@ class FmsOrderSubmissionStrategy(
       fmsOrderId = monitoringOrderId,
       fmsOrderRequest = monitoringOrderRequest,
       orderSource = orderSource,
+      fmsAdditionalDocument = createAttachmentsResult.data!!,
     )
   }
 }
