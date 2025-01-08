@@ -45,8 +45,8 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsErrorResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsResult
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.FmsSubmissionResultRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.SubmitFmsOrderResultRepository
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 import java.time.DayOfWeek
 import java.time.ZoneId
@@ -60,7 +60,7 @@ class OrderControllerTest : IntegrationTestBase() {
   lateinit var repo: OrderRepository
 
   @Autowired
-  lateinit var fmsResultRepository: SubmitFmsOrderResultRepository
+  lateinit var fmsResultRepository: FmsSubmissionResultRepository
 
   val mockStartDate: ZonedDateTime = ZonedDateTime.now().plusMonths(1)
   val mockEndDate: ZonedDateTime = ZonedDateTime.now().plusMonths(2)
@@ -871,17 +871,15 @@ class OrderControllerTest : IntegrationTestBase() {
       }
       """.trimIndent()
 
-      val expectedAttachmentJson = """
-      [{
-        "fmsSysId": "MockSysId",
-        "fileType": "${order.additionalDocuments.first().fileType}",
-        "cemoAttachmentId": "${order.additionalDocuments.first().id}" 
-      }]
-      """.trimIndent()
-
-      assertThat(submitResult!!.fmsDeviceWearerRequest).isEqualTo(expectedDWJson.removeWhitespaceAndNewlines())
-      assertThat(submitResult.fmsOrderRequest).isEqualTo(expectedOrderJson.removeWhitespaceAndNewlines())
-      assertThat(submitResult.fmsAdditionalDocument).isEqualTo(expectedAttachmentJson.removeWhitespaceAndNewlines())
+      assertThat(submitResult!!.deviceWearerResult.payload).isEqualTo(expectedDWJson.removeWhitespaceAndNewlines())
+      assertThat(submitResult.monitoringOrderResult.payload).isEqualTo(expectedOrderJson.removeWhitespaceAndNewlines())
+      assertThat(submitResult.attachmentResults[0].sysId).isEqualTo("MockSysId")
+      assertThat(
+        submitResult.attachmentResults[0].fileType,
+      ).isEqualTo(order.additionalDocuments.first().fileType.toString())
+      assertThat(
+        submitResult.attachmentResults[0].attachmentId,
+      ).isEqualTo(order.additionalDocuments.first().id.toString())
       val updatedOrder = repo.findById(order.id).get()
       assertThat(updatedOrder.fmsResultId).isEqualTo(submitResult.id)
       assertThat(updatedOrder.status).isEqualTo(OrderStatus.SUBMITTED)
@@ -1174,8 +1172,8 @@ class OrderControllerTest : IntegrationTestBase() {
       }
       """.trimIndent()
 
-      assertThat(submitResult!!.fmsDeviceWearerRequest).isEqualTo(expectedDWJson.removeWhitespaceAndNewlines())
-      assertThat(submitResult.fmsOrderRequest).isEqualTo(expectedOrderJson.removeWhitespaceAndNewlines())
+      assertThat(submitResult!!.deviceWearerResult.payload).isEqualTo(expectedDWJson.removeWhitespaceAndNewlines())
+      assertThat(submitResult.monitoringOrderResult.payload).isEqualTo(expectedOrderJson.removeWhitespaceAndNewlines())
       val updatedOrder = repo.findById(order.id).get()
       assertThat(updatedOrder.fmsResultId).isEqualTo(submitResult.id)
       assertThat(updatedOrder.status).isEqualTo(OrderStatus.SUBMITTED)
@@ -1260,8 +1258,8 @@ class OrderControllerTest : IntegrationTestBase() {
       }
       """.trimIndent()
 
-      assertThat(submitResult!!.fmsDeviceWearerRequest).isEqualTo(expectedDWJson.removeWhitespaceAndNewlines())
-      val fmsOrderRequest = submitResult.fmsOrderRequest!!
+      assertThat(submitResult!!.deviceWearerResult.payload).isEqualTo(expectedDWJson.removeWhitespaceAndNewlines())
+      val fmsOrderRequest = submitResult.monitoringOrderResult.payload!!
 
       JsonPathExpectationsHelper("installation_address_1").assertValue(fmsOrderRequest, "24 Somewhere Street")
       JsonPathExpectationsHelper("installation_address_2").assertValue(fmsOrderRequest, "Nowhere City")

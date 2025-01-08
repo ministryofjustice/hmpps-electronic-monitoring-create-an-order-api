@@ -27,7 +27,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.in
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.listener.CourtHearingEventListener
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsResult
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.SubmitFmsOrderResultRepository
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.FmsSubmissionResultRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.courthearing.HearingEventHandler
 import uk.gov.justice.hmpps.sqs.HmppsQueueService
 import uk.gov.justice.hmpps.sqs.MissingQueueException
@@ -39,7 +39,7 @@ import java.util.concurrent.CompletableFuture
 @Transactional
 class CourtHearingEventListenerTest : IntegrationTestBase() {
   @SpyBean
-  lateinit var repo: SubmitFmsOrderResultRepository
+  lateinit var repo: FmsSubmissionResultRepository
 
   @SpyBean
   lateinit var eventHandler: HearingEventHandler
@@ -260,9 +260,9 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
     val mockDeviceWearerJson = Files.readString(Paths.get("$rootFilePath/expected_fms_device_wearer.json"))
     val mockOrderJson = Files.readString(
       Paths.get("$rootFilePath/expected_fms_order.json"),
-    ).replace("{expectedOderId}", savedResult.id.toString())
-    assertThat(savedResult.fmsDeviceWearerRequest).isEqualTo(mockDeviceWearerJson.removeWhitespaceAndNewlines())
-    assertThat(savedResult.fmsOrderRequest).isEqualTo(mockOrderJson.removeWhitespaceAndNewlines())
+    ).replace("{expectedOderId}", savedResult.orderId.toString())
+    assertThat(savedResult.deviceWearerResult.payload).isEqualTo(mockDeviceWearerJson.removeWhitespaceAndNewlines())
+    assertThat(savedResult.monitoringOrderResult.payload).isEqualTo(mockOrderJson.removeWhitespaceAndNewlines())
     assertThat(savedResult.error).isEqualTo("")
     assertThat(savedResult.success).isTrue()
   }

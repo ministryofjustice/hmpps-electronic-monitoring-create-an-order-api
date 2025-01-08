@@ -6,11 +6,11 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.DocumentApiClient
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.FmsClient
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.FmsSubmissionResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.SubmitFmsOrderResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderType
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.SubmitFmsOrderResultRepository
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.FmsSubmissionResultRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.strategy.FmsDummySubmissionStrategy
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.strategy.FmsOrderSubmissionStrategy
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.strategy.FmsSubmissionStrategy
@@ -22,7 +22,7 @@ class FmsService(
   val fmsClient: FmsClient,
   val documentApiClient: DocumentApiClient,
   val objectMapper: ObjectMapper,
-  val submitFmsOrderResultRepository: SubmitFmsOrderResultRepository,
+  val repo: FmsSubmissionResultRepository,
   @Value("\${toggle.cemo.fms-integration.enabled:false}") val cemoFmsIntegrationEnabled: Boolean,
   @Value("\${toggle.common-platform.fms-integration.enabled:false}") val cpFmsIntegrationEnabled: Boolean,
 ) {
@@ -42,11 +42,11 @@ class FmsService(
     return FmsDummySubmissionStrategy(this.objectMapper)
   }
 
-  fun submitOrder(order: Order, orderSource: FmsOrderSource): SubmitFmsOrderResult {
+  fun submitOrder(order: Order, orderSource: FmsOrderSource): FmsSubmissionResult {
     val strategy = this.getSubmissionStrategy(order, orderSource)
     val submissionResult = strategy.submitOrder(order, orderSource)
 
-    submitFmsOrderResultRepository.save(submissionResult)
+    repo.save(submissionResult)
 
     return submissionResult
   }
