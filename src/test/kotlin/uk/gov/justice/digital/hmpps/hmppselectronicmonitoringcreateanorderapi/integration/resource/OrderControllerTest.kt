@@ -1259,7 +1259,7 @@ class OrderControllerTest : IntegrationTestBase() {
       """.trimIndent()
 
       assertThat(submitResult!!.deviceWearerResult.payload).isEqualTo(expectedDWJson.removeWhitespaceAndNewlines())
-      val fmsOrderRequest = submitResult.monitoringOrderResult.payload!!
+      val fmsOrderRequest = submitResult.monitoringOrderResult.payload
 
       JsonPathExpectationsHelper("installation_address_1").assertValue(fmsOrderRequest, "24 Somewhere Street")
       JsonPathExpectationsHelper("installation_address_2").assertValue(fmsOrderRequest, "Nowhere City")

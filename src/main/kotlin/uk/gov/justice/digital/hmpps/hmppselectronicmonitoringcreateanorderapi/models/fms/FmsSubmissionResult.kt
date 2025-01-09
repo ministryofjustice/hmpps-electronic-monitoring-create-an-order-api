@@ -57,15 +57,15 @@ data class FmsSubmissionResult(
   val error: String
     get() {
       if (deviceWearerResult.status == SubmissionStatus.FAILURE) {
-        return deviceWearerResult.error!!
+        return deviceWearerResult.error
       }
 
       if (monitoringOrderResult.status == SubmissionStatus.FAILURE) {
-        return monitoringOrderResult.error!!
+        return monitoringOrderResult.error
       }
 
       if (attachmentResults.any { it.status == SubmissionStatus.FAILURE }) {
-        return attachmentResults.first { it.status == SubmissionStatus.FAILURE }.error!!
+        return attachmentResults.first { it.status == SubmissionStatus.FAILURE }.error
       }
 
       return ""

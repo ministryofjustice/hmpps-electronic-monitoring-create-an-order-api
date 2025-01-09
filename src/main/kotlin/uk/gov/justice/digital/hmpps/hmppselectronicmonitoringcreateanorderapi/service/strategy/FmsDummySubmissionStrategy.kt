@@ -67,7 +67,7 @@ class FmsDummySubmissionStrategy(
 
   override fun submitOrder(order: Order, orderSource: FmsOrderSource): FmsSubmissionResult {
     val createDeviceWearerResult = this.createDeviceWearer(order)
-    val deviceWearerId = createDeviceWearerResult.deviceWearerId!!
+    val deviceWearerId = createDeviceWearerResult.deviceWearerId
 
     if (createDeviceWearerResult.status == SubmissionStatus.FAILURE) {
       return FmsSubmissionResult(
