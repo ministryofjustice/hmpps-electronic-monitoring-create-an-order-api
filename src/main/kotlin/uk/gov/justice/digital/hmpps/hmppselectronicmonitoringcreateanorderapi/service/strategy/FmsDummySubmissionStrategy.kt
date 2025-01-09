@@ -74,7 +74,6 @@ class FmsDummySubmissionStrategy(
         orderId = order.id,
         strategy = FmsSubmissionStrategyKind.DUMMY,
         deviceWearerResult = createDeviceWearerResult,
-        monitoringOrderResult = FmsMonitoringOrderSubmissionResult(),
         orderSource = orderSource,
       )
     }

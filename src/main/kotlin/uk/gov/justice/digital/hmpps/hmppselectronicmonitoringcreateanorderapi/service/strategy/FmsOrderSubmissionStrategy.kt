@@ -165,7 +165,6 @@ class FmsOrderSubmissionStrategy(
         orderId = order.id,
         strategy = FmsSubmissionStrategyKind.ORDER,
         deviceWearerResult = createDeviceWearerResult,
-        monitoringOrderResult = FmsMonitoringOrderSubmissionResult(),
         orderSource = orderSource,
       )
     }

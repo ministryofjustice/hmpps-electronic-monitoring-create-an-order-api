@@ -131,7 +131,6 @@ class FmsVariationSubmissionStrategy(
         orderId = order.id,
         strategy = FmsSubmissionStrategyKind.VARIATION,
         deviceWearerResult = createDeviceWearerResult,
-        monitoringOrderResult = FmsMonitoringOrderSubmissionResult(),
         orderSource = orderSource,
       )
     }

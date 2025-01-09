@@ -39,7 +39,7 @@ data class FmsSubmissionResult(
 
   @OneToOne(fetch = FetchType.LAZY, cascade = [ALL], orphanRemoval = true)
   @JoinColumn(name = "fms_monitoring_order_result_id", referencedColumnName = "id")
-  var monitoringOrderResult: FmsMonitoringOrderSubmissionResult,
+  var monitoringOrderResult: FmsMonitoringOrderSubmissionResult = FmsMonitoringOrderSubmissionResult(),
 
   @OneToMany(fetch = FetchType.EAGER, cascade = [ALL], orphanRemoval = true)
   @JoinColumn(name = "fms_attachment_result_id", referencedColumnName = "id")
