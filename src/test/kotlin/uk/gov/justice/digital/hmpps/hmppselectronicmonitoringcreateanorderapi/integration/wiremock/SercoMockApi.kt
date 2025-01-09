@@ -49,7 +49,7 @@ class SercoMockApiServer : WireMockServer(WIREMOCK_PORT) {
       body = objectMapper.writeValueAsString(result)
     }
     stubFor(
-      post(urlPathTemplate("/device_wearer/createDW"))
+      post(urlPathTemplate("/x_seem_cemo/device_wearer/createDW"))
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")
@@ -69,7 +69,7 @@ class SercoMockApiServer : WireMockServer(WIREMOCK_PORT) {
       body = objectMapper.writeValueAsString(result)
     }
     stubFor(
-      post(urlPathTemplate("/monitoring_order/createMO"))
+      post(urlPathTemplate("/x_seem_cemo/monitoring_order/createMO"))
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")
@@ -89,7 +89,7 @@ class SercoMockApiServer : WireMockServer(WIREMOCK_PORT) {
       body = objectMapper.writeValueAsString(result)
     }
     stubFor(
-      post(urlPathTemplate("/monitoring_order/updateMO"))
+      post(urlPathTemplate("/x_seem_cemo/monitoring_order/updateMO"))
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")
@@ -111,7 +111,7 @@ class SercoMockApiServer : WireMockServer(WIREMOCK_PORT) {
     }
 
     stubFor(
-      post(urlPathTemplate("/attachment_csm/file"))
+      post(urlPathTemplate("/now/v1/attachment_csm/file"))
         .withQueryParam("table_name", equalTo(result.result.tableName))
         .withQueryParam("table_sys_id", equalTo(result.result.tableSysId))
         .withQueryParam("file_name", equalTo(result.result.fileName))
