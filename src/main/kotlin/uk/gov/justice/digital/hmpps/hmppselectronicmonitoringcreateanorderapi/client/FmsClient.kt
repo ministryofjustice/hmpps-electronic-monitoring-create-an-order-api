@@ -90,7 +90,7 @@ class FmsClient(
       .block()!!
     return result
   }
-  
+
   fun createAttachment(
     fileName: String,
     caseId: String,
