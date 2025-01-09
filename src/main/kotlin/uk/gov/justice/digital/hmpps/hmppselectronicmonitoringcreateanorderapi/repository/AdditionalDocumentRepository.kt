@@ -8,7 +8,6 @@ import java.util.*
 
 @Repository
 interface AdditionalDocumentRepository : JpaRepository<AdditionalDocument, UUID> {
-
   fun findAdditionalDocumentsByOrderIdAndOrderUsernameAndFileType(
     orderId: UUID,
     orderUserName: String,

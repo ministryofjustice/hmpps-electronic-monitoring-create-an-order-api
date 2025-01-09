@@ -1,20 +1,26 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.strategy
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.DocumentApiClient
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.FmsClient
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AdditionalDocument
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.SubmitFmsOrderResult
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Result
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.SubmissionStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.DeviceWearer
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsRequestResult
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsAttachmentSubmissionResult
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsDeviceWearerSubmissionResult
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsMonitoringOrderSubmissionResult
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsSubmissionResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsSubmissionStrategyKind
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.MonitoringOrder
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.Result
 import java.util.*
 
 class FmsOrderSubmissionStrategy(
   objectMapper: ObjectMapper,
   val fmsClient: FmsClient,
+  val documentApiClient: DocumentApiClient,
 ) : FmsSubmissionStrategyBase(objectMapper) {
 
   private fun submitCreateDeviceWearerRequest(deviceWearer: DeviceWearer, orderId: UUID): Result<String> {
@@ -45,12 +51,43 @@ class FmsOrderSubmissionStrategy(
     }
   }
 
-  private fun createDeviceWearer(order: Order): FmsRequestResult {
+  private fun createAttachment(document: AdditionalDocument, deviceWearerId: String): FmsAttachmentSubmissionResult {
+    try {
+      val fileId = document.id.toString()
+      val fileName = document.fileName
+      val fileType = document.fileType.toString()
+      val fileStream = this.documentApiClient.getDocument(fileId)?.body?.blockFirst()
+      val result = fmsClient.createAttachment(
+        fileName = fileName!!,
+        caseId = deviceWearerId,
+        file = fileStream!!,
+        documentType = fileType,
+      )
+
+      return FmsAttachmentSubmissionResult(
+        status = SubmissionStatus.SUCCESS,
+        sysId = result.result.sysId,
+        fileType = fileType,
+        attachmentId = fileId,
+      )
+    } catch (e: Exception) {
+      return FmsAttachmentSubmissionResult(
+        status = SubmissionStatus.FAILURE,
+        error = Exception("Failed to submit FMS Attachment", e).toString(),
+      )
+    }
+  }
+
+  private fun createAttachments(order: Order, deviceWearerId: String): List<FmsAttachmentSubmissionResult> {
+    return order.additionalDocuments.map { this.createAttachment(it, deviceWearerId) }
+  }
+
+  private fun createDeviceWearer(order: Order): FmsDeviceWearerSubmissionResult {
     val deviceWearerResult = this.getDeviceWearer(order)
 
     if (!deviceWearerResult.success) {
-      return FmsRequestResult(
-        success = false,
+      return FmsDeviceWearerSubmissionResult(
+        status = SubmissionStatus.FAILURE,
         error = deviceWearerResult.error.toString(),
       )
     }
@@ -59,8 +96,8 @@ class FmsOrderSubmissionStrategy(
     val serialiseResult = this.serialiseDeviceWearer(deviceWearer)
 
     if (!serialiseResult.success) {
-      return FmsRequestResult(
-        success = false,
+      return FmsDeviceWearerSubmissionResult(
+        status = SubmissionStatus.FAILURE,
         error = serialiseResult.error.toString(),
       )
     }
@@ -68,26 +105,26 @@ class FmsOrderSubmissionStrategy(
     val submissionResult = this.submitCreateDeviceWearerRequest(deviceWearer, order.id)
 
     if (!submissionResult.success) {
-      return FmsRequestResult(
-        success = false,
+      return FmsDeviceWearerSubmissionResult(
+        status = SubmissionStatus.FAILURE,
         error = submissionResult.error.toString(),
-        payload = submissionResult.data!!,
+        payload = serialiseResult.data!!,
       )
     }
 
-    return FmsRequestResult(
-      success = true,
-      id = submissionResult.data!!,
+    return FmsDeviceWearerSubmissionResult(
+      status = SubmissionStatus.SUCCESS,
+      deviceWearerId = submissionResult.data!!,
       payload = serialiseResult.data!!,
     )
   }
 
-  private fun createMonitoringOrder(order: Order, deviceWearerId: String): FmsRequestResult {
+  private fun createMonitoringOrder(order: Order, deviceWearerId: String): FmsMonitoringOrderSubmissionResult {
     val monitoringOrderResult = this.getMonitoringOrder(order, deviceWearerId)
 
     if (!monitoringOrderResult.success) {
-      return FmsRequestResult(
-        success = false,
+      return FmsMonitoringOrderSubmissionResult(
+        status = SubmissionStatus.FAILURE,
         error = monitoringOrderResult.error.toString(),
       )
     }
@@ -96,8 +133,8 @@ class FmsOrderSubmissionStrategy(
     val serialiseResult = this.serialiseMonitoringOrder(monitoringOrder)
 
     if (!serialiseResult.success) {
-      return FmsRequestResult(
-        success = false,
+      return FmsMonitoringOrderSubmissionResult(
+        status = SubmissionStatus.FAILURE,
         error = serialiseResult.error.toString(),
       )
     }
@@ -105,63 +142,53 @@ class FmsOrderSubmissionStrategy(
     val submissionResult = this.submitCreateMonitoringOrderRequest(monitoringOrder, order.id)
 
     if (!submissionResult.success) {
-      return FmsRequestResult(
-        success = false,
+      return FmsMonitoringOrderSubmissionResult(
+        status = SubmissionStatus.FAILURE,
         error = submissionResult.error.toString(),
         payload = serialiseResult.data!!,
       )
     }
 
-    return FmsRequestResult(
-      success = true,
-      id = submissionResult.data!!,
+    return FmsMonitoringOrderSubmissionResult(
+      status = SubmissionStatus.SUCCESS,
+      monitoringOrderId = submissionResult.data!!,
       payload = serialiseResult.data!!,
     )
   }
 
-  override fun submitOrder(order: Order, orderSource: FmsOrderSource): SubmitFmsOrderResult {
+  override fun submitOrder(order: Order, orderSource: FmsOrderSource): FmsSubmissionResult {
     val createDeviceWearerResult = this.createDeviceWearer(order)
-    val deviceWearerId = createDeviceWearerResult.id
-    val deviceWearerRequest = createDeviceWearerResult.payload
+    val deviceWearerId = createDeviceWearerResult.deviceWearerId
 
-    if (!createDeviceWearerResult.success) {
-      return SubmitFmsOrderResult(
-        id = order.id,
-        success = false,
+    if (createDeviceWearerResult.status == SubmissionStatus.FAILURE) {
+      return FmsSubmissionResult(
+        orderId = order.id,
         strategy = FmsSubmissionStrategyKind.ORDER,
-        error = createDeviceWearerResult.error,
-        deviceWearerId = deviceWearerId,
-        fmsDeviceWearerRequest = deviceWearerRequest,
+        deviceWearerResult = createDeviceWearerResult,
         orderSource = orderSource,
       )
     }
 
     val createMonitoringOrderResult = this.createMonitoringOrder(order, deviceWearerId)
-    val monitoringOrderId = createMonitoringOrderResult.id
-    val monitoringOrderRequest = createMonitoringOrderResult.payload
 
-    if (!createMonitoringOrderResult.success) {
-      return SubmitFmsOrderResult(
-        id = order.id,
-        success = false,
+    if (createMonitoringOrderResult.status == SubmissionStatus.FAILURE) {
+      return FmsSubmissionResult(
+        orderId = order.id,
         strategy = FmsSubmissionStrategyKind.ORDER,
-        error = createMonitoringOrderResult.error,
-        deviceWearerId = deviceWearerId,
-        fmsDeviceWearerRequest = deviceWearerRequest,
-        fmsOrderId = monitoringOrderId,
-        fmsOrderRequest = monitoringOrderRequest,
+        deviceWearerResult = createDeviceWearerResult,
+        monitoringOrderResult = createMonitoringOrderResult,
         orderSource = orderSource,
       )
     }
 
-    return SubmitFmsOrderResult(
-      id = order.id,
-      success = true,
+    val createAttachmentsResult = this.createAttachments(order, deviceWearerId)
+
+    return FmsSubmissionResult(
+      orderId = order.id,
       strategy = FmsSubmissionStrategyKind.ORDER,
-      deviceWearerId = deviceWearerId,
-      fmsDeviceWearerRequest = deviceWearerRequest,
-      fmsOrderId = monitoringOrderId,
-      fmsOrderRequest = monitoringOrderRequest,
+      deviceWearerResult = createDeviceWearerResult,
+      monitoringOrderResult = createMonitoringOrderResult,
+      attachmentResults = createAttachmentsResult.toMutableList(),
       orderSource = orderSource,
     )
   }

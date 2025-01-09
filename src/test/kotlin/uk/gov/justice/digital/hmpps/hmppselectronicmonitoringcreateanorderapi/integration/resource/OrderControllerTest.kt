@@ -11,8 +11,10 @@ import org.springframework.http.MediaType
 import org.springframework.test.util.JsonPathExpectationsHelper
 import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.HmppsDocumentManagementApiExtension.Companion.documentApi
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.SercoAuthMockServerExtension.Companion.sercoAuthApi
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.SercoMockApiExtension.Companion.sercoApi
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AdditionalDocument
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Address
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AlcoholMonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ContactDetails
@@ -31,17 +33,22 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringInstallationLocationType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DocumentType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.EnforcementZoneType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MonitoringConditionType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderTypeDescription
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.SubmissionStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.VariationType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsAttachmentResponse
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsAttachmentResult
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsAttachmentSubmissionResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsErrorResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsResult
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.FmsSubmissionResultRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.SubmitFmsOrderResultRepository
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 import java.time.DayOfWeek
 import java.time.ZoneId
@@ -55,7 +62,7 @@ class OrderControllerTest : IntegrationTestBase() {
   lateinit var repo: OrderRepository
 
   @Autowired
-  lateinit var fmsResultRepository: SubmitFmsOrderResultRepository
+  lateinit var fmsResultRepository: FmsSubmissionResultRepository
 
   val mockStartDate: ZonedDateTime = ZonedDateTime.now().plusMonths(1)
   val mockEndDate: ZonedDateTime = ZonedDateTime.now().plusMonths(2)
@@ -545,8 +552,20 @@ class OrderControllerTest : IntegrationTestBase() {
     fun String.removeWhitespaceAndNewlines(): String = this.replace("(\"[^\"]*\")|\\s".toRegex(), "\$1")
 
     @Test
-    fun `It should update order with serco device wearer id, monitoring id & order status, and return 200`() {
-      val order = createAndPersistReadyToSubmitOrder()
+    fun `It updates order with serco device wearer id, monitoring id, order status & attachments, and return 200`() {
+      val id = UUID.randomUUID()
+      val order = createAndPersistReadyToSubmitOrder(
+        id = id,
+        documents = mutableListOf(
+          AdditionalDocument(
+            id = UUID.fromString("550e8400-e29b-41d4-a716-446655440000"),
+            orderId = id,
+            fileType = DocumentType.LICENCE,
+            fileName = "mockFile",
+          ),
+        ),
+      )
+
       sercoAuthApi.stubGrantToken()
 
       sercoApi.stubCreateDeviceWearer(
@@ -557,6 +576,39 @@ class OrderControllerTest : IntegrationTestBase() {
         HttpStatus.OK,
         FmsResponse(result = listOf(FmsResult(message = "", id = "MockMonitoringOrderId"))),
       )
+      sercoApi.stubSubmitAttachment(
+        HttpStatus.OK,
+        FmsAttachmentResponse(
+          result = FmsAttachmentResult(
+            sizeBytes = "",
+            fileName = order.additionalDocuments.first().fileName!!,
+            sysModCount = "",
+            averageImageColor = "",
+            imageWidth = "",
+            sysUpdatedOn = "",
+            sysTags = "",
+            createdByName = "",
+            tableName = "x_serg2_ems_csm_sr_mo_new",
+            sysId = "MockSysId",
+            updatedByName = "",
+            imageHeight = "",
+            sysUpdatedBy = "",
+            downloadLink = "",
+            contentType = "",
+            sysCreatedOn = "",
+            sizeCompressed = "",
+            compressed = "",
+            state = "",
+            tableSysId = "MockDeviceWearerId",
+            chunkSizeBytes = "",
+            hash = "",
+            sysCreatedBy = "",
+          ),
+        ),
+      )
+
+      documentApi.stubGetDocument(order.additionalDocuments.first().id.toString())
+
       webTestClient.post()
         .uri("/api/orders/${order.id}/submit")
         .headers(setAuthorisation())
@@ -622,6 +674,7 @@ class OrderControllerTest : IntegrationTestBase() {
       	"language": "British Sign"
       }
       """.trimIndent()
+
       val expectedOrderJson = """
       {
       	"case_id": "MockDeviceWearerId",
@@ -831,8 +884,383 @@ class OrderControllerTest : IntegrationTestBase() {
       }
       """.trimIndent()
 
-      assertThat(submitResult!!.fmsDeviceWearerRequest).isEqualTo(expectedDWJson.removeWhitespaceAndNewlines())
-      assertThat(submitResult.fmsOrderRequest).isEqualTo(expectedOrderJson.removeWhitespaceAndNewlines())
+      assertThat(submitResult!!.deviceWearerResult.payload).isEqualTo(expectedDWJson.removeWhitespaceAndNewlines())
+      assertThat(submitResult.monitoringOrderResult.payload).isEqualTo(expectedOrderJson.removeWhitespaceAndNewlines())
+      assertThat(submitResult.attachmentResults[0].sysId).isEqualTo("MockSysId")
+      assertThat(
+        submitResult.attachmentResults[0].fileType,
+      ).isEqualTo(order.additionalDocuments.first().fileType.toString())
+      assertThat(
+        submitResult.attachmentResults[0].attachmentId,
+      ).isEqualTo(order.additionalDocuments.first().id.toString())
+      val updatedOrder = repo.findById(order.id).get()
+      assertThat(updatedOrder.fmsResultId).isEqualTo(submitResult.id)
+      assertThat(updatedOrder.status).isEqualTo(OrderStatus.SUBMITTED)
+    }
+
+    @Test
+    fun `It should be possible to submit multiple attachments`() {
+      val id = UUID.randomUUID()
+      val order = createAndPersistReadyToSubmitOrder(
+        id = id,
+        documents = mutableListOf(
+          AdditionalDocument(
+            id = UUID.fromString("550e8400-e29b-41d4-a716-446655440000"),
+            orderId = id,
+            fileType = DocumentType.LICENCE,
+            fileName = "mockLicense.jpg",
+          ),
+          AdditionalDocument(
+            id = UUID.fromString("550e8400-e29b-41d4-a716-446655440001"),
+            orderId = id,
+            fileType = DocumentType.PHOTO_ID,
+            fileName = "mockPhotoId.jpg",
+          ),
+        ),
+      )
+
+      sercoAuthApi.stubGrantToken()
+
+      sercoApi.stubCreateDeviceWearer(
+        HttpStatus.OK,
+        FmsResponse(result = listOf(FmsResult(message = "", id = "MockDeviceWearerId"))),
+      )
+      sercoApi.stubCreateMonitoringOrder(
+        HttpStatus.OK,
+        FmsResponse(result = listOf(FmsResult(message = "", id = "MockMonitoringOrderId"))),
+      )
+      sercoApi.stubSubmitAttachment(
+        HttpStatus.OK,
+        FmsAttachmentResponse(
+          result = FmsAttachmentResult(
+            fileName = order.additionalDocuments[0].fileName!!,
+            tableName = "x_serg2_ems_csm_sr_mo_new",
+            sysId = "MockSysId",
+            tableSysId = "MockDeviceWearerId",
+          ),
+        ),
+      )
+
+      sercoApi.stubSubmitAttachment(
+        HttpStatus.OK,
+        FmsAttachmentResponse(
+          result = FmsAttachmentResult(
+            fileName = order.additionalDocuments[1].fileName!!,
+            tableName = "x_serg2_ems_csm_sr_mo_new",
+            sysId = "MockSysId",
+            tableSysId = "MockDeviceWearerId",
+          ),
+        ),
+      )
+
+      documentApi.stubGetDocument(order.additionalDocuments[0].id.toString())
+      documentApi.stubGetDocument(order.additionalDocuments[1].id.toString())
+
+      webTestClient.post()
+        .uri("/api/orders/${order.id}/submit")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .isOk
+
+      val submitResult = fmsResultRepository.findAll().firstOrNull()
+      assertThat(submitResult).isNotNull
+
+      val expectedDWJson = """
+      {
+      	"title": "",
+      	"first_name": "John",
+      	"middle_name": "",
+      	"last_name": "Smith",
+      	"alias": "Johnny",
+      	"date_of_birth": "1990-01-01",
+      	"adult_child": "adult",
+      	"sex": "Male",
+      	"gender_identity": "Male",
+      	"disability": [
+      		{
+      			"disability": "Vision"
+      		},
+      		{
+      			"disability": "Learning, understanding or concentrating"
+      		}
+      	],
+      	"address_1": "20 Somewhere Street",
+      	"address_2": "Nowhere City",
+      	"address_3": "Random County",
+      	"address_4": "United Kingdom",
+      	"address_post_code": "SW11 1NC",
+      	"secondary_address_1": "",
+      	"secondary_address_2": "",
+      	"secondary_address_3": "",
+      	"secondary_address_4": "",
+      	"secondary_address_post_code": "",
+      	"phone_number": "07401111111",
+      	"risk_serious_harm": "",
+      	"risk_self_harm": "",
+      	"risk_details": "Danger",
+      	"mappa": "MAAPA 1",
+      	"mappa_case_type": "CPPC (Critical Public Protection Case)",
+      	"risk_categories": [],
+      	"responsible_adult_required": "true",
+      	"parent": "Mark Smith",
+      	"guardian": "",
+      	"parent_address_1": "",
+      	"parent_address_2": "",
+      	"parent_address_3": "",
+      	"parent_address_4": "",
+      	"parent_address_post_code": "",
+      	"parent_phone_number": "07401111111",
+      	"parent_dob": "",
+      	"pnc_id": "pncId",
+      	"nomis_id": "nomisId",
+      	"delius_id": "deliusId",
+      	"prison_number": "prisonNumber",
+      	"home_office_case_reference_number": "homeOfficeReferenceNumber",
+      	"interpreter_required": "true",
+      	"language": "British Sign"
+      }
+      """.trimIndent()
+
+      val expectedOrderJson = """
+      {
+      	"case_id": "MockDeviceWearerId",
+      	"allday_lockdown": "",
+      	"atv_allowance": "",
+      	"condition_type": "Requirement of a Community Order",
+      	"court": "",
+      	"court_order_email": "",      	
+      	"device_type": "",
+      	"device_wearer": "John Smith",
+      	"enforceable_condition": [
+      		{
+      			"condition": "Curfew with EM",
+            "start_date": "${mockStartDate.format(dateTimeFormatter)}",
+            "end_date": "${mockEndDate.format(dateTimeFormatter)}"
+      		},
+      		{
+      			"condition": "Location Monitoring (Fitted Device)",
+            "start_date": "${mockStartDate.format(dateTimeFormatter)}",
+            "end_date": "${mockEndDate.format(dateTimeFormatter)}"
+      		},
+      		{
+      			"condition": "EM Exclusion / Inclusion Zone",
+            "start_date": "${mockStartDate.format(dateTimeFormatter)}",
+            "end_date": "${mockEndDate.format(dateTimeFormatter)}"
+      		},          
+      		{
+      			"condition": "AAMR",
+            "start_date": "${mockStartDate.format(dateTimeFormatter)}",
+            "end_date": "${mockEndDate.format(dateTimeFormatter)}"
+      		}
+      	],
+      	"exclusion_allday": "",
+      	"interim_court_date": "",
+      	"issuing_organisation": "",
+      	"media_interest": "",
+      	"new_order_received": "",
+      	"notifying_officer_email": "",
+      	"notifying_officer_name": "",
+      	"notifying_organization": "Mock Organisation",
+      	"no_post_code": "",
+      	"no_address_1": "",
+      	"no_address_2": "",
+      	"no_address_3": "",
+      	"no_address_4": "",
+      	"no_email": "",
+      	"no_name": "",
+      	"no_phone_number": "",
+      	"offence": "Fraud Offences",
+      	"offence_date": "",
+      	"order_end": "${mockEndDate.format(dateTimeFormatter)}",
+      	"order_id": "${order.id}",
+      	"order_request_type": "New Order",
+      	"order_start": "${mockStartDate.format(dateTimeFormatter)}",
+      	"order_type": "community",
+      	"order_type_description": "DAPOL",
+      	"order_type_detail": "",
+      	"order_variation_date": "",
+      	"order_variation_details": "",
+      	"order_variation_req_received_date": "",
+      	"order_variation_type": "",
+      	"pdu_responsible": "",
+      	"pdu_responsible_email": "",
+      	"planned_order_end_date": "",
+      	"responsible_officer_details_received": "",
+      	"responsible_officer_email": "",
+      	"responsible_officer_phone": "07401111111",
+      	"responsible_officer_name": "John Smith",
+      	"responsible_organization": "Avon and Somerset Constabulary",
+      	"ro_post_code": "AB11 1CD",
+      	"ro_address_1": "Line 1",
+      	"ro_address_2": "Line 2",
+      	"ro_address_3": "",
+      	"ro_address_4": "",
+      	"ro_email": "abc@def.com",
+      	"ro_phone": "07401111111",
+      	"ro_region": "Mock Region",
+      	"sentence_date": "",
+      	"sentence_expiry": "",
+      	"tag_at_source": "",
+      	"tag_at_source_details": "",
+      	"technical_bail": "",
+      	"trial_date": "",
+      	"trial_outcome": "",
+      	"conditional_release_date": "${mockStartDate.format(formatter)}",
+      	"reason_for_order_ending_early": "",
+      	"business_unit": "",
+        "service_end_date": "${mockEndDate.format(formatter)}",
+        "curfew_description": "",
+      	"curfew_start": "${mockStartDate.format(dateTimeFormatter)}",
+      	"curfew_end": "${mockEndDate.format(dateTimeFormatter)}",
+      	"curfew_duration": [
+      		{
+      			"location": "primary",
+      			"allday": "",
+      			"schedule": [
+      				{
+      					"day": "Mo",
+      					"start": "17:00",
+      					"end": "09:00"
+      				},
+      				{
+      					"day": "Tu",
+      					"start": "17:00",
+      					"end": "09:00"
+      				},
+      				{
+      					"day": "Wed",
+      					"start": "17:00",
+      					"end": "09:00"
+      				},
+      				{
+      					"day": "Th",
+      					"start": "17:00",
+      					"end": "09:00"
+      				},
+      				{
+      					"day": "Fr",
+      					"start": "17:00",
+      					"end": "09:00"
+      				},
+      				{
+      					"day": "Sa",
+      					"start": "17:00",
+      					"end": "09:00"
+      				},
+      				{
+      					"day": "Su",
+      					"start": "17:00",
+      					"end": "09:00"
+      				}
+      			]
+      		},
+      		{
+      			"location": "secondary",
+      			"allday": "",
+      			"schedule": [
+      				{
+      					"day": "Mo",
+      					"start": "17:00",
+      					"end": "09:00"
+      				},
+      				{
+      					"day": "Tu",
+      					"start": "17:00",
+      					"end": "09:00"
+      				},
+      				{
+      					"day": "Wed",
+      					"start": "17:00",
+      					"end": "09:00"
+      				},
+      				{
+      					"day": "Th",
+      					"start": "17:00",
+      					"end": "09:00"
+      				},
+      				{
+      					"day": "Fr",
+      					"start": "17:00",
+      					"end": "09:00"
+      				},
+      				{
+      					"day": "Sa",
+      					"start": "17:00",
+      					"end": "09:00"
+      				},
+      				{
+      					"day": "Su",
+      					"start": "17:00",
+      					"end": "09:00"
+      				}
+      			]
+      		}
+      	],
+      	"trail_monitoring": "No",
+      	"exclusion_zones": [
+          {
+            "description": "Mock Exclusion Zone",
+            "duration": "Mock Exclusion Duration",
+            "start": "${mockStartDate.format(formatter)}",
+            "end": "${mockEndDate.format(formatter)}"
+          }
+          ],      	
+      	"inclusion_zones": [
+          {
+            "description": "Mock Inclusion Zone",
+            "duration": "Mock Inclusion Duration",
+            "start": "${mockStartDate.format(formatter)}",
+            "end": "${mockEndDate.format(formatter)}"
+          }
+          ],
+      	
+      	"abstinence": "Yes",
+      	"schedule": "",
+      	"checkin_schedule": [],
+      	"revocation_date": "",
+      	"revocation_type": "",
+        "installation_address_1": "24 Somewhere Street",
+        "installation_address_2": "Nowhere City",
+        "installation_address_3": "Random County",
+        "installation_address_4": "United Kingdom",
+        "installation_address_post_code": "SW11 1NC",
+        "crown_court_case_reference_number": "",
+        "magistrate_court_case_reference_number": "",
+      	"order_status": "Not Started"
+      }
+      """.trimIndent()
+
+      assertThat(submitResult!!.success).isEqualTo(true)
+      assertThat(submitResult.error).isEqualTo("")
+
+      assertThat(submitResult.deviceWearerResult.payload).isEqualTo(expectedDWJson.removeWhitespaceAndNewlines())
+      assertThat(submitResult.monitoringOrderResult.payload).isEqualTo(expectedOrderJson.removeWhitespaceAndNewlines())
+
+      assertThat(submitResult.attachmentResults[0])
+        .usingRecursiveComparison()
+        .ignoringFields("id")
+        .isEqualTo(
+          FmsAttachmentSubmissionResult(
+            status = SubmissionStatus.SUCCESS,
+            sysId = "MockSysId",
+            fileType = order.additionalDocuments[0].fileType.toString(),
+            attachmentId = order.additionalDocuments[0].id.toString(),
+          ),
+        )
+
+      assertThat(submitResult.attachmentResults[1])
+        .usingRecursiveComparison()
+        .ignoringFields("id")
+        .isEqualTo(
+          FmsAttachmentSubmissionResult(
+            status = SubmissionStatus.SUCCESS,
+            sysId = "MockSysId",
+            fileType = order.additionalDocuments[1].fileType.toString(),
+            attachmentId = order.additionalDocuments[1].id.toString(),
+          ),
+        )
+
       val updatedOrder = repo.findById(order.id).get()
       assertThat(updatedOrder.fmsResultId).isEqualTo(submitResult.id)
       assertThat(updatedOrder.status).isEqualTo(OrderStatus.SUBMITTED)
@@ -840,7 +1268,7 @@ class OrderControllerTest : IntegrationTestBase() {
 
     @Test
     fun `It should update order with device wearer id, monitoring id & order status, and return 200 for a variation`() {
-      val order = createAndPersistReadyToSubmitOrder(false, OrderType.VARIATION)
+      val order = createAndPersistReadyToSubmitOrder(noFixedAddress = false, orderType = OrderType.VARIATION)
       sercoAuthApi.stubGrantToken()
 
       sercoApi.stubCreateDeviceWearer(
@@ -1125,8 +1553,8 @@ class OrderControllerTest : IntegrationTestBase() {
       }
       """.trimIndent()
 
-      assertThat(submitResult!!.fmsDeviceWearerRequest).isEqualTo(expectedDWJson.removeWhitespaceAndNewlines())
-      assertThat(submitResult.fmsOrderRequest).isEqualTo(expectedOrderJson.removeWhitespaceAndNewlines())
+      assertThat(submitResult!!.deviceWearerResult.payload).isEqualTo(expectedDWJson.removeWhitespaceAndNewlines())
+      assertThat(submitResult.monitoringOrderResult.payload).isEqualTo(expectedOrderJson.removeWhitespaceAndNewlines())
       val updatedOrder = repo.findById(order.id).get()
       assertThat(updatedOrder.fmsResultId).isEqualTo(submitResult.id)
       assertThat(updatedOrder.status).isEqualTo(OrderStatus.SUBMITTED)
@@ -1134,7 +1562,7 @@ class OrderControllerTest : IntegrationTestBase() {
 
     @Test
     fun `It should map installation address if device wearer no fixed Abode is true`() {
-      val order = createAndPersistReadyToSubmitOrder(true)
+      val order = createAndPersistReadyToSubmitOrder(noFixedAddress = true)
       sercoAuthApi.stubGrantToken()
 
       sercoApi.stubCreateDeviceWearer(
@@ -1211,8 +1639,8 @@ class OrderControllerTest : IntegrationTestBase() {
       }
       """.trimIndent()
 
-      assertThat(submitResult!!.fmsDeviceWearerRequest).isEqualTo(expectedDWJson.removeWhitespaceAndNewlines())
-      val fmsOrderRequest = submitResult.fmsOrderRequest!!
+      assertThat(submitResult!!.deviceWearerResult.payload).isEqualTo(expectedDWJson.removeWhitespaceAndNewlines())
+      val fmsOrderRequest = submitResult.monitoringOrderResult.payload
 
       JsonPathExpectationsHelper("installation_address_1").assertValue(fmsOrderRequest, "24 Somewhere Street")
       JsonPathExpectationsHelper("installation_address_2").assertValue(fmsOrderRequest, "Nowhere City")
@@ -1224,8 +1652,14 @@ class OrderControllerTest : IntegrationTestBase() {
     }
   }
 
-  fun createReadyToSubmitOrder(noFixedAddress: Boolean = false, orderType: OrderType = OrderType.REQUEST): Order {
+  fun createReadyToSubmitOrder(
+    id: UUID = UUID.randomUUID(),
+    noFixedAddress: Boolean = false,
+    orderType: OrderType = OrderType.REQUEST,
+    documents: MutableList<AdditionalDocument> = mutableListOf(),
+  ): Order {
     val order = Order(
+      id = id,
       username = "AUTH_ADM",
       status = OrderStatus.IN_PROGRESS,
       type = orderType,
@@ -1333,7 +1767,9 @@ class OrderControllerTest : IntegrationTestBase() {
       caseId = "d8ea62e61bb8d610a10c20e0b24bcb85",
       conditionType = MonitoringConditionType.REQUIREMENT_OF_A_COMMUNITY_ORDER,
     )
-    order.additionalDocuments = mutableListOf()
+
+    order.additionalDocuments = documents
+
     val curfewConditions = CurfewConditions(
       orderId = order.id,
       startDate = mockStartDate,
@@ -1432,10 +1868,12 @@ class OrderControllerTest : IntegrationTestBase() {
   }
 
   fun createAndPersistReadyToSubmitOrder(
+    id: UUID = UUID.randomUUID(),
     noFixedAddress: Boolean = false,
     orderType: OrderType = OrderType.REQUEST,
+    documents: MutableList<AdditionalDocument> = mutableListOf(),
   ): Order {
-    val order = createReadyToSubmitOrder(noFixedAddress, orderType)
+    val order = createReadyToSubmitOrder(id, noFixedAddress, orderType, documents)
     repo.save(order)
     return order
   }

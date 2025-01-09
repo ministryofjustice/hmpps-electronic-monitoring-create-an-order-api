@@ -9,6 +9,7 @@
 .kotlin/
 .localstack/
 build/
+localstack/
 
 # CMake
 cmake-build-debug/

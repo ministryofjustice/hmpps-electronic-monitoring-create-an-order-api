@@ -2,21 +2,23 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.s
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.SubmitFmsOrderResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsRequestResult
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.SubmissionStatus
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsDeviceWearerSubmissionResult
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsMonitoringOrderSubmissionResult
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsSubmissionResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsSubmissionStrategyKind
 
 class FmsDummySubmissionStrategy(
   objectMapper: ObjectMapper,
 ) : FmsSubmissionStrategyBase(objectMapper) {
 
-  private fun createDeviceWearer(order: Order): FmsRequestResult {
+  private fun createDeviceWearer(order: Order): FmsDeviceWearerSubmissionResult {
     val deviceWearerResult = this.getDeviceWearer(order)
 
     if (!deviceWearerResult.success) {
-      return FmsRequestResult(
-        success = false,
+      return FmsDeviceWearerSubmissionResult(
+        status = SubmissionStatus.FAILURE,
         error = deviceWearerResult.error.toString(),
       )
     }
@@ -25,24 +27,24 @@ class FmsDummySubmissionStrategy(
     val serialiseResult = this.serialiseDeviceWearer(deviceWearer)
 
     if (!serialiseResult.success) {
-      return FmsRequestResult(
-        success = false,
+      return FmsDeviceWearerSubmissionResult(
+        status = SubmissionStatus.FAILURE,
         error = serialiseResult.error.toString(),
       )
     }
 
-    return FmsRequestResult(
-      success = true,
+    return FmsDeviceWearerSubmissionResult(
+      status = SubmissionStatus.SUCCESS,
       payload = serialiseResult.data!!,
     )
   }
 
-  private fun createMonitoringOrder(order: Order, deviceWearerId: String): FmsRequestResult {
+  private fun createMonitoringOrder(order: Order, deviceWearerId: String): FmsMonitoringOrderSubmissionResult {
     val monitoringOrderResult = this.getMonitoringOrder(order, deviceWearerId)
 
     if (!monitoringOrderResult.success) {
-      return FmsRequestResult(
-        success = false,
+      return FmsMonitoringOrderSubmissionResult(
+        status = SubmissionStatus.FAILURE,
         error = monitoringOrderResult.error.toString(),
       )
     }
@@ -51,61 +53,38 @@ class FmsDummySubmissionStrategy(
     val serialiseResult = this.serialiseMonitoringOrder(monitoringOrder)
 
     if (!serialiseResult.success) {
-      return FmsRequestResult(
-        success = false,
+      return FmsMonitoringOrderSubmissionResult(
+        status = SubmissionStatus.FAILURE,
         error = serialiseResult.error.toString(),
       )
     }
 
-    return FmsRequestResult(
-      success = true,
+    return FmsMonitoringOrderSubmissionResult(
+      status = SubmissionStatus.SUCCESS,
       payload = serialiseResult.data!!,
     )
   }
 
-  override fun submitOrder(order: Order, orderSource: FmsOrderSource): SubmitFmsOrderResult {
+  override fun submitOrder(order: Order, orderSource: FmsOrderSource): FmsSubmissionResult {
     val createDeviceWearerResult = this.createDeviceWearer(order)
-    val deviceWearerId = createDeviceWearerResult.id
-    val deviceWearerRequest = createDeviceWearerResult.payload
+    val deviceWearerId = createDeviceWearerResult.deviceWearerId
 
-    if (!createDeviceWearerResult.success) {
-      return SubmitFmsOrderResult(
-        id = order.id,
-        success = false,
+    if (createDeviceWearerResult.status == SubmissionStatus.FAILURE) {
+      return FmsSubmissionResult(
+        orderId = order.id,
         strategy = FmsSubmissionStrategyKind.DUMMY,
-        error = createDeviceWearerResult.error,
-        deviceWearerId = deviceWearerId,
-        fmsDeviceWearerRequest = deviceWearerRequest,
+        deviceWearerResult = createDeviceWearerResult,
         orderSource = orderSource,
       )
     }
 
     val createMonitoringOrderResult = this.createMonitoringOrder(order, deviceWearerId)
-    val monitoringOrderId = createMonitoringOrderResult.id
-    val monitoringOrderRequest = createMonitoringOrderResult.payload
 
-    if (!createMonitoringOrderResult.success) {
-      return SubmitFmsOrderResult(
-        id = order.id,
-        success = false,
-        strategy = FmsSubmissionStrategyKind.DUMMY,
-        error = createMonitoringOrderResult.error,
-        deviceWearerId = deviceWearerId,
-        fmsDeviceWearerRequest = deviceWearerRequest,
-        fmsOrderId = monitoringOrderId,
-        fmsOrderRequest = monitoringOrderRequest,
-        orderSource = orderSource,
-      )
-    }
-
-    return SubmitFmsOrderResult(
-      id = order.id,
-      success = true,
+    return FmsSubmissionResult(
+      orderId = order.id,
       strategy = FmsSubmissionStrategyKind.DUMMY,
-      deviceWearerId = deviceWearerId,
-      fmsDeviceWearerRequest = deviceWearerRequest,
-      fmsOrderId = monitoringOrderId,
-      fmsOrderRequest = monitoringOrderRequest,
+      deviceWearerResult = createDeviceWearerResult,
+      monitoringOrderResult = createMonitoringOrderResult,
       orderSource = orderSource,
     )
   }
