@@ -27,7 +27,7 @@ class FmsClient(
 
   fun createDeviceWearer(deviceWearer: DeviceWearer, orderId: UUID): FmsResponse {
     val token = fmsAuthClient.getClientToken()
-    val result = webClient.post().uri("/device_wearer/createDW")
+    val result = webClient.post().uri("/x_seem_cemo/device_wearer/createDW")
       .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
       .contentType(MediaType.APPLICATION_JSON)
       .bodyValue(deviceWearer)
@@ -49,7 +49,7 @@ class FmsClient(
 
   fun createMonitoringOrder(order: MonitoringOrder, orderId: UUID): FmsResponse {
     val token = fmsAuthClient.getClientToken()
-    val result = webClient.post().uri("/monitoring_order/createMO")
+    val result = webClient.post().uri("/x_seem_cemo/monitoring_order/createMO")
       .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
       .contentType(MediaType.APPLICATION_JSON)
       .bodyValue(order)
@@ -71,7 +71,7 @@ class FmsClient(
 
   fun updateMonitoringOrder(order: MonitoringOrder, orderId: UUID): FmsResponse {
     val token = fmsAuthClient.getClientToken()
-    val result = webClient.post().uri("/monitoring_order/updateMO")
+    val result = webClient.post().uri("/x_seem_cemo/monitoring_order/updateMO")
       .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
       .contentType(MediaType.APPLICATION_JSON)
       .bodyValue(order)
@@ -103,7 +103,7 @@ class FmsClient(
     val result = webClient.post()
       .uri { uriBuilder ->
         uriBuilder
-          .path("/attachment_csm/file")
+          .path("/now/v1/attachment_csm/file")
           .queryParam("table_name", tableName)
           .queryParam("table_sys_id", caseId)
           .queryParam("file_name", fileName)
