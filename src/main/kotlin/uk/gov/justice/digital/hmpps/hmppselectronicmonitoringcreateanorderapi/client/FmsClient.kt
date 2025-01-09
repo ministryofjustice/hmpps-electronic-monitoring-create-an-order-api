@@ -90,8 +90,7 @@ class FmsClient(
       .block()!!
     return result
   }
-
-  // TODO: Sort out variation path
+  
   fun createAttachment(
     fileName: String,
     caseId: String,
