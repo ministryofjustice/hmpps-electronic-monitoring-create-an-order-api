@@ -6,6 +6,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.cl
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AdditionalDocument
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Result
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DocumentType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.SubmissionStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.DeviceWearer
@@ -79,7 +80,24 @@ class FmsOrderSubmissionStrategy(
   }
 
   private fun createAttachments(order: Order, deviceWearerId: String): List<FmsAttachmentSubmissionResult> {
-    return order.additionalDocuments.map { this.createAttachment(it, deviceWearerId) }
+    val documents = order.additionalDocuments
+
+    if (order.enforcementZoneConditions.isNotEmpty()) {
+      documents.addAll(
+        order.enforcementZoneConditions.filter {
+          it.fileId !== null && it.fileName !== null
+        }.map {
+          AdditionalDocument(
+            id = it.fileId!!,
+            orderId = it.orderId,
+            fileType = DocumentType.ENFORCEMENT_ZONE_MAP,
+            fileName = it.fileName!!,
+          )
+        },
+      )
+    }
+
+    return documents.map { this.createAttachment(it, deviceWearerId) }
   }
 
   private fun createDeviceWearer(order: Order): FmsDeviceWearerSubmissionResult {

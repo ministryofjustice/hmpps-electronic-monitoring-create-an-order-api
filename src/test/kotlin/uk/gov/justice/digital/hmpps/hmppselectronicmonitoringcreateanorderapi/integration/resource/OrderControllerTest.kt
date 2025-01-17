@@ -572,42 +572,38 @@ class OrderControllerTest : IntegrationTestBase() {
         HttpStatus.OK,
         FmsResponse(result = listOf(FmsResult(message = "", id = "MockDeviceWearerId"))),
       )
+
       sercoApi.stubCreateMonitoringOrder(
         HttpStatus.OK,
         FmsResponse(result = listOf(FmsResult(message = "", id = "MockMonitoringOrderId"))),
       )
+
       sercoApi.stubSubmitAttachment(
         HttpStatus.OK,
         FmsAttachmentResponse(
           result = FmsAttachmentResult(
-            sizeBytes = "",
-            fileName = order.additionalDocuments.first().fileName!!,
-            sysModCount = "",
-            averageImageColor = "",
-            imageWidth = "",
-            sysUpdatedOn = "",
-            sysTags = "",
-            createdByName = "",
+            fileName = order.additionalDocuments[0].fileName!!,
             tableName = "x_serg2_ems_csm_sr_mo_new",
             sysId = "MockSysId",
-            updatedByName = "",
-            imageHeight = "",
-            sysUpdatedBy = "",
-            downloadLink = "",
-            contentType = "",
-            sysCreatedOn = "",
-            sizeCompressed = "",
-            compressed = "",
-            state = "",
             tableSysId = "MockDeviceWearerId",
-            chunkSizeBytes = "",
-            hash = "",
-            sysCreatedBy = "",
+          ),
+        ),
+      )
+
+      sercoApi.stubSubmitAttachment(
+        HttpStatus.OK,
+        FmsAttachmentResponse(
+          result = FmsAttachmentResult(
+            fileName = order.enforcementZoneConditions[0].fileName!!,
+            tableName = "x_serg2_ems_csm_sr_mo_new",
+            sysId = "MockSysId",
+            tableSysId = "MockDeviceWearerId",
           ),
         ),
       )
 
       documentApi.stubGetDocument(order.additionalDocuments.first().id.toString())
+      documentApi.stubGetDocument(order.enforcementZoneConditions[0].id.toString())
 
       webTestClient.post()
         .uri("/api/orders/${order.id}/submit")
@@ -953,8 +949,21 @@ class OrderControllerTest : IntegrationTestBase() {
         ),
       )
 
+      sercoApi.stubSubmitAttachment(
+        HttpStatus.OK,
+        FmsAttachmentResponse(
+          result = FmsAttachmentResult(
+            fileName = order.enforcementZoneConditions[0].fileName!!,
+            tableName = "x_serg2_ems_csm_sr_mo_new",
+            sysId = "MockSysId",
+            tableSysId = "MockDeviceWearerId",
+          ),
+        ),
+      )
+
       documentApi.stubGetDocument(order.additionalDocuments[0].id.toString())
       documentApi.stubGetDocument(order.additionalDocuments[1].id.toString())
+      documentApi.stubGetDocument(order.enforcementZoneConditions[0].id.toString())
 
       webTestClient.post()
         .uri("/api/orders/${order.id}/submit")
@@ -1258,6 +1267,18 @@ class OrderControllerTest : IntegrationTestBase() {
             sysId = "MockSysId",
             fileType = order.additionalDocuments[1].fileType.toString(),
             attachmentId = order.additionalDocuments[1].id.toString(),
+          ),
+        )
+
+      assertThat(submitResult.attachmentResults[2])
+        .usingRecursiveComparison()
+        .ignoringFields("id")
+        .isEqualTo(
+          FmsAttachmentSubmissionResult(
+            status = SubmissionStatus.SUCCESS,
+            sysId = "MockSysId",
+            fileType = DocumentType.ENFORCEMENT_ZONE_MAP.toString(),
+            attachmentId = order.enforcementZoneConditions[0].fileId.toString(),
           ),
         )
 
@@ -1815,6 +1836,8 @@ class OrderControllerTest : IntegrationTestBase() {
         startDate = mockStartDate,
         endDate = mockEndDate,
         zoneType = EnforcementZoneType.EXCLUSION,
+        fileId = UUID.randomUUID(),
+        fileName = "MockMapFile.jpeg"
       ),
     )
 

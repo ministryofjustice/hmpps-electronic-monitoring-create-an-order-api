@@ -3,4 +3,5 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.m
 enum class DocumentType {
   LICENCE,
   PHOTO_ID,
+  ENFORCEMENT_ZONE_MAP,
 }
