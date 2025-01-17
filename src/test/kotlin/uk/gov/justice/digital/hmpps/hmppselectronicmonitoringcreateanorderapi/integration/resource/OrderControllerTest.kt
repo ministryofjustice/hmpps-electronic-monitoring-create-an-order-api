@@ -603,7 +603,7 @@ class OrderControllerTest : IntegrationTestBase() {
       )
 
       documentApi.stubGetDocument(order.additionalDocuments.first().id.toString())
-      documentApi.stubGetDocument(order.enforcementZoneConditions[0].id.toString())
+      documentApi.stubGetDocument(order.enforcementZoneConditions[0].fileId.toString())
 
       webTestClient.post()
         .uri("/api/orders/${order.id}/submit")
@@ -921,10 +921,12 @@ class OrderControllerTest : IntegrationTestBase() {
         HttpStatus.OK,
         FmsResponse(result = listOf(FmsResult(message = "", id = "MockDeviceWearerId"))),
       )
+
       sercoApi.stubCreateMonitoringOrder(
         HttpStatus.OK,
         FmsResponse(result = listOf(FmsResult(message = "", id = "MockMonitoringOrderId"))),
       )
+
       sercoApi.stubSubmitAttachment(
         HttpStatus.OK,
         FmsAttachmentResponse(
@@ -963,7 +965,7 @@ class OrderControllerTest : IntegrationTestBase() {
 
       documentApi.stubGetDocument(order.additionalDocuments[0].id.toString())
       documentApi.stubGetDocument(order.additionalDocuments[1].id.toString())
-      documentApi.stubGetDocument(order.enforcementZoneConditions[0].id.toString())
+      documentApi.stubGetDocument(order.enforcementZoneConditions[0].fileId.toString())
 
       webTestClient.post()
         .uri("/api/orders/${order.id}/submit")
@@ -1590,10 +1592,26 @@ class OrderControllerTest : IntegrationTestBase() {
         HttpStatus.OK,
         FmsResponse(result = listOf(FmsResult(message = "", id = "MockDeviceWearerId"))),
       )
+
       sercoApi.stubCreateMonitoringOrder(
         HttpStatus.OK,
         FmsResponse(result = listOf(FmsResult(message = "", id = "MockMonitoringOrderId"))),
       )
+
+      sercoApi.stubSubmitAttachment(
+        HttpStatus.OK,
+        FmsAttachmentResponse(
+          result = FmsAttachmentResult(
+            fileName = order.enforcementZoneConditions[0].fileName!!,
+            tableName = "x_serg2_ems_csm_sr_mo_new",
+            sysId = "MockSysId",
+            tableSysId = "MockDeviceWearerId",
+          ),
+        ),
+      )
+
+      documentApi.stubGetDocument(order.enforcementZoneConditions[0].fileId.toString())
+
       webTestClient.post()
         .uri("/api/orders/${order.id}/submit")
         .headers(setAuthorisation())
@@ -1668,6 +1686,19 @@ class OrderControllerTest : IntegrationTestBase() {
       JsonPathExpectationsHelper("installation_address_3").assertValue(fmsOrderRequest, "Random County")
       JsonPathExpectationsHelper("installation_address_4").assertValue(fmsOrderRequest, "United Kingdom")
       JsonPathExpectationsHelper("installation_address_post_code").assertValue(fmsOrderRequest, "SW11 1NC")
+
+      assertThat(submitResult.attachmentResults[0])
+        .usingRecursiveComparison()
+        .ignoringFields("id")
+        .isEqualTo(
+          FmsAttachmentSubmissionResult(
+            status = SubmissionStatus.SUCCESS,
+            sysId = "MockSysId",
+            fileType = DocumentType.ENFORCEMENT_ZONE_MAP.toString(),
+            attachmentId = order.enforcementZoneConditions[0].fileId.toString(),
+          ),
+        )
+
       val updatedOrder = repo.findById(order.id).get()
       assertThat(updatedOrder.fmsResultId).isEqualTo(submitResult.id)
     }
@@ -1837,7 +1868,7 @@ class OrderControllerTest : IntegrationTestBase() {
         endDate = mockEndDate,
         zoneType = EnforcementZoneType.EXCLUSION,
         fileId = UUID.randomUUID(),
-        fileName = "MockMapFile.jpeg"
+        fileName = "MockMapFile.jpeg",
       ),
     )
 
