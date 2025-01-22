@@ -71,7 +71,7 @@ data class Order(
   var enforcementZoneConditions: MutableList<EnforcementZoneConditions> = mutableListOf(),
 
   @OneToMany(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "order", orphanRemoval = true)
-  var mandatoryAttendanceConditions: MutableList<MandatoryAttendanceConditions>? = mutableListOf(),
+  var mandatoryAttendanceConditions: MutableList<MandatoryAttendanceConditions> = mutableListOf(),
 
   @OneToOne(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "order", orphanRemoval = true)
   var curfewReleaseDateConditions: CurfewReleaseDateConditions? = null,

@@ -23,7 +23,5 @@ data class UpdateMandatoryAttendanceDto(
 
   var addressLine4: String? = null,
 
-  var postcode: String? = null
-) {
-
-}
+  var postcode: String? = null,
+)
