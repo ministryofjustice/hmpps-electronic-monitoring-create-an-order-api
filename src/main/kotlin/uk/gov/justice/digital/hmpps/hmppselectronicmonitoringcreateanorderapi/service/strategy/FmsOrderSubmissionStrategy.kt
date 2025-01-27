@@ -80,7 +80,7 @@ class FmsOrderSubmissionStrategy(
   }
 
   private fun createAttachments(order: Order, deviceWearerId: String): List<FmsAttachmentSubmissionResult> {
-    val documents = order.additionalDocuments
+    val documents = order.additionalDocuments.toMutableList()
 
     if (order.enforcementZoneConditions.isNotEmpty()) {
       documents.addAll(
