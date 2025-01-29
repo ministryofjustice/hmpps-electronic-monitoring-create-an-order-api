@@ -102,6 +102,9 @@ class HearingEventHandler(
     // Committed to Crown Court for sentence in Local Authority Accommodation (CCSILA)
     const val CCSILA = "61dc2dfb-df0a-4ea3-8821-4506cb51e7ec"
 
+    // Youth remittal conditional bail (REMCBY)
+    const val REMCBY = "0536dbd2-b922-4899-9bc9-cad08429a889"
+
     val BAIL_OR_REMAND_TO_CARE_CONDITION_UUIDs = arrayOf(
       REMCB,
       CCSIB,
@@ -113,6 +116,7 @@ class HearingEventHandler(
       CCIC,
       RCCCB,
       CCSILA,
+      REMCBY,
     )
 
     val COMMUNITY_ORDER_UUIDS = arrayOf(
