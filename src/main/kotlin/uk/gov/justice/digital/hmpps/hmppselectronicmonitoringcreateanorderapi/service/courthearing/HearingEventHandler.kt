@@ -99,7 +99,10 @@ class HearingEventHandler(
     // Remitted from the Crown Court to the Magistrates' Court on conditional bail (RCCCB)
     const val RCCCB = "6266e4d8-a030-4ee7-be5c-9f5624f162e5"
 
-    val BAIL_CONDITION_UUIDs = arrayOf(
+    // Committed to Crown Court for sentence in Local Authority Accommodation (CCSILA)
+    const val CCSILA = "61dc2dfb-df0a-4ea3-8821-4506cb51e7ec"
+
+    val BAIL_OR_REMAND_TO_CARE_CONDITION_UUIDs = arrayOf(
       REMCB,
       CCSIB,
       RILAB,
@@ -109,6 +112,7 @@ class HearingEventHandler(
       CCIIB,
       CCIC,
       RCCCB,
+      CCSILA,
     )
 
     val COMMUNITY_ORDER_UUIDS = arrayOf(
@@ -131,7 +135,7 @@ class HearingEventHandler(
             judicialResults ->
           CommunityOrderType.from(judicialResults.judicialResultTypeId) != null ||
             (
-              BAIL_CONDITION_UUIDs.contains(judicialResults.judicialResultTypeId) &&
+              BAIL_OR_REMAND_TO_CARE_CONDITION_UUIDs.contains(judicialResults.judicialResultTypeId) &&
                 judicialResults.judicialResultPrompts.any {
                   BailOrderType.from(it.judicialResultPromptTypeId) != null
                 }
@@ -398,10 +402,14 @@ class HearingEventHandler(
   ) {
     monitoringConditions.endDate = getNextCourtHearingDate(prompts)
     judicialResults.firstOrNull {
-      it.judicialResultPrompts.any { prompts -> prompts.judicialResultPromptTypeId == BailOrderType.CURFEW.uuid }
+      it.judicialResultPrompts.any { prompts ->
+        prompts.judicialResultPromptTypeId == BailOrderType.CURFEW.uuid ||
+          prompts.judicialResultPromptTypeId == BailOrderType.MUST_STAY_INDOORS_AT_HOME_ADDRESS.uuid
+      }
     }?.let {
       val conditionPrompt = it.judicialResultPrompts.first { prompts ->
-        prompts.judicialResultPromptTypeId == BailOrderType.CURFEW.uuid
+        prompts.judicialResultPromptTypeId == BailOrderType.CURFEW.uuid ||
+          prompts.judicialResultPromptTypeId == BailOrderType.MUST_STAY_INDOORS_AT_HOME_ADDRESS.uuid
       }
       monitoringConditions.curfew = true
       val condition = CurfewConditions(orderId = order.id)
@@ -543,7 +551,7 @@ class HearingEventHandler(
     ) {
       return "Community"
     } else if (results.any {
-        BAIL_CONDITION_UUIDs.contains(it.judicialResultTypeId)
+        BAIL_OR_REMAND_TO_CARE_CONDITION_UUIDs.contains(it.judicialResultTypeId)
       }
     ) {
       return "Pre-Trial"
@@ -554,7 +562,7 @@ class HearingEventHandler(
   private fun getConditionType(results: List<JudicialResults>): MonitoringConditionType? {
     if (results.any { COMMUNITY_ORDER_UUIDS.contains(it.judicialResultTypeId) }) {
       return MonitoringConditionType.REQUIREMENT_OF_A_COMMUNITY_ORDER
-    } else if (results.any { BAIL_CONDITION_UUIDs.contains(it.judicialResultTypeId) }) {
+    } else if (results.any { BAIL_OR_REMAND_TO_CARE_CONDITION_UUIDs.contains(it.judicialResultTypeId) }) {
       return MonitoringConditionType.BAIL_ORDER
     }
 

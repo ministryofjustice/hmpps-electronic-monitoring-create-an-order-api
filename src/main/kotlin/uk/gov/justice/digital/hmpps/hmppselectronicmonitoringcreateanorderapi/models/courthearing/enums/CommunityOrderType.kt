@@ -26,6 +26,8 @@ enum class CommunityOrderType(val uuid: String) {
 enum class BailOrderType(val uuid: String) {
   CURFEW("fa49f99a-a2f1-4d4a-bd14-d18ab1c9eca5"),
 
+  MUST_STAY_INDOORS_AT_HOME_ADDRESS("f2cab905-935b-49e5-9f82-badcfb6c6c60"),
+
   EXCLUSION_NOT_ENTER_A_PLACE("c1d490ed-1754-43b8-a485-fdab1a25f8cb"),
 
   EXCLUSION_EXCEPT_COURT_OR_APPOINTMENT("dfa19118-e944-43f4-93b2-2ed49df5553f"),
@@ -34,11 +36,18 @@ enum class BailOrderType(val uuid: String) {
 
   EXCLUSION_NOT_GO_WITHIN_A_RADIUS("9da5909e-d715-4f79-a1b8-34780c57acf1"),
 
+  EXCLUSION_MUST_NOT_ENTER("2751bd8f-897a-4aa0-b26d-b7bf7b18acff"),
+
+  EXCLUSION_NOT_ENTER_OTHER_THAN_ATTEND_COURT_OR_APPOINTMENT("f68c277a-4f7d-4da5-bd8a-396e6671e05c"),
+
   EXCLUSION_WITH_GPS_TAG("4c79ea50-6e14-4c47-8836-c0d0f647e45a"),
+
+  EXCLUSION_MUST_NOT_GO_WITHIN("6f2e2861-0ad4-4721-b0d2-65b1d5f16895"),
 
   INCLUSION_SPECIFIED_RADIUS("c9ae30f1-3c3b-4edf-a7d4-49bd027977c3"),
 
   INCLUSION_NOT_TO_LEAVE("ac44c4ed-c77c-4552-aed7-b4f05f1dc9db"),
+
   ;
 
   companion object {
@@ -49,6 +58,9 @@ enum class BailOrderType(val uuid: String) {
       EXCLUSION_EXCEPT_ACCOMPANIED_BY_OFFICER to EnforcementZoneType.EXCLUSION,
       EXCLUSION_NOT_GO_WITHIN_A_RADIUS to EnforcementZoneType.EXCLUSION,
       EXCLUSION_WITH_GPS_TAG to EnforcementZoneType.EXCLUSION,
+      EXCLUSION_MUST_NOT_ENTER to EnforcementZoneType.EXCLUSION,
+      EXCLUSION_NOT_ENTER_OTHER_THAN_ATTEND_COURT_OR_APPOINTMENT to EnforcementZoneType.EXCLUSION,
+      EXCLUSION_MUST_NOT_GO_WITHIN to EnforcementZoneType.EXCLUSION,
       INCLUSION_SPECIFIED_RADIUS to EnforcementZoneType.INCLUSION,
       INCLUSION_NOT_TO_LEAVE to EnforcementZoneType.INCLUSION,
     )

@@ -244,8 +244,14 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `Will map RCCCB_pro-trail_exclusion_and_curfew request and submit to FMS`() {
-    val rootFilePath = "src/test/resources/json/RCCCB_pro-trail_exclusion_and_curfew"
+  fun `Will map RCCCB_pre-trail_exclusion_and_curfew request and submit to FMS`() {
+    val rootFilePath = "src/test/resources/json/RCCCB_pre-trail_exclusion_and_curfew"
+    runPayloadTest(rootFilePath)
+  }
+
+  @Test
+  fun `Will map RCCCB_pre-CCSILA_pre-trail_exclusions_and_curfew request and submit to FMS`() {
+    val rootFilePath = "src/test/resources/json/CCSILA_pre-trail_exclusions_and_curfew"
     runPayloadTest(rootFilePath)
   }
 
