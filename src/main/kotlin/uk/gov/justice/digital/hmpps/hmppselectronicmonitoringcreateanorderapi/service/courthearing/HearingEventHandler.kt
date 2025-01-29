@@ -47,63 +47,85 @@ class HearingEventHandler(
   companion object {
 
     //region Comment Platform UUIDs
-    const val COMMUNITY_ORDER_ENGLAND_AND_WALES = "418b3aa7-65ab-4a4a-bab9-2f96b698118c"
 
-    const val YOUTH_REHAB_ENGLAND_AND_WALES = "73a4f6a2-b768-45de-beb7-3f4d2f933e11"
+    // Community order England / Wales (COEW)
+    const val COEW = "418b3aa7-65ab-4a4a-bab9-2f96b698118c"
 
-    const val YOUTH_REHAB_WITH_FOSTERING = "ae8c21a9-cf2a-487b-8fae-58d50c7104f0"
-    const val YOUTH_REHAB_WITH_INTENSIVE_SUPERVISION_AND_SURVEILLANCE = "0b5ce679-b262-436d-8f94-aa78de85022a"
+    // Youth Rehabilitation Order England and Wales (YROEW)
+    const val YROEW = "73a4f6a2-b768-45de-beb7-3f4d2f933e11"
 
-    const val SSO_YOUNG_OFFENDER_INSTITUTION_DETENTION = "5679e5b7-0ca8-4d2a-ba80-7a50025fb589"
+    // Youth rehabilitation order with fostering England / Wales (YROFEW)
+    const val YROFEW = "ae8c21a9-cf2a-487b-8fae-58d50c7104f0"
 
-    const val SSO_IMPRISONMENT = "8b1cff00-a456-40da-9ce4-f11c20959084"
+    // Youth rehabilitation order with intensive supervision and surveillance England / Wales (YROISS)
+    const val YROISS = "0b5ce679-b262-436d-8f94-aa78de85022a"
 
-    const val SUPERVISION_DEFAULT_ORDER = "fd391847-f640-402e-a958-f33a014e6684"
+    // Suspended sentence order - detention in a young offender institution (SUSPSD)
+    const val SUSPSD = "5679e5b7-0ca8-4d2a-ba80-7a50025fb589"
 
-    private const val COMMUNITY_ORDER_SCOTLAND = "ae617390-b41e-46ac-bd63-68a28512676a"
+    // Suspended sentence order - imprisonment (SUSPS)
+    const val SUSPS = "8b1cff00-a456-40da-9ce4-f11c20959084"
 
-    const val BAIL_ADULT_REMITTAL_FOR_SENTENCE_ON_CONDITIONAL = "f917ba0c-1faf-4945-83a8-50be9049f9b4"
+    // Supervision default order
+    const val SDO = "fd391847-f640-402e-a958-f33a014e6684"
 
-    const val BAIL_CROWN_COURT_SENTENCE_IN_CUSTODY_WITH_BAIL_DIRECTION = "35430208-3705-44ce-b5d5-153c0337f6ab"
+    // Community order Scotland (COS)
+    private const val COS = "ae617390-b41e-46ac-bd63-68a28512676a"
 
-    const val BAIL_REMAND_IN_CARE_OF_LOCAL_AUTHORITY = "f666fd58-36c5-493f-aa11-89714faee6e6"
+    // Adult remittal for sentence on conditional bail (REMCB)
+    const val REMCB = "f917ba0c-1faf-4945-83a8-50be9049f9b4"
 
-    const val BAIL_REMANDED_IN_CUSTODY_WITH_BAIL_DIRECTION = "e26940b7-2534-42f2-9c44-c70072bf6ad2"
+    // Committed to Crown Court for sentence - in custody with bail direction (CCSIB)
+    const val CCSIB = "35430208-3705-44ce-b5d5-153c0337f6ab"
 
-    const val BAIL_REMANDED_ON_CONDITIONAL_BAIL = "3a529001-2f43-45ba-a0a8-d3ced7e9e7ad"
+    // Remand in care of Local Authority with bail direction (RILAB)
+    const val RILAB = "f666fd58-36c5-493f-aa11-89714faee6e6"
 
-    const val BAIL_REMITTED_FROM_CROWN_COURT_TO_MAGISTRATES_COURT = "9fd1849f-f91f-4fa7-adfd-ef24f64654eb"
+    // Remanded in custody with bail direction (RIB)
+    const val RIB = "e26940b7-2534-42f2-9c44-c70072bf6ad2"
 
-    const val BAIL_SENT_TO_CROWN_COURT_WITH_BAIL_DIRECTION = "062373fb-ada8-49a1-b7de-659426ba6b88"
+    // Remanded on conditional bail (RC)
+    const val RC = "3a529001-2f43-45ba-a0a8-d3ced7e9e7ad"
 
-    const val BAIL_SENT_TO_CROWN_COURT_ON_BAIL_CONDITION = "b318ca35-8b6a-41e5-a674-879ac9a05cc2"
+    // Remitted from the Crown Court to the Magistrates' Court in local authority accommodation with bail direction (RCCLAB)
+    const val RCCLAB = "9fd1849f-f91f-4fa7-adfd-ef24f64654eb"
+
+    // Sent to Crown Court in custody for trial with bail direction (CCIIB)
+    const val CCIIB = "062373fb-ada8-49a1-b7de-659426ba6b88"
+
+    // Sent to Crown Court for trial on conditional bail (CCIC)
+    const val CCIC = "b318ca35-8b6a-41e5-a674-879ac9a05cc2"
+
+    // Remitted from the Crown Court to the Magistrates' Court on conditional bail (RCCCB)
+    const val RCCCB = "6266e4d8-a030-4ee7-be5c-9f5624f162e5"
 
     val BAIL_CONDITION_UUIDs = arrayOf(
-      BAIL_ADULT_REMITTAL_FOR_SENTENCE_ON_CONDITIONAL,
-      BAIL_CROWN_COURT_SENTENCE_IN_CUSTODY_WITH_BAIL_DIRECTION,
-      BAIL_REMAND_IN_CARE_OF_LOCAL_AUTHORITY,
-      BAIL_REMANDED_IN_CUSTODY_WITH_BAIL_DIRECTION,
-      BAIL_REMANDED_ON_CONDITIONAL_BAIL,
-      BAIL_REMITTED_FROM_CROWN_COURT_TO_MAGISTRATES_COURT,
-      BAIL_SENT_TO_CROWN_COURT_WITH_BAIL_DIRECTION,
-      BAIL_SENT_TO_CROWN_COURT_ON_BAIL_CONDITION,
+      REMCB,
+      CCSIB,
+      RILAB,
+      RIB,
+      RC,
+      RCCLAB,
+      CCIIB,
+      CCIC,
+      RCCCB,
     )
 
     val COMMUNITY_ORDER_UUIDS = arrayOf(
-      COMMUNITY_ORDER_ENGLAND_AND_WALES,
-      SSO_YOUNG_OFFENDER_INSTITUTION_DETENTION,
-      SSO_IMPRISONMENT,
-      YOUTH_REHAB_ENGLAND_AND_WALES,
-      YOUTH_REHAB_WITH_FOSTERING,
-      SUPERVISION_DEFAULT_ORDER,
-      YOUTH_REHAB_WITH_INTENSIVE_SUPERVISION_AND_SURVEILLANCE,
+      COEW,
+      SUSPSD,
+      SUSPS,
+      YROEW,
+      YROFEW,
+      SDO,
+      YROISS,
     )
 
     //endregion
     fun isEnglandAdnWalesEMRequest(offence: Offence): Boolean {
       return !offence.judicialResults.any {
           judicialResults ->
-        judicialResults.judicialResultTypeId== COMMUNITY_ORDER_SCOTLAND
+        judicialResults.judicialResultTypeId== COS
       } &&
         offence.judicialResults.any {
             judicialResults ->
