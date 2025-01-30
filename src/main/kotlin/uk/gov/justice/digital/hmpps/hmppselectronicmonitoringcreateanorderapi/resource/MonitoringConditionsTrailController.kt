@@ -29,7 +29,7 @@ class MonitoringConditionsTrailController(
     authentication: Authentication,
   ): ResponseEntity<TrailMonitoringConditions> {
     val username = authentication.name
-    val trailMonitoringConditions = monitoringConditionsTrailService.createOrUpdateTrailMonitoringConditions(
+    val trailMonitoringConditions = monitoringConditionsTrailService.updateTrailMonitoringConditions(
       orderId,
       username,
       trailMonitoringConditionsUpdateRecord,
