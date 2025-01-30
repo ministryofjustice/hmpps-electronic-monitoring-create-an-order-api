@@ -11,7 +11,6 @@ import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.DeviceWearerRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidationError
 import java.time.LocalDate
@@ -21,8 +20,6 @@ import java.time.ZonedDateTime
 import java.util.*
 
 class DeviceWearerControllerTest : IntegrationTestBase() {
-  @Autowired
-  lateinit var deviceWearerRepo: DeviceWearerRepository
 
   @Autowired
   lateinit var orderRepo: OrderRepository
@@ -47,7 +44,6 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
 
   @BeforeEach
   fun setup() {
-    deviceWearerRepo.deleteAll()
     orderRepo.deleteAll()
   }
 
