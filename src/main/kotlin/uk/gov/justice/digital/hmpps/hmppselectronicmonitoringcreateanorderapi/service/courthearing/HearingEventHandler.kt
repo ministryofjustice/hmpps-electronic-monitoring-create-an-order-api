@@ -48,7 +48,7 @@ class HearingEventHandler(
 
     //region Comment Platform UUIDs
 
-    // Community order England / Wales (COEW)
+    // Community order England / Wales(COEW)
     const val COEW = "418b3aa7-65ab-4a4a-bab9-2f96b698118c"
 
     // Youth Rehabilitation Order England and Wales (YROEW)
@@ -66,7 +66,7 @@ class HearingEventHandler(
     // Suspended sentence order - imprisonment (SUSPS)
     const val SUSPS = "8b1cff00-a456-40da-9ce4-f11c20959084"
 
-    // Supervision default order
+    // Supervision default order(SDO)
     const val SDO = "fd391847-f640-402e-a958-f33a014e6684"
 
     // Community order Scotland (COS)
@@ -105,6 +105,9 @@ class HearingEventHandler(
     // Youth remittal conditional bail (REMCBY)
     const val REMCBY = "0536dbd2-b922-4899-9bc9-cad08429a889"
 
+    // Remand In care of Local Authority (RILA)
+    const val RCLA = "903b3e90-f185-40d3-92dd-6f81b73c4bb2"
+
     val BAIL_OR_REMAND_TO_CARE_CONDITION_UUIDs = arrayOf(
       REMCB,
       CCSIB,
@@ -117,6 +120,7 @@ class HearingEventHandler(
       RCCCB,
       CCSILA,
       REMCBY,
+      RCLA,
     )
 
     val COMMUNITY_ORDER_UUIDS = arrayOf(
@@ -163,7 +167,7 @@ class HearingEventHandler(
           eventService.recordEvent(
             "Common_Platform_Failed_Request",
             mapOf(
-              "Error" to "${submitResult.error}",
+              "Error" to submitResult.error,
               "Start Date And Time" to startDateTime.format(formatter),
             ),
             System.currentTimeMillis() - startTimeInMs,

@@ -1,0 +1,428 @@
+{
+    "hearing": {
+        "id": "3623e1af-0297-496f-bd2e-591dda4b5cb1",
+        "jurisdictionType": "MAGISTRATES",
+        "courtCentre": {
+            "address": {
+                "address1": "Victoria Law Courts",
+                "address2": "Corporation Street",
+                "address3": "Birmingham",
+                "address4": "",
+                "address5": "",
+                "postcode": "B4 6QA"
+            },
+            "code": "B20BL00",
+            "courtHearingLocation": "B20BL01",
+            "id": "fb423eb7-3f90-31ba-8ba1-984ff832ba53",
+            "lja": {
+                "ljaCode": "2922",
+                "ljaName": "Birmingham and Solihull Magistrates' Court"
+            },
+            "name": "Birmingham Magistrates' Court",
+            "roomId": "d98e83df-3815-3d93-b3d6-f5e2341fed6b",
+            "roomName": "Courtroom 01"
+        },
+        "type": {
+            "description": "First hearing",
+            "id": "4a0e892d-c0c5-3c51-95b8-704d8c781776"
+        },
+        "hearingDays": [
+            {
+                "courtCentreId": "fb423eb7-3f90-31ba-8ba1-984ff832ba53",
+                "courtRoomId": "d98e83df-3815-3d93-b3d6-f5e2341fed6b",
+                "hasSharedResults": true,
+                "isCancelled": false,
+                "listedDurationMinutes": 20,
+                "listingSequence": 0,
+                "sittingDay": "2025-01-15T09:30:00.000Z"
+            }
+        ],
+        "hearingLanguage": "ENGLISH",
+        "prosecutionCases": [
+            {
+                "id": "67660c22-65eb-44d2-94d0-6cd7ab1c667c",
+                "prosecutionCaseIdentifier": {
+                    "address": {
+                        "address1": "Bishopsgate police station",
+                        "address2": "182, Bishopsgate",
+                        "address5": "London",
+                        "postcode": "EC2M 4NP"
+                    },
+                    "contact": {
+                        "primaryEmail": "casebuilderscpsmemos@cityoflondon.police.uk"
+                    },
+                    "majorCreditorCode": "COLP",
+                    "prosecutionAuthorityCode": "CITYPF",
+                    "prosecutionAuthorityId": "baa2ec52-296b-3f38-922a-9e641c1f94d3",
+                    "prosecutionAuthorityName": "City of London Police",
+                    "prosecutionAuthorityOUCode": "0480000",
+                    "caseURN": "RQ370014166"
+                },
+                "initiationCode": "C",
+                "defendants": [
+                    {
+                        "id": "6a2333d7-1b5e-4b2d-8f71-89f941c9b9a8",
+                        "prosecutionCaseId": "67660c22-65eb-44d2-94d0-6cd7ab1c667c",
+                        "offences": [
+                            {
+                                "id": "d8d87cd2-b7e0-47db-a3d4-bb8740746dc2",
+                                "offenceDefinitionId": "b376a716-3b8e-3eab-a4e7-f7e6efe2b75c",
+                                "offenceCode": "CD98526",
+                                "offenceTitle": "Complaint for an individual support order",
+                                "wording": "Unknown offenses",
+                                "startDate": "2024-11-16",
+                                "offenceTitleWelsh": "Achwyneb am orchymyn cefnogi unigolyn",
+                                "offenceLegislation": "In accordance with section 1AA(1A) of the Crime and Disorder Act 1998.",
+                                "offenceLegislationWelsh": "Yn unol ag adran 1AA(1A) Deddf Trosedd ac Anrhefn 1998.",
+                                "arrestDate": "2024-12-31",
+                                "chargeDate": "2025-01-05",
+                                "orderIndex": 1,
+                                "count": 0,
+                                "convictionDate": "2025-01-15",
+                                "plea": {
+                                    "offenceId": "d8d87cd2-b7e0-47db-a3d4-bb8740746dc2",
+                                    "originatingHearingId": "3623e1af-0297-496f-bd2e-591dda4b5cb1",
+                                    "pleaDate": "2025-01-15",
+                                    "pleaValue": "GUILTY"
+                                },
+                                "judicialResults": [
+                                    {
+                                        "alwaysPublished": false,
+                                        "canBeSubjectOfBreach": false,
+                                        "canBeSubjectOfVariation": false,
+                                        "category": "INTERMEDIARY",
+                                        "cjsCode": "4029",
+                                        "courtClerk": {
+                                            "firstName": "Erica",
+                                            "lastName": "Wilson",
+                                            "userId": "31ec3a16-8721-498c-8da5-f099390ee254"
+                                        },
+                                        "d20": false,
+                                        "excludedFromResults": false,
+                                        "isAdjournmentResult": true,
+                                        "isAvailableForCourtExtract": true,
+                                        "isConvictedResult": false,
+                                        "isDeleted": false,
+                                        "isFinancialResult": false,
+                                        "isNewAmendment": true,
+                                        "isUnscheduled": false,
+                                        "judicialResultId": "8e0dc1f5-7fa7-4366-b51a-f6208caef489",
+                                        "judicialResultPrompts": [
+                                            {
+                                                "courtExtract": "Y",
+                                                "judicialResultPromptTypeId": "70c98fa6-804d-11e8-adc0-fa7ae01bbebc",
+                                                "label": "Next hearing in magistrates' court",
+                                                "promptReference": "b91b1067-4fcd-4715-b71c-a5784a067941",
+                                                "promptSequence": 0,
+                                                "usergroups": [],
+                                                "value": "Date of hearing:15/01/2025\nTime of hearing:10:00\nCourthouse organisation name:City of London Magistrates' Court\nCourthouse address line 1:1 Queen Victoria Street\nCourthouse address line 2:London\nCourthouse post code:EC4N 4XY\nCourtroom:Courtroom 01\nHearing type:Bail Variation Application\nEstimated duration:3 HOURS\nBooking reference:b6bfdd73-2524-4340-95c6-3bbb3d15b627",
+                                                "welshLabel": "Ni wnaeth y Llys barhau â’r treial yn absenoldeb y diffynnydd"
+                                            },
+                                            {
+                                                "courtExtract": "Y",
+                                                "isFinancialImposition": false,
+                                                "judicialResultPromptTypeId": "49f9ee68-3dee-4ed1-8020-377818c3697f",
+                                                "label": "Remand basis",
+                                                "promptReference": "remandBasis",
+                                                "promptSequence": 200,
+                                                "type": "FIXL",
+                                                "usergroups": [],
+                                                "value": "Further remanded in absence due to illness or accident",
+                                                "welshLabel": "Sail remand",
+                                                "welshValue": "Wedi'i remandio ymhellach yn ei absenoldeb oherwydd salwch neu ddamwain"
+                                            },
+                                            {
+                                                "courtExtract": "Y",
+                                                "isFinancialImposition": false,
+                                                "judicialResultPromptTypeId": "f63f692f-3bfc-4d0f-8e45-acd99b06431c",
+                                                "label": "Local Authority",
+                                                "promptReference": "nameOfLocalAuthority",
+                                                "promptSequence": 300,
+                                                "type": "FIXL",
+                                                "usergroups": [],
+                                                "value": "Birmingham City Council",
+                                                "welshLabel": "Awdurdod Lleol",
+                                                "welshValue": "Birmingham City Council"
+                                            },
+                                            {
+                                                "courtExtract": "Y",
+                                                "isFinancialImposition": false,
+                                                "judicialResultPromptTypeId": "7b2e6219-ddcb-4afa-8615-8de978e60af1",
+                                                "label": "Bail exception",
+                                                "promptReference": "bailException",
+                                                "promptSequence": 500,
+                                                "qualifier": "MK",
+                                                "type": "FIXLM",
+                                                "usergroups": [],
+                                                "value": "To prevent interference with witnesses or otherwise obstruct the course of justice, whether in relation to the defendant or any other person",
+                                                "welshLabel": "Eithriad rhag caniatáu mechnïaeth",
+                                                "welshValue": "I atal ymyrraeth â thystion neu rwystro cwrs cyfiawnder fel arall, naill ai mewn perthynas â'r diffynnydd neu unrhyw berson arall"
+                                            },
+                                            {
+                                                "courtExtract": "Y",
+                                                "isFinancialImposition": false,
+                                                "judicialResultPromptTypeId": "53ac8d08-49a9-4495-ab3a-0ef94ca9e560",
+                                                "label": "Bail exception reason",
+                                                "promptReference": "bailExceptionReason",
+                                                "promptSequence": 700,
+                                                "type": "FIXLOM",
+                                                "usergroups": [],
+                                                "value": "Failed to surrender, Offended on bail",
+                                                "welshLabel": "Rheswm dros beidio â chaniatáu mechnïaeth",
+                                                "welshValue": "Wedi methu ildio, Wedi troseddu ar fechnïaeth"
+                                            },
+                                            {
+                                                "courtExtract": "N",
+                                                "judicialResultPromptTypeId": "86857bb0-aaa6-4a76-b226-812a9987fcb2",
+                                                "label": "Notification of electronic monitoring order (bail)",
+                                                "promptReference": "bd0ea1d0-2749-43de-95e6-9eb395722ddc",
+                                                "promptSequence": 800,
+                                                "usergroups": [],
+                                                "value": "Electronic monitoring contractor organisation name:Electronic Monitoring Contractor\nElectronic monitoring contractor email address 1:LPadmin@ems.co.uk\nFirst notification of electronic monitoring:Yes\nDefendant's mobile number:03524186689\nWas an interpreter used?:No\nLanguage:English\nDoes the offender have any special needs?:No\nSpecial needs:special witness room to be arrnged\nThis curfew shall apply upon release from custody:Yes",
+                                                "welshLabel": "Hysbysiad o orchymyn monitro electronig (mechnïaeth)"
+                                            },
+                                            {
+                                                "courtExtract": "Y",
+                                                "judicialResultPromptTypeId": "6656b25a-de49-4722-b21f-acebe07d4d1c",
+                                                "label": "Must live, and sleep each night at",
+                                                "promptReference": "c7d4091d-28bb-4086-8495-99cde70d3e12",
+                                                "promptSequence": 900,
+                                                "qualifier": "RB",
+                                                "usergroups": [],
+                                                "value": "Address:101,\nwhitehouse\nMK8 2AE",
+                                                "welshLabel": "Rhaid byw, a chysgu bob nos yn"
+                                            },
+                                            {
+                                                "courtExtract": "Y",
+                                                "judicialResultPromptTypeId": "6f2e2861-0ad4-4721-b0d2-65b1d5f16895",
+                                                "label": "Must not go within",
+                                                "promptReference": "363f8280-9e3c-483f-b6ae-ca5953d25ec2",
+                                                "promptSequence": 1000,
+                                                "qualifier": "JO",
+                                                "usergroups": [],
+                                                "value": "A radius of:2\nIn respect of this place:whitehouse",
+                                                "welshLabel": "Rhaid peidio â mynd o fewn"
+                                            },
+                                            {
+                                                "courtExtract": "Y",
+                                                "judicialResultPromptTypeId": "2751bd8f-897a-4aa0-b26d-b7bf7b18acff",
+                                                "label": "Must not enter",
+                                                "promptReference": "e4e75fe4-5112-44f6-96ee-9f983d352c25",
+                                                "promptSequence": 1100,
+                                                "qualifier": "JO",
+                                                "usergroups": [],
+                                                "value": "Place or area:trafalgaur square",
+                                                "welshLabel": "Rhaid peidio â mynd i mewn"
+                                            },
+                                            {
+                                                "courtExtract": "Y",
+                                                "judicialResultPromptTypeId": "f68c277a-4f7d-4da5-bd8a-396e6671e05c",
+                                                "label": "Must not enter the place or area specified other than to attend court or for a pre-arranged appointment with your solicitor",
+                                                "promptReference": "ae10ff89-aee9-4b11-b0bc-a2c7f1f17528",
+                                                "promptSequence": 1200,
+                                                "qualifier": "JO",
+                                                "usergroups": [],
+                                                "value": "Place or area:buckingham palace",
+                                                "welshLabel": "Rhaid peidio â mynd i mewn i'r lle neu'r ardal a nodwyd heblaw i fynychu'r llys neu am apwyntiad wedi'i drefnu ymlaen llaw gyda'ch cyfreithiwr"
+                                            },
+                                            {
+                                                "courtExtract": "Y",
+                                                "judicialResultPromptTypeId": "f2cab905-935b-49e5-9f82-badcfb6c6c60",
+                                                "label": "Must stay indoors at home address (or at any other address allowed by the court)",
+                                                "promptReference": "58fda660-21dd-44ea-823f-0b12c65bba04",
+                                                "promptSequence": 1300,
+                                                "qualifier": "JD",
+                                                "usergroups": [],
+                                                "value": "Between:18:00\nAnd:09:00\nFrequency of curfew:1",
+                                                "welshLabel": "Rhaid aros y tu fewn yn eich cyfeiriad cartref (neu mewn unrhyw gyfeiriad arall a ganiateir gan y llys)"
+                                            },
+                                            {
+                                                "courtExtract": "Y",
+                                                "judicialResultPromptTypeId": "6a84ebbd-d1e9-43cc-a3c3-a3b459d8cb5a",
+                                                "label": "The curfew condition will be electronically monitored. The electronic monitoring service will see that the curfew is complied with. You will wear a personal identification device at all times during the terms of this condition. You must not remove or tamper with the monitoring equipment in any way. You must allow access for the monitoring staff to complete the induction process and follow any reasonable instructions they give you.",
+                                                "promptReference": "bc924c83-b4a7-47c8-b3f5-e85d8133b27f",
+                                                "promptSequence": 1400,
+                                                "qualifier": "BA",
+                                                "usergroups": [],
+                                                "value": ""
+                                            },
+                                            {
+                                                "courtExtract": "Y",
+                                                "judicialResultPromptTypeId": "671c65dc-8406-4923-bff2-e193a7fbd489",
+                                                "label": "Must",
+                                                "promptReference": "58df3879-a114-4f59-832e-cdfde07134b2",
+                                                "promptSequence": 1500,
+                                                "qualifier": "RA",
+                                                "usergroups": [],
+                                                "value": "Details:submit passport",
+                                                "welshLabel": "Rhaid"
+                                            },
+                                            {
+                                                "courtExtract": "Y",
+                                                "judicialResultPromptTypeId": "5dc70e17-6095-4bd8-8597-36186e7eaba1",
+                                                "label": "Remand to care conditions imposed on the defendant",
+                                                "promptReference": "dc148c21-01ed-4d92-9a93-d0fcd9acb020",
+                                                "promptSequence": 1600,
+                                                "usergroups": [],
+                                                "value": "Reasons for the conditions imposed on the defendant:To make sure that the defendant goes to court for the next hearing",
+                                                "welshLabel": "Remand i amodau gofal a osodir ar y diffynnydd"
+                                            }
+                                        ],
+                                        "judicialResultTypeId": "903b3e90-f185-40d3-92dd-6f81b73c4bb2",
+                                        "label": "Remand In care of Local Authority",
+                                        "lastSharedDateTime": "2025-01-20",
+                                        "level": "O",
+                                        "lifeDuration": false,
+                                        "nextHearing": {
+                                            "adjournmentReason": "",
+                                            "bookingReference": "b6bfdd73-2524-4340-95c6-3bbb3d15b627",
+                                            "courtCentre": {
+                                                "address": {
+                                                    "address1": "1 Queen Victoria Street",
+                                                    "address2": "London",
+                                                    "postcode": "EC4N 4XY"
+                                                },
+                                                "code": "B01DU00",
+                                                "courtHearingLocation": "B01DU01",
+                                                "id": "c133d0de-c989-48b9-bd20-0431943e347e",
+                                                "name": "City of London Magistrates' Court",
+                                                "psaCode": 2570,
+                                                "roomId": "4294a92c-8827-3296-be53-c74b7e9e31d8",
+                                                "roomName": "Courtroom 01",
+                                                "welshName": "Llys Ynadon Dinas Llundain"
+                                            },
+                                            "estimatedDuration": "3 HOURS",
+                                            "estimatedMinutes": 180,
+                                            "jurisdictionType": "MAGISTRATES",
+                                            "listedStartDateTime": "2025-01-15T10:00:00.000Z",
+                                            "type": {
+                                                "description": "Bail Variation Application",
+                                                "id": "3b5fdf13-7033-4ce0-857d-b7ea463da91d"
+                                            }
+                                        },
+                                        "orderedDate": "2025-01-15",
+                                        "orderedHearingId": "3623e1af-0297-496f-bd2e-591dda4b5cb1",
+                                        "policeSubjectLineTitle": "Bail without conditions",
+                                        "postHearingCustodyStatus": "L",
+                                        "preserveActiveOrder": false,
+                                        "publishedAsAPrompt": false,
+                                        "publishedForNows": false,
+                                        "qualifier": "MK,RB,JO,JO,JO,JD,BA,RA",
+                                        "rank": 36900,
+                                        "resultText": "RILA - Remand In care of Local Authority\nRemand In care of Local Authority until hearing on 15/01/2025 at 10:00 in Courtroom 01, City of London Magistrates' Court in accommodation provided by the local authority for Birmingham City Council. Basis: Further remanded in absence due to illness or accident. Bail exceptions: To prevent interference with witnesses or otherwise obstruct the course of justice, whether in relation to the defendant or any other person. Reasons for applying: Failed to surrender, Offended on bail. Conditions imposed on the defendant: The curfew condition will be electronically monitored. The electronic monitoring service will see that the curfew is complied with. You will wear a personal identification device at all times during the terms of this condition. You must not remove or tamper with the monitoring equipment in any way. You must allow access for the monitoring staff to complete the induction process and follow any reasonable instructions they give you., Must: submit passport, Must not enter trafalgaur square, Must not enter buckingham palace except to attend court or pre-arranged appointment with solicitor, Must not go within 2 of whitehouse, Must stay indoors at home address (or at any other address allowed by the court) between 18:00 and 09:00 1, Must live, and sleep each night, at 101,\nwhitehouse\nMK8 2AE. Reasons for Conditions: To make sure that the defendant goes to court for the next hearing.",
+                                        "rollUpPrompts": true,
+                                        "rootJudicialResultId": "8e0dc1f5-7fa7-4366-b51a-f6208caef489",
+                                        "rootJudicialResultTypeId": "903b3e90-f185-40d3-92dd-6f81b73c4bb2",
+                                        "terminatesOffenceProceedings": false,
+                                        "urgent": false,
+                                        "usergroups": [],
+                                        "welshLabel": "Rydych wedi’ch remandio yng ngofal yr Awdurdod Lleol"
+                                    }
+                                ],
+                                "allocationDecision": {
+                                    "offenceId": "d8d87cd2-b7e0-47db-a3d4-bb8740746dc2",
+                                    "motReasonId": "b8c37e33-defd-351c-b91e-1e03e51657da",
+                                    "sequenceNumber": 90,
+                                    "motReasonDescription": "Summary-only offence",
+                                    "motReasonCode": "01",
+                                    "originatingHearingId": "3623e1af-0297-496f-bd2e-591dda4b5cb1",
+                                    "allocationDecisionDate": "2025-01-15"
+                                },
+                                "listingNumber": 1
+                            }
+                        ],
+                        "prosecutionAuthorityReference": "2391NX0000793129829D",
+                        "personDefendant": {
+                            "arrestSummonsNumber": "2391NX0000793129829D",
+                            "bailConditions": "The curfew condition will be electronically monitored. The electronic monitoring service will see that the curfew is complied with. You will wear a personal identification device at all times during the terms of this condition. You must not remove or tamper with the monitoring equipment in any way. You must allow access for the monitoring staff to complete the induction process and follow any reasonable instructions they give you.;Must not enter trafalgaur square;Must live, and sleep each night, at 101, whitehouse MK8 2AE;Must not enter buckingham palace except to attend court or pre-arranged appointment with solicitor;Must not go within 2 of whitehouse;Must stay indoors at home address (or at any other address allowed by the court) between 18:00 and 09:00 1;Must: submit passport;",
+                            "bailReasons": "Failed to surrender, Offended on bail",
+                            "bailStatus": {
+                                "code": "L",
+                                "description": "Remanded into care of Local Authority",
+                                "id": "4dc146db-9d89-30bf-93b3-b22bc072d666"
+                            },
+                            "driverNumber": "VANFL002222OW9PH",
+                            "personDetails": {
+                                "address": {
+                                    "address1": "30 Church Street",
+                                    "address2": "Church Street",
+                                    "address3": "Edinburgh",
+                                    "address4": "City of Edinburgh",
+                                    "postcode": "NW1 5BR"
+                                },
+                                "contact": {
+                                    "home": "0956985653",
+                                    "mobile": "03524186689",
+                                    "primaryEmail": "valentine.murray@hotmail.com"
+                                },
+                                "dateOfBirth": "1978-01-15",
+                                "documentationLanguageNeeds": "ENGLISH",
+                                "ethnicity": {
+                                    "observedEthnicityCode": "1",
+                                    "observedEthnicityDescription": "White",
+                                    "observedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+                                    "selfDefinedEthnicityCode": "W1",
+                                    "selfDefinedEthnicityDescription": "British",
+                                    "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+                                },
+                                "firstName": "Person",
+                                "gender": "MALE",
+                                "hearingLanguageNeeds": "ENGLISH",
+                                "lastName": "Mock",
+                                "title": "Mr"
+                            },
+                            "policeBailStatus": {
+                                "code": "C",
+                                "description": "Custody",
+                                "id": "12e69486-4d01-3403-a50a-7419ca040635"
+                            }
+                        },
+                        "masterDefendantId": "6a2333d7-1b5e-4b2d-8f71-89f941c9b9a8",
+                        "isYouth": false
+                    }
+                ],
+                "caseStatus": "ACTIVE",
+                "originatingOrganisation": "0480000"
+            }
+        ],
+        "hasSharedResults": true,
+        "defendantAttendance": [
+            {
+                "attendanceDays": [
+                    {
+                        "attendanceType": "IN_PERSON",
+                        "day": "2025-01-15"
+                    }
+                ],
+                "defendantId": "6a2333d7-1b5e-4b2d-8f71-89f941c9b9a8"
+            }
+        ],
+        "isGroupProceedings": false
+    },
+    "cpsProsecutorIds": [
+        "52b27284-0686-4894-b1c7-7d4b634cacdb",
+        "5f045b6a-241b-3a37-9776-bb584c9dd73d",
+        "42880989-5d09-332e-a711-8797af06ecea",
+        "5ef639c4-5284-3d6d-8772-7fca0e8ef067",
+        "1c2a2913-8908-33fb-8833-0b6198fa9dc2",
+        "38777dbc-ceb0-3f70-8195-495f629bdd18",
+        "92575f4d-5c8d-3624-aa1e-89f34e007c2a",
+        "3bf14803-01ed-3a98-8865-e9b56e62c3bc",
+        "33fab31f-d9cd-326f-bff5-69fdd404905c",
+        "0abae9b6-57b5-376c-b104-6e28b069a0ac",
+        "108763b2-fca2-37f1-bb58-785514e4e6ad",
+        "c8e6c4c8-f31f-3e48-b40a-6e7d33fe5652",
+        "927709cd-712f-36bf-b469-6dddca06272d",
+        "7a045bd4-3813-39fa-aaa4-34f824d45b18",
+        "7fab0955-9352-3f05-9a9c-e93162859ae6",
+        "3857a67c-b797-3424-ac9f-02bac90ab9d7",
+        "a4b56f72-bbe5-3dba-9fe3-339906f11359",
+        "43a675f8-d1ce-3a71-8a0d-a4276a97f8d2",
+        "6ba816ce-237e-3740-8aa4-107977f5d13d",
+        "d2196b0a-094f-3ad3-82c0-8986c6b8c78b",
+        "44c25dc4-be90-3071-a989-51e9de4eb4b9",
+        "91c97a02-d3f6-34e8-9ec7-960c0c607ee4",
+        "6f20d293-77d6-3e79-991a-657372106cd6"
+    ],
+    "sharedTime": "2025-01-20T17:31:11.368Z"
+}
