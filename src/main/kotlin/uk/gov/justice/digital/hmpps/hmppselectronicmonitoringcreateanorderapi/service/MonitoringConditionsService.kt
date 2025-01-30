@@ -1,43 +1,34 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service
 
-import jakarta.persistence.EntityNotFoundException
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.MonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateMonitoringConditionsDto
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.MonitoringConditionsRepository
 import java.util.*
 
 @Service
-class MonitoringConditionsService(
-  val repo: MonitoringConditionsRepository,
-) {
+class MonitoringConditionsService : OrderSectionServiceBase() {
   fun updateMonitoringConditions(
     orderId: UUID,
     username: String,
-    monitoringConditionsUpdateRecord: UpdateMonitoringConditionsDto,
+    updateRecord: UpdateMonitoringConditionsDto,
   ): MonitoringConditions {
-    val monitoringConditions = repo.findByOrderIdAndOrderUsernameAndOrderStatus(
-      orderId,
-      username,
-      OrderStatus.IN_PROGRESS,
-    ).orElseThrow {
-      EntityNotFoundException("An editable Monitoring Conditions was not found for Order: $orderId")
-    }
+    // Verify the order belongs to the user and is in draft state
+    val order = this.findEditableOrder(orderId, username)
 
-    with(monitoringConditionsUpdateRecord) {
-      monitoringConditions.orderType = orderType
-      monitoringConditions.startDate = startDate
-      monitoringConditions.endDate = endDate
-      monitoringConditions.orderTypeDescription = orderTypeDescription
-      monitoringConditions.conditionType = conditionType
-      monitoringConditions.curfew = curfew
-      monitoringConditions.exclusionZone = exclusionZone
-      monitoringConditions.trail = trail
-      monitoringConditions.mandatoryAttendance = mandatoryAttendance
-      monitoringConditions.alcohol = alcohol
-    }
+    order.monitoringConditions = MonitoringConditions(
+      orderId = orderId,
+      orderType = updateRecord.orderType,
+      startDate = updateRecord.startDate,
+      endDate = updateRecord.endDate,
+      orderTypeDescription = updateRecord.orderTypeDescription,
+      conditionType = updateRecord.conditionType,
+      curfew = updateRecord.curfew,
+      exclusionZone = updateRecord.exclusionZone,
+      trail = updateRecord.trail,
+      mandatoryAttendance = updateRecord.mandatoryAttendance,
+      alcohol = updateRecord.alcohol,
+    )
 
-    return repo.save(monitoringConditions)
+    return orderRepo.save(order).monitoringConditions!!
   }
 }

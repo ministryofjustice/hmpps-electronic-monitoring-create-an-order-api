@@ -14,7 +14,7 @@ class DeviceWearerService() : OrderSectionServiceBase() {
     // Verify the order belongs to the user and is in draft state
     val order = this.findEditableOrder(orderId, username)
 
-    val deviceWearer = DeviceWearer(
+    order.deviceWearer = DeviceWearer(
       orderId = orderId,
       firstName = updateRecord.firstName,
       lastName = updateRecord.lastName,
@@ -28,10 +28,7 @@ class DeviceWearerService() : OrderSectionServiceBase() {
       interpreterRequired = updateRecord.interpreterRequired,
     )
 
-    order.deviceWearer = deviceWearer
-    orderRepo.save(order)
-
-    return deviceWearer
+    return orderRepo.save(order).deviceWearer!!
   }
 
   fun updateNoFixedAbode(orderId: UUID, username: String, updateRecord: UpdateNoFixedAbodeDto): DeviceWearer {
