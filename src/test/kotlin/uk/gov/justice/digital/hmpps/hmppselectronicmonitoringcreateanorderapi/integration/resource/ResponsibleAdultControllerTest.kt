@@ -11,14 +11,10 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.in
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ResponsibleAdult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.ResponsibleAdultRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidationError
 import java.util.*
 
 class ResponsibleAdultControllerTest : IntegrationTestBase() {
-  @Autowired
-  lateinit var responsibleAdultRepo: ResponsibleAdultRepository
-
   @Autowired
   lateinit var orderRepo: OrderRepository
 
@@ -28,7 +24,6 @@ class ResponsibleAdultControllerTest : IntegrationTestBase() {
 
   @BeforeEach
   fun setup() {
-    responsibleAdultRepo.deleteAll()
     orderRepo.deleteAll()
   }
 
