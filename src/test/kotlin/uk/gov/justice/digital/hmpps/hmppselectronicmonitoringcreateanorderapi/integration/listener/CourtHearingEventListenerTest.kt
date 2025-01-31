@@ -267,6 +267,12 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
     runPayloadTest(rootFilePath)
   }
 
+  @Test
+  fun `Will map RCCLA_pre-trail_exclusions_and_curfew request and submit to FMS`() {
+    val rootFilePath = "src/test/resources/json/RCCLA_pre-trail_exclusions_and_curfew"
+    runPayloadTest(rootFilePath)
+  }
+
   fun runPayloadTest(rootFilePath: String) {
     val rawMessage = generateRawHearingEventMessage("$rootFilePath/cp_payload.json")
     sercoApi.stubCreateDeviceWearer(

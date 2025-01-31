@@ -28,6 +28,8 @@ enum class BailOrderType(val uuid: String) {
 
   MUST_STAY_INDOORS_AT_HOME_ADDRESS("f2cab905-935b-49e5-9f82-badcfb6c6c60"),
 
+  REMAND_TO_CARE_MUST("671c65dc-8406-4923-bff2-e193a7fbd489"),
+
   EXCLUSION_NOT_ENTER_A_PLACE("c1d490ed-1754-43b8-a485-fdab1a25f8cb"),
 
   EXCLUSION_EXCEPT_COURT_OR_APPOINTMENT("dfa19118-e944-43f4-93b2-2ed49df5553f"),
@@ -51,6 +53,11 @@ enum class BailOrderType(val uuid: String) {
   ;
 
   companion object {
+
+    val REMAND_TO_CARE_CURFEWS = listOf(
+      MUST_STAY_INDOORS_AT_HOME_ADDRESS.uuid,
+      REMAND_TO_CARE_MUST.uuid,
+    )
 
     val ENFORCEMENT_ZONE_IDS = mapOf(
       EXCLUSION_NOT_ENTER_A_PLACE to EnforcementZoneType.EXCLUSION,

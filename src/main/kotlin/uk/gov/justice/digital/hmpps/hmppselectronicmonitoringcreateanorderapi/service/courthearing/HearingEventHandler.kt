@@ -106,7 +106,10 @@ class HearingEventHandler(
     const val REMCBY = "0536dbd2-b922-4899-9bc9-cad08429a889"
 
     // Remand In care of Local Authority (RILA)
-    const val RCLA = "903b3e90-f185-40d3-92dd-6f81b73c4bb2"
+    const val RILA = "903b3e90-f185-40d3-92dd-6f81b73c4bb2"
+
+    // Remand In care of Local Authority (RILA)
+    const val RCCLA = "975f04f2-412b-40f4-8e9b-31edfefaea60"
 
     val BAIL_OR_REMAND_TO_CARE_CONDITION_UUIDs = arrayOf(
       REMCB,
@@ -120,7 +123,8 @@ class HearingEventHandler(
       RCCCB,
       CCSILA,
       REMCBY,
-      RCLA,
+      RILA,
+      RCCLA,
     )
 
     val COMMUNITY_ORDER_UUIDS = arrayOf(
@@ -412,12 +416,12 @@ class HearingEventHandler(
     judicialResults.firstOrNull {
       it.judicialResultPrompts.any { prompts ->
         prompts.judicialResultPromptTypeId == BailOrderType.CURFEW.uuid ||
-          prompts.judicialResultPromptTypeId == BailOrderType.MUST_STAY_INDOORS_AT_HOME_ADDRESS.uuid
+          BailOrderType.REMAND_TO_CARE_CURFEWS.contains(prompts.judicialResultPromptTypeId)
       }
     }?.let {
       val conditionPrompt = it.judicialResultPrompts.first { prompts ->
         prompts.judicialResultPromptTypeId == BailOrderType.CURFEW.uuid ||
-          prompts.judicialResultPromptTypeId == BailOrderType.MUST_STAY_INDOORS_AT_HOME_ADDRESS.uuid
+          BailOrderType.REMAND_TO_CARE_CURFEWS.contains(prompts.judicialResultPromptTypeId)
       }
       monitoringConditions.curfew = true
       val condition = CurfewConditions(orderId = order.id)
