@@ -114,6 +114,9 @@ class HearingEventHandler(
     // Sent to Crown Court for trial in Local Authority Accommodation (CCIILA)
     const val CCIILA = "d4fa6715-b1b3-4145-bedc-061ccf33df50"
 
+    // Youth remittal In Local Authority accommodation (REMIL)
+    const val REMIL = "e85dc2ee-9b63-4dca-8dc0-7dedaa00f5bf"
+
     val BAIL_OR_REMAND_TO_CARE_CONDITION_UUIDs = arrayOf(
       REMCB,
       CCSIB,
@@ -129,6 +132,7 @@ class HearingEventHandler(
       RILA,
       RCCLA,
       CCIILA,
+      REMIL,
     )
 
     val COMMUNITY_ORDER_UUIDS = arrayOf(
