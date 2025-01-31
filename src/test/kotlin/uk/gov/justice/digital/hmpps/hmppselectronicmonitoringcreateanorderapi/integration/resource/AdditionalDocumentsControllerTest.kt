@@ -23,7 +23,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.documentmanagement.DocumentUploadResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DocumentType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.AdditionalDocumentRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
@@ -39,7 +39,7 @@ class AdditionalDocumentsControllerTest : IntegrationTestBase() {
 
   @SpyBean
   lateinit var apiCLient: DocumentApiClient
-  val order = Order(username = "mockUser", status = OrderStatus.IN_PROGRESS, type = OrderType.REQUEST)
+  val order = Order(username = "mockUser", status = OrderStatus.IN_PROGRESS, type = RequestType.REQUEST)
 
   @Suppress("ktlint:standard:max-line-length")
   private val filePath = "src/test/kotlin/uk/gov/justice/digital/hmpps/hmppselectronicmonitoringcreateanorderapi/integration/assets/profile.jpeg"

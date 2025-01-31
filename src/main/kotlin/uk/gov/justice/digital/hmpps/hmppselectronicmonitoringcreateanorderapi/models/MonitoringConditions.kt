@@ -10,6 +10,7 @@ import jakarta.persistence.JoinColumn
 import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MonitoringConditionType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderTypeDescription
 import java.time.ZonedDateTime
 import java.util.*
@@ -30,8 +31,9 @@ data class MonitoringConditions(
   @Column(name = "END_DATE", nullable = true)
   var endDate: ZonedDateTime? = null,
 
+  @Enumerated(EnumType.STRING)
   @Column(name = "ORDER_TYPE", nullable = true)
-  var orderType: String? = null,
+  var orderType: OrderType? = null,
 
   @Enumerated(EnumType.STRING)
   @Column(name = "ORDER_TYPE_DESCRIPTION", nullable = true)

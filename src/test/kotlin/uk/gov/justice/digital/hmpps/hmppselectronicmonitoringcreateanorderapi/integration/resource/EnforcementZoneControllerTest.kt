@@ -22,7 +22,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.documentmanagement.DocumentUploadResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.EnforcementZoneType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.EnforcementZoneRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidationError
@@ -52,7 +52,7 @@ class EnforcementZoneControllerTest : IntegrationTestBase() {
   )
   private val mockPastEndDate = mockPastStartDate.plusDays(1)
   private final val mockUser = "AUTH_ADM"
-  private final val mockOrder = Order(username = mockUser, status = OrderStatus.IN_PROGRESS, type = OrderType.REQUEST)
+  private final val mockOrder = Order(username = mockUser, status = OrderStatus.IN_PROGRESS, type = RequestType.REQUEST)
 
   @BeforeEach
   fun setup() {

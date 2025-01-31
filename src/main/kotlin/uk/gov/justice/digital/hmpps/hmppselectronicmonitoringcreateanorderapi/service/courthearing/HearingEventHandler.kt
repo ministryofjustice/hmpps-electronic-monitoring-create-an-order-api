@@ -27,6 +27,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MonitoringConditionType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.EventService
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.FmsService
 import java.time.LocalDate
@@ -142,7 +143,7 @@ class HearingEventHandler(
           eventService.recordEvent(
             "Common_Platform_Success_Request",
             mapOf(
-              "OrderType" to order.monitoringConditions!!.orderType!!,
+              "OrderType" to order.monitoringConditions!!.orderType!!.value,
               "Start Date And Time" to startDateTime.format(formatter),
             ),
             System.currentTimeMillis() - startTimeInMs,
@@ -173,7 +174,7 @@ class HearingEventHandler(
     val judicialResults = offences.flatMap { it.judicialResults }.toList()
 
     val prompts = judicialResults.flatMap { it.judicialResultPrompts }.toList()
-    val order = Order(username = commentPlatformUsername, status = OrderStatus.IN_PROGRESS, type = OrderType.REQUEST)
+    val order = Order(username = commentPlatformUsername, status = OrderStatus.IN_PROGRESS, type = RequestType.REQUEST)
 
     val monitoringConditions = MonitoringConditions(orderId = order.id)
     val orderedDate = judicialResults.first().orderedDate
@@ -514,17 +515,17 @@ class HearingEventHandler(
     return zone
   }
 
-  private fun getOrderType(results: List<JudicialResults>): String? {
+  private fun getOrderType(results: List<JudicialResults>): OrderType? {
     if (results.any {
         COMMUNITY_ORDER_UUIDS.contains(it.judicialResultTypeId)
       }
     ) {
-      return "Community"
+      return OrderType.COMMUNITY
     } else if (results.any {
         BAIL_CONDITION_UUIDs.contains(it.judicialResultTypeId)
       }
     ) {
-      return "Pre-Trial"
+      return OrderType.PRE_TRIAL
     }
     return null
   }

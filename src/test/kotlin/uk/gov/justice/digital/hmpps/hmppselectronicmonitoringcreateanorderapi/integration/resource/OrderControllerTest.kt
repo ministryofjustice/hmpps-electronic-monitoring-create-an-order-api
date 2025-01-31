@@ -39,6 +39,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderTypeDescription
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.SubmissionStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.VariationType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsAttachmentResponse
@@ -92,7 +93,7 @@ class OrderControllerTest : IntegrationTestBase() {
       assertThat(orders).hasSize(1)
       assertThat(orders[0].username).isEqualTo("AUTH_ADM")
       assertThat(orders[0].status).isEqualTo(OrderStatus.IN_PROGRESS)
-      assertThat(orders[0].type).isEqualTo(OrderType.REQUEST)
+      assertThat(orders[0].type).isEqualTo(RequestType.REQUEST)
       assertThat(orders[0].id).isNotNull()
       assertThat(UUID.fromString(orders[0].id.toString())).isEqualTo(orders[0].id)
     }
@@ -121,7 +122,7 @@ class OrderControllerTest : IntegrationTestBase() {
       assertThat(orders).hasSize(1)
       assertThat(orders[0].username).isEqualTo("AUTH_ADM")
       assertThat(orders[0].status).isEqualTo(OrderStatus.IN_PROGRESS)
-      assertThat(orders[0].type).isEqualTo(OrderType.VARIATION)
+      assertThat(orders[0].type).isEqualTo(RequestType.VARIATION)
       assertThat(orders[0].id).isNotNull()
       assertThat(UUID.fromString(orders[0].id.toString())).isEqualTo(orders[0].id)
     }
@@ -725,7 +726,7 @@ class OrderControllerTest : IntegrationTestBase() {
       	"order_id": "${order.id}",
       	"order_request_type": "New Order",
       	"order_start": "${mockStartDate.format(dateTimeFormatter)}",
-      	"order_type": "community",
+      	"order_type": "Community",
       	"order_type_description": "DAPOL",
       	"order_type_detail": "",
       	"order_variation_date": "",
@@ -1087,7 +1088,7 @@ class OrderControllerTest : IntegrationTestBase() {
       	"order_id": "${order.id}",
       	"order_request_type": "New Order",
       	"order_start": "${mockStartDate.format(dateTimeFormatter)}",
-      	"order_type": "community",
+      	"order_type": "Community",
       	"order_type_description": "DAPOL",
       	"order_type_detail": "",
       	"order_variation_date": "",
@@ -1291,7 +1292,7 @@ class OrderControllerTest : IntegrationTestBase() {
 
     @Test
     fun `It should update order with device wearer id, monitoring id & order status, and return 200 for a variation`() {
-      val order = createAndPersistReadyToSubmitOrder(noFixedAddress = false, orderType = OrderType.VARIATION)
+      val order = createAndPersistReadyToSubmitOrder(noFixedAddress = false, requestType = RequestType.VARIATION)
       sercoAuthApi.stubGrantToken()
 
       sercoApi.stubCreateDeviceWearer(
@@ -1421,7 +1422,7 @@ class OrderControllerTest : IntegrationTestBase() {
       	"order_id": "${order.id}",
       	"order_request_type": "Variation",
       	"order_start": "${mockStartDate.format(dateTimeFormatter)}",
-      	"order_type": "community",
+      	"order_type": "Community",
       	"order_type_description": "DAPOL",
       	"order_type_detail": "",
       	"order_variation_date": "${mockStartDate.format(dateTimeFormatter)}",
@@ -1707,14 +1708,14 @@ class OrderControllerTest : IntegrationTestBase() {
   fun createReadyToSubmitOrder(
     id: UUID = UUID.randomUUID(),
     noFixedAddress: Boolean = false,
-    orderType: OrderType = OrderType.REQUEST,
+    requestType: RequestType = RequestType.REQUEST,
     documents: MutableList<AdditionalDocument> = mutableListOf(),
   ): Order {
     val order = Order(
       id = id,
       username = "AUTH_ADM",
       status = OrderStatus.IN_PROGRESS,
-      type = orderType,
+      type = requestType,
     )
 
     order.deviceWearer = DeviceWearer(
@@ -1808,7 +1809,7 @@ class OrderControllerTest : IntegrationTestBase() {
 
     order.monitoringConditions = MonitoringConditions(
       orderId = order.id,
-      orderType = "community",
+      orderType = OrderType.COMMUNITY,
       orderTypeDescription = OrderTypeDescription.DAPOL,
       startDate = mockStartDate,
       endDate = mockEndDate,
@@ -1910,7 +1911,7 @@ class OrderControllerTest : IntegrationTestBase() {
       notifyingOrganisationEmail = "",
     )
 
-    if (order.type === OrderType.VARIATION) {
+    if (order.type === RequestType.VARIATION) {
       order.variationDetails = VariationDetails(
         orderId = order.id,
         variationType = VariationType.ADDRESS,
@@ -1924,10 +1925,10 @@ class OrderControllerTest : IntegrationTestBase() {
   fun createAndPersistReadyToSubmitOrder(
     id: UUID = UUID.randomUUID(),
     noFixedAddress: Boolean = false,
-    orderType: OrderType = OrderType.REQUEST,
+    requestType: RequestType = RequestType.REQUEST,
     documents: MutableList<AdditionalDocument> = mutableListOf(),
   ): Order {
-    val order = createReadyToSubmitOrder(id, noFixedAddress, orderType, documents)
+    val order = createReadyToSubmitOrder(id, noFixedAddress, requestType, documents)
     repo.save(order)
     return order
   }

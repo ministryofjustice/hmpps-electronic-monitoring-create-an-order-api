@@ -1,6 +1,10 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums
 
 enum class OrderType(val value: String) {
-  REQUEST("New Order"),
-  VARIATION("Variation"),
+  CIVIL("Civil"),
+  COMMUNITY("Community"),
+  IMMIGRATION("Immigration"),
+  POST_RELEASE("Post Release"),
+  PRE_TRIAL("Pre-Trial"),
+  SPECIAL("Special"),
 }
