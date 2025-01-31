@@ -32,6 +32,7 @@ class OrderService(
     order.monitoringConditions = MonitoringConditions(orderId = order.id)
     order.additionalDocuments = mutableListOf()
     order.enforcementZoneConditions = mutableListOf()
+    order.mandatoryAttendanceConditions = mutableListOf()
 
     repo.save(order)
     return order
