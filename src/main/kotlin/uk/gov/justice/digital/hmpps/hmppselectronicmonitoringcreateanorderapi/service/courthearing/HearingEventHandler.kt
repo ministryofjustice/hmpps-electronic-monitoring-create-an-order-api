@@ -108,8 +108,11 @@ class HearingEventHandler(
     // Remand In care of Local Authority (RILA)
     const val RILA = "903b3e90-f185-40d3-92dd-6f81b73c4bb2"
 
-    // Remand In care of Local Authority (RILA)
+    // Remitted from the Crown Court to the Magistrates' Court in local authority accommodation (RCCLA)
     const val RCCLA = "975f04f2-412b-40f4-8e9b-31edfefaea60"
+
+    // Sent to Crown Court for trial in Local Authority Accommodation (CCIILA)
+    const val CCIILA = "d4fa6715-b1b3-4145-bedc-061ccf33df50"
 
     val BAIL_OR_REMAND_TO_CARE_CONDITION_UUIDs = arrayOf(
       REMCB,
@@ -125,6 +128,7 @@ class HearingEventHandler(
       REMCBY,
       RILA,
       RCCLA,
+      CCIILA,
     )
 
     val COMMUNITY_ORDER_UUIDS = arrayOf(
