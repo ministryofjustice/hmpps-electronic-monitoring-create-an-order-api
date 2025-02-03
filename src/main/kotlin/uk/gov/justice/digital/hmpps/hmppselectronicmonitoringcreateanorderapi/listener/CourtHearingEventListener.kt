@@ -57,7 +57,6 @@ class CourtHearingEventListener(
         "Common_Platform_Exception",
         mapOf("Start Date And Time" to startDateTime.format(formatter)),
         System.currentTimeMillis() - startTimeInMs,
-
       )
     }
   }

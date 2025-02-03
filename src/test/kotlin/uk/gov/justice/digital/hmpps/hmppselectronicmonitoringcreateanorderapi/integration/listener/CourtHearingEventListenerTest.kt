@@ -243,6 +243,48 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
     runPayloadTest(rootFilePath)
   }
 
+  @Test
+  fun `Will map RCCCB_pre-trail_exclusion_and_curfew request and submit to FMS`() {
+    val rootFilePath = "src/test/resources/json/RCCCB_pre-trail_exclusion_and_curfew"
+    runPayloadTest(rootFilePath)
+  }
+
+  @Test
+  fun `Will map RCCCB_pre-CCSILA_pre-trail_exclusions_and_curfew request and submit to FMS`() {
+    val rootFilePath = "src/test/resources/json/CCSILA_pre-trail_exclusions_and_curfew"
+    runPayloadTest(rootFilePath)
+  }
+
+  @Test
+  fun `Will map REMCBY_bail_exclusion_inclusion_and_curfew request and submit to FMS`() {
+    val rootFilePath = "src/test/resources/json/REMCBY_bail_exclusion_inclusion_and_curfew"
+    runPayloadTest(rootFilePath)
+  }
+
+  @Test
+  fun `Will map RILA_pre-trail_exclusions_and_curfew request and submit to FMS`() {
+    val rootFilePath = "src/test/resources/json/RILA_pre-trail_exclusions_and_curfew"
+    runPayloadTest(rootFilePath)
+  }
+
+  @Test
+  fun `Will map RCCLA_pre-trail_exclusions_and_curfew request and submit to FMS`() {
+    val rootFilePath = "src/test/resources/json/RCCLA_pre-trail_exclusions_and_curfew"
+    runPayloadTest(rootFilePath)
+  }
+
+  @Test
+  fun `Will map CCIILA_pre-trail_exclusions_and_curfew request and submit to FMS`() {
+    val rootFilePath = "src/test/resources/json/CCIILA_pre-trail_exclusions_and_curfew"
+    runPayloadTest(rootFilePath)
+  }
+
+  @Test
+  fun `Will map REMIL_pre-trail_exclusions_and_curfew request and submit to FMS`() {
+    val rootFilePath = "src/test/resources/json/REMIL_pre-trail_exclusions_and_curfew"
+    runPayloadTest(rootFilePath)
+  }
+
   fun runPayloadTest(rootFilePath: String) {
     val rawMessage = generateRawHearingEventMessage("$rootFilePath/cp_payload.json")
     sercoApi.stubCreateDeviceWearer(
