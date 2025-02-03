@@ -15,12 +15,10 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.cl
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AdditionalDocument
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.documentmanagement.DocumentMetadata
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DocumentType
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.AdditionalDocumentRepository
 import java.util.*
 
 @Service
 class AdditionalDocumentService(
-  val attachmentRepo: AdditionalDocumentRepository,
   val webClient: DocumentApiClient,
 ) : OrderSectionServiceBase() {
 
@@ -31,13 +29,13 @@ class AdditionalDocumentService(
     username: String,
     documentType: DocumentType,
   ): ResponseEntity<Flux<InputStreamResource>>? {
-    val doc = attachmentRepo.findAdditionalDocumentsByOrderIdAndOrderUsernameAndFileType(
-      orderId,
-      username,
-      documentType,
-    ).orElseThrow {
-      EntityNotFoundException("Document for $orderId with type $documentType not found")
+    val order = this.findEditableOrder(orderId, username)
+    val doc = order.additionalDocuments.firstOrNull { it.fileType == documentType }
+
+    if (doc === null) {
+      throw EntityNotFoundException("Document for $orderId with type $documentType not found")
     }
+
     return webClient.getDocument(doc.id.toString())
   }
 
@@ -46,7 +44,7 @@ class AdditionalDocumentService(
     val doc = order.additionalDocuments.firstOrNull { it.fileType == documentType }
     if (doc != null) {
       order.additionalDocuments.remove(doc)
-      attachmentRepo.deleteById(doc.id)
+      orderRepo.save(order)
       webClient.deleteDocument(doc.id.toString())
     }
   }
@@ -56,6 +54,7 @@ class AdditionalDocumentService(
 
     deleteDocument(orderId, username, documentType)
 
+    val order = this.findEditableOrder(orderId, username)
     val document =
       AdditionalDocument(
         orderId = orderId,
@@ -68,7 +67,10 @@ class AdditionalDocumentService(
       .filename(multipartFile.originalFilename!!)
     builder.part("metadata", DocumentMetadata(orderId, documentType))
     webClient.createDocument(document.id.toString(), builder)
-    attachmentRepo.save(document)
+
+    order.additionalDocuments.add(document)
+
+    orderRepo.save(order)
   }
 
   private fun validateFileExtension(multipartFile: MultipartFile) {
