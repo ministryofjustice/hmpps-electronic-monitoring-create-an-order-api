@@ -314,10 +314,8 @@ class EnforcementZoneControllerTest : IntegrationTestBase() {
           BodyInserters.fromValue(
             mockRequestBody(
               orderId = order.id,
-              duration = "ExistingDuration",
-              description = "ExistingDescription",
-              startDate = ZonedDateTime.now(ZoneId.of("UTC")).plusDays(1),
-              endDate = ZonedDateTime.now(ZoneId.of("UTC")).plusDays(2),
+              duration = "ExistingDurationOld",
+              description = "ExistingDescriptionOld"
             ),
           ),
         )
@@ -465,8 +463,6 @@ class EnforcementZoneControllerTest : IntegrationTestBase() {
               orderId = order.id,
               duration = "ExistingDuration",
               description = "ExistingDescription",
-              startDate = ZonedDateTime.now(ZoneId.of("UTC")).plusDays(1),
-              endDate = ZonedDateTime.now(ZoneId.of("UTC")).plusDays(2),
             ),
           ),
         )
