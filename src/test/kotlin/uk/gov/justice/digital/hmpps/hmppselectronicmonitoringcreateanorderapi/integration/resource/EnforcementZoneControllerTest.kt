@@ -31,8 +31,16 @@ class EnforcementZoneControllerTest : IntegrationTestBase() {
   @Autowired
   lateinit var orderRepo: OrderRepository
 
-  private val mockStartDate = ZonedDateTime.now(ZoneId.of("UTC")).plusMonths(1)
-  private val mockEndDate = ZonedDateTime.now(ZoneId.of("UTC")).plusMonths(2)
+  private val mockStartDate = ZonedDateTime.of(
+    LocalDate.now(ZoneId.of("UTC")),
+    LocalTime.NOON,
+    ZoneId.of("UTC"),
+  ).plusMonths(1)
+  private val mockEndDate = ZonedDateTime.of(
+    LocalDate.now(ZoneId.of("UTC")),
+    LocalTime.NOON,
+    ZoneId.of("UTC"),
+  ).plusMonths(2)
   private val mockPastStartDate = ZonedDateTime.of(
     LocalDate.of(1970, 2, 1),
     LocalTime.NOON,
