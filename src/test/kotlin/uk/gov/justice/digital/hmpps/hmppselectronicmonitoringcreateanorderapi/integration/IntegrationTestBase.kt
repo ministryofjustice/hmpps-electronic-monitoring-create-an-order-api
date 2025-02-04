@@ -4,8 +4,11 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
+import org.springframework.core.io.ByteArrayResource
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
+import org.springframework.http.client.MultipartBodyBuilder
+import org.springframework.mock.web.MockMultipartFile
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.web.reactive.function.BodyInserters
@@ -51,6 +54,24 @@ abstract class IntegrationTestBase {
   ): (HttpHeaders) -> Unit = jwtAuthHelper.setAuthorisationHeader(scope = scopes, roles = roles)
   protected fun stubPingWithResponse(status: Int) {
     hmppsAuth.stubHealthPing(status)
+  }
+
+  fun mockFile(fileName: String? = "file-name.jpeg"): MockMultipartFile {
+    return MockMultipartFile(
+      "file",
+      fileName,
+      MediaType.IMAGE_JPEG_VALUE,
+      "Test file content".toByteArray(),
+    )
+  }
+
+  fun createMultiPartBodyBuilder(multiPartFile: MockMultipartFile): MultipartBodyBuilder {
+    val builder = MultipartBodyBuilder()
+
+    builder.part("file", ByteArrayResource(multiPartFile.bytes))
+      .header("Content-Disposition", "form-data; name=file; filename=${multiPartFile.originalFilename}")
+
+    return builder
   }
 
   fun createOrder(username: String? = "AUTH_ADM"): Order = webTestClient.post()

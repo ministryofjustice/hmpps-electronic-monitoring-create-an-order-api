@@ -10,12 +10,10 @@ import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.mock.mockito.SpyBean
-import org.springframework.core.io.ByteArrayResource
 import org.springframework.http.HttpStatus.BAD_REQUEST
 import org.springframework.http.HttpStatus.NOT_FOUND
 import org.springframework.http.MediaType
 import org.springframework.http.client.MultipartBodyBuilder
-import org.springframework.mock.web.MockMultipartFile
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.DocumentApiClient
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.HmppsDocumentManagementApiExtension.Companion.documentApi
@@ -39,24 +37,6 @@ class AdditionalDocumentsControllerTest : IntegrationTestBase() {
   @BeforeEach
   fun setup() {
     repo.deleteAll()
-  }
-
-  fun mockFile(fileName: String? = "file-name.jpeg"): MockMultipartFile {
-    return MockMultipartFile(
-      "file",
-      fileName,
-      MediaType.IMAGE_JPEG_VALUE,
-      "Test file content".toByteArray(),
-    )
-  }
-
-  fun createMultiPartBodyBuilder(multiPartFile: MockMultipartFile): MultipartBodyBuilder {
-    val builder = MultipartBodyBuilder()
-
-    builder.part("file", ByteArrayResource(multiPartFile.bytes))
-      .header("Content-Disposition", "form-data; name=file; filename=${multiPartFile.originalFilename}")
-
-    return builder
   }
 
   @Nested
