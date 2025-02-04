@@ -315,7 +315,7 @@ class EnforcementZoneControllerTest : IntegrationTestBase() {
             mockRequestBody(
               orderId = order.id,
               duration = "ExistingDurationOld",
-              description = "ExistingDescriptionOld"
+              description = "ExistingDescriptionOld",
             ),
           ),
         )
