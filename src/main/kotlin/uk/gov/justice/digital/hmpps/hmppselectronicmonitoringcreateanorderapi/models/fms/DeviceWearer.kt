@@ -171,6 +171,7 @@ data class DeviceWearer(
         homeOfficeReferenceNumber = order.deviceWearer?.homeOfficeReferenceNumber,
         prisonNumber = order.deviceWearer?.prisonNumber,
       )
+
       if (order.deviceWearer?.noFixedAbode != null && !order.deviceWearer?.noFixedAbode!!) {
         val primaryAddress = order.addresses.find { address -> address.addressType == AddressType.PRIMARY }!!
         deviceWearer.address1 = primaryAddress.addressLine1
@@ -180,16 +181,12 @@ data class DeviceWearer(
         deviceWearer.addressPostCode = primaryAddress.postcode
       }
 
-      order.addresses.find { address -> address.addressType == AddressType.SECONDARY }.let { address ->
-        {
-          if (address != null) {
-            deviceWearer.secondaryAddress1 = address.addressLine1
-            deviceWearer.secondaryAddress2 = address.addressLine2
-            deviceWearer.secondaryAddress3 = address.addressLine3
-            deviceWearer.secondaryAddress4 = address.addressLine4
-            deviceWearer.secondaryAddressPostCode = address.postcode
-          }
-        }
+      order.addresses.firstOrNull { it.addressType == AddressType.SECONDARY }?.let {
+        deviceWearer.secondaryAddress1 = it.addressLine1
+        deviceWearer.secondaryAddress2 = it.addressLine2
+        deviceWearer.secondaryAddress3 = if (it.addressLine3 == "") "N/A" else it.addressLine3
+        deviceWearer.secondaryAddress4 = if (it.addressLine4 == "") "N/A" else it.addressLine4
+        deviceWearer.secondaryAddressPostCode = it.postcode
       }
 
       return deviceWearer
