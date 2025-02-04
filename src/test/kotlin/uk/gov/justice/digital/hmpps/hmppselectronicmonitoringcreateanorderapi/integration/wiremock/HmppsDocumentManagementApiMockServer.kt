@@ -8,6 +8,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.delete
 import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.post
+import com.github.tomakehurst.wiremock.client.WireMock.urlMatching
 import com.github.tomakehurst.wiremock.client.WireMock.urlPathTemplate
 import org.junit.jupiter.api.extension.AfterAllCallback
 import org.junit.jupiter.api.extension.BeforeAllCallback
@@ -77,7 +78,7 @@ class HmppsDocumentManagementApi : WireMockServer(WIREMOCK_PORT) {
 
   fun stubGetDocument(uuid: String = "xxx") {
     stubFor(
-      get("/documents/$uuid/file")
+      get(urlMatching("/documents/$uuid/file"))
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "image/jpeg")
@@ -95,7 +96,7 @@ class HmppsDocumentManagementApi : WireMockServer(WIREMOCK_PORT) {
 
   fun stubDeleteDocument(uuid: String = "xxx") {
     stubFor(
-      delete("/documents/$uuid")
+      delete(urlMatching("/documents/$uuid"))
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")

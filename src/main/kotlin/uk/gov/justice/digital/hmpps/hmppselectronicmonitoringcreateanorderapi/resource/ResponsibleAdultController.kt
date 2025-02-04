@@ -29,7 +29,7 @@ class ResponsibleAdultController(
     authentication: Authentication,
   ): ResponseEntity<ResponsibleAdult> {
     val username = authentication.name
-    val responsibleAdult = responsibleAdultService.createOrUpdateResponsibleAdult(
+    val responsibleAdult = responsibleAdultService.updateResponsibleAdult(
       orderId,
       username,
       responsibleAdultUpdateRecord,

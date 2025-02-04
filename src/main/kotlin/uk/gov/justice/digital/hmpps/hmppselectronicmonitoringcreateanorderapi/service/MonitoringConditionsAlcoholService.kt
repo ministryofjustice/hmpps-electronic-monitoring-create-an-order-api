@@ -4,13 +4,10 @@ import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AlcoholMonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateAlcoholMonitoringConditionsDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.MonitoringConditionsAlcoholRepository
 import java.util.*
 
 @Service
-class MonitoringConditionsAlcoholService(
-  val alcoholMonitoringConditionsRepo: MonitoringConditionsAlcoholRepository,
-) : OrderSectionServiceBase() {
+class MonitoringConditionsAlcoholService : OrderSectionServiceBase() {
   fun createOrUpdateAlcoholMonitoringConditions(
     orderId: UUID,
     username: String,
@@ -45,6 +42,8 @@ class MonitoringConditionsAlcoholService(
       alcoholMonitoringConditions.installationAddressId = alcoholMonitoringAddressId
     }
 
-    return alcoholMonitoringConditionsRepo.save(alcoholMonitoringConditions)
+    order.monitoringConditionsAlcohol = alcoholMonitoringConditions
+
+    return orderRepo.save(order).monitoringConditionsAlcohol!!
   }
 }

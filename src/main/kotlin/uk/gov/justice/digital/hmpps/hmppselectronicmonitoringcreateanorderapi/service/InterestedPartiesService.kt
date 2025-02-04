@@ -32,7 +32,7 @@ class InterestedPartiesService(
       ),
     )
 
-    val interestedParties = InterestedParties(
+    order.interestedParties = InterestedParties(
       orderId = order.id,
       notifyingOrganisation = "",
       notifyingOrganisationEmail = updateRecord.notifyingOrganisationEmail,
@@ -45,9 +45,6 @@ class InterestedPartiesService(
       responsibleOrganisationAddress = address,
     )
 
-    order.interestedParties = interestedParties
-    orderRepo.save(order)
-
-    return interestedParties
+    return orderRepo.save(order).interestedParties!!
   }
 }

@@ -12,7 +12,6 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderTypeDescription
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.MonitoringConditionsRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidationError
 import java.time.ZoneId
@@ -20,9 +19,6 @@ import java.time.ZonedDateTime
 import java.util.*
 
 class MonitoringConditionsControllerTest : IntegrationTestBase() {
-  @Autowired
-  lateinit var repo: MonitoringConditionsRepository
-
   @Autowired
   lateinit var orderRepo: OrderRepository
 
@@ -34,7 +30,7 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
 
   @BeforeEach
   fun setup() {
-    repo.deleteAll()
+    orderRepo.deleteAll()
   }
 
   @Test

@@ -11,7 +11,6 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringInstallationLocationType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.MonitoringConditionsAlcoholRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidationError
 import java.time.LocalDate
@@ -21,8 +20,6 @@ import java.time.ZonedDateTime
 import java.util.*
 
 class MonitoringConditionsAlcoholControllerTest : IntegrationTestBase() {
-  @Autowired
-  lateinit var alcoholMonitoringConditionsRepo: MonitoringConditionsAlcoholRepository
 
   @Autowired
   lateinit var orderRepo: OrderRepository
@@ -51,7 +48,6 @@ class MonitoringConditionsAlcoholControllerTest : IntegrationTestBase() {
 
   @BeforeEach
   fun setup() {
-    alcoholMonitoringConditionsRepo.deleteAll()
     orderRepo.deleteAll()
   }
 

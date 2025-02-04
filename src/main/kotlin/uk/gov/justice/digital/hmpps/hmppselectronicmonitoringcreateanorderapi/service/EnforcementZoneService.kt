@@ -11,12 +11,10 @@ import org.springframework.web.multipart.MultipartFile
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.DocumentApiClient
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.EnforcementZoneConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.documentmanagement.DocumentMetadata
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.EnforcementZoneRepository
 import java.util.*
 
 @Service
 class EnforcementZoneService(
-  val repo: EnforcementZoneRepository,
   val webClient: DocumentApiClient,
 
 ) : OrderSectionServiceBase() {
@@ -25,16 +23,20 @@ class EnforcementZoneService(
 
   fun updateEnforcementZone(orderId: UUID, username: String, enforcementZone: EnforcementZoneConditions) {
     val order = findEditableOrder(orderId, username)
+    val zone = order.enforcementZoneConditions.firstOrNull { it.zoneId == enforcementZone.zoneId }
+
     // remove existing enforcement zone
-    order.enforcementZoneConditions.firstOrNull { it.zoneId == enforcementZone.zoneId }?.let { zone ->
+    if (zone != null) {
       order.enforcementZoneConditions.remove(zone)
-      repo.deleteById(zone.id)
+
       if (zone.fileId != null) {
         webClient.deleteDocument(zone.fileId.toString())
       }
     }
 
-    repo.save(enforcementZone)
+    order.enforcementZoneConditions.add(enforcementZone)
+
+    orderRepo.save(order)
   }
 
   fun uploadEnforcementZoneAttachment(orderId: UUID, username: String, zoneId: Int, multipartFile: MultipartFile) {
@@ -59,7 +61,9 @@ class EnforcementZoneService(
 
     zone.fileId = fileId
     zone.fileName = multipartFile.originalFilename
-    repo.save(zone)
+
+    order.enforcementZoneConditions.add(zone)
+    orderRepo.save(order)
   }
 
   private fun validateFileExtension(multipartFile: MultipartFile) {
