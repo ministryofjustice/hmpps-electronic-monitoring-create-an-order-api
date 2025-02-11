@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AdditionalDocument
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.EnforcementZoneConditions
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateEnforcementZoneDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.EnforcementZoneService
 import java.util.UUID
 
@@ -25,17 +25,20 @@ import java.util.UUID
 @RequestMapping("/api/")
 class EnforcementZoneController(
   @Autowired val enforcementZoneService: EnforcementZoneService,
-
 ) {
 
   @PutMapping("/orders/{orderId}/enforcementZone")
   fun updateEnforcementZone(
     @PathVariable orderId: UUID,
-    @RequestBody @Valid enforcementZone: EnforcementZoneConditions,
+    @RequestBody @Valid updateRecord: UpdateEnforcementZoneDto,
     authentication: Authentication,
   ): ResponseEntity<AdditionalDocument> {
     val username = authentication.name
-    enforcementZoneService.updateEnforcementZone(orderId, username, enforcementZone)
+    enforcementZoneService.updateEnforcementZone(
+      orderId,
+      username,
+      updateRecord,
+    )
     return ResponseEntity(HttpStatus.OK)
   }
 

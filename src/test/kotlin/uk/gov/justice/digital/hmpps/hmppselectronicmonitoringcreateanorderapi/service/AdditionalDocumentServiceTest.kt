@@ -26,6 +26,7 @@ import reactor.core.publisher.Flux
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.DocumentApiClient
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AdditionalDocument
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DocumentType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
@@ -41,10 +42,11 @@ class AdditionalDocumentServiceTest {
   private lateinit var orderRepo: OrderRepository
 
   val username: String = "username"
-  val order = Order(username = username, status = OrderStatus.IN_PROGRESS, type = RequestType.REQUEST)
-  val orderId = order.id
+  val mockOrderId = UUID.randomUUID()
+  val mockVersionId = UUID.randomUUID()
+
   val docType: DocumentType = DocumentType.LICENCE
-  val doc: AdditionalDocument = AdditionalDocument(orderId = orderId, fileType = docType)
+  val doc: AdditionalDocument = AdditionalDocument(versionId = mockVersionId, fileType = docType)
 
   @BeforeEach
   fun setup() {
@@ -61,54 +63,66 @@ class AdditionalDocumentServiceTest {
     fun `it should throw an error if document does not exist`() {
       // Mock an order with no documents
       whenever(
-        orderRepo.findByIdAndUsernameAndStatus(orderId, username, OrderStatus.IN_PROGRESS),
+        orderRepo.findById(mockOrderId),
       ).thenReturn(
         Optional.of(
           Order(
-            id = orderId,
-            status = OrderStatus.IN_PROGRESS,
-            type = RequestType.REQUEST,
-            username = username,
+            id = mockOrderId,
+            versions = mutableListOf(
+              OrderVersion(
+                id = mockVersionId,
+                status = OrderStatus.IN_PROGRESS,
+                type = RequestType.REQUEST,
+                username = username,
+                orderId = mockOrderId,
+              ),
+            ),
           ),
         ),
       )
 
       // Verify that an error is thrown
       val e = assertThrows(EntityNotFoundException::class.java) {
-        service.getDocument(orderId, username, docType)
+        service.getDocument(mockOrderId, username, docType)
       }
 
-      Assertions.assertThat(e.message).isEqualTo("Document for $orderId with type $docType not found")
+      Assertions.assertThat(e.message).isEqualTo("Document for $mockOrderId with type $docType not found")
     }
 
     @Test
     fun `it should return the object blob if the document exists`() {
       // Mock an order with a single document
       whenever(
-        orderRepo.findByIdAndUsernameAndStatus(orderId, username, OrderStatus.IN_PROGRESS),
+        orderRepo.findById(mockOrderId),
       ).thenReturn(
         Optional.of(
           Order(
-            id = orderId,
-            status = OrderStatus.IN_PROGRESS,
-            type = RequestType.REQUEST,
-            username = username,
-            additionalDocuments = mutableListOf(
-              doc,
+            id = mockOrderId,
+            versions = mutableListOf(
+              OrderVersion(
+                id = mockVersionId,
+                status = OrderStatus.IN_PROGRESS,
+                type = RequestType.REQUEST,
+                username = username,
+                orderId = mockOrderId,
+                additionalDocuments = mutableListOf(
+                  doc,
+                ),
+              ),
             ),
           ),
         ),
       )
 
       // Mock the document api response
-      `when`(client.getDocument(doc.id.toString())).thenReturn(
+      `when`(client.getDocument(mockOrderId.toString())).thenReturn(
         ResponseEntity.ok().body(
           Flux.just(InputStreamResource(ByteArrayInputStream("".toByteArray()))),
         ),
       )
 
       // Get the document
-      val result = service.getDocument(orderId, username, docType)
+      val result = service.getDocument(mockOrderId, username, docType)
 
       // Verify the document api was called
       verify(client, times(1)).getDocument(doc.id.toString())
@@ -122,33 +136,47 @@ class AdditionalDocumentServiceTest {
     fun `it should delete the document from the database and the document management api`() {
       // Mock an order with a single document
       whenever(
-        orderRepo.findByIdAndUsernameAndStatus(orderId, username, OrderStatus.IN_PROGRESS),
+        orderRepo.findById(mockOrderId),
       ).thenReturn(
         Optional.of(
           Order(
-            id = orderId,
-            status = OrderStatus.IN_PROGRESS,
-            type = RequestType.REQUEST,
-            username = username,
-            additionalDocuments = mutableListOf(
-              doc,
+            id = mockOrderId,
+            versions = mutableListOf(
+              OrderVersion(
+                id = mockVersionId,
+                status = OrderStatus.IN_PROGRESS,
+                type = RequestType.REQUEST,
+                username = username,
+                orderId = mockOrderId,
+                additionalDocuments = mutableListOf(
+                  doc,
+                ),
+              ),
             ),
           ),
         ),
       )
 
       // Delete the document
-      service.deleteDocument(orderId, username, docType)
+      service.deleteDocument(mockOrderId, username, docType)
 
       // Verify that the document was removed from the order
       verify(orderRepo, times(1)).save(
         Order(
-          id = orderId,
-          status = OrderStatus.IN_PROGRESS,
-          type = RequestType.REQUEST,
-          username = username,
-          additionalDocuments = mutableListOf(),
+          id = mockOrderId,
+          versions = mutableListOf(
+            OrderVersion(
+              id = mockVersionId,
+              status = OrderStatus.IN_PROGRESS,
+              type = RequestType.REQUEST,
+              username = username,
+              versionId = 0,
+              orderId = mockOrderId,
+              additionalDocuments = mutableListOf(),
+            ),
+          ),
         ),
+
       )
 
       // Verify that the file was deleted from document api
@@ -166,21 +194,27 @@ class AdditionalDocumentServiceTest {
     fun `it should throw an error for unsupported document extensions`() {
       // Mock an order with no documents
       whenever(
-        orderRepo.findByIdAndUsernameAndStatus(orderId, username, OrderStatus.IN_PROGRESS),
+        orderRepo.findById(mockOrderId),
       ).thenReturn(
         Optional.of(
           Order(
-            id = orderId,
-            status = OrderStatus.IN_PROGRESS,
-            type = RequestType.REQUEST,
-            username = username,
+            id = mockOrderId,
+            versions = mutableListOf(
+              OrderVersion(
+                id = mockVersionId,
+                status = OrderStatus.IN_PROGRESS,
+                type = RequestType.REQUEST,
+                username = username,
+                orderId = mockOrderId,
+              ),
+            ),
           ),
         ),
       )
 
       val e = assertThrows(ValidationException::class.java) {
         service.uploadDocument(
-          orderId,
+          mockOrderId,
           username,
           docType,
           MockMultipartFile(
@@ -205,16 +239,22 @@ class AdditionalDocumentServiceTest {
 
         // Mock an order with a single pdf
         whenever(
-          orderRepo.findByIdAndUsernameAndStatus(orderId, username, OrderStatus.IN_PROGRESS),
+          orderRepo.findById(mockOrderId),
         ).thenReturn(
           Optional.of(
             Order(
-              id = orderId,
-              status = OrderStatus.IN_PROGRESS,
-              type = RequestType.REQUEST,
-              username = username,
-              additionalDocuments = mutableListOf(
-                doc,
+              id = mockOrderId,
+              versions = mutableListOf(
+                OrderVersion(
+                  id = mockVersionId,
+                  status = OrderStatus.IN_PROGRESS,
+                  type = RequestType.REQUEST,
+                  username = username,
+                  orderId = mockOrderId,
+                  additionalDocuments = mutableListOf(
+                    doc,
+                  ),
+                ),
               ),
             ),
           ),
@@ -222,7 +262,7 @@ class AdditionalDocumentServiceTest {
 
         // Upload a new pdf
         service.uploadDocument(
-          orderId,
+          mockOrderId,
           username,
           docType,
           MockMultipartFile(
@@ -236,16 +276,22 @@ class AdditionalDocumentServiceTest {
         // Verify that the order contains only the new pdf
         verify(orderRepo, times(2)).save(
           Order(
-            id = orderId,
-            status = OrderStatus.IN_PROGRESS,
-            type = RequestType.REQUEST,
-            username = username,
-            additionalDocuments = mutableListOf(
-              AdditionalDocument(
-                id = defaultUuid,
-                orderId = orderId,
-                fileType = docType,
-                fileName = "file-name.pdf",
+            id = mockOrderId,
+            versions = mutableListOf(
+              OrderVersion(
+                id = mockVersionId,
+                status = OrderStatus.IN_PROGRESS,
+                type = RequestType.REQUEST,
+                username = username,
+                orderId = mockOrderId,
+                additionalDocuments = mutableListOf(
+                  AdditionalDocument(
+                    id = defaultUuid,
+                    versionId = mockVersionId,
+                    fileType = docType,
+                    fileName = "file-name.pdf",
+                  ),
+                ),
               ),
             ),
           ),
@@ -265,7 +311,7 @@ class AdditionalDocumentServiceTest {
           Assertions.assertThat(multipartBody["file"]?.get(0)).isNotNull
           Assertions.assertThat(
             multipartBody["metadata"]?.get(0)?.body.toString(),
-          ).isEqualTo("DocumentMetadata(orderId=$orderId, documentType=LICENCE)")
+          ).isEqualTo("DocumentMetadata(orderId=$mockOrderId, documentType=LICENCE)")
         }
       }
     }
@@ -278,21 +324,27 @@ class AdditionalDocumentServiceTest {
 
         // Mock an order with no documents
         whenever(
-          orderRepo.findByIdAndUsernameAndStatus(orderId, username, OrderStatus.IN_PROGRESS),
+          orderRepo.findById(mockOrderId),
         ).thenReturn(
           Optional.of(
             Order(
-              id = orderId,
-              status = OrderStatus.IN_PROGRESS,
-              type = RequestType.REQUEST,
-              username = username,
+              id = mockOrderId,
+              versions = mutableListOf(
+                OrderVersion(
+                  id = mockVersionId,
+                  status = OrderStatus.IN_PROGRESS,
+                  type = RequestType.REQUEST,
+                  username = username,
+                  orderId = mockOrderId,
+                ),
+              ),
             ),
           ),
         )
 
         // Upload a document
         service.uploadDocument(
-          orderId,
+          mockOrderId,
           username,
           docType,
           MockMultipartFile(
@@ -306,16 +358,22 @@ class AdditionalDocumentServiceTest {
         // Verify that the order contains only the new pdf
         verify(orderRepo, times(1)).save(
           Order(
-            id = orderId,
-            status = OrderStatus.IN_PROGRESS,
-            type = RequestType.REQUEST,
-            username = username,
-            additionalDocuments = mutableListOf(
-              AdditionalDocument(
-                id = defaultUuid,
-                orderId = orderId,
-                fileType = docType,
-                fileName = "file-name.pdf",
+            id = mockOrderId,
+            versions = mutableListOf(
+              OrderVersion(
+                id = mockVersionId,
+                status = OrderStatus.IN_PROGRESS,
+                type = RequestType.REQUEST,
+                username = username,
+                orderId = mockOrderId,
+                additionalDocuments = mutableListOf(
+                  AdditionalDocument(
+                    id = defaultUuid,
+                    versionId = mockVersionId,
+                    fileType = docType,
+                    fileName = "file-name.pdf",
+                  ),
+                ),
               ),
             ),
           ),
@@ -329,7 +387,7 @@ class AdditionalDocumentServiceTest {
           Assertions.assertThat(multipartBody["file"]?.get(0)).isNotNull
           Assertions.assertThat(
             multipartBody["metadata"]?.get(0)?.body.toString(),
-          ).isEqualTo("DocumentMetadata(orderId=$orderId, documentType=LICENCE)")
+          ).isEqualTo("DocumentMetadata(orderId=$mockOrderId, documentType=LICENCE)")
         }
       }
     }

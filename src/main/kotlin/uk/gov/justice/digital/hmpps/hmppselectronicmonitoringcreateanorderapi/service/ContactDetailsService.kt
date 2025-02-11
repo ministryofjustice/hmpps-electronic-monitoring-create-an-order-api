@@ -15,13 +15,11 @@ class ContactDetailsService() : OrderSectionServiceBase() {
     // Verify the order belongs to the user and is in draft state
     val order = this.findEditableOrder(orderId, username)
 
-    val contactDetails = ContactDetails(
-      orderId = order.id,
+    order.contactDetails = ContactDetails(
+      versionId = order.getCurrentVersion().id,
       contactNumber = updateContactDetailsRecord.contactNumber,
     )
 
-    order.contactDetails = contactDetails
-    orderRepo.save(order)
-    return contactDetails
+    return orderRepo.save(order).contactDetails!!
   }
 }

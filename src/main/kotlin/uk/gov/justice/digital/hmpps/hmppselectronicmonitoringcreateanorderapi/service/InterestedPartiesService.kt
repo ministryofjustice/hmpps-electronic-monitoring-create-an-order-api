@@ -33,7 +33,7 @@ class InterestedPartiesService(
     )
 
     order.interestedParties = InterestedParties(
-      orderId = order.id,
+      versionId = order.getCurrentVersion().id,
       notifyingOrganisation = "",
       notifyingOrganisationEmail = updateRecord.notifyingOrganisationEmail,
       responsibleOfficerName = updateRecord.responsibleOfficerName,

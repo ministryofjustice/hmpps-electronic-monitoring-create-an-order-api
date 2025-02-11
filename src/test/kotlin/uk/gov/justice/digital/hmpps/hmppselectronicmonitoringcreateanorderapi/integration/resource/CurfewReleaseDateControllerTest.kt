@@ -4,30 +4,19 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito
-import org.mockito.internal.verification.Times
-import org.mockito.kotlin.argumentCaptor
-import org.mockito.kotlin.verify
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR
 import org.springframework.http.MediaType
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewReleaseDateConditions
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateCurfewReleaseDateConditionsDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidationError
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 import java.time.ZonedDateTime
-import java.util.*
 
 class CurfewReleaseDateControllerTest : IntegrationTestBase() {
-  @MockitoSpyBean
-  lateinit var orderRepo: OrderRepository
-
   @Autowired
   lateinit var objectMapper: ObjectMapper
 
@@ -35,8 +24,7 @@ class CurfewReleaseDateControllerTest : IntegrationTestBase() {
 
   @BeforeEach
   fun setup() {
-    Mockito.reset(orderRepo)
-    orderRepo.deleteAll()
+    repo.deleteAll()
   }
 
   @Test
@@ -48,7 +36,7 @@ class CurfewReleaseDateControllerTest : IntegrationTestBase() {
       .contentType(MediaType.APPLICATION_JSON)
       .body(
         BodyInserters.fromValue(
-          mockValidRequestBody(order.id),
+          mockValidRequestBody(),
         ),
       )
       .headers(setAuthorisation("AUTH_ADM_2"))
@@ -65,15 +53,14 @@ class CurfewReleaseDateControllerTest : IntegrationTestBase() {
 
   @Test
   fun `Curfew release date for an order already submitted are not update-able`() {
-    val order = createOrder()
-    order.status = OrderStatus.SUBMITTED
-    orderRepo.save(order)
+    val order = createSubmittedOrder()
+
     val result = webTestClient.put()
       .uri("/api/orders/${order.id}/monitoring-conditions-curfew-release-date")
       .contentType(MediaType.APPLICATION_JSON)
       .body(
         BodyInserters.fromValue(
-          mockValidRequestBody(order.id),
+          mockValidRequestBody(),
         ),
       )
       .headers(setAuthorisation())
@@ -90,15 +77,14 @@ class CurfewReleaseDateControllerTest : IntegrationTestBase() {
 
   @Test
   fun `Should return errors when curfew release date is invalid`() {
-    val order = createOrder()
-    order.status = OrderStatus.SUBMITTED
-    orderRepo.save(order)
+    val order = createSubmittedOrder()
+
     val result = webTestClient.put()
       .uri("/api/orders/${order.id}/monitoring-conditions-curfew-release-date")
       .contentType(MediaType.APPLICATION_JSON)
       .body(
         BodyInserters.fromValue(
-          mockRequestBody(order.id, null, null, null, null),
+          mockRequestBody(null, null, null, null),
         ),
       )
       .headers(setAuthorisation())
@@ -122,14 +108,12 @@ class CurfewReleaseDateControllerTest : IntegrationTestBase() {
   @Test
   fun `Should not return errors when release date is in the past`() {
     val order = createOrder()
-    orderRepo.save(order)
     webTestClient.put()
       .uri("/api/orders/${order.id}/monitoring-conditions-curfew-release-date")
       .contentType(MediaType.APPLICATION_JSON)
       .body(
         BodyInserters.fromValue(
           mockRequestBody(
-            order.id,
             ZonedDateTime.now().minusDays(1),
             "19:00:00",
             "23:00:00",
@@ -147,90 +131,51 @@ class CurfewReleaseDateControllerTest : IntegrationTestBase() {
   @Test
   fun `Should save order with updated release date `() {
     val order = createOrder()
-    orderRepo.save(order)
-    Mockito.reset(orderRepo)
     webTestClient.put()
       .uri("/api/orders/${order.id}/monitoring-conditions-curfew-release-date")
       .contentType(MediaType.APPLICATION_JSON)
       .body(
         BodyInserters.fromValue(
-          mockValidRequestBody(order.id),
+          mockValidRequestBody(),
         ),
       )
       .headers(setAuthorisation())
       .exchange()
       .expectStatus()
       .isOk
-    argumentCaptor<Order>().apply {
-      verify(orderRepo, Times(1)).save(capture())
-      val updatedOrder = firstValue
-      Assertions.assertThat(
-        updatedOrder.curfewReleaseDateConditions?.releaseDate,
-      ).isEqualTo(mockReleaseDate)
-      Assertions.assertThat(
-        updatedOrder.curfewReleaseDateConditions?.startTime,
-      ).isEqualTo("19:00:00")
-      Assertions.assertThat(updatedOrder.curfewReleaseDateConditions?.endTime).isEqualTo("23:59:00")
-      Assertions.assertThat(
-        updatedOrder.curfewReleaseDateConditions?.curfewAddress,
-      ).isEqualTo(AddressType.PRIMARY)
-    }
-  }
 
-  @Test
-  fun `Should not expose sql statements if an invalid request is sent`() {
-    val order = createOrder()
-    orderRepo.save(order)
-    Mockito.reset(orderRepo)
+    // Get updated order
+    val updatedOrder = getOrder(order.id)
 
-    val result = webTestClient.put()
-      .uri("/api/orders/${order.id}/monitoring-conditions-curfew-release-date")
-      .contentType(MediaType.APPLICATION_JSON)
-      .body(
-        BodyInserters.fromValue(
-          mockValidRequestBody(UUID.randomUUID()),
-        ),
-      )
-      .headers(setAuthorisation())
-      .exchange()
-      .expectStatus()
-      .is5xxServerError
-      .expectBody(ErrorResponse::class.java)
-      .returnResult()
-
-    Assertions.assertThat(result.responseBody!!).isEqualTo(
-      ErrorResponse(
-        status = INTERNAL_SERVER_ERROR,
-        userMessage = "500 Internal Server Error",
-        developerMessage = "500 Internal Server Error",
-      ),
-    )
+    Assertions.assertThat(updatedOrder.curfewReleaseDateConditions).isNotNull()
+    Assertions.assertThat(updatedOrder.curfewReleaseDateConditions?.releaseDate).isEqualTo(mockReleaseDate)
+    Assertions.assertThat(updatedOrder.curfewReleaseDateConditions?.startTime).isEqualTo("19:00:00")
+    Assertions.assertThat(updatedOrder.curfewReleaseDateConditions?.endTime).isEqualTo("23:59:00")
+    Assertions.assertThat(updatedOrder.curfewReleaseDateConditions?.curfewAddress).isEqualTo(AddressType.PRIMARY)
   }
 
   fun mockValidRequestBody(
-    orderId: UUID,
     releaseDate: ZonedDateTime? = mockReleaseDate,
     startTime: String? = "19:00:00",
     endTime: String? = "23:59:00",
     curfewAddress: AddressType? = AddressType.PRIMARY,
   ): String {
-    return mockRequestBody(orderId, releaseDate, startTime, endTime, curfewAddress)
+    return mockRequestBody(releaseDate, startTime, endTime, curfewAddress)
   }
 
   fun mockRequestBody(
-    orderId: UUID,
     releaseDate: ZonedDateTime?,
     startTime: String?,
     endTime: String?,
     curfewAddress: AddressType?,
   ): String {
-    val condition = CurfewReleaseDateConditions(
-      orderId = orderId,
+    // TODO - can you create an invalid request this way?
+    val dto = UpdateCurfewReleaseDateConditionsDto(
       releaseDate = releaseDate,
       startTime = startTime,
       endTime = endTime,
       curfewAddress = curfewAddress,
     )
-    return objectMapper.writeValueAsString(condition)
+    return objectMapper.writeValueAsString(dto)
   }
 }
