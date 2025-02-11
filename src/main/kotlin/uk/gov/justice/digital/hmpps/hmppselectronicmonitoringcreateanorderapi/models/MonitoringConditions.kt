@@ -22,8 +22,8 @@ data class MonitoringConditions(
   @Column(name = "ID", nullable = false, unique = true)
   val id: UUID = UUID.randomUUID(),
 
-  @Column(name = "ORDER_ID", nullable = false, unique = true)
-  val orderId: UUID,
+  @Column(name = "VERSION_ID", nullable = false, unique = true)
+  val versionId: UUID,
 
   @Column(name = "START_DATE", nullable = true)
   var startDate: ZonedDateTime? = null,
@@ -63,8 +63,8 @@ data class MonitoringConditions(
 
   @Schema(hidden = true)
   @OneToOne
-  @JoinColumn(name = "ORDER_ID", updatable = false, insertable = false)
-  private val order: Order? = null,
+  @JoinColumn(name = "VERSION_ID", updatable = false, insertable = false)
+  private val version: OrderVersion? = null,
 ) {
   val isValid: Boolean
     get() = (

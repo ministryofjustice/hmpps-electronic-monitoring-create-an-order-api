@@ -15,7 +15,7 @@ class DeviceWearerService() : OrderSectionServiceBase() {
     val order = this.findEditableOrder(orderId, username)
 
     order.deviceWearer = DeviceWearer(
-      orderId = orderId,
+      versionId = order.getCurrentVersion().id,
       firstName = updateRecord.firstName,
       lastName = updateRecord.lastName,
       alias = updateRecord.alias,

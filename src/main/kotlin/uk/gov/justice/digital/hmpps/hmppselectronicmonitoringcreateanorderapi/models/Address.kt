@@ -18,7 +18,7 @@ import java.util.*
 @Table(
   name = "ADDRESS",
   uniqueConstraints = [
-    UniqueConstraint(columnNames = ["ORDER_ID", "ADDRESS_TYPE"]),
+    UniqueConstraint(columnNames = ["VERSION_ID", "ADDRESS_TYPE"]),
   ],
 )
 data class Address(
@@ -26,8 +26,8 @@ data class Address(
   @Column(name = "ID", nullable = false, unique = true)
   val id: UUID = UUID.randomUUID(),
 
-  @Column(name = "ORDER_ID", nullable = false)
-  val orderId: UUID,
+  @Column(name = "VERSION_ID", nullable = false)
+  val versionId: UUID,
 
   @Enumerated(EnumType.STRING)
   @Column(name = "ADDRESS_TYPE", nullable = false)
@@ -54,6 +54,6 @@ data class Address(
 
   @Schema(hidden = true)
   @ManyToOne(optional = true)
-  @JoinColumn(name = "ORDER_ID", updatable = false, insertable = false)
-  private val order: Order? = null,
+  @JoinColumn(name = "VERSION_ID", updatable = false, insertable = false)
+  private val version: OrderVersion? = null,
 )
