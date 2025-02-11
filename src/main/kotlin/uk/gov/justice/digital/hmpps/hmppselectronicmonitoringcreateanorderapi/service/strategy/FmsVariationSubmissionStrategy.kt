@@ -128,7 +128,7 @@ class FmsVariationSubmissionStrategy(
 
     if (createDeviceWearerResult.status === SubmissionStatus.FAILURE) {
       return FmsSubmissionResult(
-        orderId = order.id,
+        orderId = order.getCurrentVersion().id,
         strategy = FmsSubmissionStrategyKind.VARIATION,
         deviceWearerResult = createDeviceWearerResult,
         orderSource = orderSource,
@@ -138,7 +138,7 @@ class FmsVariationSubmissionStrategy(
     val createMonitoringOrderResult = this.updateMonitoringOrder(order, deviceWearerId)
 
     return FmsSubmissionResult(
-      orderId = order.id,
+      orderId = order.getCurrentVersion().id,
       strategy = FmsSubmissionStrategyKind.VARIATION,
       deviceWearerResult = createDeviceWearerResult,
       monitoringOrderResult = createMonitoringOrderResult,

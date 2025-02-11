@@ -180,7 +180,7 @@ class FmsOrderSubmissionStrategy(
 
     if (createDeviceWearerResult.status == SubmissionStatus.FAILURE) {
       return FmsSubmissionResult(
-        orderId = order.id,
+        orderId = order.getCurrentVersion().id,
         strategy = FmsSubmissionStrategyKind.ORDER,
         deviceWearerResult = createDeviceWearerResult,
         orderSource = orderSource,
@@ -191,7 +191,7 @@ class FmsOrderSubmissionStrategy(
 
     if (createMonitoringOrderResult.status == SubmissionStatus.FAILURE) {
       return FmsSubmissionResult(
-        orderId = order.id,
+        orderId = order.getCurrentVersion().id,
         strategy = FmsSubmissionStrategyKind.ORDER,
         deviceWearerResult = createDeviceWearerResult,
         monitoringOrderResult = createMonitoringOrderResult,
@@ -202,7 +202,7 @@ class FmsOrderSubmissionStrategy(
     val createAttachmentsResult = this.createAttachments(order, deviceWearerId)
 
     return FmsSubmissionResult(
-      orderId = order.id,
+      orderId = order.getCurrentVersion().id,
       strategy = FmsSubmissionStrategyKind.ORDER,
       deviceWearerResult = createDeviceWearerResult,
       monitoringOrderResult = createMonitoringOrderResult,
