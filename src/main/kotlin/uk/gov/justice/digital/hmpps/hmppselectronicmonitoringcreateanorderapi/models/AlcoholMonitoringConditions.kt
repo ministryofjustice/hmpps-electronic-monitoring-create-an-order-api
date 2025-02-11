@@ -21,8 +21,8 @@ data class AlcoholMonitoringConditions(
   @Column(name = "ID", nullable = false, unique = true)
   val id: UUID = UUID.randomUUID(),
 
-  @Column(name = "ORDER_ID", nullable = false, unique = true)
-  val orderId: UUID,
+  @Column(name = "VERSION_ID", nullable = false, unique = true)
+  val versionId: UUID,
 
   @Enumerated(EnumType.STRING)
   @Column(name = "MONITORING_TYPE", nullable = true)
@@ -48,8 +48,8 @@ data class AlcoholMonitoringConditions(
   var probationOfficeName: String? = null,
 
   @OneToOne(optional = true)
-  @JoinColumn(name = "ORDER_ID", updatable = false, insertable = false)
-  private val order: Order? = null,
+  @JoinColumn(name = "VERSION_ID", updatable = false, insertable = false)
+  private val version: OrderVersion? = null,
 
   @Schema(hidden = true)
   @OneToOne(optional = true)

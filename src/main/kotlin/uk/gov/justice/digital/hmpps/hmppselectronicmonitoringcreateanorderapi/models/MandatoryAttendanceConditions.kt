@@ -18,8 +18,8 @@ data class MandatoryAttendanceConditions(
   @Column(name = "ID", nullable = false, unique = true)
   val id: UUID = UUID.randomUUID(),
 
-  @Column(name = "ORDER_ID", nullable = false, unique = false)
-  val orderId: UUID,
+  @Column(name = "VERSION_ID", nullable = false, unique = false)
+  val versionId: UUID,
 
   @Column(name = "START_DATE", nullable = false)
   @field:NotNull(
@@ -66,6 +66,6 @@ data class MandatoryAttendanceConditions(
 
   @Schema(hidden = true)
   @ManyToOne(optional = true)
-  @JoinColumn(name = "ORDER_ID", updatable = false, insertable = false)
-  private val order: Order? = null,
+  @JoinColumn(name = "VERSION_ID", updatable = false, insertable = false)
+  private val version: OrderVersion? = null,
 )

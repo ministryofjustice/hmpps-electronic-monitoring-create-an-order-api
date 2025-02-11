@@ -16,7 +16,7 @@ class MonitoringConditionsService : OrderSectionServiceBase() {
     val order = this.findEditableOrder(orderId, username)
 
     order.monitoringConditions = MonitoringConditions(
-      orderId = orderId,
+      versionId = order.getCurrentVersion().id,
       orderType = updateRecord.orderType,
       startDate = updateRecord.startDate,
       endDate = updateRecord.endDate,

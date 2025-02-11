@@ -25,8 +25,8 @@ data class EnforcementZoneConditions(
   @Column(name = "ID", nullable = false, unique = true)
   val id: UUID = UUID.randomUUID(),
 
-  @Column(name = "ORDER_ID", nullable = false, unique = false)
-  val orderId: UUID,
+  @Column(name = "VERSION_ID", nullable = false)
+  val versionId: UUID,
 
   @Column(name = "ZONE_TYPE", nullable = false)
   @Enumerated(EnumType.STRING)
@@ -65,8 +65,8 @@ data class EnforcementZoneConditions(
 
   @Schema(hidden = true)
   @ManyToOne(optional = true)
-  @JoinColumn(name = "ORDER_ID", updatable = false, insertable = false)
-  private val order: Order? = null,
+  @JoinColumn(name = "VERSION_ID", updatable = false, insertable = false)
+  private val version: OrderVersion? = null,
 ) {
   @AssertTrue(message = "End date must be after start date")
   fun isEndDate(): Boolean {

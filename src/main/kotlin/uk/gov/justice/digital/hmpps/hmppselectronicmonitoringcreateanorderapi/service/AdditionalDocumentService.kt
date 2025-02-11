@@ -57,7 +57,7 @@ class AdditionalDocumentService(
     val order = this.findEditableOrder(orderId, username)
     val document =
       AdditionalDocument(
-        orderId = orderId,
+        versionId = order.getCurrentVersion().id,
         fileType = documentType,
         fileName = multipartFile.originalFilename,
       )

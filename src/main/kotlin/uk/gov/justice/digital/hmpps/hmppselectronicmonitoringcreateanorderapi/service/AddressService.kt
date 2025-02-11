@@ -24,7 +24,7 @@ class AddressService() : OrderSectionServiceBase() {
       existingAddress.postcode = updateRecord.postcode
     } else {
       newAddress = Address(
-        orderId = orderId,
+        versionId = order.getCurrentVersion().id,
         addressType = updateRecord.addressType,
         addressLine1 = updateRecord.addressLine1,
         addressLine2 = updateRecord.addressLine2,

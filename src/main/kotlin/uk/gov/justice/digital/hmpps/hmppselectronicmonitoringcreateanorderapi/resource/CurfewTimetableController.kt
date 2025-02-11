@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewTimeTable
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateCurfewTimetableDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.CurfewTimetableService
 import java.util.UUID
 
@@ -24,11 +25,16 @@ class CurfewTimetableController(val service: CurfewTimetableService) {
   @PutMapping("/orders/{orderId}/monitoring-conditions-curfew-timetable")
   fun updateCurfewTimetable(
     @PathVariable orderId: UUID,
-    @RequestBody @Valid timetable: List<CurfewTimeTable>,
+    @RequestBody @Valid updateRecord: List<UpdateCurfewTimetableDto>,
     authentication: Authentication,
   ): ResponseEntity<List<CurfewTimeTable>> {
     val username = authentication.name
-    service.updateCurfewTimetable(orderId, username, timetable)
+    val timetable = service.updateCurfewTimetable(
+      orderId,
+      username,
+      updateRecord,
+    )
+
     return ResponseEntity(timetable, HttpStatus.OK)
   }
 }

@@ -11,6 +11,7 @@ import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Address
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AlcoholMonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateAlcoholMonitoringConditionsDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringInstallationLocationType
@@ -34,12 +35,11 @@ class MonitoringConditionsAlcoholServiceTest {
   @Autowired
   lateinit var alcoholMonitoringConditionsService: MonitoringConditionsAlcoholService
 
-  private val mockOrderId: UUID = UUID.fromString("da69b6d1-fb7f-4513-aee5-bd762cd8921d")
+  private val mockOrderId: UUID = UUID.randomUUID()
+  private val mockVersionId: UUID = UUID.randomUUID()
   private val mockUsername: String = "username"
-  private val mockAddressId = UUID.fromString("506fdf2f-7c4e-4bc7-bdb6-e42ccbf2a4f4")
-  private val mockAlcoholMonitoringConditionsId = UUID.fromString(
-    "4f174060-6a26-41d3-ad7d-9b28f607a7df",
-  )
+  private val mockAddressId = UUID.randomUUID()
+  private val mockAlcoholMonitoringConditionsId = UUID.randomUUID()
 
   private val mockStartDate: ZonedDateTime = ZonedDateTime.of(
     LocalDate.of(2025, 1, 1),
@@ -61,7 +61,7 @@ class MonitoringConditionsAlcoholServiceTest {
   )
   private val mockAlcoholMonitoringConditions = AlcoholMonitoringConditions(
     id = mockAlcoholMonitoringConditionsId,
-    orderId = mockOrderId,
+    versionId = mockVersionId,
     monitoringType = AlcoholMonitoringType.ALCOHOL_ABSTINENCE,
     startDate = mockStartDate,
     endDate = mockEndDate,
@@ -73,7 +73,7 @@ class MonitoringConditionsAlcoholServiceTest {
 
   private val mockAddress = Address(
     id = mockAddressId,
-    orderId = mockOrderId,
+    versionId = mockVersionId,
     addressType = AddressType.PRIMARY,
     addressUsage = DeviceWearerAddressUsage.NA,
     addressLine1 = "mockAddressLine1",
@@ -86,19 +86,25 @@ class MonitoringConditionsAlcoholServiceTest {
     @Test
     fun `gets the address ID from the order ID and address type`() {
       whenever(
-        orderRepo.findByIdAndUsernameAndStatus(mockOrderId, mockUsername, OrderStatus.IN_PROGRESS),
+        orderRepo.findById(mockOrderId),
       ).thenReturn(
         Optional.of(
           Order(
             id = mockOrderId,
-            username = mockUsername,
-            status = OrderStatus.IN_PROGRESS,
-            type = RequestType.REQUEST,
-            monitoringConditionsAlcohol = AlcoholMonitoringConditions(
-              id = mockAlcoholMonitoringConditionsId,
-              orderId = mockOrderId,
+            versions = mutableListOf(
+              OrderVersion(
+                id = mockVersionId,
+                username = mockUsername,
+                status = OrderStatus.IN_PROGRESS,
+                type = RequestType.REQUEST,
+                orderId = mockOrderId,
+                monitoringConditionsAlcohol = AlcoholMonitoringConditions(
+                  id = mockAlcoholMonitoringConditionsId,
+                  versionId = mockVersionId,
+                ),
+                addresses = mutableListOf(mockAddress),
+              ),
             ),
-            addresses = mutableListOf(mockAddress),
           ),
         ),
       )
@@ -106,21 +112,33 @@ class MonitoringConditionsAlcoholServiceTest {
         orderRepo.save(
           Order(
             id = mockOrderId,
-            username = mockUsername,
-            status = OrderStatus.IN_PROGRESS,
-            type = RequestType.REQUEST,
-            monitoringConditionsAlcohol = mockAlcoholMonitoringConditions,
-            addresses = mutableListOf(mockAddress),
+            versions = mutableListOf(
+              OrderVersion(
+                id = mockVersionId,
+                username = mockUsername,
+                status = OrderStatus.IN_PROGRESS,
+                type = RequestType.REQUEST,
+                orderId = mockOrderId,
+                monitoringConditionsAlcohol = mockAlcoholMonitoringConditions,
+                addresses = mutableListOf(mockAddress),
+              ),
+            ),
           ),
         ),
       ).thenReturn(
         Order(
           id = mockOrderId,
-          username = mockUsername,
-          status = OrderStatus.IN_PROGRESS,
-          type = RequestType.REQUEST,
-          monitoringConditionsAlcohol = mockAlcoholMonitoringConditions,
-          addresses = mutableListOf(mockAddress),
+          versions = mutableListOf(
+            OrderVersion(
+              id = mockVersionId,
+              username = mockUsername,
+              status = OrderStatus.IN_PROGRESS,
+              type = RequestType.REQUEST,
+              orderId = mockOrderId,
+              monitoringConditionsAlcohol = mockAlcoholMonitoringConditions,
+              addresses = mutableListOf(mockAddress),
+            ),
+          ),
         ),
       )
 
@@ -145,7 +163,7 @@ class MonitoringConditionsAlcoholServiceTest {
       )
       val mockAlcoholMonitoringConditions = AlcoholMonitoringConditions(
         id = mockAlcoholMonitoringConditionsId,
-        orderId = mockOrderId,
+        versionId = mockVersionId,
         monitoringType = AlcoholMonitoringType.ALCOHOL_ABSTINENCE,
         startDate = mockStartDate,
         endDate = mockEndDate,
@@ -155,19 +173,25 @@ class MonitoringConditionsAlcoholServiceTest {
         probationOfficeName = "MockProbationOfficeName",
       )
       whenever(
-        orderRepo.findByIdAndUsernameAndStatus(mockOrderId, mockUsername, OrderStatus.IN_PROGRESS),
+        orderRepo.findById(mockOrderId),
       ).thenReturn(
         Optional.of(
           Order(
             id = mockOrderId,
-            username = mockUsername,
-            status = OrderStatus.IN_PROGRESS,
-            type = RequestType.REQUEST,
-            monitoringConditionsAlcohol = AlcoholMonitoringConditions(
-              id = mockAlcoholMonitoringConditionsId,
-              orderId = mockOrderId,
+            versions = mutableListOf(
+              OrderVersion(
+                id = mockVersionId,
+                username = mockUsername,
+                status = OrderStatus.IN_PROGRESS,
+                type = RequestType.REQUEST,
+                orderId = mockOrderId,
+                monitoringConditionsAlcohol = AlcoholMonitoringConditions(
+                  id = mockAlcoholMonitoringConditionsId,
+                  versionId = mockVersionId,
+                ),
+                addresses = mutableListOf(mockAddress),
+              ),
             ),
-            addresses = mutableListOf(mockAddress),
           ),
         ),
       )
@@ -175,21 +199,33 @@ class MonitoringConditionsAlcoholServiceTest {
         orderRepo.save(
           Order(
             id = mockOrderId,
-            username = mockUsername,
-            status = OrderStatus.IN_PROGRESS,
-            type = RequestType.REQUEST,
-            monitoringConditionsAlcohol = mockAlcoholMonitoringConditions,
-            addresses = mutableListOf(mockAddress),
+            versions = mutableListOf(
+              OrderVersion(
+                id = mockVersionId,
+                username = mockUsername,
+                status = OrderStatus.IN_PROGRESS,
+                type = RequestType.REQUEST,
+                orderId = mockOrderId,
+                monitoringConditionsAlcohol = mockAlcoholMonitoringConditions,
+                addresses = mutableListOf(mockAddress),
+              ),
+            ),
           ),
         ),
       ).thenReturn(
         Order(
           id = mockOrderId,
-          username = mockUsername,
-          status = OrderStatus.IN_PROGRESS,
-          type = RequestType.REQUEST,
-          monitoringConditionsAlcohol = mockAlcoholMonitoringConditions,
-          addresses = mutableListOf(mockAddress),
+          versions = mutableListOf(
+            OrderVersion(
+              id = mockVersionId,
+              username = mockUsername,
+              status = OrderStatus.IN_PROGRESS,
+              type = RequestType.REQUEST,
+              orderId = mockOrderId,
+              monitoringConditionsAlcohol = mockAlcoholMonitoringConditions,
+              addresses = mutableListOf(mockAddress),
+            ),
+          ),
         ),
       )
 

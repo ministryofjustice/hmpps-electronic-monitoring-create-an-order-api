@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewConditions
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateCurfewConditionsDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.CurfewConditionService
 import java.util.*
 
@@ -24,11 +25,16 @@ class CurfewConditionController(val service: CurfewConditionService) {
   @PutMapping("/orders/{orderId}/monitoring-conditions-curfew-conditions")
   fun updateCurfewConditions(
     @PathVariable orderId: UUID,
-    @RequestBody @Valid conditions: CurfewConditions,
+    @RequestBody @Valid updateRecord: UpdateCurfewConditionsDto,
     authentication: Authentication,
   ): ResponseEntity<CurfewConditions> {
     val username = authentication.name
-    service.updateCurfewCondition(orderId, username, conditions)
+    val conditions = service.updateCurfewCondition(
+      orderId,
+      username,
+      updateRecord,
+    )
+
     return ResponseEntity(conditions, HttpStatus.OK)
   }
 }

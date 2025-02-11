@@ -5,17 +5,12 @@ import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
-import org.mockito.internal.verification.Times
-import org.mockito.kotlin.argumentCaptor
-import org.mockito.kotlin.verify
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewTimeTable
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateCurfewTimetableDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ListItemValidationError
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidationError
@@ -62,9 +57,8 @@ class CurfewTimetableControllerTest : IntegrationTestBase() {
 
   @Test
   fun `Curfew timetable for an order already submitted are not update-able`() {
-    val order = createOrder()
-    order.status = OrderStatus.SUBMITTED
-    orderRepo.save(order)
+    val order = createSubmittedOrder()
+
     val result = webTestClient.put()
       .uri("/api/orders/${order.id}/monitoring-conditions-curfew-timetable")
       .contentType(MediaType.APPLICATION_JSON)
@@ -87,9 +81,8 @@ class CurfewTimetableControllerTest : IntegrationTestBase() {
 
   @Test
   fun `Should return errors when curfew timetable is invalid`() {
-    val order = createOrder()
-    order.status = OrderStatus.SUBMITTED
-    orderRepo.save(order)
+    val order = createSubmittedOrder()
+
     val result = webTestClient.put()
       .uri("/api/orders/${order.id}/monitoring-conditions-curfew-timetable")
       .contentType(MediaType.APPLICATION_JSON)
@@ -123,18 +116,27 @@ class CurfewTimetableControllerTest : IntegrationTestBase() {
   @Test
   fun `Should save order with updated timetable and cleared any previous timetable`() {
     val order = createOrder()
-    val timetable = DayOfWeek.entries.map { day ->
-      CurfewTimeTable(
-        dayOfWeek = day,
-        orderId = order.id,
-        startTime = "00:00:00",
-        endTime = "07:00:00",
-        curfewAddress = "SECONDARY_ADDRESS",
+
+    // Create initial timetable
+    webTestClient.put()
+      .uri("/api/orders/${order.id}/monitoring-conditions-curfew-timetable")
+      .contentType(MediaType.APPLICATION_JSON)
+      .body(
+        BodyInserters.fromValue(
+          mockTimetableRequestBody(
+            order.id,
+            startTime = "00:00:00",
+            endTime = "07:00:00",
+            curfewAddress = "SECONDARY_ADDRESS",
+          ),
+        ),
       )
-    }.toList()
-    order.curfewTimeTable.addAll(timetable)
-    orderRepo.save(order)
-    Mockito.reset(orderRepo)
+      .headers(setAuthorisation())
+      .exchange()
+      .expectStatus()
+      .isOk
+
+    // Update timetable
     webTestClient.put()
       .uri("/api/orders/${order.id}/monitoring-conditions-curfew-timetable")
       .contentType(MediaType.APPLICATION_JSON)
@@ -147,15 +149,16 @@ class CurfewTimetableControllerTest : IntegrationTestBase() {
       .exchange()
       .expectStatus()
       .isOk
-    argumentCaptor<Order>().apply {
-      verify(orderRepo, Times(1)).save(capture())
-      val updatedOrder = firstValue
-      Assertions.assertThat(updatedOrder.curfewTimeTable.count()).isEqualTo(7)
-      updatedOrder.curfewTimeTable.forEach {
-        Assertions.assertThat(it.startTime).isEqualTo("19:00:00")
-        Assertions.assertThat(it.endTime).isEqualTo("23:59:00")
-        Assertions.assertThat(it.curfewAddress).isEqualTo("PRIMARY_ADDRESS")
-      }
+
+    // Get updated order
+    val updatedOrder = getOrder(order.id)
+
+    // Verify order state matches expected state
+    Assertions.assertThat(updatedOrder.curfewTimeTable).hasSize(7)
+    updatedOrder.curfewTimeTable.forEach {
+      Assertions.assertThat(it.startTime).isEqualTo("19:00:00")
+      Assertions.assertThat(it.endTime).isEqualTo("23:59:00")
+      Assertions.assertThat(it.curfewAddress).isEqualTo("PRIMARY_ADDRESS")
     }
   }
 
@@ -166,9 +169,8 @@ class CurfewTimetableControllerTest : IntegrationTestBase() {
     curfewAddress: String? = "PRIMARY_ADDRESS",
   ): String {
     val body = DayOfWeek.entries.map { day ->
-      CurfewTimeTable(
+      UpdateCurfewTimetableDto(
         dayOfWeek = day,
-        orderId = orderId,
         startTime = startTime,
         endTime = endTime,
         curfewAddress = curfewAddress,

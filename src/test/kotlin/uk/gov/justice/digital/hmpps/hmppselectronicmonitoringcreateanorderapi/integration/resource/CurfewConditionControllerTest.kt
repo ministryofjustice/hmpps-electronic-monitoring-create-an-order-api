@@ -4,19 +4,12 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito
-import org.mockito.internal.verification.Times
-import org.mockito.kotlin.argumentCaptor
-import org.mockito.kotlin.verify
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewConditions
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidationError
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 import java.time.LocalDate
@@ -26,8 +19,6 @@ import java.time.ZonedDateTime
 import java.util.*
 
 class CurfewConditionControllerTest : IntegrationTestBase() {
-  @MockitoSpyBean
-  lateinit var orderRepo: OrderRepository
 
   @Autowired
   lateinit var objectMapper: ObjectMapper
@@ -43,8 +34,7 @@ class CurfewConditionControllerTest : IntegrationTestBase() {
 
   @BeforeEach
   fun setup() {
-    Mockito.reset(orderRepo)
-    orderRepo.deleteAll()
+    repo.deleteAll()
   }
 
   @Test
@@ -73,9 +63,8 @@ class CurfewConditionControllerTest : IntegrationTestBase() {
 
   @Test
   fun `Curfew release date for an order already submitted are not update-able`() {
-    val order = createOrder()
-    order.status = OrderStatus.SUBMITTED
-    orderRepo.save(order)
+    val order = createSubmittedOrder()
+
     val result = webTestClient.put()
       .uri("/api/orders/${order.id}/monitoring-conditions-curfew-conditions")
       .contentType(MediaType.APPLICATION_JSON)
@@ -99,8 +88,7 @@ class CurfewConditionControllerTest : IntegrationTestBase() {
   @Test
   fun `Should return errors when curfew condition is invalid`() {
     val order = createOrder()
-    order.status = OrderStatus.SUBMITTED
-    orderRepo.save(order)
+
     val result = webTestClient.put()
       .uri("/api/orders/${order.id}/monitoring-conditions-curfew-conditions")
       .contentType(MediaType.APPLICATION_JSON)
@@ -126,8 +114,7 @@ class CurfewConditionControllerTest : IntegrationTestBase() {
   @Test
   fun `Should return errors when end date is in the past`() {
     val order = createOrder()
-    order.status = OrderStatus.SUBMITTED
-    orderRepo.save(order)
+
     val result = webTestClient.put()
       .uri("/api/orders/${order.id}/monitoring-conditions-curfew-conditions")
       .contentType(MediaType.APPLICATION_JSON)
@@ -182,8 +169,7 @@ class CurfewConditionControllerTest : IntegrationTestBase() {
   @Test
   fun `Should return errors when end date is before start date`() {
     val order = createOrder()
-    order.status = OrderStatus.SUBMITTED
-    orderRepo.save(order)
+
     val result = webTestClient.put()
       .uri("/api/orders/${order.id}/monitoring-conditions-curfew-conditions")
       .contentType(MediaType.APPLICATION_JSON)
@@ -214,8 +200,7 @@ class CurfewConditionControllerTest : IntegrationTestBase() {
   @Test
   fun `Should save order with updated release date `() {
     val order = createOrder()
-    orderRepo.save(order)
-    Mockito.reset(orderRepo)
+
     webTestClient.put()
       .uri("/api/orders/${order.id}/monitoring-conditions-curfew-conditions")
       .contentType(MediaType.APPLICATION_JSON)
@@ -228,15 +213,14 @@ class CurfewConditionControllerTest : IntegrationTestBase() {
       .exchange()
       .expectStatus()
       .isOk
-    argumentCaptor<Order>().apply {
-      verify(orderRepo, Times(1)).save(capture())
-      val updatedOrder = firstValue
-      Assertions.assertThat(updatedOrder.curfewConditions?.startDate).isEqualTo(mockStartDate)
-      Assertions.assertThat(updatedOrder.curfewConditions?.endDate).isEqualTo(mockEndDate)
-      Assertions.assertThat(
-        updatedOrder.curfewConditions?.curfewAddress,
-      ).isEqualTo("PRIMARY,SECONDARY")
-    }
+
+    // Get updated order
+    val updatedOrder = getOrder(order.id)
+
+    Assertions.assertThat(updatedOrder.curfewConditions).isNotNull()
+    Assertions.assertThat(updatedOrder.curfewConditions?.startDate).isEqualTo(mockStartDate)
+    Assertions.assertThat(updatedOrder.curfewConditions?.endDate).isEqualTo(mockEndDate)
+    Assertions.assertThat(updatedOrder.curfewConditions?.curfewAddress).isEqualTo("PRIMARY,SECONDARY")
   }
 
   fun mockValidRequestBody(
@@ -255,7 +239,7 @@ class CurfewConditionControllerTest : IntegrationTestBase() {
     curfewAddress: String?,
   ): String {
     val condition = CurfewConditions(
-      orderId = orderId,
+      versionId = orderId,
       startDate = startDate,
       endDate = endDate,
       curfewAddress = curfewAddress,

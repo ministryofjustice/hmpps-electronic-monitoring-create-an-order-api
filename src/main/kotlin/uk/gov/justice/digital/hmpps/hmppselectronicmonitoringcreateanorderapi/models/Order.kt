@@ -3,17 +3,13 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.m
 import jakarta.persistence.CascadeType.ALL
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
-import jakarta.persistence.EnumType
-import jakarta.persistence.Enumerated
 import jakarta.persistence.FetchType
 import jakarta.persistence.Id
 import jakarta.persistence.OneToMany
-import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
-import java.util.UUID
+import java.util.*
 
 @Entity
 @Table(name = "ORDERS")
@@ -23,147 +19,178 @@ data class Order(
   @Column(name = "ID", nullable = false, unique = true)
   val id: UUID = UUID.randomUUID(),
 
-  @Column(name = "USER_NAME", nullable = false)
-  var username: String,
-
-  @Enumerated(EnumType.STRING)
-  @Column(name = "STATUS", nullable = false)
-  var status: OrderStatus,
-
-  @Enumerated(EnumType.STRING)
-  @Column(name = "TYPE", nullable = false)
-  var type: RequestType,
-
-  @Column(name = "FMS_RESULT_ID", nullable = true)
-  var fmsResultId: UUID? = null,
-
-  @OneToOne(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "order", orphanRemoval = true)
-  var deviceWearer: DeviceWearer? = null,
-
-  @OneToOne(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "order", orphanRemoval = true)
-  var deviceWearerResponsibleAdult: ResponsibleAdult? = null,
-
-  @OneToOne(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "order", orphanRemoval = true)
-  var interestedParties: InterestedParties? = null,
-
-  @OneToOne(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "order", orphanRemoval = true)
-  var contactDetails: ContactDetails? = null,
-
   @OneToMany(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "order", orphanRemoval = true)
-  var addresses: MutableList<Address> = mutableListOf(),
-
-  @OneToOne(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "order", orphanRemoval = true)
-  var monitoringConditions: MonitoringConditions? = null,
-
-  @OneToOne(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "order", orphanRemoval = true)
-  var monitoringConditionsTrail: TrailMonitoringConditions? = null,
-
-  @OneToOne(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "order", orphanRemoval = true)
-  var monitoringConditionsAlcohol: AlcoholMonitoringConditions? = null,
-
-  @OneToOne(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "order", orphanRemoval = true)
-  var installationAndRisk: InstallationAndRisk? = null,
-
-  @OneToMany(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "order", orphanRemoval = true)
-  var additionalDocuments: MutableList<AdditionalDocument> = mutableListOf(),
-
-  @OneToMany(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "order", orphanRemoval = true)
-  var enforcementZoneConditions: MutableList<EnforcementZoneConditions> = mutableListOf(),
-
-  @OneToMany(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "order", orphanRemoval = true)
-  var mandatoryAttendanceConditions: MutableList<MandatoryAttendanceConditions> = mutableListOf(),
-
-  @OneToOne(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "order", orphanRemoval = true)
-  var curfewReleaseDateConditions: CurfewReleaseDateConditions? = null,
-
-  @OneToOne(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "order", orphanRemoval = true)
-  var curfewConditions: CurfewConditions? = null,
-
-  @OneToMany(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "order", orphanRemoval = true)
-  var curfewTimeTable: MutableList<CurfewTimeTable> = mutableListOf(),
-
-  @OneToOne(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "order", orphanRemoval = true)
-  var variationDetails: VariationDetails? = null,
+  var versions: MutableList<OrderVersion> = mutableListOf(),
 
 ) {
-  private val adultOrHasResponsibleAdult: Boolean
-    get() = (
-      deviceWearer?.adultAtTimeOfInstallation == true ||
-        (deviceWearer?.adultAtTimeOfInstallation == false && deviceWearerResponsibleAdult != null)
-      )
+  fun getCurrentVersion(): OrderVersion {
+    return versions.maxBy { it.versionId }
+  }
 
-  private val hasPrimaryAddressOrNoFixedAbode: Boolean
-    get() = (
-      (
-        (deviceWearer?.noFixedAbode == false && addresses.any { it.addressType == AddressType.PRIMARY }) ||
-          deviceWearer?.noFixedAbode == true
-        )
-      )
+  fun createVariation(username: String): OrderVersion {
+    if (getCurrentVersion().status === OrderStatus.IN_PROGRESS) {
+      throw Exception("Order is already in progress")
+    }
 
-  private val monitoringConditionsAreValid: Boolean
-    get() = (
-      addresses.any { it.addressType == AddressType.INSTALLATION } &&
-        (
-          if (monitoringConditions?.curfew == true) {
-            curfewReleaseDateConditions != null &&
-              curfewConditions != null &&
-              curfewTimeTable.isNotEmpty()
-          } else {
-            (true)
-          }
-          ) &&
-        (
-          if (monitoringConditions?.exclusionZone == true) {
-            enforcementZoneConditions.isNotEmpty()
-          } else {
-            (true)
-          }
-          ) &&
-        (
-          if (monitoringConditions?.trail == true) {
-            monitoringConditionsTrail != null
-          } else {
-            (true)
-          }
-          ) &&
-        (
-          if (monitoringConditions?.mandatoryAttendance == true) {
-            // Mandatory attendance conditions aren't currently persisted. When they are, validate them here. eg:
-            // mandatoryAttendanceConditions != null
-            true
-          } else {
-            (true)
-          }
-          ) &&
-        (
-          if (monitoringConditions?.alcohol == true) {
-            monitoringConditionsAlcohol != null
-          } else {
-            (true)
-          }
-          )
-      )
+    val versionId = versions.size + 1
+    val version = OrderVersion(
+      orderId = id,
+      status = OrderStatus.IN_PROGRESS,
+      type = RequestType.VARIATION,
+      username = username,
+      versionId = versionId,
+    )
 
-  private val isOrderOrHasVariationDetails: Boolean
-    get() = (
-      type === RequestType.REQUEST || variationDetails != null
-      )
+    versions.add(version)
+    return version
+  }
 
-  private val requiredDocuments: Boolean
-    get() = (
-//      Add additional document validation here
-//      eg. if license is a mandatory attachment:
-//      additionalDocuments.any { it.fileType == DocumentType.LICENCE }
-      true
-      )
+  fun deleteCurrentVersion() {
+    val version = getCurrentVersion()
+
+    if (version.status != OrderStatus.IN_PROGRESS) {
+      throw IllegalStateException("Order with id $id cannot be deleted because it has already been submitted")
+    }
+
+    versions.remove(version)
+  }
+
+  val additionalDocuments: MutableList<AdditionalDocument>
+    get() {
+      return getCurrentVersion().additionalDocuments
+    }
+
+  val addresses: MutableList<Address>
+    get() {
+      return getCurrentVersion().addresses
+    }
+
+  var contactDetails: ContactDetails?
+    get() {
+      return getCurrentVersion().contactDetails
+    }
+    set(contactDetails) {
+      getCurrentVersion().contactDetails = contactDetails
+    }
+
+  var curfewConditions: CurfewConditions?
+    get() {
+      return getCurrentVersion().curfewConditions
+    }
+    set(curfewConditions) {
+      getCurrentVersion().curfewConditions = curfewConditions
+    }
+
+  var curfewReleaseDateConditions: CurfewReleaseDateConditions?
+    get() {
+      return getCurrentVersion().curfewReleaseDateConditions
+    }
+    set(curfewReleaseDateConditions) {
+      getCurrentVersion().curfewReleaseDateConditions = curfewReleaseDateConditions
+    }
+
+  val curfewTimeTable: MutableList<CurfewTimeTable>
+    get() {
+      return getCurrentVersion().curfewTimeTable
+    }
+
+  var deviceWearer: DeviceWearer?
+    get() {
+      return getCurrentVersion().deviceWearer
+    }
+    set(deviceWearer) {
+      getCurrentVersion().deviceWearer = deviceWearer
+    }
+
+  var deviceWearerResponsibleAdult: ResponsibleAdult?
+    get() {
+      return getCurrentVersion().deviceWearerResponsibleAdult
+    }
+    set(responsibleAdult) {
+      getCurrentVersion().deviceWearerResponsibleAdult = responsibleAdult
+    }
+
+  val enforcementZoneConditions: MutableList<EnforcementZoneConditions>
+    get() {
+      return getCurrentVersion().enforcementZoneConditions
+    }
+
+  var fmsResultId: UUID?
+    get() {
+      return getCurrentVersion().fmsResultId
+    }
+    set(fmsResultId) {
+      getCurrentVersion().fmsResultId = fmsResultId
+    }
+
+  var installationAndRisk: InstallationAndRisk?
+    get() {
+      return getCurrentVersion().installationAndRisk
+    }
+    set(installationAndRisk) {
+      getCurrentVersion().installationAndRisk = installationAndRisk
+    }
+
+  var interestedParties: InterestedParties?
+    get() {
+      return getCurrentVersion().interestedParties
+    }
+    set(interestedParties) {
+      getCurrentVersion().interestedParties = interestedParties
+    }
 
   val isValid: Boolean
-    get() = (
-      deviceWearer?.isValid == true &&
-        monitoringConditions?.isValid == true &&
-        adultOrHasResponsibleAdult &&
-        hasPrimaryAddressOrNoFixedAbode &&
-        monitoringConditionsAreValid &&
-        isOrderOrHasVariationDetails
-      )
+    get() {
+      return getCurrentVersion().isValid
+    }
+
+  var monitoringConditions: MonitoringConditions?
+    get() {
+      return getCurrentVersion().monitoringConditions
+    }
+    set(monitoringConditions) {
+      getCurrentVersion().monitoringConditions = monitoringConditions
+    }
+
+  var monitoringConditionsAlcohol: AlcoholMonitoringConditions?
+    get() {
+      return getCurrentVersion().monitoringConditionsAlcohol
+    }
+    set(alcoholMonitoringConditions) {
+      getCurrentVersion().monitoringConditionsAlcohol = alcoholMonitoringConditions
+    }
+
+  var monitoringConditionsTrail: TrailMonitoringConditions?
+    get() {
+      return getCurrentVersion().monitoringConditionsTrail
+    }
+    set(trailMonitoringConditions) {
+      getCurrentVersion().monitoringConditionsTrail = trailMonitoringConditions
+    }
+
+  var status: OrderStatus
+    get() {
+      return getCurrentVersion().status
+    }
+    set(status) {
+      getCurrentVersion().status = status
+    }
+
+  val type: RequestType
+    get() {
+      return getCurrentVersion().type
+    }
+
+  val username: String
+    get() {
+      return getCurrentVersion().username
+    }
+
+  var variationDetails: VariationDetails?
+    get() {
+      return getCurrentVersion().variationDetails
+    }
+    set(variationDetails) {
+      getCurrentVersion().variationDetails = variationDetails
+    }
 }
