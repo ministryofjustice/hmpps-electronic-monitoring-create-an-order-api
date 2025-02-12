@@ -40,7 +40,8 @@ class OrderService(
       versionId = order.versions[0].id,
     )
 
-    return repo.save(order)
+    repo.save(order)
+    return order
   }
 
   fun deleteCurrentVersionForOrder(id: UUID, username: String) {
