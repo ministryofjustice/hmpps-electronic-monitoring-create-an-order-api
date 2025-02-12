@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.courthearingeventreceiver.model.HearingEvent
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.HmppsSqsEventMessage
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.EventService
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.S3Service
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.courthearing.DeadLetterQueueService
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.courthearing.HearingEventHandler
 import java.time.ZoneId
@@ -21,7 +22,12 @@ class CourtHearingEventListener(
   private val deadLetterQueueService: DeadLetterQueueService,
   private val objectMapper: ObjectMapper,
   private val eventService: EventService,
+  private val s3Service: S3Service,
 ) {
+  data class S3Message(
+    val s3BucketName: String,
+    val s3Key: String,
+  )
   private val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy hh:mm:ss")
 
   @SqsListener("courthearingeventqueue", factory = "hmppsQueueContainerFactoryProxy")
@@ -30,7 +36,15 @@ class CourtHearingEventListener(
     val startDateTime = ZonedDateTime.now(ZoneId.of("GMT"))
     try {
       val eventMessage: HmppsSqsEventMessage = objectMapper.readValue(rawMessage)
-      val courtHearing: HearingEvent = objectMapper.readValue(eventMessage.message)
+      val courtHearing: HearingEvent
+      if (eventMessage.messageAttributes.eventType.value == "commonplatform.large.case.received") {
+        val messageArray = objectMapper.readValue(eventMessage.message, ArrayList::class.java)
+        val s3MessageBody = objectMapper.writeValueAsString(messageArray[1])
+        val s3Message = objectMapper.readValue(s3MessageBody, S3Message::class.java)
+        courtHearing = objectMapper.readValue(s3Service.getObject(s3Message.s3Key))
+      } else {
+        courtHearing = objectMapper.readValue(eventMessage.message)
+      }
 
       // Process message if contains EM details, else ignore
       if (courtHearing.hearing.isHearingContainsEM()) {

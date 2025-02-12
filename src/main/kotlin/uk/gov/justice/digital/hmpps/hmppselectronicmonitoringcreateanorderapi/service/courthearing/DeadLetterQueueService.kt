@@ -7,6 +7,9 @@ import software.amazon.awssdk.services.sqs.model.MessageAttributeValue
 import software.amazon.awssdk.services.sqs.model.SendMessageRequest
 import uk.gov.justice.hmpps.sqs.HmppsQueue
 import uk.gov.justice.hmpps.sqs.HmppsQueueService
+import java.util.UUID
+
+private const val GROUP_ID = "COURT_HEARING_EVENT"
 
 @Service
 @ConditionalOnExpression("\${toggle.common-platform.processing.enabled:false}")
@@ -21,7 +24,6 @@ class DeadLetterQueueService(
 
   fun sentEvent(payload: Any, errorMessage: String?, retryAttempts: Int? = 0) {
     val messageBody = if (payload is String) payload else objectMapper.writeValueAsString(payload)
-
     dlClient.sendMessage(
       SendMessageRequest.builder()
         .queueUrl(dlQueueUrl)
@@ -34,7 +36,8 @@ class DeadLetterQueueService(
               .dataType("String")
               .stringValue(retryAttempts.toString()).build(),
           ),
-        )
+        ).messageGroupId(GROUP_ID)
+        .messageDeduplicationId(UUID.randomUUID().toString())
         .build(),
     )
   }
