@@ -40,6 +40,7 @@ class OrderService(
       versionId = order.versions[0].id,
     )
 
+    repo.save(order)
     return order
   }
 
