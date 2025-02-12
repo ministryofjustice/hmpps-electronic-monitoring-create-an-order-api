@@ -7,6 +7,7 @@ import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
+import jakarta.validation.constraints.NotNull
 import java.time.LocalDate
 import java.util.*
 
@@ -20,28 +21,37 @@ data class MandatoryAttendanceConditions(
   @Column(name = "ORDER_ID", nullable = false, unique = false)
   val orderId: UUID,
 
-  @Column(name = "START_DATE", nullable = true)
+  @Column(name = "START_DATE", nullable = false)
+  @field:NotNull(
+    message = "Please enter a mandatory attendance monitoring start date date to continue to the next page",
+  )
   var startDate: LocalDate? = null,
 
   @Column(name = "END_DATE", nullable = true)
   var endDate: LocalDate? = null,
 
-  @Column(name = "PURPOSE", nullable = true)
+  @Column(name = "PURPOSE", nullable = false)
+  @field:NotNull(message = "Please provide appointment details to continue to the next page")
   var purpose: String? = null,
 
-  @Column(name = "APPOINTMENT_DAY", nullable = true)
+  @Column(name = "APPOINTMENT_DAY", nullable = false)
+  @field:NotNull(message = "Please provide appointment day to continue to the next page")
   var appointmentDay: String? = null,
 
-  @Column(name = "START_TIME", nullable = true)
+  @Column(name = "START_TIME", nullable = false)
+  @field:NotNull(message = "Please provide appointment start time to continue to the next page")
   var startTime: String? = null,
 
-  @Column(name = "END_TIME", nullable = true)
+  @Column(name = "END_TIME", nullable = false)
+  @field:NotNull(message = "Please provide appointment end time to continue to the next page")
   var endTime: String? = null,
 
-  @Column(name = "ADDRESS_LINE_1", nullable = true)
+  @Column(name = "ADDRESS_LINE_1", nullable = false)
+  @field:NotNull(message = "Please provide an appointment location")
   var addressLine1: String? = null,
 
-  @Column(name = "ADDRESS_LINE_2", nullable = true)
+  @Column(name = "ADDRESS_LINE_2", nullable = false)
+  @field:NotNull(message = "Please provide an appointment location")
   var addressLine2: String? = null,
 
   @Column(name = "ADDRESS_LINE_3", nullable = true)
@@ -51,6 +61,7 @@ data class MandatoryAttendanceConditions(
   var addressLine4: String? = null,
 
   @Column(name = "POSTCODE", nullable = true)
+  @field:NotNull(message = "Please provide a postcode")
   var postcode: String? = null,
 
   @Schema(hidden = true)
