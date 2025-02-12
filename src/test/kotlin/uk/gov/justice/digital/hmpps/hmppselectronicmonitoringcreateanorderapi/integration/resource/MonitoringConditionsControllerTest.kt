@@ -81,7 +81,6 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
   @Test
   fun `isValid is false when mandatory fields are not populated`() {
     val order = createOrder()
-    // TODO - monitoring conditions is now null if not saved by user (ideal!) but needs to reflect in UI?
     Assertions.assertThat(order.monitoringConditions?.isValid).isFalse()
   }
 
@@ -111,7 +110,6 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
       .expectBody(MonitoringConditions::class.java)
       .returnResult()
 
-    // TODO - get rid of valid property
     Assertions.assertThat(updateMonitoringConditions.responseBody?.isValid).isTrue()
   }
 
