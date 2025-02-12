@@ -16,6 +16,7 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
+import java.time.temporal.ChronoUnit
 import java.util.*
 
 class CurfewConditionControllerTest : IntegrationTestBase() {
@@ -23,8 +24,8 @@ class CurfewConditionControllerTest : IntegrationTestBase() {
   @Autowired
   lateinit var objectMapper: ObjectMapper
 
-  val mockStartDate: ZonedDateTime = ZonedDateTime.now().plusDays(1)
-  val mockEndDate: ZonedDateTime = ZonedDateTime.now().plusDays(3)
+  val mockStartDate: ZonedDateTime = ZonedDateTime.now().plusDays(1).truncatedTo(ChronoUnit.SECONDS)
+  val mockEndDate: ZonedDateTime = ZonedDateTime.now().plusDays(3).truncatedTo(ChronoUnit.SECONDS)
   private val mockPastStartDate = ZonedDateTime.of(
     LocalDate.of(1970, 2, 1),
     LocalTime.NOON,
@@ -198,7 +199,7 @@ class CurfewConditionControllerTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `Should save order with updated release date `() {
+  fun `Should save order with updated conditions`() {
     val order = createOrder()
 
     webTestClient.put()

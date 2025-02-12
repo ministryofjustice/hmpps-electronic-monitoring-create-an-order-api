@@ -15,12 +15,13 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidationError
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 import java.time.ZonedDateTime
+import java.time.temporal.ChronoUnit
 
 class CurfewReleaseDateControllerTest : IntegrationTestBase() {
   @Autowired
   lateinit var objectMapper: ObjectMapper
 
-  val mockReleaseDate: ZonedDateTime = ZonedDateTime.now().plusDays(1)
+  val mockReleaseDate: ZonedDateTime = ZonedDateTime.now().plusDays(1).truncatedTo(ChronoUnit.SECONDS)
 
   @BeforeEach
   fun setup() {
@@ -169,7 +170,6 @@ class CurfewReleaseDateControllerTest : IntegrationTestBase() {
     endTime: String?,
     curfewAddress: AddressType?,
   ): String {
-    // TODO - can you create an invalid request this way?
     val dto = UpdateCurfewReleaseDateConditionsDto(
       releaseDate = releaseDate,
       startTime = startTime,

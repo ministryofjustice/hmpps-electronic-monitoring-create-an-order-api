@@ -113,7 +113,6 @@ abstract class IntegrationTestBase {
     .returnResult(OrderDto::class.java)
     .responseBody.blockFirst()!!
 
-  // TODO create submitted order using api?
   fun createSubmittedOrder(type: RequestType = RequestType.REQUEST): Order {
     val orderId = UUID.randomUUID()
     val order = Order(
