@@ -7,21 +7,16 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.VariationDetails
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.VariationType
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidationError
 import java.time.ZonedDateTime
 import java.util.*
 
 class VariationControllerTest : IntegrationTestBase() {
-  @Autowired
-  lateinit var repo: OrderRepository
 
   @BeforeEach
   fun setup() {
@@ -78,10 +73,7 @@ class VariationControllerTest : IntegrationTestBase() {
 
     @Test
     fun `it should not be possible to update the variation details if the variation has been submitted`() {
-      val variation = createVariation()
-
-      variation.status = OrderStatus.SUBMITTED
-      repo.save(variation)
+      val variation = createSubmittedVariation()
 
       webTestClient.put()
         .uri("/api/orders/${variation.id}/variation")
@@ -221,7 +213,6 @@ class VariationControllerTest : IntegrationTestBase() {
         .returnResult()
         .responseBody!!
 
-      Assertions.assertThat(result.orderId).isEqualTo(variation.id)
       Assertions.assertThat(result.variationType).isEqualTo(VariationType.valueOf(variationType))
       Assertions.assertThat(result.variationDate).isEqualTo(ZonedDateTime.parse("2024-01-01T00:00:00.000Z"))
     }

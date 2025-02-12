@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewReleaseDateConditions
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateCurfewReleaseDateConditionsDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.CurfewReleaseDateService
 import java.util.UUID
 
@@ -25,11 +26,16 @@ class CurfewReleaseDateController(val service: CurfewReleaseDateService) {
   @PutMapping("/orders/{orderId}/monitoring-conditions-curfew-release-date")
   fun updateCurfewReleaseDateConditions(
     @PathVariable orderId: UUID,
-    @RequestBody @Valid curfewReleaseDateConditions: CurfewReleaseDateConditions,
+    @RequestBody @Valid updateRecord: UpdateCurfewReleaseDateConditionsDto,
     authentication: Authentication,
   ): ResponseEntity<CurfewReleaseDateConditions> {
     val username = authentication.name
-    service.updateCurfewReleaseDateCondition(orderId, username, curfewReleaseDateConditions)
-    return ResponseEntity(curfewReleaseDateConditions, HttpStatus.OK)
+    val conditions = service.updateCurfewReleaseDateCondition(
+      orderId,
+      username,
+      updateRecord,
+    )
+
+    return ResponseEntity(conditions, HttpStatus.OK)
   }
 }

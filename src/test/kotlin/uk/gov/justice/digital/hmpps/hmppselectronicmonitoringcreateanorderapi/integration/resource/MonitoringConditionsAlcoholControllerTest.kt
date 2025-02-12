@@ -3,15 +3,12 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.i
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AlcoholMonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringInstallationLocationType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidationError
 import java.time.LocalDate
 import java.time.LocalTime
@@ -20,9 +17,6 @@ import java.time.ZonedDateTime
 import java.util.*
 
 class MonitoringConditionsAlcoholControllerTest : IntegrationTestBase() {
-
-  @Autowired
-  lateinit var orderRepo: OrderRepository
 
   private val mockStartDate: ZonedDateTime = ZonedDateTime.of(
     LocalDate.of(2025, 1, 1),
@@ -48,7 +42,7 @@ class MonitoringConditionsAlcoholControllerTest : IntegrationTestBase() {
 
   @BeforeEach
   fun setup() {
-    orderRepo.deleteAll()
+    repo.deleteAll()
   }
 
   @Test
@@ -94,10 +88,7 @@ class MonitoringConditionsAlcoholControllerTest : IntegrationTestBase() {
 
   @Test
   fun `Alcohol monitoring conditions cannot be updated for a submitted order`() {
-    val order = createOrder()
-
-    order.status = OrderStatus.SUBMITTED
-    orderRepo.save(order)
+    val order = createSubmittedOrder()
 
     webTestClient.put()
       .uri("/api/orders/${order.id}/monitoring-conditions-alcohol")

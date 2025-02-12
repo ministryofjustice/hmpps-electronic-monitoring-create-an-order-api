@@ -39,7 +39,7 @@ import java.util.concurrent.CompletableFuture
 @Transactional
 class CourtHearingEventListenerTest : IntegrationTestBase() {
   @SpyBean
-  lateinit var repo: FmsSubmissionResultRepository
+  lateinit var fmsSubmissionRepo: FmsSubmissionResultRepository
 
   @SpyBean
   lateinit var eventHandler: HearingEventHandler
@@ -71,7 +71,7 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
       PurgeQueueRequest.builder().queueUrl(courtHearingEventDeadLetterSqsUrl).build(),
     ).get()
     sercoAuthApi.stubGrantToken()
-    repo.deleteAll()
+    fmsSubmissionRepo.deleteAll()
   }
 
   @Test
@@ -84,7 +84,7 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
     assertThat(
       message.messageAttributes()["Error"]!!.stringValue(),
     ).isEqualTo("Malformed event received. Could not parse JSON")
-    val savedEvent = repo.findAll().firstOrNull()
+    val savedEvent = fmsSubmissionRepo.findAll().firstOrNull()
     assertThat(savedEvent).isNull()
     verify(eventHandler, Times(0)).handleHearingEvent(any())
   }
@@ -118,7 +118,7 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
     )
     sendDomainSqsMessage(rawMessage)
     await().until { getNumberOfMessagesCurrentlyOnEventQueue() == 0 }
-    assertThat(repo.count().toInt()).isNotEqualTo(0)
+    assertThat(fmsSubmissionRepo.count().toInt()).isNotEqualTo(0)
   }
 
   fun String.removeWhitespaceAndNewlines(): String = this.replace("(\"[^\"]*\")|\\s".toRegex(), "\$1")
@@ -297,7 +297,7 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
     )
     courtHearingEventListener.onDomainEvent(rawMessage)
     assertThat(getNumberOfMessagesCurrentlyOnDeadLetterQueue()).isEqualTo(0)
-    val savedResult = repo.findAll().first()
+    val savedResult = fmsSubmissionRepo.findAll().first()
     assertThat(savedResult).isNotNull
     val mockDeviceWearerJson = Files.readString(Paths.get("$rootFilePath/expected_fms_device_wearer.json"))
     val mockOrderJson = Files.readString(

@@ -8,6 +8,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Address
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AlcoholMonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringInstallationLocationType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
@@ -21,22 +22,22 @@ import java.time.ZonedDateTime
 import java.util.*
 
 @DataJpaTest
-class OrderRepositoryTest {
+class OrderVersionRepositoryTest {
   @Autowired
   lateinit var orderRepo: OrderRepository
 
-  private val mockOrderId: UUID = UUID.fromString("da69b6d1-fb7f-4513-aee5-bd762cd8921d")
   private val mockUsername: String = "username"
-  private val mockAddressId = UUID.fromString("506fdf2f-7c4e-4bc7-bdb6-e42ccbf2a4f4")
-  private val mockAlcoholMonitoringConditionsId = UUID.fromString(
-    "4f174060-6a26-41d3-ad7d-9b28f607a7df",
-  )
+  private val mockOrderId: UUID = UUID.randomUUID()
+  private val mockAddressId = UUID.randomUUID()
+  private val mockVersionId = UUID.randomUUID()
+  private val mockAlcoholMonitoringConditionsId = UUID.randomUUID()
 
   private val mockStartDate: ZonedDateTime = ZonedDateTime.of(
     LocalDate.of(2025, 1, 1),
     LocalTime.NOON,
     ZoneId.of("UTC"),
   )
+
   private val mockEndDate: ZonedDateTime = ZonedDateTime.of(
     LocalDate.of(2030, 1, 1),
     LocalTime.NOON,
@@ -45,7 +46,7 @@ class OrderRepositoryTest {
 
   private val mockAddress = Address(
     id = mockAddressId,
-    orderId = mockOrderId,
+    versionId = mockVersionId,
     addressType = AddressType.PRIMARY,
     addressUsage = DeviceWearerAddressUsage.NA,
     addressLine1 = "mockAddressLine1",
@@ -57,7 +58,7 @@ class OrderRepositoryTest {
 
   private val updatedMockAddress = Address(
     id = mockAddressId,
-    orderId = mockOrderId,
+    versionId = mockVersionId,
     addressType = AddressType.PRIMARY,
     addressUsage = DeviceWearerAddressUsage.NA,
     addressLine1 = "updatedMockAddressLine1",
@@ -67,59 +68,71 @@ class OrderRepositoryTest {
     postcode = "updatedMockPostcode",
   )
 
-  private val orderWithExistingPrimaryAddressAndRelation = Order(
+  private val orderVersionWithExistingPrimaryAddressAndRelation = Order(
     id = mockOrderId,
-    username = mockUsername,
-    status = OrderStatus.IN_PROGRESS,
-    type = RequestType.REQUEST,
-    monitoringConditionsAlcohol = AlcoholMonitoringConditions(
-      id = mockAlcoholMonitoringConditionsId,
-      orderId = mockOrderId,
-      monitoringType = AlcoholMonitoringType.ALCOHOL_ABSTINENCE,
-      startDate = mockStartDate,
-      endDate = mockEndDate,
-      installationLocation = AlcoholMonitoringInstallationLocationType.PRIMARY,
-      installationAddressId = mockAddressId,
-      prisonName = null,
-      probationOfficeName = null,
+    versions = mutableListOf(
+      OrderVersion(
+        id = mockVersionId,
+        username = mockUsername,
+        status = OrderStatus.IN_PROGRESS,
+        type = RequestType.REQUEST,
+        orderId = mockOrderId,
+        monitoringConditionsAlcohol = AlcoholMonitoringConditions(
+          id = mockAlcoholMonitoringConditionsId,
+          versionId = mockVersionId,
+          monitoringType = AlcoholMonitoringType.ALCOHOL_ABSTINENCE,
+          startDate = mockStartDate,
+          endDate = mockEndDate,
+          installationLocation = AlcoholMonitoringInstallationLocationType.PRIMARY,
+          installationAddressId = mockAddressId,
+          prisonName = null,
+          probationOfficeName = null,
+        ),
+        addresses = mutableListOf(mockAddress),
+      ),
     ),
-    addresses = mutableListOf(mockAddress),
   )
 
-  private val updatedOrderWithExistingPrimaryAddressAndRelation = Order(
+  private val updatedOrderVersionWithExistingPrimaryAddressAndRelation = Order(
     id = mockOrderId,
-    username = mockUsername,
-    status = OrderStatus.IN_PROGRESS,
-    type = RequestType.REQUEST,
-    monitoringConditionsAlcohol = AlcoholMonitoringConditions(
-      id = mockAlcoholMonitoringConditionsId,
-      orderId = mockOrderId,
-      monitoringType = AlcoholMonitoringType.ALCOHOL_ABSTINENCE,
-      startDate = mockStartDate,
-      endDate = mockEndDate,
-      installationLocation = AlcoholMonitoringInstallationLocationType.PRIMARY,
-      installationAddressId = mockAddressId,
-      prisonName = null,
-      probationOfficeName = null,
+    versions = mutableListOf(
+      OrderVersion(
+        id = mockVersionId,
+        username = mockUsername,
+        status = OrderStatus.IN_PROGRESS,
+        type = RequestType.REQUEST,
+        orderId = mockOrderId,
+        monitoringConditionsAlcohol = AlcoholMonitoringConditions(
+          id = mockAlcoholMonitoringConditionsId,
+          versionId = mockVersionId,
+          monitoringType = AlcoholMonitoringType.ALCOHOL_ABSTINENCE,
+          startDate = mockStartDate,
+          endDate = mockEndDate,
+          installationLocation = AlcoholMonitoringInstallationLocationType.PRIMARY,
+          installationAddressId = mockAddressId,
+          prisonName = null,
+          probationOfficeName = null,
+        ),
+        addresses = mutableListOf(updatedMockAddress),
+      ),
     ),
-    addresses = mutableListOf(updatedMockAddress),
   )
 
   fun databaseInsert() {
-    orderRepo.save(orderWithExistingPrimaryAddressAndRelation)
+    orderRepo.save(orderVersionWithExistingPrimaryAddressAndRelation)
   }
 
   @Nested
-  inner class WhenSavingAnOrderThanUpdatesAnAddress {
+  inner class WhenSavingAnOrderVersionThanUpdatesAnAddress {
     @Test
     fun `does not throw an error when other models are linked to that address`() {
       databaseInsert()
 
       assertDoesNotThrow {
-        orderRepo.save(updatedOrderWithExistingPrimaryAddressAndRelation)
+        orderRepo.save(updatedOrderVersionWithExistingPrimaryAddressAndRelation)
       }
       assertDoesNotThrow {
-        orderRepo.findByIdAndUsernameAndStatus(mockOrderId, mockUsername, OrderStatus.IN_PROGRESS)
+        orderRepo.findById(mockOrderId)
       }
     }
   }

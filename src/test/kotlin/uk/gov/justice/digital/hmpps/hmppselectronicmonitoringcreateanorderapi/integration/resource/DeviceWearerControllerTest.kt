@@ -5,13 +5,10 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidationError
 import java.time.LocalDate
 import java.time.LocalTime
@@ -20,9 +17,6 @@ import java.time.ZonedDateTime
 import java.util.*
 
 class DeviceWearerControllerTest : IntegrationTestBase() {
-
-  @Autowired
-  lateinit var orderRepo: OrderRepository
 
   private val mockNomisId: String = "mockNomisId"
   private val mockPncId: String = "mockPncId"
@@ -44,7 +38,7 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
 
   @BeforeEach
   fun setup() {
-    orderRepo.deleteAll()
+    repo.deleteAll()
   }
 
   @Test
@@ -306,10 +300,7 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
 
   @Test
   fun `NoFixedAbode cannot be updated if the order is submitted`() {
-    val order = createOrder()
-
-    order.status = OrderStatus.SUBMITTED
-    orderRepo.save(order)
+    val order = createSubmittedOrder()
 
     webTestClient.put()
       .uri("/api/orders/${order.id}/device-wearer/no-fixed-abode")
@@ -517,10 +508,7 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
 
   @Test
   fun `Identity numbers cannot be updated if the order is submitted`() {
-    val order = createOrder()
-
-    order.status = OrderStatus.SUBMITTED
-    orderRepo.save(order)
+    val order = createSubmittedOrder()
 
     webTestClient.put()
       .uri("/api/orders/${order.id}/device-wearer/identity-numbers")
