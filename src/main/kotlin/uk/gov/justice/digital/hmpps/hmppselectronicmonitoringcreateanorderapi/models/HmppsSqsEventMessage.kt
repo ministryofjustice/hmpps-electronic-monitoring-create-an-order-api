@@ -8,4 +8,17 @@ class HmppsSqsEventMessage(
   @JsonProperty("Type") val type: String,
   @JsonProperty("Message") val message: String,
   @JsonProperty("MessageId") val messageId: String,
+  @JsonProperty("MessageAttributes") val messageAttributes: HmppsSqsMessageAttributes,
+
+)
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+class HmppsSqsMessageAttributes(
+  @JsonProperty("eventType") val eventType: HmppsSqsMessageAttribute,
+)
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+class HmppsSqsMessageAttribute(
+  @JsonProperty("Type") val type: String,
+  @JsonProperty("Value") val value: String,
 )
