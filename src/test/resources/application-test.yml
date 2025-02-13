@@ -47,7 +47,3 @@ SERCO_CLIENT_SECRET: clientSecret
 SERCO_USERNAME: username
 SERCO_PASSWORD: password
 SERCO_URL: http://localhost:8094/
-
-aws:
-  provider: localstack
-  region: eu-west-2

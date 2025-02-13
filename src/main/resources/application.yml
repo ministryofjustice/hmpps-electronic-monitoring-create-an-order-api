@@ -88,6 +88,3 @@ services:
     username: ${SERCO_USERNAME}
     password: ${SERCO_PASSWORD}
     url: ${SERCO_URL}
-
-aws:
-  region: eu-west-2

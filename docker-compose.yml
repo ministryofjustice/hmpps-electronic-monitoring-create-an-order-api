@@ -62,7 +62,6 @@ services:
     volumes:
       - './localstack:/var/lib/localstack'
       - "/var/run/docker.sock:/var/run/docker.sock"
-      - "$PWD/src/test/resources/localstack/setup-aws.sh:/etc/localstack/init/ready.d/init-aws.sh"
     environment:
       - SERVICES=sqs,s3
       - DEFAULT_REGION=eu-west-2
