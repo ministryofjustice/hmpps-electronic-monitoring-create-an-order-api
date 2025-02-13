@@ -90,4 +90,4 @@ services:
     url: ${SERCO_URL}
 
 aws:
-  region-name: eu-west-2
+  region: eu-west-2
