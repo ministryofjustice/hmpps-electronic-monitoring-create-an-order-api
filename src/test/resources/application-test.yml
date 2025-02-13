@@ -16,6 +16,9 @@ spring:
     password:
   cloud:
     aws:
+      credentials:
+        access-key: foobar
+        secret-key: foobar
       region:
         static: eu-west-2
       endpoint: http://127.0.0.1:4566
