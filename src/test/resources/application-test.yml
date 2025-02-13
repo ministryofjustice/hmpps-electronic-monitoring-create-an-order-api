@@ -14,6 +14,11 @@ spring:
     url: 'jdbc:h2:mem:cemo-db;MODE=PostgreSQL'
     username: sa
     password:
+  cloud:
+    aws:
+      region:
+        static: eu-west-2
+      endpoint: http://127.0.0.1:4566
 
 services:
   hmppsauth:
@@ -37,6 +42,9 @@ hmpps.s3:
   provider: localstack
   localstackUrl: http://localhost:4566
   bucketName: testbucket
+
+
+
 
 DOCUMENT_MANAGEMENT_URL:  http://localhost:8092/
 CLIENT_ID: mockClient

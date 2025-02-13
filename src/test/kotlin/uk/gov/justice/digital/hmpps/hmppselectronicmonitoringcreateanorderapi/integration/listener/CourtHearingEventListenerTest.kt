@@ -80,6 +80,7 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
     ).get()
     sercoAuthApi.stubGrantToken()
     repo.deleteAll()
+    s3Uploader.createBucket()
   }
 
   @Test
