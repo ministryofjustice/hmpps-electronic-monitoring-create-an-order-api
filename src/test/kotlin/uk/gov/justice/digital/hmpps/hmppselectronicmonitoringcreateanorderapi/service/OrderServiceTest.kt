@@ -37,6 +37,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderTypeDescription
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.SubmissionStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsDeviceWearerSubmissionResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsMonitoringOrderSubmissionResult
@@ -112,7 +113,7 @@ class OrderServiceTest {
     val order = Order(
       username = "AUTH_ADM",
       status = OrderStatus.IN_PROGRESS,
-      type = OrderType.REQUEST,
+      type = RequestType.REQUEST,
     )
     order.deviceWearer = DeviceWearer(
       orderId = order.id,
@@ -204,7 +205,7 @@ class OrderServiceTest {
     )
     order.monitoringConditions = MonitoringConditions(
       orderId = order.id,
-      orderType = "community",
+      orderType = OrderType.COMMUNITY,
       orderTypeDescription = OrderTypeDescription.DAPOL,
       startDate = mockStartDate,
       endDate = mockEndDate,

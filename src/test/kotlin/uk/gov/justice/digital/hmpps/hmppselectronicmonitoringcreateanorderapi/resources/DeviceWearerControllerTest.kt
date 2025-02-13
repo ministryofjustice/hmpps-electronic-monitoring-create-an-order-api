@@ -65,7 +65,7 @@ class DeviceWearerControllerTest {
       deviceWearerService.updateDeviceWearer(
         username = mockUser,
         orderId = mockOrderId,
-        deviceWearerUpdateRecord = UpdateDeviceWearerDto(
+        updateRecord = UpdateDeviceWearerDto(
           alias = mockAlias,
           firstName = mockFirstName,
           lastName = mockLastName,
@@ -101,7 +101,7 @@ class DeviceWearerControllerTest {
       deviceWearerService.updateDeviceWearer(
         orderId = mockOrderId,
         username = mockUser,
-        deviceWearerUpdateRecord = UpdateDeviceWearerDto(
+        updateRecord = UpdateDeviceWearerDto(
           alias = mockAlias,
           firstName = mockFirstName,
           lastName = mockLastName,

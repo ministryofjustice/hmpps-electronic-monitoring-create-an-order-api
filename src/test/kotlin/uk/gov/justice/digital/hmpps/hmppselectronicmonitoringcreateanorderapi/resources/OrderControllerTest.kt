@@ -12,7 +12,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.OrderSearchCriteria
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.CreateOrderDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.OrderController
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.OrderService
 import java.util.*
@@ -31,7 +31,7 @@ class OrderControllerTest {
 
   @Test
   fun `Create a new order and return`() {
-    val mockOrder = Order(username = "mockUser", status = OrderStatus.IN_PROGRESS, type = OrderType.REQUEST)
+    val mockOrder = Order(username = "mockUser", status = OrderStatus.IN_PROGRESS, type = RequestType.REQUEST)
     `when`(orderService.createOrder("mockUser", CreateOrderDto())).thenReturn(mockOrder)
     `when`(authentication.name).thenReturn("mockUser")
 
@@ -45,7 +45,7 @@ class OrderControllerTest {
 
   @Test
   fun `Query a single order and return`() {
-    val order = Order(username = "mockUser", status = OrderStatus.IN_PROGRESS, type = OrderType.REQUEST)
+    val order = Order(username = "mockUser", status = OrderStatus.IN_PROGRESS, type = RequestType.REQUEST)
 
     `when`(orderService.getOrder("mockUser", order.id)).thenReturn(order)
     `when`(authentication.name).thenReturn("mockUser")
@@ -57,8 +57,8 @@ class OrderControllerTest {
   @Test
   fun `Query orders for current user and return`() {
     val orders: List<Order> = listOf(
-      Order(username = "mockUser", status = OrderStatus.IN_PROGRESS, type = OrderType.REQUEST),
-      Order(username = "mockUser", status = OrderStatus.IN_PROGRESS, type = OrderType.REQUEST),
+      Order(username = "mockUser", status = OrderStatus.IN_PROGRESS, type = RequestType.REQUEST),
+      Order(username = "mockUser", status = OrderStatus.IN_PROGRESS, type = RequestType.REQUEST),
     )
 
     `when`(orderService.listOrders(OrderSearchCriteria(username = "mockUser"))).thenReturn(orders)

@@ -39,6 +39,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderTypeDescription
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.SubmissionStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.VariationType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsAttachmentResponse
@@ -92,7 +93,7 @@ class OrderControllerTest : IntegrationTestBase() {
       assertThat(orders).hasSize(1)
       assertThat(orders[0].username).isEqualTo("AUTH_ADM")
       assertThat(orders[0].status).isEqualTo(OrderStatus.IN_PROGRESS)
-      assertThat(orders[0].type).isEqualTo(OrderType.REQUEST)
+      assertThat(orders[0].type).isEqualTo(RequestType.REQUEST)
       assertThat(orders[0].id).isNotNull()
       assertThat(UUID.fromString(orders[0].id.toString())).isEqualTo(orders[0].id)
     }
@@ -121,7 +122,7 @@ class OrderControllerTest : IntegrationTestBase() {
       assertThat(orders).hasSize(1)
       assertThat(orders[0].username).isEqualTo("AUTH_ADM")
       assertThat(orders[0].status).isEqualTo(OrderStatus.IN_PROGRESS)
-      assertThat(orders[0].type).isEqualTo(OrderType.VARIATION)
+      assertThat(orders[0].type).isEqualTo(RequestType.VARIATION)
       assertThat(orders[0].id).isNotNull()
       assertThat(UUID.fromString(orders[0].id.toString())).isEqualTo(orders[0].id)
     }
@@ -572,42 +573,38 @@ class OrderControllerTest : IntegrationTestBase() {
         HttpStatus.OK,
         FmsResponse(result = listOf(FmsResult(message = "", id = "MockDeviceWearerId"))),
       )
+
       sercoApi.stubCreateMonitoringOrder(
         HttpStatus.OK,
         FmsResponse(result = listOf(FmsResult(message = "", id = "MockMonitoringOrderId"))),
       )
+
       sercoApi.stubSubmitAttachment(
         HttpStatus.OK,
         FmsAttachmentResponse(
           result = FmsAttachmentResult(
-            sizeBytes = "",
-            fileName = order.additionalDocuments.first().fileName!!,
-            sysModCount = "",
-            averageImageColor = "",
-            imageWidth = "",
-            sysUpdatedOn = "",
-            sysTags = "",
-            createdByName = "",
+            fileName = order.additionalDocuments[0].fileName!!,
             tableName = "x_serg2_ems_csm_sr_mo_new",
             sysId = "MockSysId",
-            updatedByName = "",
-            imageHeight = "",
-            sysUpdatedBy = "",
-            downloadLink = "",
-            contentType = "",
-            sysCreatedOn = "",
-            sizeCompressed = "",
-            compressed = "",
-            state = "",
             tableSysId = "MockDeviceWearerId",
-            chunkSizeBytes = "",
-            hash = "",
-            sysCreatedBy = "",
+          ),
+        ),
+      )
+
+      sercoApi.stubSubmitAttachment(
+        HttpStatus.OK,
+        FmsAttachmentResponse(
+          result = FmsAttachmentResult(
+            fileName = order.enforcementZoneConditions[0].fileName!!,
+            tableName = "x_serg2_ems_csm_sr_mo_new",
+            sysId = "MockSysId",
+            tableSysId = "MockDeviceWearerId",
           ),
         ),
       )
 
       documentApi.stubGetDocument(order.additionalDocuments.first().id.toString())
+      documentApi.stubGetDocument(order.enforcementZoneConditions[0].fileId.toString())
 
       webTestClient.post()
         .uri("/api/orders/${order.id}/submit")
@@ -643,11 +640,11 @@ class OrderControllerTest : IntegrationTestBase() {
       	"address_3": "Random County",
       	"address_4": "United Kingdom",
       	"address_post_code": "SW11 1NC",
-      	"secondary_address_1": "",
-      	"secondary_address_2": "",
-      	"secondary_address_3": "",
-      	"secondary_address_4": "",
-      	"secondary_address_post_code": "",
+      	"secondary_address_1": "22 Somewhere Street",
+        "secondary_address_2": "Nowhere City",
+        "secondary_address_3": "Random County",
+        "secondary_address_4": "United Kingdom",
+        "secondary_address_post_code": "SW11 1NC",
       	"phone_number": "07401111111",
       	"risk_serious_harm": "",
       	"risk_self_harm": "",
@@ -729,7 +726,7 @@ class OrderControllerTest : IntegrationTestBase() {
       	"order_id": "${order.id}",
       	"order_request_type": "New Order",
       	"order_start": "${mockStartDate.format(dateTimeFormatter)}",
-      	"order_type": "community",
+      	"order_type": "Community",
       	"order_type_description": "DAPOL",
       	"order_type_detail": "",
       	"order_variation_date": "",
@@ -925,10 +922,12 @@ class OrderControllerTest : IntegrationTestBase() {
         HttpStatus.OK,
         FmsResponse(result = listOf(FmsResult(message = "", id = "MockDeviceWearerId"))),
       )
+
       sercoApi.stubCreateMonitoringOrder(
         HttpStatus.OK,
         FmsResponse(result = listOf(FmsResult(message = "", id = "MockMonitoringOrderId"))),
       )
+
       sercoApi.stubSubmitAttachment(
         HttpStatus.OK,
         FmsAttachmentResponse(
@@ -953,8 +952,21 @@ class OrderControllerTest : IntegrationTestBase() {
         ),
       )
 
+      sercoApi.stubSubmitAttachment(
+        HttpStatus.OK,
+        FmsAttachmentResponse(
+          result = FmsAttachmentResult(
+            fileName = order.enforcementZoneConditions[0].fileName!!,
+            tableName = "x_serg2_ems_csm_sr_mo_new",
+            sysId = "MockSysId",
+            tableSysId = "MockDeviceWearerId",
+          ),
+        ),
+      )
+
       documentApi.stubGetDocument(order.additionalDocuments[0].id.toString())
       documentApi.stubGetDocument(order.additionalDocuments[1].id.toString())
+      documentApi.stubGetDocument(order.enforcementZoneConditions[0].fileId.toString())
 
       webTestClient.post()
         .uri("/api/orders/${order.id}/submit")
@@ -990,11 +1002,11 @@ class OrderControllerTest : IntegrationTestBase() {
       	"address_3": "Random County",
       	"address_4": "United Kingdom",
       	"address_post_code": "SW11 1NC",
-      	"secondary_address_1": "",
-      	"secondary_address_2": "",
-      	"secondary_address_3": "",
-      	"secondary_address_4": "",
-      	"secondary_address_post_code": "",
+      	"secondary_address_1": "22 Somewhere Street",
+        "secondary_address_2": "Nowhere City",
+        "secondary_address_3": "Random County",
+        "secondary_address_4": "United Kingdom",
+        "secondary_address_post_code": "SW11 1NC",
       	"phone_number": "07401111111",
       	"risk_serious_harm": "",
       	"risk_self_harm": "",
@@ -1076,7 +1088,7 @@ class OrderControllerTest : IntegrationTestBase() {
       	"order_id": "${order.id}",
       	"order_request_type": "New Order",
       	"order_start": "${mockStartDate.format(dateTimeFormatter)}",
-      	"order_type": "community",
+      	"order_type": "Community",
       	"order_type_description": "DAPOL",
       	"order_type_detail": "",
       	"order_variation_date": "",
@@ -1261,6 +1273,18 @@ class OrderControllerTest : IntegrationTestBase() {
           ),
         )
 
+      assertThat(submitResult.attachmentResults[2])
+        .usingRecursiveComparison()
+        .ignoringFields("id")
+        .isEqualTo(
+          FmsAttachmentSubmissionResult(
+            status = SubmissionStatus.SUCCESS,
+            sysId = "MockSysId",
+            fileType = DocumentType.ENFORCEMENT_ZONE_MAP.toString(),
+            attachmentId = order.enforcementZoneConditions[0].fileId.toString(),
+          ),
+        )
+
       val updatedOrder = repo.findById(order.id).get()
       assertThat(updatedOrder.fmsResultId).isEqualTo(submitResult.id)
       assertThat(updatedOrder.status).isEqualTo(OrderStatus.SUBMITTED)
@@ -1268,7 +1292,7 @@ class OrderControllerTest : IntegrationTestBase() {
 
     @Test
     fun `It should update order with device wearer id, monitoring id & order status, and return 200 for a variation`() {
-      val order = createAndPersistReadyToSubmitOrder(noFixedAddress = false, orderType = OrderType.VARIATION)
+      val order = createAndPersistReadyToSubmitOrder(noFixedAddress = false, requestType = RequestType.VARIATION)
       sercoAuthApi.stubGrantToken()
 
       sercoApi.stubCreateDeviceWearer(
@@ -1313,11 +1337,11 @@ class OrderControllerTest : IntegrationTestBase() {
       	"address_3": "Random County",
       	"address_4": "United Kingdom",
       	"address_post_code": "SW11 1NC",
-      	"secondary_address_1": "",
-      	"secondary_address_2": "",
-      	"secondary_address_3": "",
-      	"secondary_address_4": "",
-      	"secondary_address_post_code": "",
+      	"secondary_address_1": "22 Somewhere Street",
+        "secondary_address_2": "Nowhere City",
+        "secondary_address_3": "Random County",
+        "secondary_address_4": "United Kingdom",
+        "secondary_address_post_code": "SW11 1NC",
       	"phone_number": "07401111111",
       	"risk_serious_harm": "",
       	"risk_self_harm": "",
@@ -1398,7 +1422,7 @@ class OrderControllerTest : IntegrationTestBase() {
       	"order_id": "${order.id}",
       	"order_request_type": "Variation",
       	"order_start": "${mockStartDate.format(dateTimeFormatter)}",
-      	"order_type": "community",
+      	"order_type": "Community",
       	"order_type_description": "DAPOL",
       	"order_type_detail": "",
       	"order_variation_date": "${mockStartDate.format(dateTimeFormatter)}",
@@ -1569,10 +1593,26 @@ class OrderControllerTest : IntegrationTestBase() {
         HttpStatus.OK,
         FmsResponse(result = listOf(FmsResult(message = "", id = "MockDeviceWearerId"))),
       )
+
       sercoApi.stubCreateMonitoringOrder(
         HttpStatus.OK,
         FmsResponse(result = listOf(FmsResult(message = "", id = "MockMonitoringOrderId"))),
       )
+
+      sercoApi.stubSubmitAttachment(
+        HttpStatus.OK,
+        FmsAttachmentResponse(
+          result = FmsAttachmentResult(
+            fileName = order.enforcementZoneConditions[0].fileName!!,
+            tableName = "x_serg2_ems_csm_sr_mo_new",
+            sysId = "MockSysId",
+            tableSysId = "MockDeviceWearerId",
+          ),
+        ),
+      )
+
+      documentApi.stubGetDocument(order.enforcementZoneConditions[0].fileId.toString())
+
       webTestClient.post()
         .uri("/api/orders/${order.id}/submit")
         .headers(setAuthorisation())
@@ -1647,6 +1687,19 @@ class OrderControllerTest : IntegrationTestBase() {
       JsonPathExpectationsHelper("installation_address_3").assertValue(fmsOrderRequest, "Random County")
       JsonPathExpectationsHelper("installation_address_4").assertValue(fmsOrderRequest, "United Kingdom")
       JsonPathExpectationsHelper("installation_address_post_code").assertValue(fmsOrderRequest, "SW11 1NC")
+
+      assertThat(submitResult.attachmentResults[0])
+        .usingRecursiveComparison()
+        .ignoringFields("id")
+        .isEqualTo(
+          FmsAttachmentSubmissionResult(
+            status = SubmissionStatus.SUCCESS,
+            sysId = "MockSysId",
+            fileType = DocumentType.ENFORCEMENT_ZONE_MAP.toString(),
+            attachmentId = order.enforcementZoneConditions[0].fileId.toString(),
+          ),
+        )
+
       val updatedOrder = repo.findById(order.id).get()
       assertThat(updatedOrder.fmsResultId).isEqualTo(submitResult.id)
     }
@@ -1655,14 +1708,14 @@ class OrderControllerTest : IntegrationTestBase() {
   fun createReadyToSubmitOrder(
     id: UUID = UUID.randomUUID(),
     noFixedAddress: Boolean = false,
-    orderType: OrderType = OrderType.REQUEST,
+    requestType: RequestType = RequestType.REQUEST,
     documents: MutableList<AdditionalDocument> = mutableListOf(),
   ): Order {
     val order = Order(
       id = id,
       username = "AUTH_ADM",
       status = OrderStatus.IN_PROGRESS,
-      type = orderType,
+      type = requestType,
     )
 
     order.deviceWearer = DeviceWearer(
@@ -1756,7 +1809,7 @@ class OrderControllerTest : IntegrationTestBase() {
 
     order.monitoringConditions = MonitoringConditions(
       orderId = order.id,
-      orderType = "community",
+      orderType = OrderType.COMMUNITY,
       orderTypeDescription = OrderTypeDescription.DAPOL,
       startDate = mockStartDate,
       endDate = mockEndDate,
@@ -1815,6 +1868,8 @@ class OrderControllerTest : IntegrationTestBase() {
         startDate = mockStartDate,
         endDate = mockEndDate,
         zoneType = EnforcementZoneType.EXCLUSION,
+        fileId = UUID.randomUUID(),
+        fileName = "MockMapFile.jpeg",
       ),
     )
 
@@ -1856,7 +1911,7 @@ class OrderControllerTest : IntegrationTestBase() {
       notifyingOrganisationEmail = "",
     )
 
-    if (order.type === OrderType.VARIATION) {
+    if (order.type === RequestType.VARIATION) {
       order.variationDetails = VariationDetails(
         orderId = order.id,
         variationType = VariationType.ADDRESS,
@@ -1870,10 +1925,10 @@ class OrderControllerTest : IntegrationTestBase() {
   fun createAndPersistReadyToSubmitOrder(
     id: UUID = UUID.randomUUID(),
     noFixedAddress: Boolean = false,
-    orderType: OrderType = OrderType.REQUEST,
+    requestType: RequestType = RequestType.REQUEST,
     documents: MutableList<AdditionalDocument> = mutableListOf(),
   ): Order {
-    val order = createReadyToSubmitOrder(id, noFixedAddress, orderType, documents)
+    val order = createReadyToSubmitOrder(id, noFixedAddress, requestType, documents)
     repo.save(order)
     return order
   }

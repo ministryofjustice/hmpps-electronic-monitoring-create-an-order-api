@@ -1,29 +1,23 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.resource
 
+import com.github.tomakehurst.wiremock.client.WireMock.deleteRequestedFor
+import com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor
+import com.github.tomakehurst.wiremock.client.WireMock.urlMatching
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.mockito.internal.verification.Times
-import org.mockito.kotlin.argumentCaptor
-import org.mockito.kotlin.verify
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.mock.mockito.SpyBean
-import org.springframework.core.io.ByteArrayResource
 import org.springframework.http.HttpStatus.BAD_REQUEST
+import org.springframework.http.HttpStatus.NOT_FOUND
 import org.springframework.http.MediaType
-import org.springframework.http.client.MultipartBodyBuilder
-import org.springframework.mock.web.MockMultipartFile
 import org.springframework.web.reactive.function.BodyInserters
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.DocumentApiClient
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.HmppsDocumentManagementApiExtension.Companion.documentApi
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.EnforcementZoneConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.documentmanagement.DocumentUploadResponse
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.EnforcementZoneType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderType
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.EnforcementZoneRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidationError
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
@@ -37,14 +31,16 @@ class EnforcementZoneControllerTest : IntegrationTestBase() {
   @Autowired
   lateinit var orderRepo: OrderRepository
 
-  @SpyBean
-  lateinit var repo: EnforcementZoneRepository
-
-  @SpyBean
-  lateinit var apiCLient: DocumentApiClient
-
-  private val mockStartDate = ZonedDateTime.now(ZoneId.of("UTC")).plusMonths(1)
-  private val mockEndDate = ZonedDateTime.now(ZoneId.of("UTC")).plusMonths(2)
+  private val mockStartDate = ZonedDateTime.of(
+    LocalDate.now(ZoneId.of("UTC")),
+    LocalTime.NOON,
+    ZoneId.of("UTC"),
+  ).plusMonths(1)
+  private val mockEndDate = ZonedDateTime.of(
+    LocalDate.now(ZoneId.of("UTC")),
+    LocalTime.NOON,
+    ZoneId.of("UTC"),
+  ).plusMonths(2)
   private val mockPastStartDate = ZonedDateTime.of(
     LocalDate.of(1970, 2, 1),
     LocalTime.NOON,
@@ -52,75 +48,83 @@ class EnforcementZoneControllerTest : IntegrationTestBase() {
   )
   private val mockPastEndDate = mockPastStartDate.plusDays(1)
   private final val mockUser = "AUTH_ADM"
-  private final val mockOrder = Order(username = mockUser, status = OrderStatus.IN_PROGRESS, type = OrderType.REQUEST)
 
   @BeforeEach
   fun setup() {
     orderRepo.deleteAll()
-    repo.deleteAll()
-
-    orderRepo.save(mockOrder)
   }
 
-  @Test
-  fun `Enforcement zone for an order created by a different user are not update-able`() {
-    val order = createOrder()
+  @Nested
+  @DisplayName("PUT /api/orders/{orderId}/enforcementZone")
+  inner class UpdateEnforcementZone {
+    @Test
+    fun `it should return an error if the order is not created by the user`() {
+      val order = createOrder()
 
-    val result = webTestClient.put()
-      .uri("/api/orders/${order.id}/enforcementZone")
-      .contentType(MediaType.APPLICATION_JSON)
-      .body(
-        BodyInserters.fromValue(
-          mockRequestBody(order.id),
+      val result = webTestClient.put()
+        .uri("/api/orders/${order.id}/enforcementZone")
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(
+          BodyInserters.fromValue(
+            mockRequestBody(order.id),
+          ),
+        )
+        .headers(setAuthorisation("AUTH_ADM_2"))
+        .exchange()
+        .expectStatus()
+        .isNotFound
+        .expectBodyList(ErrorResponse::class.java)
+        .returnResult()
+
+      Assertions.assertThat(result.responseBody!!).contains(
+        ErrorResponse(
+          status = NOT_FOUND,
+          developerMessage = "An editable order with ${order.id} does not exist",
+          userMessage = "Not Found",
         ),
       )
-      .headers(setAuthorisation("AUTH_ADM_2"))
-      .exchange()
-      .expectStatus()
-      .isNotFound
-      .expectBodyList(ErrorResponse::class.java)
-      .returnResult()
-    val error = result.responseBody!!.first()
-    Assertions.assertThat(
-      error.developerMessage,
-    ).isEqualTo("An editable order with ${order.id} does not exist")
-  }
+    }
 
-  @Test
-  fun `Enforcement zone for an order already submitted are not update-able`() {
-    val order = createOrder()
-    order.status = OrderStatus.SUBMITTED
-    orderRepo.save(order)
-    val result = webTestClient.put()
-      .uri("/api/orders/${order.id}/enforcementZone")
-      .contentType(MediaType.APPLICATION_JSON)
-      .body(
-        BodyInserters.fromValue(
-          mockRequestBody(order.id),
+    @Test
+    fun `it should return an error if the order is in a submitted state`() {
+      val order = createOrder()
+      order.status = OrderStatus.SUBMITTED
+      orderRepo.save(order)
+
+      val result = webTestClient.put()
+        .uri("/api/orders/${order.id}/enforcementZone")
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(
+          BodyInserters.fromValue(
+            mockRequestBody(order.id),
+          ),
+        )
+        .headers(setAuthorisation(mockUser))
+        .exchange()
+        .expectStatus()
+        .isNotFound
+        .expectBodyList(ErrorResponse::class.java)
+        .returnResult()
+
+      Assertions.assertThat(result.responseBody!!).contains(
+        ErrorResponse(
+          status = NOT_FOUND,
+          developerMessage = "An editable order with ${order.id} does not exist",
+          userMessage = "Not Found",
         ),
       )
-      .headers(setAuthorisation(mockUser))
-      .exchange()
-      .expectStatus()
-      .isNotFound
-      .expectBodyList(ErrorResponse::class.java)
-      .returnResult()
-    val error = result.responseBody!!.first()
-    Assertions.assertThat(
-      error.developerMessage,
-    ).isEqualTo("An editable order with ${order.id} does not exist")
-  }
+    }
 
-  @Test
-  fun `Should return error when enforcement zone is not valid`() {
-    val order = createOrder()
+    @Test
+    fun `it should return a validation error when request is not valid`() {
+      val order = createOrder()
 
-    val result = webTestClient.put()
-      .uri("/api/orders/${order.id}/enforcementZone")
-      .contentType(MediaType.APPLICATION_JSON)
-      .body(
-        BodyInserters.fromValue(
-          """
+      val result = webTestClient.put()
+        .uri("/api/orders/${order.id}/enforcementZone")
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(
+          BodyInserters.fromValue(
+            """
             {
               "orderId": "${order.id}",
               "zoneType": null,
@@ -130,257 +134,408 @@ class EnforcementZoneControllerTest : IntegrationTestBase() {
               "duration": null,
               "zoneId": null
             }
-          """.trimIndent(),
+            """.trimIndent(),
 
-        ),
-      )
-      .headers(setAuthorisation(mockUser))
-      .exchange()
-      .expectStatus()
-      .isBadRequest
-      .expectBodyList(ValidationError::class.java)
-      .returnResult()
-    Assertions.assertThat(result.responseBody).isNotNull
-    Assertions.assertThat(result.responseBody).hasSize(4)
-
-    Assertions.assertThat(result.responseBody!!).contains(
-      ValidationError("zoneType", "Enforcement zone type is required"),
-    )
-    Assertions.assertThat(result.responseBody!!).contains(
-      ValidationError("startDate", "Enforcement zone start date is required"),
-    )
-    Assertions.assertThat(result.responseBody!!).contains(
-      ValidationError("description", "Enforcement zone description is required"),
-    )
-    Assertions.assertThat(result.responseBody!!).contains(
-      ValidationError("duration", "Enforcement zone duration is required"),
-    )
-  }
-
-  @Test
-  fun `Should return error when enforcement zone end date is in the past`() {
-    val order = createOrder()
-
-    val result = webTestClient.put()
-      .uri("/api/orders/${order.id}/enforcementZone")
-      .contentType(MediaType.APPLICATION_JSON)
-      .body(
-        BodyInserters.fromValue(
-          mockRequestBody(
-            order.id,
-            startDate = mockPastStartDate,
-            endDate = mockPastEndDate,
           ),
-        ),
+        )
+        .headers(setAuthorisation(mockUser))
+        .exchange()
+        .expectStatus()
+        .isBadRequest
+        .expectBodyList(ValidationError::class.java)
+        .returnResult()
+
+      Assertions.assertThat(result.responseBody).isNotNull
+      Assertions.assertThat(result.responseBody).hasSize(4)
+
+      Assertions.assertThat(result.responseBody!!).contains(
+        ValidationError("zoneType", "Enforcement zone type is required"),
       )
-      .headers(setAuthorisation(mockUser))
-      .exchange()
-      .expectStatus()
-      .isBadRequest
-      .expectBodyList(ValidationError::class.java)
-      .returnResult()
-    Assertions.assertThat(result.responseBody).isNotNull
-    Assertions.assertThat(result.responseBody).hasSize(1)
-
-    Assertions.assertThat(result.responseBody!!).contains(
-      ValidationError("endDate", "Enforcement zone end date must be in the future"),
-    )
-  }
-
-  @Test
-  fun `Should not return error when enforcement zone start date is in the past`() {
-    val order = createOrder()
-
-    webTestClient.put()
-      .uri("/api/orders/${order.id}/enforcementZone")
-      .contentType(MediaType.APPLICATION_JSON)
-      .body(
-        BodyInserters.fromValue(
-          mockRequestBody(
-            order.id,
-            startDate = mockPastStartDate,
-          ),
-        ),
+      Assertions.assertThat(result.responseBody!!).contains(
+        ValidationError("startDate", "Enforcement zone start date is required"),
       )
-      .headers(setAuthorisation(mockUser))
-      .exchange()
-      .expectStatus()
-      .isOk()
-      .expectBody(EnforcementZoneConditions::class.java)
-  }
-
-  @Test
-  fun `Should return error when enforcement zone end date is not after start date`() {
-    val order = createOrder()
-
-    val result = webTestClient.put()
-      .uri("/api/orders/${order.id}/enforcementZone")
-      .contentType(MediaType.APPLICATION_JSON)
-      .body(
-        BodyInserters.fromValue(
-          mockRequestBody(
-            order.id,
-            startDate = mockStartDate,
-            endDate = mockStartDate.minusDays(1),
-          ),
-        ),
+      Assertions.assertThat(result.responseBody!!).contains(
+        ValidationError("description", "Enforcement zone description is required"),
       )
-      .headers(setAuthorisation(mockUser))
-      .exchange()
-      .expectStatus()
-      .isBadRequest
-      .expectBodyList(ValidationError::class.java)
-      .returnResult()
-    Assertions.assertThat(result.responseBody).isNotNull
-    Assertions.assertThat(result.responseBody).hasSize(1)
-
-    Assertions.assertThat(result.responseBody!!).contains(
-      ValidationError("endDate", "End date must be after start date"),
-    )
-  }
-
-  @Test
-  fun `Should replace the enforcement zone condition and clear file in document api`() {
-    val zone = EnforcementZoneConditions(
-      zoneId = 0,
-      zoneType = EnforcementZoneType.EXCLUSION,
-      duration = "ExistingDuration",
-      orderId = mockOrder.id,
-      description = "ExistingDescription",
-      startDate = ZonedDateTime.now(ZoneId.of("UTC")).plusDays(1),
-      endDate = ZonedDateTime.now(ZoneId.of("UTC")).plusDays(2),
-      fileId = UUID.randomUUID(),
-    )
-    mockOrder.enforcementZoneConditions.add(zone)
-    orderRepo.save(mockOrder)
-    documentApi.stubDeleteDocument(zone.fileId.toString())
-
-    webTestClient.put()
-      .uri("/api/orders/${mockOrder.id}/enforcementZone")
-      .contentType(MediaType.APPLICATION_JSON)
-      .body(
-        BodyInserters.fromValue(
-          mockRequestBody(mockOrder.id),
-        ),
+      Assertions.assertThat(result.responseBody!!).contains(
+        ValidationError("duration", "Enforcement zone duration is required"),
       )
-      .headers(setAuthorisation(mockUser))
-      .exchange()
-      .expectStatus()
-      .isOk
-    verify(repo, Times(1)).deleteById(zone.id)
-
-    argumentCaptor<EnforcementZoneConditions>().apply {
-      verify(repo, Times(1)).save(capture())
-      Assertions.assertThat(firstValue.orderId).isEqualTo(mockOrder.id)
-      Assertions.assertThat(firstValue.startDate).isEqualTo(mockStartDate)
-      Assertions.assertThat(firstValue.endDate).isEqualTo(mockEndDate)
-      Assertions.assertThat(firstValue.description).isEqualTo("MockDescription")
-      Assertions.assertThat(firstValue.duration).isEqualTo("MockDuration")
-      Assertions.assertThat(firstValue.zoneId).isEqualTo(0)
     }
 
-    verify(apiCLient, Times(1)).deleteDocument(zone.fileId.toString())
+    @Test
+    fun `it should return a validation error when end date is in the past`() {
+      val order = createOrder()
+
+      val result = webTestClient.put()
+        .uri("/api/orders/${order.id}/enforcementZone")
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(
+          BodyInserters.fromValue(
+            mockRequestBody(
+              order.id,
+              startDate = mockPastStartDate,
+              endDate = mockPastEndDate,
+            ),
+          ),
+        )
+        .headers(setAuthorisation(mockUser))
+        .exchange()
+        .expectStatus()
+        .isBadRequest
+        .expectBodyList(ValidationError::class.java)
+        .returnResult()
+
+      Assertions.assertThat(result.responseBody).isNotNull
+      Assertions.assertThat(result.responseBody).hasSize(1)
+
+      Assertions.assertThat(result.responseBody!!).contains(
+        ValidationError("endDate", "Enforcement zone end date must be in the future"),
+      )
+    }
+
+    @Test
+    fun `it should not return a validation error when start date is in the past`() {
+      val order = createOrder()
+
+      webTestClient.put()
+        .uri("/api/orders/${order.id}/enforcementZone")
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(
+          BodyInserters.fromValue(
+            mockRequestBody(
+              order.id,
+              startDate = mockPastStartDate,
+            ),
+          ),
+        )
+        .headers(setAuthorisation(mockUser))
+        .exchange()
+        .expectStatus()
+        .isOk()
+    }
+
+    @Test
+    fun `it should return a validation error when end date is before start date`() {
+      val order = createOrder()
+
+      val result = webTestClient.put()
+        .uri("/api/orders/${order.id}/enforcementZone")
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(
+          BodyInserters.fromValue(
+            mockRequestBody(
+              order.id,
+              startDate = mockStartDate,
+              endDate = mockStartDate.minusDays(1),
+            ),
+          ),
+        )
+        .headers(setAuthorisation(mockUser))
+        .exchange()
+        .expectStatus()
+        .isBadRequest
+        .expectBodyList(ValidationError::class.java)
+        .returnResult()
+
+      Assertions.assertThat(result.responseBody).isNotNull
+      Assertions.assertThat(result.responseBody).hasSize(1)
+
+      Assertions.assertThat(result.responseBody!!).contains(
+        ValidationError("endDate", "End date must be after start date"),
+      )
+    }
+
+    @Test
+    fun `it should create 2 enforcement zone conditions`() {
+      val order = createOrder()
+
+      // Create first enforcement zone
+      webTestClient.put()
+        .uri("/api/orders/${order.id}/enforcementZone")
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(
+          BodyInserters.fromValue(
+            mockRequestBody(
+              orderId = order.id,
+              zoneId = 0,
+            ),
+          ),
+        )
+        .headers(setAuthorisation(mockUser))
+        .exchange()
+        .expectStatus()
+        .isOk
+
+      // Create second enforcement zone
+      webTestClient.put()
+        .uri("/api/orders/${order.id}/enforcementZone")
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(
+          BodyInserters.fromValue(
+            mockRequestBody(
+              orderId = order.id,
+              zoneId = 1,
+            ),
+          ),
+        )
+        .headers(setAuthorisation(mockUser))
+        .exchange()
+        .expectStatus()
+        .isOk
+
+      // Get updated order
+      val updatedOrder = webTestClient.get()
+        .uri("/api/orders/${order.id}")
+        .headers(setAuthorisation("AUTH_ADM"))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody(Order::class.java)
+        .returnResult()
+        .responseBody!!
+
+      // Verify order state matches expected state
+      Assertions.assertThat(updatedOrder.enforcementZoneConditions).hasSize(2)
+      Assertions.assertThat(updatedOrder.enforcementZoneConditions[0].orderId).isEqualTo(order.id)
+      Assertions.assertThat(updatedOrder.enforcementZoneConditions[0].startDate).isEqualTo(mockStartDate)
+      Assertions.assertThat(updatedOrder.enforcementZoneConditions[0].endDate).isEqualTo(mockEndDate)
+      Assertions.assertThat(updatedOrder.enforcementZoneConditions[0].description).isEqualTo("MockDescription")
+      Assertions.assertThat(updatedOrder.enforcementZoneConditions[0].duration).isEqualTo("MockDuration")
+      Assertions.assertThat(updatedOrder.enforcementZoneConditions[0].zoneId).isEqualTo(0)
+      Assertions.assertThat(updatedOrder.enforcementZoneConditions[1].orderId).isEqualTo(order.id)
+      Assertions.assertThat(updatedOrder.enforcementZoneConditions[1].startDate).isEqualTo(mockStartDate)
+      Assertions.assertThat(updatedOrder.enforcementZoneConditions[1].endDate).isEqualTo(mockEndDate)
+      Assertions.assertThat(updatedOrder.enforcementZoneConditions[1].description).isEqualTo("MockDescription")
+      Assertions.assertThat(updatedOrder.enforcementZoneConditions[1].duration).isEqualTo("MockDuration")
+      Assertions.assertThat(updatedOrder.enforcementZoneConditions[1].zoneId).isEqualTo(1)
+    }
+
+    @Test
+    fun `it should replace the enforcement zone condition`() {
+      val order = createOrder()
+
+      // Create first enforcement zone
+      webTestClient.put()
+        .uri("/api/orders/${order.id}/enforcementZone")
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(
+          BodyInserters.fromValue(
+            mockRequestBody(
+              orderId = order.id,
+              duration = "ExistingDurationOld",
+              description = "ExistingDescriptionOld",
+            ),
+          ),
+        )
+        .headers(setAuthorisation(mockUser))
+        .exchange()
+        .expectStatus()
+        .isOk
+
+      // Update enforcement zone
+      webTestClient.put()
+        .uri("/api/orders/${order.id}/enforcementZone")
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(
+          BodyInserters.fromValue(
+            mockRequestBody(order.id),
+          ),
+        )
+        .headers(setAuthorisation(mockUser))
+        .exchange()
+        .expectStatus()
+        .isOk
+
+      // Get updated order
+      val updatedOrder = webTestClient.get()
+        .uri("/api/orders/${order.id}")
+        .headers(setAuthorisation("AUTH_ADM"))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody(Order::class.java)
+        .returnResult()
+        .responseBody!!
+
+      // Verify order state matches expected state
+      Assertions.assertThat(updatedOrder.enforcementZoneConditions).hasSize(1)
+      Assertions.assertThat(updatedOrder.enforcementZoneConditions[0].orderId).isEqualTo(order.id)
+      Assertions.assertThat(updatedOrder.enforcementZoneConditions[0].startDate).isEqualTo(mockStartDate)
+      Assertions.assertThat(updatedOrder.enforcementZoneConditions[0].endDate).isEqualTo(mockEndDate)
+      Assertions.assertThat(updatedOrder.enforcementZoneConditions[0].description).isEqualTo("MockDescription")
+      Assertions.assertThat(updatedOrder.enforcementZoneConditions[0].duration).isEqualTo("MockDuration")
+      Assertions.assertThat(updatedOrder.enforcementZoneConditions[0].zoneId).isEqualTo(0)
+    }
   }
 
-  @Test
-  fun `file extension not allow return bad request with validation error`() {
-    val bodyBuilder = MultipartBodyBuilder()
-    bodyBuilder.part("file", ByteArrayResource(mockFile("filename2.txt").bytes))
-      .header("Content-Disposition", "form-data; name=file; filename=filename2.txt")
+  @Nested
+  @DisplayName("POST /api/orders/{orderId}/enforcementZone/{zoneId}/attachment")
+  inner class UploadAttachment {
+    @Suppress("ktlint:standard:max-line-length")
+    private val validationMessage = "Validation failure: Unsupported or missing file type txt. Supported file types: pdf, jpeg, jpg"
 
-    val result = webTestClient.post()
-      .uri("/api/orders/${mockOrder.id}/enforcementZone/0/attachment")
-      .bodyValue(bodyBuilder.build())
-      .headers(setAuthorisation(mockUser))
-      .exchange()
-      .expectStatus()
-      .isBadRequest
-      .expectBodyList(ErrorResponse::class.java)
-      .returnResult()
+    @Test
+    fun `it should return a validation error for an invalid file extension`() {
+      val order = createOrder()
+      val bodyBuilder = createMultiPartBodyBuilder(mockFile("filename2.txt"))
 
-    val error = result.responseBody!!.first()
-    Assertions.assertThat(
-      error.userMessage,
-    ).isEqualTo(
-      "Validation failure: Unsupported or missing file type txt. Supported file types: pdf, jpeg, jpg",
-    )
-  }
+      val result = webTestClient.post()
+        .uri("/api/orders/${order.id}/enforcementZone/0/attachment")
+        .bodyValue(bodyBuilder.build())
+        .headers(setAuthorisation(mockUser))
+        .exchange()
+        .expectStatus()
+        .isBadRequest
+        .expectBodyList(ErrorResponse::class.java)
+        .returnResult()
 
-  @Test
-  fun `Return error when Document management api validation failed,`() {
-    val zone = EnforcementZoneConditions(
-      zoneId = 0,
-      zoneType = EnforcementZoneType.EXCLUSION,
-      duration = "ExistingDuration",
-      orderId = mockOrder.id,
-      description = "ExistingDescription",
-      startDate = ZonedDateTime.now(ZoneId.of("UTC")).plusDays(1),
-      endDate = ZonedDateTime.now(ZoneId.of("UTC")).plusDays(2),
+      Assertions.assertThat(result.responseBody!!).contains(
+        ErrorResponse(
+          status = BAD_REQUEST,
+          developerMessage = "Unsupported or missing file type txt. Supported file types: pdf, jpeg, jpg",
+          userMessage = validationMessage,
+        ),
+      )
+    }
 
-    )
-    mockOrder.enforcementZoneConditions.add(zone)
-    orderRepo.save(mockOrder)
-    val bodyBuilder = MultipartBodyBuilder()
-    bodyBuilder.part("file", ByteArrayResource(mockFile().bytes))
-      .header("Content-Disposition", "form-data; name=file; filename=file-name.jpeg")
-    documentApi.stubUploadDocumentBadRequest(
-      ErrorResponse(
-        status = BAD_REQUEST,
-        userMessage = "mock document api error",
-        developerMessage = "",
-      ),
-    )
+    @Test
+    fun `it should return an error if upload to document management api fails`() {
+      val order = createOrder()
+      val bodyBuilder = createMultiPartBodyBuilder(mockFile())
 
-    val result = webTestClient.post()
-      .uri("/api/orders/${mockOrder.id}/enforcementZone/0/attachment")
-      .bodyValue(bodyBuilder.build())
-      .headers(setAuthorisation(mockUser))
-      .exchange()
-      .expectStatus()
-      .isBadRequest
-      .expectBodyList(ErrorResponse::class.java)
-      .returnResult()
+      // Return an error from the document api
+      documentApi.stubUploadDocumentBadRequest(
+        ErrorResponse(
+          status = BAD_REQUEST,
+          userMessage = "mock document api error",
+          developerMessage = "",
+        ),
+      )
 
-    val error = result.responseBody!!.first()
-    Assertions.assertThat(error.userMessage)
-      .isEqualTo("mock document api error")
-  }
+      // Create enforcement zone
+      webTestClient.put()
+        .uri("/api/orders/${order.id}/enforcementZone")
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(
+          BodyInserters.fromValue(
+            mockRequestBody(
+              orderId = order.id,
+              duration = "ExistingDuration",
+              description = "ExistingDescription",
+              startDate = ZonedDateTime.now(ZoneId.of("UTC")).plusDays(1),
+              endDate = ZonedDateTime.now(ZoneId.of("UTC")).plusDays(2),
+            ),
+          ),
+        )
+        .headers(setAuthorisation(mockUser))
+        .exchange()
+        .expectStatus()
+        .isOk
 
-  @Test
-  fun `Should replace the document and update enforcement zone with file id and name`() {
-    val zone = EnforcementZoneConditions(
-      zoneId = 0,
-      zoneType = EnforcementZoneType.EXCLUSION,
-      duration = "ExistingDuration",
-      orderId = mockOrder.id,
-      description = "ExistingDescription",
-      startDate = ZonedDateTime.now(ZoneId.of("UTC")).plusDays(1),
-      endDate = ZonedDateTime.now(ZoneId.of("UTC")).plusDays(2),
-      fileId = UUID.randomUUID(),
-    )
-    mockOrder.enforcementZoneConditions.add(zone)
-    orderRepo.save(mockOrder)
+      // Upload attachment
+      val result = webTestClient.post()
+        .uri("/api/orders/${order.id}/enforcementZone/0/attachment")
+        .bodyValue(bodyBuilder.build())
+        .headers(setAuthorisation(mockUser))
+        .exchange()
+        .expectStatus()
+        .isBadRequest
+        .expectBodyList(ErrorResponse::class.java)
+        .returnResult()
 
-    val bodyBuilder = MultipartBodyBuilder()
-    bodyBuilder.part("file", ByteArrayResource(mockFile().bytes))
-      .header("Content-Disposition", "form-data; name=file; filename=filename2.jpeg")
+      Assertions.assertThat(result.responseBody!!).contains(
+        ErrorResponse(
+          status = BAD_REQUEST,
+          developerMessage = "",
+          userMessage = "mock document api error",
+        ),
+      )
+    }
 
-    documentApi.stubDeleteDocument(zone.fileId.toString())
-    documentApi.stubUploadDocument(DocumentUploadResponse())
-    webTestClient.post()
-      .uri("/api/orders/${mockOrder.id}/enforcementZone/0/attachment")
-      .bodyValue(bodyBuilder.build())
-      .headers(setAuthorisation(mockUser))
-      .exchange()
-      .expectStatus()
-      .isOk
+    @Test
+    fun `it should replace the enforcement zone condition and delete file from document api`() {
+      val order = createOrder()
+      val bodyBuilder = createMultiPartBodyBuilder(mockFile())
+      val bodyBuilder2 = createMultiPartBodyBuilder(mockFile("file-name-2.jpeg"))
 
-    verify(apiCLient, Times(1)).deleteDocument(zone.fileId.toString())
+      documentApi.stubDeleteDocument("(.*)")
+      documentApi.stubUploadDocument(DocumentUploadResponse())
 
-    argumentCaptor<EnforcementZoneConditions>().apply {
-      verify(repo, Times(1)).save(capture())
+      // Create first enforcement zone
+      webTestClient.put()
+        .uri("/api/orders/${order.id}/enforcementZone")
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(
+          BodyInserters.fromValue(
+            mockRequestBody(
+              orderId = order.id,
+              duration = "ExistingDuration",
+              description = "ExistingDescription",
+            ),
+          ),
+        )
+        .headers(setAuthorisation(mockUser))
+        .exchange()
+        .expectStatus()
+        .isOk
 
-      Assertions.assertThat(firstValue.fileName).isEqualTo("filename2.jpeg")
+      // Upload first attachment
+      webTestClient.post()
+        .uri("/api/orders/${order.id}/enforcementZone/0/attachment")
+        .bodyValue(bodyBuilder.build())
+        .headers(setAuthorisation(mockUser))
+        .exchange()
+        .expectStatus()
+        .isOk
+
+      // Update enforcement zone
+      webTestClient.put()
+        .uri("/api/orders/${order.id}/enforcementZone")
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(
+          BodyInserters.fromValue(
+            mockRequestBody(order.id),
+          ),
+        )
+        .headers(setAuthorisation(mockUser))
+        .exchange()
+        .expectStatus()
+        .isOk
+
+      // Upload second attachment
+      webTestClient.post()
+        .uri("/api/orders/${order.id}/enforcementZone/0/attachment")
+        .bodyValue(bodyBuilder2.build())
+        .headers(setAuthorisation(mockUser))
+        .exchange()
+        .expectStatus()
+        .isOk
+
+      // Get updated order
+      val updatedOrder = webTestClient.get()
+        .uri("/api/orders/${order.id}")
+        .headers(setAuthorisation("AUTH_ADM"))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody(Order::class.java)
+        .returnResult()
+        .responseBody!!
+
+      // Verify order state matches expected state
+      Assertions.assertThat(updatedOrder.enforcementZoneConditions).hasSize(1)
+      Assertions.assertThat(updatedOrder.enforcementZoneConditions[0].orderId).isEqualTo(order.id)
+      Assertions.assertThat(updatedOrder.enforcementZoneConditions[0].startDate).isEqualTo(mockStartDate)
+      Assertions.assertThat(updatedOrder.enforcementZoneConditions[0].endDate).isEqualTo(mockEndDate)
+      Assertions.assertThat(updatedOrder.enforcementZoneConditions[0].description).isEqualTo("MockDescription")
+      Assertions.assertThat(updatedOrder.enforcementZoneConditions[0].duration).isEqualTo("MockDuration")
+      Assertions.assertThat(updatedOrder.enforcementZoneConditions[0].zoneId).isEqualTo(0)
+
+      // Verify 2 document were uploaded to the document api
+      documentApi.verify(2, postRequestedFor(urlMatching("/documents/CEMO_ATTACHMENT/(.*)")))
+
+      // Verify 1 document was deleted from the document api
+      documentApi.verify(1, deleteRequestedFor(urlMatching("/documents/(.*)")))
     }
   }
 
@@ -393,24 +548,15 @@ class EnforcementZoneControllerTest : IntegrationTestBase() {
     zoneId: Int? = 0,
   ): String {
     return """
-            {
-              "orderId": "$orderId",
-              "zoneType": "EXCLUSION",
-              "startDate": "$startDate",
-              "endDate": "$endDate",
-              "description": "$description",
-              "duration": "$duration",
-              "zoneId": $zoneId
-            }
+      {
+        "orderId": "$orderId",
+        "zoneType": "EXCLUSION",
+        "startDate": "$startDate",
+        "endDate": "$endDate",
+        "description": "$description",
+        "duration": "$duration",
+        "zoneId": $zoneId
+      }
     """.trimIndent()
-  }
-
-  fun mockFile(fileName: String? = "file-name.jpeg"): MockMultipartFile {
-    return MockMultipartFile(
-      "file",
-      "file-name.jpeg",
-      MediaType.IMAGE_JPEG_VALUE,
-      "Test file content".toByteArray(),
-    )
   }
 }

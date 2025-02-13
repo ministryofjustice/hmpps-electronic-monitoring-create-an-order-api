@@ -5,6 +5,8 @@ import jakarta.validation.ValidationException
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.mockito.Mockito.mock
@@ -12,6 +14,7 @@ import org.mockito.Mockito.`when`
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 import org.springframework.boot.test.autoconfigure.json.JsonTest
 import org.springframework.core.io.InputStreamResource
 import org.springframework.http.MediaType
@@ -25,8 +28,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DocumentType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderType
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.AdditionalDocumentRepository
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 import java.io.ByteArrayInputStream
 import java.util.*
@@ -36,146 +38,299 @@ import java.util.*
 class AdditionalDocumentServiceTest {
   private lateinit var service: AdditionalDocumentService
   private lateinit var client: DocumentApiClient
-  private lateinit var repo: AdditionalDocumentRepository
-  private lateinit var orderRepop: OrderRepository
+  private lateinit var orderRepo: OrderRepository
 
   val username: String = "username"
-  val order = Order(username = username, status = OrderStatus.IN_PROGRESS, type = OrderType.REQUEST)
+  val order = Order(username = username, status = OrderStatus.IN_PROGRESS, type = RequestType.REQUEST)
   val orderId = order.id
   val docType: DocumentType = DocumentType.LICENCE
   val doc: AdditionalDocument = AdditionalDocument(orderId = orderId, fileType = docType)
 
   @BeforeEach
   fun setup() {
-    orderRepop = mock(OrderRepository::class.java)
-    repo = mock(AdditionalDocumentRepository::class.java)
+    orderRepo = mock(OrderRepository::class.java)
     client = mock(DocumentApiClient::class.java)
-    service = AdditionalDocumentService(repo, client)
-    service.orderRepo = orderRepop
-
-    `when`(
-      orderRepop.findByIdAndUsernameAndStatus(orderId, username, OrderStatus.IN_PROGRESS),
-    ).thenReturn(Optional.of(order))
+    service = AdditionalDocumentService(client)
+    service.orderRepo = orderRepo
   }
 
-  @Test
-  fun `document not exist with orderId and document type, throw entity not found error`() {
-    val e = assertThrows(EntityNotFoundException::class.java) {
-      service.getDocument(orderId, username, docType)
-    }
-    Assertions.assertThat(e.message).isEqualTo("Document for $orderId with type $docType not found")
-  }
-
-  @Test
-  fun `document exist should retrieve raw document from document management api`() {
-    `when`(
-      repo.findAdditionalDocumentsByOrderIdAndOrderUsernameAndFileType(orderId, username, docType),
-    ).thenReturn(Optional.of(doc))
-    `when`(client.getDocument(doc.id.toString())).thenReturn(
-      ResponseEntity.ok().body(
-        Flux.just(InputStreamResource(ByteArrayInputStream("".toByteArray()))),
-      ),
-    )
-    service.getDocument(orderId, username, docType)
-    verify(client, times(1)).getDocument(doc.id.toString())
-  }
-
-  @Test
-  fun `delete document in repo and in document management api`() {
-    order.additionalDocuments.add(doc)
-
-    service.deleteDocument(orderId, username, docType)
-
-    argumentCaptor<UUID>().apply {
-      verify(repo, times(1)).deleteById(capture())
-      Assertions.assertThat(firstValue).isEqualTo(doc.id)
-    }
-
-    argumentCaptor<String>().apply {
-      verify(client, times(1)).deleteDocument(capture())
-      Assertions.assertThat(firstValue).isEqualTo(doc.id.toString())
-    }
-  }
-
-  @Test
-  fun `document extension not allowed, throw unsupported validation exception`() {
-    val e = assertThrows(ValidationException::class.java) {
-      service.uploadDocument(
-        orderId,
-        username,
-        docType,
-        MockMultipartFile(
-          "file",
-          "file-name.txt",
-          MediaType.TEXT_PLAIN_VALUE,
-          "Test file content".toByteArray(),
+  @Nested
+  @DisplayName("getDocument")
+  inner class GetDocument {
+    @Test
+    fun `it should throw an error if document does not exist`() {
+      // Mock an order with no documents
+      whenever(
+        orderRepo.findByIdAndUsernameAndStatus(orderId, username, OrderStatus.IN_PROGRESS),
+      ).thenReturn(
+        Optional.of(
+          Order(
+            id = orderId,
+            status = OrderStatus.IN_PROGRESS,
+            type = RequestType.REQUEST,
+            username = username,
+          ),
         ),
       )
-    }
-    Assertions.assertThat(
-      e.message,
-    ).isEqualTo("Unsupported or missing file type txt. Supported file types: pdf, png, jpeg, jpg")
-  }
 
-  @Test
-  fun `document with same type already exist, remove old document`() {
-    order.additionalDocuments.add(doc)
-
-    service.uploadDocument(
-      orderId,
-      username,
-      docType,
-      MockMultipartFile(
-        "file",
-        "file-name.pdf",
-        MediaType.TEXT_PLAIN_VALUE,
-        "Test file content".toByteArray(),
-      ),
-    )
-
-    argumentCaptor<UUID>().apply {
-      verify(repo, times(1)).deleteById(capture())
-      Assertions.assertThat(firstValue).isEqualTo(doc.id)
-    }
-
-    argumentCaptor<String>().apply {
-      verify(client, times(1)).deleteDocument(capture())
-      Assertions.assertThat(firstValue).isEqualTo(doc.id.toString())
-    }
-  }
-
-  @Test
-  fun `save document in repo and call document management api`() {
-    val defaultUuid = UUID.randomUUID()
-    Mockito.mockStatic(UUID::class.java).use {
-      it.`when`<Any> { UUID.randomUUID() }.thenReturn(defaultUuid)
-
-      service.uploadDocument(
-        orderId,
-        username,
-        docType,
-        MockMultipartFile(
-          "file",
-          "file-name.pdf",
-          MediaType.TEXT_PLAIN_VALUE,
-          "Test file content".toByteArray(),
-        ),
-      )
-      argumentCaptor<AdditionalDocument>().apply {
-        verify(repo, times(1)).save(capture())
-        Assertions.assertThat(firstValue.id).isEqualTo(defaultUuid)
-        Assertions.assertThat(firstValue.orderId).isEqualTo(orderId)
-        Assertions.assertThat(firstValue.fileType).isEqualTo(docType)
-        Assertions.assertThat(firstValue.fileName).isEqualTo("file-name.pdf")
+      // Verify that an error is thrown
+      val e = assertThrows(EntityNotFoundException::class.java) {
+        service.getDocument(orderId, username, docType)
       }
-      argumentCaptor<String, MultipartBodyBuilder>().apply {
-        verify(client, times(1)).createDocument(first.capture(), second.capture())
-        Assertions.assertThat(first.firstValue).isEqualTo(defaultUuid.toString())
-        val multipartBody = second.firstValue.build()
-        Assertions.assertThat(multipartBody["file"]?.get(0)).isNotNull
-        Assertions.assertThat(
-          multipartBody["metadata"]?.get(0)?.body.toString(),
-        ).isEqualTo("DocumentMetadata(orderId=$orderId, documentType=LICENCE)")
+
+      Assertions.assertThat(e.message).isEqualTo("Document for $orderId with type $docType not found")
+    }
+
+    @Test
+    fun `it should return the object blob if the document exists`() {
+      // Mock an order with a single document
+      whenever(
+        orderRepo.findByIdAndUsernameAndStatus(orderId, username, OrderStatus.IN_PROGRESS),
+      ).thenReturn(
+        Optional.of(
+          Order(
+            id = orderId,
+            status = OrderStatus.IN_PROGRESS,
+            type = RequestType.REQUEST,
+            username = username,
+            additionalDocuments = mutableListOf(
+              doc,
+            ),
+          ),
+        ),
+      )
+
+      // Mock the document api response
+      `when`(client.getDocument(doc.id.toString())).thenReturn(
+        ResponseEntity.ok().body(
+          Flux.just(InputStreamResource(ByteArrayInputStream("".toByteArray()))),
+        ),
+      )
+
+      // Get the document
+      val result = service.getDocument(orderId, username, docType)
+
+      // Verify the document api was called
+      verify(client, times(1)).getDocument(doc.id.toString())
+    }
+  }
+
+  @Nested
+  @DisplayName("deleteDocument")
+  inner class DeleteDocument {
+    @Test
+    fun `it should delete the document from the database and the document management api`() {
+      // Mock an order with a single document
+      whenever(
+        orderRepo.findByIdAndUsernameAndStatus(orderId, username, OrderStatus.IN_PROGRESS),
+      ).thenReturn(
+        Optional.of(
+          Order(
+            id = orderId,
+            status = OrderStatus.IN_PROGRESS,
+            type = RequestType.REQUEST,
+            username = username,
+            additionalDocuments = mutableListOf(
+              doc,
+            ),
+          ),
+        ),
+      )
+
+      // Delete the document
+      service.deleteDocument(orderId, username, docType)
+
+      // Verify that the document was removed from the order
+      verify(orderRepo, times(1)).save(
+        Order(
+          id = orderId,
+          status = OrderStatus.IN_PROGRESS,
+          type = RequestType.REQUEST,
+          username = username,
+          additionalDocuments = mutableListOf(),
+        ),
+      )
+
+      // Verify that the file was deleted from document api
+      argumentCaptor<String>().apply {
+        verify(client, times(1)).deleteDocument(capture())
+        Assertions.assertThat(firstValue).isEqualTo(doc.id.toString())
+      }
+    }
+  }
+
+  @Nested
+  @DisplayName("uploadDocument")
+  inner class UploadDocument {
+    @Test
+    fun `it should throw an error for unsupported document extensions`() {
+      // Mock an order with no documents
+      whenever(
+        orderRepo.findByIdAndUsernameAndStatus(orderId, username, OrderStatus.IN_PROGRESS),
+      ).thenReturn(
+        Optional.of(
+          Order(
+            id = orderId,
+            status = OrderStatus.IN_PROGRESS,
+            type = RequestType.REQUEST,
+            username = username,
+          ),
+        ),
+      )
+
+      val e = assertThrows(ValidationException::class.java) {
+        service.uploadDocument(
+          orderId,
+          username,
+          docType,
+          MockMultipartFile(
+            "file",
+            "file-name.txt",
+            MediaType.TEXT_PLAIN_VALUE,
+            "Test file content".toByteArray(),
+          ),
+        )
+      }
+      Assertions.assertThat(
+        e.message,
+      ).isEqualTo("Unsupported or missing file type txt. Supported file types: pdf, png, jpeg, jpg")
+    }
+
+    @Test
+    fun `it should replace a document with same file type`() {
+      // Mock a UUID for new document
+      val defaultUuid = UUID.randomUUID()
+      Mockito.mockStatic(UUID::class.java).use {
+        it.`when`<Any> { UUID.randomUUID() }.thenReturn(defaultUuid)
+
+        // Mock an order with a single pdf
+        whenever(
+          orderRepo.findByIdAndUsernameAndStatus(orderId, username, OrderStatus.IN_PROGRESS),
+        ).thenReturn(
+          Optional.of(
+            Order(
+              id = orderId,
+              status = OrderStatus.IN_PROGRESS,
+              type = RequestType.REQUEST,
+              username = username,
+              additionalDocuments = mutableListOf(
+                doc,
+              ),
+            ),
+          ),
+        )
+
+        // Upload a new pdf
+        service.uploadDocument(
+          orderId,
+          username,
+          docType,
+          MockMultipartFile(
+            "file",
+            "file-name.pdf",
+            MediaType.TEXT_PLAIN_VALUE,
+            "Test file content".toByteArray(),
+          ),
+        )
+
+        // Verify that the order contains only the new pdf
+        verify(orderRepo, times(2)).save(
+          Order(
+            id = orderId,
+            status = OrderStatus.IN_PROGRESS,
+            type = RequestType.REQUEST,
+            username = username,
+            additionalDocuments = mutableListOf(
+              AdditionalDocument(
+                id = defaultUuid,
+                orderId = orderId,
+                fileType = docType,
+                fileName = "file-name.pdf",
+              ),
+            ),
+          ),
+        )
+
+        // Verify that the old file was deleted from document api
+        argumentCaptor<String>().apply {
+          verify(client, times(1)).deleteDocument(capture())
+          Assertions.assertThat(firstValue).isEqualTo(doc.id.toString())
+        }
+
+        // Verify the new file was uploaded to the document api
+        argumentCaptor<String, MultipartBodyBuilder>().apply {
+          verify(client, times(1)).createDocument(first.capture(), second.capture())
+          Assertions.assertThat(first.firstValue).isEqualTo(defaultUuid.toString())
+          val multipartBody = second.firstValue.build()
+          Assertions.assertThat(multipartBody["file"]?.get(0)).isNotNull
+          Assertions.assertThat(
+            multipartBody["metadata"]?.get(0)?.body.toString(),
+          ).isEqualTo("DocumentMetadata(orderId=$orderId, documentType=LICENCE)")
+        }
+      }
+    }
+
+    @Test
+    fun `it should create a new document`() {
+      val defaultUuid = UUID.randomUUID()
+      Mockito.mockStatic(UUID::class.java).use {
+        it.`when`<Any> { UUID.randomUUID() }.thenReturn(defaultUuid)
+
+        // Mock an order with no documents
+        whenever(
+          orderRepo.findByIdAndUsernameAndStatus(orderId, username, OrderStatus.IN_PROGRESS),
+        ).thenReturn(
+          Optional.of(
+            Order(
+              id = orderId,
+              status = OrderStatus.IN_PROGRESS,
+              type = RequestType.REQUEST,
+              username = username,
+            ),
+          ),
+        )
+
+        // Upload a document
+        service.uploadDocument(
+          orderId,
+          username,
+          docType,
+          MockMultipartFile(
+            "file",
+            "file-name.pdf",
+            MediaType.TEXT_PLAIN_VALUE,
+            "Test file content".toByteArray(),
+          ),
+        )
+
+        // Verify that the order contains only the new pdf
+        verify(orderRepo, times(1)).save(
+          Order(
+            id = orderId,
+            status = OrderStatus.IN_PROGRESS,
+            type = RequestType.REQUEST,
+            username = username,
+            additionalDocuments = mutableListOf(
+              AdditionalDocument(
+                id = defaultUuid,
+                orderId = orderId,
+                fileType = docType,
+                fileName = "file-name.pdf",
+              ),
+            ),
+          ),
+        )
+
+        // Verify the new file was uploaded to the document api
+        argumentCaptor<String, MultipartBodyBuilder>().apply {
+          verify(client, times(1)).createDocument(first.capture(), second.capture())
+          Assertions.assertThat(first.firstValue).isEqualTo(defaultUuid.toString())
+          val multipartBody = second.firstValue.build()
+          Assertions.assertThat(multipartBody["file"]?.get(0)).isNotNull
+          Assertions.assertThat(
+            multipartBody["metadata"]?.get(0)?.body.toString(),
+          ).isEqualTo("DocumentMetadata(orderId=$orderId, documentType=LICENCE)")
+        }
       }
     }
   }

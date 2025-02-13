@@ -10,8 +10,8 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.in
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.MonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MonitoringConditionType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderTypeDescription
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.MonitoringConditionsRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidationError
 import java.time.ZoneId
@@ -20,12 +20,9 @@ import java.util.*
 
 class MonitoringConditionsControllerTest : IntegrationTestBase() {
   @Autowired
-  lateinit var repo: MonitoringConditionsRepository
-
-  @Autowired
   lateinit var orderRepo: OrderRepository
 
-  private val mockOrderType: String = "mockOrderType"
+  private val mockOrderType = OrderType.COMMUNITY
   private val mockOrderTypeDescription = OrderTypeDescription.DAPOL
   private val mockConditionType = MonitoringConditionType.LICENSE_CONDITION_OF_A_CUSTODIAL_ORDER
   private val mockStartDate = ZonedDateTime.now(ZoneId.of("UTC")).plusMonths(1)
@@ -33,7 +30,7 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
 
   @BeforeEach
   fun setup() {
-    repo.deleteAll()
+    orderRepo.deleteAll()
   }
 
   @Test

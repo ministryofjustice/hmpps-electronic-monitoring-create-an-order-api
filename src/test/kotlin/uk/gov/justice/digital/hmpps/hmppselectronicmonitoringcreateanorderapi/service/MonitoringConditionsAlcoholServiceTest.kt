@@ -17,8 +17,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DeviceWearerAddressUsage
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderType
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.MonitoringConditionsAlcoholRepository
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 import java.time.LocalDate
 import java.time.LocalTime
@@ -31,9 +30,6 @@ import java.util.*
 class MonitoringConditionsAlcoholServiceTest {
   @MockBean
   lateinit var orderRepo: OrderRepository
-
-  @MockBean
-  lateinit var alcoholMonitoringConditionsRepo: MonitoringConditionsAlcoholRepository
 
   @Autowired
   lateinit var alcoholMonitoringConditionsService: MonitoringConditionsAlcoholService
@@ -97,7 +93,7 @@ class MonitoringConditionsAlcoholServiceTest {
             id = mockOrderId,
             username = mockUsername,
             status = OrderStatus.IN_PROGRESS,
-            type = OrderType.REQUEST,
+            type = RequestType.REQUEST,
             monitoringConditionsAlcohol = AlcoholMonitoringConditions(
               id = mockAlcoholMonitoringConditionsId,
               orderId = mockOrderId,
@@ -106,8 +102,26 @@ class MonitoringConditionsAlcoholServiceTest {
           ),
         ),
       )
-      whenever(alcoholMonitoringConditionsRepo.save(mockAlcoholMonitoringConditions)).thenReturn(
-        mockAlcoholMonitoringConditions,
+      whenever(
+        orderRepo.save(
+          Order(
+            id = mockOrderId,
+            username = mockUsername,
+            status = OrderStatus.IN_PROGRESS,
+            type = RequestType.REQUEST,
+            monitoringConditionsAlcohol = mockAlcoholMonitoringConditions,
+            addresses = mutableListOf(mockAddress),
+          ),
+        ),
+      ).thenReturn(
+        Order(
+          id = mockOrderId,
+          username = mockUsername,
+          status = OrderStatus.IN_PROGRESS,
+          type = RequestType.REQUEST,
+          monitoringConditionsAlcohol = mockAlcoholMonitoringConditions,
+          addresses = mutableListOf(mockAddress),
+        ),
       )
 
       val result = alcoholMonitoringConditionsService.createOrUpdateAlcoholMonitoringConditions(
@@ -148,7 +162,7 @@ class MonitoringConditionsAlcoholServiceTest {
             id = mockOrderId,
             username = mockUsername,
             status = OrderStatus.IN_PROGRESS,
-            type = OrderType.REQUEST,
+            type = RequestType.REQUEST,
             monitoringConditionsAlcohol = AlcoholMonitoringConditions(
               id = mockAlcoholMonitoringConditionsId,
               orderId = mockOrderId,
@@ -157,8 +171,26 @@ class MonitoringConditionsAlcoholServiceTest {
           ),
         ),
       )
-      whenever(alcoholMonitoringConditionsRepo.save(mockAlcoholMonitoringConditions)).thenReturn(
-        mockAlcoholMonitoringConditions,
+      whenever(
+        orderRepo.save(
+          Order(
+            id = mockOrderId,
+            username = mockUsername,
+            status = OrderStatus.IN_PROGRESS,
+            type = RequestType.REQUEST,
+            monitoringConditionsAlcohol = mockAlcoholMonitoringConditions,
+            addresses = mutableListOf(mockAddress),
+          ),
+        ),
+      ).thenReturn(
+        Order(
+          id = mockOrderId,
+          username = mockUsername,
+          status = OrderStatus.IN_PROGRESS,
+          type = RequestType.REQUEST,
+          monitoringConditionsAlcohol = mockAlcoholMonitoringConditions,
+          addresses = mutableListOf(mockAddress),
+        ),
       )
 
       val result = alcoholMonitoringConditionsService.createOrUpdateAlcoholMonitoringConditions(

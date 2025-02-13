@@ -3,37 +3,24 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.s
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.TrailMonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateTrailMonitoringConditionsDto
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.MonitoringConditionsTrailRepository
 import java.util.*
 
 @Service
-class MonitoringConditionsTrailService(
-
-  val trailMonitoringConditionsRepo: MonitoringConditionsTrailRepository,
-) : OrderSectionServiceBase() {
-  fun getTrailMonitoringConditions(orderId: UUID, username: String): TrailMonitoringConditions {
-    // Verify the order belongs to the user and is in draft state
-    val order = findEditableOrder(orderId, username)
-
-    // Find an existing trail monitoring conditions or create new trail monitoring conditions
-    return order.monitoringConditionsTrail ?: TrailMonitoringConditions(orderId = orderId)
-  }
-
-  fun createOrUpdateTrailMonitoringConditions(
+class MonitoringConditionsTrailService : OrderSectionServiceBase() {
+  fun updateTrailMonitoringConditions(
     orderId: UUID,
     username: String,
-    trailMonitoringConditionsUpdateRecord: UpdateTrailMonitoringConditionsDto,
+    updateRecord: UpdateTrailMonitoringConditionsDto,
   ): TrailMonitoringConditions {
-    val trailMonitoringConditions = this.getTrailMonitoringConditions(
-      orderId,
-      username,
+    // Verify the order belongs to the user and is in draft state
+    val order = this.findEditableOrder(orderId, username)
+
+    order.monitoringConditionsTrail = TrailMonitoringConditions(
+      orderId = orderId,
+      startDate = updateRecord.startDate,
+      endDate = updateRecord.endDate,
     )
 
-    with(trailMonitoringConditionsUpdateRecord) {
-      trailMonitoringConditions.startDate = startDate
-      trailMonitoringConditions.endDate = endDate
-    }
-
-    return trailMonitoringConditionsRepo.save(trailMonitoringConditions)
+    return orderRepo.save(order).monitoringConditionsTrail!!
   }
 }

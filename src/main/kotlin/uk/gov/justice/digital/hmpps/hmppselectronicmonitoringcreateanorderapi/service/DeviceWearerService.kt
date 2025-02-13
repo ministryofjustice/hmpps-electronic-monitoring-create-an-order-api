@@ -6,76 +6,62 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateDeviceWearerDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateIdentityNumbersDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateNoFixedAbodeDto
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.DeviceWearerRepository
 import java.util.*
 
 @Service
-class DeviceWearerService(
-  val repo: DeviceWearerRepository,
-) {
-  fun updateDeviceWearer(
-    orderId: UUID,
-    username: String,
-    deviceWearerUpdateRecord: UpdateDeviceWearerDto,
-  ): DeviceWearer {
-    val deviceWearer = repo.findByOrderIdAndOrderUsernameAndOrderStatus(
-      orderId,
-      username,
-      OrderStatus.IN_PROGRESS,
-    ).orElseThrow {
-      EntityNotFoundException("An editable device wearer for $orderId could not be found")
-    }
+class DeviceWearerService() : OrderSectionServiceBase() {
+  fun updateDeviceWearer(orderId: UUID, username: String, updateRecord: UpdateDeviceWearerDto): DeviceWearer {
+    // Verify the order belongs to the user and is in draft state
+    val order = this.findEditableOrder(orderId, username)
 
-    with(deviceWearerUpdateRecord) {
-      deviceWearer.firstName = firstName
-      deviceWearer.lastName = lastName
-      deviceWearer.alias = alias
-      deviceWearer.adultAtTimeOfInstallation = adultAtTimeOfInstallation
-      deviceWearer.sex = sex
-      deviceWearer.gender = gender
-      deviceWearer.dateOfBirth = dateOfBirth
-      deviceWearer.disabilities = disabilities
-      deviceWearer.language = language
-      deviceWearer.interpreterRequired = interpreterRequired
-    }
+    order.deviceWearer = DeviceWearer(
+      orderId = orderId,
+      firstName = updateRecord.firstName,
+      lastName = updateRecord.lastName,
+      alias = updateRecord.alias,
+      adultAtTimeOfInstallation = updateRecord.adultAtTimeOfInstallation,
+      sex = updateRecord.sex,
+      gender = updateRecord.gender,
+      dateOfBirth = updateRecord.dateOfBirth,
+      disabilities = updateRecord.disabilities,
+      language = updateRecord.language,
+      interpreterRequired = updateRecord.interpreterRequired,
+    )
 
-    return repo.save(deviceWearer)
+    return orderRepo.save(order).deviceWearer!!
   }
 
   fun updateNoFixedAbode(orderId: UUID, username: String, updateRecord: UpdateNoFixedAbodeDto): DeviceWearer {
-    val deviceWearer = repo.findByOrderIdAndOrderUsernameAndOrderStatus(
-      orderId,
-      username,
-      OrderStatus.IN_PROGRESS,
-    ).orElseThrow {
-      EntityNotFoundException("An editable device wearer for $orderId could not be found")
+    // Verify the order belongs to the user and is in draft state
+    val order = this.findEditableOrder(orderId, username)
+
+    if (order.deviceWearer === null) {
+      throw EntityNotFoundException("An editable device wearer for $orderId could not be found")
     }
 
-    with(updateRecord) {
-      deviceWearer.noFixedAbode = noFixedAbode
-    }
+    order.deviceWearer?.noFixedAbode = updateRecord.noFixedAbode
 
-    return repo.save(deviceWearer)
+    orderRepo.save(order)
+
+    return order.deviceWearer!!
   }
 
   fun updateIdentityNumbers(orderId: UUID, username: String, updateRecord: UpdateIdentityNumbersDto): DeviceWearer {
-    val deviceWearer = repo.findByOrderIdAndOrderUsernameAndOrderStatus(
-      orderId,
-      username,
-      OrderStatus.IN_PROGRESS,
-    ).orElseThrow {
-      EntityNotFoundException("An editable device wearer for $orderId could not be found")
+    // Verify the order belongs to the user and is in draft state
+    val order = this.findEditableOrder(orderId, username)
+
+    if (order.deviceWearer === null) {
+      throw EntityNotFoundException("An editable device wearer for $orderId could not be found")
     }
 
-    with(updateRecord) {
-      deviceWearer.nomisId = nomisId
-      deviceWearer.pncId = pncId
-      deviceWearer.deliusId = deliusId
-      deviceWearer.prisonNumber = prisonNumber
-      deviceWearer.homeOfficeReferenceNumber = homeOfficeReferenceNumber
-    }
+    order.deviceWearer?.nomisId = updateRecord.nomisId
+    order.deviceWearer?.pncId = updateRecord.pncId
+    order.deviceWearer?.deliusId = updateRecord.deliusId
+    order.deviceWearer?.prisonNumber = updateRecord.prisonNumber
+    order.deviceWearer?.homeOfficeReferenceNumber = updateRecord.homeOfficeReferenceNumber
 
-    return repo.save(deviceWearer)
+    orderRepo.save(order)
+
+    return order.deviceWearer!!
   }
 }

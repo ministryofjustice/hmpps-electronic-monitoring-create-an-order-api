@@ -12,7 +12,7 @@ import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import java.util.UUID
 
 @Entity
@@ -32,7 +32,7 @@ data class Order(
 
   @Enumerated(EnumType.STRING)
   @Column(name = "TYPE", nullable = false)
-  var type: OrderType,
+  var type: RequestType,
 
   @Column(name = "FMS_RESULT_ID", nullable = true)
   var fmsResultId: UUID? = null,
@@ -146,7 +146,7 @@ data class Order(
 
   private val isOrderOrHasVariationDetails: Boolean
     get() = (
-      type === OrderType.REQUEST || variationDetails != null
+      type === RequestType.REQUEST || variationDetails != null
       )
 
   private val requiredDocuments: Boolean
