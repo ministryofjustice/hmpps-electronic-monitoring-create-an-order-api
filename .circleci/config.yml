@@ -21,12 +21,6 @@ jobs:
       services: "s3,sqs"
     steps:
       - checkout
-      - hmpps/install_aws_cli
-      - hmpps/wait_till_ready
-      - run:
-          name: Set up S3
-          command:
-            sh src/test/resources/localstack/setup-aws.sh
       - restore_cache:
           keys:
             - gradle-{{ checksum "build.gradle.kts" }}
