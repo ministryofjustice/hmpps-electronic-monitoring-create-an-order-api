@@ -51,10 +51,10 @@ workflows:
               ignore: /.*/
       - hmpps/build_multiplatform_docker:
           name: build_docker
-          filters:
-            branches:
-              only:
-                - main
+#          filters:
+#            branches:
+#              only:
+#                - main
           requires:
             - validate
             - docker_lint
@@ -65,10 +65,10 @@ workflows:
           pipeline_id: <<pipeline.id>>
           pipeline_number: <<pipeline.number>>
           context: hmpps-common-vars
-          filters:
-            branches:
-              only:
-                - main
+#          filters:
+#            branches:
+#              only:
+#                - main
           requires:
             - build_docker
             - helm_lint
