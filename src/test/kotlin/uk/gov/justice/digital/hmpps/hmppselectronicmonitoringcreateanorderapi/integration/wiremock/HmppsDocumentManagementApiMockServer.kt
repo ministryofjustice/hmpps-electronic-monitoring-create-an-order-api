@@ -77,17 +77,19 @@ class HmppsDocumentManagementApi : WireMockServer(WIREMOCK_PORT) {
   }
 
   fun stubGetDocument(uuid: String = "xxx") {
+    val file = Files.readAllBytes(
+      Paths.get(
+        this.filePath,
+      ),
+    )
     stubFor(
       get(urlMatching("/documents/$uuid/file"))
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "image/jpeg")
+            .withHeader("Content-Length", file.size.toString())
             .withBody(
-              Files.readAllBytes(
-                Paths.get(
-                  this.filePath,
-                ),
-              ),
+              file,
             )
             .withStatus(200),
         ),

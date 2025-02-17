@@ -9,8 +9,8 @@ import org.mockito.internal.verification.Times
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.verify
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.mock.mockito.SpyBean
 import org.springframework.http.MediaType
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationAndRisk
@@ -21,7 +21,7 @@ import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 import java.util.*
 
 class InstallationAndRiskControllerTest : IntegrationTestBase() {
-  @SpyBean
+  @MockitoSpyBean
   lateinit var orderRepo: OrderRepository
 
   @Autowired

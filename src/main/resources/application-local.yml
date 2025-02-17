@@ -7,6 +7,11 @@ spring:
     url: jdbc:postgresql://localhost:5432/postgres?sslmode=prefer
     username: postgres
     password: postgres
+  cloud:
+    aws:
+      region:
+        static: eu-west-2
+      endpoint: http://127.0.0.1:4566
 
 #Uncomment the below to setup localstack for sqs listener, require localstack running in docker compose
 #hmpps.sqs:
@@ -18,7 +23,8 @@ spring:
 #      queueName: court_case_events_queue
 #      queueArn: arn:aws:sns:eu-west-2:000000000000:court_case_events_queue
 #      dlqName: court_case_events_dead_letter_queue
-
+hmpps.s3:
+  bucketName: testbucket
 services:
   hmppsauth:
     url: http://localhost:9090/auth
