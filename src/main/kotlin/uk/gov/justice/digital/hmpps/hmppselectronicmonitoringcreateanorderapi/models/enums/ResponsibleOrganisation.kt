@@ -1,10 +1,10 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums
 
-enum class ResponsibleOrganisation {
-  YJS,
-  YCS,
-  PROBATION,
-  FIELD_MONITORING_SERVICE,
-  HOME_OFFICE,
-  POLICE,
+enum class ResponsibleOrganisation(val value: String) {
+  YJS("YJS"),
+  YCS("YCS"),
+  PROBATION("Probation"),
+  FIELD_MONITORING_SERVICE("Field Monitoring Service"),
+  HOME_OFFICE("Home Office"),
+  POLICE("Police"),
 }
