@@ -43,7 +43,7 @@ import java.util.concurrent.CompletableFuture
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @Transactional
 class CourtHearingEventListenerTest : IntegrationTestBase() {
-  @SpyBean
+  @MockitoSpyBean
   lateinit var fmsSubmissionRepo: FmsSubmissionResultRepository
 
   @MockitoSpyBean
