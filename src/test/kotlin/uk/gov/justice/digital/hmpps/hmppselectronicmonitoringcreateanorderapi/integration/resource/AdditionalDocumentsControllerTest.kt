@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Test
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus.BAD_REQUEST
 import org.springframework.http.HttpStatus.NOT_FOUND
 import org.springframework.http.MediaType
@@ -17,19 +16,13 @@ import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.DocumentApiClient
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.HmppsDocumentManagementApiExtension.Companion.documentApi
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AdditionalDocument
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.documentmanagement.DocumentUploadResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DocumentType
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 import java.nio.file.Files
 import java.nio.file.Paths
 
 class AdditionalDocumentsControllerTest : IntegrationTestBase() {
-  @Autowired
-  lateinit var repo: OrderRepository
 
   @MockitoSpyBean
   lateinit var apiClient: DocumentApiClient
@@ -119,15 +112,7 @@ class AdditionalDocumentsControllerTest : IntegrationTestBase() {
         .isOk
 
       // Get updated order
-      val updatedOrder = webTestClient.get()
-        .uri("/api/orders/${order.id}")
-        .headers(setAuthorisation("AUTH_ADM"))
-        .exchange()
-        .expectStatus()
-        .isOk
-        .expectBody(Order::class.java)
-        .returnResult()
-        .responseBody!!
+      val updatedOrder = getOrder(order.id)
 
       // Verify order state
       Assertions.assertThat(updatedOrder.additionalDocuments).hasSize(1)
@@ -173,15 +158,7 @@ class AdditionalDocumentsControllerTest : IntegrationTestBase() {
         .isOk
 
       // Get updated order
-      val updatedOrder = webTestClient.get()
-        .uri("/api/orders/${order.id}")
-        .headers(setAuthorisation("AUTH_ADM"))
-        .exchange()
-        .expectStatus()
-        .isOk
-        .expectBody(Order::class.java)
-        .returnResult()
-        .responseBody!!
+      val updatedOrder = getOrder(order.id)
 
       // Verify order state
       Assertions.assertThat(updatedOrder.additionalDocuments).hasSize(1)
@@ -191,9 +168,7 @@ class AdditionalDocumentsControllerTest : IntegrationTestBase() {
 
     @Test
     fun `it should return an error if the order is in a submitted state`() {
-      val order = createOrder()
-      order.status = OrderStatus.SUBMITTED
-      repo.save(order)
+      val order = createSubmittedOrder()
 
       val bodyBuilder = createMultiPartBodyBuilder(mockFile())
 
@@ -325,9 +300,7 @@ class AdditionalDocumentsControllerTest : IntegrationTestBase() {
   inner class DeleteDocument {
     @Test
     fun`it should return an error if the order is in a submitted state`() {
-      val order = createOrder()
-      order.status = OrderStatus.SUBMITTED
-      repo.save(order)
+      val order = createSubmittedOrder()
 
       val result = webTestClient.delete()
         .uri("/api/orders/${order.id}/document-type/${DocumentType.PHOTO_ID}")
@@ -372,15 +345,22 @@ class AdditionalDocumentsControllerTest : IntegrationTestBase() {
     @Test
     fun `it should remove document from database and from document management api`() {
       val order = createOrder()
-      val doc = AdditionalDocument(
-        orderId = order.id,
-        fileName = "mockFile1",
-        fileType = DocumentType.PHOTO_ID,
-      )
-      order.additionalDocuments.add(doc)
-      repo.save(order)
+      val bodyBuilder = createMultiPartBodyBuilder(mockFile())
 
-      documentApi.stubDeleteDocument(doc.id.toString())
+      // Stub the document api
+      documentApi.stubUploadDocument(DocumentUploadResponse())
+      documentApi.stubDeleteDocument("(.*)")
+
+      // Upload a document
+      webTestClient.post()
+        .uri("/api/orders/${order.id}/document-type/${DocumentType.PHOTO_ID}")
+        .bodyValue(bodyBuilder.build())
+        .headers(setAuthorisation("AUTH_ADM"))
+        .exchange()
+        .expectStatus()
+        .isOk
+
+      // Delete document
       webTestClient.delete()
         .uri("/api/orders/${order.id}/document-type/${DocumentType.PHOTO_ID}")
         .headers(setAuthorisation("AUTH_ADM"))
@@ -389,15 +369,7 @@ class AdditionalDocumentsControllerTest : IntegrationTestBase() {
         .isNoContent
 
       // Get updated order
-      val updatedOrder = webTestClient.get()
-        .uri("/api/orders/${order.id}")
-        .headers(setAuthorisation("AUTH_ADM"))
-        .exchange()
-        .expectStatus()
-        .isOk
-        .expectBody(Order::class.java)
-        .returnResult()
-        .responseBody!!
+      val updatedOrder = getOrder(order.id)
 
       Assertions.assertThat(updatedOrder.additionalDocuments).hasSize(0)
     }

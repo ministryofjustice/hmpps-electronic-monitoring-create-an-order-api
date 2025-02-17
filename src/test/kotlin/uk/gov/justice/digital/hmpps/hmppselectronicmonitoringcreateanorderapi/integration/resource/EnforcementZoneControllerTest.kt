@@ -8,17 +8,13 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus.BAD_REQUEST
 import org.springframework.http.HttpStatus.NOT_FOUND
 import org.springframework.http.MediaType
 import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.HmppsDocumentManagementApiExtension.Companion.documentApi
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.documentmanagement.DocumentUploadResponse
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidationError
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 import java.time.LocalDate
@@ -28,8 +24,6 @@ import java.time.ZonedDateTime
 import java.util.*
 
 class EnforcementZoneControllerTest : IntegrationTestBase() {
-  @Autowired
-  lateinit var orderRepo: OrderRepository
 
   private val mockStartDate = ZonedDateTime.of(
     LocalDate.now(ZoneId.of("UTC")),
@@ -51,7 +45,7 @@ class EnforcementZoneControllerTest : IntegrationTestBase() {
 
   @BeforeEach
   fun setup() {
-    orderRepo.deleteAll()
+    repo.deleteAll()
   }
 
   @Nested
@@ -66,7 +60,7 @@ class EnforcementZoneControllerTest : IntegrationTestBase() {
         .contentType(MediaType.APPLICATION_JSON)
         .body(
           BodyInserters.fromValue(
-            mockRequestBody(order.id),
+            mockRequestBody(),
           ),
         )
         .headers(setAuthorisation("AUTH_ADM_2"))
@@ -87,16 +81,14 @@ class EnforcementZoneControllerTest : IntegrationTestBase() {
 
     @Test
     fun `it should return an error if the order is in a submitted state`() {
-      val order = createOrder()
-      order.status = OrderStatus.SUBMITTED
-      orderRepo.save(order)
+      val order = createSubmittedOrder()
 
       val result = webTestClient.put()
         .uri("/api/orders/${order.id}/enforcementZone")
         .contentType(MediaType.APPLICATION_JSON)
         .body(
           BodyInserters.fromValue(
-            mockRequestBody(order.id),
+            mockRequestBody(),
           ),
         )
         .headers(setAuthorisation(mockUser))
@@ -172,7 +164,6 @@ class EnforcementZoneControllerTest : IntegrationTestBase() {
         .body(
           BodyInserters.fromValue(
             mockRequestBody(
-              order.id,
               startDate = mockPastStartDate,
               endDate = mockPastEndDate,
             ),
@@ -203,7 +194,6 @@ class EnforcementZoneControllerTest : IntegrationTestBase() {
         .body(
           BodyInserters.fromValue(
             mockRequestBody(
-              order.id,
               startDate = mockPastStartDate,
             ),
           ),
@@ -224,7 +214,6 @@ class EnforcementZoneControllerTest : IntegrationTestBase() {
         .body(
           BodyInserters.fromValue(
             mockRequestBody(
-              order.id,
               startDate = mockStartDate,
               endDate = mockStartDate.minusDays(1),
             ),
@@ -256,7 +245,6 @@ class EnforcementZoneControllerTest : IntegrationTestBase() {
         .body(
           BodyInserters.fromValue(
             mockRequestBody(
-              orderId = order.id,
               zoneId = 0,
             ),
           ),
@@ -273,7 +261,6 @@ class EnforcementZoneControllerTest : IntegrationTestBase() {
         .body(
           BodyInserters.fromValue(
             mockRequestBody(
-              orderId = order.id,
               zoneId = 1,
             ),
           ),
@@ -284,30 +271,20 @@ class EnforcementZoneControllerTest : IntegrationTestBase() {
         .isOk
 
       // Get updated order
-      val updatedOrder = webTestClient.get()
-        .uri("/api/orders/${order.id}")
-        .headers(setAuthorisation("AUTH_ADM"))
-        .exchange()
-        .expectStatus()
-        .isOk
-        .expectBody(Order::class.java)
-        .returnResult()
-        .responseBody!!
+      val updatedOrder = getOrder(order.id)
 
       // Verify order state matches expected state
       Assertions.assertThat(updatedOrder.enforcementZoneConditions).hasSize(2)
-      Assertions.assertThat(updatedOrder.enforcementZoneConditions[0].orderId).isEqualTo(order.id)
-      Assertions.assertThat(updatedOrder.enforcementZoneConditions[0].startDate).isEqualTo(mockStartDate)
-      Assertions.assertThat(updatedOrder.enforcementZoneConditions[0].endDate).isEqualTo(mockEndDate)
-      Assertions.assertThat(updatedOrder.enforcementZoneConditions[0].description).isEqualTo("MockDescription")
-      Assertions.assertThat(updatedOrder.enforcementZoneConditions[0].duration).isEqualTo("MockDuration")
-      Assertions.assertThat(updatedOrder.enforcementZoneConditions[0].zoneId).isEqualTo(0)
-      Assertions.assertThat(updatedOrder.enforcementZoneConditions[1].orderId).isEqualTo(order.id)
-      Assertions.assertThat(updatedOrder.enforcementZoneConditions[1].startDate).isEqualTo(mockStartDate)
-      Assertions.assertThat(updatedOrder.enforcementZoneConditions[1].endDate).isEqualTo(mockEndDate)
-      Assertions.assertThat(updatedOrder.enforcementZoneConditions[1].description).isEqualTo("MockDescription")
-      Assertions.assertThat(updatedOrder.enforcementZoneConditions[1].duration).isEqualTo("MockDuration")
-      Assertions.assertThat(updatedOrder.enforcementZoneConditions[1].zoneId).isEqualTo(1)
+      Assertions.assertThat(updatedOrder.enforcementZoneConditions!![0].startDate).isEqualTo(mockStartDate)
+      Assertions.assertThat(updatedOrder.enforcementZoneConditions!![0].endDate).isEqualTo(mockEndDate)
+      Assertions.assertThat(updatedOrder.enforcementZoneConditions!![0].description).isEqualTo("MockDescription")
+      Assertions.assertThat(updatedOrder.enforcementZoneConditions!![0].duration).isEqualTo("MockDuration")
+      Assertions.assertThat(updatedOrder.enforcementZoneConditions!![0].zoneId).isEqualTo(0)
+      Assertions.assertThat(updatedOrder.enforcementZoneConditions!![1].startDate).isEqualTo(mockStartDate)
+      Assertions.assertThat(updatedOrder.enforcementZoneConditions!![1].endDate).isEqualTo(mockEndDate)
+      Assertions.assertThat(updatedOrder.enforcementZoneConditions!![1].description).isEqualTo("MockDescription")
+      Assertions.assertThat(updatedOrder.enforcementZoneConditions!![1].duration).isEqualTo("MockDuration")
+      Assertions.assertThat(updatedOrder.enforcementZoneConditions!![1].zoneId).isEqualTo(1)
     }
 
     @Test
@@ -321,7 +298,6 @@ class EnforcementZoneControllerTest : IntegrationTestBase() {
         .body(
           BodyInserters.fromValue(
             mockRequestBody(
-              orderId = order.id,
               duration = "ExistingDurationOld",
               description = "ExistingDescriptionOld",
             ),
@@ -338,7 +314,7 @@ class EnforcementZoneControllerTest : IntegrationTestBase() {
         .contentType(MediaType.APPLICATION_JSON)
         .body(
           BodyInserters.fromValue(
-            mockRequestBody(order.id),
+            mockRequestBody(),
           ),
         )
         .headers(setAuthorisation(mockUser))
@@ -347,24 +323,15 @@ class EnforcementZoneControllerTest : IntegrationTestBase() {
         .isOk
 
       // Get updated order
-      val updatedOrder = webTestClient.get()
-        .uri("/api/orders/${order.id}")
-        .headers(setAuthorisation("AUTH_ADM"))
-        .exchange()
-        .expectStatus()
-        .isOk
-        .expectBody(Order::class.java)
-        .returnResult()
-        .responseBody!!
+      val updatedOrder = getOrder(order.id)
 
       // Verify order state matches expected state
       Assertions.assertThat(updatedOrder.enforcementZoneConditions).hasSize(1)
-      Assertions.assertThat(updatedOrder.enforcementZoneConditions[0].orderId).isEqualTo(order.id)
-      Assertions.assertThat(updatedOrder.enforcementZoneConditions[0].startDate).isEqualTo(mockStartDate)
-      Assertions.assertThat(updatedOrder.enforcementZoneConditions[0].endDate).isEqualTo(mockEndDate)
-      Assertions.assertThat(updatedOrder.enforcementZoneConditions[0].description).isEqualTo("MockDescription")
-      Assertions.assertThat(updatedOrder.enforcementZoneConditions[0].duration).isEqualTo("MockDuration")
-      Assertions.assertThat(updatedOrder.enforcementZoneConditions[0].zoneId).isEqualTo(0)
+      Assertions.assertThat(updatedOrder.enforcementZoneConditions!![0].startDate).isEqualTo(mockStartDate)
+      Assertions.assertThat(updatedOrder.enforcementZoneConditions!![0].endDate).isEqualTo(mockEndDate)
+      Assertions.assertThat(updatedOrder.enforcementZoneConditions!![0].description).isEqualTo("MockDescription")
+      Assertions.assertThat(updatedOrder.enforcementZoneConditions!![0].duration).isEqualTo("MockDuration")
+      Assertions.assertThat(updatedOrder.enforcementZoneConditions!![0].zoneId).isEqualTo(0)
     }
   }
 
@@ -419,7 +386,6 @@ class EnforcementZoneControllerTest : IntegrationTestBase() {
         .body(
           BodyInserters.fromValue(
             mockRequestBody(
-              orderId = order.id,
               duration = "ExistingDuration",
               description = "ExistingDescription",
               startDate = ZonedDateTime.now(ZoneId.of("UTC")).plusDays(1),
@@ -468,7 +434,6 @@ class EnforcementZoneControllerTest : IntegrationTestBase() {
         .body(
           BodyInserters.fromValue(
             mockRequestBody(
-              orderId = order.id,
               duration = "ExistingDuration",
               description = "ExistingDescription",
             ),
@@ -494,7 +459,7 @@ class EnforcementZoneControllerTest : IntegrationTestBase() {
         .contentType(MediaType.APPLICATION_JSON)
         .body(
           BodyInserters.fromValue(
-            mockRequestBody(order.id),
+            mockRequestBody(),
           ),
         )
         .headers(setAuthorisation(mockUser))
@@ -512,24 +477,15 @@ class EnforcementZoneControllerTest : IntegrationTestBase() {
         .isOk
 
       // Get updated order
-      val updatedOrder = webTestClient.get()
-        .uri("/api/orders/${order.id}")
-        .headers(setAuthorisation("AUTH_ADM"))
-        .exchange()
-        .expectStatus()
-        .isOk
-        .expectBody(Order::class.java)
-        .returnResult()
-        .responseBody!!
+      val updatedOrder = getOrder(order.id)
 
       // Verify order state matches expected state
       Assertions.assertThat(updatedOrder.enforcementZoneConditions).hasSize(1)
-      Assertions.assertThat(updatedOrder.enforcementZoneConditions[0].orderId).isEqualTo(order.id)
-      Assertions.assertThat(updatedOrder.enforcementZoneConditions[0].startDate).isEqualTo(mockStartDate)
-      Assertions.assertThat(updatedOrder.enforcementZoneConditions[0].endDate).isEqualTo(mockEndDate)
-      Assertions.assertThat(updatedOrder.enforcementZoneConditions[0].description).isEqualTo("MockDescription")
-      Assertions.assertThat(updatedOrder.enforcementZoneConditions[0].duration).isEqualTo("MockDuration")
-      Assertions.assertThat(updatedOrder.enforcementZoneConditions[0].zoneId).isEqualTo(0)
+      Assertions.assertThat(updatedOrder.enforcementZoneConditions!![0].startDate).isEqualTo(mockStartDate)
+      Assertions.assertThat(updatedOrder.enforcementZoneConditions!![0].endDate).isEqualTo(mockEndDate)
+      Assertions.assertThat(updatedOrder.enforcementZoneConditions!![0].description).isEqualTo("MockDescription")
+      Assertions.assertThat(updatedOrder.enforcementZoneConditions!![0].duration).isEqualTo("MockDuration")
+      Assertions.assertThat(updatedOrder.enforcementZoneConditions!![0].zoneId).isEqualTo(0)
 
       // Verify 2 document were uploaded to the document api
       documentApi.verify(2, postRequestedFor(urlMatching("/documents/CEMO_ATTACHMENT/(.*)")))
@@ -540,7 +496,6 @@ class EnforcementZoneControllerTest : IntegrationTestBase() {
   }
 
   fun mockRequestBody(
-    orderId: UUID,
     startDate: ZonedDateTime? = mockStartDate,
     endDate: ZonedDateTime? = mockEndDate,
     description: String? = "MockDescription",
@@ -549,7 +504,6 @@ class EnforcementZoneControllerTest : IntegrationTestBase() {
   ): String {
     return """
       {
-        "orderId": "$orderId",
         "zoneType": "EXCLUSION",
         "startDate": "$startDate",
         "endDate": "$endDate",

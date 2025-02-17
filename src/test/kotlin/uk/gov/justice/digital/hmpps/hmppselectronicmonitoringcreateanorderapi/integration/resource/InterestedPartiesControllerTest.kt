@@ -3,21 +3,16 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.i
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InterestedParties
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DeviceWearerAddressUsage
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ResponsibleOrganisation
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 import java.util.*
 
 class InterestedPartiesControllerTest : IntegrationTestBase() {
-  @Autowired
-  lateinit var orderRepo: OrderRepository
 
   private val mockNotifyingOrganisationEmail: String = "mockNotifyingOrganisationEmail"
   private val mockResponsibleOfficerName: String = "mockResponsibleOfficerName"
@@ -34,7 +29,7 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
 
   @BeforeEach
   fun setup() {
-    orderRepo.deleteAll()
+    repo.deleteAll()
   }
 
   @Test
@@ -103,10 +98,7 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
 
   @Test
   fun `Interested parties details for a submitted order are not update-able`() {
-    val order = createOrder()
-
-    order.status = OrderStatus.SUBMITTED
-    orderRepo.save(order)
+    val order = createSubmittedOrder()
 
     webTestClient.put()
       .uri("/api/orders/${order.id}/interested-parties")

@@ -18,8 +18,8 @@ data class InstallationAndRisk(
   @Column(name = "ID", nullable = false, unique = true)
   val id: UUID = UUID.randomUUID(),
 
-  @Column(name = "ORDER_ID", nullable = false, unique = true)
-  var orderId: UUID? = null,
+  @Column(name = "VERSION_ID", nullable = false, unique = true)
+  var versionId: UUID,
 
   @Column(name = "OFFENCE", nullable = true)
   var offence: String? = "",
@@ -39,6 +39,6 @@ data class InstallationAndRisk(
 
   @Schema(hidden = true)
   @OneToOne
-  @JoinColumn(name = "ORDER_ID", updatable = false, insertable = false)
-  private val order: Order? = null,
+  @JoinColumn(name = "VERSION_ID", updatable = false, insertable = false)
+  private val version: OrderVersion? = null,
 )

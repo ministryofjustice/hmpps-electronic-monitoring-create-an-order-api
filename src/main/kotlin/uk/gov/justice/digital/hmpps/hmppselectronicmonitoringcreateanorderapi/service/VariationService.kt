@@ -18,13 +18,12 @@ class VariationService() : OrderSectionServiceBase() {
 
     with(updateRecord) {
       order.variationDetails = VariationDetails(
-        orderId = orderId,
+        versionId = order.getCurrentVersion().id,
         variationType = VariationType.valueOf(variationType),
         variationDate = ZonedDateTime.parse(variationDate),
       )
     }
 
-    orderRepo.save(order)
-    return order.variationDetails!!
+    return orderRepo.save(order).variationDetails!!
   }
 }

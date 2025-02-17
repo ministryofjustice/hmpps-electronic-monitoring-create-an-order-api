@@ -21,12 +21,12 @@ data class CurfewTimeTable(
   @Column(name = "ID", nullable = false, unique = true)
   val id: UUID = UUID.randomUUID(),
 
+  @Column(name = "VERSION_ID", nullable = false)
+  val versionId: UUID,
+
   @Enumerated(EnumType.STRING)
   @Column(name = "DAY_OF_WEEK", nullable = false)
   var dayOfWeek: DayOfWeek,
-
-  @Column(name = "ORDER_ID", nullable = false)
-  val orderId: UUID,
 
   @Column(name = "START_TIME", nullable = true)
   @field:NotNull(message = "Enter start time of curfew")
@@ -45,6 +45,6 @@ data class CurfewTimeTable(
 
   @Schema(hidden = true)
   @ManyToOne(optional = true)
-  @JoinColumn(name = "ORDER_ID", updatable = false, insertable = false)
-  private val order: Order? = null,
+  @JoinColumn(name = "VERSION_ID", updatable = false, insertable = false)
+  private val version: OrderVersion? = null,
 )

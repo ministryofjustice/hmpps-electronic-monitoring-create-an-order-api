@@ -13,13 +13,19 @@ abstract class OrderSectionServiceBase() {
   @Autowired
   lateinit var orderRepo: OrderRepository
 
-  internal fun findEditableOrder(orderId: UUID, username: String): Order {
-    return orderRepo.findByIdAndUsernameAndStatus(
-      orderId,
-      username,
-      OrderStatus.IN_PROGRESS,
-    ).orElseThrow {
-      EntityNotFoundException("An editable order with $orderId does not exist")
+  internal fun findEditableOrder(id: UUID, username: String): Order {
+    val order = orderRepo.findById(id).orElseThrow {
+      EntityNotFoundException("An editable order with $id does not exist")
     }
+
+    if (order.status !== OrderStatus.IN_PROGRESS) {
+      throw EntityNotFoundException("An editable order with $id does not exist")
+    }
+
+    if (order.username != username) {
+      throw EntityNotFoundException("An editable order with $id does not exist")
+    }
+
+    return order
   }
 }

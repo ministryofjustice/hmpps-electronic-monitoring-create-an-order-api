@@ -12,11 +12,10 @@ class ResponsibleAdultService() : OrderSectionServiceBase() {
     username: String,
     updateRecord: UpdateResponsibleAdultDto,
   ): ResponsibleAdult {
-    // Verify the order belongs to the user and is in draft state
     val order = this.findEditableOrder(orderId, username)
 
     order.deviceWearerResponsibleAdult = ResponsibleAdult(
-      orderId = orderId,
+      versionId = order.getCurrentVersion().id,
       fullName = updateRecord.fullName,
       relationship = updateRecord.relationship,
       otherRelationshipDetails = updateRecord.otherRelationshipDetails,
