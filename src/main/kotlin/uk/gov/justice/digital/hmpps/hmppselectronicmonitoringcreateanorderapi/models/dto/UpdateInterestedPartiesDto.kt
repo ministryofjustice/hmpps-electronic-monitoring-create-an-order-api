@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto
 import jakarta.validation.constraints.AssertTrue
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.CrownCourt
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FamilyCourt
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MagistrateCourt
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Prison
@@ -48,10 +47,6 @@ data class UpdateInterestedPartiesDto(
 
     if (notifyingOrganisation === NotifyingOrganisation.MAGISTRATES_COURT) {
       return MagistrateCourt.entries.any { it.name === notifyingOrganisationName }
-    }
-
-    if (notifyingOrganisation === NotifyingOrganisation.FAMILY_COURT) {
-      return FamilyCourt.entries.any { it.name === notifyingOrganisationName }
     }
 
     return notifyingOrganisationName === ""
