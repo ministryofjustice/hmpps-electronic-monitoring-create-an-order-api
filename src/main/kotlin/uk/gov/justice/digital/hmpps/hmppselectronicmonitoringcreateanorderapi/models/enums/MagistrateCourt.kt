@@ -124,4 +124,3 @@ enum class MagistrateCourt(val value: String) {
   WREXHAM_MAGISTRATES_COURT("Wrexham Magistrates Court"),
   YEOVIL_COUNTY_MAGISTRATES_COURT("Yeovil County, Magistrates Court"),
 }
-
