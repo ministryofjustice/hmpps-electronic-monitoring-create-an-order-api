@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.MandatoryAttendanceConditions
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateMandatoryAttendanceDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.MandatoryAttendanceService
 import java.util.*
 
@@ -24,11 +25,11 @@ class MandatoryAttendanceController(
   @PutMapping("/orders/{orderId}/mandatory-attendance")
   fun updateMandatoryAttendance(
     @PathVariable orderId: UUID,
-    @RequestBody @Valid mandatoryAttendanceUpdateRecord: MandatoryAttendanceConditions,
+    @RequestBody @Valid updateRecord: UpdateMandatoryAttendanceDto,
     authentication: Authentication,
   ): ResponseEntity<MandatoryAttendanceConditions> {
     val username = authentication.name
-    val saved = mandatoryAttendanceService.updateMandatoryAttendance(orderId, username, mandatoryAttendanceUpdateRecord)
+    val saved = mandatoryAttendanceService.updateMandatoryAttendance(orderId, username, updateRecord)
 
     return ResponseEntity(saved, HttpStatus.OK)
   }

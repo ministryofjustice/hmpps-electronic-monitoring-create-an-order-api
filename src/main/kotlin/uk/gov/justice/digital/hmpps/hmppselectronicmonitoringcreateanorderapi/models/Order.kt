@@ -144,6 +144,11 @@ data class Order(
       return getCurrentVersion().isValid
     }
 
+  val mandatoryAttendanceConditions: MutableList<MandatoryAttendanceConditions>
+    get() {
+      return getCurrentVersion().mandatoryAttendanceConditions
+    }
+
   var monitoringConditions: MonitoringConditions?
     get() {
       return getCurrentVersion().monitoringConditions

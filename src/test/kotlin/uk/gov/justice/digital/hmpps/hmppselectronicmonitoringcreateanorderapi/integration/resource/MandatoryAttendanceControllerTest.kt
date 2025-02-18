@@ -2,19 +2,13 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.i
 
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 import java.time.LocalDate
 import java.util.*
 
 class MandatoryAttendanceControllerTest : IntegrationTestBase() {
-  @Autowired
-  lateinit var orderRepo: OrderRepository
-
   private val mockId: UUID = UUID.randomUUID()
   private val mockStartDate: LocalDate = LocalDate.now()
   private val mockEndDate: LocalDate = LocalDate.now().plusDays(1)
@@ -30,7 +24,7 @@ class MandatoryAttendanceControllerTest : IntegrationTestBase() {
 
   @BeforeEach
   fun setup() {
-    orderRepo.deleteAll()
+    repo.deleteAll()
   }
 
   @Test
@@ -45,7 +39,6 @@ class MandatoryAttendanceControllerTest : IntegrationTestBase() {
           """
             {
               "id": "$mockId",
-              "orderId": "${order.id}",
               "startDate": "$mockStartDate",
               "endDate": "$mockEndDate",
               "purpose": "$mockPurpose",
@@ -77,7 +70,6 @@ class MandatoryAttendanceControllerTest : IntegrationTestBase() {
           """
             {
               "id": "$mockId",
-              "orderId": "12345",
               "startDate": "$mockStartDate",
               "endDate": "$mockEndDate",
               "purpose": "$mockPurpose",
@@ -96,15 +88,12 @@ class MandatoryAttendanceControllerTest : IntegrationTestBase() {
       .headers(setAuthorisation("AUTH_ADM"))
       .exchange()
       .expectStatus()
-      .is5xxServerError
+      .isNotFound
   }
 
   @Test
   fun `Mandatory Attendance details for a submitted order are not update-able`() {
-    val order = createOrder()
-
-    order.status = OrderStatus.SUBMITTED
-    orderRepo.save(order)
+    val order = createSubmittedOrder()
 
     webTestClient.put()
       .uri("/api/orders/${order.id}/mandatory-attendance")
@@ -114,7 +103,6 @@ class MandatoryAttendanceControllerTest : IntegrationTestBase() {
           """
             {
               "id": "$mockId",
-              "orderId": "${order.id}",
               "startDate": "$mockStartDate",
               "endDate": "$mockEndDate",
               "purpose": "$mockPurpose",
@@ -148,7 +136,6 @@ class MandatoryAttendanceControllerTest : IntegrationTestBase() {
           """
             {
               "id": "$mockId",
-              "orderId": "${order.id}",
               "startDate": "$mockStartDate",
               "endDate": "$mockEndDate",
               "purpose": "$mockPurpose",
@@ -182,7 +169,6 @@ class MandatoryAttendanceControllerTest : IntegrationTestBase() {
           """
             {
               "id": "$mockId",
-              "orderId": "${order.id}",
               "startDate": "$mockStartDate",
               "endDate": "$mockEndDate",
               "purpose": "$mockPurpose",
@@ -211,7 +197,6 @@ class MandatoryAttendanceControllerTest : IntegrationTestBase() {
           """
             {
               "id": "$mockId",
-              "orderId": "${order.id}",
               "startDate": "$mockStartDate",
               "endDate": "$mockEndDate",
               "purpose": "$mockPurpose",
@@ -245,7 +230,6 @@ class MandatoryAttendanceControllerTest : IntegrationTestBase() {
           """
             {
               "id": "$mockId",
-              "orderId": "${order.id}",
               "startDate": "",
               "endDate": "",
               "purpose": "",

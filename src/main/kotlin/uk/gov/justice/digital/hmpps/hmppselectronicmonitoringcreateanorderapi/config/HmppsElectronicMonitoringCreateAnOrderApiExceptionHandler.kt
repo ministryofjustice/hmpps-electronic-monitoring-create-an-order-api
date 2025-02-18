@@ -92,7 +92,7 @@ class HmppsElectronicMonitoringCreateAnOrderApiExceptionHandler {
     e: HandlerMethodValidationException,
   ): ResponseEntity<List<ListItemValidationError>> {
     if (e.reason == "Validation failure") {
-      val validationResult = e.allValidationResults
+      val validationResult = e.parameterValidationResults
       val details: List<ListItemValidationError> = validationResult.stream()
         .map {
           val errors = it.resolvableErrors.stream().map {
