@@ -18,7 +18,7 @@ data class MandatoryAttendanceConditions(
   @Column(name = "ID", nullable = false, unique = true)
   val id: UUID = UUID.randomUUID(),
 
-  @Column(name = "VERSION_ID", nullable = false)
+  @Column(name = "VERSION_ID", nullable = false, unique = false)
   val versionId: UUID,
 
   @Column(name = "START_DATE", nullable = false)

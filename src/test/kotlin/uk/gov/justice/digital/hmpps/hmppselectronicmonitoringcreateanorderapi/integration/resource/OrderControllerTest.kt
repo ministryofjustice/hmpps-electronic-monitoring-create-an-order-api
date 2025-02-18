@@ -1500,7 +1500,7 @@ class OrderControllerTest : IntegrationTestBase() {
       	"offence": "Fraud Offences",
       	"offence_date": "",
       	"order_end": "${mockEndDate.format(dateTimeFormatter)}",
-      	"order_id": "${order.getCurrentVersion().id}",
+      	"order_id": "${order.id}",
       	"order_request_type": "Variation",
       	"order_start": "${mockStartDate.format(dateTimeFormatter)}",
       	"order_type": "Community",

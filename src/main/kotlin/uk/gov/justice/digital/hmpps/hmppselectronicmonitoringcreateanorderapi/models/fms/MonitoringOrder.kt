@@ -199,7 +199,7 @@ data class MonitoringOrder(
         serviceEndDate = conditions.endDate?.format(dateFormatter) ?: "",
         caseId = caseId,
         conditionType = conditions.conditionType!!.value,
-        orderId = order.getCurrentVersion().id.toString(),
+        orderId = order.id.toString(),
         orderStatus = "Not Started",
         offence = order.installationAndRisk?.offence,
       )
