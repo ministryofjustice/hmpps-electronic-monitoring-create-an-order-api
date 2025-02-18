@@ -89,6 +89,7 @@ class OrderController(
       fmsResultId = order.fmsResultId,
       installationAndRisk = order.installationAndRisk,
       interestedParties = order.interestedParties,
+      isValid = order.isValid,
       monitoringConditions = order.monitoringConditions,
       monitoringConditionsAlcohol = order.monitoringConditionsAlcohol,
       monitoringConditionsTrail = order.monitoringConditionsTrail,

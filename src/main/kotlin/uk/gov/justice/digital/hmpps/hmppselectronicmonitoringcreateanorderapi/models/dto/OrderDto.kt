@@ -46,6 +46,8 @@ data class OrderDto(
 
   val interestedParties: InterestedParties?,
 
+  val isValid: Boolean,
+
   val monitoringConditions: MonitoringConditions?,
 
   val monitoringConditionsAlcohol: AlcoholMonitoringConditions?,

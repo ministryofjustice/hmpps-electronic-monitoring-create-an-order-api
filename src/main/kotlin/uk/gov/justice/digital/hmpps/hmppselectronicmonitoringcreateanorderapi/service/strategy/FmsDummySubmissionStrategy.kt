@@ -71,7 +71,7 @@ class FmsDummySubmissionStrategy(
 
     if (createDeviceWearerResult.status == SubmissionStatus.FAILURE) {
       return FmsSubmissionResult(
-        orderId = order.getCurrentVersion().id,
+        orderId = order.id,
         strategy = FmsSubmissionStrategyKind.DUMMY,
         deviceWearerResult = createDeviceWearerResult,
         orderSource = orderSource,
@@ -81,7 +81,7 @@ class FmsDummySubmissionStrategy(
     val createMonitoringOrderResult = this.createMonitoringOrder(order, deviceWearerId)
 
     return FmsSubmissionResult(
-      orderId = order.getCurrentVersion().id,
+      orderId = order.id,
       strategy = FmsSubmissionStrategyKind.DUMMY,
       deviceWearerResult = createDeviceWearerResult,
       monitoringOrderResult = createMonitoringOrderResult,
