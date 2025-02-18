@@ -324,6 +324,8 @@ data class MonitoringOrder(
           monitoringOrder.roAddress4 = address.addressLine4
           monitoringOrder.roPostCode = address.postcode
         }
+        monitoringOrder.noName = interestedParties.notifyingOrganisationName
+        monitoringOrder.noEmail = interestedParties.notifyingOrganisationEmail
       }
 
       order.addresses.firstOrNull { it.addressType == AddressType.INSTALLATION }?.let {

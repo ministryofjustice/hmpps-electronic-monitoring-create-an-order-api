@@ -33,7 +33,7 @@ data class Hearing(
   }
 }
 
-enum class JurisdictionType {
-  MAGISTRATES,
-  CROWN,
+enum class JurisdictionType(val value: String) {
+  MAGISTRATES("Magistrates Court"),
+  CROWN("Crown Court"),
 }
