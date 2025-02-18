@@ -235,7 +235,7 @@ class AdditionalDocumentsControllerTest : IntegrationTestBase() {
     }
 
     @Test
-    fun `it should return an error if the order is not created by the user`() {
+    fun `it should return an error if the order was not created by the user`() {
       val order = createOrder()
 
       val result = webTestClient.get()

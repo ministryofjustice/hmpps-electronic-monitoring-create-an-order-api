@@ -1,10 +1,13 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto
 import jakarta.validation.constraints.AssertTrue
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.data.ValidationErrors
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.CrownCourt
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MagistrateCourt
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Prison
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ProbationServiceRegion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ResponsibleOrganisation
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YouthJusticeServiceRegions
 
 data class UpdateInterestedPartiesDto(
   val notifyingOrganisation: NotifyingOrganisation,
@@ -17,7 +20,7 @@ data class UpdateInterestedPartiesDto(
 
   val responsibleOfficerPhoneNumber: String? = null,
 
-  val responsibleOrganisation: ResponsibleOrganisation? = null,
+  val responsibleOrganisation: ResponsibleOrganisation,
 
   val responsibleOrganisationRegion: String = "",
 
@@ -35,7 +38,7 @@ data class UpdateInterestedPartiesDto(
 
   val responsibleOrganisationAddressPostcode: String = "",
 ) {
-  @AssertTrue(message = "A valid Notifying Organisation Name is required")
+  @AssertTrue(message = ValidationErrors.NOTIFYING_ORGANISATION_NAME_REQUIRED)
   fun isNotifyingOrganisationName(): Boolean {
     if (notifyingOrganisation === NotifyingOrganisation.PRISON) {
       return Prison.entries.any { it.name === notifyingOrganisationName }
@@ -50,5 +53,18 @@ data class UpdateInterestedPartiesDto(
     }
 
     return notifyingOrganisationName === ""
+  }
+
+  @AssertTrue(message = ValidationErrors.RESPONSIBLE_ORGANISATION_REGION_REQUIRED)
+  fun isResponsibleOrganisationRegion(): Boolean {
+    if (responsibleOrganisation === ResponsibleOrganisation.PROBATION) {
+      return ProbationServiceRegion.entries.any { it.name === responsibleOrganisationRegion }
+    }
+
+    if (responsibleOrganisation === ResponsibleOrganisation.YJS) {
+      return YouthJusticeServiceRegions.entries.any { it.name === notifyingOrganisationName }
+    }
+
+    return responsibleOrganisationRegion === ""
   }
 }

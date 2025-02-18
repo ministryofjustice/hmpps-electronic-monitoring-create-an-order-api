@@ -652,10 +652,13 @@ class HearingEventHandler(
   ): InterestedParties {
     return InterestedParties(
       versionId = versionId,
+      notifyingOrganisation = notifyingOrganisation,
+      notifyingOrganisationName = "",
+      notifyingOrganisationEmail = "",
       responsibleOrganisation = responsibleOfficer,
       responsibleOrganisationRegion = responsibleOrganisationRegion,
       responsibleOrganisationEmail = responsibleOrganisationId,
-      notifyingOrganisation = notifyingOrganisation,
+      responsibleOrganisationPhoneNumber = null,
       responsibleOrganisationAddress =
       Address(
         versionId = versionId,
@@ -666,8 +669,6 @@ class HearingEventHandler(
       ),
       responsibleOfficerName = "",
       responsibleOfficerPhoneNumber = null,
-      responsibleOrganisationPhoneNumber = null,
-      notifyingOrganisationEmail = "",
     )
   }
 }
