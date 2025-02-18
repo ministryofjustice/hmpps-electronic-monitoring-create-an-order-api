@@ -34,11 +34,12 @@ class InterestedPartiesService(
 
     order.interestedParties = InterestedParties(
       versionId = order.getCurrentVersion().id,
-      notifyingOrganisation = "",
+      notifyingOrganisation = updateRecord.notifyingOrganisation.toString(),
+      notifyingOrganisationName = updateRecord.notifyingOrganisationName,
       notifyingOrganisationEmail = updateRecord.notifyingOrganisationEmail,
       responsibleOfficerName = updateRecord.responsibleOfficerName,
       responsibleOfficerPhoneNumber = updateRecord.responsibleOfficerPhoneNumber,
-      responsibleOrganisation = updateRecord.responsibleOrganisation?.toString(),
+      responsibleOrganisation = updateRecord.responsibleOrganisation.toString(),
       responsibleOrganisationRegion = updateRecord.responsibleOrganisationRegion,
       responsibleOrganisationPhoneNumber = updateRecord.responsibleOrganisationPhoneNumber,
       responsibleOrganisationEmail = updateRecord.responsibleOrganisationEmail,

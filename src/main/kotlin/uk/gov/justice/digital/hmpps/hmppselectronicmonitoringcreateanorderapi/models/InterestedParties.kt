@@ -28,7 +28,7 @@ data class InterestedParties(
   var responsibleOfficerPhoneNumber: String?,
 
   @Column(name = "RESPONSIBLE_ORGANISATION", nullable = true)
-  var responsibleOrganisation: String? = null,
+  var responsibleOrganisation: String,
 
   @Column(name = "RESPONSIBLE_ORGANISATION_REGION", nullable = false)
   var responsibleOrganisationRegion: String,
@@ -42,6 +42,9 @@ data class InterestedParties(
 
   @Column(name = "NOTIFYING_ORGANISATION", nullable = false)
   var notifyingOrganisation: String,
+
+  @Column(name = "NOTIFYING_ORGANISATION_NAME", nullable = false)
+  var notifyingOrganisationName: String,
 
   @Column(name = "NOTIFYING_ORGANISATION_EMAIL", nullable = false)
   var notifyingOrganisationEmail: String,

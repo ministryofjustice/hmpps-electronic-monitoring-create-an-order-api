@@ -322,8 +322,10 @@ class OrderServiceTest {
       responsibleOrganisationPhoneNumber = "07401111111",
       responsibleOrganisationEmail = "abc@def.com",
       notifyingOrganisation = "Mock Organisation",
+      notifyingOrganisationName = "",
       notifyingOrganisationEmail = "",
     )
+
     return order
   }
 }
