@@ -18,7 +18,13 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.in
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.SercoAuthMockServerExtension
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.SercoMockApiExtension
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderDto
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 import uk.gov.justice.hmpps.test.kotlin.auth.JwtAuthorisationHelper
+import java.util.*
 
 @ExtendWith(
   HmppsAuthApiExtension::class,
@@ -31,13 +37,18 @@ import uk.gov.justice.hmpps.test.kotlin.auth.JwtAuthorisationHelper
 abstract class IntegrationTestBase {
 
   @Autowired
+  lateinit var repo: OrderRepository
+
+  @Autowired
   protected lateinit var webTestClient: WebTestClient
 
   @Autowired
   protected lateinit var jwtAuthHelper: JwtAuthorisationHelper
 
+  protected val testUser = "AUTH_ADM"
+
   internal fun setAuthorisation(
-    username: String? = "AUTH_ADM",
+    username: String? = testUser,
     roles: List<String> = listOf("ROLE_EM_CEMO__CREATE_ORDER"),
     scopes: List<String> = listOf("read"),
   ): (
@@ -74,16 +85,16 @@ abstract class IntegrationTestBase {
     return builder
   }
 
-  fun createOrder(username: String? = "AUTH_ADM"): Order = webTestClient.post()
+  fun createOrder(username: String? = testUser): OrderDto = webTestClient.post()
     .uri("/api/orders")
     .headers(setAuthorisation(username))
     .exchange()
     .expectStatus()
     .isOk
-    .returnResult(Order::class.java)
+    .returnResult(OrderDto::class.java)
     .responseBody.blockFirst()!!
 
-  fun createVariation(username: String? = "AUTH_ADM"): Order = webTestClient.post()
+  fun createVariation(username: String? = testUser): OrderDto = webTestClient.post()
     .uri("/api/orders")
     .contentType(MediaType.APPLICATION_JSON)
     .body(
@@ -99,6 +110,35 @@ abstract class IntegrationTestBase {
     .exchange()
     .expectStatus()
     .isOk
-    .returnResult(Order::class.java)
+    .returnResult(OrderDto::class.java)
     .responseBody.blockFirst()!!
+
+  fun createSubmittedOrder(type: RequestType = RequestType.REQUEST): Order {
+    val orderId = UUID.randomUUID()
+    val order = Order(
+      id = orderId,
+      versions = mutableListOf(
+        OrderVersion(
+          orderId = orderId,
+          status = OrderStatus.SUBMITTED,
+          type = RequestType.REQUEST,
+          username = testUser,
+        ),
+      ),
+    )
+
+    return repo.save(order)
+  }
+
+  fun createSubmittedVariation() = createSubmittedOrder(RequestType.VARIATION)
+
+  fun getOrder(id: UUID) = webTestClient.get()
+    .uri("/api/orders/$id")
+    .headers(setAuthorisation(testUser))
+    .exchange()
+    .expectStatus()
+    .isOk
+    .expectBody(OrderDto::class.java)
+    .returnResult()
+    .responseBody!!
 }

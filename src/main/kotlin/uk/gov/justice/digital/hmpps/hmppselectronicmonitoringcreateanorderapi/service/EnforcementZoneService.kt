@@ -11,6 +11,7 @@ import org.springframework.web.multipart.MultipartFile
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.DocumentApiClient
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.EnforcementZoneConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.documentmanagement.DocumentMetadata
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateEnforcementZoneDto
 import java.util.*
 
 @Service
@@ -21,11 +22,11 @@ class EnforcementZoneService(
 
   val allowedFileExtensions: List<String> = listOf("pdf", "jpeg", "jpg")
 
-  fun updateEnforcementZone(orderId: UUID, username: String, enforcementZone: EnforcementZoneConditions) {
+  fun updateEnforcementZone(orderId: UUID, username: String, updateRecord: UpdateEnforcementZoneDto) {
     val order = findEditableOrder(orderId, username)
-    val zone = order.enforcementZoneConditions.firstOrNull { it.zoneId == enforcementZone.zoneId }
+    val zone = order.enforcementZoneConditions.firstOrNull { it.zoneId == updateRecord.zoneId }
 
-    // remove existing enforcement zone
+    // Remove existing enforcement zone
     if (zone != null) {
       order.enforcementZoneConditions.remove(zone)
 
@@ -34,7 +35,18 @@ class EnforcementZoneService(
       }
     }
 
-    order.enforcementZoneConditions.add(enforcementZone)
+    // Add new enforcement zone
+    order.enforcementZoneConditions.add(
+      EnforcementZoneConditions(
+        versionId = order.getCurrentVersion().id,
+        description = updateRecord.description,
+        duration = updateRecord.duration,
+        endDate = updateRecord.endDate,
+        startDate = updateRecord.startDate,
+        zoneId = updateRecord.zoneId,
+        zoneType = updateRecord.zoneType,
+      ),
+    )
 
     orderRepo.save(order)
   }

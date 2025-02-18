@@ -27,9 +27,11 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InterestedParties
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.MonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ResponsibleAdult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.TrailMonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.VariationDetails
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringInstallationLocationType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
@@ -49,7 +51,6 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.FmsSubmissionResultRepository
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 import java.time.DayOfWeek
 import java.time.ZoneId
@@ -59,8 +60,6 @@ import java.util.*
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.ErrorResponse as FmsErrorResponseDetails
 
 class OrderControllerTest : IntegrationTestBase() {
-  @Autowired
-  lateinit var repo: OrderRepository
 
   @Autowired
   lateinit var fmsResultRepository: FmsSubmissionResultRepository
@@ -81,26 +80,25 @@ class OrderControllerTest : IntegrationTestBase() {
   inner class PostOrders {
     @Test
     fun `It should should create an order with type REQUEST if no type provided`() {
-      webTestClient.post()
+      val order = webTestClient.post()
         .uri("/api/orders")
         .headers(setAuthorisation())
         .exchange()
         .expectStatus()
         .isOk
-        .expectBody(Order::class.java)
+        .expectBody(OrderDto::class.java)
+        .returnResult()
+        .responseBody!!
 
-      val orders = repo.findAll()
-      assertThat(orders).hasSize(1)
-      assertThat(orders[0].username).isEqualTo("AUTH_ADM")
-      assertThat(orders[0].status).isEqualTo(OrderStatus.IN_PROGRESS)
-      assertThat(orders[0].type).isEqualTo(RequestType.REQUEST)
-      assertThat(orders[0].id).isNotNull()
-      assertThat(UUID.fromString(orders[0].id.toString())).isEqualTo(orders[0].id)
+      assertThat(order.id).isNotNull()
+      assertThat(order.status).isEqualTo(OrderStatus.IN_PROGRESS)
+      assertThat(order.type).isEqualTo(RequestType.REQUEST)
+      assertThat(order.username).isEqualTo(testUser)
     }
 
     @Test
     fun `It should create an order with type VARIATION`() {
-      webTestClient.post()
+      val order = webTestClient.post()
         .uri("/api/orders")
         .contentType(MediaType.APPLICATION_JSON)
         .body(
@@ -116,15 +114,14 @@ class OrderControllerTest : IntegrationTestBase() {
         .exchange()
         .expectStatus()
         .isOk
-        .expectBody(Order::class.java)
+        .expectBody(OrderDto::class.java)
+        .returnResult()
+        .responseBody!!
 
-      val orders = repo.findAll()
-      assertThat(orders).hasSize(1)
-      assertThat(orders[0].username).isEqualTo("AUTH_ADM")
-      assertThat(orders[0].status).isEqualTo(OrderStatus.IN_PROGRESS)
-      assertThat(orders[0].type).isEqualTo(RequestType.VARIATION)
-      assertThat(orders[0].id).isNotNull()
-      assertThat(UUID.fromString(orders[0].id.toString())).isEqualTo(orders[0].id)
+      assertThat(order.id).isNotNull()
+      assertThat(order.status).isEqualTo(OrderStatus.IN_PROGRESS)
+      assertThat(order.type).isEqualTo(RequestType.VARIATION)
+      assertThat(order.username).isEqualTo(testUser)
     }
   }
 
@@ -141,7 +138,7 @@ class OrderControllerTest : IntegrationTestBase() {
         .exchange()
         .expectStatus()
         .isOk
-        .expectBodyList(Order::class.java)
+        .expectBodyList(OrderDto::class.java)
         .hasSize(1)
     }
 
@@ -155,7 +152,7 @@ class OrderControllerTest : IntegrationTestBase() {
         .exchange()
         .expectStatus()
         .isOk
-        .expectBodyList(Order::class.java)
+        .expectBodyList(OrderDto::class.java)
         .hasSize(1)
     }
 
@@ -163,11 +160,32 @@ class OrderControllerTest : IntegrationTestBase() {
     fun `It should return orders where the firstName matches the searchTerm`() {
       val order = createOrder("AUTH_ADM")
 
-      order.deviceWearer = DeviceWearer(
-        orderId = order.id,
-        firstName = "John",
-      )
-      repo.save(order)
+      // Create the device wearer
+      webTestClient.put()
+        .uri("/api/orders/${order.id}/device-wearer")
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(
+          BodyInserters.fromValue(
+            """
+            {
+              "firstName": "John",
+              "lastName": "Smith",
+              "alias": "",
+              "adultAtTimeOfInstallation": "false",
+              "sex": "Male",
+              "gender": "Male",
+              "dateOfBirth": "2024-01-01T00:00:00.000Z",
+              "disabilities": "",
+              "interpreterRequired": true,
+              "language": "French"
+            }
+            """.trimIndent(),
+          ),
+        )
+        .headers(setAuthorisation("AUTH_ADM"))
+        .exchange()
+        .expectStatus()
+        .isOk
 
       webTestClient.get()
         .uri("/api/orders?searchTerm=John")
@@ -175,7 +193,7 @@ class OrderControllerTest : IntegrationTestBase() {
         .exchange()
         .expectStatus()
         .isOk
-        .expectBodyList(Order::class.java)
+        .expectBodyList(OrderDto::class.java)
         .hasSize(1)
     }
 
@@ -183,11 +201,32 @@ class OrderControllerTest : IntegrationTestBase() {
     fun `It should return orders where the lastName matches the searchTerm`() {
       val order = createOrder("AUTH_ADM")
 
-      order.deviceWearer = DeviceWearer(
-        orderId = order.id,
-        lastName = "Smith",
-      )
-      repo.save(order)
+      // Create the device wearer
+      webTestClient.put()
+        .uri("/api/orders/${order.id}/device-wearer")
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(
+          BodyInserters.fromValue(
+            """
+            {
+              "firstName": "John",
+              "lastName": "Smith",
+              "alias": "",
+              "adultAtTimeOfInstallation": "false",
+              "sex": "Male",
+              "gender": "Male",
+              "dateOfBirth": "2024-01-01T00:00:00.000Z",
+              "disabilities": "",
+              "interpreterRequired": true,
+              "language": "French"
+            }
+            """.trimIndent(),
+          ),
+        )
+        .headers(setAuthorisation("AUTH_ADM"))
+        .exchange()
+        .expectStatus()
+        .isOk
 
       webTestClient.get()
         .uri("/api/orders?searchTerm=Smith")
@@ -195,7 +234,7 @@ class OrderControllerTest : IntegrationTestBase() {
         .exchange()
         .expectStatus()
         .isOk
-        .expectBodyList(Order::class.java)
+        .expectBodyList(OrderDto::class.java)
         .hasSize(1)
     }
 
@@ -203,11 +242,32 @@ class OrderControllerTest : IntegrationTestBase() {
     fun `It should return orders where the firstName matches the searchTerm with different casing`() {
       val order = createOrder("AUTH_ADM")
 
-      order.deviceWearer = DeviceWearer(
-        orderId = order.id,
-        firstName = "John",
-      )
-      repo.save(order)
+      // Create the device wearer
+      webTestClient.put()
+        .uri("/api/orders/${order.id}/device-wearer")
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(
+          BodyInserters.fromValue(
+            """
+            {
+              "firstName": "John",
+              "lastName": "Smith",
+              "alias": "",
+              "adultAtTimeOfInstallation": "false",
+              "sex": "Male",
+              "gender": "Male",
+              "dateOfBirth": "2024-01-01T00:00:00.000Z",
+              "disabilities": "",
+              "interpreterRequired": true,
+              "language": "French"
+            }
+            """.trimIndent(),
+          ),
+        )
+        .headers(setAuthorisation("AUTH_ADM"))
+        .exchange()
+        .expectStatus()
+        .isOk
 
       webTestClient.get()
         .uri("/api/orders?searchTerm=john")
@@ -215,7 +275,7 @@ class OrderControllerTest : IntegrationTestBase() {
         .exchange()
         .expectStatus()
         .isOk
-        .expectBodyList(Order::class.java)
+        .expectBodyList(OrderDto::class.java)
         .hasSize(1)
     }
 
@@ -223,11 +283,32 @@ class OrderControllerTest : IntegrationTestBase() {
     fun `It should return orders where the lastName matches the searchTerm with different casing`() {
       val order = createOrder("AUTH_ADM")
 
-      order.deviceWearer = DeviceWearer(
-        orderId = order.id,
-        lastName = "Smith",
-      )
-      repo.save(order)
+      // Create the device wearer
+      webTestClient.put()
+        .uri("/api/orders/${order.id}/device-wearer")
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(
+          BodyInserters.fromValue(
+            """
+            {
+              "firstName": "John",
+              "lastName": "Smith",
+              "alias": "",
+              "adultAtTimeOfInstallation": "false",
+              "sex": "Male",
+              "gender": "Male",
+              "dateOfBirth": "2024-01-01T00:00:00.000Z",
+              "disabilities": "",
+              "interpreterRequired": true,
+              "language": "French"
+            }
+            """.trimIndent(),
+          ),
+        )
+        .headers(setAuthorisation("AUTH_ADM"))
+        .exchange()
+        .expectStatus()
+        .isOk
 
       webTestClient.get()
         .uri("/api/orders?searchTerm=smith")
@@ -235,7 +316,7 @@ class OrderControllerTest : IntegrationTestBase() {
         .exchange()
         .expectStatus()
         .isOk
-        .expectBodyList(Order::class.java)
+        .expectBodyList(OrderDto::class.java)
         .hasSize(1)
     }
 
@@ -251,14 +332,14 @@ class OrderControllerTest : IntegrationTestBase() {
         .exchange()
         .expectStatus()
         .isOk
-        .expectBodyList(Order::class.java)
+        .expectBodyList(OrderDto::class.java)
         .hasSize(2)
     }
   }
 
   @Nested
   @DisplayName("GET /api/orders/{orderId}")
-  inner class GetOrder {
+  inner class GetOrderVersion {
     @Test
     fun `It should return the order if owned by the user`() {
       val order = createOrder()
@@ -269,7 +350,7 @@ class OrderControllerTest : IntegrationTestBase() {
         .exchange()
         .expectStatus()
         .isOk
-        .expectBody(Order::class.java)
+        .expectBody(OrderDto::class.java)
         .isEqualTo(order)
     }
 
@@ -298,7 +379,7 @@ class OrderControllerTest : IntegrationTestBase() {
 
   @Nested
   @DisplayName("DELETE /api/orders/{orderId}")
-  inner class DeleteOrder {
+  inner class DeleteOrderVersion {
     @Test
     fun `It should return an error if the order does not exist`() {
       val id = UUID.randomUUID()
@@ -315,7 +396,7 @@ class OrderControllerTest : IntegrationTestBase() {
 
       assertThat(
         error.developerMessage,
-      ).isEqualTo("An order with id $id does not exist")
+      ).isEqualTo("Order with id $id does not exist")
     }
 
     @Test
@@ -334,15 +415,12 @@ class OrderControllerTest : IntegrationTestBase() {
 
       assertThat(
         error.developerMessage,
-      ).isEqualTo("An order with id ${order.id} does not exist")
+      ).isEqualTo("Order (${order.id}) for AUTH_ADM_2 not found")
     }
 
     @Test
     fun `It should return an error if the order is in a submitted state`() {
-      val order = createOrder()
-
-      order.status = OrderStatus.SUBMITTED
-      repo.save(order)
+      val order = createSubmittedOrder()
 
       val result = webTestClient.delete()
         .uri("/api/orders/${order.id}")
@@ -397,9 +475,7 @@ class OrderControllerTest : IntegrationTestBase() {
 
     @Test
     fun `It should throw an error if an attempt is made to re-submit a submitted order`() {
-      val order = createReadyToSubmitOrder()
-      order.status = OrderStatus.SUBMITTED
-      repo.save(order)
+      val order = createAndPersistReadyToSubmitOrder(status = OrderStatus.SUBMITTED)
 
       val result = webTestClient.post()
         .uri("/api/orders/${order.id}/submit")
@@ -417,9 +493,7 @@ class OrderControllerTest : IntegrationTestBase() {
 
     @Test
     fun `It should throw an error if an attempt is made to submit an order with error status`() {
-      val order = createReadyToSubmitOrder()
-      order.status = OrderStatus.ERROR
-      repo.save(order)
+      val order = createAndPersistReadyToSubmitOrder(status = OrderStatus.ERROR)
 
       val result = webTestClient.post()
         .uri("/api/orders/${order.id}/submit")
@@ -482,7 +556,7 @@ class OrderControllerTest : IntegrationTestBase() {
         .headers(setAuthorisation())
         .exchange()
         .expectStatus()
-        .is4xxClientError()
+        .is4xxClientError
         .expectBody(ErrorResponse::class.java)
         .returnResult()
 
@@ -501,6 +575,7 @@ class OrderControllerTest : IntegrationTestBase() {
         FmsResponse(),
         FmsErrorResponse(error = FmsErrorResponseDetails("", "Mock Create DW Error")),
       )
+
       val result = webTestClient.post()
         .uri("/api/orders/${order.id}/submit")
         .headers(setAuthorisation())
@@ -545,7 +620,9 @@ class OrderControllerTest : IntegrationTestBase() {
       val submitResult = fmsResultRepository.findAll().firstOrNull()
       assertThat(submitResult).isNotNull
 
-      val updatedOrder = repo.findById(order.id).get()
+      // Get updated order
+      val updatedOrder = getOrder(order.id)
+
       assertThat(updatedOrder.fmsResultId).isEqualTo(submitResult!!.id)
       assertThat(updatedOrder.status).isEqualTo(OrderStatus.ERROR)
     }
@@ -554,13 +631,15 @@ class OrderControllerTest : IntegrationTestBase() {
 
     @Test
     fun `It updates order with serco device wearer id, monitoring id, order status & attachments, and return 200`() {
-      val id = UUID.randomUUID()
+      val orderId = UUID.randomUUID()
+      val versionId = UUID.randomUUID()
       val order = createAndPersistReadyToSubmitOrder(
-        id = id,
+        id = orderId,
+        versionId = versionId,
         documents = mutableListOf(
           AdditionalDocument(
             id = UUID.fromString("550e8400-e29b-41d4-a716-446655440000"),
-            orderId = id,
+            versionId = versionId,
             fileType = DocumentType.LICENCE,
             fileName = "mockFile",
           ),
@@ -723,7 +802,7 @@ class OrderControllerTest : IntegrationTestBase() {
       	"offence": "Fraud Offences",
       	"offence_date": "",
       	"order_end": "${mockEndDate.format(dateTimeFormatter)}",
-      	"order_id": "${order.id}",
+      	"order_id": "$orderId",
       	"order_request_type": "New Order",
       	"order_start": "${mockStartDate.format(dateTimeFormatter)}",
       	"order_type": "Community",
@@ -890,26 +969,28 @@ class OrderControllerTest : IntegrationTestBase() {
       assertThat(
         submitResult.attachmentResults[0].attachmentId,
       ).isEqualTo(order.additionalDocuments.first().id.toString())
-      val updatedOrder = repo.findById(order.id).get()
+      val updatedOrder = getOrder(order.id)
       assertThat(updatedOrder.fmsResultId).isEqualTo(submitResult.id)
       assertThat(updatedOrder.status).isEqualTo(OrderStatus.SUBMITTED)
     }
 
     @Test
     fun `It should be possible to submit multiple attachments`() {
-      val id = UUID.randomUUID()
+      val orderId = UUID.randomUUID()
+      val versionId = UUID.randomUUID()
       val order = createAndPersistReadyToSubmitOrder(
-        id = id,
+        id = orderId,
+        versionId = versionId,
         documents = mutableListOf(
           AdditionalDocument(
             id = UUID.fromString("550e8400-e29b-41d4-a716-446655440000"),
-            orderId = id,
+            versionId = versionId,
             fileType = DocumentType.LICENCE,
             fileName = "mockLicense.jpg",
           ),
           AdditionalDocument(
             id = UUID.fromString("550e8400-e29b-41d4-a716-446655440001"),
-            orderId = id,
+            versionId = versionId,
             fileType = DocumentType.PHOTO_ID,
             fileName = "mockPhotoId.jpg",
           ),
@@ -1085,7 +1166,7 @@ class OrderControllerTest : IntegrationTestBase() {
       	"offence": "Fraud Offences",
       	"offence_date": "",
       	"order_end": "${mockEndDate.format(dateTimeFormatter)}",
-      	"order_id": "${order.id}",
+      	"order_id": "$orderId",
       	"order_request_type": "New Order",
       	"order_start": "${mockStartDate.format(dateTimeFormatter)}",
       	"order_type": "Community",
@@ -1285,7 +1366,7 @@ class OrderControllerTest : IntegrationTestBase() {
           ),
         )
 
-      val updatedOrder = repo.findById(order.id).get()
+      val updatedOrder = getOrder(order.id)
       assertThat(updatedOrder.fmsResultId).isEqualTo(submitResult.id)
       assertThat(updatedOrder.status).isEqualTo(OrderStatus.SUBMITTED)
     }
@@ -1579,7 +1660,7 @@ class OrderControllerTest : IntegrationTestBase() {
 
       assertThat(submitResult!!.deviceWearerResult.payload).isEqualTo(expectedDWJson.removeWhitespaceAndNewlines())
       assertThat(submitResult.monitoringOrderResult.payload).isEqualTo(expectedOrderJson.removeWhitespaceAndNewlines())
-      val updatedOrder = repo.findById(order.id).get()
+      val updatedOrder = getOrder(order.id)
       assertThat(updatedOrder.fmsResultId).isEqualTo(submitResult.id)
       assertThat(updatedOrder.status).isEqualTo(OrderStatus.SUBMITTED)
     }
@@ -1700,26 +1781,34 @@ class OrderControllerTest : IntegrationTestBase() {
           ),
         )
 
-      val updatedOrder = repo.findById(order.id).get()
+      val updatedOrder = getOrder(order.id)
       assertThat(updatedOrder.fmsResultId).isEqualTo(submitResult.id)
     }
   }
 
   fun createReadyToSubmitOrder(
     id: UUID = UUID.randomUUID(),
+    versionId: UUID = UUID.randomUUID(),
     noFixedAddress: Boolean = false,
     requestType: RequestType = RequestType.REQUEST,
+    status: OrderStatus = OrderStatus.IN_PROGRESS,
     documents: MutableList<AdditionalDocument> = mutableListOf(),
   ): Order {
     val order = Order(
       id = id,
-      username = "AUTH_ADM",
-      status = OrderStatus.IN_PROGRESS,
-      type = requestType,
+      versions = mutableListOf(
+        OrderVersion(
+          id = versionId,
+          username = "AUTH_ADM",
+          status = OrderStatus.IN_PROGRESS,
+          type = requestType,
+          orderId = id,
+        ),
+      ),
     )
 
     order.deviceWearer = DeviceWearer(
-      orderId = order.id,
+      versionId = versionId,
       firstName = "John",
       lastName = "Smith",
       alias = "Johnny",
@@ -1739,13 +1828,13 @@ class OrderControllerTest : IntegrationTestBase() {
     )
 
     order.deviceWearerResponsibleAdult = ResponsibleAdult(
-      orderId = order.id,
+      versionId = versionId,
       fullName = "Mark Smith",
       contactNumber = "07401111111",
     )
 
     val responsibleOrganisationAddress = Address(
-      orderId = order.id,
+      versionId = versionId,
       addressLine1 = "Line 1",
       addressLine2 = "Line 2",
       addressLine3 = "",
@@ -1755,7 +1844,7 @@ class OrderControllerTest : IntegrationTestBase() {
     )
 
     val installationAddress = Address(
-      orderId = order.id,
+      versionId = versionId,
       addressLine1 = "24 Somewhere Street",
       addressLine2 = "Nowhere City",
       addressLine3 = "Random County",
@@ -1765,9 +1854,9 @@ class OrderControllerTest : IntegrationTestBase() {
     )
 
     if (!noFixedAddress) {
-      order.addresses = mutableListOf(
+      order.addresses.add(
         Address(
-          orderId = order.id,
+          versionId = versionId,
           addressLine1 = "20 Somewhere Street",
           addressLine2 = "Nowhere City",
           addressLine3 = "Random County",
@@ -1775,8 +1864,10 @@ class OrderControllerTest : IntegrationTestBase() {
           postcode = "SW11 1NC",
           addressType = AddressType.PRIMARY,
         ),
+      )
+      order.addresses.add(
         Address(
-          orderId = order.id,
+          versionId = versionId,
           addressLine1 = "22 Somewhere Street",
           addressLine2 = "Nowhere City",
           addressLine3 = "Random County",
@@ -1784,18 +1875,18 @@ class OrderControllerTest : IntegrationTestBase() {
           postcode = "SW11 1NC",
           addressType = AddressType.SECONDARY,
         ),
-        responsibleOrganisationAddress,
-        installationAddress,
-      )
-    } else {
-      order.addresses = mutableListOf(
-        responsibleOrganisationAddress,
-        installationAddress,
       )
     }
 
+    order.addresses.add(
+      responsibleOrganisationAddress,
+    )
+    order.addresses.add(
+      installationAddress,
+    )
+
     order.installationAndRisk = InstallationAndRisk(
-      orderId = order.id,
+      versionId = versionId,
       offence = "Fraud Offences",
       riskDetails = "Danger",
       mappaLevel = "MAAPA 1",
@@ -1803,12 +1894,12 @@ class OrderControllerTest : IntegrationTestBase() {
     )
 
     order.contactDetails = ContactDetails(
-      orderId = order.id,
+      versionId = versionId,
       contactNumber = "07401111111",
     )
 
     order.monitoringConditions = MonitoringConditions(
-      orderId = order.id,
+      versionId = versionId,
       orderType = OrderType.COMMUNITY,
       orderTypeDescription = OrderTypeDescription.DAPOL,
       startDate = mockStartDate,
@@ -1821,10 +1912,12 @@ class OrderControllerTest : IntegrationTestBase() {
       conditionType = MonitoringConditionType.REQUIREMENT_OF_A_COMMUNITY_ORDER,
     )
 
-    order.additionalDocuments = documents
+    documents.forEach {
+      order.additionalDocuments.add(it)
+    }
 
     val curfewConditions = CurfewConditions(
-      orderId = order.id,
+      versionId = versionId,
       startDate = mockStartDate,
       endDate = mockEndDate,
       curfewAddress = "PRIMARY,SECONDARY",
@@ -1832,7 +1925,7 @@ class OrderControllerTest : IntegrationTestBase() {
 
     val curfewTimeTables = DayOfWeek.entries.map {
       CurfewTimeTable(
-        orderId = order.id,
+        versionId = versionId,
         dayOfWeek = it,
         startTime = "17:00",
         endTime = "09:00",
@@ -1842,7 +1935,7 @@ class OrderControllerTest : IntegrationTestBase() {
     order.curfewTimeTable.addAll(curfewTimeTables)
     val secondTimeTable = DayOfWeek.entries.map {
       CurfewTimeTable(
-        orderId = order.id,
+        versionId = versionId,
         dayOfWeek = it,
         startTime = "17:00",
         endTime = "09:00",
@@ -1853,7 +1946,7 @@ class OrderControllerTest : IntegrationTestBase() {
     order.curfewConditions = curfewConditions
 
     order.curfewReleaseDateConditions = CurfewReleaseDateConditions(
-      orderId = order.id,
+      versionId = versionId,
       releaseDate = mockStartDate,
       startTime = "19:00",
       endTime = "23:00",
@@ -1862,7 +1955,7 @@ class OrderControllerTest : IntegrationTestBase() {
 
     order.enforcementZoneConditions.add(
       EnforcementZoneConditions(
-        orderId = order.id,
+        versionId = versionId,
         description = "Mock Exclusion Zone",
         duration = "Mock Exclusion Duration",
         startDate = mockStartDate,
@@ -1875,7 +1968,7 @@ class OrderControllerTest : IntegrationTestBase() {
 
     order.enforcementZoneConditions.add(
       EnforcementZoneConditions(
-        orderId = order.id,
+        versionId = versionId,
         description = "Mock Inclusion Zone",
         duration = "Mock Inclusion Duration",
         startDate = mockStartDate,
@@ -1885,7 +1978,7 @@ class OrderControllerTest : IntegrationTestBase() {
     )
 
     order.monitoringConditionsAlcohol = AlcoholMonitoringConditions(
-      orderId = order.id,
+      versionId = versionId,
       startDate = mockStartDate,
       endDate = mockEndDate,
       monitoringType = AlcoholMonitoringType.ALCOHOL_ABSTINENCE,
@@ -1893,13 +1986,13 @@ class OrderControllerTest : IntegrationTestBase() {
     )
 
     order.monitoringConditionsTrail = TrailMonitoringConditions(
-      orderId = order.id,
+      versionId = versionId,
       startDate = mockStartDate,
       endDate = mockEndDate,
     )
 
     order.interestedParties = InterestedParties(
-      orderId = order.id,
+      versionId = versionId,
       responsibleOfficerName = "John Smith",
       responsibleOfficerPhoneNumber = "07401111111",
       responsibleOrganisation = "Avon and Somerset Constabulary",
@@ -1911,24 +2004,35 @@ class OrderControllerTest : IntegrationTestBase() {
       notifyingOrganisationEmail = "",
     )
 
-    if (order.type === RequestType.VARIATION) {
+    if (order.getCurrentVersion().type === RequestType.VARIATION) {
       order.variationDetails = VariationDetails(
-        orderId = order.id,
+        versionId = versionId,
         variationType = VariationType.ADDRESS,
         variationDate = mockStartDate,
       )
     }
+
+    order.versions[0].status = status
 
     return order
   }
 
   fun createAndPersistReadyToSubmitOrder(
     id: UUID = UUID.randomUUID(),
+    versionId: UUID = UUID.randomUUID(),
     noFixedAddress: Boolean = false,
     requestType: RequestType = RequestType.REQUEST,
+    status: OrderStatus = OrderStatus.IN_PROGRESS,
     documents: MutableList<AdditionalDocument> = mutableListOf(),
   ): Order {
-    val order = createReadyToSubmitOrder(id, noFixedAddress, requestType, documents)
+    val order = createReadyToSubmitOrder(
+      id = id,
+      versionId = versionId,
+      noFixedAddress = noFixedAddress,
+      requestType = requestType,
+      status = status,
+      documents = documents,
+    )
     repo.save(order)
     return order
   }

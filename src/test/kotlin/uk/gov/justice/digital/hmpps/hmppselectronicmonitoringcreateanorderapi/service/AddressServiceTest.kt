@@ -13,6 +13,7 @@ import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Address
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AlcoholMonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateAddressDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringInstallationLocationType
@@ -36,12 +37,11 @@ class AddressServiceTest {
   @Autowired
   lateinit var addressService: AddressService
 
-  private val mockOrderId: UUID = UUID.fromString("da69b6d1-fb7f-4513-aee5-bd762cd8921d")
+  private val mockOrderId: UUID = UUID.randomUUID()
+  private val mockVersionId: UUID = UUID.randomUUID()
   private val mockUsername: String = "username"
-  private val mockAddressId = UUID.fromString("506fdf2f-7c4e-4bc7-bdb6-e42ccbf2a4f4")
-  private val mockAlcoholMonitoringConditionsId = UUID.fromString(
-    "4f174060-6a26-41d3-ad7d-9b28f607a7df",
-  )
+  private val mockAddressId = UUID.randomUUID()
+  private val mockAlcoholMonitoringConditionsId = UUID.randomUUID()
 
   private val mockStartDate: ZonedDateTime = ZonedDateTime.of(
     LocalDate.of(2025, 1, 1),
@@ -56,7 +56,7 @@ class AddressServiceTest {
 
   private val mockAddress = Address(
     id = mockAddressId,
-    orderId = mockOrderId,
+    versionId = mockVersionId,
     addressType = AddressType.PRIMARY,
     addressUsage = DeviceWearerAddressUsage.NA,
     addressLine1 = "mockAddressLine1",
@@ -77,7 +77,7 @@ class AddressServiceTest {
 
   private val updatedMockAddress = Address(
     id = mockAddressId,
-    orderId = mockOrderId,
+    versionId = mockVersionId,
     addressType = AddressType.PRIMARY,
     addressUsage = DeviceWearerAddressUsage.NA,
     addressLine1 = "updatedMockAddressLine1",
@@ -89,48 +89,67 @@ class AddressServiceTest {
 
   private val orderWithExistingPrimaryAddressAndRelation = Order(
     id = mockOrderId,
-    username = mockUsername,
-    status = OrderStatus.IN_PROGRESS,
-    type = RequestType.REQUEST,
-    monitoringConditionsAlcohol = AlcoholMonitoringConditions(
-      id = mockAlcoholMonitoringConditionsId,
-      orderId = mockOrderId,
-      monitoringType = AlcoholMonitoringType.ALCOHOL_ABSTINENCE,
-      startDate = mockStartDate,
-      endDate = mockEndDate,
-      installationLocation = AlcoholMonitoringInstallationLocationType.PRIMARY,
-      installationAddressId = mockAddressId,
-      prisonName = null,
-      probationOfficeName = null,
+    versions = mutableListOf(
+      OrderVersion(
+        id = mockVersionId,
+        username = mockUsername,
+        status = OrderStatus.IN_PROGRESS,
+        type = RequestType.REQUEST,
+        orderId = mockOrderId,
+        monitoringConditionsAlcohol = AlcoholMonitoringConditions(
+          id = mockAlcoholMonitoringConditionsId,
+          versionId = mockVersionId,
+          monitoringType = AlcoholMonitoringType.ALCOHOL_ABSTINENCE,
+          startDate = mockStartDate,
+          endDate = mockEndDate,
+          installationLocation = AlcoholMonitoringInstallationLocationType.PRIMARY,
+          installationAddressId = mockAddressId,
+          prisonName = null,
+          probationOfficeName = null,
+        ),
+        addresses = mutableListOf(mockAddress),
+      ),
     ),
-    addresses = mutableListOf(mockAddress),
   )
 
   private val updatedOrderWithExistingPrimaryAddressAndRelation = Order(
     id = mockOrderId,
-    username = mockUsername,
-    status = OrderStatus.IN_PROGRESS,
-    type = RequestType.REQUEST,
-    monitoringConditionsAlcohol = AlcoholMonitoringConditions(
-      id = mockAlcoholMonitoringConditionsId,
-      orderId = mockOrderId,
-      monitoringType = AlcoholMonitoringType.ALCOHOL_ABSTINENCE,
-      startDate = mockStartDate,
-      endDate = mockEndDate,
-      installationLocation = AlcoholMonitoringInstallationLocationType.PRIMARY,
-      installationAddressId = mockAddressId,
-      prisonName = null,
-      probationOfficeName = null,
+    versions = mutableListOf(
+      OrderVersion(
+        id = mockVersionId,
+        username = mockUsername,
+        status = OrderStatus.IN_PROGRESS,
+        type = RequestType.REQUEST,
+        versionId = 0,
+        orderId = mockOrderId,
+        monitoringConditionsAlcohol = AlcoholMonitoringConditions(
+          id = mockAlcoholMonitoringConditionsId,
+          versionId = mockVersionId,
+          monitoringType = AlcoholMonitoringType.ALCOHOL_ABSTINENCE,
+          startDate = mockStartDate,
+          endDate = mockEndDate,
+          installationLocation = AlcoholMonitoringInstallationLocationType.PRIMARY,
+          installationAddressId = mockAddressId,
+          prisonName = null,
+          probationOfficeName = null,
+        ),
+        addresses = mutableListOf(updatedMockAddress),
+      ),
     ),
-    addresses = mutableListOf(updatedMockAddress),
   )
 
   private val orderWithoutPrimaryAddress = Order(
     id = mockOrderId,
-    username = mockUsername,
-    status = OrderStatus.IN_PROGRESS,
-    type = RequestType.REQUEST,
-    addresses = mutableListOf(),
+    versions = mutableListOf(
+      OrderVersion(
+        id = mockVersionId,
+        username = mockUsername,
+        status = OrderStatus.IN_PROGRESS,
+        type = RequestType.REQUEST,
+        orderId = mockOrderId,
+        addresses = mutableListOf(),
+      ),
+    ),
   )
 
   @Nested
@@ -138,7 +157,7 @@ class AddressServiceTest {
     @Test
     fun `updates the existing address record if an address of that type exists for the order`() {
       whenever(
-        orderRepo.findByIdAndUsernameAndStatus(mockOrderId, mockUsername, OrderStatus.IN_PROGRESS),
+        orderRepo.findById(mockOrderId),
       ).thenReturn(
         Optional.of(orderWithExistingPrimaryAddressAndRelation),
       )
@@ -153,14 +172,14 @@ class AddressServiceTest {
       )
 
       Assertions.assertThat(updatedAddress).isEqualTo(updatedMockAddress)
-      Assertions.assertThat(updatedAddress?.id).isEqualTo(originalPrimaryAddressId)
+      Assertions.assertThat(updatedAddress.id).isEqualTo(originalPrimaryAddressId)
       verify(orderRepo, times(1)).save(updatedOrderWithExistingPrimaryAddressAndRelation)
     }
 
     @Test
     fun `creates a new address record if an address of that type does not exist for the order`() {
       whenever(
-        orderRepo.findByIdAndUsernameAndStatus(mockOrderId, mockUsername, OrderStatus.IN_PROGRESS),
+        orderRepo.findById(mockOrderId),
       ).thenReturn(
         Optional.of(orderWithoutPrimaryAddress),
       )

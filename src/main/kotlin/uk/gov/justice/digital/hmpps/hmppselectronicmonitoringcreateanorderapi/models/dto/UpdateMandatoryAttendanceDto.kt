@@ -1,8 +1,11 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto
 
 import java.time.LocalDate
+import java.util.*
 
 data class UpdateMandatoryAttendanceDto(
+  val id: UUID? = null,
+
   val startDate: LocalDate? = null,
 
   var endDate: LocalDate? = null,

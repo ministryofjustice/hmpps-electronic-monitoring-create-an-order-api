@@ -18,7 +18,7 @@ class MonitoringConditionsAlcoholService : OrderSectionServiceBase() {
 
     // Find existing alcohol monitoring conditions or create new alcohol monitoring conditions
     val alcoholMonitoringConditions =
-      order.monitoringConditionsAlcohol ?: AlcoholMonitoringConditions(orderId = orderId)
+      order.monitoringConditionsAlcohol ?: AlcoholMonitoringConditions(versionId = order.getCurrentVersion().id)
 
     // Add relevant address ID when installation location is an address
     var alcoholMonitoringAddressId: UUID? = null

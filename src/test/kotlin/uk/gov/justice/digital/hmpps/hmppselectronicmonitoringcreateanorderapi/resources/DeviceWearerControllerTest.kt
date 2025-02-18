@@ -45,7 +45,7 @@ class DeviceWearerControllerTest {
   @Test
   fun `Update a device wearer`() {
     val mockDeviceWearer = DeviceWearer(
-      orderId = mockOrderId,
+      versionId = mockOrderId,
       firstName = mockFirstName,
       lastName = mockLastName,
       alias = mockAlias,

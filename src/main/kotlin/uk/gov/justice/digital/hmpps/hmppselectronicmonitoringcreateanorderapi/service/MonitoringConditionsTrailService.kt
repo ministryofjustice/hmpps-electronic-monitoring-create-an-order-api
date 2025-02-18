@@ -12,11 +12,10 @@ class MonitoringConditionsTrailService : OrderSectionServiceBase() {
     username: String,
     updateRecord: UpdateTrailMonitoringConditionsDto,
   ): TrailMonitoringConditions {
-    // Verify the order belongs to the user and is in draft state
     val order = this.findEditableOrder(orderId, username)
 
     order.monitoringConditionsTrail = TrailMonitoringConditions(
-      orderId = orderId,
+      versionId = order.getCurrentVersion().id,
       startDate = updateRecord.startDate,
       endDate = updateRecord.endDate,
     )

@@ -25,6 +25,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InterestedParties
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.MonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ResponsibleAdult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.TrailMonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.CreateOrderDto
@@ -83,7 +84,7 @@ class OrderServiceTest {
     reset(repo)
 
     val mockFmsResult = FmsSubmissionResult(
-      orderId = mockOrder.id,
+      orderId = mockOrder.getCurrentVersion().id,
       deviceWearerResult = FmsDeviceWearerSubmissionResult(
         status = SubmissionStatus.SUCCESS,
         deviceWearerId = "mockDeviceWearerId",
@@ -95,7 +96,7 @@ class OrderServiceTest {
       orderSource = FmsOrderSource.CEMO,
       strategy = FmsSubmissionStrategyKind.ORDER,
     )
-    whenever(repo.findByUsernameAndId("mockUser", mockOrder.id)).thenReturn(Optional.of(mockOrder))
+    whenever(repo.findById(mockOrder.id)).thenReturn(Optional.of(mockOrder))
     whenever(fmsService.submitOrder(any<Order>(), eq(FmsOrderSource.CEMO))).thenReturn(
       mockFmsResult,
     )
@@ -110,17 +111,35 @@ class OrderServiceTest {
   val mockStartDate: ZonedDateTime = ZonedDateTime.now().plusMonths(1)
   val mockEndDate: ZonedDateTime = ZonedDateTime.now().plusMonths(2)
   fun createReadyToSubmitOrder(noFixedAddress: Boolean = false): Order {
+    val orderId = UUID.randomUUID()
+    val versionId = UUID.randomUUID()
     val order = Order(
-      username = "AUTH_ADM",
-      status = OrderStatus.IN_PROGRESS,
-      type = RequestType.REQUEST,
+      id = orderId,
+      versions = mutableListOf(
+        OrderVersion(
+          id = versionId,
+          orderId = orderId,
+          username = "mockUser",
+          status = OrderStatus.IN_PROGRESS,
+          type = RequestType.REQUEST,
+        ),
+      ),
     )
     order.deviceWearer = DeviceWearer(
-      orderId = order.id,
+      versionId = versionId,
       firstName = "John",
       lastName = "Smith",
       alias = "Johnny",
-      dateOfBirth = ZonedDateTime.of(1990, 1, 1, 1, 1, 1, 1, ZoneId.systemDefault()),
+      dateOfBirth = ZonedDateTime.of(
+        1990,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        ZoneId.systemDefault(),
+      ),
       adultAtTimeOfInstallation = true,
       sex = "Male",
       gender = "Male",
@@ -136,13 +155,13 @@ class OrderServiceTest {
     )
 
     order.deviceWearerResponsibleAdult = ResponsibleAdult(
-      orderId = order.id,
+      versionId = versionId,
       fullName = "Mark Smith",
       contactNumber = "07401111111",
     )
 
     val responsibleOrganisationAddress = Address(
-      orderId = order.id,
+      versionId = versionId,
       addressLine1 = "Line 1",
       addressLine2 = "Line 2",
       addressLine3 = "",
@@ -152,7 +171,7 @@ class OrderServiceTest {
     )
 
     val installationAddress = Address(
-      orderId = order.id,
+      versionId = versionId,
       addressLine1 = "24 Somewhere Street",
       addressLine2 = "Nowhere City",
       addressLine3 = "Random County",
@@ -162,37 +181,41 @@ class OrderServiceTest {
     )
 
     if (!noFixedAddress) {
-      order.addresses = mutableListOf(
-        Address(
-          orderId = order.id,
-          addressLine1 = "20 Somewhere Street",
-          addressLine2 = "Nowhere City",
-          addressLine3 = "Random County",
-          addressLine4 = "United Kingdom",
-          postcode = "SW11 1NC",
-          addressType = AddressType.PRIMARY,
+      order.addresses.addAll(
+        mutableListOf(
+          Address(
+            versionId = versionId,
+            addressLine1 = "20 Somewhere Street",
+            addressLine2 = "Nowhere City",
+            addressLine3 = "Random County",
+            addressLine4 = "United Kingdom",
+            postcode = "SW11 1NC",
+            addressType = AddressType.PRIMARY,
+          ),
+          Address(
+            versionId = versionId,
+            addressLine1 = "22 Somewhere Street",
+            addressLine2 = "Nowhere City",
+            addressLine3 = "Random County",
+            addressLine4 = "United Kingdom",
+            postcode = "SW11 1NC",
+            addressType = AddressType.SECONDARY,
+          ),
+          responsibleOrganisationAddress,
+          installationAddress,
         ),
-        Address(
-          orderId = order.id,
-          addressLine1 = "22 Somewhere Street",
-          addressLine2 = "Nowhere City",
-          addressLine3 = "Random County",
-          addressLine4 = "United Kingdom",
-          postcode = "SW11 1NC",
-          addressType = AddressType.SECONDARY,
-        ),
-        responsibleOrganisationAddress,
-        installationAddress,
       )
     } else {
-      order.addresses = mutableListOf(
-        responsibleOrganisationAddress,
-        installationAddress,
+      order.addresses.addAll(
+        mutableListOf(
+          responsibleOrganisationAddress,
+          installationAddress,
+        ),
       )
     }
 
     order.installationAndRisk = InstallationAndRisk(
-      orderId = order.id,
+      versionId = versionId,
       offence = "Fraud Offences",
       riskDetails = "Danger",
       mappaLevel = "MAAPA 1",
@@ -200,11 +223,11 @@ class OrderServiceTest {
     )
 
     order.contactDetails = ContactDetails(
-      orderId = order.id,
+      versionId = versionId,
       contactNumber = "07401111111",
     )
     order.monitoringConditions = MonitoringConditions(
-      orderId = order.id,
+      versionId = versionId,
       orderType = OrderType.COMMUNITY,
       orderTypeDescription = OrderTypeDescription.DAPOL,
       startDate = mockStartDate,
@@ -216,9 +239,8 @@ class OrderServiceTest {
       caseId = "d8ea62e61bb8d610a10c20e0b24bcb85",
       conditionType = MonitoringConditionType.REQUIREMENT_OF_A_COMMUNITY_ORDER,
     )
-    order.additionalDocuments = mutableListOf()
     val curfewConditions = CurfewConditions(
-      orderId = order.id,
+      versionId = versionId,
       startDate = mockStartDate,
       endDate = mockEndDate,
       curfewAddress = "PRIMARY,SECONDARY",
@@ -226,7 +248,7 @@ class OrderServiceTest {
 
     val curfewTimeTables = DayOfWeek.entries.map {
       CurfewTimeTable(
-        orderId = order.id,
+        versionId = versionId,
         dayOfWeek = it,
         startTime = "17:00",
         endTime = "09:00",
@@ -236,7 +258,7 @@ class OrderServiceTest {
     order.curfewTimeTable.addAll(curfewTimeTables)
     val secondTimeTable = DayOfWeek.entries.map {
       CurfewTimeTable(
-        orderId = order.id,
+        versionId = versionId,
         dayOfWeek = it,
         startTime = "17:00",
         endTime = "09:00",
@@ -247,7 +269,7 @@ class OrderServiceTest {
     order.curfewConditions = curfewConditions
 
     order.curfewReleaseDateConditions = CurfewReleaseDateConditions(
-      orderId = order.id,
+      versionId = versionId,
       releaseDate = mockStartDate,
       startTime = "19:00",
       endTime = "23:00",
@@ -256,7 +278,7 @@ class OrderServiceTest {
 
     order.enforcementZoneConditions.add(
       EnforcementZoneConditions(
-        orderId = order.id,
+        versionId = versionId,
         description = "Mock Exclusion Zone",
         duration = "Mock Exclusion Duration",
         startDate = mockStartDate,
@@ -267,7 +289,7 @@ class OrderServiceTest {
 
     order.enforcementZoneConditions.add(
       EnforcementZoneConditions(
-        orderId = order.id,
+        versionId = versionId,
         description = "Mock Inclusion Zone",
         duration = "Mock Inclusion Duration",
         startDate = mockStartDate,
@@ -277,7 +299,7 @@ class OrderServiceTest {
     )
 
     order.monitoringConditionsAlcohol = AlcoholMonitoringConditions(
-      orderId = order.id,
+      versionId = versionId,
       startDate = mockStartDate,
       endDate = mockEndDate,
       monitoringType = AlcoholMonitoringType.ALCOHOL_ABSTINENCE,
@@ -285,13 +307,13 @@ class OrderServiceTest {
     )
 
     order.monitoringConditionsTrail = TrailMonitoringConditions(
-      orderId = order.id,
+      versionId = versionId,
       startDate = mockStartDate,
       endDate = mockEndDate,
     )
 
     order.interestedParties = InterestedParties(
-      orderId = order.id,
+      versionId = versionId,
       responsibleOfficerName = "John Smith",
       responsibleOfficerPhoneNumber = "07401111111",
       responsibleOrganisation = "Avon and Somerset Constabulary",

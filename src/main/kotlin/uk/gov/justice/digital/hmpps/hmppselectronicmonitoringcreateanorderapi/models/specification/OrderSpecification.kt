@@ -9,6 +9,7 @@ import org.springframework.data.jpa.domain.Specification
 import org.springframework.lang.Nullable
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.OrderSearchCriteria
 
 class OrderSpecification(private val criteria: OrderSearchCriteria) : Specification<Order> {
@@ -16,12 +17,19 @@ class OrderSpecification(private val criteria: OrderSearchCriteria) : Specificat
     return "%$str%"
   }
 
-  private fun isOwnedByUser(root: Root<Order>, criteriaBuilder: CriteriaBuilder, username: String): Predicate {
-    return criteriaBuilder.equal(root.get<String>(Order::username.name), username)
+  private fun isOwnedByUser(
+    version: Join<Order, OrderVersion>,
+    criteriaBuilder: CriteriaBuilder,
+    username: String,
+  ): Predicate {
+    return criteriaBuilder.equal(
+      version.get<String>(OrderVersion::username.name),
+      username,
+    )
   }
 
   private fun isLikeFirstName(
-    deviceWearer: Join<Order, DeviceWearer>,
+    deviceWearer: Join<OrderVersion, DeviceWearer>,
     criteriaBuilder: CriteriaBuilder,
     keyword: String,
   ): Predicate {
@@ -34,7 +42,7 @@ class OrderSpecification(private val criteria: OrderSearchCriteria) : Specificat
   }
 
   private fun isLikeLastName(
-    deviceWearer: Join<Order, DeviceWearer>,
+    deviceWearer: Join<OrderVersion, DeviceWearer>,
     criteriaBuilder: CriteriaBuilder,
     keyword: String,
   ): Predicate {
@@ -52,7 +60,14 @@ class OrderSpecification(private val criteria: OrderSearchCriteria) : Specificat
     criteriaBuilder: CriteriaBuilder,
   ): Predicate? {
     val predicates = mutableListOf<Predicate>()
-    val deviceWearer: Join<Order, DeviceWearer> = root.join("deviceWearer")
+    val version: Join<Order, OrderVersion> = root.join("versions")
+    val deviceWearer: Join<OrderVersion, DeviceWearer> = version.join("deviceWearer")
+
+    // Subquery to get the max version number
+    val subquery = query?.subquery(Int::class.java)
+    val subqueryRoot = subquery?.from(OrderVersion::class.java)
+    subquery?.select(criteriaBuilder.max(subqueryRoot?.get<Int>("versionId")))
+    subquery?.where(criteriaBuilder.equal(subqueryRoot?.get<Order>("order"), root))
 
     if (this.criteria.searchTerm.isNotEmpty()) {
       predicates.add(isLikeFirstName(deviceWearer, criteriaBuilder, this.criteria.searchTerm))
@@ -61,13 +76,15 @@ class OrderSpecification(private val criteria: OrderSearchCriteria) : Specificat
 
     if (predicates.isNotEmpty()) {
       return criteriaBuilder.and(
-        isOwnedByUser(root, criteriaBuilder, this.criteria.username),
+        criteriaBuilder.equal(version.get<Int>("versionId"), subquery),
+        isOwnedByUser(version, criteriaBuilder, this.criteria.username),
         criteriaBuilder.or(*predicates.toTypedArray()),
       )
     }
 
     return criteriaBuilder.and(
-      isOwnedByUser(root, criteriaBuilder, this.criteria.username),
+      criteriaBuilder.equal(version.get<Int>("versionId"), subquery),
+      isOwnedByUser(version, criteriaBuilder, this.criteria.username),
     )
   }
 }

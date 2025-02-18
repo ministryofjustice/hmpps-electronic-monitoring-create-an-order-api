@@ -89,7 +89,7 @@ class FmsOrderSubmissionStrategy(
         }.map {
           AdditionalDocument(
             id = it.fileId!!,
-            orderId = it.orderId,
+            versionId = order.getCurrentVersion().id,
             fileType = DocumentType.ENFORCEMENT_ZONE_MAP,
             fileName = it.fileName!!,
           )

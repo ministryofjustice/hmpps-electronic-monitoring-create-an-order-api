@@ -6,61 +6,70 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.ex
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.MonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.OrderSearchCriteria
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.CreateOrderDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.specification.OrderSpecification
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
-import java.util.UUID
+import java.util.*
 
 @Service
 class OrderService(
   val repo: OrderRepository,
   val fmsService: FmsService,
-
 ) {
   fun createOrder(username: String, createRecord: CreateOrderDto): Order {
-    val order = Order(
-      username = username,
-      status = OrderStatus.IN_PROGRESS,
-      type = createRecord.type,
+    val order = Order()
+
+    order.versions.add(
+      OrderVersion(
+        username = username,
+        status = OrderStatus.IN_PROGRESS,
+        type = createRecord.type,
+        orderId = order.id,
+      ),
     )
 
-    order.deviceWearer = DeviceWearer(orderId = order.id)
-    order.addresses = mutableListOf()
-    order.monitoringConditions = MonitoringConditions(orderId = order.id)
-    order.additionalDocuments = mutableListOf()
-    order.enforcementZoneConditions = mutableListOf()
-    order.mandatoryAttendanceConditions = mutableListOf()
+    order.versions[0].deviceWearer = DeviceWearer(
+      versionId = order.versions[0].id,
+    )
+
+    order.versions[0].monitoringConditions = MonitoringConditions(
+      versionId = order.versions[0].id,
+    )
 
     repo.save(order)
     return order
   }
 
-  fun deleteOrder(id: UUID, username: String) {
-    val order = repo.findByUsernameAndId(username, id).orElseThrow {
-      EntityNotFoundException("An order with id $id does not exist")
-    }
+  fun deleteCurrentVersionForOrder(id: UUID, username: String) {
+    val order = getOrder(id, username)
 
-    if (order.status == OrderStatus.SUBMITTED) {
-      throw IllegalStateException("Order with id $id cannot be deleted because it has already been submitted")
-    }
+    order.deleteCurrentVersion()
 
-    repo.delete(order)
+    if (order.versions.isEmpty()) {
+      repo.delete(order)
+    } else {
+      repo.save(order)
+    }
   }
 
-  fun getOrder(username: String, id: UUID): Order? {
-    return repo.findByUsernameAndId(
-      username,
-      id,
-    ).orElseThrow {
-      EntityNotFoundException("Order ($id) for $username not found")
+  fun getOrder(id: UUID, username: String): Order {
+    val order = repo.findById(id).orElseThrow {
+      EntityNotFoundException("Order with id $id does not exist")
     }
+
+    if (order.username != username) {
+      throw EntityNotFoundException("Order ($id) for $username not found")
+    }
+
+    return order
   }
 
   fun submitOrder(id: UUID, username: String): Order {
-    val order = getOrder(username, id)!!
+    val order = getOrder(id, username)
 
     if (order.status == OrderStatus.SUBMITTED) {
       throw SubmitOrderException("This order has already been submitted")
@@ -93,6 +102,7 @@ class OrderService(
         throw SubmitOrderException("The order could not be submitted to Serco", e)
       }
     }
+
     return order
   }
 
