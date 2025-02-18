@@ -30,6 +30,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.in
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.listener.CourtHearingEventListener
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsResult
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsSubmissionResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.FmsSubmissionResultRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.courthearing.HearingEventHandler
 import uk.gov.justice.hmpps.sqs.HmppsQueueService
@@ -289,6 +290,12 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
   }
 
   @Test
+  fun `Will map Multi_Defendant_only_one_with_EM_CCIILA_RILA_exclusion request and submit to FMS`() {
+    val rootFilePath = "src/test/resources/json/Multi_Defendant_only_one_with_EM_CCIILA_RILA_exclusion"
+    runPayloadTest(rootFilePath, false, 2)
+  }
+
+  @Test
   fun `Will map REMIL_pre-trail_exclusions_and_curfew request and submit to FMS`() {
     val rootFilePath = "src/test/resources/json/REMIL_pre-trail_exclusions_and_curfew"
     runPayloadTest(rootFilePath)
@@ -302,7 +309,7 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
     runPayloadTest(rootFilePath, true)
   }
 
-  fun runPayloadTest(rootFilePath: String, isLargeMessage: Boolean = false) {
+  fun runPayloadTest(rootFilePath: String, isLargeMessage: Boolean = false, numberOfDefendant: Int = 1) {
     var rawMessage = ""
     if (isLargeMessage) {
       rawMessage = generateRawLargeHearingEventMessage("$rootFilePath/cp_payload.json")
@@ -320,12 +327,32 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
     )
     courtHearingEventListener.onDomainEvent(rawMessage)
     assertThat(getNumberOfMessagesCurrentlyOnDeadLetterQueue()).isEqualTo(0)
-    val savedResult = fmsSubmissionRepo.findAll().first()
-    assertThat(savedResult).isNotNull
-    val mockDeviceWearerJson = Files.readString(Paths.get("$rootFilePath/expected_fms_device_wearer.json"))
-    val mockOrderJson = Files.readString(
-      Paths.get("$rootFilePath/expected_fms_order.json"),
-    ).replace("{expectedOderId}", savedResult.orderId.toString())
+    if (numberOfDefendant == 1) {
+      val savedResult = fmsSubmissionRepo.findAll().first()
+      assertThat(savedResult).isNotNull
+      val mockDeviceWearerJson = Files.readString(Paths.get("$rootFilePath/expected_fms_device_wearer.json"))
+      val mockOrderJson = Files.readString(
+        Paths.get("$rootFilePath/expected_fms_order.json"),
+      ).replace("{expectedOderId}", savedResult.orderId.toString())
+      assertSavedFmsRequests(savedResult, mockDeviceWearerJson, mockOrderJson)
+    } else {
+      val savedResult = fmsSubmissionRepo.findAll()
+      assertThat(savedResult.count()).isEqualTo(numberOfDefendant)
+      for ((index, result) in savedResult.withIndex()) {
+        val mockDeviceWearerJson = Files.readString(Paths.get("$rootFilePath/expected_fms_device_wearer_$index.json"))
+        val mockOrderJson = Files.readString(
+          Paths.get("$rootFilePath/expected_fms_order_$index.json"),
+        ).replace("{expectedOderId}", result.orderId.toString())
+        assertSavedFmsRequests(result, mockDeviceWearerJson, mockOrderJson)
+      }
+    }
+  }
+
+  private fun assertSavedFmsRequests(
+    savedResult: FmsSubmissionResult,
+    mockDeviceWearerJson: String,
+    mockOrderJson: String,
+  ) {
     assertThat(savedResult.deviceWearerResult.payload).isEqualTo(mockDeviceWearerJson.removeWhitespaceAndNewlines())
     assertThat(savedResult.monitoringOrderResult.payload).isEqualTo(mockOrderJson.removeWhitespaceAndNewlines())
     assertThat(savedResult.error).isEqualTo("")
