@@ -90,6 +90,7 @@ class OrderController(
       installationAndRisk = order.installationAndRisk,
       interestedParties = order.interestedParties,
       isValid = order.isValid,
+      mandatoryAttendanceConditions = order.mandatoryAttendanceConditions,
       monitoringConditions = order.monitoringConditions,
       monitoringConditionsAlcohol = order.monitoringConditionsAlcohol,
       monitoringConditionsTrail = order.monitoringConditionsTrail,
