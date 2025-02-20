@@ -12,7 +12,7 @@ enum class ResponsibleOrganisation(val value: String) {
   companion object {
     fun from(value: String?): ResponsibleOrganisation? {
       return ResponsibleOrganisation.entries.firstOrNull {
-        it.value == value
+        it.toString() == value
       }
     }
   }
