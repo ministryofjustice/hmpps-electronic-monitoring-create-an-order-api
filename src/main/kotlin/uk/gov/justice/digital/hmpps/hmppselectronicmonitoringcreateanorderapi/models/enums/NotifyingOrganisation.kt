@@ -13,7 +13,7 @@ enum class NotifyingOrganisation(val value: String) {
   companion object {
     fun from(value: String?): NotifyingOrganisation? {
       return NotifyingOrganisation.entries.firstOrNull {
-        it.value == value
+        it.name == value
       }
     }
   }

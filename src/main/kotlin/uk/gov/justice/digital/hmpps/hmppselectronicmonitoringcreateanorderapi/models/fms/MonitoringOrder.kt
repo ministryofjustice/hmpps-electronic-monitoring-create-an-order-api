@@ -375,89 +375,30 @@ data class MonitoringOrder(
     }
 
     private fun getNotifyingOrganisation(order: Order): String {
-      val interestedParties = order.interestedParties
-
-      if (interestedParties != null) {
-        for (no in NotifyingOrganisation.entries) {
-          if (no.name == interestedParties.notifyingOrganisation) {
-            return no.value
-          }
-        }
-
-        if (interestedParties.notifyingOrganisation != "") {
-          return interestedParties.notifyingOrganisation
-        }
-      }
-
-      return "N/A"
+      return NotifyingOrganisation.from(order.interestedParties?.notifyingOrganisation)?.value
+        ?: order.interestedParties?.notifyingOrganisation
+        ?: "N/A"
     }
 
     private fun getNotifyingOrganisationName(order: Order): String {
-      val interestedParties = order.interestedParties
-
-      if (interestedParties != null) {
-        if (interestedParties.notifyingOrganisation == "PRISON") {
-          for (no in Prison.entries) {
-            if (no.name == interestedParties.notifyingOrganisationName) {
-              return no.value
-            }
-          }
-        }
-
-        if (interestedParties.notifyingOrganisation == "CROWN_COURT") {
-          for (no in CrownCourt.entries) {
-            if (no.name == interestedParties.notifyingOrganisationName) {
-              return no.value
-            }
-          }
-        }
-
-        if (interestedParties.notifyingOrganisation == "MAGISTRATES_COURT") {
-          for (no in MagistrateCourt.entries) {
-            if (no.name == interestedParties.notifyingOrganisationName) {
-              return no.value
-            }
-          }
-        }
-
-        return interestedParties.notifyingOrganisationName
-      }
-
-      return ""
+      return Prison.from(order.interestedParties?.notifyingOrganisationName)?.value
+        ?: CrownCourt.from(order.interestedParties?.notifyingOrganisationName)?.value
+        ?: MagistrateCourt.from(order.interestedParties?.notifyingOrganisationName)?.value
+        ?: order.interestedParties?.notifyingOrganisationName
+        ?: ""
     }
 
     private fun getResponsibleOrganisation(order: Order): String {
-      val interestedParties = order.interestedParties
-
-      return ResponsibleOrganisation.from(interestedParties?.responsibleOrganisation)?.value
-        ?: interestedParties?.responsibleOrganisation
+      return ResponsibleOrganisation.from(order.interestedParties?.responsibleOrganisation)?.value
+        ?: order.interestedParties?.responsibleOrganisation
         ?: "N/A"
     }
 
     private fun getResponsibleOrganisationRegion(order: Order): String {
-      val interestedParties = order.interestedParties
-
-      if (interestedParties != null) {
-        if (interestedParties.responsibleOrganisation == "PROBATION") {
-          for (no in ProbationServiceRegion.entries) {
-            if (no.name == interestedParties.responsibleOrganisationRegion) {
-              return no.value
-            }
-          }
-        }
-
-        if (interestedParties.notifyingOrganisation == "YJS") {
-          for (no in YouthJusticeServiceRegions.entries) {
-            if (no.name == interestedParties.responsibleOrganisationRegion) {
-              return no.value
-            }
-          }
-        }
-
-        return interestedParties.responsibleOrganisationRegion
-      }
-
-      return ""
+      return ProbationServiceRegion.from(order.interestedParties?.responsibleOrganisationRegion)?.value
+        ?: YouthJusticeServiceRegions.from(order.interestedParties?.responsibleOrganisationRegion)?.value
+        ?: order.interestedParties?.responsibleOrganisationRegion
+        ?: ""
     }
   }
 }
