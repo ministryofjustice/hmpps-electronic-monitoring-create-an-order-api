@@ -8,4 +8,13 @@ enum class NotifyingOrganisation(val value: String) {
   SCOTTISH_COURT("Scottish Court"),
   FAMILY_COURT("Family Court"),
   PROBATION("Probation"),
+  ;
+
+  companion object {
+    fun from(value: String?): NotifyingOrganisation? {
+      return NotifyingOrganisation.entries.firstOrNull {
+        it.value == value
+      }
+    }
+  }
 }
