@@ -6,8 +6,15 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.CrownCourt
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.EnforcementZoneType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MagistrateCourt
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisation
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Prison
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ProbationServiceRegion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ResponsibleOrganisation
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YouthJusticeServiceRegions
 import java.time.DayOfWeek
 import java.time.format.DateTimeFormatter
 
@@ -303,19 +310,11 @@ data class MonitoringOrder(
         val interestedParties = order.interestedParties!!
         monitoringOrder.responsibleOfficerName = interestedParties.responsibleOfficerName
         monitoringOrder.responsibleOfficerPhone = interestedParties.responsibleOfficerPhoneNumber
-        monitoringOrder.responsibleOrganization = if (interestedParties.responsibleOrganisation == "") {
-          "N/A"
-        } else {
-          interestedParties.responsibleOrganisation
-        }
-        monitoringOrder.roRegion = interestedParties.responsibleOrganisationRegion
+        monitoringOrder.responsibleOrganization = getResponsibleOrganisation(order)
+        monitoringOrder.roRegion = getResponsibleOrganisationRegion(order)
         monitoringOrder.roPhone = interestedParties.responsibleOrganisationPhoneNumber
         monitoringOrder.roEmail = interestedParties.responsibleOrganisationEmail
-        monitoringOrder.notifyingOrganization = if (interestedParties.notifyingOrganisation == "") {
-          "N/A"
-        } else {
-          interestedParties.notifyingOrganisation
-        }
+        monitoringOrder.notifyingOrganization = getNotifyingOrganisation(order)
         val address = order.addresses.firstOrNull { it.addressType == AddressType.RESPONSIBLE_ORGANISATION }
         if (address != null) {
           monitoringOrder.roAddress1 = address.addressLine1
@@ -324,7 +323,7 @@ data class MonitoringOrder(
           monitoringOrder.roAddress4 = address.addressLine4
           monitoringOrder.roPostCode = address.postcode
         }
-        monitoringOrder.noName = interestedParties.notifyingOrganisationName
+        monitoringOrder.noName = getNotifyingOrganisationName(order)
         monitoringOrder.noEmail = interestedParties.notifyingOrganisationEmail
       }
 
@@ -373,6 +372,33 @@ data class MonitoringOrder(
         )
       }
       return schedules
+    }
+
+    private fun getNotifyingOrganisation(order: Order): String {
+      return NotifyingOrganisation.from(order.interestedParties?.notifyingOrganisation)?.value
+        ?: order.interestedParties?.notifyingOrganisation
+        ?: "N/A"
+    }
+
+    private fun getNotifyingOrganisationName(order: Order): String {
+      return Prison.from(order.interestedParties?.notifyingOrganisationName)?.value
+        ?: CrownCourt.from(order.interestedParties?.notifyingOrganisationName)?.value
+        ?: MagistrateCourt.from(order.interestedParties?.notifyingOrganisationName)?.value
+        ?: order.interestedParties?.notifyingOrganisationName
+        ?: ""
+    }
+
+    private fun getResponsibleOrganisation(order: Order): String {
+      return ResponsibleOrganisation.from(order.interestedParties?.responsibleOrganisation)?.value
+        ?: order.interestedParties?.responsibleOrganisation
+        ?: "N/A"
+    }
+
+    private fun getResponsibleOrganisationRegion(order: Order): String {
+      return ProbationServiceRegion.from(order.interestedParties?.responsibleOrganisationRegion)?.value
+        ?: YouthJusticeServiceRegions.from(order.interestedParties?.responsibleOrganisationRegion)?.value
+        ?: order.interestedParties?.responsibleOrganisationRegion
+        ?: ""
     }
   }
 }

@@ -9,4 +9,13 @@ enum class YouthJusticeServiceRegions(val value: String) {
   SOUTH_WEST_AND_SOUTH_CENTRAL("South West and Central"),
   LONDON("London"),
   EAST_AND_SOUTH_EAST("East and South East"),
+  ;
+
+  companion object {
+    fun from(value: String?): YouthJusticeServiceRegions? {
+      return YouthJusticeServiceRegions.entries.firstOrNull {
+        it.name == value
+      }
+    }
+  }
 }

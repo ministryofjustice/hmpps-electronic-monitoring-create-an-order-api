@@ -123,4 +123,13 @@ enum class MagistrateCourt(val value: String) {
   WORTHIN_MAGISTRATE_COURT("Worthing Magistrates Court"),
   WREXHAM_MAGISTRATES_COURT("Wrexham Magistrates Court"),
   YEOVIL_COUNTY_MAGISTRATES_COURT("Yeovil County, Magistrates Court"),
+  ;
+
+  companion object {
+    fun from(value: String?): MagistrateCourt? {
+      return MagistrateCourt.entries.firstOrNull {
+        it.name == value
+      }
+    }
+  }
 }

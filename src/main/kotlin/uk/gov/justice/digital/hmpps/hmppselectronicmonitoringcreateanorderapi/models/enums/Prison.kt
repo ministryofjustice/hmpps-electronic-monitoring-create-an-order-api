@@ -122,4 +122,13 @@ enum class Prison(val value: String) {
   WOODHILL_PRISON("Woodhill Prison"),
   WORMWOOD_SCRUBS_PRISON("Wormwood Scrubs Prison"),
   WYMOTT_PRISON("Wymott Prison"),
+  ;
+
+  companion object {
+    fun from(value: String?): Prison? {
+      return Prison.entries.firstOrNull {
+        it.name == value
+      }
+    }
+  }
 }
