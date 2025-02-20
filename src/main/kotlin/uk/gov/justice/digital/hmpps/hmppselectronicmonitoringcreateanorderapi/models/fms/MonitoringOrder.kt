@@ -6,8 +6,15 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.CrownCourt
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.EnforcementZoneType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MagistrateCourt
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisation
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Prison
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ProbationServiceRegion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ResponsibleOrganisation
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YouthJusticeServiceRegions
 import java.time.DayOfWeek
 import java.time.format.DateTimeFormatter
 
@@ -303,19 +310,11 @@ data class MonitoringOrder(
         val interestedParties = order.interestedParties!!
         monitoringOrder.responsibleOfficerName = interestedParties.responsibleOfficerName
         monitoringOrder.responsibleOfficerPhone = interestedParties.responsibleOfficerPhoneNumber
-        monitoringOrder.responsibleOrganization = if (interestedParties.responsibleOrganisation == "") {
-          "N/A"
-        } else {
-          interestedParties.responsibleOrganisation
-        }
-        monitoringOrder.roRegion = interestedParties.responsibleOrganisationRegion
+        monitoringOrder.responsibleOrganization = getResponsibleOrganisation(order)
+        monitoringOrder.roRegion = getResponsibleOrganisationRegion(order)
         monitoringOrder.roPhone = interestedParties.responsibleOrganisationPhoneNumber
         monitoringOrder.roEmail = interestedParties.responsibleOrganisationEmail
-        monitoringOrder.notifyingOrganization = if (interestedParties.notifyingOrganisation == "") {
-          "N/A"
-        } else {
-          interestedParties.notifyingOrganisation
-        }
+        monitoringOrder.notifyingOrganization = getNotifyingOrganisation(order)
         val address = order.addresses.firstOrNull { it.addressType == AddressType.RESPONSIBLE_ORGANISATION }
         if (address != null) {
           monitoringOrder.roAddress1 = address.addressLine1
@@ -324,7 +323,7 @@ data class MonitoringOrder(
           monitoringOrder.roAddress4 = address.addressLine4
           monitoringOrder.roPostCode = address.postcode
         }
-        monitoringOrder.noName = interestedParties.notifyingOrganisationName
+        monitoringOrder.noName = getNotifyingOrganisationName(order)
         monitoringOrder.noEmail = interestedParties.notifyingOrganisationEmail
       }
 
@@ -373,6 +372,102 @@ data class MonitoringOrder(
         )
       }
       return schedules
+    }
+
+    private fun getNotifyingOrganisation(order: Order): String {
+      val interestedParties = order.interestedParties
+
+      if (interestedParties != null) {
+        for (no in NotifyingOrganisation.entries) {
+          if (no.name == interestedParties.notifyingOrganisation) {
+            return no.value
+          }
+        }
+
+        if (interestedParties.notifyingOrganisation != "") {
+          return interestedParties.notifyingOrganisation
+        }
+      }
+
+      return "N/A"
+    }
+
+    private fun getNotifyingOrganisationName(order: Order): String {
+      val interestedParties = order.interestedParties
+
+      if (interestedParties != null) {
+        if (interestedParties.notifyingOrganisation == "PRISON") {
+          for (no in Prison.entries) {
+            if (no.name == interestedParties.notifyingOrganisationName) {
+              return no.value
+            }
+          }
+        }
+
+        if (interestedParties.notifyingOrganisation == "CROWN_COURT") {
+          for (no in CrownCourt.entries) {
+            if (no.name == interestedParties.notifyingOrganisationName) {
+              return no.value
+            }
+          }
+        }
+
+        if (interestedParties.notifyingOrganisation == "MAGISTRATES_COURT") {
+          for (no in MagistrateCourt.entries) {
+            if (no.name == interestedParties.notifyingOrganisationName) {
+              return no.value
+            }
+          }
+        }
+
+        return interestedParties.notifyingOrganisationName
+      }
+
+      return ""
+    }
+
+    private fun getResponsibleOrganisation(order: Order): String {
+      val interestedParties = order.interestedParties
+
+      if (interestedParties != null) {
+        for (no in ResponsibleOrganisation.entries) {
+          if (no.name == interestedParties.responsibleOrganisation) {
+            return no.value
+          }
+        }
+
+        if (interestedParties.responsibleOrganisation != "") {
+          return interestedParties.responsibleOrganisation
+        }
+      }
+
+      return "N/A"
+    }
+
+    private fun getResponsibleOrganisationRegion(order: Order): String {
+      val interestedParties = order.interestedParties
+
+      if (interestedParties != null) {
+        if (interestedParties.responsibleOrganisation == "PROBATION") {
+          for (no in ProbationServiceRegion.entries) {
+            if (no.name == interestedParties.responsibleOrganisationRegion) {
+              return no.value
+            }
+          }
+        }
+
+        if (interestedParties.notifyingOrganisation == "YJS") {
+          for (no in YouthJusticeServiceRegions.entries) {
+            if (no.name == interestedParties.responsibleOrganisationRegion) {
+              return no.value
+            }
+          }
+        }
+
+        return interestedParties.responsibleOrganisationRegion
+      }
+
+      return ""
     }
   }
 }
