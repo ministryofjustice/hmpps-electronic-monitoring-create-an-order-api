@@ -429,19 +429,9 @@ data class MonitoringOrder(
     private fun getResponsibleOrganisation(order: Order): String {
       val interestedParties = order.interestedParties
 
-      if (interestedParties != null) {
-        for (no in ResponsibleOrganisation.entries) {
-          if (no.name == interestedParties.responsibleOrganisation) {
-            return no.value
-          }
-        }
-
-        if (interestedParties.responsibleOrganisation != "") {
-          return interestedParties.responsibleOrganisation
-        }
-      }
-
-      return "N/A"
+      return ResponsibleOrganisation.from(interestedParties?.responsibleOrganisation)?.value
+        ?: interestedParties?.responsibleOrganisation
+        ?: "N/A"
     }
 
     private fun getResponsibleOrganisationRegion(order: Order): String {

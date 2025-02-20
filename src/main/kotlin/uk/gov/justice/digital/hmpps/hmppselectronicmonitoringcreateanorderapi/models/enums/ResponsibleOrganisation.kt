@@ -7,4 +7,13 @@ enum class ResponsibleOrganisation(val value: String) {
   FIELD_MONITORING_SERVICE("Field Monitoring Service"),
   HOME_OFFICE("Home Office"),
   POLICE("Police"),
+  ;
+
+  companion object {
+    fun from(value: String?): ResponsibleOrganisation? {
+      return ResponsibleOrganisation.entries.firstOrNull {
+        it.toString() == value
+      }
+    }
+  }
 }
