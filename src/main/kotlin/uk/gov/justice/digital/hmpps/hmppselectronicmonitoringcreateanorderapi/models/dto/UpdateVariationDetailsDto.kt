@@ -2,18 +2,19 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.m
 
 import jakarta.validation.constraints.AssertTrue
 import jakarta.validation.constraints.NotEmpty
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.data.ValidationErrors
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.VariationType
 import java.time.ZonedDateTime
 import java.time.format.DateTimeParseException
 
 data class UpdateVariationDetailsDto(
-  @field:NotEmpty(message = "Variation type is required")
+  @field:NotEmpty(message = ValidationErrors.VariationDetails.TYPE_REQUIRED)
   val variationType: String = "",
 
-  @field:NotEmpty(message = "Variation date is required")
+  @field:NotEmpty(message = ValidationErrors.VariationDetails.DATE_REQUIRED)
   val variationDate: String = "",
 ) {
-  @AssertTrue(message = "Variation type must be a valid variation type")
+  @AssertTrue(message = ValidationErrors.VariationDetails.TYPE_MUST_BE_VALID)
   fun isVariationType(): Boolean {
     // Prevent additional error being generated for empty string
     if (variationType == "") {
@@ -29,7 +30,7 @@ data class UpdateVariationDetailsDto(
     return false
   }
 
-  @AssertTrue(message = "Variation date must be a valid date")
+  @AssertTrue(message = ValidationErrors.VariationDetails.DATE_MUST_BE_VALID)
   fun isVariationDate(): Boolean {
     // Prevent additional error being generated for empty string
     if (variationDate == "") {

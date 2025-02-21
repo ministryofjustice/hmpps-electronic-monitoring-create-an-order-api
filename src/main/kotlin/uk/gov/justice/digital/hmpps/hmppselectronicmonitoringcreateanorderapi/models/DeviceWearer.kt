@@ -8,6 +8,7 @@ import jakarta.persistence.JoinColumn
 import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
 import jakarta.validation.constraints.Past
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.data.ValidationErrors
 import java.time.ZonedDateTime
 import java.util.UUID
 
@@ -62,7 +63,7 @@ data class DeviceWearer(
   var interpreterRequired: Boolean? = null,
 
   @Column(name = "DATE_OF_BIRTH", nullable = true)
-  @field:Past(message = "Date of birth must be in the past")
+  @field:Past(message = ValidationErrors.DeviceWearer.DOB_REQUIRED)
   var dateOfBirth: ZonedDateTime? = null,
 
   @Column(name = "DISABILITIES", nullable = true)

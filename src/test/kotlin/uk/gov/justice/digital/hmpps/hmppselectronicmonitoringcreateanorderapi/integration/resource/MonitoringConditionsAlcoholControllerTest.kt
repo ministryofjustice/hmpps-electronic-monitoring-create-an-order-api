@@ -40,6 +40,13 @@ class MonitoringConditionsAlcoholControllerTest : IntegrationTestBase() {
     }
   """.trimIndent()
 
+  private object ErrorMessages {
+    const val MONITORING_TYPE_REQUIRED: String = "Select what alcohol monitoring the device wearer needs"
+    const val START_DATE_REQUIRED: String = "Enter date alcohol monitoring starts"
+    const val END_DATE_MUST_BE_IN_FUTURE: String = "Date alcohol monitoring ends must be in the future"
+    const val INSTALLATION_LOCATION_REQUIRED: String = "Select the address of the base station "
+  }
+
   @BeforeEach
   fun setup() {
     repo.deleteAll()
@@ -164,7 +171,7 @@ class MonitoringConditionsAlcoholControllerTest : IntegrationTestBase() {
     Assertions.assertThat(result.responseBody).isNotNull
     Assertions.assertThat(result.responseBody).hasSize(1)
     Assertions.assertThat(result.responseBody!!).contains(
-      ValidationError("startDate", "Start date is required"),
+      ValidationError("startDate", ErrorMessages.START_DATE_REQUIRED),
     )
   }
 
@@ -199,7 +206,7 @@ class MonitoringConditionsAlcoholControllerTest : IntegrationTestBase() {
     Assertions.assertThat(result.responseBody).isNotNull
     Assertions.assertThat(result.responseBody).hasSize(1)
     Assertions.assertThat(result.responseBody!!).contains(
-      ValidationError("monitoringType", "Monitoring type is required"),
+      ValidationError("monitoringType", ErrorMessages.MONITORING_TYPE_REQUIRED),
     )
   }
 
@@ -234,7 +241,7 @@ class MonitoringConditionsAlcoholControllerTest : IntegrationTestBase() {
     Assertions.assertThat(result.responseBody).isNotNull
     Assertions.assertThat(result.responseBody).hasSize(1)
     Assertions.assertThat(result.responseBody!!).contains(
-      ValidationError("installationLocation", "Installation location is required"),
+      ValidationError("installationLocation", ErrorMessages.INSTALLATION_LOCATION_REQUIRED),
     )
   }
 
@@ -305,7 +312,7 @@ class MonitoringConditionsAlcoholControllerTest : IntegrationTestBase() {
     Assertions.assertThat(result.responseBody).isNotNull
     Assertions.assertThat(result.responseBody).hasSize(1)
     Assertions.assertThat(result.responseBody!!).contains(
-      ValidationError("endDate", "End date must be in the future"),
+      ValidationError("endDate", ErrorMessages.END_DATE_MUST_BE_IN_FUTURE),
     )
   }
 }

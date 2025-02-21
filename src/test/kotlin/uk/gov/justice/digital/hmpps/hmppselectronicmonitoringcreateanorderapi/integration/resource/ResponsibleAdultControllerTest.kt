@@ -17,6 +17,12 @@ class ResponsibleAdultControllerTest : IntegrationTestBase() {
   private val mockRelationship: String = "mockRelationship"
   private val mockContactNumber: String = "01234567890"
 
+  private object ErrorMessages {
+    const val FULL_NAME_REQUIRED: String = "Enter responsible adult's full name"
+    const val RELATIONSHIP_REQUIRED: String = "Enter details of their relationship"
+    const val RELATIONSHIP_DETAILS_REQUIRED: String = "Select their relationship to the device wearer"
+  }
+
   @BeforeEach
   fun setup() {
     repo.deleteAll()
@@ -187,10 +193,10 @@ class ResponsibleAdultControllerTest : IntegrationTestBase() {
     Assertions.assertThat(result.responseBody).isNotNull
     Assertions.assertThat(result.responseBody).hasSize(2)
     Assertions.assertThat(result.responseBody!!).contains(
-      ValidationError("fullName", "Full name is required"),
+      ValidationError("fullName", ErrorMessages.FULL_NAME_REQUIRED),
     )
     Assertions.assertThat(result.responseBody!!).contains(
-      ValidationError("relationship", "Relationship is required"),
+      ValidationError("relationship", ErrorMessages.RELATIONSHIP_REQUIRED),
     )
   }
 
@@ -250,7 +256,7 @@ class ResponsibleAdultControllerTest : IntegrationTestBase() {
       Assertions.assertThat(result.responseBody!!).contains(
         ValidationError(
           "otherRelationshipDetails",
-          "You must provide details of the responsible adult to the device wearer",
+          ErrorMessages.RELATIONSHIP_DETAILS_REQUIRED,
         ),
       )
     }

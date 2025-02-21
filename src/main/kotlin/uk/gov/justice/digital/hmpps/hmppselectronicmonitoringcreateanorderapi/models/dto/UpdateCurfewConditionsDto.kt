@@ -4,20 +4,21 @@ import jakarta.validation.constraints.AssertTrue
 import jakarta.validation.constraints.Future
 import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Size
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.data.ValidationErrors
 import java.time.ZonedDateTime
 
 data class UpdateCurfewConditionsDto(
-  @field:NotNull(message = "Enter curfew start day")
+  @field:NotNull(message = ValidationErrors.CurfewConditions.START_DATE_REQUIRED)
   var startDate: ZonedDateTime? = null,
 
-  @field:Future(message = "Curfew end day must be in the future")
+  @field:Future(message = ValidationErrors.CurfewConditions.END_DATE_MUST_BE_IN_FUTURE)
   var endDate: ZonedDateTime? = null,
 
-  @field:NotNull(message = "Curfew address is required")
-  @field:Size(min = 1, message = "Curfew address is required")
+  @field:NotNull(message = ValidationErrors.CurfewConditions.ADDRESS_REQUIRED)
+  @field:Size(min = 1, message = ValidationErrors.CurfewConditions.ADDRESS_REQUIRED)
   var curfewAddress: String? = null,
 ) {
-  @AssertTrue(message = "End date must be after start date")
+  @AssertTrue(message = ValidationErrors.CurfewConditions.END_DATE_MUST_BE_AFTER_START_DATE)
   fun isEndDate(): Boolean {
     if (this.endDate != null && this.startDate != null) {
       return this.endDate!! > this.startDate

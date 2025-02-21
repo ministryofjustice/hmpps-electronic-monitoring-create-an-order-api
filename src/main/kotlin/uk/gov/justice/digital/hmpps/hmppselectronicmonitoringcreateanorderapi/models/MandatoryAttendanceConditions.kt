@@ -8,6 +8,7 @@ import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
 import jakarta.validation.constraints.NotNull
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.data.ValidationErrors
 import java.time.LocalDate
 import java.util.*
 
@@ -23,7 +24,7 @@ data class MandatoryAttendanceConditions(
 
   @Column(name = "START_DATE", nullable = false)
   @field:NotNull(
-    message = "Please enter a mandatory attendance monitoring start date date to continue to the next page",
+    message = ValidationErrors.MandatoryAttendance.START_DATE_REQUIRED,
   )
   var startDate: LocalDate? = null,
 
@@ -31,37 +32,37 @@ data class MandatoryAttendanceConditions(
   var endDate: LocalDate? = null,
 
   @Column(name = "PURPOSE", nullable = false)
-  @field:NotNull(message = "Please provide appointment details to continue to the next page")
+  @field:NotNull(message = ValidationErrors.MandatoryAttendance.PURPOSE_REQUIRED)
   var purpose: String? = null,
 
   @Column(name = "APPOINTMENT_DAY", nullable = false)
-  @field:NotNull(message = "Please provide appointment day to continue to the next page")
+  @field:NotNull(message = ValidationErrors.MandatoryAttendance.APPOINTMENT_DAY_REQUIRED)
   var appointmentDay: String? = null,
 
   @Column(name = "START_TIME", nullable = false)
-  @field:NotNull(message = "Please provide appointment start time to continue to the next page")
+  @field:NotNull(message = ValidationErrors.MandatoryAttendance.START_TIME_REQUIRED)
   var startTime: String? = null,
 
   @Column(name = "END_TIME", nullable = false)
-  @field:NotNull(message = "Please provide appointment end time to continue to the next page")
+  @field:NotNull(message = ValidationErrors.MandatoryAttendance.END_TIME_REQUIRED)
   var endTime: String? = null,
 
   @Column(name = "ADDRESS_LINE_1", nullable = false)
-  @field:NotNull(message = "Please provide an appointment location")
+  @field:NotNull(message = ValidationErrors.Address.ADDRESS_1_REQUIRED)
   var addressLine1: String? = null,
 
   @Column(name = "ADDRESS_LINE_2", nullable = false)
-  @field:NotNull(message = "Please provide an appointment location")
   var addressLine2: String? = null,
 
   @Column(name = "ADDRESS_LINE_3", nullable = true)
+  @field:NotNull(message = ValidationErrors.Address.ADDRESS_3_REQUIRED)
   var addressLine3: String? = null,
 
   @Column(name = "ADDRESS_LINE_4", nullable = true)
   var addressLine4: String? = null,
 
   @Column(name = "POSTCODE", nullable = true)
-  @field:NotNull(message = "Please provide a postcode")
+  @field:NotNull(message = ValidationErrors.Address.POSTCODE_REQUIRED)
   var postcode: String? = null,
 
   @Schema(hidden = true)

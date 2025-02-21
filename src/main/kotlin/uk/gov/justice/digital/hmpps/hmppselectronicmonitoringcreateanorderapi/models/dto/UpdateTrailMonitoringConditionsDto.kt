@@ -2,11 +2,12 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.m
 
 import jakarta.validation.constraints.Future
 import jakarta.validation.constraints.NotNull
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.data.ValidationErrors
 import java.time.ZonedDateTime
 
 data class UpdateTrailMonitoringConditionsDto(
-  @field:NotNull(message = "Start date is required")
+  @field:NotNull(message = ValidationErrors.TrailMonitoringConditions.START_DATE_REQUIRED)
   val startDate: ZonedDateTime? = null,
-  @field:Future(message = "End date must be in the future")
+  @field:Future(message = ValidationErrors.TrailMonitoringConditions.END_DATE_MUST_BE_IN_FUTURE)
   val endDate: ZonedDateTime? = null,
 )

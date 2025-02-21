@@ -32,6 +32,13 @@ class CurfewConditionControllerTest : IntegrationTestBase() {
   )
   private val mockPastEndDate = mockPastStartDate.plusDays(1)
 
+  private object ErrorMessages {
+    const val START_DATE_REQUIRED: String = "Enter date curfew starts"
+    const val END_DATE_MUST_BE_IN_FUTURE: String = "Date curfew ends must be in the future"
+    const val END_DATE_MUST_BE_AFTER_START_DATE: String = "Date curfew ends be after the date curfew starts"
+    const val ADDRESS_REQUIRED: String = "Select where the device wearer will be during curfew hours"
+  }
+
   @BeforeEach
   fun setup() {
     repo.deleteAll()
@@ -107,8 +114,8 @@ class CurfewConditionControllerTest : IntegrationTestBase() {
     Assertions.assertThat(result.responseBody).hasSize(2)
     Assertions.assertThat(
       error,
-    ).contains(ValidationError("curfewAddress", "Curfew address is required"))
-    Assertions.assertThat(error).contains(ValidationError("startDate", "Enter curfew start day"))
+    ).contains(ValidationError("curfewAddress", ErrorMessages.ADDRESS_REQUIRED))
+    Assertions.assertThat(error).contains(ValidationError("startDate", ErrorMessages.START_DATE_REQUIRED))
   }
 
   @Test
@@ -139,7 +146,7 @@ class CurfewConditionControllerTest : IntegrationTestBase() {
     Assertions.assertThat(result.responseBody).hasSize(1)
     Assertions.assertThat(
       error,
-    ).contains(ValidationError("endDate", "Curfew end day must be in the future"))
+    ).contains(ValidationError("endDate", ErrorMessages.END_DATE_MUST_BE_IN_FUTURE))
   }
 
   @Test
@@ -194,7 +201,7 @@ class CurfewConditionControllerTest : IntegrationTestBase() {
 
     Assertions.assertThat(
       error,
-    ).contains(ValidationError("endDate", "End date must be after start date"))
+    ).contains(ValidationError("endDate", ErrorMessages.END_DATE_MUST_BE_AFTER_START_DATE))
   }
 
   @Test

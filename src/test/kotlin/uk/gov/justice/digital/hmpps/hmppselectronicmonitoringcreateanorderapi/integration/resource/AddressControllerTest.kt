@@ -22,6 +22,12 @@ class AddressControllerTest : IntegrationTestBase() {
   private val mockAddressLine4: String = "mockAddressLine4"
   private val mockPostcode: String = "mockPostcode"
 
+  private object ErrorMessages {
+    const val ADDRESS_1_REQUIRED: String = "Enter address line 1, typically the building and street"
+    const val ADDRESS_3_REQUIRED: String = "Enter town or city"
+    const val POSTCODE_REQUIRED: String = "Enter postcode"
+  }
+
   @BeforeEach
   fun setup() {
     repo.deleteAll()
@@ -178,13 +184,13 @@ class AddressControllerTest : IntegrationTestBase() {
     Assertions.assertThat(result.responseBody).isNotNull
     Assertions.assertThat(result.responseBody).hasSize(3)
     Assertions.assertThat(result.responseBody!!).contains(
-      ValidationError("addressLine1", "Address line 1 is required"),
+      ValidationError("addressLine1", ErrorMessages.ADDRESS_1_REQUIRED),
     )
     Assertions.assertThat(result.responseBody!!).contains(
-      ValidationError("addressLine2", "Address line 2 is required"),
+      ValidationError("addressLine3", ErrorMessages.ADDRESS_3_REQUIRED),
     )
     Assertions.assertThat(result.responseBody!!).contains(
-      ValidationError("postcode", "Postcode is required"),
+      ValidationError("postcode", ErrorMessages.POSTCODE_REQUIRED),
     )
   }
 
