@@ -14,6 +14,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ProbationServiceRegion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ResponsibleOrganisation
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YesNoUnknown
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YouthJusticeServiceRegions
 import java.time.DayOfWeek
 import java.time.format.DateTimeFormatter
@@ -131,6 +132,8 @@ data class MonitoringOrder(
   var sentenceDate: String? = "",
   @JsonProperty("sentence_expiry")
   var sentenceExpiry: String? = "",
+  @JsonProperty("sentence_type")
+  var sentenceType: String? = "",
   @JsonProperty("tag_at_source")
   var tagAtSource: String? = "",
   @JsonProperty("tag_at_source_details")
@@ -187,6 +190,10 @@ data class MonitoringOrder(
   var crownCourtCaseReferenceNumber: String? = "",
   @JsonProperty("magistrate_court_case_reference_number")
   var magistrateCourtCaseReferenceNumber: String? = "",
+  @JsonProperty("issp")
+  var issp: String = "",
+  @JsonProperty("hdc")
+  var hdc: String = "",
   @JsonProperty("order_status")
   var orderStatus: String? = "",
 ) {
@@ -210,6 +217,18 @@ data class MonitoringOrder(
         orderStatus = "Not Started",
         offence = order.installationAndRisk?.offence,
       )
+
+      monitoringOrder.sentenceType = conditions.sentenceType?.value ?: ""
+      monitoringOrder.issp = if (conditions.issp == YesNoUnknown.YES) {
+        "Yes"
+      } else {
+        "No"
+      }
+      monitoringOrder.hdc = if (conditions.hdc == YesNoUnknown.YES) {
+        "Yes"
+      } else {
+        "No"
+      }
 
       if (conditions.curfew != null && conditions.curfew!!) {
         val curfew = order.curfewConditions!!

@@ -27,6 +27,9 @@ class MonitoringConditionsService : OrderSectionServiceBase() {
       trail = updateRecord.trail,
       mandatoryAttendance = updateRecord.mandatoryAttendance,
       alcohol = updateRecord.alcohol,
+      sentenceType = updateRecord.sentenceType,
+      issp = updateRecord.issp,
+      hdc = updateRecord.hdc,
     )
 
     return orderRepo.save(order).monitoringConditions!!

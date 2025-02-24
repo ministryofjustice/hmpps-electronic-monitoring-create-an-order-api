@@ -42,8 +42,10 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderTypeDescription
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.SentenceType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.SubmissionStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.VariationType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YesNoUnknown
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsAttachmentResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsAttachmentResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsAttachmentSubmissionResult
@@ -830,6 +832,7 @@ class OrderControllerTest : IntegrationTestBase() {
       	"ro_region": "London",
       	"sentence_date": "",
       	"sentence_expiry": "",
+        "sentence_type": "Life Sentence",
       	"tag_at_source": "",
       	"tag_at_source_details": "",
       	"technical_bail": "",
@@ -934,7 +937,7 @@ class OrderControllerTest : IntegrationTestBase() {
             "start": "${mockStartDate.format(formatter)}",
             "end": "${mockEndDate.format(formatter)}"
           }
-          ],      	
+        ],      	
       	"inclusion_zones": [
           {
             "description": "Mock Inclusion Zone",
@@ -942,8 +945,7 @@ class OrderControllerTest : IntegrationTestBase() {
             "start": "${mockStartDate.format(formatter)}",
             "end": "${mockEndDate.format(formatter)}"
           }
-          ],
-      	
+        ],
       	"abstinence": "Yes",
       	"schedule": "",
       	"checkin_schedule": [],
@@ -956,6 +958,8 @@ class OrderControllerTest : IntegrationTestBase() {
         "installation_address_post_code": "SW11 1NC",
         "crown_court_case_reference_number": "",
         "magistrate_court_case_reference_number": "",
+        "issp": "Yes",
+        "hdc": "No",
       	"order_status": "Not Started"
       }
       """.trimIndent()
@@ -1194,6 +1198,7 @@ class OrderControllerTest : IntegrationTestBase() {
       	"ro_region": "London",
       	"sentence_date": "",
       	"sentence_expiry": "",
+        "sentence_type": "Life Sentence",
       	"tag_at_source": "",
       	"tag_at_source_details": "",
       	"technical_bail": "",
@@ -1298,7 +1303,7 @@ class OrderControllerTest : IntegrationTestBase() {
             "start": "${mockStartDate.format(formatter)}",
             "end": "${mockEndDate.format(formatter)}"
           }
-          ],      	
+        ],      	
       	"inclusion_zones": [
           {
             "description": "Mock Inclusion Zone",
@@ -1306,8 +1311,7 @@ class OrderControllerTest : IntegrationTestBase() {
             "start": "${mockStartDate.format(formatter)}",
             "end": "${mockEndDate.format(formatter)}"
           }
-          ],
-      	
+        ],
       	"abstinence": "Yes",
       	"schedule": "",
       	"checkin_schedule": [],
@@ -1320,6 +1324,8 @@ class OrderControllerTest : IntegrationTestBase() {
         "installation_address_post_code": "SW11 1NC",
         "crown_court_case_reference_number": "",
         "magistrate_court_case_reference_number": "",
+        "issp": "Yes",
+        "hdc": "No",
       	"order_status": "Not Started"
       }
       """.trimIndent()
@@ -1528,6 +1534,7 @@ class OrderControllerTest : IntegrationTestBase() {
       	"ro_region": "London",
       	"sentence_date": "",
       	"sentence_expiry": "",
+        "sentence_type": "Life Sentence",
       	"tag_at_source": "",
       	"tag_at_source_details": "",
       	"technical_bail": "",
@@ -1632,7 +1639,7 @@ class OrderControllerTest : IntegrationTestBase() {
             "start": "${mockStartDate.format(formatter)}",
             "end": "${mockEndDate.format(formatter)}"
           }
-          ],      	
+        ],      	
       	"inclusion_zones": [
           {
             "description": "Mock Inclusion Zone",
@@ -1640,8 +1647,7 @@ class OrderControllerTest : IntegrationTestBase() {
             "start": "${mockStartDate.format(formatter)}",
             "end": "${mockEndDate.format(formatter)}"
           }
-          ],
-      	
+        ],
       	"abstinence": "Yes",
       	"schedule": "",
       	"checkin_schedule": [],
@@ -1654,6 +1660,8 @@ class OrderControllerTest : IntegrationTestBase() {
         "installation_address_post_code": "SW11 1NC",
         "crown_court_case_reference_number": "",
         "magistrate_court_case_reference_number": "",
+        "issp": "Yes",
+        "hdc": "No",
       	"order_status": "Not Started"
       }
       """.trimIndent()
@@ -1910,6 +1918,8 @@ class OrderControllerTest : IntegrationTestBase() {
       alcohol = true,
       caseId = "d8ea62e61bb8d610a10c20e0b24bcb85",
       conditionType = MonitoringConditionType.REQUIREMENT_OF_A_COMMUNITY_ORDER,
+      sentenceType = SentenceType.LIFE_SENTENCE,
+      issp = YesNoUnknown.YES,
     )
 
     documents.forEach {

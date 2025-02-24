@@ -5,6 +5,8 @@ import jakarta.validation.constraints.NotNull
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MonitoringConditionType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderTypeDescription
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.SentenceType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YesNoUnknown
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.AtLeastOneSelected
 import java.time.ZonedDateTime
 
@@ -19,27 +21,33 @@ data class UpdateMonitoringConditionsDto(
   var curfew: Boolean? = null,
 
   @field:NotNull(message = "Monitoring conditions start date is required")
-  var startDate: ZonedDateTime? = null,
+  val startDate: ZonedDateTime? = null,
 
-  var endDate: ZonedDateTime? = null,
+  val endDate: ZonedDateTime? = null,
 
-  var exclusionZone: Boolean? = null,
+  val exclusionZone: Boolean? = null,
 
-  var trail: Boolean? = null,
+  val trail: Boolean? = null,
 
-  var mandatoryAttendance: Boolean? = null,
+  val mandatoryAttendance: Boolean? = null,
 
-  var alcohol: Boolean? = null,
+  val alcohol: Boolean? = null,
 
   @field:NotNull(message = "Condition type is required")
-  var conditionType: MonitoringConditionType? = null,
+  val conditionType: MonitoringConditionType? = null,
 
   val orderTypeDescription: OrderTypeDescription? = null,
+
+  val sentenceType: SentenceType? = null,
+
+  val issp: YesNoUnknown = YesNoUnknown.UNKNOWN,
+
+  val hdc: YesNoUnknown = YesNoUnknown.UNKNOWN,
 ) {
   @AssertTrue(message = "End date must be after start date")
   fun isEndDate(): Boolean {
     if (this.endDate != null && this.startDate != null) {
-      return this.endDate!! > this.startDate
+      return this.endDate > this.startDate
     }
     return true
   }

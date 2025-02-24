@@ -12,6 +12,8 @@ import jakarta.persistence.Table
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MonitoringConditionType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderTypeDescription
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.SentenceType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YesNoUnknown
 import java.time.ZonedDateTime
 import java.util.*
 
@@ -60,6 +62,18 @@ data class MonitoringConditions(
 
   @Column(name = "ALCOHOL", nullable = true)
   var alcohol: Boolean? = null,
+
+  @Enumerated(EnumType.STRING)
+  @Column(name = "SENTENCE_TYPE", nullable = true)
+  var sentenceType: SentenceType? = null,
+
+  @Enumerated(EnumType.STRING)
+  @Column(name = "ISSP", nullable = true)
+  var issp: YesNoUnknown? = null,
+
+  @Enumerated(EnumType.STRING)
+  @Column(name = "HDC", nullable = true)
+  var hdc: YesNoUnknown? = null,
 
   @Schema(hidden = true)
   @OneToOne

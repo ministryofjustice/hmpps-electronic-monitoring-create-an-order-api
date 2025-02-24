@@ -66,6 +66,7 @@
   "ro_region": "",
   "sentence_date": "",
   "sentence_expiry": "",
+  "sentence_type": "",
   "tag_at_source": "",
   "tag_at_source_details": "",
   "technical_bail": "",
@@ -132,5 +133,7 @@
   "installation_address_post_code": "",
   "crown_court_case_reference_number": "",
   "magistrate_court_case_reference_number": "",
+  "issp": "No",
+  "hdc": "No",
   "order_status": "Not Started"
 }
