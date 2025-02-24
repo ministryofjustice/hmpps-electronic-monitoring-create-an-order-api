@@ -19,9 +19,7 @@ import java.util.*
 @RestController
 @PreAuthorize("hasRole('ROLE_EM_CEMO__CREATE_ORDER')")
 @RequestMapping("/api/")
-class ResponsibleAdultController(
-  @Autowired val responsibleAdultService: ResponsibleAdultService,
-) {
+class ResponsibleAdultController(@Autowired val responsibleAdultService: ResponsibleAdultService) {
   @PutMapping("/orders/{orderId}/device-wearer-responsible-adult")
   fun updateResponsibleAdult(
     @PathVariable orderId: UUID,

@@ -95,8 +95,7 @@ class HmppsElectronicMonitoringCreateAnOrderApiExceptionHandler {
       val validationResult = e.parameterValidationResults
       val details: List<ListItemValidationError> = validationResult.stream()
         .map {
-          val errors = it.resolvableErrors.stream().map {
-              violation ->
+          val errors = it.resolvableErrors.stream().map { violation ->
             val error = violation as FieldError
             ValidationError(error.field.toString(), error.defaultMessage!!)
           }.collect(Collectors.toList())
@@ -157,46 +156,40 @@ class HmppsElectronicMonitoringCreateAnOrderApiExceptionHandler {
     ).also { log.error("Unexpected exception", e) }
 
   @ExceptionHandler(IllegalStateException::class)
-  fun handleIllegalStateException(e: Exception): ResponseEntity<ErrorResponse> {
-    return ResponseEntity
-      .status(INTERNAL_SERVER_ERROR)
-      .body(
-        ErrorResponse(
-          status = INTERNAL_SERVER_ERROR,
-          userMessage = e.message,
-          developerMessage = e.message,
-        ),
-      ).also { log.error("Illegal state exception", e) }
-  }
+  fun handleIllegalStateException(e: Exception): ResponseEntity<ErrorResponse> = ResponseEntity
+    .status(INTERNAL_SERVER_ERROR)
+    .body(
+      ErrorResponse(
+        status = INTERNAL_SERVER_ERROR,
+        userMessage = e.message,
+        developerMessage = e.message,
+      ),
+    ).also { log.error("Illegal state exception", e) }
 
   @ExceptionHandler(MaxUploadSizeExceededException::class)
-  fun handleMaxUploadSizeExceededException(e: Exception): ResponseEntity<ErrorResponse> {
-    return ResponseEntity
-      .status(BAD_REQUEST)
-      .body(
-        ErrorResponse(
-          status = BAD_REQUEST,
-          userMessage = "File uploaded exceed max file size limit of 10MB",
-          developerMessage = e.message,
-        ),
-      ).also { log.error("Unexpected exception", e) }
-  }
+  fun handleMaxUploadSizeExceededException(e: Exception): ResponseEntity<ErrorResponse> = ResponseEntity
+    .status(BAD_REQUEST)
+    .body(
+      ErrorResponse(
+        status = BAD_REQUEST,
+        userMessage = "File uploaded exceed max file size limit of 10MB",
+        developerMessage = e.message,
+      ),
+    ).also { log.error("Unexpected exception", e) }
 
   // The default exception handler returns a fixed text response to avoid leaking internal implementation
   // details. If you want to return a more sensible error,
   // generate a custom error type with a bespoke ExceptionHandler
   @ExceptionHandler(Exception::class)
-  fun handleException(e: Exception): ResponseEntity<ErrorResponse> {
-    return ResponseEntity
-      .status(INTERNAL_SERVER_ERROR)
-      .body(
-        ErrorResponse(
-          status = INTERNAL_SERVER_ERROR,
-          userMessage = "500 Internal Server Error",
-          developerMessage = "500 Internal Server Error",
-        ),
-      ).also { log.error("Unexpected exception", e) }
-  }
+  fun handleException(e: Exception): ResponseEntity<ErrorResponse> = ResponseEntity
+    .status(INTERNAL_SERVER_ERROR)
+    .body(
+      ErrorResponse(
+        status = INTERNAL_SERVER_ERROR,
+        userMessage = "500 Internal Server Error",
+        developerMessage = "500 Internal Server Error",
+      ),
+    ).also { log.error("Unexpected exception", e) }
 
   private companion object {
     private val log = LoggerFactory.getLogger(this::class.java)

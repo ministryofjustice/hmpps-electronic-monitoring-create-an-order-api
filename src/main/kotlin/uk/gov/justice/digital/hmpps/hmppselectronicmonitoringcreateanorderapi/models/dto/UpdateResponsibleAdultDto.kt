@@ -17,7 +17,5 @@ data class UpdateResponsibleAdultDto(
   val contactNumber: String? = null,
 ) {
   @AssertTrue(message = "You must provide details of the responsible adult to the device wearer")
-  fun isOtherRelationshipDetails(): Boolean {
-    return !(relationship == "other" && otherRelationshipDetails.isNullOrBlank())
-  }
+  fun isOtherRelationshipDetails(): Boolean = !(relationship == "other" && otherRelationshipDetails.isNullOrBlank())
 }

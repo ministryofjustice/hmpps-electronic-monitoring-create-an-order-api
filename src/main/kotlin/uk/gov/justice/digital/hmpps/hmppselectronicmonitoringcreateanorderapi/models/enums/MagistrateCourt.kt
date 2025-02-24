@@ -126,10 +126,8 @@ enum class MagistrateCourt(val value: String) {
   ;
 
   companion object {
-    fun from(value: String?): MagistrateCourt? {
-      return MagistrateCourt.entries.firstOrNull {
-        it.name == value
-      }
+    fun from(value: String?): MagistrateCourt? = MagistrateCourt.entries.firstOrNull {
+      it.name == value
     }
   }
 }

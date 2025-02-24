@@ -15,10 +15,8 @@ enum class CommunityOrderType(val uuid: String) {
   ;
 
   companion object {
-    fun from(uuid: String?): CommunityOrderType? {
-      return CommunityOrderType.entries.firstOrNull {
-        it.uuid == uuid
-      }
+    fun from(uuid: String?): CommunityOrderType? = CommunityOrderType.entries.firstOrNull {
+      it.uuid == uuid
     }
   }
 }
@@ -71,10 +69,8 @@ enum class BailOrderType(val uuid: String) {
       INCLUSION_SPECIFIED_RADIUS to EnforcementZoneType.INCLUSION,
       INCLUSION_NOT_TO_LEAVE to EnforcementZoneType.INCLUSION,
     )
-    fun from(uuid: String?): BailOrderType? {
-      return BailOrderType.entries.firstOrNull {
-        it.uuid == uuid
-      }
+    fun from(uuid: String?): BailOrderType? = BailOrderType.entries.firstOrNull {
+      it.uuid == uuid
     }
   }
 }

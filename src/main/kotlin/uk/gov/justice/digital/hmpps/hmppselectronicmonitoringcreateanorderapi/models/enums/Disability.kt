@@ -16,11 +16,9 @@ enum class Disability(val value: String) {
   ;
 
   companion object {
-    fun getValuesFromEnumString(value: String): List<String> {
-      return value.split(",")
-        .mapNotNull { disabilityName ->
-          entries.find { it.name == disabilityName }?.value
-        }
-    }
+    fun getValuesFromEnumString(value: String): List<String> = value.split(",")
+      .mapNotNull { disabilityName ->
+        entries.find { it.name == disabilityName }?.value
+      }
   }
 }

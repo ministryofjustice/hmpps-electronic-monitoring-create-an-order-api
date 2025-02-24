@@ -159,9 +159,7 @@ class CurfewReleaseDateControllerTest : IntegrationTestBase() {
     startTime: String? = "19:00:00",
     endTime: String? = "23:59:00",
     curfewAddress: AddressType? = AddressType.PRIMARY,
-  ): String {
-    return mockRequestBody(releaseDate, startTime, endTime, curfewAddress)
-  }
+  ): String = mockRequestBody(releaseDate, startTime, endTime, curfewAddress)
 
   fun mockRequestBody(
     releaseDate: ZonedDateTime?,

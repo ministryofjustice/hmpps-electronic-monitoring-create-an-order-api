@@ -23,9 +23,7 @@ data class Order(
   var versions: MutableList<OrderVersion> = mutableListOf(),
 
 ) {
-  fun getCurrentVersion(): OrderVersion {
-    return versions.maxBy { it.versionId }
-  }
+  fun getCurrentVersion(): OrderVersion = versions.maxBy { it.versionId }
 
   fun createVariation(username: String): OrderVersion {
     if (getCurrentVersion().status === OrderStatus.IN_PROGRESS) {

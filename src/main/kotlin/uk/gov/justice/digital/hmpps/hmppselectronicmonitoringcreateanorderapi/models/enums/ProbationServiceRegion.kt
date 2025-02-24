@@ -16,10 +16,8 @@ enum class ProbationServiceRegion(val value: String) {
   ;
 
   companion object {
-    fun from(value: String?): ProbationServiceRegion? {
-      return ProbationServiceRegion.entries.firstOrNull {
-        it.name == value
-      }
+    fun from(value: String?): ProbationServiceRegion? = ProbationServiceRegion.entries.firstOrNull {
+      it.name == value
     }
   }
 }

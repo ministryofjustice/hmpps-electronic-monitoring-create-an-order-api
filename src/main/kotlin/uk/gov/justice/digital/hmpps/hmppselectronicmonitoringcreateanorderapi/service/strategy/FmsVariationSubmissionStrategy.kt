@@ -14,28 +14,24 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.MonitoringOrder
 import java.util.*
 
-class FmsVariationSubmissionStrategy(
-  objectMapper: ObjectMapper,
-  val fmsClient: FmsClient,
-) : FmsSubmissionStrategyBase(objectMapper) {
+class FmsVariationSubmissionStrategy(objectMapper: ObjectMapper, val fmsClient: FmsClient) :
+  FmsSubmissionStrategyBase(objectMapper) {
 
-  private fun submitUpdateDeviceWearerRequest(deviceWearer: DeviceWearer, orderId: UUID): Result<String> {
-    return try {
-      // TODO: Should call updateDeviceWearer endpoint, but not currently possible
-      Result(
-        success = true,
-        data = fmsClient.createDeviceWearer(deviceWearer, orderId).result.first().id,
-      )
-    } catch (e: Exception) {
-      Result(
-        success = false,
-        error = Exception("Failed to submit FMS Device Wearer", e),
-      )
-    }
+  private fun submitUpdateDeviceWearerRequest(deviceWearer: DeviceWearer, orderId: UUID): Result<String> = try {
+    // TODO: Should call updateDeviceWearer endpoint, but not currently possible
+    Result(
+      success = true,
+      data = fmsClient.createDeviceWearer(deviceWearer, orderId).result.first().id,
+    )
+  } catch (e: Exception) {
+    Result(
+      success = false,
+      error = Exception("Failed to submit FMS Device Wearer", e),
+    )
   }
 
-  private fun submitUpdateMonitoringOrderRequest(monitoringOrder: MonitoringOrder, orderId: UUID): Result<String> {
-    return try {
+  private fun submitUpdateMonitoringOrderRequest(monitoringOrder: MonitoringOrder, orderId: UUID): Result<String> =
+    try {
       Result(
         success = true,
         data = fmsClient.updateMonitoringOrder(monitoringOrder, orderId).result.first().id,
@@ -46,7 +42,6 @@ class FmsVariationSubmissionStrategy(
         error = Exception("Failed to submit FMS Monitoring Order", e),
       )
     }
-  }
 
   private fun updateDeviceWearer(order: Order): FmsDeviceWearerSubmissionResult {
     val deviceWearerResult = this.getDeviceWearer(order)

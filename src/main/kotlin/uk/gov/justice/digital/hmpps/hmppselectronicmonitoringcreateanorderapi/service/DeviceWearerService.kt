@@ -9,7 +9,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import java.util.*
 
 @Service
-class DeviceWearerService() : OrderSectionServiceBase() {
+class DeviceWearerService : OrderSectionServiceBase() {
   fun updateDeviceWearer(orderId: UUID, username: String, updateRecord: UpdateDeviceWearerDto): DeviceWearer {
     // Verify the order belongs to the user and is in draft state
     val order = this.findEditableOrder(orderId, username)

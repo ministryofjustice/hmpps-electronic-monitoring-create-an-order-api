@@ -4,7 +4,4 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import java.time.LocalDate
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-data class Verdict(
-  val verdictType: VerdictType?,
-  val verdictDate: LocalDate?,
-)
+data class Verdict(val verdictType: VerdictType?, val verdictDate: LocalDate?)

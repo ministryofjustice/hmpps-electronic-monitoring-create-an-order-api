@@ -19,9 +19,7 @@ import java.util.UUID
 @RestController
 @PreAuthorize("hasRole('ROLE_EM_CEMO__CREATE_ORDER')")
 @RequestMapping("/api/")
-class MonitoringConditionsController(
-  @Autowired val monitoringConditionsService: MonitoringConditionsService,
-) {
+class MonitoringConditionsController(@Autowired val monitoringConditionsService: MonitoringConditionsService) {
   @PutMapping("/orders/{orderId}/monitoring-conditions")
   fun updateMonitoringConditions(
     @PathVariable orderId: UUID,

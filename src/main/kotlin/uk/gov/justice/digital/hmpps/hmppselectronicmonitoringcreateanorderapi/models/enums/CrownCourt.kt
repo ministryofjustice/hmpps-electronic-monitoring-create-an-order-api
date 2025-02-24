@@ -46,10 +46,8 @@ enum class CrownCourt(val value: String) {
   ;
 
   companion object {
-    fun from(value: String?): CrownCourt? {
-      return CrownCourt.entries.firstOrNull {
-        it.name == value
-      }
+    fun from(value: String?): CrownCourt? = CrownCourt.entries.firstOrNull {
+      it.name == value
     }
   }
 }

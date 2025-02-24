@@ -19,9 +19,7 @@ import java.util.*
 @RestController
 @PreAuthorize("hasRole('ROLE_EM_CEMO__CREATE_ORDER')")
 @RequestMapping("/api/")
-class MandatoryAttendanceController(
-  @Autowired private val mandatoryAttendanceService: MandatoryAttendanceService,
-) {
+class MandatoryAttendanceController(@Autowired private val mandatoryAttendanceService: MandatoryAttendanceService) {
   @PutMapping("/orders/{orderId}/mandatory-attendance")
   fun updateMandatoryAttendance(
     @PathVariable orderId: UUID,

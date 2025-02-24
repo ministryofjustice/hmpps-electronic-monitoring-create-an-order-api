@@ -299,7 +299,7 @@ class AdditionalDocumentsControllerTest : IntegrationTestBase() {
   @DisplayName("DELETE /api/orders/{orderId}/document-type/{documentType}")
   inner class DeleteDocument {
     @Test
-    fun`it should return an error if the order is in a submitted state`() {
+    fun `it should return an error if the order is in a submitted state`() {
       val order = createSubmittedOrder()
 
       val result = webTestClient.delete()

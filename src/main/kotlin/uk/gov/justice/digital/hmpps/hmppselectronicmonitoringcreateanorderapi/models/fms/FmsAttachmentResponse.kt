@@ -3,10 +3,7 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.m
 import com.fasterxml.jackson.databind.PropertyNamingStrategies
 import com.fasterxml.jackson.databind.annotation.JsonNaming
 
-class FmsAttachmentResponse(
-  val result: FmsAttachmentResult,
-  val status: String? = null,
-)
+class FmsAttachmentResponse(val result: FmsAttachmentResult, val status: String? = null)
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
 class FmsAttachmentResult(

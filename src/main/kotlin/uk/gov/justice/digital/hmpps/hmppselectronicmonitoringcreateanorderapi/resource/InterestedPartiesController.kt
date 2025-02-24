@@ -19,9 +19,7 @@ import java.util.*
 @RestController
 @PreAuthorize("hasRole('ROLE_EM_CEMO__CREATE_ORDER')")
 @RequestMapping("/api/")
-class InterestedPartiesController(
-  @Autowired val interestPartiesService: InterestedPartiesService,
-) {
+class InterestedPartiesController(@Autowired val interestPartiesService: InterestedPartiesService) {
   @PutMapping("/orders/{orderId}/interested-parties")
   fun updateAddress(
     @PathVariable orderId: UUID,
