@@ -11,10 +11,8 @@ enum class NotifyingOrganisation(val value: String) {
   ;
 
   companion object {
-    fun from(value: String?): NotifyingOrganisation? {
-      return NotifyingOrganisation.entries.firstOrNull {
-        it.name == value
-      }
+    fun from(value: String?): NotifyingOrganisation? = NotifyingOrganisation.entries.firstOrNull {
+      it.name == value
     }
   }
 }

@@ -19,7 +19,10 @@ import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 import java.nio.file.Files
 import java.nio.file.Paths
 
-class HmppsDocumentManagementApiExtension : BeforeAllCallback, AfterAllCallback, BeforeEachCallback {
+class HmppsDocumentManagementApiExtension :
+  BeforeAllCallback,
+  AfterAllCallback,
+  BeforeEachCallback {
   companion object {
     @JvmField
     val documentApi = HmppsDocumentManagementApi()

@@ -10,10 +10,8 @@ enum class ResponsibleOrganisation(val value: String) {
   ;
 
   companion object {
-    fun from(value: String?): ResponsibleOrganisation? {
-      return ResponsibleOrganisation.entries.firstOrNull {
-        it.toString() == value
-      }
+    fun from(value: String?): ResponsibleOrganisation? = ResponsibleOrganisation.entries.firstOrNull {
+      it.toString() == value
     }
   }
 }

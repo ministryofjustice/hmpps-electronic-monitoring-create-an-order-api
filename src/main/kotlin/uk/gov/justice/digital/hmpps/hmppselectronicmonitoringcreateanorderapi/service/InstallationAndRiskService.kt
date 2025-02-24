@@ -6,7 +6,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import java.util.*
 
 @Service
-class InstallationAndRiskService() : OrderSectionServiceBase() {
+class InstallationAndRiskService : OrderSectionServiceBase() {
   fun updateInstallationAndRisk(
     orderId: UUID,
     username: String,

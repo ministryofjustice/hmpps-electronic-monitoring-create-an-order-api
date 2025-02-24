@@ -19,9 +19,7 @@ import java.util.*
 @RestController
 @PreAuthorize("hasRole('ROLE_EM_CEMO__CREATE_ORDER')")
 @RequestMapping("/api/")
-class AddressController(
-  @Autowired val addressService: AddressService,
-) {
+class AddressController(@Autowired val addressService: AddressService) {
   @PutMapping("/orders/{orderId}/address")
   fun updateAddress(
     @PathVariable orderId: UUID,

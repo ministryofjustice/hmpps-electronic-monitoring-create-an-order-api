@@ -125,10 +125,8 @@ enum class Prison(val value: String) {
   ;
 
   companion object {
-    fun from(value: String?): Prison? {
-      return Prison.entries.firstOrNull {
-        it.name == value
-      }
+    fun from(value: String?): Prison? = Prison.entries.firstOrNull {
+      it.name == value
     }
   }
 }

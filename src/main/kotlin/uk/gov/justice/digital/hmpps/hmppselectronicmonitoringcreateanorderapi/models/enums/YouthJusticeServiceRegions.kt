@@ -12,10 +12,8 @@ enum class YouthJusticeServiceRegions(val value: String) {
   ;
 
   companion object {
-    fun from(value: String?): YouthJusticeServiceRegions? {
-      return YouthJusticeServiceRegions.entries.firstOrNull {
-        it.name == value
-      }
+    fun from(value: String?): YouthJusticeServiceRegions? = YouthJusticeServiceRegions.entries.firstOrNull {
+      it.name == value
     }
   }
 }

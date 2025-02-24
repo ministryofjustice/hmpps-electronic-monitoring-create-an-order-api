@@ -24,9 +24,7 @@ import java.util.UUID
 @RestController
 @PreAuthorize("hasRole('ROLE_EM_CEMO__CREATE_ORDER')")
 @RequestMapping("/api/")
-class AdditionalDocumentsController(
-  @Autowired val documentService: AdditionalDocumentService,
-) {
+class AdditionalDocumentsController(@Autowired val documentService: AdditionalDocumentService) {
 
   @PostMapping(
     "/orders/{orderId}/document-type/{fileType}",

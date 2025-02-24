@@ -7,7 +7,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import java.util.UUID
 
 @Service
-class AddressService() : OrderSectionServiceBase() {
+class AddressService : OrderSectionServiceBase() {
   @Transactional
   fun updateAddress(orderId: UUID, username: String, updateRecord: UpdateAddressDto): Address {
     // Verify the order belongs to the user and is in draft state

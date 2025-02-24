@@ -15,16 +15,14 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 
 @Component
-class DocumentApiClient(
-  private val documentManagementApiWebClient: WebClient,
-) {
+class DocumentApiClient(private val documentManagementApiWebClient: WebClient) {
   companion object {
 
     const val DOCUMENT_MANAGEMENT_API_SERVICE_NAME_HEADER = "Service-Name"
     const val SERVICE_NAME_HEADER = "create-electronic-monitoring-order"
   }
-  fun createDocument(documentUuid: String, multipartBodyBuilder: MultipartBodyBuilder): DocumentUploadResponse? {
-    return documentManagementApiWebClient
+  fun createDocument(documentUuid: String, multipartBodyBuilder: MultipartBodyBuilder): DocumentUploadResponse? =
+    documentManagementApiWebClient
       .post()
       .uri("/documents/CEMO_ATTACHMENT/$documentUuid")
       .body(BodyInserters.fromMultipartData(multipartBodyBuilder.build()))
@@ -33,43 +31,36 @@ class DocumentApiClient(
       .onStatus(
         { status -> status === HttpStatus.BAD_REQUEST },
         { clientResponse ->
-          clientResponse.bodyToMono(ErrorResponse::class.java).map {
-              error ->
+          clientResponse.bodyToMono(ErrorResponse::class.java).map { error ->
             DocumentApiBadRequestException(error)
           }
         },
       )
       .bodyToMono(DocumentUploadResponse::class.java)
       .block()
-  }
 
-  fun getDocument(documentUuid: String): ResponseEntity<Flux<InputStreamResource>>? {
-    return documentManagementApiWebClient
-      .get()
-      .uri("/documents/$documentUuid/file")
-      .accept(MediaType.ALL)
-      .header(DOCUMENT_MANAGEMENT_API_SERVICE_NAME_HEADER, SERVICE_NAME_HEADER)
-      .retrieve()
-      .onStatus(
-        { status -> status === HttpStatus.BAD_REQUEST },
-        { clientResponse ->
-          clientResponse.bodyToMono(ErrorResponse::class.java).map {
-              error ->
-            DocumentApiBadRequestException(error)
-          }
-        },
-      )
-      .toEntityFlux(InputStreamResource::class.java)
-      .block()
-  }
+  fun getDocument(documentUuid: String): ResponseEntity<Flux<InputStreamResource>>? = documentManagementApiWebClient
+    .get()
+    .uri("/documents/$documentUuid/file")
+    .accept(MediaType.ALL)
+    .header(DOCUMENT_MANAGEMENT_API_SERVICE_NAME_HEADER, SERVICE_NAME_HEADER)
+    .retrieve()
+    .onStatus(
+      { status -> status === HttpStatus.BAD_REQUEST },
+      { clientResponse ->
+        clientResponse.bodyToMono(ErrorResponse::class.java).map { error ->
+          DocumentApiBadRequestException(error)
+        }
+      },
+    )
+    .toEntityFlux(InputStreamResource::class.java)
+    .block()
 
-  fun deleteDocument(documentUuid: String): ResponseEntity<Any>? {
-    return documentManagementApiWebClient
-      .delete()
-      .uri("/documents/$documentUuid")
-      .header(DOCUMENT_MANAGEMENT_API_SERVICE_NAME_HEADER, SERVICE_NAME_HEADER)
-      .retrieve()
-      .toEntity<Any>()
-      .block()
-  }
+  fun deleteDocument(documentUuid: String): ResponseEntity<Any>? = documentManagementApiWebClient
+    .delete()
+    .uri("/documents/$documentUuid")
+    .header(DOCUMENT_MANAGEMENT_API_SERVICE_NAME_HEADER, SERVICE_NAME_HEADER)
+    .retrieve()
+    .toEntity<Any>()
+    .block()
 }

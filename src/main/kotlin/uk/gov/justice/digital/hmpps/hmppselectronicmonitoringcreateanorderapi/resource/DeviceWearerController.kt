@@ -21,9 +21,7 @@ import java.util.UUID
 @RestController
 @PreAuthorize("hasRole('ROLE_EM_CEMO__CREATE_ORDER')")
 @RequestMapping("/api/")
-class DeviceWearerController(
-  @Autowired val deviceWearerService: DeviceWearerService,
-) {
+class DeviceWearerController(@Autowired val deviceWearerService: DeviceWearerService) {
 
   @PutMapping("/orders/{orderId}/device-wearer")
   fun updateDeviceWearer(

@@ -9,7 +9,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.re
 import java.util.*
 
 @Service
-abstract class OrderSectionServiceBase() {
+abstract class OrderSectionServiceBase {
   @Autowired
   lateinit var orderRepo: OrderRepository
 

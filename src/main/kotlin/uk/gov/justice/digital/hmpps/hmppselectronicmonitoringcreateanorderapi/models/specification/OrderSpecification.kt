@@ -13,46 +13,38 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.OrderSearchCriteria
 
 class OrderSpecification(private val criteria: OrderSearchCriteria) : Specification<Order> {
-  private fun wildcard(str: String): String {
-    return "%$str%"
-  }
+  private fun wildcard(str: String): String = "%$str%"
 
   private fun isOwnedByUser(
     version: Join<Order, OrderVersion>,
     criteriaBuilder: CriteriaBuilder,
     username: String,
-  ): Predicate {
-    return criteriaBuilder.equal(
-      version.get<String>(OrderVersion::username.name),
-      username,
-    )
-  }
+  ): Predicate = criteriaBuilder.equal(
+    version.get<String>(OrderVersion::username.name),
+    username,
+  )
 
   private fun isLikeFirstName(
     deviceWearer: Join<OrderVersion, DeviceWearer>,
     criteriaBuilder: CriteriaBuilder,
     keyword: String,
-  ): Predicate {
-    return criteriaBuilder.like(
-      criteriaBuilder.lower(
-        deviceWearer.get(DeviceWearer::firstName.name),
-      ),
-      wildcard(keyword).lowercase(),
-    )
-  }
+  ): Predicate = criteriaBuilder.like(
+    criteriaBuilder.lower(
+      deviceWearer.get(DeviceWearer::firstName.name),
+    ),
+    wildcard(keyword).lowercase(),
+  )
 
   private fun isLikeLastName(
     deviceWearer: Join<OrderVersion, DeviceWearer>,
     criteriaBuilder: CriteriaBuilder,
     keyword: String,
-  ): Predicate {
-    return criteriaBuilder.like(
-      criteriaBuilder.lower(
-        deviceWearer.get(DeviceWearer::lastName.name),
-      ),
-      wildcard(keyword).lowercase(),
-    )
-  }
+  ): Predicate = criteriaBuilder.like(
+    criteriaBuilder.lower(
+      deviceWearer.get(DeviceWearer::lastName.name),
+    ),
+    wildcard(keyword).lowercase(),
+  )
 
   override fun toPredicate(
     root: Root<Order>,

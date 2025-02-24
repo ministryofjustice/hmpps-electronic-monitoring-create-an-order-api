@@ -8,9 +8,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import java.util.*
 
 @Service
-class InterestedPartiesService(
-  private val addressService: AddressService,
-) : OrderSectionServiceBase() {
+class InterestedPartiesService(private val addressService: AddressService) : OrderSectionServiceBase() {
   fun updateInterestedParties(
     orderId: UUID,
     username: String,

@@ -19,9 +19,7 @@ import java.util.*
 @RestController
 @PreAuthorize("hasRole('ROLE_EM_CEMO__CREATE_ORDER')")
 @RequestMapping("/api/")
-class ContactDetailsController(
-  @Autowired val contactDetailsService: ContactDetailsService,
-) {
+class ContactDetailsController(@Autowired val contactDetailsService: ContactDetailsService) {
 
   @PutMapping("/orders/{orderId}/contact-details")
   fun updateContactDetails(

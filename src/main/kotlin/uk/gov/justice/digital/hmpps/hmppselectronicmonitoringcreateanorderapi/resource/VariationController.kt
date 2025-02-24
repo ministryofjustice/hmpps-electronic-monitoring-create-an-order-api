@@ -19,9 +19,7 @@ import java.util.*
 @RestController
 @PreAuthorize("hasRole('ROLE_EM_CEMO__CREATE_ORDER')")
 @RequestMapping("/api/")
-class VariationController(
-  @Autowired val variationService: VariationService,
-) {
+class VariationController(@Autowired val variationService: VariationService) {
   @PutMapping("/orders/{orderId}/variation")
   fun updateVariationDetails(
     @PathVariable orderId: UUID,

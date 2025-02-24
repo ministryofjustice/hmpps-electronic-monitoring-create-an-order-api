@@ -39,10 +39,7 @@ import java.time.format.DateTimeFormatter
 import java.util.*
 
 @Service
-class HearingEventHandler(
-  private val fmsService: FmsService,
-  private val eventService: EventService,
-) {
+class HearingEventHandler(private val fmsService: FmsService, private val eventService: EventService) {
   private val commentPlatformUsername = "COMMENT_PLATFORM"
   private val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
   private val dateTimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
@@ -151,24 +148,22 @@ class HearingEventHandler(
     )
 
     //endregion
-    fun isEnglandAdnWalesEMRequest(offence: Offence): Boolean {
-      return !offence.judicialResults.any { judicialResults ->
-        // If it's a Scottish court case
-        judicialResults.judicialResultTypeId == COS
-      } &&
-        offence.judicialResults.any { judicialResults ->
-          // If it's a known community order type
-          CommunityOrderType.from(judicialResults.judicialResultTypeId) != null ||
-            (
-              BAIL_OR_REMAND_TO_CARE_CONDITION_UUIDs.contains(judicialResults.judicialResultTypeId) &&
-                judicialResults.judicialResultPrompts.any {
-                  // If it's a known Bail/Remand in care case, or it has bail electronic monitoring flag
-                  BailOrderType.from(it.judicialResultPromptTypeId) != null ||
-                    it.judicialResultPromptTypeId == BAIL_ELECTRONIC_MONITORING_FLAG
-                }
-              )
-        }
-    }
+    fun isEnglandAdnWalesEMRequest(offence: Offence): Boolean = !offence.judicialResults.any { judicialResults ->
+      // If it's a Scottish court case
+      judicialResults.judicialResultTypeId == COS
+    } &&
+      offence.judicialResults.any { judicialResults ->
+        // If it's a known community order type
+        CommunityOrderType.from(judicialResults.judicialResultTypeId) != null ||
+          (
+            BAIL_OR_REMAND_TO_CARE_CONDITION_UUIDs.contains(judicialResults.judicialResultTypeId) &&
+              judicialResults.judicialResultPrompts.any {
+                // If it's a known Bail/Remand in care case, or it has bail electronic monitoring flag
+                BailOrderType.from(it.judicialResultPromptTypeId) != null ||
+                  it.judicialResultPromptTypeId == BAIL_ELECTRONIC_MONITORING_FLAG
+              }
+            )
+      }
   }
 
   fun handleHearingEvent(event: HearingEvent): List<String> {
@@ -626,30 +621,26 @@ class HearingEventHandler(
     return null
   }
 
-  private fun getSex(gender: Gender?): String {
-    return when (gender) {
-      Gender.MALE -> "male"
-      Gender.FEMALE -> "female"
-      Gender.NOT_KNOWN -> "unknown"
-      Gender.NOT_SPECIFIED -> "prefer not to say"
-      null -> ""
-    }
+  private fun getSex(gender: Gender?): String = when (gender) {
+    Gender.MALE -> "male"
+    Gender.FEMALE -> "female"
+    Gender.NOT_KNOWN -> "unknown"
+    Gender.NOT_SPECIFIED -> "prefer not to say"
+    null -> ""
   }
 
-  private fun getResponsibleOrganisation(responsibleOfficer: String?): String {
-    return when (responsibleOfficer) {
-      "an officer of a provider of probation services" -> "Probation"
-      "a probation officer" -> "Probation"
-      "a member of the youth offending team" -> "YJS"
-      "the electronic monitoring supervisor" -> "Field Monitoring Service"
-      "the officer in charge of the Attendance Centre" -> "Policy/youth attendance"
-      else -> ""
-    }
+  private fun getResponsibleOrganisation(responsibleOfficer: String?): String = when (responsibleOfficer) {
+    "an officer of a provider of probation services" -> "Probation"
+    "a probation officer" -> "Probation"
+    "a member of the youth offending team" -> "YJS"
+    "the electronic monitoring supervisor" -> "Field Monitoring Service"
+    "the officer in charge of the Attendance Centre" -> "Policy/youth attendance"
+    else -> ""
   }
 
-  private fun getPromptValue(prompts: List<JudicialResultsPrompt>, label: String): String? {
-    return prompts.firstOrNull { it.label == label }?.value
-  }
+  private fun getPromptValue(prompts: List<JudicialResultsPrompt>, label: String): String? = prompts.firstOrNull {
+    it.label == label
+  }?.value
 
   private fun buildInterestedPartiesFromHearing(
     versionId: UUID,
@@ -658,26 +649,24 @@ class HearingEventHandler(
     responsibleOrganisationId: String,
     notifyingOrganisation: String,
     notifyingOrganisationName: String,
-  ): InterestedParties {
-    return InterestedParties(
+  ): InterestedParties = InterestedParties(
+    versionId = versionId,
+    notifyingOrganisation = notifyingOrganisation,
+    notifyingOrganisationName = notifyingOrganisationName,
+    notifyingOrganisationEmail = "",
+    responsibleOrganisation = responsibleOfficer,
+    responsibleOrganisationRegion = responsibleOrganisationRegion,
+    responsibleOrganisationEmail = responsibleOrganisationId,
+    responsibleOrganisationPhoneNumber = null,
+    responsibleOrganisationAddress =
+    Address(
       versionId = versionId,
-      notifyingOrganisation = notifyingOrganisation,
-      notifyingOrganisationName = notifyingOrganisationName,
-      notifyingOrganisationEmail = "",
-      responsibleOrganisation = responsibleOfficer,
-      responsibleOrganisationRegion = responsibleOrganisationRegion,
-      responsibleOrganisationEmail = responsibleOrganisationId,
-      responsibleOrganisationPhoneNumber = null,
-      responsibleOrganisationAddress =
-      Address(
-        versionId = versionId,
-        addressType = AddressType.RESPONSIBLE_ORGANISATION,
-        addressLine1 = "",
-        addressLine2 = "",
-        postcode = "",
-      ),
-      responsibleOfficerName = "",
-      responsibleOfficerPhoneNumber = null,
-    )
-  }
+      addressType = AddressType.RESPONSIBLE_ORGANISATION,
+      addressLine1 = "",
+      addressLine2 = "",
+      postcode = "",
+    ),
+    responsibleOfficerName = "",
+    responsibleOfficerPhoneNumber = null,
+  )
 }

@@ -8,7 +8,7 @@ import java.time.ZonedDateTime
 import java.util.*
 
 @Service
-class VariationService() : OrderSectionServiceBase() {
+class VariationService : OrderSectionServiceBase() {
   fun updateVariationDetails(
     orderId: UUID,
     username: String,

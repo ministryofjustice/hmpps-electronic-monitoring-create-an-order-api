@@ -501,8 +501,7 @@ class EnforcementZoneControllerTest : IntegrationTestBase() {
     description: String? = "MockDescription",
     duration: String? = "MockDuration",
     zoneId: Int? = 0,
-  ): String {
-    return """
+  ): String = """
       {
         "zoneType": "EXCLUSION",
         "startDate": "$startDate",
@@ -511,6 +510,5 @@ class EnforcementZoneControllerTest : IntegrationTestBase() {
         "duration": "$duration",
         "zoneId": $zoneId
       }
-    """.trimIndent()
-  }
+  """.trimIndent()
 }

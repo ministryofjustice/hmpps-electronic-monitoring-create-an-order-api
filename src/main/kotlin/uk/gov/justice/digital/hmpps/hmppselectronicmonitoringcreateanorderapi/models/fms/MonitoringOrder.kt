@@ -374,32 +374,28 @@ data class MonitoringOrder(
       return schedules
     }
 
-    private fun getNotifyingOrganisation(order: Order): String {
-      return NotifyingOrganisation.from(order.interestedParties?.notifyingOrganisation)?.value
+    private fun getNotifyingOrganisation(order: Order): String =
+      NotifyingOrganisation.from(order.interestedParties?.notifyingOrganisation)?.value
         ?: order.interestedParties?.notifyingOrganisation
         ?: "N/A"
-    }
 
-    private fun getNotifyingOrganisationName(order: Order): String {
-      return Prison.from(order.interestedParties?.notifyingOrganisationName)?.value
+    private fun getNotifyingOrganisationName(order: Order): String =
+      Prison.from(order.interestedParties?.notifyingOrganisationName)?.value
         ?: CrownCourt.from(order.interestedParties?.notifyingOrganisationName)?.value
         ?: MagistrateCourt.from(order.interestedParties?.notifyingOrganisationName)?.value
         ?: order.interestedParties?.notifyingOrganisationName
         ?: ""
-    }
 
-    private fun getResponsibleOrganisation(order: Order): String {
-      return ResponsibleOrganisation.from(order.interestedParties?.responsibleOrganisation)?.value
+    private fun getResponsibleOrganisation(order: Order): String =
+      ResponsibleOrganisation.from(order.interestedParties?.responsibleOrganisation)?.value
         ?: order.interestedParties?.responsibleOrganisation
         ?: "N/A"
-    }
 
-    private fun getResponsibleOrganisationRegion(order: Order): String {
-      return ProbationServiceRegion.from(order.interestedParties?.responsibleOrganisationRegion)?.value
+    private fun getResponsibleOrganisationRegion(order: Order): String =
+      ProbationServiceRegion.from(order.interestedParties?.responsibleOrganisationRegion)?.value
         ?: YouthJusticeServiceRegions.from(order.interestedParties?.responsibleOrganisationRegion)?.value
         ?: order.interestedParties?.responsibleOrganisationRegion
         ?: ""
-    }
   }
 }
 
@@ -424,25 +420,18 @@ data class Zone(
   val end: String? = "",
 )
 
-data class Schedule(
-  val day: String? = "",
-  val start: String? = "",
-  val end: String? = "",
-) {
+data class Schedule(val day: String? = "", val start: String? = "", val end: String? = "") {
   companion object {
-    private fun getShortDayString(dayOfWeek: DayOfWeek): String {
-      return when (dayOfWeek) {
-        DayOfWeek.MONDAY -> "Mo"
-        DayOfWeek.TUESDAY -> "Tu"
-        DayOfWeek.WEDNESDAY -> "Wed"
-        DayOfWeek.THURSDAY -> "Th"
-        DayOfWeek.FRIDAY -> "Fr"
-        DayOfWeek.SATURDAY -> "Sa"
-        DayOfWeek.SUNDAY -> "Su"
-      }
+    private fun getShortDayString(dayOfWeek: DayOfWeek): String = when (dayOfWeek) {
+      DayOfWeek.MONDAY -> "Mo"
+      DayOfWeek.TUESDAY -> "Tu"
+      DayOfWeek.WEDNESDAY -> "Wed"
+      DayOfWeek.THURSDAY -> "Th"
+      DayOfWeek.FRIDAY -> "Fr"
+      DayOfWeek.SATURDAY -> "Sa"
+      DayOfWeek.SUNDAY -> "Su"
     }
-    fun fromCurfewTimeTable(curfewTimeTable: CurfewTimeTable): Schedule {
-      return Schedule(getShortDayString(curfewTimeTable.dayOfWeek), curfewTimeTable.startTime, curfewTimeTable.endTime)
-    }
+    fun fromCurfewTimeTable(curfewTimeTable: CurfewTimeTable): Schedule =
+      Schedule(getShortDayString(curfewTimeTable.dayOfWeek), curfewTimeTable.startTime, curfewTimeTable.endTime)
   }
 }

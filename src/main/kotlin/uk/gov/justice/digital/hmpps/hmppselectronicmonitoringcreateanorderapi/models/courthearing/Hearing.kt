@@ -19,15 +19,10 @@ data class Hearing(
   val prosecutionCases: List<ProsecutionCase> = emptyList(),
 ) {
 
-  fun isHearingContainsEM(): Boolean {
-    return this.prosecutionCases.any {
-        case ->
-      case.defendants.any {
-          defendant ->
-        defendant.offences.any {
-            offence ->
-          HearingEventHandler.isEnglandAdnWalesEMRequest(offence)
-        }
+  fun isHearingContainsEM(): Boolean = this.prosecutionCases.any { case ->
+    case.defendants.any { defendant ->
+      defendant.offences.any { offence ->
+        HearingEventHandler.isEnglandAdnWalesEMRequest(offence)
       }
     }
   }

@@ -6,7 +6,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import java.util.*
 
 @Service
-class ContactDetailsService() : OrderSectionServiceBase() {
+class ContactDetailsService : OrderSectionServiceBase() {
   fun updateContactDetails(
     orderId: UUID,
     username: String,

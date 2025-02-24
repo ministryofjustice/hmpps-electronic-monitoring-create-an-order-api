@@ -194,10 +194,6 @@ data class DeviceWearer(
   }
 }
 
-data class Disability(
-  var disability: String? = "",
-)
+data class Disability(var disability: String? = "")
 
-data class RiskCategory(
-  var category: String? = "",
-)
+data class RiskCategory(var category: String? = "")
