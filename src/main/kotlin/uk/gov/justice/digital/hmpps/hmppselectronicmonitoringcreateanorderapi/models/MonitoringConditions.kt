@@ -75,6 +75,10 @@ data class MonitoringConditions(
   @Column(name = "HDC", nullable = true)
   var hdc: YesNoUnknown? = null,
 
+  @Enumerated(EnumType.STRING)
+  @Column(name = "PRARR", nullable = true)
+  var prarr: YesNoUnknown? = null,
+
   @Schema(hidden = true)
   @OneToOne
   @JoinColumn(name = "VERSION_ID", updatable = false, insertable = false)

@@ -43,6 +43,8 @@ data class UpdateMonitoringConditionsDto(
   val issp: YesNoUnknown = YesNoUnknown.UNKNOWN,
 
   val hdc: YesNoUnknown = YesNoUnknown.UNKNOWN,
+
+  val prarr: YesNoUnknown = YesNoUnknown.UNKNOWN,
 ) {
   @AssertTrue(message = "End date must be after start date")
   fun isEndDate(): Boolean {

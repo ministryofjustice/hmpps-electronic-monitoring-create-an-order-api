@@ -30,6 +30,7 @@ class MonitoringConditionsService : OrderSectionServiceBase() {
       sentenceType = updateRecord.sentenceType,
       issp = updateRecord.issp,
       hdc = updateRecord.hdc,
+      prarr = updateRecord.prarr,
     )
 
     return orderRepo.save(order).monitoringConditions!!
