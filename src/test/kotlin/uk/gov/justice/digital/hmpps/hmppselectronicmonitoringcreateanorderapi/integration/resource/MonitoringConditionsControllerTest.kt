@@ -54,6 +54,7 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
               "endDate": "$mockEndDate",
               "issp": "YES",
               "hdc": "NO",
+              "prarr": "UNKNOWN",
               "sentenceType": "LIFE_SENTENCE"
             }
           """.trimIndent(),
@@ -83,6 +84,7 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
     Assertions.assertThat(updateMonitoringConditions.responseBody?.alcohol).isTrue()
     Assertions.assertThat(updateMonitoringConditions.responseBody?.issp).isEqualTo(YesNoUnknown.YES)
     Assertions.assertThat(updateMonitoringConditions.responseBody?.hdc).isEqualTo(YesNoUnknown.NO)
+    Assertions.assertThat(updateMonitoringConditions.responseBody?.prarr).isEqualTo(YesNoUnknown.UNKNOWN)
     Assertions.assertThat(updateMonitoringConditions.responseBody?.sentenceType).isEqualTo(SentenceType.LIFE_SENTENCE)
   }
 
