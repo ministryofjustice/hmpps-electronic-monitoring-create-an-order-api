@@ -42,8 +42,10 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderTypeDescription
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.SentenceType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.SubmissionStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.VariationType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YesNoUnknown
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsAttachmentResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsAttachmentResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsAttachmentSubmissionResult
@@ -790,14 +792,14 @@ class OrderControllerTest : IntegrationTestBase() {
       	"new_order_received": "",
       	"notifying_officer_email": "",
       	"notifying_officer_name": "",
-      	"notifying_organization": "Mock Organisation",
+      	"notifying_organization": "Prison",
       	"no_post_code": "",
       	"no_address_1": "",
       	"no_address_2": "",
       	"no_address_3": "",
       	"no_address_4": "",
       	"no_email": "",
-      	"no_name": "",
+      	"no_name": "Wayland Prison",
       	"no_phone_number": "",
       	"offence": "Fraud Offences",
       	"offence_date": "",
@@ -819,7 +821,7 @@ class OrderControllerTest : IntegrationTestBase() {
       	"responsible_officer_email": "",
       	"responsible_officer_phone": "07401111111",
       	"responsible_officer_name": "John Smith",
-      	"responsible_organization": "Avon and Somerset Constabulary",
+      	"responsible_organization": "Probation",
       	"ro_post_code": "AB11 1CD",
       	"ro_address_1": "Line 1",
       	"ro_address_2": "Line 2",
@@ -827,9 +829,10 @@ class OrderControllerTest : IntegrationTestBase() {
       	"ro_address_4": "",
       	"ro_email": "abc@def.com",
       	"ro_phone": "07401111111",
-      	"ro_region": "Mock Region",
+      	"ro_region": "London",
       	"sentence_date": "",
       	"sentence_expiry": "",
+        "sentence_type": "Life Sentence",
       	"tag_at_source": "",
       	"tag_at_source_details": "",
       	"technical_bail": "",
@@ -934,7 +937,7 @@ class OrderControllerTest : IntegrationTestBase() {
             "start": "${mockStartDate.format(formatter)}",
             "end": "${mockEndDate.format(formatter)}"
           }
-          ],      	
+        ],      	
       	"inclusion_zones": [
           {
             "description": "Mock Inclusion Zone",
@@ -942,8 +945,7 @@ class OrderControllerTest : IntegrationTestBase() {
             "start": "${mockStartDate.format(formatter)}",
             "end": "${mockEndDate.format(formatter)}"
           }
-          ],
-      	
+        ],
       	"abstinence": "Yes",
       	"schedule": "",
       	"checkin_schedule": [],
@@ -956,6 +958,8 @@ class OrderControllerTest : IntegrationTestBase() {
         "installation_address_post_code": "SW11 1NC",
         "crown_court_case_reference_number": "",
         "magistrate_court_case_reference_number": "",
+        "issp": "Yes",
+        "hdc": "No",
       	"order_status": "Not Started"
       }
       """.trimIndent()
@@ -1154,14 +1158,14 @@ class OrderControllerTest : IntegrationTestBase() {
       	"new_order_received": "",
       	"notifying_officer_email": "",
       	"notifying_officer_name": "",
-      	"notifying_organization": "Mock Organisation",
+      	"notifying_organization": "Prison",
       	"no_post_code": "",
       	"no_address_1": "",
       	"no_address_2": "",
       	"no_address_3": "",
       	"no_address_4": "",
       	"no_email": "",
-      	"no_name": "",
+      	"no_name": "Wayland Prison",
       	"no_phone_number": "",
       	"offence": "Fraud Offences",
       	"offence_date": "",
@@ -1183,7 +1187,7 @@ class OrderControllerTest : IntegrationTestBase() {
       	"responsible_officer_email": "",
       	"responsible_officer_phone": "07401111111",
       	"responsible_officer_name": "John Smith",
-      	"responsible_organization": "Avon and Somerset Constabulary",
+      	"responsible_organization": "Probation",
       	"ro_post_code": "AB11 1CD",
       	"ro_address_1": "Line 1",
       	"ro_address_2": "Line 2",
@@ -1191,9 +1195,10 @@ class OrderControllerTest : IntegrationTestBase() {
       	"ro_address_4": "",
       	"ro_email": "abc@def.com",
       	"ro_phone": "07401111111",
-      	"ro_region": "Mock Region",
+      	"ro_region": "London",
       	"sentence_date": "",
       	"sentence_expiry": "",
+        "sentence_type": "Life Sentence",
       	"tag_at_source": "",
       	"tag_at_source_details": "",
       	"technical_bail": "",
@@ -1298,7 +1303,7 @@ class OrderControllerTest : IntegrationTestBase() {
             "start": "${mockStartDate.format(formatter)}",
             "end": "${mockEndDate.format(formatter)}"
           }
-          ],      	
+        ],      	
       	"inclusion_zones": [
           {
             "description": "Mock Inclusion Zone",
@@ -1306,8 +1311,7 @@ class OrderControllerTest : IntegrationTestBase() {
             "start": "${mockStartDate.format(formatter)}",
             "end": "${mockEndDate.format(formatter)}"
           }
-          ],
-      	
+        ],
       	"abstinence": "Yes",
       	"schedule": "",
       	"checkin_schedule": [],
@@ -1320,6 +1324,8 @@ class OrderControllerTest : IntegrationTestBase() {
         "installation_address_post_code": "SW11 1NC",
         "crown_court_case_reference_number": "",
         "magistrate_court_case_reference_number": "",
+        "issp": "Yes",
+        "hdc": "No",
       	"order_status": "Not Started"
       }
       """.trimIndent()
@@ -1488,14 +1494,14 @@ class OrderControllerTest : IntegrationTestBase() {
       	"new_order_received": "",
       	"notifying_officer_email": "",
       	"notifying_officer_name": "",
-      	"notifying_organization": "Mock Organisation",
+      	"notifying_organization": "Prison",
       	"no_post_code": "",
       	"no_address_1": "",
       	"no_address_2": "",
       	"no_address_3": "",
       	"no_address_4": "",
       	"no_email": "",
-      	"no_name": "",
+      	"no_name": "Wayland Prison",
       	"no_phone_number": "",
       	"offence": "Fraud Offences",
       	"offence_date": "",
@@ -1517,7 +1523,7 @@ class OrderControllerTest : IntegrationTestBase() {
       	"responsible_officer_email": "",
       	"responsible_officer_phone": "07401111111",
       	"responsible_officer_name": "John Smith",
-      	"responsible_organization": "Avon and Somerset Constabulary",
+      	"responsible_organization": "Probation",
       	"ro_post_code": "AB11 1CD",
       	"ro_address_1": "Line 1",
       	"ro_address_2": "Line 2",
@@ -1525,9 +1531,10 @@ class OrderControllerTest : IntegrationTestBase() {
       	"ro_address_4": "",
       	"ro_email": "abc@def.com",
       	"ro_phone": "07401111111",
-      	"ro_region": "Mock Region",
+      	"ro_region": "London",
       	"sentence_date": "",
       	"sentence_expiry": "",
+        "sentence_type": "Life Sentence",
       	"tag_at_source": "",
       	"tag_at_source_details": "",
       	"technical_bail": "",
@@ -1632,7 +1639,7 @@ class OrderControllerTest : IntegrationTestBase() {
             "start": "${mockStartDate.format(formatter)}",
             "end": "${mockEndDate.format(formatter)}"
           }
-          ],      	
+        ],      	
       	"inclusion_zones": [
           {
             "description": "Mock Inclusion Zone",
@@ -1640,8 +1647,7 @@ class OrderControllerTest : IntegrationTestBase() {
             "start": "${mockStartDate.format(formatter)}",
             "end": "${mockEndDate.format(formatter)}"
           }
-          ],
-      	
+        ],
       	"abstinence": "Yes",
       	"schedule": "",
       	"checkin_schedule": [],
@@ -1654,6 +1660,8 @@ class OrderControllerTest : IntegrationTestBase() {
         "installation_address_post_code": "SW11 1NC",
         "crown_court_case_reference_number": "",
         "magistrate_court_case_reference_number": "",
+        "issp": "Yes",
+        "hdc": "No",
       	"order_status": "Not Started"
       }
       """.trimIndent()
@@ -1910,6 +1918,8 @@ class OrderControllerTest : IntegrationTestBase() {
       alcohol = true,
       caseId = "d8ea62e61bb8d610a10c20e0b24bcb85",
       conditionType = MonitoringConditionType.REQUIREMENT_OF_A_COMMUNITY_ORDER,
+      sentenceType = SentenceType.LIFE_SENTENCE,
+      issp = YesNoUnknown.YES,
     )
 
     documents.forEach {
@@ -1995,13 +2005,13 @@ class OrderControllerTest : IntegrationTestBase() {
       versionId = versionId,
       responsibleOfficerName = "John Smith",
       responsibleOfficerPhoneNumber = "07401111111",
-      responsibleOrganisation = "Avon and Somerset Constabulary",
-      responsibleOrganisationRegion = "Mock Region",
+      responsibleOrganisation = "PROBATION",
+      responsibleOrganisationRegion = "LONDON",
       responsibleOrganisationAddress = responsibleOrganisationAddress,
       responsibleOrganisationPhoneNumber = "07401111111",
       responsibleOrganisationEmail = "abc@def.com",
-      notifyingOrganisation = "Mock Organisation",
-      notifyingOrganisationName = "",
+      notifyingOrganisation = "PRISON",
+      notifyingOrganisationName = "WAYLAND_PRISON",
       notifyingOrganisationEmail = "",
     )
 

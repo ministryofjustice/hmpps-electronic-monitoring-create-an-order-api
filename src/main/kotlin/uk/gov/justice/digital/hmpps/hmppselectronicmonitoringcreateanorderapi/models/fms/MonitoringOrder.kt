@@ -6,8 +6,16 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.CrownCourt
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.EnforcementZoneType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MagistrateCourt
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisation
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Prison
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ProbationServiceRegion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ResponsibleOrganisation
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YesNoUnknown
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YouthJusticeServiceRegions
 import java.time.DayOfWeek
 import java.time.format.DateTimeFormatter
 
@@ -124,6 +132,8 @@ data class MonitoringOrder(
   var sentenceDate: String? = "",
   @JsonProperty("sentence_expiry")
   var sentenceExpiry: String? = "",
+  @JsonProperty("sentence_type")
+  var sentenceType: String? = "",
   @JsonProperty("tag_at_source")
   var tagAtSource: String? = "",
   @JsonProperty("tag_at_source_details")
@@ -180,6 +190,10 @@ data class MonitoringOrder(
   var crownCourtCaseReferenceNumber: String? = "",
   @JsonProperty("magistrate_court_case_reference_number")
   var magistrateCourtCaseReferenceNumber: String? = "",
+  @JsonProperty("issp")
+  var issp: String = "",
+  @JsonProperty("hdc")
+  var hdc: String = "",
   @JsonProperty("order_status")
   var orderStatus: String? = "",
 ) {
@@ -203,6 +217,18 @@ data class MonitoringOrder(
         orderStatus = "Not Started",
         offence = order.installationAndRisk?.offence,
       )
+
+      monitoringOrder.sentenceType = conditions.sentenceType?.value ?: ""
+      monitoringOrder.issp = if (conditions.issp == YesNoUnknown.YES) {
+        "Yes"
+      } else {
+        "No"
+      }
+      monitoringOrder.hdc = if (conditions.hdc == YesNoUnknown.YES) {
+        "Yes"
+      } else {
+        "No"
+      }
 
       if (conditions.curfew != null && conditions.curfew!!) {
         val curfew = order.curfewConditions!!
@@ -303,19 +329,11 @@ data class MonitoringOrder(
         val interestedParties = order.interestedParties!!
         monitoringOrder.responsibleOfficerName = interestedParties.responsibleOfficerName
         monitoringOrder.responsibleOfficerPhone = interestedParties.responsibleOfficerPhoneNumber
-        monitoringOrder.responsibleOrganization = if (interestedParties.responsibleOrganisation == "") {
-          "N/A"
-        } else {
-          interestedParties.responsibleOrganisation
-        }
-        monitoringOrder.roRegion = interestedParties.responsibleOrganisationRegion
+        monitoringOrder.responsibleOrganization = getResponsibleOrganisation(order)
+        monitoringOrder.roRegion = getResponsibleOrganisationRegion(order)
         monitoringOrder.roPhone = interestedParties.responsibleOrganisationPhoneNumber
         monitoringOrder.roEmail = interestedParties.responsibleOrganisationEmail
-        monitoringOrder.notifyingOrganization = if (interestedParties.notifyingOrganisation == "") {
-          "N/A"
-        } else {
-          interestedParties.notifyingOrganisation
-        }
+        monitoringOrder.notifyingOrganization = getNotifyingOrganisation(order)
         val address = order.addresses.firstOrNull { it.addressType == AddressType.RESPONSIBLE_ORGANISATION }
         if (address != null) {
           monitoringOrder.roAddress1 = address.addressLine1
@@ -324,6 +342,8 @@ data class MonitoringOrder(
           monitoringOrder.roAddress4 = address.addressLine4
           monitoringOrder.roPostCode = address.postcode
         }
+        monitoringOrder.noName = getNotifyingOrganisationName(order)
+        monitoringOrder.noEmail = interestedParties.notifyingOrganisationEmail
       }
 
       order.addresses.firstOrNull { it.addressType == AddressType.INSTALLATION }?.let {
@@ -372,6 +392,29 @@ data class MonitoringOrder(
       }
       return schedules
     }
+
+    private fun getNotifyingOrganisation(order: Order): String =
+      NotifyingOrganisation.from(order.interestedParties?.notifyingOrganisation)?.value
+        ?: order.interestedParties?.notifyingOrganisation
+        ?: "N/A"
+
+    private fun getNotifyingOrganisationName(order: Order): String =
+      Prison.from(order.interestedParties?.notifyingOrganisationName)?.value
+        ?: CrownCourt.from(order.interestedParties?.notifyingOrganisationName)?.value
+        ?: MagistrateCourt.from(order.interestedParties?.notifyingOrganisationName)?.value
+        ?: order.interestedParties?.notifyingOrganisationName
+        ?: ""
+
+    private fun getResponsibleOrganisation(order: Order): String =
+      ResponsibleOrganisation.from(order.interestedParties?.responsibleOrganisation)?.value
+        ?: order.interestedParties?.responsibleOrganisation
+        ?: "N/A"
+
+    private fun getResponsibleOrganisationRegion(order: Order): String =
+      ProbationServiceRegion.from(order.interestedParties?.responsibleOrganisationRegion)?.value
+        ?: YouthJusticeServiceRegions.from(order.interestedParties?.responsibleOrganisationRegion)?.value
+        ?: order.interestedParties?.responsibleOrganisationRegion
+        ?: ""
   }
 }
 
@@ -396,25 +439,18 @@ data class Zone(
   val end: String? = "",
 )
 
-data class Schedule(
-  val day: String? = "",
-  val start: String? = "",
-  val end: String? = "",
-) {
+data class Schedule(val day: String? = "", val start: String? = "", val end: String? = "") {
   companion object {
-    private fun getShortDayString(dayOfWeek: DayOfWeek): String {
-      return when (dayOfWeek) {
-        DayOfWeek.MONDAY -> "Mo"
-        DayOfWeek.TUESDAY -> "Tu"
-        DayOfWeek.WEDNESDAY -> "Wed"
-        DayOfWeek.THURSDAY -> "Th"
-        DayOfWeek.FRIDAY -> "Fr"
-        DayOfWeek.SATURDAY -> "Sa"
-        DayOfWeek.SUNDAY -> "Su"
-      }
+    private fun getShortDayString(dayOfWeek: DayOfWeek): String = when (dayOfWeek) {
+      DayOfWeek.MONDAY -> "Mo"
+      DayOfWeek.TUESDAY -> "Tu"
+      DayOfWeek.WEDNESDAY -> "Wed"
+      DayOfWeek.THURSDAY -> "Th"
+      DayOfWeek.FRIDAY -> "Fr"
+      DayOfWeek.SATURDAY -> "Sa"
+      DayOfWeek.SUNDAY -> "Su"
     }
-    fun fromCurfewTimeTable(curfewTimeTable: CurfewTimeTable): Schedule {
-      return Schedule(getShortDayString(curfewTimeTable.dayOfWeek), curfewTimeTable.startTime, curfewTimeTable.endTime)
-    }
+    fun fromCurfewTimeTable(curfewTimeTable: CurfewTimeTable): Schedule =
+      Schedule(getShortDayString(curfewTimeTable.dayOfWeek), curfewTimeTable.startTime, curfewTimeTable.endTime)
   }
 }

@@ -15,10 +15,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import java.util.*
 
 @Service
-class EnforcementZoneService(
-  val webClient: DocumentApiClient,
-
-) : OrderSectionServiceBase() {
+class EnforcementZoneService(val webClient: DocumentApiClient) : OrderSectionServiceBase() {
 
   val allowedFileExtensions: List<String> = listOf("pdf", "jpeg", "jpg")
 

@@ -19,21 +19,16 @@ data class Hearing(
   val prosecutionCases: List<ProsecutionCase> = emptyList(),
 ) {
 
-  fun isHearingContainsEM(): Boolean {
-    return this.prosecutionCases.any {
-        case ->
-      case.defendants.any {
-          defendant ->
-        defendant.offences.any {
-            offence ->
-          HearingEventHandler.isEnglandAdnWalesEMRequest(offence)
-        }
+  fun isHearingContainsEM(): Boolean = this.prosecutionCases.any { case ->
+    case.defendants.any { defendant ->
+      defendant.offences.any { offence ->
+        HearingEventHandler.isEnglandAdnWalesEMRequest(offence)
       }
     }
   }
 }
 
-enum class JurisdictionType {
-  MAGISTRATES,
-  CROWN,
+enum class JurisdictionType(val value: String) {
+  MAGISTRATES("Magistrates Court"),
+  CROWN("Crown Court"),
 }

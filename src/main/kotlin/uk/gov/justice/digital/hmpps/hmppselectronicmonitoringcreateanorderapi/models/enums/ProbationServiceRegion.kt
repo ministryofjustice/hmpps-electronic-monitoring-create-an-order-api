@@ -13,4 +13,11 @@ enum class ProbationServiceRegion(val value: String) {
   SOUTH_CENTRAL("South Central"),
   LONDON("London"),
   KENT_SURREY_SUSSEX("Kent, Surrey & Sussex"),
+  ;
+
+  companion object {
+    fun from(value: String?): ProbationServiceRegion? = ProbationServiceRegion.entries.firstOrNull {
+      it.name == value
+    }
+  }
 }

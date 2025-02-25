@@ -43,4 +43,11 @@ enum class CrownCourt(val value: String) {
   WARRINGTON_CROWN_COURT("Warrington Crown Court"),
   WOOD_GREEN_CROWN_COURT("Wood Green Crown Court"),
   WOOLWICH_CROWN_COURT("Woolwich Crown Court"),
+  ;
+
+  companion object {
+    fun from(value: String?): CrownCourt? = CrownCourt.entries.firstOrNull {
+      it.name == value
+    }
+  }
 }

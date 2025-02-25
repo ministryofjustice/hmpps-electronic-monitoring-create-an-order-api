@@ -23,9 +23,7 @@ import java.util.UUID
 @RestController
 @PreAuthorize("hasRole('ROLE_EM_CEMO__CREATE_ORDER')")
 @RequestMapping("/api/")
-class EnforcementZoneController(
-  @Autowired val enforcementZoneService: EnforcementZoneService,
-) {
+class EnforcementZoneController(@Autowired val enforcementZoneService: EnforcementZoneService) {
 
   @PutMapping("/orders/{orderId}/enforcementZone")
   fun updateEnforcementZone(

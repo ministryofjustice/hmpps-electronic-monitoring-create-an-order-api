@@ -235,9 +235,7 @@ class CurfewConditionControllerTest : IntegrationTestBase() {
     startDate: ZonedDateTime? = mockStartDate,
     endDate: ZonedDateTime? = mockEndDate,
     curfewAddress: String? = "PRIMARY,SECONDARY",
-  ): String {
-    return mockRequestBody(orderId, startDate, endDate, curfewAddress)
-  }
+  ): String = mockRequestBody(orderId, startDate, endDate, curfewAddress)
 
   fun mockRequestBody(
     orderId: UUID,

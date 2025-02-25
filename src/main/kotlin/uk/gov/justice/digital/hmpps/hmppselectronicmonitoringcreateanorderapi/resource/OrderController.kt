@@ -24,9 +24,7 @@ import java.util.UUID
 @RestController
 @PreAuthorize("hasRole('ROLE_EM_CEMO__CREATE_ORDER')")
 @RequestMapping("/api/")
-class OrderController(
-  @Autowired val orderService: OrderService,
-) {
+class OrderController(@Autowired val orderService: OrderService) {
 
   @PostMapping("/orders")
   fun createOrder(
@@ -74,29 +72,28 @@ class OrderController(
     return ResponseEntity(orders.map { convertToDto(it) }, HttpStatus.OK)
   }
 
-  private fun convertToDto(order: Order): OrderDto {
-    return OrderDto(
-      id = order.id,
-      additionalDocuments = order.additionalDocuments,
-      addresses = order.addresses,
-      contactDetails = order.contactDetails,
-      curfewConditions = order.curfewConditions,
-      curfewReleaseDateConditions = order.curfewReleaseDateConditions,
-      curfewTimeTable = order.curfewTimeTable,
-      deviceWearer = order.deviceWearer,
-      deviceWearerResponsibleAdult = order.deviceWearerResponsibleAdult,
-      enforcementZoneConditions = order.enforcementZoneConditions,
-      fmsResultId = order.fmsResultId,
-      installationAndRisk = order.installationAndRisk,
-      interestedParties = order.interestedParties,
-      isValid = order.isValid,
-      monitoringConditions = order.monitoringConditions,
-      monitoringConditionsAlcohol = order.monitoringConditionsAlcohol,
-      monitoringConditionsTrail = order.monitoringConditionsTrail,
-      status = order.status,
-      type = order.type,
-      username = order.username,
-      variationDetails = order.variationDetails,
-    )
-  }
+  private fun convertToDto(order: Order): OrderDto = OrderDto(
+    id = order.id,
+    additionalDocuments = order.additionalDocuments,
+    addresses = order.addresses,
+    contactDetails = order.contactDetails,
+    curfewConditions = order.curfewConditions,
+    curfewReleaseDateConditions = order.curfewReleaseDateConditions,
+    curfewTimeTable = order.curfewTimeTable,
+    deviceWearer = order.deviceWearer,
+    deviceWearerResponsibleAdult = order.deviceWearerResponsibleAdult,
+    enforcementZoneConditions = order.enforcementZoneConditions,
+    fmsResultId = order.fmsResultId,
+    installationAndRisk = order.installationAndRisk,
+    interestedParties = order.interestedParties,
+    isValid = order.isValid,
+    mandatoryAttendanceConditions = order.mandatoryAttendanceConditions,
+    monitoringConditions = order.monitoringConditions,
+    monitoringConditionsAlcohol = order.monitoringConditionsAlcohol,
+    monitoringConditionsTrail = order.monitoringConditionsTrail,
+    status = order.status,
+    type = order.type,
+    username = order.username,
+    variationDetails = order.variationDetails,
+  )
 }

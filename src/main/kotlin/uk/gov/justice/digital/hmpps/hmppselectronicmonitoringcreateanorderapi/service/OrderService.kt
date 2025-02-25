@@ -16,10 +16,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.re
 import java.util.*
 
 @Service
-class OrderService(
-  val repo: OrderRepository,
-  val fmsService: FmsService,
-) {
+class OrderService(val repo: OrderRepository, val fmsService: FmsService) {
   fun createOrder(username: String, createRecord: CreateOrderDto): Order {
     val order = Order()
 
@@ -106,9 +103,7 @@ class OrderService(
     return order
   }
 
-  fun listOrders(searchCriteria: OrderSearchCriteria): List<Order> {
-    return repo.findAll(
-      OrderSpecification(searchCriteria),
-    )
-  }
+  fun listOrders(searchCriteria: OrderSearchCriteria): List<Order> = repo.findAll(
+    OrderSpecification(searchCriteria),
+  )
 }

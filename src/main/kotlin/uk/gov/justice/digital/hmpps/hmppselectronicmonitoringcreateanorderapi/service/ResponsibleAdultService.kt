@@ -6,7 +6,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import java.util.UUID
 
 @Service
-class ResponsibleAdultService() : OrderSectionServiceBase() {
+class ResponsibleAdultService : OrderSectionServiceBase() {
   fun updateResponsibleAdult(
     orderId: UUID,
     username: String,

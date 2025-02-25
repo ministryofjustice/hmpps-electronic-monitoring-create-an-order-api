@@ -4,7 +4,4 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import java.time.LocalDate
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-data class Plea(
-  val pleaValue: String,
-  val pleaDate: LocalDate?,
-)
+data class Plea(val pleaValue: String, val pleaDate: LocalDate?)

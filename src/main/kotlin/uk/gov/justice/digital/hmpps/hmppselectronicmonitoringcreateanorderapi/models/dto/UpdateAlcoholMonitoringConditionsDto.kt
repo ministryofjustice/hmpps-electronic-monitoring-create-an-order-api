@@ -25,19 +25,15 @@ data class UpdateAlcoholMonitoringConditionsDto(
   val probationOfficeName: String? = null,
 ) {
   @AssertTrue(message = ValidationErrors.AlcoholMonitoring.PRISON_NAME_REQUIRED_LOCATION_IS_PRISON)
-  fun isPrisonName(): Boolean {
-    return !(
-      installationLocation == AlcoholMonitoringInstallationLocationType.PRISON && prisonName.isNullOrBlank()
-      )
-  }
+  fun isPrisonName(): Boolean = !(
+    installationLocation == AlcoholMonitoringInstallationLocationType.PRISON && prisonName.isNullOrBlank()
+    )
 
   @AssertTrue(
     message = ValidationErrors.AlcoholMonitoring.OFFICE_NAME_REQUIRED_LOCATION_IS_PROBATION_OFFICE,
   )
-  fun isProbationOfficeName(): Boolean {
-    return !(
-      installationLocation == AlcoholMonitoringInstallationLocationType.PROBATION_OFFICE &&
-        probationOfficeName.isNullOrBlank()
-      )
-  }
+  fun isProbationOfficeName(): Boolean = !(
+    installationLocation == AlcoholMonitoringInstallationLocationType.PROBATION_OFFICE &&
+      probationOfficeName.isNullOrBlank()
+    )
 }

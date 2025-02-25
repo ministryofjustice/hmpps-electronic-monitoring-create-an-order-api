@@ -13,7 +13,10 @@ import org.junit.jupiter.api.extension.ExtensionContext
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 
-class SercoAuthMockServerExtension : BeforeAllCallback, AfterAllCallback, BeforeEachCallback {
+class SercoAuthMockServerExtension :
+  BeforeAllCallback,
+  AfterAllCallback,
+  BeforeEachCallback {
   companion object {
     @JvmField
     val sercoAuthApi = SercoAuthMockServer()

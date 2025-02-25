@@ -3,8 +3,4 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.m
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DocumentType
 import java.util.UUID
 
-data class DocumentMetadata(
-  val orderId: UUID?,
-  val documentType: DocumentType? = null,
-
-)
+data class DocumentMetadata(val orderId: UUID?, val documentType: DocumentType? = null)

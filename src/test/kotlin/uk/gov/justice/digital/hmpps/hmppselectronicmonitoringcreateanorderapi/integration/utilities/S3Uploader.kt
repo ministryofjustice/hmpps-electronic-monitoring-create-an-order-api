@@ -14,10 +14,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.co
 @EnableConfigurationProperties(
   HmppsS3Properties::class,
 )
-class S3Uploader(
-  private val s3Client: S3Client,
-  private val hmppsS3Properties: HmppsS3Properties,
-) {
+class S3Uploader(private val s3Client: S3Client, private val hmppsS3Properties: HmppsS3Properties) {
   fun createBucket() {
     try {
       val headBucketRequest = HeadBucketRequest.builder()

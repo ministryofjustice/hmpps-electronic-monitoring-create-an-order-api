@@ -24,10 +24,7 @@ class CourtHearingEventListener(
   private val eventService: EventService,
   private val s3Service: S3Service,
 ) {
-  data class S3Message(
-    val s3BucketName: String,
-    val s3Key: String,
-  )
+  data class S3Message(val s3BucketName: String, val s3Key: String)
   private val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy hh:mm:ss")
 
   @SqsListener("courthearingeventqueue", factory = "hmppsQueueContainerFactoryProxy")

@@ -67,14 +67,12 @@ abstract class IntegrationTestBase {
     hmppsAuth.stubHealthPing(status)
   }
 
-  fun mockFile(fileName: String? = "file-name.jpeg"): MockMultipartFile {
-    return MockMultipartFile(
-      "file",
-      fileName,
-      MediaType.IMAGE_JPEG_VALUE,
-      "Test file content".toByteArray(),
-    )
-  }
+  fun mockFile(fileName: String? = "file-name.jpeg"): MockMultipartFile = MockMultipartFile(
+    "file",
+    fileName,
+    MediaType.IMAGE_JPEG_VALUE,
+    "Test file content".toByteArray(),
+  )
 
   fun createMultiPartBodyBuilder(multiPartFile: MockMultipartFile): MultipartBodyBuilder {
     val builder = MultipartBodyBuilder()

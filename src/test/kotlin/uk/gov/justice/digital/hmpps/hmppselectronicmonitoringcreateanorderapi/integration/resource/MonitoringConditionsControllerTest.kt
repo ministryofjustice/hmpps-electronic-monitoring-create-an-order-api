@@ -10,6 +10,8 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MonitoringConditionType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderTypeDescription
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.SentenceType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YesNoUnknown
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidationError
 import java.time.ZoneId
 import java.time.ZonedDateTime
@@ -56,7 +58,11 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
               "mandatoryAttendance": "true",
               "alcohol": "true",
               "startDate": "$mockStartDate",
-              "endDate": "$mockEndDate"
+              "endDate": "$mockEndDate",
+              "issp": "YES",
+              "hdc": "NO",
+              "prarr": "UNKNOWN",
+              "sentenceType": "LIFE_SENTENCE"
             }
           """.trimIndent(),
         ),
@@ -83,6 +89,10 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
     Assertions.assertThat(updateMonitoringConditions.responseBody?.mandatoryAttendance)
       .isTrue()
     Assertions.assertThat(updateMonitoringConditions.responseBody?.alcohol).isTrue()
+    Assertions.assertThat(updateMonitoringConditions.responseBody?.issp).isEqualTo(YesNoUnknown.YES)
+    Assertions.assertThat(updateMonitoringConditions.responseBody?.hdc).isEqualTo(YesNoUnknown.NO)
+    Assertions.assertThat(updateMonitoringConditions.responseBody?.prarr).isEqualTo(YesNoUnknown.UNKNOWN)
+    Assertions.assertThat(updateMonitoringConditions.responseBody?.sentenceType).isEqualTo(SentenceType.LIFE_SENTENCE)
   }
 
   @Test

@@ -19,9 +19,7 @@ import java.util.*
 @RestController
 @PreAuthorize("hasRole('ROLE_EM_CEMO__CREATE_ORDER')")
 @RequestMapping("/api/")
-class InstallationAndRiskController(
-  @Autowired val service: InstallationAndRiskService,
-) {
+class InstallationAndRiskController(@Autowired val service: InstallationAndRiskService) {
 
   @PutMapping("/orders/{orderId}/installation-and-risk")
   fun updateInstallationAndRisk(

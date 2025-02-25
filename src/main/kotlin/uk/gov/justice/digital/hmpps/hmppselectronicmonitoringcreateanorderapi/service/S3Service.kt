@@ -10,10 +10,7 @@ import java.nio.charset.StandardCharsets
 @EnableConfigurationProperties(
   HmppsS3Properties::class,
 )
-class S3Service(
-  private val s3Client: S3Client,
-  private val hmppsS3Properties: HmppsS3Properties,
-) {
+class S3Service(private val s3Client: S3Client, private val hmppsS3Properties: HmppsS3Properties) {
 
   fun getObject(key: String): String {
     val request = GetObjectRequest.builder()

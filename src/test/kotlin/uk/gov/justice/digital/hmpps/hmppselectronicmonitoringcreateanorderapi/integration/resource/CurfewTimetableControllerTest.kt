@@ -185,8 +185,7 @@ class CurfewTimetableControllerTest : IntegrationTestBase() {
     return objectMapper.writeValueAsString(body)
   }
 
-  fun mockInvalidTimetableRequestBody(orderId: UUID): String {
-    return """
+  fun mockInvalidTimetableRequestBody(orderId: UUID): String = """
       [
           {
               "dayOfWeek": "MONDAY",
@@ -242,6 +241,5 @@ class CurfewTimetableControllerTest : IntegrationTestBase() {
               "endTime": "07:00:00"
           }
       ]
-    """.trimIndent()
-  }
+  """.trimIndent()
 }

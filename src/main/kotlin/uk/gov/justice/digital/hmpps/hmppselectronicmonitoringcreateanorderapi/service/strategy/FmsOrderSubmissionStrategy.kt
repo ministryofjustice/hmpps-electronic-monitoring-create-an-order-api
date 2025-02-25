@@ -24,22 +24,20 @@ class FmsOrderSubmissionStrategy(
   val documentApiClient: DocumentApiClient,
 ) : FmsSubmissionStrategyBase(objectMapper) {
 
-  private fun submitCreateDeviceWearerRequest(deviceWearer: DeviceWearer, orderId: UUID): Result<String> {
-    return try {
-      Result(
-        success = true,
-        data = fmsClient.createDeviceWearer(deviceWearer, orderId).result.first().id,
-      )
-    } catch (e: Exception) {
-      Result(
-        success = false,
-        error = Exception("Failed to submit FMS Device Wearer", e),
-      )
-    }
+  private fun submitCreateDeviceWearerRequest(deviceWearer: DeviceWearer, orderId: UUID): Result<String> = try {
+    Result(
+      success = true,
+      data = fmsClient.createDeviceWearer(deviceWearer, orderId).result.first().id,
+    )
+  } catch (e: Exception) {
+    Result(
+      success = false,
+      error = Exception("Failed to submit FMS Device Wearer", e),
+    )
   }
 
-  private fun submitCreateMonitoringOrderRequest(monitoringOrder: MonitoringOrder, orderId: UUID): Result<String> {
-    return try {
+  private fun submitCreateMonitoringOrderRequest(monitoringOrder: MonitoringOrder, orderId: UUID): Result<String> =
+    try {
       Result(
         success = true,
         data = fmsClient.createMonitoringOrder(monitoringOrder, orderId).result.first().id,
@@ -50,7 +48,6 @@ class FmsOrderSubmissionStrategy(
         error = Exception("Failed to submit FMS Monitoring Order", e),
       )
     }
-  }
 
   private fun createAttachment(document: AdditionalDocument, deviceWearerId: String): FmsAttachmentSubmissionResult {
     try {
