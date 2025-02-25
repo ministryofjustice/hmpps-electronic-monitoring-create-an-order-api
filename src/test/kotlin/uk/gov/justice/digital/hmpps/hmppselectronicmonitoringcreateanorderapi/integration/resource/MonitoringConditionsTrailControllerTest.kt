@@ -27,6 +27,11 @@ class MonitoringConditionsTrailControllerTest : IntegrationTestBase() {
     ZoneId.of("UTC"),
   )
 
+  private object ErrorMessages {
+    const val START_DATE_REQUIRED: String = "Enter date trail monitoring starts"
+    const val END_DATE_MUST_BE_IN_FUTURE: String = "End date must be in the future"
+  }
+
   @BeforeEach
   fun setup() {
     repo.deleteAll()
@@ -156,7 +161,7 @@ class MonitoringConditionsTrailControllerTest : IntegrationTestBase() {
     Assertions.assertThat(result.responseBody).isNotNull
     Assertions.assertThat(result.responseBody).hasSize(1)
     Assertions.assertThat(result.responseBody!!).contains(
-      ValidationError("startDate", "Start date is required"),
+      ValidationError("startDate", ErrorMessages.START_DATE_REQUIRED),
     )
   }
 
@@ -220,7 +225,7 @@ class MonitoringConditionsTrailControllerTest : IntegrationTestBase() {
     Assertions.assertThat(result.responseBody).isNotNull
     Assertions.assertThat(result.responseBody).hasSize(1)
     Assertions.assertThat(result.responseBody!!).contains(
-      ValidationError("endDate", "End date must be in the future"),
+      ValidationError("endDate", ErrorMessages.END_DATE_MUST_BE_IN_FUTURE),
     )
   }
 }

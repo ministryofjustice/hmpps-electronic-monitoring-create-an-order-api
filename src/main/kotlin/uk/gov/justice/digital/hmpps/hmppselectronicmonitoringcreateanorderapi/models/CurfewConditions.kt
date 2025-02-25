@@ -12,6 +12,7 @@ import jakarta.validation.constraints.Future
 import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Size
 import net.minidev.json.annotate.JsonIgnore
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.data.ValidationErrors
 import java.time.ZonedDateTime
 import java.util.*
 
@@ -25,17 +26,17 @@ data class CurfewConditions(
   @Column(name = "VERSION_ID", nullable = false, unique = true)
   val versionId: UUID,
 
-  @field:NotNull(message = "Enter curfew start day")
+  @field:NotNull(message = ValidationErrors.CurfewConditions.START_DATE_REQUIRED)
   @Column(name = "START_DATE", nullable = true)
   var startDate: ZonedDateTime? = null,
 
-  @field:Future(message = "Curfew end day must be in the future")
+  @field:Future(message = ValidationErrors.CurfewConditions.END_DATE_MUST_BE_IN_FUTURE)
   @Column(name = "END_DATE", nullable = true)
   var endDate: ZonedDateTime? = null,
 
-  @field:NotNull(message = "Curfew address is required")
+  @field:NotNull(message = ValidationErrors.CurfewConditions.ADDRESS_REQUIRED)
   @Column(name = "CURFEW_ADDRESS", nullable = true)
-  @field:Size(min = 1, message = "Curfew address is required")
+  @field:Size(min = 1, message = ValidationErrors.CurfewConditions.ADDRESS_REQUIRED)
   var curfewAddress: String? = null,
 
   @JsonIgnore
@@ -47,7 +48,7 @@ data class CurfewConditions(
   private val version: OrderVersion? = null,
 
 ) {
-  @AssertTrue(message = "End date must be after start date")
+  @AssertTrue(message = ValidationErrors.CurfewConditions.END_DATE_MUST_BE_AFTER_START_DATE)
   fun isEndDate(): Boolean {
     if (this.endDate != null && this.startDate != null) {
       return this.endDate!! > this.startDate

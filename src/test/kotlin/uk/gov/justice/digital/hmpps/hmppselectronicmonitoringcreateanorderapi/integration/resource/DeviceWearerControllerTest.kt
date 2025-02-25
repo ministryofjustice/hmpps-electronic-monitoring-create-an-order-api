@@ -36,6 +36,20 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
     ZoneId.of("UTC"),
   )
 
+  private object ErrorMessages {
+    const val FIRST_NAME_REQUIRED: String = "Enter device wearer's first name"
+    const val LAST_NAME_REQUIRED: String = "Enter device wearer's last name"
+    const val IS_ADULT_REQUIRED: String = "Select yes if a responsible adult is required"
+    const val SEX_REQUIRED: String = "Select the device wearer's sex, or select 'Not able to provide this information'"
+    const val GENDER_REQUIRED: String =
+      "Select the device wearer's gender, or select 'Not able to provide this information'"
+    const val DOB_REQUIRED: String = "Enter date of birth"
+    const val DOB_MUST_BE_IN_PAST: String = "Date of birth must be in the past"
+    const val INTERPRETER_REQUIRED: String = "Select yes if the device wearer requires an interpreter"
+    const val LANGUAGE_REQUIRED: String = "Select the language required"
+    const val NO_FIXED_ABODE_REQUIRED: String = "Select yes if the device wearer has a fixed address"
+  }
+
   @BeforeEach
   fun setup() {
     repo.deleteAll()
@@ -175,31 +189,31 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
     Assertions.assertThat(result.responseBody).isNotNull
     Assertions.assertThat(result.responseBody).hasSize(7)
     Assertions.assertThat(result.responseBody!!).contains(
-      ValidationError("firstName", "First name is required"),
+      ValidationError("firstName", ErrorMessages.FIRST_NAME_REQUIRED),
     )
     Assertions.assertThat(result.responseBody!!).contains(
-      ValidationError("lastName", "Last name is required"),
+      ValidationError("lastName", ErrorMessages.LAST_NAME_REQUIRED),
     )
     Assertions.assertThat(result.responseBody!!).contains(
       ValidationError(
         "adultAtTimeOfInstallation",
-        "You must indicate whether the device wearer will be an adult at installation",
+        ErrorMessages.IS_ADULT_REQUIRED,
       ),
     )
     Assertions.assertThat(result.responseBody!!).contains(
-      ValidationError("sex", "Sex is required"),
+      ValidationError("sex", ErrorMessages.SEX_REQUIRED),
     )
     Assertions.assertThat(result.responseBody!!).contains(
-      ValidationError("gender", "Gender is required"),
+      ValidationError("gender", ErrorMessages.GENDER_REQUIRED),
     )
     Assertions.assertThat(result.responseBody!!).contains(
-      ValidationError("dateOfBirth", "Date of birth is required"),
+      ValidationError("dateOfBirth", ErrorMessages.DOB_REQUIRED),
     )
 
     Assertions.assertThat(result.responseBody!!).contains(
       ValidationError(
         "interpreterRequired",
-        "You must indicate whether the device wearer will require an interpreter on the day of installation",
+        ErrorMessages.INTERPRETER_REQUIRED,
       ),
     )
   }
@@ -237,7 +251,7 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
     Assertions.assertThat(result.responseBody).isNotNull
     Assertions.assertThat(result.responseBody).hasSize(1)
     Assertions.assertThat(result.responseBody!!).contains(
-      ValidationError("dateOfBirth", "Date of birth must be in the past"),
+      ValidationError("dateOfBirth", ErrorMessages.DOB_MUST_BE_IN_PAST),
     )
   }
 
@@ -274,7 +288,7 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
     Assertions.assertThat(result.responseBody).isNotNull
     Assertions.assertThat(result.responseBody).hasSize(1)
     Assertions.assertThat(result.responseBody!!).contains(
-      ValidationError("language", "Device wearer's main language is required"),
+      ValidationError("language", ErrorMessages.LANGUAGE_REQUIRED),
     )
   }
 
@@ -422,7 +436,7 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
     Assertions.assertThat(result.responseBody!!).contains(
       ValidationError(
         "noFixedAbode",
-        "You must indicate whether the device wearer has a fixed abode",
+        ErrorMessages.NO_FIXED_ABODE_REQUIRED,
       ),
     )
   }

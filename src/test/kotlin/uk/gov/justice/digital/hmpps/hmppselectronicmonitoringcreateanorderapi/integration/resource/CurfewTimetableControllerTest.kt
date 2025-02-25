@@ -25,6 +25,12 @@ class CurfewTimetableControllerTest : IntegrationTestBase() {
   @Autowired
   lateinit var objectMapper: ObjectMapper
 
+  private object ErrorMessages {
+    const val START_TIME_REQUIRED: String = "Enter time curfew starts"
+    const val END_TIME_REQUIRED: String = "Enter time curfew ends"
+    const val ADDRESS_REQUIRED: String = "Select where the device wearer will be during curfew hours"
+  }
+
   @BeforeEach
   fun setup() {
     Mockito.reset(orderRepo)
@@ -102,15 +108,15 @@ class CurfewTimetableControllerTest : IntegrationTestBase() {
     Assertions.assertThat(error[0].index).isEqualTo(0)
     Assertions.assertThat(
       error[0].errors,
-    ).contains(ValidationError("curfewAddress", "Curfew address is required"))
+    ).contains(ValidationError("curfewAddress", ErrorMessages.ADDRESS_REQUIRED))
     Assertions.assertThat(error[1].index).isEqualTo(2)
     Assertions.assertThat(
       error[1].errors,
-    ).contains(ValidationError("startTime", "Enter start time of curfew"))
+    ).contains(ValidationError("startTime", ErrorMessages.START_TIME_REQUIRED))
     Assertions.assertThat(error[2].index).isEqualTo(4)
     Assertions.assertThat(
       error[2].errors,
-    ).contains(ValidationError("endTime", "Enter end time of curfew"))
+    ).contains(ValidationError("endTime", ErrorMessages.END_TIME_REQUIRED))
   }
 
   @Test

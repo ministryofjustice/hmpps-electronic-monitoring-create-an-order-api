@@ -22,6 +22,14 @@ class CurfewReleaseDateControllerTest : IntegrationTestBase() {
 
   val mockReleaseDate: ZonedDateTime = ZonedDateTime.now().plusDays(1).truncatedTo(ChronoUnit.SECONDS)
 
+  private object ErrorMessages {
+    const val START_DATE_REQUIRED: String = "Enter date wearer is released from custody"
+    const val START_TIME_REQUIRED: String = "Enter time curfew starts on day of release"
+    const val END_TIME_REQUIRED: String = "Enter time curfew ends on day of release"
+    const val ADDRESS_REQUIRED: String =
+      "Select the address the device wearer will be during curfew hours on the day of release"
+  }
+
   @BeforeEach
   fun setup() {
     repo.deleteAll()
@@ -97,12 +105,12 @@ class CurfewReleaseDateControllerTest : IntegrationTestBase() {
     Assertions.assertThat(result.responseBody).hasSize(4)
     Assertions.assertThat(
       error,
-    ).contains(ValidationError("curfewAddress", "Curfew address is required"))
-    Assertions.assertThat(error).contains(ValidationError("startTime", "Enter start time"))
-    Assertions.assertThat(error).contains(ValidationError("endTime", "Enter end time"))
+    ).contains(ValidationError("curfewAddress", ErrorMessages.ADDRESS_REQUIRED))
+    Assertions.assertThat(error).contains(ValidationError("startTime", ErrorMessages.START_TIME_REQUIRED))
+    Assertions.assertThat(error).contains(ValidationError("endTime", ErrorMessages.END_TIME_REQUIRED))
     Assertions.assertThat(
       error,
-    ).contains(ValidationError("releaseDate", "Enter curfew release date"))
+    ).contains(ValidationError("releaseDate", ErrorMessages.START_DATE_REQUIRED))
   }
 
   @Test

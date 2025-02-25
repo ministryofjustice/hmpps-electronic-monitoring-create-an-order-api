@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.m
 
 import jakarta.validation.constraints.AssertTrue
 import jakarta.validation.constraints.NotNull
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.data.ValidationErrors
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MonitoringConditionType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderTypeDescription
@@ -12,15 +13,15 @@ import java.time.ZonedDateTime
 
 @AtLeastOneSelected(
   fieldNames = ["curfew", "exclusionZone", "trail", "mandatoryAttendance", "alcohol"],
-  message = "Select at least one monitoring type.",
+  message = ValidationErrors.MonitoringConditions.ORDER_TYPE_REQUIRED,
 )
 data class UpdateMonitoringConditionsDto(
-  @field:NotNull(message = "Order type is required")
+  @field:NotNull(message = ValidationErrors.MonitoringConditions.ORDER_TYPE_REQUIRED)
   val orderType: OrderType? = null,
 
   var curfew: Boolean? = null,
 
-  @field:NotNull(message = "Monitoring conditions start date is required")
+  @field:NotNull(message = ValidationErrors.MonitoringConditions.START_DATE_REQUIRED)
   val startDate: ZonedDateTime? = null,
 
   val endDate: ZonedDateTime? = null,
@@ -33,7 +34,7 @@ data class UpdateMonitoringConditionsDto(
 
   val alcohol: Boolean? = null,
 
-  @field:NotNull(message = "Condition type is required")
+  @field:NotNull(message = ValidationErrors.MonitoringConditions.TYPE_REQUIRED)
   val conditionType: MonitoringConditionType? = null,
 
   val orderTypeDescription: OrderTypeDescription? = null,
@@ -46,7 +47,7 @@ data class UpdateMonitoringConditionsDto(
 
   val prarr: YesNoUnknown = YesNoUnknown.UNKNOWN,
 ) {
-  @AssertTrue(message = "End date must be after start date")
+  @AssertTrue(message = ValidationErrors.MonitoringConditions.END_DATE_MUST_BE_AFTER_START_DATE)
   fun isEndDate(): Boolean {
     if (this.endDate != null && this.startDate != null) {
       return this.endDate > this.startDate

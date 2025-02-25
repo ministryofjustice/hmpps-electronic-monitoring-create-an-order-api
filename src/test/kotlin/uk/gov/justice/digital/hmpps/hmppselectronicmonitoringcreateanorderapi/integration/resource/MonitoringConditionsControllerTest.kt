@@ -25,6 +25,13 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
   private val mockStartDate = ZonedDateTime.now(ZoneId.of("UTC")).plusMonths(1)
   private val mockEndDate = ZonedDateTime.now(ZoneId.of("UTC")).plusMonths(2)
 
+  private object ErrorMessages {
+    const val ORDER_TYPE_REQUIRED: String = "Select order type"
+    const val START_DATE_REQUIRED: String = "Enter start date for monitoring"
+    const val TYPE_REQUIRED: String = "Select order type"
+    const val END_DATE_MUST_BE_AFTER_START_DATE: String = "End date must be after start date"
+  }
+
   @BeforeEach
   fun setup() {
     repo.deleteAll()
@@ -193,13 +200,13 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
     Assertions.assertThat(result.responseBody).isNotNull
     Assertions.assertThat(result.responseBody).hasSize(3)
     Assertions.assertThat(result.responseBody!!).contains(
-      ValidationError("orderType", "Order type is required"),
+      ValidationError("orderType", ErrorMessages.ORDER_TYPE_REQUIRED),
     )
     Assertions.assertThat(result.responseBody!!).contains(
-      ValidationError("conditionType", "Condition type is required"),
+      ValidationError("conditionType", ErrorMessages.TYPE_REQUIRED),
     )
     Assertions.assertThat(result.responseBody!!).contains(
-      ValidationError("startDate", "Monitoring conditions start date is required"),
+      ValidationError("startDate", ErrorMessages.START_DATE_REQUIRED),
     )
   }
 
@@ -274,7 +281,7 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
     Assertions.assertThat(result.responseBody).isNotNull
     Assertions.assertThat(result.responseBody).hasSize(1)
     Assertions.assertThat(result.responseBody!!).contains(
-      ValidationError("endDate", "End date must be after start date"),
+      ValidationError("endDate", ErrorMessages.END_DATE_MUST_BE_AFTER_START_DATE),
     )
   }
 
