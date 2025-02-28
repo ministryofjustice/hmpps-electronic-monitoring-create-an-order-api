@@ -175,16 +175,16 @@ data class DeviceWearer(
       if (order.deviceWearer?.noFixedAbode != null && !order.deviceWearer?.noFixedAbode!!) {
         val primaryAddress = order.addresses.find { address -> address.addressType == AddressType.PRIMARY }!!
         deviceWearer.address1 = primaryAddress.addressLine1
-        deviceWearer.address2 = primaryAddress.addressLine2
-        deviceWearer.address3 = if (primaryAddress.addressLine3 == "") "N/A" else primaryAddress.addressLine3
+        deviceWearer.address2 = if (primaryAddress.addressLine2 == "") "N/A" else primaryAddress.addressLine2
+        deviceWearer.address3 = primaryAddress.addressLine3
         deviceWearer.address4 = if (primaryAddress.addressLine4 == "") "N/A" else primaryAddress.addressLine4
         deviceWearer.addressPostCode = primaryAddress.postcode
       }
 
       order.addresses.firstOrNull { it.addressType == AddressType.SECONDARY }?.let {
         deviceWearer.secondaryAddress1 = it.addressLine1
-        deviceWearer.secondaryAddress2 = it.addressLine2
-        deviceWearer.secondaryAddress3 = if (it.addressLine3 == "") "N/A" else it.addressLine3
+        deviceWearer.secondaryAddress2 = if (it.addressLine2 == "") "N/A" else it.addressLine2
+        deviceWearer.secondaryAddress3 = it.addressLine3
         deviceWearer.secondaryAddress4 = if (it.addressLine4 == "") "N/A" else it.addressLine4
         deviceWearer.secondaryAddressPostCode = it.postcode
       }
