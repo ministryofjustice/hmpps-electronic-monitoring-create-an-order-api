@@ -30,7 +30,7 @@ object ValidationErrors {
   }
 
   object CurfewReleaseDateConditions {
-    const val START_DATE_REQUIRED: String = "Enter date wearer is released from custody"
+    const val START_DATE_REQUIRED: String = "Enter date device wearer is released from custody"
     const val START_TIME_REQUIRED: String = "Enter time curfew starts on day of release"
     const val END_TIME_REQUIRED: String = "Enter time curfew ends on day of release"
     const val ADDRESS_REQUIRED: String =
@@ -56,6 +56,7 @@ object ValidationErrors {
     const val LANGUAGE_REQUIRED: String = "Select the language required"
   }
 
+  // This may be "Exclusion Zone" in the front end, but also "Inclusion Zone"?
   object EnforcementZone {
     const val DESCRIPTION_REQUIRED: String = "Enforcement zone description is required"
     const val DURATION_REQUIRED: String = "Enforcement zone duration is required"
@@ -65,7 +66,7 @@ object ValidationErrors {
   }
 
   object MandatoryAttendance {
-    const val START_DATE_REQUIRED: String = "Enter date attendance monitoring starts"
+    const val START_DATE_REQUIRED: String = "Enter date mandatory attendance monitoring starts"
     const val PURPOSE_REQUIRED: String = "Enter what the appointment is for"
     const val APPOINTMENT_DAY_REQUIRED: String = "Enter the day the appointment is on"
     const val START_TIME_REQUIRED: String = "Enter time appointment starts"
