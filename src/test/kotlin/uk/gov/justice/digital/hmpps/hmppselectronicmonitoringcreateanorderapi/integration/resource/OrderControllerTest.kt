@@ -606,7 +606,7 @@ class OrderControllerTest : IntegrationTestBase() {
         FmsResponse(),
         FmsErrorResponse(error = FmsErrorResponseDetails("", "Mock Create MO Error")),
       )
-      var result = webTestClient.post()
+      val result = webTestClient.post()
         .uri("/api/orders/${order.id}/submit")
         .headers(setAuthorisation())
         .exchange()
@@ -629,6 +629,48 @@ class OrderControllerTest : IntegrationTestBase() {
       assertThat(updatedOrder.status).isEqualTo(OrderStatus.ERROR)
     }
 
+    @Test
+    fun `It should return an error if submit attachment to serco returned error`() {
+      val order = createAndPersistReadyToSubmitOrder()
+      sercoAuthApi.stubGrantToken()
+      sercoApi.stubCreateDeviceWearer(
+        HttpStatus.OK,
+        FmsResponse(result = listOf(FmsResult(message = "", id = "MockDeviceWearerId"))),
+      )
+      sercoApi.stubCreateMonitoringOrder(
+        HttpStatus.OK,
+        FmsResponse(result = listOf(FmsResult(message = "", id = "MockMonitoringOrderId"))),
+      )
+
+      sercoApi.stubSubmitAttachment(
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        FmsAttachmentResponse(
+          result = FmsAttachmentResult(),
+        ),
+        FmsErrorResponse(error = FmsErrorResponseDetails("", "Mock Create Attachment Error")),
+      )
+      val result = webTestClient.post()
+        .uri("/api/orders/${order.id}/submit")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .is4xxClientError
+        .expectBody(ErrorResponse::class.java)
+        .returnResult()
+
+      val error = result.responseBody!!
+      assertThat(error.developerMessage)
+        .isEqualTo("Error submit attachments to Serco")
+
+      val submitResult = fmsResultRepository.findAll().firstOrNull()
+      assertThat(submitResult).isNotNull
+
+      // Get updated order
+      val updatedOrder = getOrder(order.id)
+
+      assertThat(updatedOrder.fmsResultId).isEqualTo(submitResult!!.id)
+      assertThat(updatedOrder.status).isEqualTo(OrderStatus.ERROR)
+    }
     fun String.removeWhitespaceAndNewlines(): String = this.replace("(\"[^\"]*\")|\\s".toRegex(), "\$1")
 
     @Test
