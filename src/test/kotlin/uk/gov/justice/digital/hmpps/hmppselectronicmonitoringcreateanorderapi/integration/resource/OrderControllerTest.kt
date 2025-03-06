@@ -631,7 +631,20 @@ class OrderControllerTest : IntegrationTestBase() {
 
     @Test
     fun `It should return an error if submit attachment to serco returned error`() {
-      val order = createAndPersistReadyToSubmitOrder()
+      val orderId = UUID.randomUUID()
+      val versionId = UUID.randomUUID()
+      val order = createAndPersistReadyToSubmitOrder(
+        id = orderId,
+        versionId = versionId,
+        documents = mutableListOf(
+          AdditionalDocument(
+            id = UUID.fromString("550e8400-e29b-41d4-a716-446655440000"),
+            versionId = versionId,
+            fileType = DocumentType.LICENCE,
+            fileName = "mockLicense.jpg",
+          ),
+        ),
+      )
       sercoAuthApi.stubGrantToken()
       sercoApi.stubCreateDeviceWearer(
         HttpStatus.OK,
@@ -649,6 +662,8 @@ class OrderControllerTest : IntegrationTestBase() {
         ),
         FmsErrorResponse(error = FmsErrorResponseDetails("", "Mock Create Attachment Error")),
       )
+
+      documentApi.stubGetDocument(order.additionalDocuments[0].id.toString())
       val result = webTestClient.post()
         .uri("/api/orders/${order.id}/submit")
         .headers(setAuthorisation())
