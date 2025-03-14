@@ -11,25 +11,30 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YouthJusticeServiceRegions
 
 data class UpdateInterestedPartiesDto(
-  @field:NotNull(message = ValidationErrors.NOTIFYING_ORGANISATION_REQUIRED)
+  @field:NotNull(message = ValidationErrors.InterestedParties.NOTIFYING_ORGANISATION_REQUIRED)
   val notifyingOrganisation: NotifyingOrganisation? = null,
 
-  val notifyingOrganisationEmail: String = "",
+  @field:NotNull(message = ValidationErrors.InterestedParties.TEAM_EMAIL_REQUIRED)
+  val notifyingOrganisationEmail: String? = null,
 
   val notifyingOrganisationName: String = "",
 
-  val responsibleOfficerName: String = "",
+  @field:NotNull(message = ValidationErrors.InterestedParties.RESPONSIBLE_OFFICER_FULL_NAME_REQUIRED)
+  val responsibleOfficerName: String? = null,
 
+  @field:NotNull(message = ValidationErrors.InterestedParties.RESPONSIBLE_OFFICER_TELEPHONE_NUMBER_REQUIRED)
   val responsibleOfficerPhoneNumber: String? = null,
 
-  @field:NotNull(message = ValidationErrors.RESPONSIBLE_ORGANISATION_REQUIRED)
+  @field:NotNull(message = ValidationErrors.InterestedParties.RESPONSIBLE_ORGANISATION_REQUIRED)
   val responsibleOrganisation: ResponsibleOrganisation? = null,
 
   val responsibleOrganisationRegion: String = "",
 
+  @field:NotNull(message = ValidationErrors.InterestedParties.RESPONSIBLE_ORGANISATION_TELEPHONE_NUMBER_REQUIRED)
   val responsibleOrganisationPhoneNumber: String? = null,
 
-  val responsibleOrganisationEmail: String = "",
+  @field:NotNull(message = ValidationErrors.InterestedParties.RESPONSIBLE_ORGANISATION_EMAIL_REQUIRED)
+  val responsibleOrganisationEmail: String? = null,
 
   val responsibleOrganisationAddressLine1: String = "",
 
@@ -41,7 +46,7 @@ data class UpdateInterestedPartiesDto(
 
   val responsibleOrganisationAddressPostcode: String = "",
 ) {
-  @AssertTrue(message = ValidationErrors.NOTIFYING_ORGANISATION_NAME_REQUIRED)
+  @AssertTrue(message = ValidationErrors.InterestedParties.NOTIFYING_ORGANISATION_NAME_REQUIRED)
   fun isNotifyingOrganisationName(): Boolean {
     val b = MagistrateCourt.entries.any { it.name == notifyingOrganisationName }
 
@@ -60,7 +65,7 @@ data class UpdateInterestedPartiesDto(
     return notifyingOrganisationName == ""
   }
 
-  @AssertTrue(message = ValidationErrors.RESPONSIBLE_ORGANISATION_REGION_REQUIRED)
+  @AssertTrue(message = ValidationErrors.InterestedParties.RESPONSIBLE_ORGANISATION_REGION_REQUIRED)
   fun isResponsibleOrganisationRegion(): Boolean {
     if (responsibleOrganisation === ResponsibleOrganisation.PROBATION) {
       return ProbationServiceRegion.entries.any { it.name == responsibleOrganisationRegion }

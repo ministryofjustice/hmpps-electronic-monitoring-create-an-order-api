@@ -1,11 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.data
 
 object ValidationErrors {
-  const val NOTIFYING_ORGANISATION_REQUIRED: String = "Notifying Organisation is required"
-  const val NOTIFYING_ORGANISATION_NAME_REQUIRED: String = "Notifying Organisation Name is required"
-  const val RESPONSIBLE_ORGANISATION_REQUIRED: String = "Responsible Organisation is required"
-  const val RESPONSIBLE_ORGANISATION_REGION_REQUIRED: String = "Responsible Organisation Region is required"
-
   object Address {
     const val ADDRESS_1_REQUIRED: String = "Enter address line 1, typically the building and street"
     const val ADDRESS_3_REQUIRED: String = "Enter town or city"
@@ -65,6 +60,19 @@ object ValidationErrors {
     const val TYPE_REQUIRED: String = "Enforcement Zone type is required"
   }
 
+  object InterestedParties {
+    const val NOTIFYING_ORGANISATION_REQUIRED: String = "Select the organisation you are part of"
+    const val NOTIFYING_ORGANISATION_NAME_REQUIRED: String = "Enter the name of the prison"
+    const val RESPONSIBLE_ORGANISATION_REQUIRED: String = "Select the responsible officer's organisation"
+    const val RESPONSIBLE_ORGANISATION_REGION_REQUIRED: String = "Select the probation region"
+    const val TEAM_EMAIL_REQUIRED: String = "Enter your team's email address"
+    const val RESPONSIBLE_OFFICER_FULL_NAME_REQUIRED: String = "Enter the Responsible Officer's full name"
+    const val RESPONSIBLE_OFFICER_TELEPHONE_NUMBER_REQUIRED: String = "Enter the Responsible Officer's telephone number"
+    const val RESPONSIBLE_ORGANISATION_TELEPHONE_NUMBER_REQUIRED: String =
+      "Enter the Responsible Organisation's telephone number"
+    const val RESPONSIBLE_ORGANISATION_EMAIL_REQUIRED: String = "Enter the Responsible Organisation's email address"
+  }
+
   object MandatoryAttendance {
     const val START_DATE_REQUIRED: String = "Enter date mandatory attendance monitoring starts"
     const val PURPOSE_REQUIRED: String = "Enter what the appointment is for"
@@ -89,8 +97,8 @@ object ValidationErrors {
     const val FIRST_NAME_REQUIRED: String = "Enter responsible adult's first name"
     const val LAST_NAME_REQUIRED: String = "Enter responsible adult's last name"
     const val FULL_NAME_REQUIRED: String = "Enter responsible adult's full name"
-    const val RELATIONSHIP_REQUIRED: String = "Enter details of their relationship"
-    const val RELATIONSHIP_DETAILS_REQUIRED: String = "Select their relationship to the device wearer"
+    const val RELATIONSHIP_REQUIRED: String = "Select their relationship to the device wearer"
+    const val RELATIONSHIP_DETAILS_REQUIRED: String = "Enter details of their relationship"
   }
 
   object TrailMonitoringConditions {
