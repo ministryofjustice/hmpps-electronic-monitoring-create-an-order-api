@@ -47,13 +47,19 @@ data class FmsSubmissionResult(
 ) {
   val success: Boolean
     get() {
+      return partialSuccess && attachmentSuccess
+    }
+  val attachmentSuccess: Boolean
+    get() {
+      return attachmentResults.all { it.status == SubmissionStatus.SUCCESS }
+    }
+  val partialSuccess: Boolean
+    get() {
       val deviceWearerSuccess = deviceWearerResult.status == SubmissionStatus.SUCCESS
       val monitoringOrderSuccess = monitoringOrderResult.status == SubmissionStatus.SUCCESS
-      val attachmentsSuccess = attachmentResults.all { it.status == SubmissionStatus.SUCCESS }
 
-      return deviceWearerSuccess && monitoringOrderSuccess && attachmentsSuccess
+      return deviceWearerSuccess && monitoringOrderSuccess
     }
-
   val error: String
     get() {
       if (deviceWearerResult.status == SubmissionStatus.FAILURE) {

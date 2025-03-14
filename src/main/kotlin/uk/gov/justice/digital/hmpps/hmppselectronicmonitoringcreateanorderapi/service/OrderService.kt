@@ -85,10 +85,14 @@ class OrderService(val repo: OrderRepository, val fmsService: FmsService) {
         val submitResult = fmsService.submitOrder(order, FmsOrderSource.CEMO)
         order.fmsResultId = submitResult.id
 
-        if (!submitResult.success) {
+        if (!submitResult.partialSuccess) {
           order.status = OrderStatus.ERROR
           repo.save(order)
           throw SubmitOrderException("The order could not be submitted to Serco")
+        } else if (!submitResult.attachmentSuccess) {
+          order.status = OrderStatus.ERROR
+          repo.save(order)
+          throw SubmitOrderException("Error submit attachments to Serco")
         } else {
           order.status = OrderStatus.SUBMITTED
           repo.save(order)
@@ -96,6 +100,9 @@ class OrderService(val repo: OrderRepository, val fmsService: FmsService) {
       } catch (e: Exception) {
         order.status = OrderStatus.ERROR
         repo.save(order)
+        if (e is SubmitOrderException) {
+          throw e
+        }
         throw SubmitOrderException("The order could not be submitted to Serco", e)
       }
     }
