@@ -65,6 +65,10 @@ object ValidationErrors {
     const val TYPE_REQUIRED: String = "Enforcement Zone type is required"
   }
 
+  object InstallationAndRisk {
+    const val RISK_CATEGORY_VALID: String = "Risk categories must be a valid risk category"
+  }
+
   object MandatoryAttendance {
     const val START_DATE_REQUIRED: String = "Enter date mandatory attendance monitoring starts"
     const val PURPOSE_REQUIRED: String = "Enter what the appointment is for"
