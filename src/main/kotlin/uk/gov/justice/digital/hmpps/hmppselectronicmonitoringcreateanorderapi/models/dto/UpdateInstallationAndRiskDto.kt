@@ -18,7 +18,7 @@ data class UpdateInstallationAndRiskDto(
 ) {
   @AssertTrue(message = ValidationErrors.InstallationAndRisk.OFFENCE_VALID)
   fun isOffence(): Boolean {
-    if (offence == null) {
+    if (offence.isNullOrEmpty()) {
       return true
     }
 
