@@ -66,6 +66,7 @@ object ValidationErrors {
   }
 
   object InstallationAndRisk {
+    const val OFFENCE_VALID: String = "Offence must be a valid offence"
     const val RISK_CATEGORY_VALID: String = "Risk categories must be a valid risk category"
   }
 
