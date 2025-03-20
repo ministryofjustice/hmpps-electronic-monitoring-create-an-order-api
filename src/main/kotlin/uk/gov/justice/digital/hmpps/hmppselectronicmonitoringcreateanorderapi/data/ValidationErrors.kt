@@ -73,6 +73,11 @@ object ValidationErrors {
     const val RESPONSIBLE_ORGANISATION_EMAIL_REQUIRED: String = "Enter the Responsible Organisation's email address"
   }
 
+  object InstallationAndRisk {
+    const val OFFENCE_VALID: String = "Offence must be a valid offence"
+    const val RISK_CATEGORY_VALID: String = "Risk categories must be a valid risk category"
+  }
+
   object MandatoryAttendance {
     const val START_DATE_REQUIRED: String = "Enter date mandatory attendance monitoring starts"
     const val PURPOSE_REQUIRED: String = "Enter what the appointment is for"

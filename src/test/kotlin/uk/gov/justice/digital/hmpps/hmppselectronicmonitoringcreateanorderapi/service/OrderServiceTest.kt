@@ -216,7 +216,7 @@ class OrderServiceTest {
 
     order.installationAndRisk = InstallationAndRisk(
       versionId = versionId,
-      offence = "Fraud Offences",
+      offence = "FRAUD_OFFENCES",
       riskDetails = "Danger",
       mappaLevel = "MAAPA 1",
       mappaCaseType = "CPPC (Critical Public Protection Case)",

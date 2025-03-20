@@ -10,6 +10,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.EnforcementZoneType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MagistrateCourt
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisation
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Offence
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Prison
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ProbationServiceRegion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
@@ -215,7 +216,7 @@ data class MonitoringOrder(
         conditionType = conditions.conditionType!!.value,
         orderId = order.id.toString(),
         orderStatus = "Not Started",
-        offence = order.installationAndRisk?.offence,
+        offence = getOffence(order),
       )
 
       monitoringOrder.sentenceType = conditions.sentenceType?.value ?: ""
@@ -415,6 +416,9 @@ data class MonitoringOrder(
         ?: YouthJusticeServiceRegions.from(order.interestedParties?.responsibleOrganisationRegion)?.value
         ?: order.interestedParties?.responsibleOrganisationRegion
         ?: ""
+
+    private fun getOffence(order: Order): String? = Offence.from(order.installationAndRisk?.offence)?.value
+      ?: order.installationAndRisk?.offence
   }
 }
 
