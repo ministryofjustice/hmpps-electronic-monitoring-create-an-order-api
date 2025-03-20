@@ -95,7 +95,7 @@ class InstallationAndRiskControllerTest : IntegrationTestBase() {
     fun `it should update installation and risk with valid request body`() {
       val order = createOrder()
       val mockRisk = mockValidRequestBody(
-        offence = "MockOffence",
+        offence = "VIOLENCE_AGAINST_THE_PERSON",
         riskCategory = arrayOf("SEXUAL_OFFENCES"),
         riskDetails = "mockRisk",
         mappaLevel = "mockMappaLevel",
@@ -117,7 +117,7 @@ class InstallationAndRiskControllerTest : IntegrationTestBase() {
       // Get updated order
       val updatedOrder = getOrder(order.id)
 
-      Assertions.assertThat(updatedOrder.installationAndRisk?.offence).isEqualTo("MockOffence")
+      Assertions.assertThat(updatedOrder.installationAndRisk?.offence).isEqualTo("VIOLENCE_AGAINST_THE_PERSON")
       Assertions.assertThat(updatedOrder.installationAndRisk?.riskCategory?.first()).isEqualTo("SEXUAL_OFFENCES")
       Assertions.assertThat(updatedOrder.installationAndRisk?.riskDetails).isEqualTo("mockRisk")
       Assertions.assertThat(updatedOrder.installationAndRisk?.mappaLevel).isEqualTo("mockMappaLevel")
@@ -153,7 +153,7 @@ class InstallationAndRiskControllerTest : IntegrationTestBase() {
     }
 
     @Test
-    fun `it should return an error if an invalid risk category is submitted`() {
+    fun `it should return an error if an invalid data is submitted`() {
       val order = createOrder()
 
       val result = webTestClient.put()
@@ -163,7 +163,7 @@ class InstallationAndRiskControllerTest : IntegrationTestBase() {
           BodyInserters.fromValue(
             """
               {
-                "offence": "",
+                "offence": "INVALID",
                 "riskCategory": ["INVALID"],
                 "riskDetails": "",
                 "mappaLevel": "",
@@ -181,11 +181,17 @@ class InstallationAndRiskControllerTest : IntegrationTestBase() {
         .responseBody
 
       Assertions.assertThat(result).isNotNull
-      Assertions.assertThat(result).hasSize(1)
+      Assertions.assertThat(result).hasSize(2)
       Assertions.assertThat(result).contains(
         ValidationError(
           "riskCategory",
           ValidationErrors.InstallationAndRisk.RISK_CATEGORY_VALID,
+        ),
+      )
+      Assertions.assertThat(result).contains(
+        ValidationError(
+          "offence",
+          ValidationErrors.InstallationAndRisk.OFFENCE_VALID,
         ),
       )
     }
