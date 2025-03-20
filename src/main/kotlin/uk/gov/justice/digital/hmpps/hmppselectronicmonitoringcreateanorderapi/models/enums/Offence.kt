@@ -14,4 +14,11 @@ enum class Offence(val value: String) {
   SUMMARY_NON_MOTORING("Summary Non-Motoring"),
   SUMMARY_MOTORING("Summary motoring"),
   OFFENCE_NOT_RECORDED("Offence not recorded"),
+  ;
+
+  companion object {
+    fun from(value: String?): Offence? = Offence.entries.firstOrNull {
+      it.name == value
+    }
+  }
 }
