@@ -153,6 +153,36 @@ class InstallationAndRiskControllerTest : IntegrationTestBase() {
     }
 
     @Test
+    fun `it should update installation and risk with offence set to an empty string`() {
+      val order = createOrder()
+      val mockRisk = mockValidRequestBody(
+        offence = "",
+      )
+
+      webTestClient.put()
+        .uri("/api/orders/${order.id}/installation-and-risk")
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(
+          BodyInserters.fromValue(
+            mockRisk,
+          ),
+        )
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .isOk
+
+      // Get updated order
+      val updatedOrder = getOrder(order.id)
+
+      Assertions.assertThat(updatedOrder.installationAndRisk?.offence).isEqualTo("")
+      Assertions.assertThat(updatedOrder.installationAndRisk?.riskCategory).isNull()
+      Assertions.assertThat(updatedOrder.installationAndRisk?.riskDetails).isNull()
+      Assertions.assertThat(updatedOrder.installationAndRisk?.mappaLevel).isNull()
+      Assertions.assertThat(updatedOrder.installationAndRisk?.mappaCaseType).isNull()
+    }
+
+    @Test
     fun `it should return an error if an invalid data is submitted`() {
       val order = createOrder()
 
