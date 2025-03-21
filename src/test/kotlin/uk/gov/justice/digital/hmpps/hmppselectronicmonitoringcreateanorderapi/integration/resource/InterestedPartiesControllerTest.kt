@@ -232,13 +232,13 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
       Assertions.assertThat(result).contains(
         ValidationError(
           "responsibleOrganisation",
-          ValidationErrors.RESPONSIBLE_ORGANISATION_REQUIRED,
+          ValidationErrors.InterestedParties.RESPONSIBLE_ORGANISATION_REQUIRED,
         ),
       )
       Assertions.assertThat(result).contains(
         ValidationError(
           "notifyingOrganisation",
-          ValidationErrors.NOTIFYING_ORGANISATION_REQUIRED,
+          ValidationErrors.InterestedParties.NOTIFYING_ORGANISATION_REQUIRED,
         ),
       )
     }
@@ -277,7 +277,7 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
       Assertions.assertThat(result).contains(
         ValidationError(
           "responsibleOrganisationRegion",
-          ValidationErrors.RESPONSIBLE_ORGANISATION_REGION_REQUIRED,
+          ValidationErrors.InterestedParties.RESPONSIBLE_ORGANISATION_REGION_REQUIRED,
         ),
       )
     }
@@ -364,7 +364,7 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
       Assertions.assertThat(result).contains(
         ValidationError(
           "responsibleOrganisationRegion",
-          ValidationErrors.RESPONSIBLE_ORGANISATION_REGION_REQUIRED,
+          ValidationErrors.InterestedParties.RESPONSIBLE_ORGANISATION_REGION_REQUIRED,
         ),
       )
     }
@@ -451,7 +451,7 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
       Assertions.assertThat(result).contains(
         ValidationError(
           "notifyingOrganisationName",
-          ValidationErrors.NOTIFYING_ORGANISATION_NAME_REQUIRED,
+          ValidationErrors.InterestedParties.NOTIFYING_ORGANISATION_NAME_REQUIRED,
         ),
       )
     }
@@ -540,7 +540,7 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
       Assertions.assertThat(result).contains(
         ValidationError(
           "notifyingOrganisationName",
-          ValidationErrors.NOTIFYING_ORGANISATION_NAME_REQUIRED,
+          ValidationErrors.InterestedParties.NOTIFYING_ORGANISATION_NAME_REQUIRED,
         ),
       )
     }
@@ -629,7 +629,7 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
       Assertions.assertThat(result).contains(
         ValidationError(
           "notifyingOrganisationName",
-          ValidationErrors.NOTIFYING_ORGANISATION_NAME_REQUIRED,
+          ValidationErrors.InterestedParties.NOTIFYING_ORGANISATION_NAME_REQUIRED,
         ),
       )
     }
