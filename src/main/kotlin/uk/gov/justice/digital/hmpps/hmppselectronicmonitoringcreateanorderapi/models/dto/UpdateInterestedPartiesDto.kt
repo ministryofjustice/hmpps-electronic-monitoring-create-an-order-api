@@ -15,12 +15,12 @@ data class UpdateInterestedPartiesDto(
   val notifyingOrganisation: NotifyingOrganisation? = null,
 
   @field:NotNull(message = ValidationErrors.InterestedParties.TEAM_EMAIL_REQUIRED)
-  val notifyingOrganisationEmail: String? = null,
+  val notifyingOrganisationEmail: String = "",
 
   val notifyingOrganisationName: String = "",
 
   @field:NotNull(message = ValidationErrors.InterestedParties.RESPONSIBLE_OFFICER_FULL_NAME_REQUIRED)
-  val responsibleOfficerName: String? = null,
+  val responsibleOfficerName: String = "",
 
   @field:NotNull(message = ValidationErrors.InterestedParties.RESPONSIBLE_OFFICER_TELEPHONE_NUMBER_REQUIRED)
   val responsibleOfficerPhoneNumber: String? = null,
@@ -34,7 +34,7 @@ data class UpdateInterestedPartiesDto(
   val responsibleOrganisationPhoneNumber: String? = null,
 
   @field:NotNull(message = ValidationErrors.InterestedParties.RESPONSIBLE_ORGANISATION_EMAIL_REQUIRED)
-  val responsibleOrganisationEmail: String? = null,
+  val responsibleOrganisationEmail: String = "",
 
   val responsibleOrganisationAddressLine1: String = "",
 

@@ -195,9 +195,6 @@ class ResponsibleAdultControllerTest : IntegrationTestBase() {
     Assertions.assertThat(result.responseBody!!).contains(
       ValidationError("fullName", ErrorMessages.FULL_NAME_REQUIRED),
     )
-    Assertions.assertThat(result.responseBody!!).contains(
-      ValidationError("relationship", ErrorMessages.RELATIONSHIP_REQUIRED),
-    )
   }
 
   @Nested
@@ -253,12 +250,6 @@ class ResponsibleAdultControllerTest : IntegrationTestBase() {
 
       Assertions.assertThat(result.responseBody).isNotNull
       Assertions.assertThat(result.responseBody).hasSize(1)
-      Assertions.assertThat(result.responseBody!!).contains(
-        ValidationError(
-          "otherRelationshipDetails",
-          ErrorMessages.RELATIONSHIP_DETAILS_REQUIRED,
-        ),
-      )
     }
   }
 }

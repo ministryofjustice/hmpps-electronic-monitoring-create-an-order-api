@@ -21,7 +21,7 @@ data class InterestedParties(
   val versionId: UUID,
 
   @Column(name = "RESPONSIBLE_OFFICER_NAME", nullable = false)
-  var responsibleOfficerName: String?,
+  var responsibleOfficerName: String,
 
   @Column(name = "RESPONSIBLE_OFFICER_PHONE_NUMBER", nullable = true)
   @field:ValidPhoneNumber
@@ -38,7 +38,7 @@ data class InterestedParties(
   var responsibleOrganisationPhoneNumber: String?,
 
   @Column(name = "RESPONSIBLE_ORGANISATION_EMAIL", nullable = false)
-  var responsibleOrganisationEmail: String?,
+  var responsibleOrganisationEmail: String,
 
   @Column(name = "NOTIFYING_ORGANISATION", nullable = false)
   var notifyingOrganisation: String,
@@ -47,7 +47,7 @@ data class InterestedParties(
   var notifyingOrganisationName: String,
 
   @Column(name = "NOTIFYING_ORGANISATION_EMAIL", nullable = false)
-  var notifyingOrganisationEmail: String?,
+  var notifyingOrganisationEmail: String,
 
   @Schema(hidden = true)
   @OneToOne
