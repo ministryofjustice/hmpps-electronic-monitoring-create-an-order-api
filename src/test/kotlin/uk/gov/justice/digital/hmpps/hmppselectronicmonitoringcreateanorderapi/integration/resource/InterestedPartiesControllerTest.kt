@@ -231,16 +231,24 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
 
       Assertions.assertThat(result).isNotNull
       Assertions.assertThat(result).hasSize(4)
-      Assertions.assertThat(result).contains(
-        ValidationError(
-          "responsibleOrganisation",
-          ValidationErrors.InterestedParties.RESPONSIBLE_ORGANISATION_REQUIRED,
-        ),
-      )
-      Assertions.assertThat(result).contains(
-        ValidationError(
-          "notifyingOrganisation",
-          ValidationErrors.InterestedParties.NOTIFYING_ORGANISATION_REQUIRED,
+      Assertions.assertThat(result?.sortedBy { it.field }).isEqualTo(
+        listOf(
+          ValidationError(
+            "notifyingOrganisation",
+            ValidationErrors.InterestedParties.NOTIFYING_ORGANISATION_REQUIRED,
+          ),
+          ValidationError(
+            "responsibleOfficerPhoneNumber",
+            ValidationErrors.InterestedParties.RESPONSIBLE_OFFICER_TELEPHONE_NUMBER_REQUIRED,
+          ),
+          ValidationError(
+            "responsibleOrganisation",
+            ValidationErrors.InterestedParties.RESPONSIBLE_ORGANISATION_REQUIRED,
+          ),
+          ValidationError(
+            "responsibleOrganisationPhoneNumber",
+            ValidationErrors.InterestedParties.RESPONSIBLE_ORGANISATION_TELEPHONE_NUMBER_REQUIRED,
+          ),
         ),
       )
     }
@@ -276,10 +284,20 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
 
       Assertions.assertThat(result).isNotNull
       Assertions.assertThat(result).hasSize(3)
-      Assertions.assertThat(result).contains(
-        ValidationError(
-          "responsibleOrganisationRegion",
-          ValidationErrors.InterestedParties.RESPONSIBLE_ORGANISATION_REGION_REQUIRED,
+      Assertions.assertThat(result?.sortedBy { it.field }).isEqualTo(
+        listOf(
+          ValidationError(
+            "responsibleOfficerPhoneNumber",
+            ValidationErrors.InterestedParties.RESPONSIBLE_OFFICER_TELEPHONE_NUMBER_REQUIRED,
+          ),
+          ValidationError(
+            "responsibleOrganisationPhoneNumber",
+            ValidationErrors.InterestedParties.RESPONSIBLE_ORGANISATION_TELEPHONE_NUMBER_REQUIRED,
+          ),
+          ValidationError(
+            "responsibleOrganisationRegion",
+            ValidationErrors.InterestedParties.RESPONSIBLE_ORGANISATION_REGION_REQUIRED,
+          ),
         ),
       )
     }
@@ -365,10 +383,20 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
 
       Assertions.assertThat(result).isNotNull
       Assertions.assertThat(result).hasSize(3)
-      Assertions.assertThat(result).contains(
-        ValidationError(
-          "responsibleOrganisationRegion",
-          ValidationErrors.InterestedParties.RESPONSIBLE_ORGANISATION_REGION_REQUIRED,
+      Assertions.assertThat(result?.sortedBy { it.field }).isEqualTo(
+        listOf(
+          ValidationError(
+            "responsibleOfficerPhoneNumber",
+            ValidationErrors.InterestedParties.RESPONSIBLE_OFFICER_TELEPHONE_NUMBER_REQUIRED,
+          ),
+          ValidationError(
+            "responsibleOrganisationPhoneNumber",
+            ValidationErrors.InterestedParties.RESPONSIBLE_ORGANISATION_TELEPHONE_NUMBER_REQUIRED,
+          ),
+          ValidationError(
+            "responsibleOrganisationRegion",
+            ValidationErrors.InterestedParties.RESPONSIBLE_ORGANISATION_REGION_REQUIRED,
+          ),
         ),
       )
     }
@@ -456,10 +484,20 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
 
       Assertions.assertThat(result).isNotNull
       Assertions.assertThat(result).hasSize(3)
-      Assertions.assertThat(result).contains(
-        ValidationError(
-          "notifyingOrganisationName",
-          ValidationErrors.InterestedParties.NOTIFYING_ORGANISATION_NAME_REQUIRED,
+      Assertions.assertThat(result?.sortedBy { it.field }).isEqualTo(
+        listOf(
+          ValidationError(
+            "notifyingOrganisationName",
+            ValidationErrors.InterestedParties.NOTIFYING_ORGANISATION_NAME_REQUIRED,
+          ),
+          ValidationError(
+            "responsibleOfficerPhoneNumber",
+            ValidationErrors.InterestedParties.RESPONSIBLE_OFFICER_TELEPHONE_NUMBER_REQUIRED,
+          ),
+          ValidationError(
+            "responsibleOrganisationPhoneNumber",
+            ValidationErrors.InterestedParties.RESPONSIBLE_ORGANISATION_TELEPHONE_NUMBER_REQUIRED,
+          ),
         ),
       )
     }
@@ -549,10 +587,20 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
 
       Assertions.assertThat(result).isNotNull
       Assertions.assertThat(result).hasSize(3)
-      Assertions.assertThat(result).contains(
-        ValidationError(
-          "notifyingOrganisationName",
-          ValidationErrors.InterestedParties.NOTIFYING_ORGANISATION_NAME_REQUIRED,
+      Assertions.assertThat(result?.sortedBy { it.field }).isEqualTo(
+        listOf(
+          ValidationError(
+            "notifyingOrganisationName",
+            ValidationErrors.InterestedParties.NOTIFYING_ORGANISATION_NAME_REQUIRED,
+          ),
+          ValidationError(
+            "responsibleOfficerPhoneNumber",
+            ValidationErrors.InterestedParties.RESPONSIBLE_OFFICER_TELEPHONE_NUMBER_REQUIRED,
+          ),
+          ValidationError(
+            "responsibleOrganisationPhoneNumber",
+            ValidationErrors.InterestedParties.RESPONSIBLE_ORGANISATION_TELEPHONE_NUMBER_REQUIRED,
+          ),
         ),
       )
     }
@@ -640,10 +688,20 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
 
       Assertions.assertThat(result).isNotNull
       Assertions.assertThat(result).hasSize(3)
-      Assertions.assertThat(result).contains(
-        ValidationError(
-          "notifyingOrganisationName",
-          ValidationErrors.InterestedParties.NOTIFYING_ORGANISATION_NAME_REQUIRED,
+      Assertions.assertThat(result?.sortedBy { it.field }).isEqualTo(
+        listOf(
+          ValidationError(
+            "notifyingOrganisationName",
+            ValidationErrors.InterestedParties.NOTIFYING_ORGANISATION_NAME_REQUIRED,
+          ),
+          ValidationError(
+            "responsibleOfficerPhoneNumber",
+            ValidationErrors.InterestedParties.RESPONSIBLE_OFFICER_TELEPHONE_NUMBER_REQUIRED,
+          ),
+          ValidationError(
+            "responsibleOrganisationPhoneNumber",
+            ValidationErrors.InterestedParties.RESPONSIBLE_ORGANISATION_TELEPHONE_NUMBER_REQUIRED,
+          ),
         ),
       )
     }
