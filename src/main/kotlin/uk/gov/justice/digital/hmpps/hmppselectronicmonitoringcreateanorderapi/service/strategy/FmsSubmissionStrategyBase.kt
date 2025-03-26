@@ -3,15 +3,17 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.s
 import com.fasterxml.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Result
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.DeviceWearer
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.MonitoringOrder
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.requests.DeviceWearerRequest
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.requests.DeviceWearerRequestOnlineFormAdaptor
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.requests.MonitoringOrderRequest
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.requests.MonitoringOrderRequestOnlineFormAdaptor
 
 abstract class FmsSubmissionStrategyBase(val objectMapper: ObjectMapper) : FmsSubmissionStrategy {
 
-  protected fun getDeviceWearer(order: Order): Result<DeviceWearer> = try {
+  protected fun getDeviceWearer(order: Order): Result<DeviceWearerRequest> = try {
     Result(
       success = true,
-      data = DeviceWearer.fromCemoOrder(order),
+      data = DeviceWearerRequestOnlineFormAdaptor(order),
     )
   } catch (e: Exception) {
     Result(
@@ -20,7 +22,7 @@ abstract class FmsSubmissionStrategyBase(val objectMapper: ObjectMapper) : FmsSu
     )
   }
 
-  protected fun serialiseDeviceWearer(deviceWearer: DeviceWearer): Result<String> = try {
+  protected fun serialiseDeviceWearer(deviceWearer: DeviceWearerRequest): Result<String> = try {
     Result(
       success = true,
       data = objectMapper.writeValueAsString(deviceWearer),
@@ -32,11 +34,11 @@ abstract class FmsSubmissionStrategyBase(val objectMapper: ObjectMapper) : FmsSu
     )
   }
 
-  protected fun getMonitoringOrder(order: Order, deviceWearerId: String): Result<MonitoringOrder> {
+  protected fun getMonitoringOrder(order: Order, deviceWearerId: String): Result<MonitoringOrderRequest> {
     return try {
       return Result(
         success = true,
-        data = MonitoringOrder.fromOrder(order, deviceWearerId),
+        data = MonitoringOrderRequestOnlineFormAdaptor(order, deviceWearerId),
       )
     } catch (e: Exception) {
       Result(
@@ -46,7 +48,7 @@ abstract class FmsSubmissionStrategyBase(val objectMapper: ObjectMapper) : FmsSu
     }
   }
 
-  protected fun serialiseMonitoringOrder(order: MonitoringOrder): Result<String> {
+  protected fun serialiseMonitoringOrder(order: MonitoringOrderRequest): Result<String> {
     return try {
       return Result(
         success = true,

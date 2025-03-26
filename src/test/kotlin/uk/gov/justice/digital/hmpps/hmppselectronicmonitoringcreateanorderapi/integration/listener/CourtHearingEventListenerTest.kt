@@ -11,6 +11,7 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.argThat
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.verify
+import org.skyscreamer.jsonassert.JSONAssert
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
@@ -353,8 +354,8 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
     mockDeviceWearerJson: String,
     mockOrderJson: String,
   ) {
-    assertThat(savedResult.deviceWearerResult.payload).isEqualTo(mockDeviceWearerJson.removeWhitespaceAndNewlines())
-    assertThat(savedResult.monitoringOrderResult.payload).isEqualTo(mockOrderJson.removeWhitespaceAndNewlines())
+    JSONAssert.assertEquals(mockDeviceWearerJson, savedResult.deviceWearerResult.payload, true)
+    JSONAssert.assertEquals(mockOrderJson, savedResult.monitoringOrderResult.payload, true)
     assertThat(savedResult.error).isEqualTo("")
     assertThat(savedResult.success).isTrue()
   }

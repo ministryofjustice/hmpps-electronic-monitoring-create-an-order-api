@@ -10,11 +10,11 @@ import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import reactor.core.publisher.Mono
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.CreateSercoEntityException
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.DeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsAttachmentResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsErrorResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsResponse
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.MonitoringOrder
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.requests.DeviceWearerRequest
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.requests.MonitoringOrderRequest
 import java.util.UUID
 
 @Service
@@ -25,7 +25,7 @@ class FmsClient(
 ) {
   private val webClient: WebClient = WebClient.builder().baseUrl(url).build()
 
-  fun createDeviceWearer(deviceWearer: DeviceWearer, orderId: UUID): FmsResponse {
+  fun createDeviceWearer(deviceWearer: DeviceWearerRequest, orderId: UUID): FmsResponse {
     val token = fmsAuthClient.getClientToken()
     val result = webClient.post().uri("/x_seem_cemo/device_wearer/createDW")
       .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
@@ -47,7 +47,7 @@ class FmsClient(
     return result
   }
 
-  fun createMonitoringOrder(order: MonitoringOrder, orderId: UUID): FmsResponse {
+  fun createMonitoringOrder(order: MonitoringOrderRequest, orderId: UUID): FmsResponse {
     val token = fmsAuthClient.getClientToken()
     val result = webClient.post().uri("/x_seem_cemo/monitoring_order/createMO")
       .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
@@ -69,7 +69,7 @@ class FmsClient(
     return result
   }
 
-  fun updateMonitoringOrder(order: MonitoringOrder, orderId: UUID): FmsResponse {
+  fun updateMonitoringOrder(order: MonitoringOrderRequest, orderId: UUID): FmsResponse {
     val token = fmsAuthClient.getClientToken()
     val result = webClient.post().uri("/x_seem_cemo/monitoring_order/updateMO")
       .header(HttpHeaders.AUTHORIZATION, "Bearer $token")

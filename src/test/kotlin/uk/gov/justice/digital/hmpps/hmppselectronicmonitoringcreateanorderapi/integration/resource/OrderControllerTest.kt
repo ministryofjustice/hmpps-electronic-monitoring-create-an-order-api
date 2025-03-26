@@ -5,6 +5,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.skyscreamer.jsonassert.JSONAssert
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
@@ -1021,8 +1022,9 @@ class OrderControllerTest : IntegrationTestBase() {
       }
       """.trimIndent()
 
-      assertThat(submitResult!!.deviceWearerResult.payload).isEqualTo(expectedDWJson.removeWhitespaceAndNewlines())
-      assertThat(submitResult.monitoringOrderResult.payload).isEqualTo(expectedOrderJson.removeWhitespaceAndNewlines())
+      JSONAssert.assertEquals(expectedDWJson, submitResult!!.deviceWearerResult.payload, true)
+      JSONAssert.assertEquals(expectedOrderJson, submitResult.monitoringOrderResult.payload, true)
+
       assertThat(submitResult.attachmentResults[0].sysId).isEqualTo("MockSysId")
       assertThat(
         submitResult.attachmentResults[0].fileType,
@@ -1390,8 +1392,8 @@ class OrderControllerTest : IntegrationTestBase() {
       assertThat(submitResult!!.success).isEqualTo(true)
       assertThat(submitResult.error).isEqualTo("")
 
-      assertThat(submitResult.deviceWearerResult.payload).isEqualTo(expectedDWJson.removeWhitespaceAndNewlines())
-      assertThat(submitResult.monitoringOrderResult.payload).isEqualTo(expectedOrderJson.removeWhitespaceAndNewlines())
+      JSONAssert.assertEquals(expectedDWJson, submitResult.deviceWearerResult.payload, true)
+      JSONAssert.assertEquals(expectedOrderJson, submitResult.monitoringOrderResult.payload, true)
 
       assertThat(submitResult.attachmentResults[0])
         .usingRecursiveComparison()
@@ -1723,8 +1725,8 @@ class OrderControllerTest : IntegrationTestBase() {
       }
       """.trimIndent()
 
-      assertThat(submitResult!!.deviceWearerResult.payload).isEqualTo(expectedDWJson.removeWhitespaceAndNewlines())
-      assertThat(submitResult.monitoringOrderResult.payload).isEqualTo(expectedOrderJson.removeWhitespaceAndNewlines())
+      JSONAssert.assertEquals(expectedDWJson, submitResult!!.deviceWearerResult.payload, true)
+      JSONAssert.assertEquals(expectedOrderJson, submitResult.monitoringOrderResult.payload, true)
       val updatedOrder = getOrder(order.id)
       assertThat(updatedOrder.fmsResultId).isEqualTo(submitResult.id)
       assertThat(updatedOrder.status).isEqualTo(OrderStatus.SUBMITTED)
@@ -1825,7 +1827,7 @@ class OrderControllerTest : IntegrationTestBase() {
       }
       """.trimIndent()
 
-      assertThat(submitResult!!.deviceWearerResult.payload).isEqualTo(expectedDWJson.removeWhitespaceAndNewlines())
+      JSONAssert.assertEquals(expectedDWJson, submitResult!!.deviceWearerResult.payload, true)
       val fmsOrderRequest = submitResult.monitoringOrderResult.payload
 
       JsonPathExpectationsHelper("installation_address_1").assertValue(fmsOrderRequest, "24 Somewhere Street")
