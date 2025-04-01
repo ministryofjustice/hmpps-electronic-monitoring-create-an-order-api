@@ -26,6 +26,11 @@ class DeviceWearerService : OrderSectionServiceBase() {
       disabilities = updateRecord.disabilities,
       language = updateRecord.language,
       interpreterRequired = updateRecord.interpreterRequired,
+      nomisId = order.deviceWearer?.nomisId,
+      deliusId = order.deviceWearer?.deliusId,
+      pncId = order.deviceWearer?.pncId,
+      prisonNumber = order.deviceWearer?.prisonNumber,
+      homeOfficeReferenceNumber = order.deviceWearer?.homeOfficeReferenceNumber,
     )
 
     return orderRepo.save(order).deviceWearer!!
