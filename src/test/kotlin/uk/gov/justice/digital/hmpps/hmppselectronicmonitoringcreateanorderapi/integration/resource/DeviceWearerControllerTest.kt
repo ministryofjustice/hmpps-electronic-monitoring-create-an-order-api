@@ -617,5 +617,71 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
       Assertions.assertThat(deviceWearer.prisonNumber).isEqualTo(mockPrisonNumber)
       Assertions.assertThat(deviceWearer.homeOfficeReferenceNumber).isEqualTo(mockHomeOfficeReferenceNumber)
     }
+
+    @Test
+    fun `it should retain the identity numbers when updating the device wearer's personal details`() {
+      // Set up a new order
+      val order = createOrder()
+
+      // Save some identity numbers
+      webTestClient.put()
+        .uri("/api/orders/${order.id}/device-wearer/identity-numbers")
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(
+          BodyInserters.fromValue(
+            """
+            {
+              "nomisId": "$mockNomisId",
+              "pncId": "$mockPncId",
+              "deliusId": "$mockDeliusId",
+              "prisonNumber": "$mockPrisonNumber",
+              "homeOfficeReferenceNumber": "$mockHomeOfficeReferenceNumber"
+            }
+            """.trimIndent(),
+          ),
+        )
+        .headers(setAuthorisation("AUTH_ADM"))
+        .exchange()
+        .expectStatus()
+        .isOk
+
+      // Update the device wearer's personal details
+      webTestClient.put()
+        .uri("/api/orders/${order.id}/device-wearer")
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(
+          BodyInserters.fromValue(
+            """
+            {
+              "firstName": "$mockFirstName",
+              "lastName": "$mockLastName",
+              "alias": "$mockAlias",
+              "adultAtTimeOfInstallation": "false",
+              "sex": "$mockSex",
+              "gender": "$mockGender",
+              "dateOfBirth": "$mockDateOfBirth",
+              "disabilities": "$mockDisabilities",
+              "interpreterRequired": true,
+              "language": "$mockLanguage"
+            }
+            """.trimIndent(),
+          ),
+        )
+        .headers(setAuthorisation("AUTH_ADM"))
+        .exchange()
+        .expectStatus()
+        .isOk
+
+      // Ensure that the identity numbers have not been overwritten
+      val updatedOrder = getOrder(order.id)
+
+      Assertions.assertThat(updatedOrder.deviceWearer!!.nomisId).isEqualTo(mockNomisId)
+      Assertions.assertThat(updatedOrder.deviceWearer!!.deliusId).isEqualTo(mockDeliusId)
+      Assertions.assertThat(updatedOrder.deviceWearer!!.pncId).isEqualTo(mockPncId)
+      Assertions.assertThat(updatedOrder.deviceWearer!!.prisonNumber).isEqualTo(mockPrisonNumber)
+      Assertions.assertThat(
+        updatedOrder.deviceWearer!!.homeOfficeReferenceNumber,
+      ).isEqualTo(mockHomeOfficeReferenceNumber)
+    }
   }
 }
