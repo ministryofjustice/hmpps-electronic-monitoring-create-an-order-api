@@ -26,6 +26,7 @@ class DeviceWearerService : OrderSectionServiceBase() {
       disabilities = updateRecord.disabilities,
       language = updateRecord.language,
       interpreterRequired = updateRecord.interpreterRequired,
+      noFixedAbode = order.deviceWearer?.noFixedAbode,
       nomisId = order.deviceWearer?.nomisId,
       deliusId = order.deviceWearer?.deliusId,
       pncId = order.deviceWearer?.pncId,
