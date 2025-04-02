@@ -69,6 +69,28 @@ class FmsClient(
     return result
   }
 
+  fun updateDeviceWearer(deviceWearer: DeviceWearer, orderId: UUID): FmsResponse {
+    val token = fmsAuthClient.getClientToken()
+    val result = webClient.post().uri("/x_seem_cemo/device_wearer/updateDW")
+      .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+      .contentType(MediaType.APPLICATION_JSON)
+      .bodyValue(deviceWearer)
+      .retrieve()
+      .onStatus({ t -> t.is5xxServerError }, {
+        it.bodyToMono(FmsErrorResponse::class.java).flatMap { error ->
+          Mono.error(
+            CreateSercoEntityException(
+              "Error updating FMS Device Wearer for order: $orderId with error: ${error?.error?.detail}",
+            ),
+          )
+        }
+      })
+      .bodyToMono(FmsResponse::class.java)
+      .onErrorResume(WebClientResponseException::class.java) { Mono.empty() }
+      .block()!!
+    return result
+  }
+
   fun updateMonitoringOrder(order: MonitoringOrder, orderId: UUID): FmsResponse {
     val token = fmsAuthClient.getClientToken()
     val result = webClient.post().uri("/x_seem_cemo/monitoring_order/updateMO")

@@ -1439,7 +1439,7 @@ class OrderControllerTest : IntegrationTestBase() {
       val order = createAndPersistReadyToSubmitOrder(noFixedAddress = false, requestType = RequestType.VARIATION)
       sercoAuthApi.stubGrantToken()
 
-      sercoApi.stubCreateDeviceWearer(
+      sercoApi.stubUpdateDeviceWearer(
         HttpStatus.OK,
         FmsResponse(result = listOf(FmsResult(message = "", id = "MockDeviceWearerId"))),
       )

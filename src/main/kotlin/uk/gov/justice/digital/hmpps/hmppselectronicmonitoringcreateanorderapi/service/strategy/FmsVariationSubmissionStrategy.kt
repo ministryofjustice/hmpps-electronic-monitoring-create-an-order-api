@@ -18,10 +18,9 @@ class FmsVariationSubmissionStrategy(objectMapper: ObjectMapper, val fmsClient: 
   FmsSubmissionStrategyBase(objectMapper) {
 
   private fun submitUpdateDeviceWearerRequest(deviceWearer: DeviceWearer, orderId: UUID): Result<String> = try {
-    // TODO: Should call updateDeviceWearer endpoint, but not currently possible
     Result(
       success = true,
-      data = fmsClient.createDeviceWearer(deviceWearer, orderId).result.first().id,
+      data = fmsClient.updateDeviceWearer(deviceWearer, orderId).result.first().id,
     )
   } catch (e: Exception) {
     Result(
