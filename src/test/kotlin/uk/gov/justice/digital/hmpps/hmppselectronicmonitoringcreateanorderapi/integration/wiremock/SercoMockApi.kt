@@ -84,6 +84,26 @@ class SercoMockApiServer : WireMockServer(WIREMOCK_PORT) {
     )
   }
 
+  fun stubUpdateDeviceWearer(status: HttpStatus, result: FmsResponse, errorResponse: FmsErrorResponse? = null) {
+    val body: String
+    if (errorResponse != null) {
+      body = objectMapper.writeValueAsString(errorResponse)
+    } else {
+      body = objectMapper.writeValueAsString(result)
+    }
+    stubFor(
+      post(urlPathTemplate("/x_seem_cemo/device_wearer/updateDW"))
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withBody(
+              body,
+            )
+            .withStatus(status.value()),
+        ),
+    )
+  }
+
   fun stubUpdateMonitoringOrder(status: HttpStatus, result: FmsResponse, errorResponse: FmsErrorResponse? = null) {
     val body: String
     if (errorResponse != null) {
