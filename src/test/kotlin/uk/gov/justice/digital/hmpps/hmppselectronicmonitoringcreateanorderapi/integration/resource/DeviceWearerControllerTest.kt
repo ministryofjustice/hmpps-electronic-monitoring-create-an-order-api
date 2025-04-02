@@ -449,6 +449,62 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
         ),
       )
     }
+
+    @Test
+    fun `it should retain noFixedAbode when updating the device wearer's personal details`() {
+      // Set up a new order
+      val order = createOrder()
+
+      // Save some identity numbers
+      webTestClient.put()
+        .uri("/api/orders/${order.id}/device-wearer/no-fixed-abode")
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(
+          BodyInserters.fromValue(
+            """
+            {
+              "noFixedAbode": "true"
+            }
+            """.trimIndent(),
+          ),
+        )
+        .headers(setAuthorisation("AUTH_ADM"))
+        .exchange()
+        .expectStatus()
+        .isOk
+
+      // Update the device wearer's personal details
+      webTestClient.put()
+        .uri("/api/orders/${order.id}/device-wearer")
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(
+          BodyInserters.fromValue(
+            """
+            {
+              "firstName": "$mockFirstName",
+              "lastName": "$mockLastName",
+              "alias": "$mockAlias",
+              "adultAtTimeOfInstallation": "false",
+              "sex": "$mockSex",
+              "gender": "$mockGender",
+              "dateOfBirth": "$mockDateOfBirth",
+              "disabilities": "$mockDisabilities",
+              "interpreterRequired": true,
+              "language": "$mockLanguage"
+            }
+            """.trimIndent(),
+          ),
+        )
+        .headers(setAuthorisation("AUTH_ADM"))
+        .exchange()
+        .expectStatus()
+        .isOk
+
+      // Ensure that the identity numbers have not been overwritten
+      val updatedOrder = getOrder(order.id)
+
+      Assertions.assertThat(updatedOrder.deviceWearer!!.noFixedAbode).isEqualTo(true)
+    }
   }
 
   @Test
