@@ -9,13 +9,13 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DocumentType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.SubmissionStatus
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.DeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsAttachmentSubmissionResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsDeviceWearerSubmissionResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsMonitoringOrderSubmissionResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsSubmissionResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsSubmissionStrategyKind
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.MonitoringOrder
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.requests.DeviceWearerRequest
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.requests.MonitoringOrderRequest
 import java.util.*
 
 class FmsOrderSubmissionStrategy(
@@ -24,7 +24,7 @@ class FmsOrderSubmissionStrategy(
   val documentApiClient: DocumentApiClient,
 ) : FmsSubmissionStrategyBase(objectMapper) {
 
-  private fun submitCreateDeviceWearerRequest(deviceWearer: DeviceWearer, orderId: UUID): Result<String> = try {
+  private fun submitCreateDeviceWearerRequest(deviceWearer: DeviceWearerRequest, orderId: UUID): Result<String> = try {
     Result(
       success = true,
       data = fmsClient.createDeviceWearer(deviceWearer, orderId).result.first().id,
@@ -36,18 +36,20 @@ class FmsOrderSubmissionStrategy(
     )
   }
 
-  private fun submitCreateMonitoringOrderRequest(monitoringOrder: MonitoringOrder, orderId: UUID): Result<String> =
-    try {
-      Result(
-        success = true,
-        data = fmsClient.createMonitoringOrder(monitoringOrder, orderId).result.first().id,
-      )
-    } catch (e: Exception) {
-      Result(
-        success = false,
-        error = Exception("Failed to submit FMS Monitoring Order", e),
-      )
-    }
+  private fun submitCreateMonitoringOrderRequest(
+    monitoringOrder: MonitoringOrderRequest,
+    orderId: UUID,
+  ): Result<String> = try {
+    Result(
+      success = true,
+      data = fmsClient.createMonitoringOrder(monitoringOrder, orderId).result.first().id,
+    )
+  } catch (e: Exception) {
+    Result(
+      success = false,
+      error = Exception("Failed to submit FMS Monitoring Order", e),
+    )
+  }
 
   private fun createAttachment(document: AdditionalDocument, deviceWearerId: String): FmsAttachmentSubmissionResult {
     try {

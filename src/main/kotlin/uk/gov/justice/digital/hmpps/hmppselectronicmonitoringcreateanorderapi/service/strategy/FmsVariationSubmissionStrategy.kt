@@ -6,18 +6,18 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Result
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.SubmissionStatus
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.DeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsDeviceWearerSubmissionResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsMonitoringOrderSubmissionResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsSubmissionResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsSubmissionStrategyKind
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.MonitoringOrder
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.requests.DeviceWearerRequest
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.requests.MonitoringOrderRequest
 import java.util.*
 
 class FmsVariationSubmissionStrategy(objectMapper: ObjectMapper, val fmsClient: FmsClient) :
   FmsSubmissionStrategyBase(objectMapper) {
 
-  private fun submitUpdateDeviceWearerRequest(deviceWearer: DeviceWearer, orderId: UUID): Result<String> = try {
+  private fun submitUpdateDeviceWearerRequest(deviceWearer: DeviceWearerRequest, orderId: UUID): Result<String> = try {
     // TODO: Should call updateDeviceWearer endpoint, but not currently possible
     Result(
       success = true,
@@ -30,18 +30,20 @@ class FmsVariationSubmissionStrategy(objectMapper: ObjectMapper, val fmsClient: 
     )
   }
 
-  private fun submitUpdateMonitoringOrderRequest(monitoringOrder: MonitoringOrder, orderId: UUID): Result<String> =
-    try {
-      Result(
-        success = true,
-        data = fmsClient.updateMonitoringOrder(monitoringOrder, orderId).result.first().id,
-      )
-    } catch (e: Exception) {
-      Result(
-        success = false,
-        error = Exception("Failed to submit FMS Monitoring Order", e),
-      )
-    }
+  private fun submitUpdateMonitoringOrderRequest(
+    monitoringOrder: MonitoringOrderRequest,
+    orderId: UUID,
+  ): Result<String> = try {
+    Result(
+      success = true,
+      data = fmsClient.updateMonitoringOrder(monitoringOrder, orderId).result.first().id,
+    )
+  } catch (e: Exception) {
+    Result(
+      success = false,
+      error = Exception("Failed to submit FMS Monitoring Order", e),
+    )
+  }
 
   private fun updateDeviceWearer(order: Order): FmsDeviceWearerSubmissionResult {
     val deviceWearerResult = this.getDeviceWearer(order)
