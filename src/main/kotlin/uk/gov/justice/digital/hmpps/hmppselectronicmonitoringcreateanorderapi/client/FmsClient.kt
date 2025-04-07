@@ -6,6 +6,10 @@ import org.springframework.core.io.InputStreamResource
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
+import org.springframework.web.reactive.function.client.ClientRequest
+import org.springframework.web.reactive.function.client.ClientResponse
+import org.springframework.web.reactive.function.client.ExchangeFilterFunction
+import org.springframework.web.reactive.function.client.ExchangeFunction
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import reactor.core.publisher.Mono
@@ -15,7 +19,11 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsErrorResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.MonitoringOrder
-import java.util.UUID
+import java.util.*
+import java.util.function.Consumer
+import org.slf4j.LoggerFactory
+
+
 
 @Service
 class FmsClient(
@@ -32,15 +40,30 @@ class FmsClient(
       .contentType(MediaType.APPLICATION_JSON)
       .bodyValue(deviceWearer)
       .retrieve()
-      .onStatus({ t -> t.is5xxServerError }, {
-        it.bodyToMono(FmsErrorResponse::class.java).flatMap { error ->
-          Mono.error(
-            CreateSercoEntityException(
-              "Error creating FMS Device Wearer for order: $orderId with error: ${error?.error?.detail}",
-            ),
-          )
-        }
-      })
+      .onStatus(
+        { t -> t.is5xxServerError },
+        {
+          it.bodyToMono(FmsErrorResponse::class.java).flatMap { error ->
+            Mono.error(
+              CreateSercoEntityException(
+                "Error creating FMS Device Wearer for order: $orderId with error: ${error?.error?.detail}",
+              ),
+            )
+          }
+        },
+      )
+      .onStatus(
+        { t -> t.is4xxClientError },
+        {
+          it.bodyToMono(FmsErrorResponse::class.java).flatMap { error ->
+            Mono.error(
+              CreateSercoEntityException(
+                "Error creating FMS Device Wearer for order: $orderId with error: ${error?.error?.detail}",
+              ),
+            )
+          }
+        },
+      )
       .bodyToMono(FmsResponse::class.java)
       .onErrorResume(WebClientResponseException::class.java) { Mono.empty() }
       .block()!!
@@ -54,15 +77,30 @@ class FmsClient(
       .contentType(MediaType.APPLICATION_JSON)
       .bodyValue(order)
       .retrieve()
-      .onStatus({ t -> t.is5xxServerError }, {
-        it.bodyToMono(FmsErrorResponse::class.java).flatMap { error ->
-          Mono.error(
-            CreateSercoEntityException(
-              "Error creating FMS Monitoring Order for order: $orderId with error: ${error?.error?.detail}",
-            ),
-          )
-        }
-      })
+      .onStatus(
+        { t -> t.is5xxServerError },
+        {
+          it.bodyToMono(FmsErrorResponse::class.java).flatMap { error ->
+            Mono.error(
+              CreateSercoEntityException(
+                "Error creating FMS Monitoring Order for order: $orderId with error: ${error?.error?.detail}",
+              ),
+            )
+          }
+        },
+      )
+      .onStatus(
+        { t -> t.is4xxClientError },
+        {
+          it.bodyToMono(FmsErrorResponse::class.java).flatMap { error ->
+            Mono.error(
+              CreateSercoEntityException(
+                "Error creating FMS Monitoring Order for order: $orderId with error: ${error?.error?.detail}",
+              ),
+            )
+          }
+        },
+      )
       .bodyToMono(FmsResponse::class.java)
       .onErrorResume(WebClientResponseException::class.java) { Mono.empty() }
       .block()!!
@@ -76,15 +114,30 @@ class FmsClient(
       .contentType(MediaType.APPLICATION_JSON)
       .bodyValue(deviceWearer)
       .retrieve()
-      .onStatus({ t -> t.is5xxServerError }, {
-        it.bodyToMono(FmsErrorResponse::class.java).flatMap { error ->
-          Mono.error(
-            CreateSercoEntityException(
-              "Error updating FMS Device Wearer for order: $orderId with error: ${error?.error?.detail}",
-            ),
-          )
-        }
-      })
+      .onStatus(
+        { t -> t.is5xxServerError },
+        {
+          it.bodyToMono(FmsErrorResponse::class.java).flatMap { error ->
+            Mono.error(
+              CreateSercoEntityException(
+                "Error updating FMS Device Wearer for order: $orderId with error: ${error?.error?.detail}",
+              ),
+            )
+          }
+        },
+      )
+      .onStatus(
+        { t -> t.is4xxClientError },
+        {
+          it.bodyToMono(FmsErrorResponse::class.java).flatMap { error ->
+            Mono.error(
+              CreateSercoEntityException(
+                "Error updating FMS Device Wearer for order: $orderId with error: ${error?.error?.detail}",
+              ),
+            )
+          }
+        },
+      )
       .bodyToMono(FmsResponse::class.java)
       .onErrorResume(WebClientResponseException::class.java) { Mono.empty() }
       .block()!!
@@ -98,15 +151,30 @@ class FmsClient(
       .contentType(MediaType.APPLICATION_JSON)
       .bodyValue(order)
       .retrieve()
-      .onStatus({ t -> t.is5xxServerError }, {
-        it.bodyToMono(FmsErrorResponse::class.java).flatMap { error ->
-          Mono.error(
-            CreateSercoEntityException(
-              "Error updating FMS Monitoring Order for order: $orderId with error: ${error?.error?.detail}",
-            ),
-          )
-        }
-      })
+      .onStatus(
+        { t -> t.is5xxServerError },
+        {
+          it.bodyToMono(FmsErrorResponse::class.java).flatMap { error ->
+            Mono.error(
+              CreateSercoEntityException(
+                "Error updating FMS Monitoring Order for order: $orderId with error: ${error?.error?.detail}",
+              ),
+            )
+          }
+        },
+      )
+      .onStatus(
+        { t -> t.is4xxClientError },
+        {
+          it.bodyToMono(FmsErrorResponse::class.java).flatMap { error ->
+            Mono.error(
+              CreateSercoEntityException(
+                "Error updating FMS Monitoring Order for order: $orderId with error: ${error?.error?.detail}",
+              ),
+            )
+          }
+        },
+      )
       .bodyToMono(FmsResponse::class.java)
       .onErrorResume(WebClientResponseException::class.java) { Mono.empty() }
       .block()!!
@@ -135,15 +203,30 @@ class FmsClient(
       .contentType(MediaType.APPLICATION_OCTET_STREAM) // turns into binary
       .bodyValue(file)
       .retrieve()
-      .onStatus({ t -> t.is5xxServerError }, {
-        it.bodyToMono(FmsErrorResponse::class.java).flatMap { error ->
-          Mono.error(
-            CreateSercoEntityException(
-              "Error creating $documentType attachment for order: $caseId with error: ${error?.error?.detail}",
-            ),
-          )
-        }
-      })
+      .onStatus(
+        { t -> t.is5xxServerError },
+        {
+          it.bodyToMono(FmsErrorResponse::class.java).flatMap { error ->
+            Mono.error(
+              CreateSercoEntityException(
+                "Error creating $documentType attachment for order: $caseId with error: ${error?.error?.detail}",
+              ),
+            )
+          }
+        },
+      )
+      .onStatus(
+        { t -> t.is4xxClientError },
+        {
+          it.bodyToMono(FmsErrorResponse::class.java).flatMap { error ->
+            Mono.error(
+              CreateSercoEntityException(
+                "Error creating $documentType attachment for order: $caseId with error: ${error?.error?.detail}",
+              ),
+            )
+          }
+        },
+      )
       .bodyToMono(FmsAttachmentResponse::class.java)
       .onErrorResume(WebClientResponseException::class.java) { Mono.empty() }
       .block()!!
