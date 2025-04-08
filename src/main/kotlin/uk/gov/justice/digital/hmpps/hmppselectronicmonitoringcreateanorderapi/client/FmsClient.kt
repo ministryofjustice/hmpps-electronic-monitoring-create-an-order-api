@@ -33,19 +33,7 @@ class FmsClient(
       .bodyValue(deviceWearer)
       .retrieve()
       .onStatus(
-        { t -> t.is5xxServerError },
-        {
-          it.bodyToMono(FmsErrorResponse::class.java).flatMap { error ->
-            Mono.error(
-              CreateSercoEntityException(
-                "Error creating FMS Device Wearer for order: $orderId with error: ${error?.error?.detail}",
-              ),
-            )
-          }
-        },
-      )
-      .onStatus(
-        { t -> t.is4xxClientError },
+        { t -> t.isError },
         {
           it.bodyToMono(FmsErrorResponse::class.java).flatMap { error ->
             Mono.error(
@@ -70,19 +58,7 @@ class FmsClient(
       .bodyValue(order)
       .retrieve()
       .onStatus(
-        { t -> t.is5xxServerError },
-        {
-          it.bodyToMono(FmsErrorResponse::class.java).flatMap { error ->
-            Mono.error(
-              CreateSercoEntityException(
-                "Error creating FMS Monitoring Order for order: $orderId with error: ${error?.error?.detail}",
-              ),
-            )
-          }
-        },
-      )
-      .onStatus(
-        { t -> t.is4xxClientError },
+        { t -> t.isError },
         {
           it.bodyToMono(FmsErrorResponse::class.java).flatMap { error ->
             Mono.error(
@@ -107,19 +83,7 @@ class FmsClient(
       .bodyValue(deviceWearer)
       .retrieve()
       .onStatus(
-        { t -> t.is5xxServerError },
-        {
-          it.bodyToMono(FmsErrorResponse::class.java).flatMap { error ->
-            Mono.error(
-              CreateSercoEntityException(
-                "Error updating FMS Device Wearer for order: $orderId with error: ${error?.error?.detail}",
-              ),
-            )
-          }
-        },
-      )
-      .onStatus(
-        { t -> t.is4xxClientError },
+        { t -> t.isError },
         {
           it.bodyToMono(FmsErrorResponse::class.java).flatMap { error ->
             Mono.error(
@@ -144,19 +108,7 @@ class FmsClient(
       .bodyValue(order)
       .retrieve()
       .onStatus(
-        { t -> t.is5xxServerError },
-        {
-          it.bodyToMono(FmsErrorResponse::class.java).flatMap { error ->
-            Mono.error(
-              CreateSercoEntityException(
-                "Error updating FMS Monitoring Order for order: $orderId with error: ${error?.error?.detail}",
-              ),
-            )
-          }
-        },
-      )
-      .onStatus(
-        { t -> t.is4xxClientError },
+        { t -> t.isError },
         {
           it.bodyToMono(FmsErrorResponse::class.java).flatMap { error ->
             Mono.error(
@@ -196,19 +148,7 @@ class FmsClient(
       .bodyValue(file)
       .retrieve()
       .onStatus(
-        { t -> t.is5xxServerError },
-        {
-          it.bodyToMono(FmsErrorResponse::class.java).flatMap { error ->
-            Mono.error(
-              CreateSercoEntityException(
-                "Error creating $documentType attachment for order: $caseId with error: ${error?.error?.detail}",
-              ),
-            )
-          }
-        },
-      )
-      .onStatus(
-        { t -> t.is4xxClientError },
+        { t -> t.isError },
         {
           it.bodyToMono(FmsErrorResponse::class.java).flatMap { error ->
             Mono.error(
