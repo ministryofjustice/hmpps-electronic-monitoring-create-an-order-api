@@ -17,6 +17,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ResponsibleOrganisation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YesNoUnknown
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YouthJusticeServiceRegions
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.formatters.PhoneNumberFormatter
 import java.time.DayOfWeek
 import java.time.format.DateTimeFormatter
 
@@ -329,10 +330,10 @@ data class MonitoringOrder(
       if (order.interestedParties != null) {
         val interestedParties = order.interestedParties!!
         monitoringOrder.responsibleOfficerName = interestedParties.responsibleOfficerName
-        monitoringOrder.responsibleOfficerPhone = interestedParties.responsibleOfficerPhoneNumber
+        monitoringOrder.responsibleOfficerPhone = getResponsibleOfficerPhoneNumber(order)
         monitoringOrder.responsibleOrganization = getResponsibleOrganisation(order)
         monitoringOrder.roRegion = getResponsibleOrganisationRegion(order)
-        monitoringOrder.roPhone = interestedParties.responsibleOrganisationPhoneNumber
+        monitoringOrder.roPhone = getResponsibleOrganisationPhoneNumber(order)
         monitoringOrder.roEmail = interestedParties.responsibleOrganisationEmail
         monitoringOrder.notifyingOrganization = getNotifyingOrganisation(order)
         val address = order.addresses.firstOrNull { it.addressType == AddressType.RESPONSIBLE_ORGANISATION }
@@ -419,6 +420,25 @@ data class MonitoringOrder(
 
     private fun getOffence(order: Order): String? = Offence.from(order.installationAndRisk?.offence)?.value
       ?: order.installationAndRisk?.offence
+
+    private fun getResponsibleOfficerPhoneNumber(order: Order): String? {
+      if (order.interestedParties?.responsibleOfficerPhoneNumber == null) {
+        return null
+      }
+      return PhoneNumberFormatter.formatAsInternationalDirectDialingNumber(
+        order.interestedParties!!.responsibleOfficerPhoneNumber!!,
+      )
+    }
+
+    private fun getResponsibleOrganisationPhoneNumber(order: Order): String? {
+      if (order.interestedParties?.responsibleOrganisationPhoneNumber == null) {
+        return null
+      }
+
+      return PhoneNumberFormatter.formatAsInternationalDirectDialingNumber(
+        order.interestedParties!!.responsibleOrganisationPhoneNumber!!,
+      )
+    }
   }
 }
 

@@ -1,9 +1,9 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import com.google.i18n.phonenumbers.PhoneNumberUtil
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.formatters.PhoneNumberFormatter
 import java.time.format.DateTimeFormatter
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Disability as DisabilityEnum
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.Disability as FmsDisability
@@ -193,34 +193,22 @@ data class DeviceWearer(
       return deviceWearer
     }
 
-    private fun formatPhoneNumber(phoneNumber: String?): String? {
-      if (phoneNumber == null) {
+    private fun getPhoneNumber(order: Order): String? {
+      if (order.contactDetails?.contactNumber == null) {
+        return null
+      }
+      return PhoneNumberFormatter.formatAsInternationalDirectDialingNumber(order.contactDetails!!.contactNumber!!)
+    }
+
+    private fun getParentPhoneNumber(order: Order): String? {
+      if (order.deviceWearerResponsibleAdult?.contactNumber == null) {
         return null
       }
 
-      if (phoneNumber == "") {
-        return ""
-      }
-
-      val phoneUtil = PhoneNumberUtil.getInstance()
-      val region = if (phoneNumber.startsWith("+")) "" else "GB"
-      val number = phoneUtil.parse(phoneNumber, region)
-      val countryCode = number.countryCode
-      val nationalSignificantNumber = phoneUtil.getNationalSignificantNumber(number)
-
-      // phoneUtil.getMetadataForRegion is private which makes it hard to "correctly" get the
-      // Internation Direct Dialling(IDD) prefix for a given region. Given the Electronic Monitoring
-      // programme only monitors UK device wearers from UK contact centres,
-      // it should be safe to always use the UK IDD prefix.
-      val iddPrefix = "00"
-
-      return "$iddPrefix$countryCode$nationalSignificantNumber"
+      return PhoneNumberFormatter.formatAsInternationalDirectDialingNumber(
+        order.deviceWearerResponsibleAdult!!.contactNumber!!,
+      )
     }
-
-    private fun getPhoneNumber(order: Order): String? = formatPhoneNumber(order.contactDetails?.contactNumber)
-
-    private fun getParentPhoneNumber(order: Order): String? =
-      formatPhoneNumber(order.deviceWearerResponsibleAdult?.contactNumber)
   }
 }
 
