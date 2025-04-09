@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.m
 import com.fasterxml.jackson.annotation.JsonProperty
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.formatters.PhoneNumberFormatter
 import java.time.format.DateTimeFormatter
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Disability as DisabilityEnum
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.Disability as FmsDisability
@@ -156,13 +157,13 @@ data class DeviceWearer(
         sex = order.deviceWearer?.sex ?: "",
         genderIdentity = order.deviceWearer?.gender ?: "",
         disability = disabilities,
-        phoneNumber = order.contactDetails?.contactNumber,
+        phoneNumber = getPhoneNumber(order),
         riskDetails = order.installationAndRisk?.riskDetails,
         mappa = order.installationAndRisk?.mappaLevel,
         mappaCaseType = order.installationAndRisk?.mappaCaseType,
         responsibleAdultRequired = (order.deviceWearerResponsibleAdult != null).toString(),
         parent = order.deviceWearerResponsibleAdult?.fullName ?: "",
-        parentPhoneNumber = order.deviceWearerResponsibleAdult?.contactNumber,
+        parentPhoneNumber = getParentPhoneNumber(order),
         interpreterRequired = order.deviceWearer?.interpreterRequired?.toString(),
         language = order.deviceWearer?.language,
         nomisId = order.deviceWearer?.nomisId,
@@ -190,6 +191,23 @@ data class DeviceWearer(
       }
 
       return deviceWearer
+    }
+
+    private fun getPhoneNumber(order: Order): String? {
+      if (order.contactDetails?.contactNumber == null) {
+        return null
+      }
+      return PhoneNumberFormatter.formatAsInternationalDirectDialingNumber(order.contactDetails!!.contactNumber!!)
+    }
+
+    private fun getParentPhoneNumber(order: Order): String? {
+      if (order.deviceWearerResponsibleAdult?.contactNumber == null) {
+        return null
+      }
+
+      return PhoneNumberFormatter.formatAsInternationalDirectDialingNumber(
+        order.deviceWearerResponsibleAdult!!.contactNumber!!,
+      )
     }
   }
 }
