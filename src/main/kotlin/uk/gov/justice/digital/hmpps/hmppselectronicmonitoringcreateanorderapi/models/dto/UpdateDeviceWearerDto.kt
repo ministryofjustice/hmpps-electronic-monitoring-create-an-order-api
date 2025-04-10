@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Past
 import jakarta.validation.constraints.Size
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.data.ValidationErrors
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Sex
 import java.time.ZonedDateTime
 
 data class UpdateDeviceWearerDto(
@@ -21,7 +22,6 @@ data class UpdateDeviceWearerDto(
   )
   var adultAtTimeOfInstallation: Boolean? = null,
 
-  @field:Size(min = 1, message = ValidationErrors.DeviceWearer.SEX_REQUIRED)
   var sex: String? = null,
 
   @field:Size(min = 1, message = ValidationErrors.DeviceWearer.GENDER_REQUIRED)
@@ -48,4 +48,7 @@ data class UpdateDeviceWearerDto(
     }
     return true
   }
+
+  @AssertTrue(message = ValidationErrors.DeviceWearer.SEX_REQUIRED)
+  fun isSex(): Boolean = Sex.from(sex) != null
 }

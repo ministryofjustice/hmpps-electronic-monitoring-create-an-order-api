@@ -20,7 +20,7 @@ class DeviceWearerService : OrderSectionServiceBase() {
       lastName = updateRecord.lastName,
       alias = updateRecord.alias,
       adultAtTimeOfInstallation = updateRecord.adultAtTimeOfInstallation,
-      sex = updateRecord.sex,
+      sex = updateRecord.sex.toString(),
       gender = updateRecord.gender,
       dateOfBirth = updateRecord.dateOfBirth,
       disabilities = updateRecord.disabilities,

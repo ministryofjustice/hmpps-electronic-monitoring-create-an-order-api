@@ -27,7 +27,7 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
   private val mockFirstName: String = "mockFirstName"
   private val mockLastName: String = "mockLastName"
   private val mockAlias: String = "mockAlias"
-  private val mockSex: String = "mockSex"
+  private val mockSex: String = "MALE"
   private val mockGender: String = "mockGender"
   private val mockDisabilities: String = "mockDisabilities"
   private val mockLanguage: String = "mockLanguage"
@@ -163,7 +163,7 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
     }
 
     @Test
-    fun `it should return an error if an invalid data is submitted`() {
+    fun `it should return an error if a invalid data is submitted`() {
       val order = createOrder()
       val result = webTestClient.put()
         .uri("/api/orders/${order.id}/device-wearer")
@@ -214,7 +214,6 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
       Assertions.assertThat(result.responseBody!!).contains(
         ValidationError("dateOfBirth", ErrorMessages.DOB_REQUIRED),
       )
-
       Assertions.assertThat(result.responseBody!!).contains(
         ValidationError(
           "interpreterRequired",
@@ -295,6 +294,41 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
       Assertions.assertThat(result.responseBody!!).contains(
         ValidationError("language", ErrorMessages.LANGUAGE_REQUIRED),
       )
+    }
+
+    @ParameterizedTest(name = "it should update sex with valid value - {0}")
+    @ValueSource(strings = ["MALE", "FEMALE", "PREFER_NOT_TO_SAY", "UNKNOWN"])
+    fun `it should allow Sex to be updated with valid values`(sex: String) {
+      val order = createOrder()
+
+      val deviceWearer = webTestClient.put()
+        .uri("/api/orders/${order.id}/device-wearer")
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(
+          BodyInserters.fromValue(
+            """
+            {
+              "firstName": "$mockFirstName",
+              "lastName": "$mockLastName",
+              "alias": "$mockAlias",
+              "adultAtTimeOfInstallation": "false",
+              "sex": "$sex",
+              "gender": "$mockGender",
+              "dateOfBirth": "$mockDateOfBirth",
+              "interpreterRequired": false,
+              "language": ""
+            }
+            """.trimIndent(),
+          ),
+        )
+        .headers(setAuthorisation("AUTH_ADM"))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody(DeviceWearer::class.java)
+        .returnResult()
+
+      Assertions.assertThat(deviceWearer.responseBody?.sex).isEqualTo(sex)
     }
   }
 
