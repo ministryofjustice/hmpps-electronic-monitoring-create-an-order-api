@@ -210,9 +210,16 @@ data class DeviceWearer(
         order.deviceWearerResponsibleAdult!!.contactNumber!!,
       )
     }
-    private fun getSex(order: Order): String = Sex.from(order.deviceWearer?.sex)?.value
-      ?: order.deviceWearer?.sex
-      ?: ""
+
+    private fun getSex(order: Order): String {
+      val sex = Sex.from(order.deviceWearer?.sex)
+
+      if (sex == Sex.UNKNOWN) {
+        return Sex.PREFER_NOT_TO_SAY.value
+      }
+
+      return sex?.value ?: order.deviceWearer?.sex ?: ""
+    }
   }
 }
 

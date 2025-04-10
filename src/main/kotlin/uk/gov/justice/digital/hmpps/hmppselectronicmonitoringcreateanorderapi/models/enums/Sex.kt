@@ -4,7 +4,7 @@ enum class Sex(val value: String) {
   MALE("Male"),
   FEMALE("Female"),
   PREFER_NOT_TO_SAY("Prefer Not to Say"),
-  UNKNOWN(""),
+  UNKNOWN("Unknown"),
   ;
 
   companion object {
