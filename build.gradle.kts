@@ -14,7 +14,7 @@ repositories {
 
 dependencies {
   implementation("commons-io:commons-io:2.18.0")
-  implementation("com.googlecode.libphonenumber:libphonenumber:9.0.2")
+  implementation("com.googlecode.libphonenumber:libphonenumber:9.0.3")
   implementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter:1.4.2")
   implementation("org.springframework.boot:spring-boot-starter-webflux")
   implementation("org.springframework.boot:spring-boot-starter-security")
@@ -24,7 +24,7 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
   implementation("io.awspring.cloud:spring-cloud-aws-starter-s3")
   implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:5.4.2")
-  implementation("io.sentry:sentry-spring-boot-starter-jakarta:8.6.0")
+  implementation("io.sentry:sentry-spring-boot-starter-jakarta:8.7.0")
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.6")
   runtimeOnly("org.flywaydb:flyway-database-postgresql")
   runtimeOnly("org.postgresql:postgresql:42.7.5")
