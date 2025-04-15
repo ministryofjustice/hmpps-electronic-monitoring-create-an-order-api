@@ -33,6 +33,8 @@ data class UpdateDeviceWearerDto(
 
   val disabilities: String? = null,
 
+  val otherDisability: String? = null,
+
   val language: String? = null,
 
   @field:NotNull(

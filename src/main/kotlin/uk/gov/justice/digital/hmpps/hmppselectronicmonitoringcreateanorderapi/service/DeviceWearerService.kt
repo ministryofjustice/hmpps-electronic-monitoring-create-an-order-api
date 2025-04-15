@@ -24,6 +24,7 @@ class DeviceWearerService : OrderSectionServiceBase() {
       gender = updateRecord.gender,
       dateOfBirth = updateRecord.dateOfBirth,
       disabilities = updateRecord.disabilities,
+      otherDisability = updateRecord.otherDisability,
       language = updateRecord.language,
       interpreterRequired = updateRecord.interpreterRequired,
       noFixedAbode = order.deviceWearer?.noFixedAbode,

@@ -30,6 +30,7 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
   private val mockSex: String = "MALE"
   private val mockGender: String = "mockGender"
   private val mockDisabilities: String = "mockDisabilities"
+  private val mockOtherDisability: String = "mockOtherDisabilities"
   private val mockLanguage: String = "mockLanguage"
   private val mockHomeOfficeReferenceNumber: String = "mockHomeOfficeReferenceNumber"
   private val mockDateOfBirth: ZonedDateTime = ZonedDateTime.of(
@@ -78,6 +79,7 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
               "gender": "$mockGender",
               "dateOfBirth": "$mockDateOfBirth",
               "disabilities": "$mockDisabilities",
+              "otherDisability": "$mockOtherDisability",
               "interpreterRequired": true,
               "language": "$mockLanguage"
             }
@@ -101,6 +103,7 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
       Assertions.assertThat(updateDeviceWearer.responseBody?.gender).isEqualTo(mockGender)
       Assertions.assertThat(updateDeviceWearer.responseBody?.dateOfBirth).isEqualTo(mockDateOfBirth)
       Assertions.assertThat(updateDeviceWearer.responseBody?.disabilities).isEqualTo(mockDisabilities)
+      Assertions.assertThat(updateDeviceWearer.responseBody?.otherDisability).isEqualTo(mockOtherDisability)
       Assertions.assertThat(updateDeviceWearer.responseBody?.interpreterRequired).isEqualTo(true)
       Assertions.assertThat(updateDeviceWearer.responseBody?.language).isEqualTo(mockLanguage)
     }
