@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Past
 import jakarta.validation.constraints.Size
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.data.ValidationErrors
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Disability
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Sex
 import java.time.ZonedDateTime
 
@@ -47,6 +48,14 @@ data class UpdateDeviceWearerDto(
   fun isLanguage(): Boolean {
     if (this.interpreterRequired != null && this.interpreterRequired) {
       return this.language != null && this.language != ""
+    }
+    return true
+  }
+
+  @AssertTrue(message = ValidationErrors.DeviceWearer.OTHER_DISABILITY)
+  fun isDisabilities(): Boolean {
+    if (this.disabilities == Disability.OTHER.name) {
+      return !this.otherDisability.isNullOrBlank()
     }
     return true
   }

@@ -49,6 +49,7 @@ object ValidationErrors {
     const val DOB_MUST_BE_IN_PAST: String = "Date of birth must be in the past"
     const val INTERPRETER_REQUIRED: String = "Select yes if the device wearer requires an interpreter"
     const val LANGUAGE_REQUIRED: String = "Select the language required"
+    const val OTHER_DISABILITY: String = "Enter device wearer's disability detail"
   }
 
   // This may be "Exclusion Zone" in the front end, but also "Inclusion Zone"?

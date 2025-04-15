@@ -51,6 +51,7 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
     const val INTERPRETER_REQUIRED: String = "Select yes if the device wearer requires an interpreter"
     const val LANGUAGE_REQUIRED: String = "Select the language required"
     const val NO_FIXED_ABODE_REQUIRED: String = "Select yes if the device wearer has a fixed address"
+    const val OTHER_DISABILITY: String = "Enter device wearer's disability detail"
   }
 
   @BeforeEach
@@ -296,6 +297,45 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
       Assertions.assertThat(result.responseBody).hasSize(1)
       Assertions.assertThat(result.responseBody!!).contains(
         ValidationError("language", ErrorMessages.LANGUAGE_REQUIRED),
+      )
+    }
+
+    @Test
+    fun `it should return an error if disabilities is OTHER and otherDisability is not set`() {
+      val order = createOrder()
+      val result = webTestClient.put()
+        .uri("/api/orders/${order.id}/device-wearer")
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(
+          BodyInserters.fromValue(
+            """
+            {
+              "firstName": "$mockFirstName",
+              "lastName": "$mockLastName",
+              "alias": "$mockAlias",
+              "adultAtTimeOfInstallation": "false",
+              "sex": "$mockSex",
+              "gender": "$mockGender",
+              "dateOfBirth": "$mockDateOfBirth",
+              "disabilities": "OTHER",
+              "otherDisability": "",
+              "interpreterRequired": true,
+              "language": "$mockLanguage"
+            }
+            """.trimIndent(),
+          ),
+        )
+        .headers(setAuthorisation("AUTH_ADM"))
+        .exchange()
+        .expectStatus()
+        .isBadRequest
+        .expectBodyList(ValidationError::class.java)
+        .returnResult()
+
+      Assertions.assertThat(result.responseBody).isNotNull
+      Assertions.assertThat(result.responseBody).hasSize(1)
+      Assertions.assertThat(result.responseBody!!).contains(
+        ValidationError("disabilities", ErrorMessages.OTHER_DISABILITY),
       )
     }
 
