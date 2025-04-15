@@ -69,6 +69,9 @@ data class DeviceWearer(
   @Column(name = "DISABILITIES", nullable = true)
   var disabilities: String? = null,
 
+  @Column(name = "OTHER_DISABILITY", nullable = true)
+  val otherDisability: String? = null,
+
   @Column(name = "NO_FIXED_ABODE", nullable = true)
   var noFixedAbode: Boolean? = null,
 
