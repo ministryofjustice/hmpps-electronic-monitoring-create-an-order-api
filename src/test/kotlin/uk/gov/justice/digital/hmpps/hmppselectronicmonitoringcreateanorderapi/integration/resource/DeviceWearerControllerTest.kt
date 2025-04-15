@@ -317,7 +317,7 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
               "sex": "$mockSex",
               "gender": "$mockGender",
               "dateOfBirth": "$mockDateOfBirth",
-              "disabilities": "OTHER",
+              "disabilities": "VISION,HEARING,OTHER",
               "otherDisability": "",
               "interpreterRequired": true,
               "language": "$mockLanguage"
