@@ -51,7 +51,7 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
     const val INTERPRETER_REQUIRED: String = "Select yes if the device wearer requires an interpreter"
     const val LANGUAGE_REQUIRED: String = "Select the language required"
     const val NO_FIXED_ABODE_REQUIRED: String = "Select yes if the device wearer has a fixed address"
-    const val OTHER_DISABILITY: String = "Enter device wearer's disability detail"
+    const val OTHER_DISABILITY: String = "Enter device wearer's disability or health condition"
   }
 
   @BeforeEach
