@@ -1880,7 +1880,7 @@ class OrderControllerTest : IntegrationTestBase() {
       dateOfBirth = ZonedDateTime.of(1990, 1, 1, 1, 1, 1, 1, ZoneId.systemDefault()),
       adultAtTimeOfInstallation = true,
       sex = "MALE",
-      gender = "Male",
+      gender = "MALE",
       disabilities = "VISION,LEARNING_UNDERSTANDING_CONCENTRATING",
       interpreterRequired = true,
       language = "British Sign",
