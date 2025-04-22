@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.m
 import com.fasterxml.jackson.annotation.JsonProperty
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Gender
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Sex
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.formatters.PhoneNumberFormatter
 import java.time.format.DateTimeFormatter
@@ -156,7 +157,7 @@ data class DeviceWearer(
         dateOfBirth = order.deviceWearer?.dateOfBirth?.format(formatter) ?: "",
         adultChild = adultChild,
         sex = getSex(order),
-        genderIdentity = order.deviceWearer?.gender ?: "",
+        genderIdentity = getGender(order),
         disability = disabilities,
         phoneNumber = getPhoneNumber(order),
         riskDetails = order.installationAndRisk?.riskDetails,
@@ -220,6 +221,8 @@ data class DeviceWearer(
 
       return sex?.value ?: order.deviceWearer?.sex ?: ""
     }
+
+    private fun getGender(order: Order): String = Gender.from(order.deviceWearer?.gender)?.value ?: ""
   }
 }
 
