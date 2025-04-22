@@ -222,7 +222,8 @@ data class DeviceWearer(
       return sex?.value ?: order.deviceWearer?.sex ?: ""
     }
 
-    private fun getGender(order: Order): String = Gender.from(order.deviceWearer?.gender)?.value ?: ""
+    private fun getGender(order: Order): String =
+      Gender.from(order.deviceWearer?.gender)?.value ?: order.deviceWearer?.gender ?: ""
   }
 }
 
