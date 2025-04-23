@@ -28,7 +28,7 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
   private val mockLastName: String = "mockLastName"
   private val mockAlias: String = "mockAlias"
   private val mockSex: String = "MALE"
-  private val mockGender: String = "mockGender"
+  private val mockGender: String = "MALE"
   private val mockDisabilities: String = "mockDisabilities"
   private val mockLanguage: String = "mockLanguage"
   private val mockHomeOfficeReferenceNumber: String = "mockHomeOfficeReferenceNumber"
@@ -329,6 +329,43 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
         .returnResult()
 
       Assertions.assertThat(deviceWearer.responseBody?.sex).isEqualTo(sex)
+    }
+
+    @ParameterizedTest(name = "it should update gender with valid value - {0}")
+    @ValueSource(
+      strings = ["MALE", "FEMALE", "NON_BINARY", "PREFER_TO_SELF_DESCRIBE", "NOT_ABLE_TO_PROVIDE_THIS_INFORMATION"],
+    )
+    fun `it should allow Gender to be updated with valid values`(gender: String) {
+      val order = createOrder()
+
+      val deviceWearer = webTestClient.put()
+        .uri("/api/orders/${order.id}/device-wearer")
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(
+          BodyInserters.fromValue(
+            """
+            {
+              "firstName": "$mockFirstName",
+              "lastName": "$mockLastName",
+              "alias": "$mockAlias",
+              "adultAtTimeOfInstallation": "false",
+              "sex": "$mockSex",
+              "gender": "$gender",
+              "dateOfBirth": "$mockDateOfBirth",
+              "interpreterRequired": false,
+              "language": ""
+            }
+            """.trimIndent(),
+          ),
+        )
+        .headers(setAuthorisation("AUTH_ADM"))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody(DeviceWearer::class.java)
+        .returnResult()
+
+      Assertions.assertThat(deviceWearer.responseBody?.gender).isEqualTo(gender)
     }
   }
 
