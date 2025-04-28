@@ -30,6 +30,7 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
   private val mockSex: String = "MALE"
   private val mockGender: String = "MALE"
   private val mockDisabilities: String = "mockDisabilities"
+  private val mockOtherDisability: String = "mockOtherDisabilities"
   private val mockLanguage: String = "mockLanguage"
   private val mockHomeOfficeReferenceNumber: String = "mockHomeOfficeReferenceNumber"
   private val mockDateOfBirth: ZonedDateTime = ZonedDateTime.of(
@@ -50,6 +51,7 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
     const val INTERPRETER_REQUIRED: String = "Select yes if the device wearer requires an interpreter"
     const val LANGUAGE_REQUIRED: String = "Select the language required"
     const val NO_FIXED_ABODE_REQUIRED: String = "Select yes if the device wearer has a fixed address"
+    const val OTHER_DISABILITY: String = "Enter device wearer's disability or health condition"
   }
 
   @BeforeEach
@@ -78,6 +80,7 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
               "gender": "$mockGender",
               "dateOfBirth": "$mockDateOfBirth",
               "disabilities": "$mockDisabilities",
+              "otherDisability": "$mockOtherDisability",
               "interpreterRequired": true,
               "language": "$mockLanguage"
             }
@@ -101,6 +104,7 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
       Assertions.assertThat(updateDeviceWearer.responseBody?.gender).isEqualTo(mockGender)
       Assertions.assertThat(updateDeviceWearer.responseBody?.dateOfBirth).isEqualTo(mockDateOfBirth)
       Assertions.assertThat(updateDeviceWearer.responseBody?.disabilities).isEqualTo(mockDisabilities)
+      Assertions.assertThat(updateDeviceWearer.responseBody?.otherDisability).isEqualTo(mockOtherDisability)
       Assertions.assertThat(updateDeviceWearer.responseBody?.interpreterRequired).isEqualTo(true)
       Assertions.assertThat(updateDeviceWearer.responseBody?.language).isEqualTo(mockLanguage)
     }
@@ -293,6 +297,45 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
       Assertions.assertThat(result.responseBody).hasSize(1)
       Assertions.assertThat(result.responseBody!!).contains(
         ValidationError("language", ErrorMessages.LANGUAGE_REQUIRED),
+      )
+    }
+
+    @Test
+    fun `it should return an error if disabilities is OTHER and otherDisability is not set`() {
+      val order = createOrder()
+      val result = webTestClient.put()
+        .uri("/api/orders/${order.id}/device-wearer")
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(
+          BodyInserters.fromValue(
+            """
+            {
+              "firstName": "$mockFirstName",
+              "lastName": "$mockLastName",
+              "alias": "$mockAlias",
+              "adultAtTimeOfInstallation": "false",
+              "sex": "$mockSex",
+              "gender": "$mockGender",
+              "dateOfBirth": "$mockDateOfBirth",
+              "disabilities": "VISION,HEARING,OTHER",
+              "otherDisability": "",
+              "interpreterRequired": true,
+              "language": "$mockLanguage"
+            }
+            """.trimIndent(),
+          ),
+        )
+        .headers(setAuthorisation("AUTH_ADM"))
+        .exchange()
+        .expectStatus()
+        .isBadRequest
+        .expectBodyList(ValidationError::class.java)
+        .returnResult()
+
+      Assertions.assertThat(result.responseBody).isNotNull
+      Assertions.assertThat(result.responseBody).hasSize(1)
+      Assertions.assertThat(result.responseBody!!).contains(
+        ValidationError("otherDisability", ErrorMessages.OTHER_DISABILITY),
       )
     }
 
