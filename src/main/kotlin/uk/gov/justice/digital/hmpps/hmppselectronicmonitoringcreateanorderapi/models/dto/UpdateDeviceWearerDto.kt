@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Past
 import jakarta.validation.constraints.Size
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.data.ValidationErrors
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Disability
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Gender
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Sex
 import java.time.ZonedDateTime
 
@@ -25,7 +26,6 @@ data class UpdateDeviceWearerDto(
 
   var sex: String? = null,
 
-  @field:Size(min = 1, message = ValidationErrors.DeviceWearer.GENDER_REQUIRED)
   val gender: String? = null,
 
   @field:NotNull(message = ValidationErrors.DeviceWearer.DOB_REQUIRED)
@@ -65,4 +65,7 @@ data class UpdateDeviceWearerDto(
 
   @AssertTrue(message = ValidationErrors.DeviceWearer.SEX_REQUIRED)
   fun isSex(): Boolean = Sex.from(sex) != null
+
+  @AssertTrue(message = ValidationErrors.DeviceWearer.GENDER_REQUIRED)
+  fun isGender(): Boolean = Gender.from(gender) != null
 }
