@@ -53,7 +53,7 @@ data class UpdateDeviceWearerDto(
   }
 
   @AssertTrue(message = ValidationErrors.DeviceWearer.OTHER_DISABILITY)
-  fun isDisabilities(): Boolean {
+  fun isOtherDisability(): Boolean {
     if (this.disabilities != null) {
       val disabilities = Disability.getValuesFromEnumString(this.disabilities)
       if (disabilities.contains(Disability.OTHER.value)) {

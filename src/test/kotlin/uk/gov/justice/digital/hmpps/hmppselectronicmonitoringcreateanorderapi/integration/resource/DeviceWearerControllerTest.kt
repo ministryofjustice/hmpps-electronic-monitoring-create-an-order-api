@@ -335,7 +335,7 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
       Assertions.assertThat(result.responseBody).isNotNull
       Assertions.assertThat(result.responseBody).hasSize(1)
       Assertions.assertThat(result.responseBody!!).contains(
-        ValidationError("disabilities", ErrorMessages.OTHER_DISABILITY),
+        ValidationError("otherDisability", ErrorMessages.OTHER_DISABILITY),
       )
     }
 
