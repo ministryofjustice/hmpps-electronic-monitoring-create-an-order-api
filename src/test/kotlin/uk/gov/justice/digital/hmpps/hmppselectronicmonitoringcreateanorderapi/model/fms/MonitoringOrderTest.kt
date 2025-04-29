@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.m
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.test.context.ActiveProfiles
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.EnforceableCondition
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.MonitoringOrder
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.Zone
 
@@ -32,6 +33,13 @@ class MonitoringOrderTest : FmsTestBase() {
           start = "2025-01-01 12:00:00",
           end = "2025-02-01 13:00:00",
         ),
+      ),
+    )
+    assertThat(fmsMonitoringOrder.enforceableCondition).contains(
+      EnforceableCondition(
+        condition = "Attendance Monitoring",
+        startDate = "2025-01-01 01:01:01",
+        endDate = "2025-02-01 01:01:01",
       ),
     )
   }
