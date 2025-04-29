@@ -77,3 +77,4 @@ sonar-project.properties
 
 # Environment variables
 .env
+environments
