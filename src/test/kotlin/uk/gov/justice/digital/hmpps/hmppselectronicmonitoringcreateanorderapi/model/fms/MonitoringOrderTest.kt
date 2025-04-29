@@ -37,7 +37,7 @@ class MonitoringOrderTest : FmsTestBase() {
     )
     assertThat(fmsMonitoringOrder.enforceableCondition).contains(
       EnforceableCondition(
-        condition = "Attendance Monitoring",
+        condition = "Attendance Requirement",
         startDate = "2025-01-01 01:01:01",
         endDate = "2025-02-01 01:01:01",
       ),

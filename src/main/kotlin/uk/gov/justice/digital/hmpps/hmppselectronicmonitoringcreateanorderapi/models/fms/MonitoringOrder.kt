@@ -298,7 +298,7 @@ data class MonitoringOrder(
       if (conditions.mandatoryAttendance != null && conditions.mandatoryAttendance!!) {
         monitoringOrder.enforceableCondition!!.add(
           EnforceableCondition(
-            "Attendance Monitoring",
+            "Attendance Requirement",
             startDate = conditions.startDate?.format(dateTimeFormatter) ?: "",
             endDate = conditions.endDate?.format(dateTimeFormatter) ?: "",
           ),
