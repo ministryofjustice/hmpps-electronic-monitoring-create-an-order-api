@@ -172,8 +172,8 @@ abstract class FmsTestBase {
   )
 
   protected fun createMandatoryAttendanceCondition(
-    endDate: LocalDate = LocalDate.of(2025, 1, 1),
-    startDate: LocalDate = LocalDate.of(2025, 2, 1),
+    endDate: LocalDate = LocalDate.of(2025, 2, 1),
+    startDate: LocalDate = LocalDate.of(2025, 1, 1),
     postcode: String = "AB11 1CD",
     addressLine1: String = "Line 1",
     addressLine2: String = "Line 2",

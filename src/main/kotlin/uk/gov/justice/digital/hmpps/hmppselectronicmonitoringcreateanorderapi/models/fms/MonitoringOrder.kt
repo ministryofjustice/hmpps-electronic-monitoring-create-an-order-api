@@ -19,6 +19,8 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YouthJusticeServiceRegions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.formatters.PhoneNumberFormatter
 import java.time.DayOfWeek
+import java.time.LocalDateTime
+import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
 data class MonitoringOrder(
@@ -294,9 +296,10 @@ data class MonitoringOrder(
       }
 
       // TODO: wait for confirmation if mandatory attendance is required
-//      if(conditions.mandatoryAttendance!=null && conditions.mandatoryAttendance!!){
+      if (conditions.mandatoryAttendance != null && conditions.mandatoryAttendance!!) {
+        monitoringOrder.inclusionZones.addAll(getInclusionZones(order))
 //        mo.enforceableCondition!!.add(EnforceableCondition("Attendance requirement"))
-//      }
+      }
 
       if (conditions.alcohol != null && conditions.alcohol!!) {
         val condition = order.monitoringConditionsAlcohol!!
@@ -437,6 +440,28 @@ data class MonitoringOrder(
 
       return PhoneNumberFormatter.formatAsInternationalDirectDialingNumber(
         order.interestedParties!!.responsibleOrganisationPhoneNumber!!,
+      )
+    }
+
+    private fun getInclusionZones(order: Order): List<Zone> = order.mandatoryAttendanceConditions.map {
+      Zone(
+        description = it.purpose + "\n" +
+          it.appointmentDay + "\n" +
+          it.addressLine1 + "\n" +
+          it.addressLine2 + "\n" +
+          it.addressLine3 + "\n" +
+          it.addressLine4 + "\n" +
+          it.postcode + "\n",
+        duration = "",
+        start =
+        LocalDateTime.of(
+          it.startDate,
+          LocalTime.parse(it.startTime ?: ""),
+        ).format(dateTimeFormatter),
+        end = LocalDateTime.of(
+          it.endDate,
+          LocalTime.parse(it.endTime ?: ""),
+        ).format(dateTimeFormatter),
       )
     }
   }

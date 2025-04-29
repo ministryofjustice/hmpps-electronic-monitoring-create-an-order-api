@@ -21,18 +21,13 @@ class MonitoringOrderTest : FmsTestBase() {
     assertThat(fmsMonitoringOrder.inclusionZones).isEqualTo(
       listOf(
         Zone(
-          description =
-          order.mandatoryAttendanceConditions[0].purpose + "\n" +
-            order.mandatoryAttendanceConditions[0].appointmentDay +
-            "\n" + order.mandatoryAttendanceConditions[0].addressLine1 + "\n" +
-            order.mandatoryAttendanceConditions[0].addressLine2 +
-            "\n" +
-            order.mandatoryAttendanceConditions[0].addressLine3 +
-            "\n" +
-            order.mandatoryAttendanceConditions[0].addressLine4 +
-            "\n" +
-            order.mandatoryAttendanceConditions[0].postcode +
-            "\n",
+          description = order.mandatoryAttendanceConditions[0].purpose + "\n" +
+            order.mandatoryAttendanceConditions[0].appointmentDay + "\n" +
+            order.mandatoryAttendanceConditions[0].addressLine1 + "\n" +
+            order.mandatoryAttendanceConditions[0].addressLine2 + "\n" +
+            order.mandatoryAttendanceConditions[0].addressLine3 + "\n" +
+            order.mandatoryAttendanceConditions[0].addressLine4 + "\n" +
+            order.mandatoryAttendanceConditions[0].postcode + "\n",
           duration = "",
           start = "2025-01-01 12:00:00",
           end = "2025-02-01 13:00:00",
