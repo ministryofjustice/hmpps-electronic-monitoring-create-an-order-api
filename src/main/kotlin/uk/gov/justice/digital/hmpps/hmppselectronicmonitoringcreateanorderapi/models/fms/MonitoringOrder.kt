@@ -295,10 +295,15 @@ data class MonitoringOrder(
         monitoringOrder.trailMonitoring = "No"
       }
 
-      // TODO: wait for confirmation if mandatory attendance is required
       if (conditions.mandatoryAttendance != null && conditions.mandatoryAttendance!!) {
+        monitoringOrder.enforceableCondition!!.add(
+          EnforceableCondition(
+            "Attendance Monitoring",
+            startDate = conditions.startDate?.format(dateTimeFormatter) ?: "",
+            endDate = conditions.endDate?.format(dateTimeFormatter) ?: "",
+          ),
+        )
         monitoringOrder.inclusionZones.addAll(getInclusionZones(order))
-//        mo.enforceableCondition!!.add(EnforceableCondition("Attendance requirement"))
       }
 
       if (conditions.alcohol != null && conditions.alcohol!!) {
