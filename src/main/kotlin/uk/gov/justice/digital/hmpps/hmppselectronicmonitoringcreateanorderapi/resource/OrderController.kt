@@ -84,6 +84,7 @@ class OrderController(@Autowired val orderService: OrderService) {
     deviceWearerResponsibleAdult = order.deviceWearerResponsibleAdult,
     enforcementZoneConditions = order.enforcementZoneConditions,
     fmsResultId = order.fmsResultId,
+    fmsResultDate = order.fmsResultDate,
     installationAndRisk = order.installationAndRisk,
     interestedParties = order.interestedParties,
     isValid = order.isValid,

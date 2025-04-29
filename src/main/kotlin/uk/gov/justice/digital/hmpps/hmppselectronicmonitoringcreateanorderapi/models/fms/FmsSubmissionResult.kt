@@ -13,6 +13,7 @@ import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.SubmissionStatus
+import java.time.OffsetDateTime
 import java.util.*
 
 @Entity
@@ -24,6 +25,9 @@ data class FmsSubmissionResult(
 
   @Column(name = "ORDER_ID", nullable = false)
   val orderId: UUID,
+
+  @Column(name = "SUBMISSION_DATE", nullable = false)
+  val submissionDate: OffsetDateTime = OffsetDateTime.now(),
 
   @Enumerated(EnumType.STRING)
   @Column(name = "SUBMISSION_STRATEGY", nullable = false)

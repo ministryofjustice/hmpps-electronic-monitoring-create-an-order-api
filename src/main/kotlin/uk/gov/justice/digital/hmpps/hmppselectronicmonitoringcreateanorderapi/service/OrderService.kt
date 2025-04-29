@@ -84,6 +84,7 @@ class OrderService(val repo: OrderRepository, val fmsService: FmsService) {
       try {
         val submitResult = fmsService.submitOrder(order, FmsOrderSource.CEMO)
         order.fmsResultId = submitResult.id
+        order.fmsResultDate = submitResult.submissionDate
 
         if (!submitResult.partialSuccess) {
           order.status = OrderStatus.ERROR

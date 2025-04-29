@@ -17,6 +17,7 @@ import jakarta.persistence.UniqueConstraint
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
+import java.time.OffsetDateTime
 import java.util.UUID
 
 @Entity
@@ -50,6 +51,9 @@ data class OrderVersion(
 
   @Column(name = "FMS_RESULT_ID", nullable = true)
   var fmsResultId: UUID? = null,
+
+  @Column(name = "FMS_RESULT_DATE", nullable = true)
+  var fmsResultDate: OffsetDateTime? = null,
 
   @OneToOne(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "version", orphanRemoval = true)
   var deviceWearer: DeviceWearer? = null,

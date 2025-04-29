@@ -9,6 +9,7 @@ import jakarta.persistence.OneToMany
 import jakarta.persistence.Table
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
+import java.time.OffsetDateTime
 import java.util.*
 
 @Entity
@@ -119,6 +120,14 @@ data class Order(
     }
     set(fmsResultId) {
       getCurrentVersion().fmsResultId = fmsResultId
+    }
+
+  var fmsResultDate: OffsetDateTime?
+    get() {
+      return getCurrentVersion().fmsResultDate
+    }
+    set(fmsResultDate) {
+      getCurrentVersion().fmsResultDate = fmsResultDate
     }
 
   var installationAndRisk: InstallationAndRisk?

@@ -18,6 +18,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.VariationDetails
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
+import java.time.OffsetDateTime
 import java.util.*
 
 data class OrderDto(
@@ -42,6 +43,8 @@ data class OrderDto(
   val enforcementZoneConditions: MutableList<EnforcementZoneConditions>?,
 
   val fmsResultId: UUID?,
+
+  val fmsResultDate: OffsetDateTime?,
 
   val installationAndRisk: InstallationAndRisk?,
 
