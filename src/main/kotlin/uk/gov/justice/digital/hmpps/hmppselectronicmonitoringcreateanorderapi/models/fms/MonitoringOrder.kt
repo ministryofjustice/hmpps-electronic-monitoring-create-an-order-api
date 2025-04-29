@@ -19,8 +19,6 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YouthJusticeServiceRegions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.formatters.PhoneNumberFormatter
 import java.time.DayOfWeek
-import java.time.LocalDateTime
-import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
 data class MonitoringOrder(
@@ -451,22 +449,15 @@ data class MonitoringOrder(
     private fun getInclusionZones(order: Order): List<Zone> = order.mandatoryAttendanceConditions.map {
       Zone(
         description = it.purpose + "\n" +
-          it.appointmentDay + "\n" +
+          it.appointmentDay + " " + it.startTime + "-" + it.endTime + "\n" +
           it.addressLine1 + "\n" +
           it.addressLine2 + "\n" +
           it.addressLine3 + "\n" +
           it.addressLine4 + "\n" +
           it.postcode + "\n",
         duration = "",
-        start =
-        LocalDateTime.of(
-          it.startDate,
-          LocalTime.parse(it.startTime ?: ""),
-        ).format(dateTimeFormatter),
-        end = LocalDateTime.of(
-          it.endDate,
-          LocalTime.parse(it.endTime ?: ""),
-        ).format(dateTimeFormatter),
+        start = it.startDate?.format(dateFormatter),
+        end = it.endDate?.format(dateFormatter),
       )
     }
   }
