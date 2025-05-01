@@ -33,10 +33,6 @@ data class InterestedParties(
   @Column(name = "RESPONSIBLE_ORGANISATION_REGION", nullable = false)
   var responsibleOrganisationRegion: String,
 
-  @Column(name = "RESPONSIBLE_ORGANISATION_PHONE_NUMBER", nullable = true)
-  @field:ValidPhoneNumber
-  var responsibleOrganisationPhoneNumber: String?,
-
   @Column(name = "RESPONSIBLE_ORGANISATION_EMAIL", nullable = false)
   var responsibleOrganisationEmail: String,
 
@@ -53,9 +49,4 @@ data class InterestedParties(
   @OneToOne
   @JoinColumn(name = "VERSION_ID", updatable = false, insertable = false)
   private val version: OrderVersion? = null,
-
-  @Schema(hidden = true)
-  @OneToOne
-  @JoinColumn(name = "RESPONSIBLE_ORGANISATION_ADDRESS_ID")
-  val responsibleOrganisationAddress: Address,
 )

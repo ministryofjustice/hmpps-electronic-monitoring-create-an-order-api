@@ -160,16 +160,6 @@ class OrderServiceTest {
       contactNumber = "07401111111",
     )
 
-    val responsibleOrganisationAddress = Address(
-      versionId = versionId,
-      addressLine1 = "Line 1",
-      addressLine2 = "Line 2",
-      addressLine3 = "",
-      addressLine4 = "",
-      postcode = "AB11 1CD",
-      addressType = AddressType.RESPONSIBLE_ORGANISATION,
-    )
-
     val installationAddress = Address(
       versionId = versionId,
       addressLine1 = "24 Somewhere Street",
@@ -201,14 +191,12 @@ class OrderServiceTest {
             postcode = "SW11 1NC",
             addressType = AddressType.SECONDARY,
           ),
-          responsibleOrganisationAddress,
           installationAddress,
         ),
       )
     } else {
       order.addresses.addAll(
         mutableListOf(
-          responsibleOrganisationAddress,
           installationAddress,
         ),
       )
@@ -318,8 +306,6 @@ class OrderServiceTest {
       responsibleOfficerPhoneNumber = "07401111111",
       responsibleOrganisation = "Avon and Somerset Constabulary",
       responsibleOrganisationRegion = "Mock Region",
-      responsibleOrganisationAddress = responsibleOrganisationAddress,
-      responsibleOrganisationPhoneNumber = "07401111111",
       responsibleOrganisationEmail = "abc@def.com",
       notifyingOrganisation = "Mock Organisation",
       notifyingOrganisationName = "",

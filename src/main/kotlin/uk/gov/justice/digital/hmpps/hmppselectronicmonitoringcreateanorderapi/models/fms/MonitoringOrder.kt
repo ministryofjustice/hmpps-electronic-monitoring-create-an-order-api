@@ -339,17 +339,8 @@ data class MonitoringOrder(
         monitoringOrder.responsibleOfficerPhone = getResponsibleOfficerPhoneNumber(order)
         monitoringOrder.responsibleOrganization = getResponsibleOrganisation(order)
         monitoringOrder.roRegion = getResponsibleOrganisationRegion(order)
-        monitoringOrder.roPhone = getResponsibleOrganisationPhoneNumber(order)
         monitoringOrder.roEmail = interestedParties.responsibleOrganisationEmail
         monitoringOrder.notifyingOrganization = getNotifyingOrganisation(order)
-        val address = order.addresses.firstOrNull { it.addressType == AddressType.RESPONSIBLE_ORGANISATION }
-        if (address != null) {
-          monitoringOrder.roAddress1 = address.addressLine1
-          monitoringOrder.roAddress2 = address.addressLine2
-          monitoringOrder.roAddress3 = address.addressLine3
-          monitoringOrder.roAddress4 = address.addressLine4
-          monitoringOrder.roPostCode = address.postcode
-        }
         monitoringOrder.noName = getNotifyingOrganisationName(order)
         monitoringOrder.noEmail = interestedParties.notifyingOrganisationEmail
       }
@@ -433,16 +424,6 @@ data class MonitoringOrder(
       }
       return PhoneNumberFormatter.formatAsInternationalDirectDialingNumber(
         order.interestedParties!!.responsibleOfficerPhoneNumber!!,
-      )
-    }
-
-    private fun getResponsibleOrganisationPhoneNumber(order: Order): String? {
-      if (order.interestedParties?.responsibleOrganisationPhoneNumber == null) {
-        return null
-      }
-
-      return PhoneNumberFormatter.formatAsInternationalDirectDialingNumber(
-        order.interestedParties!!.responsibleOrganisationPhoneNumber!!,
       )
     }
 
