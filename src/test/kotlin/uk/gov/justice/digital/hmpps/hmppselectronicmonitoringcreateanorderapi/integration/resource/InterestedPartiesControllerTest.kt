@@ -12,8 +12,6 @@ import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.data.ValidationErrors
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InterestedParties
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DeviceWearerAddressUsage
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ResponsibleOrganisation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidationError
@@ -28,13 +26,7 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
   private val mockResponsibleOfficerPhoneNumber = "01234567890"
   private val mockResponsibleOrganisation = ResponsibleOrganisation.HOME_OFFICE.toString()
   private val mockResponsibleOrganisationRegion = ""
-  private val mockResponsibleOrganisationPhoneNumber = "01234567890"
   private val mockResponsibleOrganisationEmail = "mockResponsibleOrganisationEmail"
-  private val mockAddressLine1 = "mockAddressLine1"
-  private val mockAddressLine2 = "mockAddressLine2"
-  private val mockAddressLine3 = "mockAddressLine3"
-  private val mockAddressLine4 = "mockAddressLine4"
-  private val mockPostcode = "mockPostcode"
 
   private val mockValidRequest = """
     {
@@ -45,13 +37,7 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
       "responsibleOfficerPhoneNumber": "$mockResponsibleOfficerPhoneNumber",
       "responsibleOrganisation": "$mockResponsibleOrganisation",
       "responsibleOrganisationRegion": "$mockResponsibleOrganisationRegion",
-      "responsibleOrganisationPhoneNumber": "$mockResponsibleOrganisationPhoneNumber",
-      "responsibleOrganisationEmail": "$mockResponsibleOrganisationEmail",
-      "responsibleOrganisationAddressLine1": "$mockAddressLine1",
-      "responsibleOrganisationAddressLine2": "$mockAddressLine2",
-      "responsibleOrganisationAddressLine3": "$mockAddressLine3",
-      "responsibleOrganisationAddressLine4": "$mockAddressLine4",
-      "responsibleOrganisationAddressPostcode": "$mockPostcode"
+      "responsibleOrganisationEmail": "$mockResponsibleOrganisationEmail"
     }
   """.trimIndent()
 
@@ -139,21 +125,7 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
       Assertions.assertThat(
         interestedParties.responsibleOrganisationRegion,
       ).isEqualTo(mockResponsibleOrganisationRegion)
-      Assertions.assertThat(
-        interestedParties.responsibleOrganisationPhoneNumber,
-      ).isEqualTo(mockResponsibleOrganisationPhoneNumber)
       Assertions.assertThat(interestedParties.responsibleOrganisationEmail).isEqualTo(mockResponsibleOrganisationEmail)
-      Assertions.assertThat(
-        interestedParties.responsibleOrganisationAddress.addressType,
-      ).isEqualTo(AddressType.RESPONSIBLE_ORGANISATION)
-      Assertions.assertThat(interestedParties.responsibleOrganisationAddress.addressLine1).isEqualTo(mockAddressLine1)
-      Assertions.assertThat(interestedParties.responsibleOrganisationAddress.addressLine2).isEqualTo(mockAddressLine2)
-      Assertions.assertThat(interestedParties.responsibleOrganisationAddress.addressLine3).isEqualTo(mockAddressLine3)
-      Assertions.assertThat(interestedParties.responsibleOrganisationAddress.addressLine4).isEqualTo(mockAddressLine4)
-      Assertions.assertThat(interestedParties.responsibleOrganisationAddress.postcode).isEqualTo(mockPostcode)
-      Assertions.assertThat(
-        interestedParties.responsibleOrganisationAddress.addressUsage,
-      ).isEqualTo(DeviceWearerAddressUsage.NA)
     }
 
     @Test
@@ -170,8 +142,7 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
               "notifyingOrganisation": "PROBATION",
               "responsibleOrganisation": "HOME_OFFICE",
               "responsibleOfficerName": "Jeff",
-              "responsibleOfficerPhoneNumber": "01234567890",
-              "responsibleOrganisationPhoneNumber": "01234567890"
+              "responsibleOfficerPhoneNumber": "01234567890"
             }
             """.trimIndent(),
           ),
@@ -191,21 +162,7 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
       Assertions.assertThat(interestedParties.responsibleOfficerPhoneNumber).isEqualTo("01234567890")
       Assertions.assertThat(interestedParties.responsibleOrganisation).isEqualTo("HOME_OFFICE")
       Assertions.assertThat(interestedParties.responsibleOrganisationRegion).isEqualTo("")
-      Assertions.assertThat(
-        interestedParties.responsibleOrganisationPhoneNumber,
-      ).isEqualTo("01234567890")
       Assertions.assertThat(interestedParties.responsibleOrganisationEmail).isEqualTo("")
-      Assertions.assertThat(
-        interestedParties.responsibleOrganisationAddress.addressType,
-      ).isEqualTo(AddressType.RESPONSIBLE_ORGANISATION)
-      Assertions.assertThat(interestedParties.responsibleOrganisationAddress.addressLine1).isEqualTo("")
-      Assertions.assertThat(interestedParties.responsibleOrganisationAddress.addressLine2).isEqualTo("")
-      Assertions.assertThat(interestedParties.responsibleOrganisationAddress.addressLine3).isEqualTo("")
-      Assertions.assertThat(interestedParties.responsibleOrganisationAddress.addressLine4).isEqualTo("")
-      Assertions.assertThat(interestedParties.responsibleOrganisationAddress.postcode).isEqualTo("")
-      Assertions.assertThat(
-        interestedParties.responsibleOrganisationAddress.addressUsage,
-      ).isEqualTo(DeviceWearerAddressUsage.NA)
     }
 
     @Test
@@ -231,7 +188,7 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
         .responseBody
 
       Assertions.assertThat(result).isNotNull
-      Assertions.assertThat(result).hasSize(5)
+      Assertions.assertThat(result).hasSize(4)
       Assertions.assertThat(result?.sortedBy { it.field }).isEqualTo(
         listOf(
           ValidationError(
@@ -249,10 +206,6 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
           ValidationError(
             "responsibleOrganisation",
             ValidationErrors.InterestedParties.RESPONSIBLE_ORGANISATION_REQUIRED,
-          ),
-          ValidationError(
-            "responsibleOrganisationPhoneNumber",
-            ValidationErrors.InterestedParties.RESPONSIBLE_ORGANISATION_TELEPHONE_NUMBER_REQUIRED,
           ),
         ),
       )
@@ -288,7 +241,7 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
         .responseBody
 
       Assertions.assertThat(result).isNotNull
-      Assertions.assertThat(result).hasSize(4)
+      Assertions.assertThat(result).hasSize(3)
       Assertions.assertThat(result?.sortedBy { it.field }).isEqualTo(
         listOf(
           ValidationError(
@@ -298,10 +251,6 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
           ValidationError(
             "responsibleOfficerPhoneNumber",
             ValidationErrors.InterestedParties.RESPONSIBLE_OFFICER_TELEPHONE_NUMBER_REQUIRED,
-          ),
-          ValidationError(
-            "responsibleOrganisationPhoneNumber",
-            ValidationErrors.InterestedParties.RESPONSIBLE_ORGANISATION_TELEPHONE_NUMBER_REQUIRED,
           ),
           ValidationError(
             "responsibleOrganisationRegion",
@@ -326,8 +275,7 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
               "responsibleOrganisation": "PROBATION",
               "responsibleOrganisationRegion": "YORKSHIRE_AND_THE_HUMBER",
               "responsibleOfficerName": "Jeff",
-              "responsibleOfficerPhoneNumber": "01234567890",
-              "responsibleOrganisationPhoneNumber": "01234567890"
+              "responsibleOfficerPhoneNumber": "01234567890"
             }
             """.trimIndent(),
           ),
@@ -347,21 +295,7 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
       Assertions.assertThat(interestedParties.responsibleOfficerPhoneNumber).isEqualTo("01234567890")
       Assertions.assertThat(interestedParties.responsibleOrganisation).isEqualTo("PROBATION")
       Assertions.assertThat(interestedParties.responsibleOrganisationRegion).isEqualTo("YORKSHIRE_AND_THE_HUMBER")
-      Assertions.assertThat(
-        interestedParties.responsibleOrganisationPhoneNumber,
-      ).isEqualTo("01234567890")
       Assertions.assertThat(interestedParties.responsibleOrganisationEmail).isEqualTo("")
-      Assertions.assertThat(
-        interestedParties.responsibleOrganisationAddress.addressType,
-      ).isEqualTo(AddressType.RESPONSIBLE_ORGANISATION)
-      Assertions.assertThat(interestedParties.responsibleOrganisationAddress.addressLine1).isEqualTo("")
-      Assertions.assertThat(interestedParties.responsibleOrganisationAddress.addressLine2).isEqualTo("")
-      Assertions.assertThat(interestedParties.responsibleOrganisationAddress.addressLine3).isEqualTo("")
-      Assertions.assertThat(interestedParties.responsibleOrganisationAddress.addressLine4).isEqualTo("")
-      Assertions.assertThat(interestedParties.responsibleOrganisationAddress.postcode).isEqualTo("")
-      Assertions.assertThat(
-        interestedParties.responsibleOrganisationAddress.addressUsage,
-      ).isEqualTo(DeviceWearerAddressUsage.NA)
     }
 
     @ParameterizedTest(name = "it should return a validation error for region={0} when responsible org is YJS")
@@ -392,7 +326,7 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
         .responseBody
 
       Assertions.assertThat(result).isNotNull
-      Assertions.assertThat(result).hasSize(4)
+      Assertions.assertThat(result).hasSize(3)
       Assertions.assertThat(result?.sortedBy { it.field }).isEqualTo(
         listOf(
           ValidationError(
@@ -402,10 +336,6 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
           ValidationError(
             "responsibleOfficerPhoneNumber",
             ValidationErrors.InterestedParties.RESPONSIBLE_OFFICER_TELEPHONE_NUMBER_REQUIRED,
-          ),
-          ValidationError(
-            "responsibleOrganisationPhoneNumber",
-            ValidationErrors.InterestedParties.RESPONSIBLE_ORGANISATION_TELEPHONE_NUMBER_REQUIRED,
           ),
           ValidationError(
             "responsibleOrganisationRegion",
@@ -431,8 +361,7 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
               "responsibleOrganisationRegion": "NORTH_EAST_AND_CUMBRIA",
               "responsibleOfficerName": "Jeff Testberg",
               "notifyingOrganisationEmail": "test@test.com",
-              "responsibleOfficerPhoneNumber": "01234567890",
-              "responsibleOrganisationPhoneNumber": "01234567890"
+              "responsibleOfficerPhoneNumber": "01234567890"
             }
             """.trimIndent(),
           ),
@@ -452,21 +381,7 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
       Assertions.assertThat(interestedParties.responsibleOfficerPhoneNumber).isEqualTo("01234567890")
       Assertions.assertThat(interestedParties.responsibleOrganisation).isEqualTo("YJS")
       Assertions.assertThat(interestedParties.responsibleOrganisationRegion).isEqualTo("NORTH_EAST_AND_CUMBRIA")
-      Assertions.assertThat(
-        interestedParties.responsibleOrganisationPhoneNumber,
-      ).isEqualTo("01234567890")
       Assertions.assertThat(interestedParties.responsibleOrganisationEmail).isEqualTo("")
-      Assertions.assertThat(
-        interestedParties.responsibleOrganisationAddress.addressType,
-      ).isEqualTo(AddressType.RESPONSIBLE_ORGANISATION)
-      Assertions.assertThat(interestedParties.responsibleOrganisationAddress.addressLine1).isEqualTo("")
-      Assertions.assertThat(interestedParties.responsibleOrganisationAddress.addressLine2).isEqualTo("")
-      Assertions.assertThat(interestedParties.responsibleOrganisationAddress.addressLine3).isEqualTo("")
-      Assertions.assertThat(interestedParties.responsibleOrganisationAddress.addressLine4).isEqualTo("")
-      Assertions.assertThat(interestedParties.responsibleOrganisationAddress.postcode).isEqualTo("")
-      Assertions.assertThat(
-        interestedParties.responsibleOrganisationAddress.addressUsage,
-      ).isEqualTo(DeviceWearerAddressUsage.NA)
     }
 
     @ParameterizedTest(name = "it should return a validation error for name={0} when notifying org is PRISON")
@@ -497,7 +412,7 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
         .responseBody
 
       Assertions.assertThat(result).isNotNull
-      Assertions.assertThat(result).hasSize(4)
+      Assertions.assertThat(result).hasSize(3)
       Assertions.assertThat(result?.sortedBy { it.field }).isEqualTo(
         listOf(
           ValidationError(
@@ -511,10 +426,6 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
           ValidationError(
             "responsibleOfficerPhoneNumber",
             ValidationErrors.InterestedParties.RESPONSIBLE_OFFICER_TELEPHONE_NUMBER_REQUIRED,
-          ),
-          ValidationError(
-            "responsibleOrganisationPhoneNumber",
-            ValidationErrors.InterestedParties.RESPONSIBLE_ORGANISATION_TELEPHONE_NUMBER_REQUIRED,
           ),
         ),
       )
@@ -536,8 +447,7 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
               "responsibleOrganisation": "FIELD_MONITORING_SERVICE",
               "responsibleOfficerName": "Jeff Testberg",
               "notifyingOrganisationEmail": "test@test.com",
-              "responsibleOfficerPhoneNumber": "01234567890",
-              "responsibleOrganisationPhoneNumber": "01234567890"
+              "responsibleOfficerPhoneNumber": "01234567890"
             }
             """.trimIndent(),
           ),
@@ -557,21 +467,7 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
       Assertions.assertThat(interestedParties.responsibleOfficerPhoneNumber).isEqualTo("01234567890")
       Assertions.assertThat(interestedParties.responsibleOrganisation).isEqualTo("FIELD_MONITORING_SERVICE")
       Assertions.assertThat(interestedParties.responsibleOrganisationRegion).isEqualTo("")
-      Assertions.assertThat(
-        interestedParties.responsibleOrganisationPhoneNumber,
-      ).isEqualTo("01234567890")
       Assertions.assertThat(interestedParties.responsibleOrganisationEmail).isEqualTo("")
-      Assertions.assertThat(
-        interestedParties.responsibleOrganisationAddress.addressType,
-      ).isEqualTo(AddressType.RESPONSIBLE_ORGANISATION)
-      Assertions.assertThat(interestedParties.responsibleOrganisationAddress.addressLine1).isEqualTo("")
-      Assertions.assertThat(interestedParties.responsibleOrganisationAddress.addressLine2).isEqualTo("")
-      Assertions.assertThat(interestedParties.responsibleOrganisationAddress.addressLine3).isEqualTo("")
-      Assertions.assertThat(interestedParties.responsibleOrganisationAddress.addressLine4).isEqualTo("")
-      Assertions.assertThat(interestedParties.responsibleOrganisationAddress.postcode).isEqualTo("")
-      Assertions.assertThat(
-        interestedParties.responsibleOrganisationAddress.addressUsage,
-      ).isEqualTo(DeviceWearerAddressUsage.NA)
     }
 
     @ParameterizedTest(name = "it should return a validation error for name={0} when notifying org is CROWN_COURT")
@@ -604,7 +500,7 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
         .responseBody
 
       Assertions.assertThat(result).isNotNull
-      Assertions.assertThat(result).hasSize(4)
+      Assertions.assertThat(result).hasSize(3)
       Assertions.assertThat(result?.sortedBy { it.field }).isEqualTo(
         listOf(
           ValidationError(
@@ -618,10 +514,6 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
           ValidationError(
             "responsibleOfficerPhoneNumber",
             ValidationErrors.InterestedParties.RESPONSIBLE_OFFICER_TELEPHONE_NUMBER_REQUIRED,
-          ),
-          ValidationError(
-            "responsibleOrganisationPhoneNumber",
-            ValidationErrors.InterestedParties.RESPONSIBLE_ORGANISATION_TELEPHONE_NUMBER_REQUIRED,
           ),
         ),
       )
@@ -642,8 +534,7 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
               "notifyingOrganisationName": "YORK_CROWN_COURT",
               "responsibleOrganisation": "FIELD_MONITORING_SERVICE",
               "responsibleOfficerName": "Jeff",
-              "responsibleOfficerPhoneNumber": "01234567890",
-              "responsibleOrganisationPhoneNumber": "01234567890"
+              "responsibleOfficerPhoneNumber": "01234567890"
             }
             """.trimIndent(),
           ),
@@ -663,21 +554,7 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
       Assertions.assertThat(interestedParties.responsibleOfficerPhoneNumber).isEqualTo("01234567890")
       Assertions.assertThat(interestedParties.responsibleOrganisation).isEqualTo("FIELD_MONITORING_SERVICE")
       Assertions.assertThat(interestedParties.responsibleOrganisationRegion).isEqualTo("")
-      Assertions.assertThat(
-        interestedParties.responsibleOrganisationPhoneNumber,
-      ).isEqualTo("01234567890")
       Assertions.assertThat(interestedParties.responsibleOrganisationEmail).isEqualTo("")
-      Assertions.assertThat(
-        interestedParties.responsibleOrganisationAddress.addressType,
-      ).isEqualTo(AddressType.RESPONSIBLE_ORGANISATION)
-      Assertions.assertThat(interestedParties.responsibleOrganisationAddress.addressLine1).isEqualTo("")
-      Assertions.assertThat(interestedParties.responsibleOrganisationAddress.addressLine2).isEqualTo("")
-      Assertions.assertThat(interestedParties.responsibleOrganisationAddress.addressLine3).isEqualTo("")
-      Assertions.assertThat(interestedParties.responsibleOrganisationAddress.addressLine4).isEqualTo("")
-      Assertions.assertThat(interestedParties.responsibleOrganisationAddress.postcode).isEqualTo("")
-      Assertions.assertThat(
-        interestedParties.responsibleOrganisationAddress.addressUsage,
-      ).isEqualTo(DeviceWearerAddressUsage.NA)
     }
 
     @ParameterizedTest(name = "it should return an error for name={0} when notifying org is MAGISTRATES_COURT")
@@ -710,7 +587,7 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
         .responseBody
 
       Assertions.assertThat(result).isNotNull
-      Assertions.assertThat(result).hasSize(4)
+      Assertions.assertThat(result).hasSize(3)
       Assertions.assertThat(result?.sortedBy { it.field }).isEqualTo(
         listOf(
           ValidationError(
@@ -724,10 +601,6 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
           ValidationError(
             "responsibleOfficerPhoneNumber",
             ValidationErrors.InterestedParties.RESPONSIBLE_OFFICER_TELEPHONE_NUMBER_REQUIRED,
-          ),
-          ValidationError(
-            "responsibleOrganisationPhoneNumber",
-            ValidationErrors.InterestedParties.RESPONSIBLE_ORGANISATION_TELEPHONE_NUMBER_REQUIRED,
           ),
         ),
       )
@@ -748,8 +621,7 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
               "notifyingOrganisationName": "BRADFORD_AND_KEIGHLEY_MAGISTRATES_COURT",
               "responsibleOrganisation": "FIELD_MONITORING_SERVICE",
               "responsibleOfficerName": "Jeff",
-              "responsibleOfficerPhoneNumber": "01234567890",
-              "responsibleOrganisationPhoneNumber": "01234567890"
+              "responsibleOfficerPhoneNumber": "01234567890"
             }
             """.trimIndent(),
           ),
@@ -771,21 +643,7 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
       Assertions.assertThat(interestedParties.responsibleOfficerPhoneNumber).isEqualTo("01234567890")
       Assertions.assertThat(interestedParties.responsibleOrganisation).isEqualTo("FIELD_MONITORING_SERVICE")
       Assertions.assertThat(interestedParties.responsibleOrganisationRegion).isEqualTo("")
-      Assertions.assertThat(
-        interestedParties.responsibleOrganisationPhoneNumber,
-      ).isEqualTo("01234567890")
       Assertions.assertThat(interestedParties.responsibleOrganisationEmail).isEqualTo("")
-      Assertions.assertThat(
-        interestedParties.responsibleOrganisationAddress.addressType,
-      ).isEqualTo(AddressType.RESPONSIBLE_ORGANISATION)
-      Assertions.assertThat(interestedParties.responsibleOrganisationAddress.addressLine1).isEqualTo("")
-      Assertions.assertThat(interestedParties.responsibleOrganisationAddress.addressLine2).isEqualTo("")
-      Assertions.assertThat(interestedParties.responsibleOrganisationAddress.addressLine3).isEqualTo("")
-      Assertions.assertThat(interestedParties.responsibleOrganisationAddress.addressLine4).isEqualTo("")
-      Assertions.assertThat(interestedParties.responsibleOrganisationAddress.postcode).isEqualTo("")
-      Assertions.assertThat(
-        interestedParties.responsibleOrganisationAddress.addressUsage,
-      ).isEqualTo(DeviceWearerAddressUsage.NA)
     }
   }
 }

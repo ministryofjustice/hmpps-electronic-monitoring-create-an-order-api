@@ -657,15 +657,6 @@ class HearingEventHandler(private val fmsService: FmsService, private val eventS
     responsibleOrganisation = responsibleOfficer,
     responsibleOrganisationRegion = responsibleOrganisationRegion,
     responsibleOrganisationEmail = responsibleOrganisationId,
-    responsibleOrganisationPhoneNumber = null,
-    responsibleOrganisationAddress =
-    Address(
-      versionId = versionId,
-      addressType = AddressType.RESPONSIBLE_ORGANISATION,
-      addressLine1 = "",
-      addressLine2 = "",
-      postcode = "",
-    ),
     responsibleOfficerName = "",
     responsibleOfficerPhoneNumber = null,
   )

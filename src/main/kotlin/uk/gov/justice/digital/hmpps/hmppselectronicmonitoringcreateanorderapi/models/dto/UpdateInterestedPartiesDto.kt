@@ -31,21 +31,8 @@ data class UpdateInterestedPartiesDto(
 
   val responsibleOrganisationRegion: String = "",
 
-  @field:NotNull(message = ValidationErrors.InterestedParties.RESPONSIBLE_ORGANISATION_TELEPHONE_NUMBER_REQUIRED)
-  val responsibleOrganisationPhoneNumber: String? = null,
-
   @field:NotNull(message = ValidationErrors.InterestedParties.RESPONSIBLE_ORGANISATION_EMAIL_REQUIRED)
   val responsibleOrganisationEmail: String = "",
-
-  val responsibleOrganisationAddressLine1: String = "",
-
-  val responsibleOrganisationAddressLine2: String = "",
-
-  val responsibleOrganisationAddressLine3: String = "",
-
-  val responsibleOrganisationAddressLine4: String = "",
-
-  val responsibleOrganisationAddressPostcode: String = "",
 ) {
   @AssertTrue(message = ValidationErrors.InterestedParties.NOTIFYING_ORGANISATION_NAME_REQUIRED)
   fun isNotifyingOrganisationName(): Boolean {

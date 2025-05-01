@@ -21,7 +21,13 @@ import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.util.*
 
-@DataJpaTest
+@DataJpaTest(
+  properties = [
+    "spring.datasource.url=jdbc:h2:mem:cemo-db;MODE=PostgreSQL",
+    "spring.jpa.hibernate.ddl-auto=create",
+    "spring.flyway.enabled=false",
+  ],
+)
 class OrderVersionRepositoryTest {
   @Autowired
   lateinit var orderRepo: OrderRepository

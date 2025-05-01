@@ -879,13 +879,13 @@ class OrderControllerTest : IntegrationTestBase() {
       	"responsible_officer_phone": "00447401111111",
       	"responsible_officer_name": "John Smith",
       	"responsible_organization": "Probation",
-      	"ro_post_code": "AB11 1CD",
-      	"ro_address_1": "Line 1",
-      	"ro_address_2": "Line 2",
+      	"ro_post_code": "",
+      	"ro_address_1": "",
+      	"ro_address_2": "",
       	"ro_address_3": "",
       	"ro_address_4": "",
       	"ro_email": "abc@def.com",
-      	"ro_phone": "00447401111111",
+      	"ro_phone": "",
       	"ro_region": "London",
       	"sentence_date": "",
       	"sentence_expiry": "",
@@ -1245,13 +1245,13 @@ class OrderControllerTest : IntegrationTestBase() {
       	"responsible_officer_phone": "00447401111111",
       	"responsible_officer_name": "John Smith",
       	"responsible_organization": "Probation",
-      	"ro_post_code": "AB11 1CD",
-      	"ro_address_1": "Line 1",
-      	"ro_address_2": "Line 2",
+      	"ro_post_code": "",
+      	"ro_address_1": "",
+      	"ro_address_2": "",
       	"ro_address_3": "",
       	"ro_address_4": "",
       	"ro_email": "abc@def.com",
-      	"ro_phone": "00447401111111",
+      	"ro_phone": "",
       	"ro_region": "London",
       	"sentence_date": "",
       	"sentence_expiry": "",
@@ -1581,13 +1581,13 @@ class OrderControllerTest : IntegrationTestBase() {
       	"responsible_officer_phone": "00447401111111",
       	"responsible_officer_name": "John Smith",
       	"responsible_organization": "Probation",
-      	"ro_post_code": "AB11 1CD",
-      	"ro_address_1": "Line 1",
-      	"ro_address_2": "Line 2",
+      	"ro_post_code": "",
+      	"ro_address_1": "",
+      	"ro_address_2": "",
       	"ro_address_3": "",
       	"ro_address_4": "",
       	"ro_email": "abc@def.com",
-      	"ro_phone": "00447401111111",
+      	"ro_phone": "",
       	"ro_region": "London",
       	"sentence_date": "",
       	"sentence_expiry": "",
@@ -1898,16 +1898,6 @@ class OrderControllerTest : IntegrationTestBase() {
       contactNumber = "+447401111111",
     )
 
-    val responsibleOrganisationAddress = Address(
-      versionId = versionId,
-      addressLine1 = "Line 1",
-      addressLine2 = "Line 2",
-      addressLine3 = "",
-      addressLine4 = "",
-      postcode = "AB11 1CD",
-      addressType = AddressType.RESPONSIBLE_ORGANISATION,
-    )
-
     val installationAddress = Address(
       versionId = versionId,
       addressLine1 = "24 Somewhere Street",
@@ -1943,9 +1933,6 @@ class OrderControllerTest : IntegrationTestBase() {
       )
     }
 
-    order.addresses.add(
-      responsibleOrganisationAddress,
-    )
     order.addresses.add(
       installationAddress,
     )
@@ -2064,8 +2051,6 @@ class OrderControllerTest : IntegrationTestBase() {
       responsibleOfficerPhoneNumber = "07401111111",
       responsibleOrganisation = "PROBATION",
       responsibleOrganisationRegion = "LONDON",
-      responsibleOrganisationAddress = responsibleOrganisationAddress,
-      responsibleOrganisationPhoneNumber = "07401111111",
       responsibleOrganisationEmail = "abc@def.com",
       notifyingOrganisation = "PRISON",
       notifyingOrganisationName = "WAYLAND_PRISON",
