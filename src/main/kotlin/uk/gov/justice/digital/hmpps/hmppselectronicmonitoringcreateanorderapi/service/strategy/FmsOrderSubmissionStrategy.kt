@@ -32,7 +32,7 @@ class FmsOrderSubmissionStrategy(
   } catch (e: Exception) {
     Result(
       success = false,
-      error = Exception("Failed to submit FMS Device Wearer", e),
+      error = e,
     )
   }
 
@@ -45,7 +45,7 @@ class FmsOrderSubmissionStrategy(
     } catch (e: Exception) {
       Result(
         success = false,
-        error = Exception("Failed to submit FMS Monitoring Order", e),
+        error = e,
       )
     }
 
@@ -122,7 +122,7 @@ class FmsOrderSubmissionStrategy(
     if (!submissionResult.success) {
       return FmsDeviceWearerSubmissionResult(
         status = SubmissionStatus.FAILURE,
-        error = submissionResult.error.toString(),
+        error = submissionResult.error?.message ?: "",
         payload = serialiseResult.data!!,
       )
     }
@@ -159,7 +159,7 @@ class FmsOrderSubmissionStrategy(
     if (!submissionResult.success) {
       return FmsMonitoringOrderSubmissionResult(
         status = SubmissionStatus.FAILURE,
-        error = submissionResult.error.toString(),
+        error = submissionResult.error?.message ?: "",
         payload = serialiseResult.data!!,
       )
     }
