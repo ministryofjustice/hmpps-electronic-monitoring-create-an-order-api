@@ -590,6 +590,10 @@ class OrderControllerTest : IntegrationTestBase() {
       val error = result.responseBody!!
       assertThat(error.userMessage)
         .isEqualTo("Error submitting order: The order could not be submitted to Serco")
+
+      val submitResult = fmsResultRepository.findAll().firstOrNull()
+      assertThat(submitResult).isNotNull
+      assertThat(submitResult!!.deviceWearerResult.error).isEqualTo("Error creating FMS Device Wearer for order: ${order.id} with error: Mock Create DW Error")
     }
 
     @Test
@@ -621,11 +625,12 @@ class OrderControllerTest : IntegrationTestBase() {
 
       val submitResult = fmsResultRepository.findAll().firstOrNull()
       assertThat(submitResult).isNotNull
+      assertThat(submitResult!!.monitoringOrderResult.error).isEqualTo("Error creating FMS Monitoring Order for order: ${order.id} with error: Mock Create MO Error")
 
       // Get updated order
       val updatedOrder = getOrder(order.id)
 
-      assertThat(updatedOrder.fmsResultId).isEqualTo(submitResult!!.id)
+      assertThat(updatedOrder.fmsResultId).isEqualTo(submitResult.id)
       assertThat(updatedOrder.status).isEqualTo(OrderStatus.ERROR)
     }
 
