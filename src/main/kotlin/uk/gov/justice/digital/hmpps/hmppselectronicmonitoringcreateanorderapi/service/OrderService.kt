@@ -89,7 +89,7 @@ class OrderService(val repo: OrderRepository, val fmsService: FmsService) {
         if (!submitResult.partialSuccess) {
           order.status = OrderStatus.ERROR
           repo.save(order)
-          throw SubmitOrderException("The order could not be submitted to Serco")
+          throw Exception(submitResult.error)
         } else if (!submitResult.attachmentSuccess) {
           order.status = OrderStatus.ERROR
           repo.save(order)
