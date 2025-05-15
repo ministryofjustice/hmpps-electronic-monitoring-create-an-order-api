@@ -11,7 +11,7 @@ generic-service:
     SENTRY_ENVIRONMENT: prod
     CP_PROCESSING_ENABLED: true
     CP_FMS_INTEGRATION_ENABLED: false
-    CEMO_FMS_INTEGRATION_ENABLED: false
+    CEMO_FMS_INTEGRATION_ENABLED: true
 
 
 # CloudPlatform AlertManager receiver to route prometheus alerts to slack
