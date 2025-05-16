@@ -170,7 +170,7 @@ class HearingEventHandler(private val fmsService: FmsService, private val eventS
     val result = mutableListOf<String>()
     val orders = getOrdersFromHearing(event.hearing)
     val startTimeInMs = System.currentTimeMillis()
-    val startDateTime = ZonedDateTime.now(ZoneId.of("GMT"))
+    val startDateTime = ZonedDateTime.now(ZoneId.of("Europe/London"))
     orders.forEach { order ->
       run {
         val submitResult = fmsService.submitOrder(order, FmsOrderSource.COMMON_PLATFORM)
@@ -234,7 +234,7 @@ class HearingEventHandler(private val fmsService: FmsService, private val eventS
 
     val monitoringConditions = MonitoringConditions(versionId = order.getCurrentVersion().id)
     val orderedDate = judicialResults.first().orderedDate
-    monitoringConditions.startDate = ZonedDateTime.of(orderedDate, LocalTime.MIDNIGHT, ZoneId.of("GMT"))
+    monitoringConditions.startDate = ZonedDateTime.of(orderedDate, LocalTime.MIDNIGHT, ZoneId.of("Europe/London"))
 
     monitoringConditions.conditionType = getConditionType(judicialResults)
     monitoringConditions.orderType = getOrderType(judicialResults)
@@ -251,7 +251,7 @@ class HearingEventHandler(private val fmsService: FmsService, private val eventS
     val deviceWearer = DeviceWearer(versionId = order.getCurrentVersion().id)
 
     if (person?.dateOfBirth != null) {
-      deviceWearer.dateOfBirth = ZonedDateTime.of(person.dateOfBirth, LocalTime.MIDNIGHT, ZoneId.of("GMT"))
+      deviceWearer.dateOfBirth = ZonedDateTime.of(person.dateOfBirth, LocalTime.MIDNIGHT, ZoneId.of("Europe/London"))
     }
     deviceWearer.firstName = person?.firstName
     deviceWearer.lastName = person?.lastName
@@ -302,7 +302,7 @@ class HearingEventHandler(private val fmsService: FmsService, private val eventS
         startDate = monitoringConditions.startDate,
         endDate = getPromptValue(prompts, "Until")?.let {
           val localDate = LocalDate.parse(it, formatter)
-          ZonedDateTime.of(localDate, LocalTime.MIDNIGHT, ZoneId.of("GMT"))
+          ZonedDateTime.of(localDate, LocalTime.MIDNIGHT, ZoneId.of("Europe/London"))
         },
       )
 
@@ -359,7 +359,7 @@ class HearingEventHandler(private val fmsService: FmsService, private val eventS
         "The defendant's whereabouts are to be electronically monitored. Start date",
       )?.let {
         val localDate = LocalDate.parse(it, formatter)
-        ZonedDateTime.of(localDate, LocalTime.parse(startTime), ZoneId.of("GMT"))
+        ZonedDateTime.of(localDate, LocalTime.parse(startTime), ZoneId.of("Europe/London"))
       }
 
       trailCondition.startDate = startDate
@@ -368,7 +368,7 @@ class HearingEventHandler(private val fmsService: FmsService, private val eventS
       val endDate =
         getPromptValue(prompts, "End date of tagging")?.let {
           val localDate = LocalDate.parse(it, formatter)
-          ZonedDateTime.of(localDate, LocalTime.parse(endTime), ZoneId.of("GMT"))
+          ZonedDateTime.of(localDate, LocalTime.parse(endTime), ZoneId.of("Europe/London"))
         }
       trailCondition.endDate = endDate
       monitoringConditions.endDate = endDate
@@ -386,12 +386,12 @@ class HearingEventHandler(private val fmsService: FmsService, private val eventS
       val startTime = getPromptValue(prompts, "Start time of tagging") ?: "00:00"
       condition.startDate = getPromptValue(prompts, "Start date of tagging")?.let {
         val localDate = LocalDate.parse(it, formatter)
-        ZonedDateTime.of(localDate, LocalTime.parse(startTime), ZoneId.of("GMT"))
+        ZonedDateTime.of(localDate, LocalTime.parse(startTime), ZoneId.of("Europe/London"))
       }
       val endTime = getPromptValue(prompts, "End time of tagging") ?: "00:00"
       condition.endDate = getPromptValue(prompts, "End date of tagging")?.let {
         val localDate = LocalDate.parse(it, formatter)
-        ZonedDateTime.of(localDate, LocalTime.parse(endTime), ZoneId.of("GMT"))
+        ZonedDateTime.of(localDate, LocalTime.parse(endTime), ZoneId.of("Europe/London"))
       }
       val defendantRemainAt = getPromptValue(prompts, "Defendant to remain at") ?: ""
       val detailsAndTiming = getPromptValue(prompts, "Details and timings") ?: ""
@@ -459,7 +459,7 @@ class HearingEventHandler(private val fmsService: FmsService, private val eventS
       }
       monitoringConditions.curfew = true
       val condition = CurfewConditions(versionId = order.getCurrentVersion().id)
-      condition.startDate = ZonedDateTime.of(it.orderedDate, LocalTime.MIDNIGHT, ZoneId.of("GMT"))
+      condition.startDate = ZonedDateTime.of(it.orderedDate, LocalTime.MIDNIGHT, ZoneId.of("Europe/London"))
       condition.endDate = monitoringConditions.endDate
       condition.curfewDescription = conditionPrompt.value
       order.curfewConditions = condition
@@ -547,7 +547,7 @@ class HearingEventHandler(private val fmsService: FmsService, private val eventS
     return ZonedDateTime.of(
       localDate,
       LocalTime.parse(nextHearingDetailsAsMap["Time of hearing"] ?: ""),
-      ZoneId.of("GMT"),
+      ZoneId.of("Europe/London"),
     )
   }
 
@@ -561,7 +561,7 @@ class HearingEventHandler(private val fmsService: FmsService, private val eventS
     condition.zoneType = zoneType
 
     condition.description = "${conditionPrompt.label} ${conditionPrompt.value}"
-    condition.startDate = ZonedDateTime.of(startDate, LocalTime.MIDNIGHT, ZoneId.of("GMT"))
+    condition.startDate = ZonedDateTime.of(startDate, LocalTime.MIDNIGHT, ZoneId.of("Europe/London"))
     return condition
   }
 
@@ -577,7 +577,7 @@ class HearingEventHandler(private val fmsService: FmsService, private val eventS
 
     val startDate = getPromptValue(prompts, "Start date for tag")?.let {
       val localDate = LocalDate.parse(it, formatter)
-      ZonedDateTime.of(localDate, LocalTime.parse(startTime), ZoneId.of("GMT"))
+      ZonedDateTime.of(localDate, LocalTime.parse(startTime), ZoneId.of("Europe/London"))
     }
 
     zone.startDate = startDate
@@ -585,7 +585,7 @@ class HearingEventHandler(private val fmsService: FmsService, private val eventS
     val endDate =
       getPromptValue(prompts, "End date for tag")?.let {
         val localDate = LocalDate.parse(it, formatter)
-        ZonedDateTime.of(localDate, LocalTime.parse(endTime), ZoneId.of("GMT"))
+        ZonedDateTime.of(localDate, LocalTime.parse(endTime), ZoneId.of("Europe/London"))
       }
 
     zone.endDate = endDate
