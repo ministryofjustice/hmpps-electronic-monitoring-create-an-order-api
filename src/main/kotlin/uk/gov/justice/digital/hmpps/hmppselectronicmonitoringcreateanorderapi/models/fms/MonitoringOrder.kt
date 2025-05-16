@@ -19,6 +19,8 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YouthJusticeServiceRegions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.formatters.PhoneNumberFormatter
 import java.time.DayOfWeek
+import java.time.ZoneId
+import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
 data class MonitoringOrder(
@@ -203,6 +205,11 @@ data class MonitoringOrder(
   companion object {
     private val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
     private val dateTimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+    private val londonTimeZone = ZoneId.of("Europe/London")
+
+    private fun getLondonDateAndTime(dateTime: ZonedDateTime?): String? =
+      dateTime?.toInstant()?.atZone(londonTimeZone)?.format(dateTimeFormatter)
+
     fun fromOrder(order: Order, caseId: String?): MonitoringOrder {
       val conditions = order.monitoringConditions!!
       val monitoringOrder = MonitoringOrder(
@@ -210,8 +217,8 @@ data class MonitoringOrder(
         orderType = conditions.orderType!!.value,
         orderRequestType = order.type.value,
         orderTypeDescription = conditions.orderTypeDescription?.value,
-        orderStart = conditions.startDate?.format(dateTimeFormatter),
-        orderEnd = conditions.endDate?.format(dateTimeFormatter) ?: "",
+        orderStart = getLondonDateAndTime(conditions.startDate),
+        orderEnd = getLondonDateAndTime(conditions.endDate) ?: "",
         serviceEndDate = conditions.endDate?.format(dateFormatter) ?: "",
         caseId = caseId,
         conditionType = conditions.conditionType!!.value,
