@@ -304,8 +304,8 @@ data class MonitoringOrder(
         monitoringOrder.enforceableCondition!!.add(
           EnforceableCondition(
             "Attendance Requirement",
-            startDate = conditions.startDate?.format(dateTimeFormatter) ?: "",
-            endDate = conditions.endDate?.format(dateTimeFormatter) ?: "",
+            startDate = getBritishDateAndTime(conditions.startDate) ?: "",
+            endDate = getBritishDateAndTime(conditions.endDate) ?: "",
           ),
         )
         monitoringOrder.inclusionZones.addAll(getInclusionZones(order))
