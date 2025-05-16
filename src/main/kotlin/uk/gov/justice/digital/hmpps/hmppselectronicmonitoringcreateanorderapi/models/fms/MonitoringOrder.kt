@@ -207,7 +207,7 @@ data class MonitoringOrder(
     private val dateTimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
     private val londonTimeZone = ZoneId.of("Europe/London")
 
-    private fun getLondonDateAndTime(dateTime: ZonedDateTime?): String? =
+    private fun getBritishDateAndTime(dateTime: ZonedDateTime?): String? =
       dateTime?.toInstant()?.atZone(londonTimeZone)?.format(dateTimeFormatter)
 
     fun fromOrder(order: Order, caseId: String?): MonitoringOrder {
@@ -217,8 +217,8 @@ data class MonitoringOrder(
         orderType = conditions.orderType!!.value,
         orderRequestType = order.type.value,
         orderTypeDescription = conditions.orderTypeDescription?.value,
-        orderStart = getLondonDateAndTime(conditions.startDate),
-        orderEnd = getLondonDateAndTime(conditions.endDate) ?: "",
+        orderStart = getBritishDateAndTime(conditions.startDate),
+        orderEnd = getBritishDateAndTime(conditions.endDate) ?: "",
         serviceEndDate = conditions.endDate?.format(dateFormatter) ?: "",
         caseId = caseId,
         conditionType = conditions.conditionType!!.value,
@@ -271,8 +271,8 @@ data class MonitoringOrder(
         monitoringOrder.enforceableCondition!!.add(
           EnforceableCondition(
             "EM Exclusion / Inclusion Zone",
-            startDate = conditions.startDate?.format(dateTimeFormatter),
-            endDate = conditions.endDate?.format(dateTimeFormatter) ?: "",
+            startDate = getBritishDateAndTime(conditions.startDate),
+            endDate = getBritishDateAndTime(conditions.endDate) ?: "",
           ),
         )
         order.enforcementZoneConditions.forEach {
