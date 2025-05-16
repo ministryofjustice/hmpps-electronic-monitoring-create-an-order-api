@@ -68,8 +68,13 @@ class OrderControllerTest : IntegrationTestBase() {
 
   val mockStartDate: ZonedDateTime = ZonedDateTime.now().plusMonths(1)
   val mockEndDate: ZonedDateTime = ZonedDateTime.now().plusMonths(2)
+
   private val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
   private val dateTimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+  val mockStartDateInBritishTime = mockStartDate.toInstant().atZone(
+    ZoneId.of("Europe/London"),
+  ).format(dateTimeFormatter)
+  val mockEndDateInBritishTime = mockEndDate.toInstant().atZone(ZoneId.of("Europe/London")).format(dateTimeFormatter)
 
   @BeforeEach
   fun setup() {
@@ -842,8 +847,8 @@ class OrderControllerTest : IntegrationTestBase() {
       		},
       		{
       			"condition": "EM Exclusion / Inclusion Zone",
-            "start_date": "${mockStartDate.format(dateTimeFormatter)}",
-            "end_date": "${mockEndDate.format(dateTimeFormatter)}"
+            "start_date": "$mockStartDateInBritishTime",
+            "end_date": "$mockEndDateInBritishTime"
       		},          
       		{
       			"condition": "AAMR",
@@ -869,10 +874,10 @@ class OrderControllerTest : IntegrationTestBase() {
       	"no_phone_number": "",
       	"offence": "Fraud Offences",
       	"offence_date": "",
-      	"order_end": "${mockEndDate.toInstant().atZone(ZoneId.of("Europe/London")).format(dateTimeFormatter)}",
+      	"order_end": "$mockEndDateInBritishTime",
       	"order_id": "$orderId",
       	"order_request_type": "New Order",
-      	"order_start": "${mockStartDate.toInstant().atZone(ZoneId.of("Europe/London")).format(dateTimeFormatter)}",
+      	"order_start": "$mockStartDateInBritishTime",
       	"order_type": "Community",
       	"order_type_description": "DAPOL",
       	"order_type_detail": "",
@@ -1208,8 +1213,8 @@ class OrderControllerTest : IntegrationTestBase() {
       		},
       		{
       			"condition": "EM Exclusion / Inclusion Zone",
-            "start_date": "${mockStartDate.format(dateTimeFormatter)}",
-            "end_date": "${mockEndDate.format(dateTimeFormatter)}"
+            "start_date": "$mockStartDateInBritishTime",
+            "end_date": "$mockEndDateInBritishTime"
       		},          
       		{
       			"condition": "AAMR",
@@ -1235,10 +1240,10 @@ class OrderControllerTest : IntegrationTestBase() {
       	"no_phone_number": "",
       	"offence": "Fraud Offences",
       	"offence_date": "",
-      	"order_end": "${mockEndDate.toInstant().atZone(ZoneId.of("Europe/London")).format(dateTimeFormatter)}",
+      	"order_end": "$mockEndDateInBritishTime",
       	"order_id": "$orderId",
       	"order_request_type": "New Order",
-      	"order_start": "${mockStartDate.toInstant().atZone(ZoneId.of("Europe/London")).format(dateTimeFormatter)}",
+      	"order_start": "$mockStartDateInBritishTime",
       	"order_type": "Community",
       	"order_type_description": "DAPOL",
       	"order_type_detail": "",
@@ -1544,8 +1549,8 @@ class OrderControllerTest : IntegrationTestBase() {
       		},
       		{
       			"condition": "EM Exclusion / Inclusion Zone",
-            "start_date": "${mockStartDate.format(dateTimeFormatter)}",
-            "end_date": "${mockEndDate.format(dateTimeFormatter)}"
+            "start_date": "$mockStartDateInBritishTime",
+            "end_date": "$mockEndDateInBritishTime"
       		},          
       		{
       			"condition": "AAMR",
@@ -1571,10 +1576,10 @@ class OrderControllerTest : IntegrationTestBase() {
       	"no_phone_number": "",
       	"offence": "Fraud Offences",
       	"offence_date": "",
-      	"order_end": "${mockEndDate.toInstant().atZone(ZoneId.of("Europe/London")).format(dateTimeFormatter)}",
+      	"order_end": "$mockEndDateInBritishTime",
       	"order_id": "${order.id}",
       	"order_request_type": "Variation",
-      	"order_start": "${mockStartDate.toInstant().atZone(ZoneId.of("Europe/London")).format(dateTimeFormatter)}",
+      	"order_start": "$mockStartDateInBritishTime",
       	"order_type": "Community",
       	"order_type_description": "DAPOL",
       	"order_type_detail": "",
