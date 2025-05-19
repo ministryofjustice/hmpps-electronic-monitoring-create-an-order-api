@@ -128,8 +128,12 @@ class MonitoringConditionsAlcoholControllerTest : IntegrationTestBase() {
 
     val alcoholConditions = result.responseBody!!
 
-    Assertions.assertThat(alcoholConditions.startDate).isEqualTo(mockStartDate)
-    Assertions.assertThat(alcoholConditions.endDate).isEqualTo(mockEndDate)
+    Assertions.assertThat(alcoholConditions.startDate!!.toLocalDate()).isEqualTo(mockStartDate.toLocalDate())
+    Assertions.assertThat(alcoholConditions.startDate!!.hour).isEqualTo(0)
+    Assertions.assertThat(alcoholConditions.startDate!!.minute).isEqualTo(0)
+    Assertions.assertThat(alcoholConditions.endDate!!.toLocalDate()).isEqualTo(mockEndDate.toLocalDate())
+    Assertions.assertThat(alcoholConditions.endDate!!.hour).isEqualTo(23)
+    Assertions.assertThat(alcoholConditions.endDate!!.minute).isEqualTo(59)
     Assertions.assertThat(
       alcoholConditions.monitoringType,
     ).isEqualTo(AlcoholMonitoringType.ALCOHOL_ABSTINENCE)
@@ -249,11 +253,20 @@ class MonitoringConditionsAlcoholControllerTest : IntegrationTestBase() {
   fun `Alcohol monitoring conditions can be updated with a startDate in the past`() {
     val mockPastStartDate: ZonedDateTime = ZonedDateTime.of(
       LocalDate.of(1990, 1, 1),
-      LocalTime.NOON,
+      LocalTime.MIDNIGHT,
       ZoneId.of("UTC"),
     )
     val order = createOrder()
-
+    val mockDefaultEndDate = ZonedDateTime.of(
+      mockEndDate.year,
+      mockEndDate.monthValue,
+      mockEndDate.dayOfMonth,
+      0,
+      0,
+      0,
+      0,
+      mockEndDate.zone,
+    )
     val result = webTestClient.put()
       .uri("/api/orders/${order.id}/monitoring-conditions-alcohol")
       .contentType(MediaType.APPLICATION_JSON)
@@ -263,7 +276,7 @@ class MonitoringConditionsAlcoholControllerTest : IntegrationTestBase() {
             {
               "monitoringType": "ALCOHOL_ABSTINENCE",
               "startDate": "$mockPastStartDate",
-              "endDate": "$mockEndDate",
+              "endDate": "$mockDefaultEndDate",
               "installationLocation": "PRIMARY",
               "prisonName": null,
               "probationOfficeName": null
@@ -285,6 +298,16 @@ class MonitoringConditionsAlcoholControllerTest : IntegrationTestBase() {
   @Test
   fun `Alcohol monitoring conditions cannot be updated if endDate is in the past`() {
     val order = createOrder()
+    val mockDefaultStartDate = ZonedDateTime.of(
+      mockStartDate.year,
+      mockStartDate.monthValue,
+      mockStartDate.dayOfMonth,
+      0,
+      0,
+      0,
+      0,
+      mockStartDate.zone,
+    )
     val result = webTestClient.put()
       .uri("/api/orders/${order.id}/monitoring-conditions-alcohol")
       .contentType(MediaType.APPLICATION_JSON)
@@ -293,7 +316,7 @@ class MonitoringConditionsAlcoholControllerTest : IntegrationTestBase() {
           """
             {
               "monitoringType": "ALCOHOL_ABSTINENCE",
-              "startDate": "$mockStartDate",
+              "startDate": "$mockDefaultStartDate",
               "endDate": "${ZonedDateTime.parse("1990-01-01T00:00:00.000Z")}",
               "installationLocation": "PRIMARY",
               "prisonName": null,
