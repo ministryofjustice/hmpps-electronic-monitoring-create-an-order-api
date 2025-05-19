@@ -114,7 +114,7 @@
             "postcode": "CV35 7QB"
           },
           "contact": {
-            "primaryEmail": "CasecoordinationResulting@warwickshire.police.uk"
+            "primaryEmail": "a@b.co.uk"
           },
           "majorCreditorCode": "PO23",
           "prosecutionAuthorityCode": "WARPF",
@@ -198,7 +198,7 @@
                         "promptReference": "probationteamtobenotifiedEmailAddress1",
                         "promptSequence": 700,
                         "type": "NAMEADDRESS",
-                        "value": "nenps.court@justice.gov.uk"
+                        "value": "a@b.co.uk"
                       },
                       {
                         "courtExtract": "N",
@@ -209,7 +209,7 @@
                         "promptReference": "bebd138c-ed0a-4ac3-83f9-47937686c0eb",
                         "promptSequence": 800,
                         "type": null,
-                        "value": "Electronic monitoring contractor organisation name:Electronic Monitoring Contractor\\nElectronic monitoring contractor email address 1:LPadmin@ems.co.uk\\nFirst notification of electronic monitoring:Yes\\nAre there any additional requirements as well?:Yes\\nWas an interpreter used?:No\\nDoes the offender have any special needs?:No"
+                        "value": "Electronic monitoring contractor organisation name:Electronic Monitoring Contractor\\nElectronic monitoring contractor email address 1:a@b.co.uk\\nFirst notification of electronic monitoring:Yes\\nAre there any additional requirements as well?:Yes\\nWas an interpreter used?:No\\nDoes the offender have any special needs?:No"
                       }
                     ]
                   },
@@ -346,7 +346,7 @@
                         "promptReference": "electronicmonitoringcontractorEmailAddress1",
                         "promptSequence": 100,
                         "type": "NAMEADDRESS",
-                        "value": "LPadmin@ems.co.uk"
+                        "value": "a@b.co.uk"
                       },
                       {
                         "courtExtract": "N",

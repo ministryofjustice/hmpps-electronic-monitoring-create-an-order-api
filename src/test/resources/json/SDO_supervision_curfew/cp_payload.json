@@ -49,7 +49,7 @@
                         "postcode": "EC2M 4NP"
                     },
                     "contact": {
-                        "primaryEmail": "casebuilderscpsmemos@cityoflondon.police.uk"
+                        "primaryEmail": "a@b.co.uk"
                     },
                     "majorCreditorCode": "COLP",
                     "prosecutionAuthorityCode": "CITYPF",
@@ -87,8 +87,8 @@
                                         "category": "FINAL",
                                         "cjsCode": "1180",
                                         "courtClerk": {
-                                            "firstName": "Erica",
-                                            "lastName": "Wilson",
+                                            "firstName": "",
+                                            "lastName": "",
                                             "userId": "31ec3a16-8721-498c-8da5-f099390ee254"
                                         },
                                         "d20": false,
@@ -141,8 +141,8 @@
                                                 "usergroups": [
 
                                                 ],
-                                                "value": "londonnps.court@justice.gov.uk",
-                                                "welshValue": "londonnps.court@justice.gov.uk"
+                                                "value": "a@b.co.uk",
+                                                "welshValue": "a@b.co.uk"
                                             },
                                             {
                                                 "courtExtract": "Y",
@@ -182,7 +182,7 @@
                                                 "usergroups": [
 
                                                 ],
-                                                "value": "Electronic monitoring contractor organisation name:Electronic Monitoring Contractor\nElectronic monitoring contractor email address 1:LPadmin@ems.co.uk\nFirst notification of electronic monitoring:Yes\nAre there any additional requirements as well?:No\nDefendant's mobile number:09756734099\nWas an interpreter used?:No\nDoes the offender have any special needs?:No",
+                                                "value": "Electronic monitoring contractor organisation name:Electronic Monitoring Contractor\nElectronic monitoring contractor email address 1:a@b.co.uk\nFirst notification of electronic monitoring:Yes\nAre there any additional requirements as well?:No\nDefendant's mobile number:09756734099\nWas an interpreter used?:No\nDoes the offender have any special needs?:No",
                                                 "welshLabel": "Hysbysiad o orchymyn monitro electronig (gofyniad)"
                                             }
                                         ],
@@ -215,8 +215,8 @@
                                         "category": "ANCILLARY",
                                         "cjsCode": "3105",
                                         "courtClerk": {
-                                            "firstName": "Erica",
-                                            "lastName": "Wilson",
+                                            "firstName": "",
+                                            "lastName": "",
                                             "userId": "31ec3a16-8721-498c-8da5-f099390ee254"
                                         },
                                         "d20": false,
@@ -372,7 +372,7 @@
                                 "contact": {
                                     "home": "0345014190",
                                     "mobile": "09756734099",
-                                    "primaryEmail": "sonny.haley@gmail.com"
+                                    "primaryEmail": "a@b.co.uk"
                                 },
                                 "dateOfBirth": "1981-11-11",
                                 "documentationLanguageNeeds": "ENGLISH",
