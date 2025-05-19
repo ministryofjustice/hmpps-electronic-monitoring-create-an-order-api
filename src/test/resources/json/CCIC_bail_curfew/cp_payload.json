@@ -49,7 +49,7 @@
                         "postcode": "EC2M 4NP"
                     },
                     "contact": {
-                        "primaryEmail": "casebuilderscpsmemos@cityoflondon.police.uk"
+                        "primaryEmail": "a@b.co.uk"
                     },
                     "majorCreditorCode": "COLP",
                     "prosecutionAuthorityCode": "CITYPF",
@@ -87,9 +87,9 @@
                                         "category": "INTERMEDIARY",
                                         "cjsCode": "4559",
                                         "courtClerk": {
-                                            "firstName": "Erica",
-                                            "lastName": "Wilson",
-                                            "userId": "31ec3a16-8721-498c-8da5-f099390ee254"
+                                            "firstName": "",
+                                            "lastName": "",
+                                            "userId": ""
                                         },
                                         "d20": false,
                                         "excludedFromResults": false,
@@ -267,8 +267,8 @@
                                                 "usergroups": [
 
                                                 ],
-                                                "value": "midlandsnps.court@justice.gov.uk",
-                                                "welshValue": "midlandsnps.court@justice.gov.uk"
+                                                "value": "a@b.co.uk",
+                                                "welshValue": "a@b.co.uk"
                                             }
                                         ],
                                         "judicialResultTypeId": "b318ca35-8b6a-41e5-a674-879ac9a05cc2",
@@ -345,7 +345,7 @@
                                 "contact": {
                                     "home": "0719700758",
                                     "mobile": "0756232899",
-                                    "primaryEmail": "karyl.connelly@yahoo.com"
+                                    "primaryEmail": "a@b.co.uk"
                                 },
                                 "dateOfBirth": "1990-10-22",
                                 "documentationLanguageNeeds": "ENGLISH",

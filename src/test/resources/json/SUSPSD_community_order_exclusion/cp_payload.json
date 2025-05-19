@@ -50,7 +50,7 @@
             "postcode": "EC2M 4NP"
           },
           "contact": {
-            "primaryEmail": "casebuilderscpsmemos@cityoflondon.police.uk"
+            "primaryEmail": "a@b.co.uk"
           },
           "majorCreditorCode": "COLP",
           "prosecutionAuthorityCode": "CITYPF",
@@ -88,8 +88,8 @@
                     "category": "FINAL",
                     "cjsCode": "1134",
                     "courtClerk": {
-                      "firstName": "Erica",
-                      "lastName": "Wilson",
+                      "firstName": "",
+                      "lastName": "",
                       "userId": "31ec3a16-8721-498c-8da5-f099390ee254"
                     },
                     "d20": false,
@@ -156,8 +156,8 @@
                         "promptSequence": 600,
                         "type": "NAMEADDRESS",
                         "usergroups": [],
-                        "value": "londonnps.court@justice.gov.uk",
-                        "welshValue": "londonnps.court@justice.gov.uk"
+                        "value": "a@b.co.uk",
+                        "welshValue": "a@b.co.uk"
                       },
                       {
                         "courtExtract": "Y",
@@ -233,7 +233,7 @@
                         "promptReference": "3e0112e7-3475-487d-850f-09cefecea4ee",
                         "promptSequence": 900,
                         "usergroups": [],
-                        "value": "Electronic monitoring contractor organisation name:Electronic Monitoring Contractor\nElectronic monitoring contractor email address 1:LPadmin@ems.co.uk\nVariation of electronic monitoring. Date and case reference of original order:Date and case reference of original order\nAre there any additional requirements as well?:Yes\nDefendant's mobile number:07984947239\nWas an interpreter used?:Yes\nLanguage:Arabic\nDoes the offender have any special needs?:No",
+                        "value": "Electronic monitoring contractor organisation name:Electronic Monitoring Contractor\nElectronic monitoring contractor email address 1:a@b.co.uk\nVariation of electronic monitoring. Date and case reference of original order:Date and case reference of original order\nAre there any additional requirements as well?:Yes\nDefendant's mobile number:07984947239\nWas an interpreter used?:Yes\nLanguage:Arabic\nDoes the offender have any special needs?:No",
                         "welshLabel": "Hysbysiad o orchymyn monitro electronig (gofyniad)"
                       }
                     ],
@@ -265,8 +265,8 @@
                     "category": "ANCILLARY",
                     "cjsCode": "3106",
                     "courtClerk": {
-                      "firstName": "Erica",
-                      "lastName": "Wilson",
+                      "firstName": "",
+                      "lastName": "",
                       "userId": "31ec3a16-8721-498c-8da5-f099390ee254"
                     },
                     "d20": false,
@@ -409,7 +409,7 @@
                 "contact": {
                   "home": "082685004",
                   "mobile": "07984947239",
-                  "primaryEmail": "caron.schaefer@yahoo.com"
+                  "primaryEmail": "a@b.co.uk"
                 },
                 "dateOfBirth": "1975-10-09",
                 "documentationLanguageNeeds": "ENGLISH",

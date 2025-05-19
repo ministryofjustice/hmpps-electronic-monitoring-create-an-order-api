@@ -114,7 +114,7 @@
             "postcode": "CV35 7QB"
           },
           "contact": {
-            "primaryEmail": "CasecoordinationResulting@warwickshire.police.uk"
+            "primaryEmail": "a@b.co.uk"
           },
           "majorCreditorCode": "PO23",
           "prosecutionAuthorityCode": "WARPF",
@@ -152,8 +152,8 @@
                     "category": "FINAL",
                     "cjsCode": "1116",
                     "courtClerk": {
-                      "firstName": "Erica",
-                      "lastName": "Wilson",
+                      "firstName": "",
+                      "lastName": "",
                       "userId": "31ec3a16-8721-498c-8da5-f099390ee254"
                     },
                     "d20": false,
@@ -266,8 +266,8 @@
                         "promptSequence": 200,
                         "type": "NAMEADDRESS",
                         "usergroups": [],
-                        "value": "FirstHearingMags.Wessex@cps.gov.uk",
-                        "welshValue": "FirstHearingMags.Wessex@cps.gov.uk"
+                        "value": "a@b.co.uk",
+                        "welshValue": "a@b.co.uk"
                       },
                       {
                         "courtExtract": "N",
@@ -278,8 +278,8 @@
                         "promptSequence": 200,
                         "type": "NAMEADDRESS",
                         "usergroups": [],
-                        "value": "PECSBasingstokeMags@serco.com",
-                        "welshValue": "PECSBasingstokeMags@serco.com"
+                        "value": "a@b.co.uk",
+                        "welshValue": "a@b.co.uk"
                       },
                       {
                         "courtExtract": "Y",
@@ -315,8 +315,8 @@
                         "promptSequence": 600,
                         "type": "NAMEADDRESS",
                         "usergroups": [],
-                        "value": "londonnps.court@justice.gov.uk",
-                        "welshValue": "londonnps.court@justice.gov.uk"
+                        "value": "a@b.co.uk",
+                        "welshValue": "a@b.co.uk"
                       },
                       {
                         "courtExtract": "N",
@@ -325,7 +325,7 @@
                         "promptReference": "56531f48-df01-4148-95e3-fa5223d871a6",
                         "promptSequence": 700,
                         "usergroups": [],
-                        "value": "Electronic monitoring contractor organisation name:Electronic Monitoring Contractor\nElectronic monitoring contractor email address 1:LPadmin@ems.co.uk\nFirst notification of electronic monitoring:Yes\nAre there any additional requirements as well?:No\nWas an interpreter used?:No\nDoes the offender have any special needs?:No",
+                        "value": "Electronic monitoring contractor organisation name:Electronic Monitoring Contractor\nElectronic monitoring contractor email address 1:a@b.co.uk\nFirst notification of electronic monitoring:Yes\nAre there any additional requirements as well?:No\nWas an interpreter used?:No\nDoes the offender have any special needs?:No",
                         "welshLabel": "Hysbysiad o orchymyn monitro electronig (gofyniad)"
                       }
                     ],
@@ -356,8 +356,8 @@
                     "category": "ANCILLARY",
                     "cjsCode": "3105",
                     "courtClerk": {
-                      "firstName": "Erica",
-                      "lastName": "Wilson",
+                      "firstName": "",
+                      "lastName": "",
                       "userId": "31ec3a16-8721-498c-8da5-f099390ee254"
                     },
                     "d20": false,

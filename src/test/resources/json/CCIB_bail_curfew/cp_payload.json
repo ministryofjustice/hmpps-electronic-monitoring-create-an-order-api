@@ -50,7 +50,7 @@
                         "postcode": "SO23 8ZD"
                     },
                     "contact": {
-                        "primaryEmail": "cjd.phoenix@hampshire.police.uk"
+                        "primaryEmail": "a@b.co.uk"
                     },
                     "majorCreditorCode": "PO44",
                     "prosecutionAuthorityCode": "HIWPF",
@@ -85,9 +85,9 @@
                                         "category": "INTERMEDIARY",
                                         "cjsCode": "4561",
                                         "courtClerk": {
-                                            "firstName": "Erica",
-                                            "lastName": "Wilson",
-                                            "userId": "31ec3a16-8721-498c-8da5-f099390ee254"
+                                            "firstName": "",
+                                            "lastName": "",
+                                            "userId": ""
                                         },
                                         "d20": false,
                                         "excludedFromResults": false,
@@ -152,8 +152,8 @@
                                                 "usergroups": [
 
                                                 ],
-                                                "value": "omu.theverne@justice.gov.uk",
-                                                "welshValue": "omu.theverne@justice.gov.uk"
+                                                "value": "a@b.co.uk",
+                                                "welshValue": "a@b.co.uk"
                                             },
                                             {
                                                 "courtExtract": "Y",
@@ -222,8 +222,8 @@
                                                 "usergroups": [
 
                                                 ],
-                                                "value": "barrowmc@geoamey.co.uk",
-                                                "welshValue": "barrowmc@geoamey.co.uk"
+                                                "value": "a@b.co.uk",
+                                                "welshValue": "a@b.co.uk"
                                             },
                                             {
                                                 "courtExtract": "Y",
@@ -249,7 +249,7 @@
                                                 "usergroups": [
 
                                                 ],
-                                                "value": "Electronic monitoring contractor organisation name:Electronic Monitoring Contractor\nElectronic monitoring contractor email address 1:LPadmin@ems.co.uk\nFirst notification of electronic monitoring:Yes\nWas an interpreter used?:No\nDoes the offender have any special needs?:No",
+                                                "value": "Electronic monitoring contractor organisation name:Electronic Monitoring Contractor\nElectronic monitoring contractor email address 1:a@b.co.uk\nFirst notification of electronic monitoring:Yes\nWas an interpreter used?:No\nDoes the offender have any special needs?:No",
                                                 "welshLabel": "Hysbysiad o orchymyn monitro electronig (mechnïaeth)"
                                             },
                                             {
@@ -387,8 +387,8 @@
                                                 "usergroups": [
 
                                                 ],
-                                                "value": "midlandsnps.court@justice.gov.uk",
-                                                "welshValue": "midlandsnps.court@justice.gov.uk"
+                                                "value": "a@b.co.uk",
+                                                "welshValue": "a@b.co.uk"
                                             },
                                             {
                                                 "courtExtract": "Y",

@@ -49,7 +49,7 @@
                         "postcode": "EC2M 4NP"
                     },
                     "contact": {
-                        "primaryEmail": "casebuilderscpsmemos@cityoflondon.police.uk"
+                        "primaryEmail": "a@b.co.uk"
                     },
                     "majorCreditorCode": "COLP",
                     "prosecutionAuthorityCode": "CITYPF",
@@ -93,9 +93,9 @@
                                         "category": "INTERMEDIARY",
                                         "cjsCode": "4562",
                                         "courtClerk": {
-                                            "firstName": "Erica",
-                                            "lastName": "Wilson",
-                                            "userId": "31ec3a16-8721-498c-8da5-f099390ee254"
+                                            "firstName": "",
+                                            "lastName": "",
+                                            "userId": ""
                                         },
                                         "d20": false,
                                         "excludedFromResults": false,
@@ -178,7 +178,7 @@
                                                 "promptReference": "bdcbb822-b633-4935-8dba-149cb95b215d",
                                                 "promptSequence": 800,
                                                 "usergroups": [],
-                                                "value": "Electronic monitoring contractor organisation name:Electronic Monitoring Contractor\nElectronic monitoring contractor email address 1:LPadmin@ems.co.uk\nAdditional notification of electronic monitoring. Date and case reference of original order:999991919191\nDefendant's mobile number:01549955669\nWas an interpreter used?:No\nLanguage:English\nDoes the offender have any special needs?:No\nSpecial needs:Special needs\nThis curfew shall apply upon release from custody:Yes",
+                                                "value": "Electronic monitoring contractor organisation name:Electronic Monitoring Contractor\nElectronic monitoring contractor email address 1:a@b.co.uk\nAdditional notification of electronic monitoring. Date and case reference of original order:999991919191\nDefendant's mobile number:01549955669\nWas an interpreter used?:No\nLanguage:English\nDoes the offender have any special needs?:No\nSpecial needs:Special needs\nThis curfew shall apply upon release from custody:Yes",
                                                 "welshLabel": "Hysbysiad o orchymyn monitro electronig (mechnïaeth)"
                                             },
                                             {
@@ -318,8 +318,8 @@
                                                 "promptSequence": 1300,
                                                 "type": "NAMEADDRESS",
                                                 "usergroups": [],
-                                                "value": "GrpBedfordshire-YOS@bedford.gov.uk.cjsm.net",
-                                                "welshValue": "GrpBedfordshire-YOS@bedford.gov.uk.cjsm.net"
+                                                "value": "a@b.co.uk",
+                                                "welshValue": "a@b.co.uk"
                                             },
                                             {
                                                 "courtExtract": "N",
@@ -330,8 +330,8 @@
                                                 "promptSequence": 1300,
                                                 "type": "NAMEADDRESS",
                                                 "usergroups": [],
-                                                "value": "GrpBedfordshire-YOS2@bedford.gov.uk.cjsm.net",
-                                                "welshValue": "GrpBedfordshire-YOS2@bedford.gov.uk.cjsm.net"
+                                                "value": "a@b.co.uk",
+                                                "welshValue": "a@b.co.uk"
                                             },
                                             {
                                                 "courtExtract": "Y",
@@ -446,7 +446,7 @@
                                 "contact": {
                                     "home": "0267492682",
                                     "mobile": "01549955669",
-                                    "primaryEmail": "mariam.cole@gmail.com"
+                                    "primaryEmail": "a@b.co.uk"
                                 },
                                 "dateOfBirth": "1956-01-22",
                                 "documentationLanguageNeeds": "ENGLISH",
