@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
+import java.time.ZonedDateTime
 import java.util.*
 
 @Service
@@ -27,5 +28,21 @@ abstract class OrderSectionServiceBase {
     }
 
     return order
+  }
+
+  internal fun getDefaultZonedDateTime(date: ZonedDateTime?, hours: Int, minutes: Int): ZonedDateTime? {
+    if (date !== null) {
+      return ZonedDateTime.of(
+        date.year,
+        date.monthValue,
+        date.dayOfMonth,
+        hours,
+        minutes,
+        0,
+        0,
+        date.zone,
+      )
+    }
+    return null
   }
 }

@@ -59,12 +59,32 @@ class MonitoringConditionsAlcoholServiceTest {
     prisonName = null,
     probationOfficeName = null,
   )
+  private val mockDefaultStartDate = ZonedDateTime.of(
+    mockStartDate.year,
+    mockStartDate.monthValue,
+    mockStartDate.dayOfMonth,
+    0,
+    0,
+    0,
+    0,
+    mockStartDate.zone,
+  )
+  private val mockDefaultEndDate = ZonedDateTime.of(
+    mockEndDate.year,
+    mockEndDate.monthValue,
+    mockEndDate.dayOfMonth,
+    23,
+    59,
+    0,
+    0,
+    mockStartDate.zone,
+  )
   private val mockAlcoholMonitoringConditions = AlcoholMonitoringConditions(
     id = mockAlcoholMonitoringConditionsId,
     versionId = mockVersionId,
     monitoringType = AlcoholMonitoringType.ALCOHOL_ABSTINENCE,
-    startDate = mockStartDate,
-    endDate = mockEndDate,
+    startDate = mockDefaultStartDate,
+    endDate = mockDefaultEndDate,
     installationLocation = AlcoholMonitoringInstallationLocationType.PRIMARY,
     installationAddressId = mockAddressId,
     prisonName = null,
@@ -153,6 +173,26 @@ class MonitoringConditionsAlcoholServiceTest {
 
     @Test
     fun `address ID is null when alcohol monitoring installation location does not match an address type`() {
+      val mockDefaultStartDate = ZonedDateTime.of(
+        mockStartDate.year,
+        mockStartDate.monthValue,
+        mockStartDate.dayOfMonth,
+        0,
+        0,
+        0,
+        0,
+        mockStartDate.zone,
+      )
+      val mockDefaultEndDate = ZonedDateTime.of(
+        mockEndDate.year,
+        mockEndDate.monthValue,
+        mockEndDate.dayOfMonth,
+        23,
+        59,
+        0,
+        0,
+        mockStartDate.zone,
+      )
       val mockAlcoholMonitoringConditionsUpdateRecord = UpdateAlcoholMonitoringConditionsDto(
         monitoringType = AlcoholMonitoringType.ALCOHOL_ABSTINENCE,
         startDate = mockStartDate,
@@ -165,8 +205,8 @@ class MonitoringConditionsAlcoholServiceTest {
         id = mockAlcoholMonitoringConditionsId,
         versionId = mockVersionId,
         monitoringType = AlcoholMonitoringType.ALCOHOL_ABSTINENCE,
-        startDate = mockStartDate,
-        endDate = mockEndDate,
+        startDate = mockDefaultStartDate,
+        endDate = mockDefaultEndDate,
         installationLocation = AlcoholMonitoringInstallationLocationType.PROBATION_OFFICE,
         installationAddressId = null,
         prisonName = null,

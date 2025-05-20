@@ -16,8 +16,8 @@ class MonitoringConditionsTrailService : OrderSectionServiceBase() {
 
     order.monitoringConditionsTrail = TrailMonitoringConditions(
       versionId = order.getCurrentVersion().id,
-      startDate = updateRecord.startDate,
-      endDate = updateRecord.endDate,
+      endDate = getDefaultZonedDateTime(updateRecord.endDate, 23, 59),
+      startDate = getDefaultZonedDateTime(updateRecord.startDate, 0, 0),
     )
 
     return orderRepo.save(order).monitoringConditionsTrail!!

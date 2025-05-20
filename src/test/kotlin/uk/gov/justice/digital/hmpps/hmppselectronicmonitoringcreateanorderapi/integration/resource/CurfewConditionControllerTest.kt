@@ -225,8 +225,14 @@ class CurfewConditionControllerTest : IntegrationTestBase() {
     val updatedOrder = getOrder(order.id)
 
     Assertions.assertThat(updatedOrder.curfewConditions).isNotNull()
-    Assertions.assertThat(updatedOrder.curfewConditions?.startDate).isEqualTo(mockStartDate)
-    Assertions.assertThat(updatedOrder.curfewConditions?.endDate).isEqualTo(mockEndDate)
+    Assertions.assertThat(
+      updatedOrder.curfewConditions?.startDate!!.toLocalDate(),
+    ).isEqualTo(mockStartDate.toLocalDate())
+    Assertions.assertThat(updatedOrder.curfewConditions?.startDate!!.hour).isEqualTo(0)
+    Assertions.assertThat(updatedOrder.curfewConditions?.startDate!!.minute).isEqualTo(0)
+    Assertions.assertThat(updatedOrder.curfewConditions?.endDate!!.toLocalDate()).isEqualTo(mockEndDate.toLocalDate())
+    Assertions.assertThat(updatedOrder.curfewConditions?.endDate!!.hour).isEqualTo(23)
+    Assertions.assertThat(updatedOrder.curfewConditions?.endDate!!.minute).isEqualTo(59)
     Assertions.assertThat(updatedOrder.curfewConditions?.curfewAddress).isEqualTo("PRIMARY,SECONDARY")
   }
 
