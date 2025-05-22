@@ -19,6 +19,7 @@ object ValidationErrors {
 
   object CurfewConditions {
     const val START_DATE_REQUIRED: String = "Enter date curfew starts"
+    const val END_DATE_REQUIRED: String = "Enter date curfew ends"
     const val END_DATE_MUST_BE_IN_FUTURE: String = "Date curfew ends must be in the future"
     const val END_DATE_MUST_BE_AFTER_START_DATE: String = "Date curfew ends be after the date curfew starts"
     const val ADDRESS_REQUIRED: String = "Select where the device wearer will be during curfew hours"
@@ -109,6 +110,7 @@ object ValidationErrors {
 
   object TrailMonitoringConditions {
     const val START_DATE_REQUIRED: String = "Enter date trail monitoring starts"
+    const val END_DATE_REQUIRED: String = "Enter date trail monitoring ends"
     const val END_DATE_MUST_BE_IN_FUTURE: String = "End date must be in the future"
   }
 

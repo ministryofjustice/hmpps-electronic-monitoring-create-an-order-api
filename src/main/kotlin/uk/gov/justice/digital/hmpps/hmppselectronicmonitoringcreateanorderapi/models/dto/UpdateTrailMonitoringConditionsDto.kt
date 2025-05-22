@@ -8,6 +8,7 @@ import java.time.ZonedDateTime
 data class UpdateTrailMonitoringConditionsDto(
   @field:NotNull(message = ValidationErrors.TrailMonitoringConditions.START_DATE_REQUIRED)
   val startDate: ZonedDateTime? = null,
+  @field:NotNull(message = ValidationErrors.TrailMonitoringConditions.END_DATE_REQUIRED)
   @field:Future(message = ValidationErrors.TrailMonitoringConditions.END_DATE_MUST_BE_IN_FUTURE)
   val endDate: ZonedDateTime? = null,
 )

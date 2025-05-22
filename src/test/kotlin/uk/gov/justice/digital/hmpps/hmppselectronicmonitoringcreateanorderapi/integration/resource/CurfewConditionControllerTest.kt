@@ -34,6 +34,7 @@ class CurfewConditionControllerTest : IntegrationTestBase() {
 
   private object ErrorMessages {
     const val START_DATE_REQUIRED: String = "Enter date curfew starts"
+    const val END_DATE_REQUIRED: String = "Enter date curfew ends"
     const val END_DATE_MUST_BE_IN_FUTURE: String = "Date curfew ends must be in the future"
     const val END_DATE_MUST_BE_AFTER_START_DATE: String = "Date curfew ends be after the date curfew starts"
     const val ADDRESS_REQUIRED: String = "Select where the device wearer will be during curfew hours"
@@ -111,11 +112,12 @@ class CurfewConditionControllerTest : IntegrationTestBase() {
       .expectBodyList(ValidationError::class.java)
       .returnResult()
     val error = result.responseBody!!
-    Assertions.assertThat(result.responseBody).hasSize(2)
+    Assertions.assertThat(result.responseBody).hasSize(3)
     Assertions.assertThat(
       error,
     ).contains(ValidationError("curfewAddress", ErrorMessages.ADDRESS_REQUIRED))
     Assertions.assertThat(error).contains(ValidationError("startDate", ErrorMessages.START_DATE_REQUIRED))
+    Assertions.assertThat(error).contains(ValidationError("endDate", ErrorMessages.END_DATE_REQUIRED))
   }
 
   @Test
