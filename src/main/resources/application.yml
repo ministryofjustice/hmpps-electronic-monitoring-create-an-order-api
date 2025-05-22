@@ -64,6 +64,9 @@ toggle:
   cemo:
     fms-integration:
       enabled: ${CEMO_FMS_INTEGRATION_ENABLED:false}
+  data-dictionary:
+    v5-1:
+      enabled: ${DATA_DICTIONARY_V5_1_ENABLED:false}
 
 management:
   endpoints:
