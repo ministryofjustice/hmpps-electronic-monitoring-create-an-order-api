@@ -14,6 +14,7 @@ generic-service:
     CP_PROCESSING_ENABLED: true
     CP_FMS_INTEGRATION_ENABLED: false
     CEMO_FMS_INTEGRATION_ENABLED: true
+    DATA_DICTIONARY_V5_1_ENABLED: true
 
 
 # CloudPlatform AlertManager receiver to route prometheus alerts to slack
