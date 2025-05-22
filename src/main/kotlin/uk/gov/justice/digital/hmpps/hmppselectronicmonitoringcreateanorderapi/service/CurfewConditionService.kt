@@ -18,7 +18,7 @@ class CurfewConditionService : OrderSectionServiceBase() {
       versionId = order.getCurrentVersion().id,
       curfewAddress = updateRecord.curfewAddress,
       endDate = getDefaultZonedDateTime(updateRecord.endDate, 23, 59),
-      startDate = getDefaultZonedDateTime(updateRecord.startDate, 0, 0),
+      startDate = updateRecord.startDate,
     )
 
     return orderRepo.save(order).curfewConditions!!

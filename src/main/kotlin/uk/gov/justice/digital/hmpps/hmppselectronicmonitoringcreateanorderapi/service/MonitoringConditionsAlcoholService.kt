@@ -34,7 +34,7 @@ class MonitoringConditionsAlcoholService : OrderSectionServiceBase() {
 
     with(alcoholMonitoringConditionsUpdateRecord) {
       alcoholMonitoringConditions.monitoringType = monitoringType
-      alcoholMonitoringConditions.startDate = getDefaultZonedDateTime(startDate, 0, 0)
+      alcoholMonitoringConditions.startDate = startDate
       alcoholMonitoringConditions.endDate = getDefaultZonedDateTime(endDate, 23, 59)
       alcoholMonitoringConditions.installationLocation = installationLocation
       alcoholMonitoringConditions.prisonName = prisonName
