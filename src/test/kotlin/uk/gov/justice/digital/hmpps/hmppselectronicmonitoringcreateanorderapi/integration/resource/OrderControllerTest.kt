@@ -838,12 +838,12 @@ class OrderControllerTest : IntegrationTestBase() {
       		{
       			"condition": "Curfew with EM",
             "start_date": "${mockStartDate.format(dateTimeFormatter)}",
-            "end_date": "${mockEndDate.format(dateTimeFormatter)}"
+            "end_date": "$mockEndDateInBritishTime"
       		},
       		{
       			"condition": "Location Monitoring (Fitted Device)",
             "start_date": "${mockStartDate.format(dateTimeFormatter)}",
-            "end_date": "${mockEndDate.format(dateTimeFormatter)}"
+            "end_date": "$mockEndDateInBritishTime"
       		},
       		{
       			"condition": "EM Exclusion / Inclusion Zone",
@@ -853,7 +853,7 @@ class OrderControllerTest : IntegrationTestBase() {
       		{
       			"condition": "AAMR",
             "start_date": "${mockStartDate.format(dateTimeFormatter)}",
-            "end_date": "${mockEndDate.format(dateTimeFormatter)}"
+            "end_date": "$mockEndDateInBritishTime"
       		}
       	],
       	"exclusion_allday": "",
@@ -915,7 +915,7 @@ class OrderControllerTest : IntegrationTestBase() {
         "service_end_date": "${mockEndDate.format(formatter)}",
         "curfew_description": "",
       	"curfew_start": "${mockStartDate.format(dateTimeFormatter)}",
-      	"curfew_end": "${mockEndDate.format(dateTimeFormatter)}",
+      	"curfew_end": "$mockEndDateInBritishTime",
       	"curfew_duration": [
       		{
       			"location": "primary",
@@ -1204,12 +1204,12 @@ class OrderControllerTest : IntegrationTestBase() {
       		{
       			"condition": "Curfew with EM",
             "start_date": "${mockStartDate.format(dateTimeFormatter)}",
-            "end_date": "${mockEndDate.format(dateTimeFormatter)}"
+            "end_date": "$mockEndDateInBritishTime"
       		},
       		{
       			"condition": "Location Monitoring (Fitted Device)",
             "start_date": "${mockStartDate.format(dateTimeFormatter)}",
-            "end_date": "${mockEndDate.format(dateTimeFormatter)}"
+            "end_date": "$mockEndDateInBritishTime"
       		},
       		{
       			"condition": "EM Exclusion / Inclusion Zone",
@@ -1219,7 +1219,7 @@ class OrderControllerTest : IntegrationTestBase() {
       		{
       			"condition": "AAMR",
             "start_date": "${mockStartDate.format(dateTimeFormatter)}",
-            "end_date": "${mockEndDate.format(dateTimeFormatter)}"
+           "end_date": "$mockEndDateInBritishTime"
       		}
       	],
       	"exclusion_allday": "",
@@ -1281,7 +1281,7 @@ class OrderControllerTest : IntegrationTestBase() {
         "service_end_date": "${mockEndDate.format(formatter)}",
         "curfew_description": "",
       	"curfew_start": "${mockStartDate.format(dateTimeFormatter)}",
-      	"curfew_end": "${mockEndDate.format(dateTimeFormatter)}",
+      	"curfew_end": "$mockEndDateInBritishTime",
       	"curfew_duration": [
       		{
       			"location": "primary",
@@ -1540,12 +1540,12 @@ class OrderControllerTest : IntegrationTestBase() {
       		{
       			"condition": "Curfew with EM",
             "start_date": "${mockStartDate.format(dateTimeFormatter)}",
-            "end_date": "${mockEndDate.format(dateTimeFormatter)}"
+            "end_date": "$mockEndDateInBritishTime"
       		},
       		{
       			"condition": "Location Monitoring (Fitted Device)",
             "start_date": "${mockStartDate.format(dateTimeFormatter)}",
-            "end_date": "${mockEndDate.format(dateTimeFormatter)}"
+            "end_date": "$mockEndDateInBritishTime"
       		},
       		{
       			"condition": "EM Exclusion / Inclusion Zone",
@@ -1555,7 +1555,7 @@ class OrderControllerTest : IntegrationTestBase() {
       		{
       			"condition": "AAMR",
             "start_date": "${mockStartDate.format(dateTimeFormatter)}",
-            "end_date": "${mockEndDate.format(dateTimeFormatter)}"
+            "end_date": "$mockEndDateInBritishTime"
       		}
       	],
       	"exclusion_allday": "",
@@ -1617,7 +1617,7 @@ class OrderControllerTest : IntegrationTestBase() {
         "service_end_date": "${mockEndDate.format(formatter)}",
         "curfew_description": "",
       	"curfew_start": "${mockStartDate.format(dateTimeFormatter)}",
-      	"curfew_end": "${mockEndDate.format(dateTimeFormatter)}",
+      	"curfew_end": "$mockEndDateInBritishTime",
       	"curfew_duration": [
       		{
       			"location": "primary",
