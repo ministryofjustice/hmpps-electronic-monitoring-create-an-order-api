@@ -27,7 +27,7 @@ class EnforcementZoneControllerTest : IntegrationTestBase() {
 
   private val mockStartDate = ZonedDateTime.of(
     LocalDate.now(ZoneId.of("UTC")),
-    LocalTime.NOON,
+    LocalTime.MIDNIGHT,
     ZoneId.of("UTC"),
   ).plusMonths(1)
   private val mockEndDate = ZonedDateTime.of(
@@ -37,7 +37,7 @@ class EnforcementZoneControllerTest : IntegrationTestBase() {
   ).plusMonths(2)
   private val mockPastStartDate = ZonedDateTime.of(
     LocalDate.of(1970, 2, 1),
-    LocalTime.NOON,
+    LocalTime.MIDNIGHT,
     ZoneId.of("UTC"),
   )
   private val mockPastEndDate = mockPastStartDate.plusDays(1)
@@ -275,29 +275,27 @@ class EnforcementZoneControllerTest : IntegrationTestBase() {
 
       // Verify order state matches expected state
       Assertions.assertThat(updatedOrder.enforcementZoneConditions).hasSize(2)
+      Assertions.assertThat(updatedOrder.enforcementZoneConditions!![0].startDate).isEqualTo(mockStartDate)
+      val condition0BritishEndDate = updatedOrder.enforcementZoneConditions!![0].endDate!!.toInstant().atZone(
+        ZoneId.of("Europe/London"),
+      )
       Assertions.assertThat(
-        updatedOrder.enforcementZoneConditions!![0].startDate!!.toLocalDate(),
-      ).isEqualTo(mockStartDate.toLocalDate())
-      Assertions.assertThat(updatedOrder.enforcementZoneConditions!![0].startDate!!.hour).isEqualTo(0)
-      Assertions.assertThat(updatedOrder.enforcementZoneConditions!![0].startDate!!.minute).isEqualTo(0)
-      Assertions.assertThat(
-        updatedOrder.enforcementZoneConditions!![0].endDate!!.toLocalDate(),
+        condition0BritishEndDate.toLocalDate(),
       ).isEqualTo(mockEndDate.toLocalDate())
-      Assertions.assertThat(updatedOrder.enforcementZoneConditions!![0].endDate!!.hour).isEqualTo(23)
-      Assertions.assertThat(updatedOrder.enforcementZoneConditions!![0].endDate!!.minute).isEqualTo(59)
+      Assertions.assertThat(condition0BritishEndDate.hour).isEqualTo(23)
+      Assertions.assertThat(condition0BritishEndDate.minute).isEqualTo(59)
       Assertions.assertThat(updatedOrder.enforcementZoneConditions!![0].description).isEqualTo("MockDescription")
       Assertions.assertThat(updatedOrder.enforcementZoneConditions!![0].duration).isEqualTo("MockDuration")
       Assertions.assertThat(updatedOrder.enforcementZoneConditions!![0].zoneId).isEqualTo(0)
+      Assertions.assertThat(updatedOrder.enforcementZoneConditions!![1].startDate).isEqualTo(mockStartDate)
+      val condition1BritishEndDate = updatedOrder.enforcementZoneConditions!![1].endDate!!.toInstant().atZone(
+        ZoneId.of("Europe/London"),
+      )
       Assertions.assertThat(
-        updatedOrder.enforcementZoneConditions!![1].startDate!!.toLocalDate(),
-      ).isEqualTo(mockStartDate.toLocalDate())
-      Assertions.assertThat(updatedOrder.enforcementZoneConditions!![1].startDate!!.hour).isEqualTo(0)
-      Assertions.assertThat(updatedOrder.enforcementZoneConditions!![1].startDate!!.minute).isEqualTo(0)
-      Assertions.assertThat(
-        updatedOrder.enforcementZoneConditions!![1].endDate!!.toLocalDate(),
+        condition0BritishEndDate.toLocalDate(),
       ).isEqualTo(mockEndDate.toLocalDate())
-      Assertions.assertThat(updatedOrder.enforcementZoneConditions!![1].endDate!!.hour).isEqualTo(23)
-      Assertions.assertThat(updatedOrder.enforcementZoneConditions!![1].endDate!!.minute).isEqualTo(59)
+      Assertions.assertThat(condition0BritishEndDate.hour).isEqualTo(23)
+      Assertions.assertThat(condition0BritishEndDate.minute).isEqualTo(59)
       Assertions.assertThat(updatedOrder.enforcementZoneConditions!![1].description).isEqualTo("MockDescription")
       Assertions.assertThat(updatedOrder.enforcementZoneConditions!![1].duration).isEqualTo("MockDuration")
       Assertions.assertThat(updatedOrder.enforcementZoneConditions!![1].zoneId).isEqualTo(1)
@@ -348,16 +346,15 @@ class EnforcementZoneControllerTest : IntegrationTestBase() {
       Assertions.assertThat(updatedOrder.enforcementZoneConditions!![0].duration).isEqualTo("MockDuration")
       Assertions.assertThat(updatedOrder.enforcementZoneConditions!![0].zoneId).isEqualTo(0)
 
+      Assertions.assertThat(updatedOrder.enforcementZoneConditions!![0].startDate).isEqualTo(mockStartDate)
+      val britishEndDate = updatedOrder.enforcementZoneConditions!![0].endDate!!.toInstant().atZone(
+        ZoneId.of("Europe/London"),
+      )
       Assertions.assertThat(
-        updatedOrder.enforcementZoneConditions!![0].startDate!!.toLocalDate(),
-      ).isEqualTo(mockStartDate.toLocalDate())
-      Assertions.assertThat(updatedOrder.enforcementZoneConditions!![0].startDate!!.hour).isEqualTo(0)
-      Assertions.assertThat(updatedOrder.enforcementZoneConditions!![0].startDate!!.minute).isEqualTo(0)
-      Assertions.assertThat(
-        updatedOrder.enforcementZoneConditions!![0].endDate!!.toLocalDate(),
+        britishEndDate.toLocalDate(),
       ).isEqualTo(mockEndDate.toLocalDate())
-      Assertions.assertThat(updatedOrder.enforcementZoneConditions!![0].endDate!!.hour).isEqualTo(23)
-      Assertions.assertThat(updatedOrder.enforcementZoneConditions!![0].endDate!!.minute).isEqualTo(59)
+      Assertions.assertThat(britishEndDate.hour).isEqualTo(23)
+      Assertions.assertThat(britishEndDate.minute).isEqualTo(59)
     }
   }
 
@@ -507,16 +504,15 @@ class EnforcementZoneControllerTest : IntegrationTestBase() {
 
       // Verify order state matches expected state
       Assertions.assertThat(updatedOrder.enforcementZoneConditions).hasSize(1)
+      Assertions.assertThat(updatedOrder.enforcementZoneConditions!![0].startDate).isEqualTo(mockStartDate)
+      val britishEndDate = updatedOrder.enforcementZoneConditions!![0].endDate!!.toInstant().atZone(
+        ZoneId.of("Europe/London"),
+      )
       Assertions.assertThat(
-        updatedOrder.enforcementZoneConditions!![0].startDate!!.toLocalDate(),
-      ).isEqualTo(mockStartDate.toLocalDate())
-      Assertions.assertThat(updatedOrder.enforcementZoneConditions!![0].startDate!!.hour).isEqualTo(0)
-      Assertions.assertThat(updatedOrder.enforcementZoneConditions!![0].startDate!!.minute).isEqualTo(0)
-      Assertions.assertThat(
-        updatedOrder.enforcementZoneConditions!![0].endDate!!.toLocalDate(),
+        britishEndDate.toLocalDate(),
       ).isEqualTo(mockEndDate.toLocalDate())
-      Assertions.assertThat(updatedOrder.enforcementZoneConditions!![0].endDate!!.hour).isEqualTo(23)
-      Assertions.assertThat(updatedOrder.enforcementZoneConditions!![0].endDate!!.minute).isEqualTo(59)
+      Assertions.assertThat(britishEndDate.hour).isEqualTo(23)
+      Assertions.assertThat(britishEndDate.minute).isEqualTo(59)
       Assertions.assertThat(updatedOrder.enforcementZoneConditions!![0].description).isEqualTo("MockDescription")
       Assertions.assertThat(updatedOrder.enforcementZoneConditions!![0].duration).isEqualTo("MockDuration")
       Assertions.assertThat(updatedOrder.enforcementZoneConditions!![0].zoneId).isEqualTo(0)

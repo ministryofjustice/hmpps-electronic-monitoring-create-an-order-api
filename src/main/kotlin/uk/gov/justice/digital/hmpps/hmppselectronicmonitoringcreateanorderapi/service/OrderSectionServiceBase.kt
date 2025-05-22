@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
+import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.util.*
 
@@ -40,7 +41,7 @@ abstract class OrderSectionServiceBase {
         minutes,
         0,
         0,
-        date.zone,
+        ZoneId.of("Europe/London"),
       )
     }
     return null
