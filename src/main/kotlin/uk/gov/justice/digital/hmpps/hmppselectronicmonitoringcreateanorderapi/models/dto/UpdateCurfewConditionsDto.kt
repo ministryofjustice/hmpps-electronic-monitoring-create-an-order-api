@@ -11,6 +11,7 @@ data class UpdateCurfewConditionsDto(
   @field:NotNull(message = ValidationErrors.CurfewConditions.START_DATE_REQUIRED)
   var startDate: ZonedDateTime? = null,
 
+  @field:NotNull(message = ValidationErrors.CurfewConditions.END_DATE_REQUIRED)
   @field:Future(message = ValidationErrors.CurfewConditions.END_DATE_MUST_BE_IN_FUTURE)
   var endDate: ZonedDateTime? = null,
 
