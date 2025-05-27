@@ -5,13 +5,13 @@ import org.junit.jupiter.api.Test
 import org.springframework.http.MediaType
 import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
-import java.time.LocalDate
+import java.time.ZonedDateTime
 import java.util.*
 
 class MandatoryAttendanceControllerTest : IntegrationTestBase() {
   private val mockId: UUID = UUID.randomUUID()
-  private val mockStartDate: LocalDate = LocalDate.now()
-  private val mockEndDate: LocalDate = LocalDate.now().plusDays(1)
+  private val mockStartDate: ZonedDateTime = ZonedDateTime.now()
+  private val mockEndDate: ZonedDateTime = ZonedDateTime.now().plusDays(1)
   private val mockPurpose: String = "Purpose"
   private val mockAppointmentDay: String = "Day"
   private val mockStartTime: String = "12:00"

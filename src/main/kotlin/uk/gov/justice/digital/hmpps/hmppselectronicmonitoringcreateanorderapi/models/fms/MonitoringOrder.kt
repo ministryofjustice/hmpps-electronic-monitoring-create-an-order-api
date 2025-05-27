@@ -222,7 +222,7 @@ data class MonitoringOrder(
         orderTypeDescription = conditions.orderTypeDescription?.value,
         orderStart = getBritishDateAndTime(conditions.startDate),
         orderEnd = getBritishDateAndTime(conditions.endDate) ?: "",
-        serviceEndDate = conditions.endDate?.format(dateFormatter) ?: "",
+        serviceEndDate = getBritishDate(conditions.endDate) ?: "",
         caseId = caseId,
         conditionType = conditions.conditionType!!.value,
         orderId = order.id.toString(),
@@ -247,13 +247,13 @@ data class MonitoringOrder(
         monitoringOrder.enforceableCondition!!.add(
           EnforceableCondition(
             "Curfew with EM",
-            startDate = curfew.startDate?.format(dateTimeFormatter),
+            startDate = getBritishDateAndTime(curfew.startDate),
             endDate = getBritishDateAndTime(curfew.endDate) ?: "",
           ),
         )
         monitoringOrder.curfewDescription = curfew.curfewDescription
         monitoringOrder.conditionalReleaseDate = order.curfewReleaseDateConditions?.releaseDate?.format(dateFormatter)
-        monitoringOrder.curfewStart = curfew.startDate!!.format(dateTimeFormatter)
+        monitoringOrder.curfewStart = getBritishDateAndTime(curfew.startDate)
         monitoringOrder.curfewEnd = getBritishDateAndTime(curfew.endDate)
         monitoringOrder.curfewDuration = getCurfewSchedules(order, curfew)
       }
@@ -262,7 +262,7 @@ data class MonitoringOrder(
         monitoringOrder.enforceableCondition!!.add(
           EnforceableCondition(
             "Location Monitoring (Fitted Device)",
-            startDate = order.monitoringConditionsTrail!!.startDate?.format(dateTimeFormatter),
+            startDate = getBritishDateAndTime(order.monitoringConditionsTrail!!.startDate),
             endDate = getBritishDateAndTime(order.monitoringConditionsTrail!!.endDate),
           ),
 
@@ -284,7 +284,7 @@ data class MonitoringOrder(
               Zone(
                 description = it.description,
                 duration = it.duration,
-                start = it.startDate?.format(dateFormatter),
+                start = getBritishDate(it.startDate),
                 end = getBritishDate(it.endDate) ?: "",
               ),
             )
@@ -293,7 +293,7 @@ data class MonitoringOrder(
               Zone(
                 description = it.description,
                 duration = it.duration,
-                start = it.startDate?.format(dateFormatter),
+                start = getBritishDate(it.startDate),
                 end = getBritishDate(it.endDate) ?: "",
               ),
             )
@@ -320,8 +320,8 @@ data class MonitoringOrder(
           monitoringOrder.enforceableCondition!!.add(
             EnforceableCondition(
               "AAMR",
-              startDate = condition.startDate?.format(dateTimeFormatter),
-              endDate = getBritishDateAndTime(conditions.endDate) ?: "",
+              startDate = getBritishDateAndTime(condition.startDate),
+              endDate = getBritishDateAndTime(condition.endDate) ?: "",
             ),
           )
           monitoringOrder.abstinence = "Yes"
@@ -329,7 +329,7 @@ data class MonitoringOrder(
           monitoringOrder.enforceableCondition!!.add(
             EnforceableCondition(
               "AML",
-              startDate = condition.startDate?.format(dateTimeFormatter),
+              startDate = getBritishDateAndTime(condition.startDate),
               endDate = getBritishDateAndTime(conditions.endDate) ?: "",
             ),
           )
@@ -447,8 +447,8 @@ data class MonitoringOrder(
           it.addressLine4 + "\n" +
           it.postcode + "\n",
         duration = "",
-        start = it.startDate?.format(dateFormatter),
-        end = it.endDate?.format(dateFormatter),
+        start = getBritishDate(it.startDate),
+        end = getBritishDate(it.endDate),
       )
     }
   }

@@ -38,7 +38,7 @@ class EnforcementZoneService(val webClient: DocumentApiClient) : OrderSectionSer
         versionId = order.getCurrentVersion().id,
         description = updateRecord.description,
         duration = updateRecord.duration,
-        endDate = getDefaultZonedDateTime(updateRecord.endDate, 23, 59),
+        endDate = updateRecord.endDate,
         startDate = updateRecord.startDate,
         zoneId = updateRecord.zoneId,
         zoneType = updateRecord.zoneType,

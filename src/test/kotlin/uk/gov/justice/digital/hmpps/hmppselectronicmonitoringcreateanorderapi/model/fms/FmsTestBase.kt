@@ -17,7 +17,6 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.SentenceType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YesNoUnknown
-import java.time.LocalDate
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.util.*
@@ -172,8 +171,8 @@ abstract class FmsTestBase {
   )
 
   protected fun createMandatoryAttendanceCondition(
-    endDate: LocalDate = LocalDate.of(2025, 2, 1),
-    startDate: LocalDate = LocalDate.of(2025, 1, 1),
+    endDate: ZonedDateTime = ZonedDateTime.of(2025, 2, 1, 0, 0, 0, 0, ZoneId.of("UTC")),
+    startDate: ZonedDateTime = ZonedDateTime.of(2025, 1, 1, 23, 59, 0, 0, ZoneId.of("UTC")),
     postcode: String = "AB11 1CD",
     addressLine1: String = "Line 1",
     addressLine2: String = "Line 2",

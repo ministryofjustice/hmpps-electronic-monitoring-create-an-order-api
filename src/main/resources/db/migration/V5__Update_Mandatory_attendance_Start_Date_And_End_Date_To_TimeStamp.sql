@@ -1,0 +1,3 @@
+ALTER Table mandatory_attendance
+    ALTER   COLUMN start_date TYPE TIMESTAMP WITHOUT TIME ZONE,
+    ALTER   COLUMN end_date TYPE TIMESTAMP WITHOUT TIME ZONE;

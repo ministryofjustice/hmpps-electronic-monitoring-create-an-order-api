@@ -131,14 +131,7 @@ class MonitoringConditionsTrailControllerTest : IntegrationTestBase() {
     val trailConditions = result.responseBody!!
 
     Assertions.assertThat(trailConditions.startDate).isEqualTo(mockStartDate)
-    val britishEndDate = trailConditions.endDate!!.toInstant().atZone(ZoneId.of("Europe/London"))
-    Assertions.assertThat(
-      britishEndDate.toLocalDate(),
-    ).isEqualTo(mockEndDate.toLocalDate())
-    Assertions.assertThat(britishEndDate.hour).isEqualTo(23)
-    Assertions.assertThat(britishEndDate.minute).isEqualTo(59)
-    Assertions.assertThat(trailConditions.endDate!!.hour).isEqualTo(23)
-    Assertions.assertThat(trailConditions.endDate!!.minute).isEqualTo(59)
+    Assertions.assertThat(trailConditions.endDate).isEqualTo(mockEndDate)
   }
 
   @Test
@@ -203,12 +196,7 @@ class MonitoringConditionsTrailControllerTest : IntegrationTestBase() {
     val trailConditions = result.responseBody!!
 
     Assertions.assertThat(trailConditions.startDate).isEqualTo(mockPastStartDate)
-    val britishEndDate = trailConditions.endDate!!.toInstant().atZone(ZoneId.of("Europe/London"))
-    Assertions.assertThat(
-      britishEndDate.toLocalDate(),
-    ).isEqualTo(mockEndDate.toLocalDate())
-    Assertions.assertThat(britishEndDate.hour).isEqualTo(23)
-    Assertions.assertThat(britishEndDate.minute).isEqualTo(59)
+    Assertions.assertThat(trailConditions.endDate).isEqualTo(mockEndDate)
   }
 
   @Test
