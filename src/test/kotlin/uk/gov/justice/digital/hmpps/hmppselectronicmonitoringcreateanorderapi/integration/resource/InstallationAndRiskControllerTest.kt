@@ -6,6 +6,8 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.ValueSource
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.web.reactive.function.BodyInserters
@@ -91,12 +93,21 @@ class InstallationAndRiskControllerTest : IntegrationTestBase() {
       ).isEqualTo("An editable order with ${order.id} does not exist")
     }
 
-    @Test
-    fun `it should update installation and risk with valid request body`() {
+    @ParameterizedTest(name = "it should update installation and risk with valid request body with riskCategory {0}")
+    @ValueSource(
+      strings = [
+        "SEXUAL_OFFENCES",
+        "SAFEGUARDING_ISSUE",
+        "SAFEGUARDING_ADULT",
+        "SAFEGUARDING_CHILD",
+        "SAFEGUARDING_DOMESTIC_ABUSE",
+      ],
+    )
+    fun `it should update installation and risk with valid request body`(riskCategory: String) {
       val order = createOrder()
       val mockRisk = mockValidRequestBody(
         offence = "VIOLENCE_AGAINST_THE_PERSON",
-        riskCategory = arrayOf("SEXUAL_OFFENCES"),
+        riskCategory = arrayOf(riskCategory),
         riskDetails = "mockRisk",
         mappaLevel = "mockMappaLevel",
         mappaCaseType = "mockMappaType",
@@ -118,7 +129,7 @@ class InstallationAndRiskControllerTest : IntegrationTestBase() {
       val updatedOrder = getOrder(order.id)
 
       Assertions.assertThat(updatedOrder.installationAndRisk?.offence).isEqualTo("VIOLENCE_AGAINST_THE_PERSON")
-      Assertions.assertThat(updatedOrder.installationAndRisk?.riskCategory?.first()).isEqualTo("SEXUAL_OFFENCES")
+      Assertions.assertThat(updatedOrder.installationAndRisk?.riskCategory?.first()).isEqualTo(riskCategory)
       Assertions.assertThat(updatedOrder.installationAndRisk?.riskDetails).isEqualTo("mockRisk")
       Assertions.assertThat(updatedOrder.installationAndRisk?.mappaLevel).isEqualTo("mockMappaLevel")
       Assertions.assertThat(updatedOrder.installationAndRisk?.mappaCaseType).isEqualTo("mockMappaType")
