@@ -17,7 +17,7 @@ class CurfewConditionService : OrderSectionServiceBase() {
     order.curfewConditions = CurfewConditions(
       versionId = order.getCurrentVersion().id,
       curfewAddress = updateRecord.curfewAddress,
-      endDate = getDefaultZonedDateTime(updateRecord.endDate, 23, 59),
+      endDate = updateRecord.endDate,
       startDate = updateRecord.startDate,
     )
 

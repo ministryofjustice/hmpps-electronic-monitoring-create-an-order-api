@@ -129,14 +129,7 @@ class MonitoringConditionsAlcoholControllerTest : IntegrationTestBase() {
     val alcoholConditions = result.responseBody!!
 
     Assertions.assertThat(alcoholConditions.startDate).isEqualTo(mockStartDate)
-    val britishEndDate = alcoholConditions.endDate!!.toInstant().atZone(ZoneId.of("Europe/London"))
-    Assertions.assertThat(
-      britishEndDate.toLocalDate(),
-    ).isEqualTo(mockEndDate.toLocalDate())
-    Assertions.assertThat(britishEndDate.hour).isEqualTo(23)
-    Assertions.assertThat(britishEndDate.minute).isEqualTo(59)
-    Assertions.assertThat(alcoholConditions.endDate!!.hour).isEqualTo(23)
-    Assertions.assertThat(alcoholConditions.endDate!!.minute).isEqualTo(59)
+    Assertions.assertThat(alcoholConditions.endDate).isEqualTo(mockEndDate)
     Assertions.assertThat(
       alcoholConditions.monitoringType,
     ).isEqualTo(AlcoholMonitoringType.ALCOHOL_ABSTINENCE)

@@ -9,7 +9,7 @@ import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
 import jakarta.validation.constraints.NotNull
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.data.ValidationErrors
-import java.time.LocalDate
+import java.time.ZonedDateTime
 import java.util.*
 
 @Entity
@@ -26,10 +26,10 @@ data class MandatoryAttendanceConditions(
   @field:NotNull(
     message = ValidationErrors.MandatoryAttendance.START_DATE_REQUIRED,
   )
-  var startDate: LocalDate? = null,
+  var startDate: ZonedDateTime? = null,
 
   @Column(name = "END_DATE", nullable = true)
-  var endDate: LocalDate? = null,
+  var endDate: ZonedDateTime? = null,
 
   @Column(name = "PURPOSE", nullable = false)
   @field:NotNull(message = ValidationErrors.MandatoryAttendance.PURPOSE_REQUIRED)

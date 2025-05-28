@@ -276,26 +276,13 @@ class EnforcementZoneControllerTest : IntegrationTestBase() {
       // Verify order state matches expected state
       Assertions.assertThat(updatedOrder.enforcementZoneConditions).hasSize(2)
       Assertions.assertThat(updatedOrder.enforcementZoneConditions!![0].startDate).isEqualTo(mockStartDate)
-      val condition0BritishEndDate = updatedOrder.enforcementZoneConditions!![0].endDate!!.toInstant().atZone(
-        ZoneId.of("Europe/London"),
-      )
-      Assertions.assertThat(
-        condition0BritishEndDate.toLocalDate(),
-      ).isEqualTo(mockEndDate.toLocalDate())
-      Assertions.assertThat(condition0BritishEndDate.hour).isEqualTo(23)
-      Assertions.assertThat(condition0BritishEndDate.minute).isEqualTo(59)
+      Assertions.assertThat(updatedOrder.enforcementZoneConditions!![0].startDate).isEqualTo(mockStartDate)
+      Assertions.assertThat(updatedOrder.enforcementZoneConditions!![0].endDate).isEqualTo(mockEndDate)
       Assertions.assertThat(updatedOrder.enforcementZoneConditions!![0].description).isEqualTo("MockDescription")
       Assertions.assertThat(updatedOrder.enforcementZoneConditions!![0].duration).isEqualTo("MockDuration")
       Assertions.assertThat(updatedOrder.enforcementZoneConditions!![0].zoneId).isEqualTo(0)
       Assertions.assertThat(updatedOrder.enforcementZoneConditions!![1].startDate).isEqualTo(mockStartDate)
-      val condition1BritishEndDate = updatedOrder.enforcementZoneConditions!![1].endDate!!.toInstant().atZone(
-        ZoneId.of("Europe/London"),
-      )
-      Assertions.assertThat(
-        condition0BritishEndDate.toLocalDate(),
-      ).isEqualTo(mockEndDate.toLocalDate())
-      Assertions.assertThat(condition0BritishEndDate.hour).isEqualTo(23)
-      Assertions.assertThat(condition0BritishEndDate.minute).isEqualTo(59)
+      Assertions.assertThat(updatedOrder.enforcementZoneConditions!![1].endDate).isEqualTo(mockEndDate)
       Assertions.assertThat(updatedOrder.enforcementZoneConditions!![1].description).isEqualTo("MockDescription")
       Assertions.assertThat(updatedOrder.enforcementZoneConditions!![1].duration).isEqualTo("MockDuration")
       Assertions.assertThat(updatedOrder.enforcementZoneConditions!![1].zoneId).isEqualTo(1)
@@ -347,14 +334,7 @@ class EnforcementZoneControllerTest : IntegrationTestBase() {
       Assertions.assertThat(updatedOrder.enforcementZoneConditions!![0].zoneId).isEqualTo(0)
 
       Assertions.assertThat(updatedOrder.enforcementZoneConditions!![0].startDate).isEqualTo(mockStartDate)
-      val britishEndDate = updatedOrder.enforcementZoneConditions!![0].endDate!!.toInstant().atZone(
-        ZoneId.of("Europe/London"),
-      )
-      Assertions.assertThat(
-        britishEndDate.toLocalDate(),
-      ).isEqualTo(mockEndDate.toLocalDate())
-      Assertions.assertThat(britishEndDate.hour).isEqualTo(23)
-      Assertions.assertThat(britishEndDate.minute).isEqualTo(59)
+      Assertions.assertThat(updatedOrder.enforcementZoneConditions!![0].endDate).isEqualTo(mockEndDate)
     }
   }
 
@@ -505,14 +485,7 @@ class EnforcementZoneControllerTest : IntegrationTestBase() {
       // Verify order state matches expected state
       Assertions.assertThat(updatedOrder.enforcementZoneConditions).hasSize(1)
       Assertions.assertThat(updatedOrder.enforcementZoneConditions!![0].startDate).isEqualTo(mockStartDate)
-      val britishEndDate = updatedOrder.enforcementZoneConditions!![0].endDate!!.toInstant().atZone(
-        ZoneId.of("Europe/London"),
-      )
-      Assertions.assertThat(
-        britishEndDate.toLocalDate(),
-      ).isEqualTo(mockEndDate.toLocalDate())
-      Assertions.assertThat(britishEndDate.hour).isEqualTo(23)
-      Assertions.assertThat(britishEndDate.minute).isEqualTo(59)
+      Assertions.assertThat(updatedOrder.enforcementZoneConditions!![0].endDate).isEqualTo(mockEndDate)
       Assertions.assertThat(updatedOrder.enforcementZoneConditions!![0].description).isEqualTo("MockDescription")
       Assertions.assertThat(updatedOrder.enforcementZoneConditions!![0].duration).isEqualTo("MockDuration")
       Assertions.assertThat(updatedOrder.enforcementZoneConditions!![0].zoneId).isEqualTo(0)

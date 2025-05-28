@@ -227,12 +227,7 @@ class CurfewConditionControllerTest : IntegrationTestBase() {
     val updatedOrder = getOrder(order.id)
 
     Assertions.assertThat(updatedOrder.curfewConditions?.startDate).isEqualTo(mockStartDate)
-    val britishEndDate = updatedOrder.curfewConditions?.endDate!!.toInstant().atZone(ZoneId.of("Europe/London"))
-    Assertions.assertThat(
-      britishEndDate.toLocalDate(),
-    ).isEqualTo(mockEndDate.toLocalDate())
-    Assertions.assertThat(britishEndDate.hour).isEqualTo(23)
-    Assertions.assertThat(britishEndDate.minute).isEqualTo(59)
+    Assertions.assertThat(updatedOrder.curfewConditions?.endDate).isEqualTo(mockEndDate)
     Assertions.assertThat(updatedOrder.curfewConditions?.curfewAddress).isEqualTo("PRIMARY,SECONDARY")
   }
 

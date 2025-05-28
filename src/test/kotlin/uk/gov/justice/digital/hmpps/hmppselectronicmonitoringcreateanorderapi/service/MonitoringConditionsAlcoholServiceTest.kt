@@ -60,22 +60,12 @@ class MonitoringConditionsAlcoholServiceTest {
     probationOfficeName = null,
   )
 
-  private val mockDefaultEndDate = ZonedDateTime.of(
-    mockEndDate.year,
-    mockEndDate.monthValue,
-    mockEndDate.dayOfMonth,
-    23,
-    59,
-    0,
-    0,
-    ZoneId.of("Europe/London"),
-  )
   private val mockAlcoholMonitoringConditions = AlcoholMonitoringConditions(
     id = mockAlcoholMonitoringConditionsId,
     versionId = mockVersionId,
     monitoringType = AlcoholMonitoringType.ALCOHOL_ABSTINENCE,
     startDate = mockStartDate,
-    endDate = mockDefaultEndDate,
+    endDate = mockEndDate,
     installationLocation = AlcoholMonitoringInstallationLocationType.PRIMARY,
     installationAddressId = mockAddressId,
     prisonName = null,
@@ -164,7 +154,7 @@ class MonitoringConditionsAlcoholServiceTest {
 
     @Test
     fun `address ID is null when alcohol monitoring installation location does not match an address type`() {
-      val mockDefaultEndDate = ZonedDateTime.of(
+      val mockEndDate = ZonedDateTime.of(
         mockEndDate.year,
         mockEndDate.monthValue,
         mockEndDate.dayOfMonth,
@@ -187,7 +177,7 @@ class MonitoringConditionsAlcoholServiceTest {
         versionId = mockVersionId,
         monitoringType = AlcoholMonitoringType.ALCOHOL_ABSTINENCE,
         startDate = mockStartDate,
-        endDate = mockDefaultEndDate,
+        endDate = mockEndDate,
         installationLocation = AlcoholMonitoringInstallationLocationType.PROBATION_OFFICE,
         installationAddressId = null,
         prisonName = null,
