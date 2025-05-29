@@ -26,3 +26,4 @@ echo "SERCO_URL=$(jq -r '.data.SERCO_URL' <<< "${SECRETS}" | base64 -d)" >> .env
 echo "CP_PROCESSING_ENABLED=false" >> .env
 echo "CP_FMS_INTEGRATION_ENABLED=false" >> .env
 echo "CEMO_FMS_INTEGRATION_ENABLED=true" >> .env
+echo "DATA_DICTIONARY_V5_1_ENABLED=true" >> .env
