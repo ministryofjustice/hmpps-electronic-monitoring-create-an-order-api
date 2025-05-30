@@ -803,7 +803,14 @@ class OrderControllerTest : IntegrationTestBase() {
       	"risk_details": "Danger",
       	"mappa": "MAAPA 1",
       	"mappa_case_type": "CPPC (Critical Public Protection Case)",
-      	"risk_categories": [],
+      	"risk_categories": [
+          {
+            "category": "Sexual Offences"
+          },
+          {
+            "category": "Risk to Specific Gender"
+          }
+        ],
       	"responsible_adult_required": "true",
       	"parent": "Mark Smith",
       	"guardian": "",
@@ -1169,7 +1176,14 @@ class OrderControllerTest : IntegrationTestBase() {
       	"risk_details": "Danger",
       	"mappa": "MAAPA 1",
       	"mappa_case_type": "CPPC (Critical Public Protection Case)",
-      	"risk_categories": [],
+      	"risk_categories": [
+          {
+            "category": "Sexual Offences"
+          },
+          {
+            "category": "Risk to Specific Gender"
+          }
+        ],
       	"responsible_adult_required": "true",
       	"parent": "Mark Smith",
       	"guardian": "",
@@ -1506,7 +1520,14 @@ class OrderControllerTest : IntegrationTestBase() {
       	"risk_details": "Danger",
       	"mappa": "MAAPA 1",
       	"mappa_case_type": "CPPC (Critical Public Protection Case)",
-      	"risk_categories": [],
+      	"risk_categories": [
+          {
+            "category": "Sexual Offences"
+          },
+          {
+            "category": "Risk to Specific Gender"
+          }
+        ],
       	"responsible_adult_required": "true",
       	"parent": "Mark Smith",
       	"guardian": "",
@@ -1818,7 +1839,14 @@ class OrderControllerTest : IntegrationTestBase() {
       	"risk_details": "Danger",
       	"mappa": "MAAPA 1",
       	"mappa_case_type": "CPPC (Critical Public Protection Case)",
-      	"risk_categories": [],
+      	"risk_categories": [
+          {
+            "category": "Sexual Offences"
+          },
+          {
+            "category": "Risk to Specific Gender"
+          }
+        ],
       	"responsible_adult_required": "true",
       	"parent": "Mark Smith",
       	"guardian": "",
@@ -1955,6 +1983,7 @@ class OrderControllerTest : IntegrationTestBase() {
       versionId = versionId,
       offence = "FRAUD_OFFENCES",
       riskDetails = "Danger",
+      riskCategory = arrayOf("SEXUAL_OFFENCES", "RISK_TO_GENDER"),
       mappaLevel = "MAAPA 1",
       mappaCaseType = "CPPC (Critical Public Protection Case)",
     )
