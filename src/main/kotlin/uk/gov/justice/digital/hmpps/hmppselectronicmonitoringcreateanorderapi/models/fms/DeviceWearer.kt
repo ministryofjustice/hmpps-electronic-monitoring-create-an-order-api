@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Gender
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RiskCategory
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Sex
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.formatters.PhoneNumberFormatter
 import java.time.format.DateTimeFormatter
@@ -85,7 +86,7 @@ data class DeviceWearer(
   var mappaCaseType: String? = "",
 
   @JsonProperty("risk_categories")
-  var riskCategory: List<RiskCategory>? = emptyList(),
+  var riskCategory: List<FmsRiskCategory>? = emptyList(),
 
   @JsonProperty("responsible_adult_required")
   var responsibleAdultRequired: String? = "false",
@@ -161,6 +162,7 @@ data class DeviceWearer(
         disability = disabilities,
         phoneNumber = getPhoneNumber(order),
         riskDetails = order.installationAndRisk?.riskDetails,
+        riskCategory = getRiskCategories(order),
         mappa = order.installationAndRisk?.mappaLevel,
         mappaCaseType = order.installationAndRisk?.mappaCaseType,
         responsibleAdultRequired = (order.deviceWearerResponsibleAdult != null).toString(),
@@ -173,6 +175,7 @@ data class DeviceWearer(
         deliusId = order.deviceWearer?.deliusId,
         homeOfficeReferenceNumber = order.deviceWearer?.homeOfficeReferenceNumber,
         prisonNumber = order.deviceWearer?.prisonNumber,
+
       )
 
       if (order.deviceWearer?.noFixedAbode != null && !order.deviceWearer?.noFixedAbode!!) {
@@ -224,9 +227,19 @@ data class DeviceWearer(
 
     private fun getGender(order: Order): String =
       Gender.from(order.deviceWearer?.gender)?.value ?: order.deviceWearer?.gender ?: ""
+
+    private fun getRiskCategories(order: Order): List<FmsRiskCategory> {
+      if (order.installationAndRisk?.riskCategory?.any() == true) {
+        return order.installationAndRisk!!.riskCategory!!
+          .filter { RiskCategory.entries.any { riskCategory -> riskCategory.name == it } }
+          .map { FmsRiskCategory(RiskCategory.entries.first { riskCategory -> riskCategory.name == it }.value) }
+          .toList()
+      }
+      return emptyList()
+    }
   }
 }
 
 data class Disability(var disability: String? = "")
 
-data class RiskCategory(var category: String? = "")
+data class FmsRiskCategory(var category: String? = "")

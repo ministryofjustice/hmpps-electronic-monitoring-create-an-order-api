@@ -80,6 +80,7 @@ abstract class FmsTestBase {
     prisonNumber: String = "prisonNumber",
     homeOfficeReferenceNumber: String = "homeOfficeReferenceNumber",
     noFixedAbode: Boolean = false,
+    riskCategory: String = "",
   ): DeviceWearer = DeviceWearer(
     versionId = UUID.randomUUID(),
     firstName = firstName,
@@ -129,12 +130,14 @@ abstract class FmsTestBase {
     riskDetails: String = "Danger",
     mappaLevel: String = "MAAPA 1",
     mappaCaseType: String = "CPPC (Critical Public Protection Case)",
+    riskCategory: String = "THREATS_OF_VIOLENCE",
   ) = InstallationAndRisk(
     versionId = UUID.randomUUID(),
     offence = offence,
     riskDetails = riskDetails,
     mappaLevel = mappaLevel,
     mappaCaseType = mappaCaseType,
+    riskCategory = arrayOf(riskCategory),
   )
 
   protected fun createMonitoringConditions(
