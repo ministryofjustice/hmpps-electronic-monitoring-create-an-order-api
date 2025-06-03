@@ -17,6 +17,7 @@ class InstallationAndRiskService : OrderSectionServiceBase() {
     order.installationAndRisk = InstallationAndRisk(
       versionId = order.getCurrentVersion().id,
       offence = updateRecord.offence,
+      offenceAdditionalDetails = updateRecord.offenceAdditionalDetails,
       riskCategory = updateRecord.riskCategory,
       riskDetails = updateRecord.riskDetails,
       mappaLevel = updateRecord.mappaLevel,

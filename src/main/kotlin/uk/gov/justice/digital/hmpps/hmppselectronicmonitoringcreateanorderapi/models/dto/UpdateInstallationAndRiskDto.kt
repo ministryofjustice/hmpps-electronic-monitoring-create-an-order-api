@@ -8,6 +8,8 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 data class UpdateInstallationAndRiskDto(
   val offence: String? = "",
 
+  val offenceAdditionalDetails: String? = "",
+
   val riskCategory: Array<String>? = null,
 
   val riskDetails: String? = "",
