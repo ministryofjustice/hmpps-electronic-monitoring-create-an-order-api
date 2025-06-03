@@ -157,6 +157,7 @@ class InstallationAndRiskControllerTest : IntegrationTestBase() {
       val updatedOrder = getOrder(order.id)
 
       Assertions.assertThat(updatedOrder.installationAndRisk?.offence).isNull()
+      Assertions.assertThat(updatedOrder.installationAndRisk?.offenceAdditionalDetails).isNull()
       Assertions.assertThat(updatedOrder.installationAndRisk?.riskCategory).isNull()
       Assertions.assertThat(updatedOrder.installationAndRisk?.riskDetails).isNull()
       Assertions.assertThat(updatedOrder.installationAndRisk?.mappaLevel).isNull()
@@ -187,6 +188,7 @@ class InstallationAndRiskControllerTest : IntegrationTestBase() {
       val updatedOrder = getOrder(order.id)
 
       Assertions.assertThat(updatedOrder.installationAndRisk?.offence).isEqualTo("")
+      Assertions.assertThat(updatedOrder.installationAndRisk?.offenceAdditionalDetails).isNull()
       Assertions.assertThat(updatedOrder.installationAndRisk?.riskCategory).isNull()
       Assertions.assertThat(updatedOrder.installationAndRisk?.riskDetails).isNull()
       Assertions.assertThat(updatedOrder.installationAndRisk?.mappaLevel).isNull()
@@ -205,6 +207,7 @@ class InstallationAndRiskControllerTest : IntegrationTestBase() {
             """
               {
                 "offence": "INVALID",
+                "offenceAdditionalDetails": "",
                 "riskCategory": ["INVALID"],
                 "riskDetails": "",
                 "mappaLevel": "",
@@ -239,6 +242,7 @@ class InstallationAndRiskControllerTest : IntegrationTestBase() {
 
     fun mockValidRequestBody(
       offence: String? = null,
+      offenceAdditionalDetails: String? = null,
       riskCategory: Array<String>? = null,
       riskDetails: String? = null,
       mappaLevel: String? = null,
@@ -246,6 +250,7 @@ class InstallationAndRiskControllerTest : IntegrationTestBase() {
     ): String {
       val condition = UpdateInstallationAndRiskDto(
         offence = offence,
+        offenceAdditionalDetails = offenceAdditionalDetails,
         riskCategory = riskCategory,
         riskDetails = riskDetails,
         mappaLevel = mappaLevel,

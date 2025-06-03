@@ -24,6 +24,9 @@ data class InstallationAndRisk(
   @Column(name = "OFFENCE", nullable = true)
   var offence: String? = "",
 
+  @Column(name = "OFFENCE_ADDITIONAL_DETAILS", nullable = true)
+  var offenceAdditionalDetails: String? = "",
+
   @Convert(converter = ArrayToStringConverter::class)
   @Column(name = "RISK_CATEGORY", nullable = true)
   var riskCategory: Array<String>? = null,
