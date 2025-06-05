@@ -4,10 +4,12 @@ import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Address
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationAndRisk
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InterestedParties
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.MandatoryAttendanceConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.MonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ProbationDeliveryUnit
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ResponsibleAdult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MonitoringConditionType
@@ -30,6 +32,8 @@ abstract class FmsTestBase {
     installationAndRisk: InstallationAndRisk = createInstallationAndRisk(),
     monitoringConditions: MonitoringConditions = createMonitoringConditions(),
     mandatoryAttendanceConditions: List<MandatoryAttendanceConditions> = listOf(),
+    interestedParties: InterestedParties? = null,
+    probationDeliveryUnits: ProbationDeliveryUnit? = null,
   ): Order {
     val orderId = UUID.randomUUID()
     val versionId = UUID.randomUUID()
@@ -51,7 +55,8 @@ abstract class FmsTestBase {
     order.installationAndRisk = installationAndRisk
     order.monitoringConditions = monitoringConditions
     order.mandatoryAttendanceConditions.addAll(mandatoryAttendanceConditions)
-
+    order.interestedParties = interestedParties
+    order.probationDeliveryUnit = probationDeliveryUnits
     if (responsibleAdult != null) {
       order.deviceWearerResponsibleAdult = responsibleAdult
     }
@@ -116,6 +121,32 @@ abstract class FmsTestBase {
     addressLine4 = addressLine4,
     postcode = postcode,
     addressType = addressType,
+  )
+
+  protected fun createInterestedParty(
+    notifyingOrganisation: String = "",
+    notifyingOrganisationName: String = "",
+    notifyingOrganisationEmail: String = "",
+    responsibleOfficerPhoneNumber: String = "",
+    responsibleOrganisation: String = "PROBATION",
+    responsibleOrganisationRegion: String = "",
+    responsibleOfficerName: String = "",
+    responsibleOrganisationEmail: String = "",
+  ) = InterestedParties(
+    versionId = UUID.randomUUID(),
+    notifyingOrganisation = notifyingOrganisation,
+    notifyingOrganisationName = notifyingOrganisationName,
+    notifyingOrganisationEmail = notifyingOrganisationEmail,
+    responsibleOfficerPhoneNumber = responsibleOfficerPhoneNumber,
+    responsibleOrganisationRegion = responsibleOrganisationRegion,
+    responsibleOrganisation = responsibleOrganisation,
+    responsibleOfficerName = responsibleOfficerName,
+    responsibleOrganisationEmail = responsibleOrganisationEmail,
+  )
+
+  protected fun createProbationDeliveryUnit(unit: String = "") = ProbationDeliveryUnit(
+    versionId = UUID.randomUUID(),
+    unit = unit,
   )
 
   protected fun createResponsibleAdult(fullName: String = "Mark Smith", contactNumber: String = "+447401111111") =
