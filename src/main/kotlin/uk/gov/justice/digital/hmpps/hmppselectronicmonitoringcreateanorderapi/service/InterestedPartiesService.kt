@@ -15,7 +15,7 @@ class InterestedPartiesService(private val addressService: AddressService) : Ord
     // Verify the order belongs to the user and is in draft state
     val order = this.findEditableOrder(orderId, username)
 
-    order.interestedParties = InterestedParties(
+    val newInterestedParties = InterestedParties(
       versionId = order.getCurrentVersion().id,
       notifyingOrganisation = updateRecord.notifyingOrganisation.toString(),
       notifyingOrganisationName = updateRecord.notifyingOrganisationName,
@@ -25,9 +25,14 @@ class InterestedPartiesService(private val addressService: AddressService) : Ord
       responsibleOrganisation = updateRecord.responsibleOrganisation.toString(),
       responsibleOrganisationRegion = updateRecord.responsibleOrganisationRegion,
       responsibleOrganisationEmail = updateRecord.responsibleOrganisationEmail,
-
     )
-
+    // clear previously selected probation delivery unit if responsible organisation or responsible organisation region changed
+    if (newInterestedParties.responsibleOrganisation != order.interestedParties?.responsibleOfficerName ||
+      newInterestedParties.responsibleOrganisationRegion != order.interestedParties?.responsibleOrganisationRegion
+    ) {
+      order.probationDeliveryUnit = null
+    }
+    order.interestedParties = newInterestedParties
     return orderRepo.save(order).interestedParties!!
   }
 }
