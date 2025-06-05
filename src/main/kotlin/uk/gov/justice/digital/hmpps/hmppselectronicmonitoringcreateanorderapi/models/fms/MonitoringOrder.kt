@@ -12,6 +12,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Offence
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Prison
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ProbationDeliveryUnits
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ProbationServiceRegion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ResponsibleOrganisation
@@ -349,6 +350,11 @@ data class MonitoringOrder(
         monitoringOrder.responsibleOfficerPhone = getResponsibleOfficerPhoneNumber(order)
         monitoringOrder.responsibleOrganization = getResponsibleOrganisation(order)
         monitoringOrder.roRegion = getResponsibleOrganisationRegion(order)
+        if (ResponsibleOrganisation.from(order.interestedParties?.responsibleOrganisation) ===
+          ResponsibleOrganisation.PROBATION
+        ) {
+          monitoringOrder.pduResponsible = getProbationDeliveryUnit(order)
+        }
         monitoringOrder.roEmail = interestedParties.responsibleOrganisationEmail
         monitoringOrder.notifyingOrganization = getNotifyingOrganisation(order)
         monitoringOrder.noName = getNotifyingOrganisationName(order)
@@ -424,6 +430,9 @@ data class MonitoringOrder(
         ?: YouthJusticeServiceRegions.from(order.interestedParties?.responsibleOrganisationRegion)?.value
         ?: order.interestedParties?.responsibleOrganisationRegion
         ?: ""
+
+    private fun getProbationDeliveryUnit(order: Order): String =
+      ProbationDeliveryUnits.from(order.probationDeliveryUnit?.unit)?.value ?: ""
 
     private fun getOffence(order: Order): String? = Offence.from(order.installationAndRisk?.offence)?.value
       ?: order.installationAndRisk?.offence

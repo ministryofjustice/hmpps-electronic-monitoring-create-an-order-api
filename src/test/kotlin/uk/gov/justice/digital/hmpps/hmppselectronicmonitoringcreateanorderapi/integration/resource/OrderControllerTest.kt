@@ -28,6 +28,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.MonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ProbationDeliveryUnit
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ResponsibleAdult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.TrailMonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.VariationDetails
@@ -892,7 +893,7 @@ class OrderControllerTest : IntegrationTestBase() {
       	"order_variation_details": "",
       	"order_variation_req_received_date": "",
       	"order_variation_type": "",
-      	"pdu_responsible": "",
+      	"pdu_responsible": "Camden and Islington",
       	"pdu_responsible_email": "",
       	"planned_order_end_date": "",
       	"responsible_officer_details_received": "",
@@ -1265,7 +1266,7 @@ class OrderControllerTest : IntegrationTestBase() {
       	"order_variation_details": "",
       	"order_variation_req_received_date": "",
       	"order_variation_type": "",
-      	"pdu_responsible": "",
+      	"pdu_responsible": "Camden and Islington",
       	"pdu_responsible_email": "",
       	"planned_order_end_date": "",
       	"responsible_officer_details_received": "",
@@ -1608,7 +1609,7 @@ class OrderControllerTest : IntegrationTestBase() {
       	"order_variation_details": "",
       	"order_variation_req_received_date": "",
       	"order_variation_type": "Change of address",
-      	"pdu_responsible": "",
+      	"pdu_responsible": "Camden and Islington",
       	"pdu_responsible_email": "",
       	"planned_order_end_date": "",
       	"responsible_officer_details_received": "",
@@ -2099,7 +2100,10 @@ class OrderControllerTest : IntegrationTestBase() {
       notifyingOrganisationName = "WAYLAND_PRISON",
       notifyingOrganisationEmail = "",
     )
-
+    order.probationDeliveryUnit = ProbationDeliveryUnit(
+      versionId = versionId,
+      unit = "CAMDEN_AND_ISLINGTON",
+    )
     if (order.getCurrentVersion().type === RequestType.VARIATION) {
       order.variationDetails = VariationDetails(
         versionId = versionId,

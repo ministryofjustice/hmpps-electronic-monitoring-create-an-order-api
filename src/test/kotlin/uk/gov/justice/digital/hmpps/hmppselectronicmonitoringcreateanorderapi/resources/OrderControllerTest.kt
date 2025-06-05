@@ -100,6 +100,7 @@ class OrderControllerTest {
         type = RequestType.REQUEST,
         username = "mockUser",
         variationDetails = null,
+        probationDeliveryUnit = null,
       ),
     )
   }
@@ -163,6 +164,7 @@ class OrderControllerTest {
           type = RequestType.REQUEST,
           username = "mockUser",
           variationDetails = null,
+          probationDeliveryUnit = null,
         ),
         OrderDto(
           id = orderId2,
@@ -188,6 +190,7 @@ class OrderControllerTest {
           type = RequestType.REQUEST,
           username = "mockUser",
           variationDetails = null,
+          probationDeliveryUnit = null,
         ),
       ),
     )

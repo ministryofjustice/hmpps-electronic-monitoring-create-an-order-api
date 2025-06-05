@@ -74,7 +74,10 @@ object ValidationErrors {
       "Enter the Responsible Organisation's telephone number"
     const val RESPONSIBLE_ORGANISATION_EMAIL_REQUIRED: String = "Enter the Responsible Organisation's email address"
   }
-
+  object ProbationDeliveryUnit {
+    const val RESPONSIBLE_ORGANISATION_NOT_PROBATION: String = "Responsible organisation must be Probation"
+    const val DELIVERY_UNIT_NOT_IN_REGION: String = "Select probation delivery unit within given probation region"
+  }
   object InstallationAndRisk {
     const val OFFENCE_VALID: String = "Offence must be a valid offence"
     const val RISK_CATEGORY_VALID: String = "Risk categories must be a valid risk category"

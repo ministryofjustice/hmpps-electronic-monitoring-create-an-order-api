@@ -146,6 +146,14 @@ data class Order(
       getCurrentVersion().interestedParties = interestedParties
     }
 
+  var probationDeliveryUnit: ProbationDeliveryUnit?
+    get() {
+      return getCurrentVersion().probationDeliveryUnit
+    }
+    set(probationDeliveryUnit) {
+      getCurrentVersion().probationDeliveryUnit = probationDeliveryUnit
+    }
+
   val isValid: Boolean
     get() {
       return getCurrentVersion().isValid
