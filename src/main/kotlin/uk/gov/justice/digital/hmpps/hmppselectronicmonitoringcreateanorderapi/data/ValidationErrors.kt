@@ -121,6 +121,7 @@ object ValidationErrors {
     const val TYPE_REQUIRED: String = "Variation type is required"
     const val DATE_REQUIRED: String = "Variation date is required"
     const val TYPE_MUST_BE_VALID: String = "Variation type must be a valid variation type"
+    fun typeObsolete(type: String): String = "Variation type $type is obsolete"
     const val DATE_MUST_BE_VALID: String = "Variation date must be a valid date"
   }
 }

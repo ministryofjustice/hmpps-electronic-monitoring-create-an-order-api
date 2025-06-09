@@ -13,6 +13,7 @@ data class UpdateVariationDetailsDto(
 
   @field:NotEmpty(message = ValidationErrors.VariationDetails.DATE_REQUIRED)
   val variationDate: String = "",
+
 ) {
   @AssertTrue(message = ValidationErrors.VariationDetails.TYPE_MUST_BE_VALID)
   fun isVariationType(): Boolean {
@@ -26,7 +27,6 @@ data class UpdateVariationDetailsDto(
         return true
       }
     }
-
     return false
   }
 
