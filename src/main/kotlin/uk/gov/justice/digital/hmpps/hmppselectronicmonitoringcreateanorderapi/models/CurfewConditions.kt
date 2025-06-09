@@ -39,6 +39,9 @@ data class CurfewConditions(
   @field:Size(min = 1, message = ValidationErrors.CurfewConditions.ADDRESS_REQUIRED)
   var curfewAddress: String? = null,
 
+  @Column(name = "CURFEW_ADDITIONAL_DETAILS", nullable = true)
+  var curfewAdditionalDetails: String? = "",
+
   @JsonIgnore
   var curfewDescription: String? = "",
 
