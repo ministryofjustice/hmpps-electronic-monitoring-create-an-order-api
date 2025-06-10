@@ -28,19 +28,7 @@ class CurfewAdditionalDetailsControllerTest : IntegrationTestBase() {
   fun `Curfew additional details can be updated with null`() {
 
     val order = createOrder()
-
-    webTestClient.put()
-      .uri("/api/orders/${order.id}/monitoring-conditions-curfew-conditions")
-      .contentType(MediaType.APPLICATION_JSON)
-      .body(
-        BodyInserters.fromValue(
-          mockValidRequestBody(order.id),
-        ),
-      )
-      .headers(setAuthorisation())
-      .exchange()
-      .expectStatus()
-      .isOk
+    addCurfewDataToOrder(order.id)
 
     webTestClient.put()
       .uri("/api/orders/${order.id}/monitoring-conditions-curfew-details")
@@ -60,12 +48,20 @@ class CurfewAdditionalDetailsControllerTest : IntegrationTestBase() {
       .isOk
   }
 
-  fun mockValidRequestBody(
-    orderId: UUID,
-    startDate: ZonedDateTime? = mockStartDate,
-    endDate: ZonedDateTime? = mockEndDate,
-    curfewAddress: String? = "PRIMARY,SECONDARY",
-  ): String = mockRequestBody(orderId, startDate, endDate, curfewAddress)
+  fun addCurfewDataToOrder(orderId: UUID){
+    webTestClient.put()
+      .uri("/api/orders/$orderId/monitoring-conditions-curfew-conditions")
+      .contentType(MediaType.APPLICATION_JSON)
+      .body(
+        BodyInserters.fromValue(
+          mockRequestBody(orderId, mockStartDate, mockEndDate, "PRIMARY,SECONDARY"),
+        ),
+      )
+      .headers(setAuthorisation())
+      .exchange()
+      .expectStatus()
+      .isOk
+  }
 
   fun mockRequestBody(
     orderId: UUID,
