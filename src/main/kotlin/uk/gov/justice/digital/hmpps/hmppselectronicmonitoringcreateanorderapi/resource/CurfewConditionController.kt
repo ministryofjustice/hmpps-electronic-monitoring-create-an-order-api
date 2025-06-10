@@ -40,7 +40,7 @@ class CurfewConditionController(val service: CurfewConditionService) {
   }
 
   @Validated
-  @PutMapping("/orders/{orderId}/monitoring-conditions-curfew-details")
+  @PutMapping("/orders/{orderId}/monitoring-conditions-curfew-additional-details")
   fun updateCurfewDetails(
     @PathVariable orderId: UUID,
     @RequestBody @Valid updateRecord: UpdateCurfewAdditionalDetailsDto,

@@ -237,7 +237,7 @@ class CurfewConditionControllerTest : IntegrationTestBase() {
     addCurfewDataToOrder(order.id)
 
     webTestClient.put()
-      .uri("/api/orders/${order.id}/monitoring-conditions-curfew-details")
+      .uri("/api/orders/${order.id}/monitoring-conditions-curfew-additional-details")
       .contentType(MediaType.APPLICATION_JSON)
       .body(
         BodyInserters.fromValue(
@@ -260,7 +260,7 @@ class CurfewConditionControllerTest : IntegrationTestBase() {
     addCurfewDataToOrder(order.id)
 
     webTestClient.put()
-      .uri("/api/orders/${order.id}/monitoring-conditions-curfew-details")
+      .uri("/api/orders/${order.id}/monitoring-conditions-curfew-additional-details")
       .contentType(MediaType.APPLICATION_JSON)
       .body(
         BodyInserters.fromValue(
@@ -283,7 +283,7 @@ class CurfewConditionControllerTest : IntegrationTestBase() {
     addCurfewDataToOrder(order.id)
 
     webTestClient.put()
-      .uri("/api/orders/${order.id}/monitoring-conditions-curfew-details")
+      .uri("/api/orders/${order.id}/monitoring-conditions-curfew-additional-details")
       .contentType(MediaType.APPLICATION_JSON)
       .body(
         BodyInserters.fromValue(
@@ -305,7 +305,7 @@ class CurfewConditionControllerTest : IntegrationTestBase() {
     val order = createOrder()
 
     webTestClient.put()
-      .uri("/api/orders/${order.id}/monitoring-conditions-curfew-details")
+      .uri("/api/orders/${order.id}/monitoring-conditions-curfew-additional-details")
       .contentType(MediaType.APPLICATION_JSON)
       .body(
         BodyInserters.fromValue(
