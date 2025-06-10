@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.s
 
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewConditions
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateCurfewAdditionalDetailsDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateCurfewConditionsDto
 import java.util.*
 
@@ -20,6 +21,18 @@ class CurfewConditionService : OrderSectionServiceBase() {
       endDate = updateRecord.endDate,
       startDate = updateRecord.startDate,
     )
+
+    return orderRepo.save(order).curfewConditions!!
+  }
+
+  fun updateCurfewAdditionalDetails(
+    orderId: UUID,
+    username: String,
+    updateRecord: UpdateCurfewAdditionalDetailsDto,
+  ): CurfewConditions {
+    val order = findEditableOrder(orderId, username)
+
+    order.curfewConditions?.curfewAdditionalDetails = updateRecord.curfewAdditionalDetails
 
     return orderRepo.save(order).curfewConditions!!
   }

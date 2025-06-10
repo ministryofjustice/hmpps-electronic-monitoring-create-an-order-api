@@ -8,14 +8,14 @@ import org.springframework.security.core.Authentication
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.*
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewConditions
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.CurfewAdditionalDetailsService
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.CurfewConditionService
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateCurfewAdditionalDetailsDto
 import java.util.*
 
 @RestController
 @PreAuthorize("hasRole('ROLE_EM_CEMO__CREATE_ORDER')")
 @RequestMapping("/api/")
-class CurfewAdditionalDetailsController(val service: CurfewAdditionalDetailsService) {
+class CurfewAdditionalDetailsController(val service: CurfewConditionService) {
 
   @Validated
   @PutMapping("/orders/{orderId}/monitoring-conditions-curfew-details")
