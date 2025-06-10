@@ -14,13 +14,7 @@ class CurfewAdditionalDetailsService : OrderSectionServiceBase() {
   ): CurfewConditions {
     val order = findEditableOrder(orderId, username)
 
-    order.curfewConditions = CurfewConditions(
-      versionId = order.getCurrentVersion().id,
-      curfewAddress = order.curfewConditions?.curfewAddress,
-      endDate = order.curfewConditions?.endDate,
-      startDate = order.curfewConditions?.startDate,
-      curfewAdditionalDetails = updateRecord.curfewAdditionalDetails,
-    )
+    order.curfewConditions?.curfewAdditionalDetails = updateRecord.curfewAdditionalDetails
 
     return orderRepo.save(order).curfewConditions!!
   }
