@@ -233,7 +233,6 @@ class CurfewConditionControllerTest : IntegrationTestBase() {
 
   @Test
   fun `Curfew additional details can be updated with null`() {
-
     val order = createOrder()
     addCurfewDataToOrder(order.id)
 
@@ -255,7 +254,7 @@ class CurfewConditionControllerTest : IntegrationTestBase() {
       .isOk
   }
 
-  fun addCurfewDataToOrder(orderId: UUID){
+  fun addCurfewDataToOrder(orderId: UUID) {
     webTestClient.put()
       .uri("/api/orders/$orderId/monitoring-conditions-curfew-conditions")
       .contentType(MediaType.APPLICATION_JSON)
