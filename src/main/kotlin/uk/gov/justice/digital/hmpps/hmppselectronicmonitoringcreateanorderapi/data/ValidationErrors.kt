@@ -106,6 +106,10 @@ object ValidationErrors {
     const val NO_FIXED_ABODE_REQUIRED: String = "Select yes if the device wearer has a fixed address"
   }
 
+  object OrderSectionServiceBase {
+    fun noEditableOrderExists(id: UUID) = "An editable order with $id does not exist"
+  }
+
   object ResponsibleAdult {
     const val FIRST_NAME_REQUIRED: String = "Enter responsible adult's first name"
     const val LAST_NAME_REQUIRED: String = "Enter responsible adult's last name"
