@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.s
 
 import jakarta.persistence.EntityNotFoundException
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.data.ValidationErrors
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateCurfewAdditionalDetailsDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateCurfewConditionsDto
@@ -34,7 +35,7 @@ class CurfewConditionService : OrderSectionServiceBase() {
     val order = findEditableOrder(orderId, username)
 
     val curfewConditions = order.curfewConditions
-      ?: throw EntityNotFoundException("Curfew conditions for $orderId not found")
+      ?: throw EntityNotFoundException(ValidationErrors.CurfewReleaseDateConditions.curfewNotFound(orderId))
 
     curfewConditions.curfewAdditionalDetails = updateRecord.curfewAdditionalDetails
 
