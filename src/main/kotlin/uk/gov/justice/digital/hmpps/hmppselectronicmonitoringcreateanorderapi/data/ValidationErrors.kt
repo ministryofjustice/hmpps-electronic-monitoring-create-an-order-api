@@ -1,5 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.data
 
+import java.util.UUID
+
 object ValidationErrors {
   object Address {
     const val ADDRESS_1_REQUIRED: String = "Enter address line 1, typically the building and street"
@@ -31,6 +33,7 @@ object ValidationErrors {
     const val END_TIME_REQUIRED: String = "Enter time curfew ends on day of release"
     const val ADDRESS_REQUIRED: String =
       "Select the address the device wearer will be during curfew hours on the day of release"
+    fun curfewNotFound(orderId: UUID): String = "Curfew conditions for $orderId not found"
   }
 
   object CurfewTimetable {
@@ -101,6 +104,10 @@ object ValidationErrors {
 
   object NoFixedAbode {
     const val NO_FIXED_ABODE_REQUIRED: String = "Select yes if the device wearer has a fixed address"
+  }
+
+  object OrderSectionServiceBase {
+    fun noEditableOrderExists(id: UUID) = "An editable order with $id does not exist"
   }
 
   object ResponsibleAdult {
