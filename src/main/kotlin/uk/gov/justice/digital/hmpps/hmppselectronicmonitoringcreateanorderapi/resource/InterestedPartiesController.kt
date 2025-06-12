@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource
+package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.rsource
 
 import jakarta.validation.Valid
 import org.springframework.beans.factory.annotation.Autowired
