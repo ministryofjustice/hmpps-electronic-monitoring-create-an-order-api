@@ -67,7 +67,7 @@ object ValidationErrors {
 
   object InterestedParties {
     const val NOTIFYING_ORGANISATION_REQUIRED: String = "Select the organisation you are part of"
-    const val NOTIFYING_ORGANISATION_NAME_REQUIRED: String = "Enter the name of the prison"
+    const val NOTIFYING_ORGANISATION_NAME_REQUIRED: String = "Select the name of the organisation you are part of"
     const val RESPONSIBLE_ORGANISATION_REQUIRED: String = "Select the responsible officer's organisation"
     const val RESPONSIBLE_ORGANISATION_REGION_REQUIRED: String = "Select the probation region"
     const val TEAM_EMAIL_REQUIRED: String = "Enter your team's email address"
