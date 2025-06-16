@@ -10,9 +10,9 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringInstallationLocationType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DeviceWearerAddressUsage
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.InstallationLocationType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import java.time.LocalDate
@@ -89,7 +89,7 @@ class OrderVersionRepositoryTest {
           monitoringType = AlcoholMonitoringType.ALCOHOL_ABSTINENCE,
           startDate = mockStartDate,
           endDate = mockEndDate,
-          installationLocation = AlcoholMonitoringInstallationLocationType.PRIMARY,
+          installationLocation = InstallationLocationType.PRIMARY,
           installationAddressId = mockAddressId,
           prisonName = null,
           probationOfficeName = null,
@@ -114,7 +114,7 @@ class OrderVersionRepositoryTest {
           monitoringType = AlcoholMonitoringType.ALCOHOL_ABSTINENCE,
           startDate = mockStartDate,
           endDate = mockEndDate,
-          installationLocation = AlcoholMonitoringInstallationLocationType.PRIMARY,
+          installationLocation = InstallationLocationType.PRIMARY,
           installationAddressId = mockAddressId,
           prisonName = null,
           probationOfficeName = null,

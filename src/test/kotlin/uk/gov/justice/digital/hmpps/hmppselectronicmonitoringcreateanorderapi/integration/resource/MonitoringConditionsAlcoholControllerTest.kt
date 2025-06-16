@@ -7,8 +7,8 @@ import org.springframework.http.MediaType
 import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AlcoholMonitoringConditions
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringInstallationLocationType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.InstallationLocationType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidationError
 import java.time.LocalDate
 import java.time.LocalTime
@@ -135,7 +135,7 @@ class MonitoringConditionsAlcoholControllerTest : IntegrationTestBase() {
     ).isEqualTo(AlcoholMonitoringType.ALCOHOL_ABSTINENCE)
     Assertions.assertThat(
       alcoholConditions.installationLocation,
-    ).isEqualTo(AlcoholMonitoringInstallationLocationType.PRIMARY)
+    ).isEqualTo(InstallationLocationType.PRIMARY)
     Assertions.assertThat(alcoholConditions.prisonName).isEqualTo(null)
     Assertions.assertThat(alcoholConditions.probationOfficeName).isEqualTo(null)
   }

@@ -101,6 +101,7 @@ class OrderControllerTest {
         username = "mockUser",
         variationDetails = null,
         probationDeliveryUnit = null,
+        installationLocation = null,
       ),
     )
   }
@@ -165,6 +166,7 @@ class OrderControllerTest {
           username = "mockUser",
           variationDetails = null,
           probationDeliveryUnit = null,
+          installationLocation = null,
         ),
         OrderDto(
           id = orderId2,
@@ -191,6 +193,7 @@ class OrderControllerTest {
           username = "mockUser",
           variationDetails = null,
           probationDeliveryUnit = null,
+          installationLocation = null,
         ),
       ),
     )
