@@ -135,4 +135,9 @@ object ValidationErrors {
   object InstallationLocation {
     const val INSTALLATION_LOCATION_REQUIRED: String = "Select where installation will take place"
   }
+
+  object InstallationAppointment {
+    const val PLACE_NAME_REQUIRED: String = "Enter name of the place where installation takes place"
+    const val APPOINT_DATE_REQUIRED: String = "Enter date of installation"
+  }
 }

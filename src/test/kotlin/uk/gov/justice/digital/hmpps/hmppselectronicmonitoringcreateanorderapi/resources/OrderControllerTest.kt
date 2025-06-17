@@ -102,6 +102,7 @@ class OrderControllerTest {
         variationDetails = null,
         probationDeliveryUnit = null,
         installationLocation = null,
+        installationAppointment = null,
       ),
     )
   }
@@ -167,6 +168,7 @@ class OrderControllerTest {
           variationDetails = null,
           probationDeliveryUnit = null,
           installationLocation = null,
+          installationAppointment = null,
         ),
         OrderDto(
           id = orderId2,
@@ -194,6 +196,7 @@ class OrderControllerTest {
           variationDetails = null,
           probationDeliveryUnit = null,
           installationLocation = null,
+          installationAppointment = null,
         ),
       ),
     )

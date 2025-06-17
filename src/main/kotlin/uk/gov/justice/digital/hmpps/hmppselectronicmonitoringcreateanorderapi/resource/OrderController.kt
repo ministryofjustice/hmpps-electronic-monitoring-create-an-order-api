@@ -98,5 +98,6 @@ class OrderController(@Autowired val orderService: OrderService) {
     variationDetails = order.variationDetails,
     probationDeliveryUnit = order.probationDeliveryUnit,
     installationLocation = order.installationLocation,
+    installationAppointment = order.installationAppointment,
   )
 }

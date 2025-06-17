@@ -221,4 +221,12 @@ data class Order(
     set(installationLocation) {
       getCurrentVersion().installationLocation = installationLocation
     }
+
+  var installationAppointment: InstallationAppointment?
+    get() {
+      return getCurrentVersion().installationAppointment
+    }
+    set(installationAppointment) {
+      getCurrentVersion().installationAppointment = installationAppointment
+    }
 }
