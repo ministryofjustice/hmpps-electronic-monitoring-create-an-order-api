@@ -2,7 +2,7 @@ CREATE TABLE installation_location
 (
     id             UUID NOT NULL,
     version_id     UUID NOT NULL,
-    unit VARCHAR(255),
+    location VARCHAR(255),
     CONSTRAINT pk_installation_location PRIMARY KEY (id)
 );
 
