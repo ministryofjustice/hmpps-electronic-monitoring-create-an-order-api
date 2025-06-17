@@ -4,8 +4,8 @@ import jakarta.validation.constraints.AssertTrue
 import jakarta.validation.constraints.Future
 import jakarta.validation.constraints.NotNull
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.data.ValidationErrors
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringInstallationLocationType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.InstallationLocationType
 import java.time.ZonedDateTime
 
 data class UpdateAlcoholMonitoringConditionsDto(
@@ -19,21 +19,21 @@ data class UpdateAlcoholMonitoringConditionsDto(
   val endDate: ZonedDateTime? = null,
 
   @field:NotNull(message = ValidationErrors.AlcoholMonitoring.INSTALLATION_LOCATION_REQUIRED)
-  val installationLocation: AlcoholMonitoringInstallationLocationType? = null,
+  val installationLocation: InstallationLocationType? = null,
 
   val prisonName: String? = null,
   val probationOfficeName: String? = null,
 ) {
   @AssertTrue(message = ValidationErrors.AlcoholMonitoring.PRISON_NAME_REQUIRED_LOCATION_IS_PRISON)
   fun isPrisonName(): Boolean = !(
-    installationLocation == AlcoholMonitoringInstallationLocationType.PRISON && prisonName.isNullOrBlank()
+    installationLocation == InstallationLocationType.PRISON && prisonName.isNullOrBlank()
     )
 
   @AssertTrue(
     message = ValidationErrors.AlcoholMonitoring.OFFICE_NAME_REQUIRED_LOCATION_IS_PROBATION_OFFICE,
   )
   fun isProbationOfficeName(): Boolean = !(
-    installationLocation == AlcoholMonitoringInstallationLocationType.PROBATION_OFFICE &&
+    installationLocation == InstallationLocationType.PROBATION_OFFICE &&
       probationOfficeName.isNullOrBlank()
     )
 }

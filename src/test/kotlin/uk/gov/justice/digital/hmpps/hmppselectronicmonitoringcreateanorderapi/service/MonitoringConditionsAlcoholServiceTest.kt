@@ -14,9 +14,9 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateAlcoholMonitoringConditionsDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringInstallationLocationType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DeviceWearerAddressUsage
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.InstallationLocationType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
@@ -55,7 +55,7 @@ class MonitoringConditionsAlcoholServiceTest {
     monitoringType = AlcoholMonitoringType.ALCOHOL_ABSTINENCE,
     startDate = mockStartDate,
     endDate = mockEndDate,
-    installationLocation = AlcoholMonitoringInstallationLocationType.PRIMARY,
+    installationLocation = InstallationLocationType.PRIMARY,
     prisonName = null,
     probationOfficeName = null,
   )
@@ -66,7 +66,7 @@ class MonitoringConditionsAlcoholServiceTest {
     monitoringType = AlcoholMonitoringType.ALCOHOL_ABSTINENCE,
     startDate = mockStartDate,
     endDate = mockEndDate,
-    installationLocation = AlcoholMonitoringInstallationLocationType.PRIMARY,
+    installationLocation = InstallationLocationType.PRIMARY,
     installationAddressId = mockAddressId,
     prisonName = null,
     probationOfficeName = null,
@@ -168,7 +168,7 @@ class MonitoringConditionsAlcoholServiceTest {
         monitoringType = AlcoholMonitoringType.ALCOHOL_ABSTINENCE,
         startDate = mockStartDate,
         endDate = mockEndDate,
-        installationLocation = AlcoholMonitoringInstallationLocationType.PROBATION_OFFICE,
+        installationLocation = InstallationLocationType.PROBATION_OFFICE,
         prisonName = null,
         probationOfficeName = "MockProbationOfficeName",
       )
@@ -178,7 +178,7 @@ class MonitoringConditionsAlcoholServiceTest {
         monitoringType = AlcoholMonitoringType.ALCOHOL_ABSTINENCE,
         startDate = mockStartDate,
         endDate = mockEndDate,
-        installationLocation = AlcoholMonitoringInstallationLocationType.PROBATION_OFFICE,
+        installationLocation = InstallationLocationType.PROBATION_OFFICE,
         installationAddressId = null,
         prisonName = null,
         probationOfficeName = "MockProbationOfficeName",

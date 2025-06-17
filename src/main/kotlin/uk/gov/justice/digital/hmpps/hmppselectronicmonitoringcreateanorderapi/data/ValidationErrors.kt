@@ -131,4 +131,13 @@ object ValidationErrors {
     fun typeObsolete(type: String): String = "Variation type $type is obsolete"
     const val DATE_MUST_BE_VALID: String = "Variation date must be a valid date"
   }
+
+  object InstallationLocation {
+    const val INSTALLATION_LOCATION_REQUIRED: String = "Select where installation will take place"
+  }
+
+  object InstallationAppointment {
+    const val PLACE_NAME_REQUIRED: String = "Enter name of the place where installation takes place"
+    const val APPOINT_DATE_REQUIRED: String = "Enter date of installation"
+  }
 }

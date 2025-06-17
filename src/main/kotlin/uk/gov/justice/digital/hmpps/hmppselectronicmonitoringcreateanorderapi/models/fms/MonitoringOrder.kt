@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Address
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewTimeTable
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
@@ -8,6 +9,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.CrownCourt
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.EnforcementZoneType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.InstallationLocationType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MagistrateCourt
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Offence
@@ -361,7 +363,7 @@ data class MonitoringOrder(
         monitoringOrder.noEmail = interestedParties.notifyingOrganisationEmail
       }
 
-      order.addresses.firstOrNull { it.addressType == AddressType.INSTALLATION }?.let {
+      getInstallationAddress(order)?.let {
         monitoringOrder.installationAddress1 = it.addressLine1
         monitoringOrder.installationAddress2 = it.addressLine2
         monitoringOrder.installationAddress3 = it.addressLine3
@@ -375,6 +377,19 @@ data class MonitoringOrder(
       }
 
       return monitoringOrder
+    }
+
+    private fun getInstallationAddress(order: Order): Address? {
+      if (order.monitoringConditions?.isCurfewOnlyMonitoringConditions == true) {
+        return order.addresses.firstOrNull { it.addressType == AddressType.PRIMARY }
+      }
+
+      return when (order.installationLocation?.location) {
+        InstallationLocationType.PRIMARY -> order.addresses.firstOrNull { it.addressType == AddressType.PRIMARY }
+        InstallationLocationType.SECONDARY -> order.addresses.firstOrNull { it.addressType == AddressType.SECONDARY }
+        InstallationLocationType.TERTIARY -> order.addresses.firstOrNull { it.addressType == AddressType.TERTIARY }
+        else -> order.addresses.firstOrNull { it.addressType == AddressType.INSTALLATION }
+      }
     }
 
     private fun getCurfewSchedules(order: Order, curfew: CurfewConditions): MutableList<CurfewSchedule> {

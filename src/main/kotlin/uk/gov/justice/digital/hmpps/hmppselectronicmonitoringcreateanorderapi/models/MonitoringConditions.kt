@@ -95,4 +95,15 @@ data class MonitoringConditions(
             alcohol == true
           )
       )
+
+  val isCurfewOnlyMonitoringConditions: Boolean
+    get() = (
+      (
+        curfew == true &&
+          trail != true &&
+          exclusionZone != true &&
+          alcohol != true &&
+          mandatoryAttendance != true
+        )
+      )
 }
