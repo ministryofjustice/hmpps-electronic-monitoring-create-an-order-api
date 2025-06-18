@@ -28,6 +28,7 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
   private object ErrorMessages {
     const val ORDER_TYPE_REQUIRED: String = "Select order type"
     const val START_DATE_REQUIRED: String = "Enter start date for monitoring"
+    const val END_DATE_REQUIRED: String = "Enter end date for monitoring"
     const val TYPE_REQUIRED: String = "Select order type"
     const val END_DATE_MUST_BE_AFTER_START_DATE: String = "End date must be after start date"
   }
@@ -115,7 +116,8 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
               "curfew": true,
               "orderTypeDescription": "$mockOrderTypeDescription",
               "conditionType": "$mockConditionType",
-              "startDate": "$mockStartDate"
+              "startDate": "$mockStartDate",
+              "endDate": "$mockEndDate"
             }
           """.trimIndent(),
         ),
@@ -198,7 +200,6 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
       .returnResult()
 
     Assertions.assertThat(result.responseBody).isNotNull
-    Assertions.assertThat(result.responseBody).hasSize(3)
     Assertions.assertThat(result.responseBody!!).contains(
       ValidationError("orderType", ErrorMessages.ORDER_TYPE_REQUIRED),
     )
@@ -207,6 +208,9 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
     )
     Assertions.assertThat(result.responseBody!!).contains(
       ValidationError("startDate", ErrorMessages.START_DATE_REQUIRED),
+    )
+    Assertions.assertThat(result.responseBody!!).contains(
+      ValidationError("endDate", ErrorMessages.END_DATE_REQUIRED),
     )
   }
 
@@ -233,7 +237,7 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
               "mandatoryAttendance": "true",
               "alcohol": "true",
               "startDate": "$mockPastStartDate",
-              "endDate": null
+              "endDate": "${mockPastStartDate.plusDays(1)}"
             }
           """.trimIndent(),
         ),

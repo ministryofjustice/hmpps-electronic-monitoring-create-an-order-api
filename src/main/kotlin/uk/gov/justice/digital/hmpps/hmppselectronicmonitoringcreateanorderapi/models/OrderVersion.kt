@@ -15,6 +15,7 @@ import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
 import jakarta.persistence.UniqueConstraint
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.InstallationLocationType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import java.time.OffsetDateTime
@@ -106,6 +107,12 @@ data class OrderVersion(
   @OneToOne(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "version", orphanRemoval = true)
   var variationDetails: VariationDetails? = null,
 
+  @OneToOne(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "version", orphanRemoval = true)
+  var installationLocation: InstallationLocation? = null,
+
+  @OneToOne(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "version", orphanRemoval = true)
+  var installationAppointment: InstallationAppointment? = null,
+
   @Schema(hidden = true)
   @ManyToOne
   @JoinColumn(name = "ORDER_ID", updatable = false, insertable = false)
@@ -128,7 +135,16 @@ data class OrderVersion(
 
   private val monitoringConditionsAreValid: Boolean
     get() = (
-      addresses.any { it.addressType == AddressType.INSTALLATION } &&
+      (
+        if (monitoringConditions?.isCurfewOnlyMonitoringConditions == true ||
+          installationLocation?.location === InstallationLocationType.PRIMARY
+        ) {
+          (addresses.any { it.addressType == AddressType.PRIMARY })
+        } else {
+          (addresses.any { it.addressType == AddressType.INSTALLATION })
+        }
+
+        ) &&
         (
           if (monitoringConditions?.curfew == true) {
             curfewReleaseDateConditions != null &&

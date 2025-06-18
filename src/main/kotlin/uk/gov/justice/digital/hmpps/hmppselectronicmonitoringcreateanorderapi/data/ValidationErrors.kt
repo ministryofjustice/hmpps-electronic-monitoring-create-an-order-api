@@ -1,5 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.data
 
+import java.util.UUID
+
 object ValidationErrors {
   object Address {
     const val ADDRESS_1_REQUIRED: String = "Enter address line 1, typically the building and street"
@@ -31,6 +33,7 @@ object ValidationErrors {
     const val END_TIME_REQUIRED: String = "Enter time curfew ends on day of release"
     const val ADDRESS_REQUIRED: String =
       "Select the address the device wearer will be during curfew hours on the day of release"
+    fun curfewNotFound(orderId: UUID): String = "Curfew conditions for $orderId not found"
   }
 
   object CurfewTimetable {
@@ -64,7 +67,7 @@ object ValidationErrors {
 
   object InterestedParties {
     const val NOTIFYING_ORGANISATION_REQUIRED: String = "Select the organisation you are part of"
-    const val NOTIFYING_ORGANISATION_NAME_REQUIRED: String = "Enter the name of the prison"
+    const val NOTIFYING_ORGANISATION_NAME_REQUIRED: String = "Select the name of the organisation you are part of"
     const val RESPONSIBLE_ORGANISATION_REQUIRED: String = "Select the responsible officer's organisation"
     const val RESPONSIBLE_ORGANISATION_REGION_REQUIRED: String = "Select the probation region"
     const val TEAM_EMAIL_REQUIRED: String = "Enter your team's email address"
@@ -95,12 +98,17 @@ object ValidationErrors {
     const val MONITORING_TYPE_MINIMUM_ONE: String = "Select monitoring required"
     const val ORDER_TYPE_REQUIRED: String = "Select order type"
     const val START_DATE_REQUIRED: String = "Enter start date for monitoring"
+    const val END_DATE_REQUIRED: String = "Enter end date for monitoring"
     const val TYPE_REQUIRED: String = "Select order type"
     const val END_DATE_MUST_BE_AFTER_START_DATE: String = "End date must be after start date"
   }
 
   object NoFixedAbode {
     const val NO_FIXED_ABODE_REQUIRED: String = "Select yes if the device wearer has a fixed address"
+  }
+
+  object OrderSectionServiceBase {
+    fun noEditableOrderExists(id: UUID) = "An editable order with $id does not exist"
   }
 
   object ResponsibleAdult {
@@ -121,6 +129,16 @@ object ValidationErrors {
     const val TYPE_REQUIRED: String = "Variation type is required"
     const val DATE_REQUIRED: String = "Variation date is required"
     const val TYPE_MUST_BE_VALID: String = "Variation type must be a valid variation type"
+    fun typeObsolete(type: String): String = "Variation type $type is obsolete"
     const val DATE_MUST_BE_VALID: String = "Variation date must be a valid date"
+  }
+
+  object InstallationLocation {
+    const val INSTALLATION_LOCATION_REQUIRED: String = "Select where installation will take place"
+  }
+
+  object InstallationAppointment {
+    const val PLACE_NAME_REQUIRED: String = "Enter name of the place where installation takes place"
+    const val APPOINT_DATE_REQUIRED: String = "Enter date of installation"
   }
 }

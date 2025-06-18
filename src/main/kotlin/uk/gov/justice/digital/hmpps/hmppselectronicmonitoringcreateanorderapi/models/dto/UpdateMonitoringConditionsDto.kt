@@ -24,6 +24,7 @@ data class UpdateMonitoringConditionsDto(
   @field:NotNull(message = ValidationErrors.MonitoringConditions.START_DATE_REQUIRED)
   val startDate: ZonedDateTime? = null,
 
+  @field:NotNull(message = ValidationErrors.MonitoringConditions.END_DATE_REQUIRED)
   val endDate: ZonedDateTime? = null,
 
   val exclusionZone: Boolean? = null,

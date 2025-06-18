@@ -9,8 +9,8 @@ import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringInstallationLocationType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.InstallationLocationType
 import java.time.ZonedDateTime
 import java.util.*
 
@@ -36,7 +36,7 @@ data class AlcoholMonitoringConditions(
 
   @Enumerated(EnumType.STRING)
   @Column(name = "INSTALLATION_LOCATION", nullable = true)
-  var installationLocation: AlcoholMonitoringInstallationLocationType? = null,
+  var installationLocation: InstallationLocationType? = null,
 
   @Column(name = "INSTALLATION_ADDRESS_ID", nullable = true, unique = true)
   var installationAddressId: UUID? = null,

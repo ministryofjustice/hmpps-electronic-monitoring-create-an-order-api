@@ -7,12 +7,14 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
+import org.springframework.http.HttpStatus.BAD_REQUEST
 import org.springframework.http.MediaType
 import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.VariationDetails
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.VariationType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidationError
+import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 import java.time.ZonedDateTime
 import java.util.*
 
@@ -38,7 +40,7 @@ class VariationControllerTest : IntegrationTestBase() {
           BodyInserters.fromValue(
             """
               {
-                "variationType": "ADDRESS",
+                "variationType": "CHANGE_TO_ADDRESS",
                 "variationDate": "2024-01-01T00:00:00.000Z"
               }
             """.trimIndent(),
@@ -59,7 +61,7 @@ class VariationControllerTest : IntegrationTestBase() {
           BodyInserters.fromValue(
             """
               {
-                "variationType": "ADDRESS",
+                "variationType": "CHANGE_TO_ADDRESS",
                 "variationDate": "2024-01-01T00:00:00.000Z"
               }
             """.trimIndent(),
@@ -82,7 +84,7 @@ class VariationControllerTest : IntegrationTestBase() {
           BodyInserters.fromValue(
             """
               {
-                "variationType": "ADDRESS",
+                "variationType": "CHANGE_TO_ADDRESS",
                 "variationDate": "2024-01-01T00:00:00.000Z"
               }
             """.trimIndent(),
@@ -167,7 +169,7 @@ class VariationControllerTest : IntegrationTestBase() {
           BodyInserters.fromValue(
             """
               {
-                "variationType": "ADDRESS",
+                "variationType": "CHANGE_TO_ADDRESS",
                 "variationDate": "2024-02-31T00:00:00.000Z"
               }
             """.trimIndent(),
@@ -187,8 +189,57 @@ class VariationControllerTest : IntegrationTestBase() {
       )
     }
 
-    @ParameterizedTest(name = "it should be possible to update the variation details with variationType = {0}")
+    @ParameterizedTest(name = "it should not be possible to update the variation details with DDv4 variationType = {0}")
     @ValueSource(strings = ["CURFEW_HOURS", "ADDRESS", "ENFORCEMENT_ADD", "ENFORCEMENT_UPDATE", "SUSPENSION"])
+    fun `it should not be possible to update the variation details with DDv4 variation types`(variationType: String) {
+      val variation = createVariation()
+
+      val result = webTestClient.put()
+        .uri("/api/orders/${variation.id}/variation")
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(
+          BodyInserters.fromValue(
+            """
+              {
+                "variationType": "$variationType",
+                "variationDate": "2024-01-01T00:00:00.000Z"
+              }
+            """.trimIndent(),
+          ),
+        )
+        .headers(setAuthorisation("AUTH_ADM"))
+        .exchange()
+        .expectStatus()
+        .isBadRequest
+        .expectBodyList(ErrorResponse::class.java)
+        .returnResult()
+
+      Assertions.assertThat(result.responseBody).isNotNull
+      Assertions.assertThat(result.responseBody).hasSize(1)
+      Assertions.assertThat(result.responseBody!!).contains(
+        ErrorResponse(
+          status = BAD_REQUEST,
+          developerMessage = "Variation type $variationType is obsolete",
+          userMessage = "Validation failure: Variation type $variationType is obsolete",
+        ),
+      )
+    }
+
+    @ParameterizedTest(name = "it should  be possible to update the variation details with DDv5 variationType = {0}")
+    @ValueSource(
+      strings = [
+        "CHANGE_TO_ADDRESS",
+        "CHANGE_TO_PERSONAL_DETAILS",
+        "CHANGE_TO_ADD_AN_EXCLUSION_ZONES",
+        "CHANGE_TO_AN_EXISTING_EXCLUSION",
+        "CHANGE_TO_CURFEW_HOURS",
+        "ORDER_SUSPENSION",
+        "CHANGE_TO_DEVICE_TYPE",
+        "CHANGE_TO_ENFORCEABLE_CONDITION",
+        "ADMIN_ERROR",
+        "OTHER",
+      ],
+    )
     fun `it should be possible to update the variation details with all variation types`(variationType: String) {
       val variation = createVariation()
 

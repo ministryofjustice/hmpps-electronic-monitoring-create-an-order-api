@@ -231,6 +231,112 @@ class CurfewConditionControllerTest : IntegrationTestBase() {
     Assertions.assertThat(updatedOrder.curfewConditions?.curfewAddress).isEqualTo("PRIMARY,SECONDARY")
   }
 
+  @Test
+  fun `Curfew additional details can be updated with null`() {
+    val order = createOrder()
+    addCurfewDataToOrder(order.id)
+
+    webTestClient.put()
+      .uri("/api/orders/${order.id}/monitoring-conditions-curfew-additional-details")
+      .contentType(MediaType.APPLICATION_JSON)
+      .body(
+        BodyInserters.fromValue(
+          """
+            {
+              "curfewAdditionalDetails": null
+            }
+          """.trimIndent(),
+        ),
+      )
+      .headers(setAuthorisation("AUTH_ADM"))
+      .exchange()
+      .expectStatus()
+      .isOk
+  }
+
+  @Test
+  fun `Curfew additional details can be updated with an empty string`() {
+    val order = createOrder()
+    addCurfewDataToOrder(order.id)
+
+    webTestClient.put()
+      .uri("/api/orders/${order.id}/monitoring-conditions-curfew-additional-details")
+      .contentType(MediaType.APPLICATION_JSON)
+      .body(
+        BodyInserters.fromValue(
+          """
+            {
+              "curfewAdditionalDetails": ""
+            }
+          """.trimIndent(),
+        ),
+      )
+      .headers(setAuthorisation("AUTH_ADM"))
+      .exchange()
+      .expectStatus()
+      .isOk
+  }
+
+  @Test
+  fun `Curfew additional details can be updated with a string`() {
+    val order = createOrder()
+    addCurfewDataToOrder(order.id)
+
+    webTestClient.put()
+      .uri("/api/orders/${order.id}/monitoring-conditions-curfew-additional-details")
+      .contentType(MediaType.APPLICATION_JSON)
+      .body(
+        BodyInserters.fromValue(
+          """
+            {
+              "curfewAdditionalDetails": "some curfew details"
+            }
+          """.trimIndent(),
+        ),
+      )
+      .headers(setAuthorisation("AUTH_ADM"))
+      .exchange()
+      .expectStatus()
+      .isOk
+  }
+
+  @Test
+  fun `Curfew additional details cannot be updated if a curfew does not exist`() {
+    val order = createOrder()
+
+    webTestClient.put()
+      .uri("/api/orders/${order.id}/monitoring-conditions-curfew-additional-details")
+      .contentType(MediaType.APPLICATION_JSON)
+      .body(
+        BodyInserters.fromValue(
+          """
+            {
+              "curfewAdditionalDetails": "some curfew details"
+            }
+          """.trimIndent(),
+        ),
+      )
+      .headers(setAuthorisation("AUTH_ADM"))
+      .exchange()
+      .expectStatus().isNotFound()
+      .expectBody().jsonPath("$.developerMessage").isEqualTo("Curfew conditions for ${order.id} not found")
+  }
+
+  fun addCurfewDataToOrder(orderId: UUID) {
+    webTestClient.put()
+      .uri("/api/orders/$orderId/monitoring-conditions-curfew-conditions")
+      .contentType(MediaType.APPLICATION_JSON)
+      .body(
+        BodyInserters.fromValue(
+          mockRequestBody(orderId, mockStartDate, mockEndDate, "PRIMARY,SECONDARY"),
+        ),
+      )
+      .headers(setAuthorisation())
+      .exchange()
+      .expectStatus()
+      .isOk
+  }
+
   fun mockValidRequestBody(
     orderId: UUID,
     startDate: ZonedDateTime? = mockStartDate,

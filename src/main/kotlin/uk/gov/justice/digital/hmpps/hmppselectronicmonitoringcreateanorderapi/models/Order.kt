@@ -213,4 +213,20 @@ data class Order(
     set(variationDetails) {
       getCurrentVersion().variationDetails = variationDetails
     }
+
+  var installationLocation: InstallationLocation?
+    get() {
+      return getCurrentVersion().installationLocation
+    }
+    set(installationLocation) {
+      getCurrentVersion().installationLocation = installationLocation
+    }
+
+  var installationAppointment: InstallationAppointment?
+    get() {
+      return getCurrentVersion().installationAppointment
+    }
+    set(installationAppointment) {
+      getCurrentVersion().installationAppointment = installationAppointment
+    }
 }

@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.s
 import jakarta.persistence.EntityNotFoundException
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.data.ValidationErrors
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
@@ -15,15 +16,15 @@ abstract class OrderSectionServiceBase {
 
   internal fun findEditableOrder(id: UUID, username: String): Order {
     val order = orderRepo.findById(id).orElseThrow {
-      EntityNotFoundException("An editable order with $id does not exist")
+      EntityNotFoundException(ValidationErrors.OrderSectionServiceBase.noEditableOrderExists(id))
     }
 
     if (order.status !== OrderStatus.IN_PROGRESS) {
-      throw EntityNotFoundException("An editable order with $id does not exist")
+      throw EntityNotFoundException(ValidationErrors.OrderSectionServiceBase.noEditableOrderExists(id))
     }
 
     if (order.username != username) {
-      throw EntityNotFoundException("An editable order with $id does not exist")
+      throw EntityNotFoundException(ValidationErrors.OrderSectionServiceBase.noEditableOrderExists(id))
     }
 
     return order
