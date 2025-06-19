@@ -15,7 +15,6 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 import java.util.*
 
-
 class MonitoringConditionsServiceTest {
 
   lateinit var repo: OrderRepository
