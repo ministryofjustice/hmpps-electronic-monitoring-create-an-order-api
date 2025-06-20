@@ -4,6 +4,8 @@ import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.http.MediaType
+import org.springframework.test.web.reactive.server.expectBody
+import org.springframework.test.web.reactive.server.returnResult
 import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.MonitoringConditions
@@ -457,5 +459,44 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
       .exchange()
       .expectStatus()
       .isNotFound
+      .expectBody()
+      .returnResult()
+  }
+
+  @Test
+  fun `Monitoring conditions can update pilot`() {
+    val order = createOrder()
+    val updateMonitoringConditions = webTestClient.put()
+      .uri("/api/orders/${order.id}/monitoring-conditions")
+      .contentType(MediaType.APPLICATION_JSON)
+      .body(
+        BodyInserters.fromValue(
+          """
+            {
+              "orderType": "$mockOrderType",
+              "orderTypeDescription": "$mockOrderTypeDescription",
+              "conditionType": "$mockConditionType",
+              "acquisitiveCrime": null,
+              "dapol": null,
+              "curfew": "true",
+              "exclusionZone": null,
+              "trail": null,
+              "mandatoryAttendance": null,
+              "alcohol": null,
+              "startDate": "$mockStartDate",
+              "endDate": "$mockEndDate",
+              "pilot": "some pilot"
+            }
+          """.trimIndent(),
+        ),
+      )
+      .headers(setAuthorisation("AUTH_ADM"))
+      .exchange()
+      .expectStatus()
+      .isOk
+      .expectBody(MonitoringConditions::class.java)
+      .returnResult()
+
+    Assertions.assertThat(updateMonitoringConditions.responseBody?.pilot).isEqualTo("some pilot")
   }
 }

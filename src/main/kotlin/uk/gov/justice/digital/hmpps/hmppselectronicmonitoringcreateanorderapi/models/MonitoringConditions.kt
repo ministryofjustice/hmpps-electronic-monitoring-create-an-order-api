@@ -79,6 +79,9 @@ data class MonitoringConditions(
   @Column(name = "PRARR", nullable = true)
   var prarr: YesNoUnknown? = null,
 
+  @Column(name = "PILOT", nullable = true)
+  var pilot: String? = null,
+
   @Schema(hidden = true)
   @OneToOne
   @JoinColumn(name = "VERSION_ID", updatable = false, insertable = false)

@@ -47,6 +47,8 @@ data class UpdateMonitoringConditionsDto(
   val hdc: YesNoUnknown = YesNoUnknown.UNKNOWN,
 
   val prarr: YesNoUnknown = YesNoUnknown.UNKNOWN,
+
+  val pilot: String? = null,
 ) {
   @AssertTrue(message = ValidationErrors.MonitoringConditions.END_DATE_MUST_BE_AFTER_START_DATE)
   fun isEndDate(): Boolean {
