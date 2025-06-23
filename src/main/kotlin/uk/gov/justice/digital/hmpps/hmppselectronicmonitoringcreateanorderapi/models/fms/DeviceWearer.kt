@@ -231,7 +231,12 @@ data class DeviceWearer(
     private fun getRiskCategories(order: Order): List<FmsRiskCategory> {
       if (order.installationAndRisk?.riskCategory?.any() == true) {
         return order.installationAndRisk!!.riskCategory!!
-          .filter { RiskCategory.entries.any { riskCategory -> riskCategory.name == it } }
+          .filter {
+            RiskCategory.entries.any { riskCategory ->
+              riskCategory != RiskCategory.NO_RISK &&
+                riskCategory.name == it
+            }
+          }
           .map { FmsRiskCategory(RiskCategory.entries.first { riskCategory -> riskCategory.name == it }.value) }
           .toList()
       }
