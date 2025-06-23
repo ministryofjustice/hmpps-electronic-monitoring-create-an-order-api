@@ -17,4 +17,5 @@ enum class RiskCategory(val value: String) {
   OTHER_RISKS("Other known Risks"),
   HOMOPHOBIC_VIEWS("Is there evidence known to the subject having homophobic views"),
   UNDER_18("Under 18 living at property"),
+  NO_RISK("No risk"),
 }

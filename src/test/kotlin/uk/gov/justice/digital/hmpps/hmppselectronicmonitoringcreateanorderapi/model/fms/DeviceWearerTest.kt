@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms
 
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
@@ -42,6 +43,17 @@ class DeviceWearerTest : FmsTestBase() {
     val fmsDeviceWearer = FmsDeviceWearer.fromCemoOrder(order)
 
     assertThat(fmsDeviceWearer.riskCategory!!.first().category).isEqualTo(mappedValue)
+  }
+
+  @Test
+  fun `It should not map risk category to serco when risk category is NO_RISK`() {
+    val order = createOrder(
+      deviceWearer = createDeviceWearer(),
+      installationAndRisk = createInstallationAndRisk(riskCategory = "NO_RISK"),
+    )
+    val fmsDeviceWearer = FmsDeviceWearer.fromCemoOrder(order)
+
+    assertThat(fmsDeviceWearer.riskCategory!!.count()).isEqualTo(0)
   }
 
   companion object {
