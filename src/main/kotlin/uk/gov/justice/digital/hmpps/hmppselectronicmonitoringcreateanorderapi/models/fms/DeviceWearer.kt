@@ -8,7 +8,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Sex
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.formatters.PhoneNumberFormatter
 import java.time.format.DateTimeFormatter
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Disability as DisabilityEnum
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ddv5.DisabilityDDv5 as DisabilityDDv5Enum
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.Disability as FmsDisability
 
 data class DeviceWearer(
@@ -147,7 +147,7 @@ data class DeviceWearer(
 
       var disabilities = emptyList<FmsDisability>()
       if (!order.deviceWearer?.disabilities.isNullOrBlank()) {
-        disabilities = DisabilityEnum.getValuesFromEnumString(order.deviceWearer!!.disabilities!!)
+        disabilities = DisabilityDDv5Enum.getValuesFromEnumString(order.deviceWearer!!.disabilities!!)
           .map { disability -> FmsDisability(disability) }
       }
 
