@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto
 
 import jakarta.validation.constraints.AssertTrue
+import jakarta.validation.constraints.Future
 import jakarta.validation.constraints.NotNull
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.data.ValidationErrors
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MonitoringConditionType
@@ -25,6 +26,7 @@ data class UpdateMonitoringConditionsDto(
   val startDate: ZonedDateTime? = null,
 
   @field:NotNull(message = ValidationErrors.MonitoringConditions.END_DATE_REQUIRED)
+  @field:Future(message = ValidationErrors.MonitoringConditions.END_DATE_MUST_BE_IN_THE_FUTURE)
   val endDate: ZonedDateTime? = null,
 
   val exclusionZone: Boolean? = null,

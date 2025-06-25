@@ -33,6 +33,7 @@ object ValidationErrors {
     const val END_TIME_REQUIRED: String = "Enter time curfew ends on day of release"
     const val ADDRESS_REQUIRED: String =
       "Select the address the device wearer will be during curfew hours on the day of release"
+
     fun curfewNotFound(orderId: UUID): String = "Curfew conditions for $orderId not found"
   }
 
@@ -77,10 +78,12 @@ object ValidationErrors {
       "Enter the Responsible Organisation's telephone number"
     const val RESPONSIBLE_ORGANISATION_EMAIL_REQUIRED: String = "Enter the Responsible Organisation's email address"
   }
+
   object ProbationDeliveryUnit {
     const val RESPONSIBLE_ORGANISATION_NOT_PROBATION: String = "Responsible organisation must be Probation"
     const val DELIVERY_UNIT_NOT_IN_REGION: String = "Select probation delivery unit within given probation region"
   }
+
   object InstallationAndRisk {
     const val OFFENCE_VALID: String = "Offence must be a valid offence"
     const val RISK_CATEGORY_VALID: String = "Risk categories must be a valid risk category"
@@ -101,6 +104,7 @@ object ValidationErrors {
     const val END_DATE_REQUIRED: String = "Enter end date for monitoring"
     const val TYPE_REQUIRED: String = "Select order type"
     const val END_DATE_MUST_BE_AFTER_START_DATE: String = "End date must be after start date"
+    const val END_DATE_MUST_BE_IN_THE_FUTURE: String = "End date of monitoring must be in the future"
   }
 
   object NoFixedAbode {
