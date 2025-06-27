@@ -56,6 +56,17 @@ class DeviceWearerTest : FmsTestBase() {
     assertThat(fmsDeviceWearer.riskCategory!!.count()).isEqualTo(0)
   }
 
+  @ParameterizedTest(name = "it should map saved disability values to Serco - {0} -> {1}")
+  @MethodSource("disabilityValues")
+  fun `It should map correctly map saved disability values to Serco`(savedValue: String, mappedValue: String) {
+    val order = createOrder(
+      deviceWearer = createDeviceWearer(disabilities = savedValue),
+    )
+    val fmsDeviceWearer = FmsDeviceWearer.fromCemoOrder(order)
+
+    assertThat(fmsDeviceWearer.disability!!.first().disability).isEqualTo(mappedValue)
+  }
+
   companion object {
     @JvmStatic
     fun sexValues() = listOf(
@@ -91,6 +102,23 @@ class DeviceWearerTest : FmsTestBase() {
       Arguments.of("OTHER_RISKS", "Other known Risks"),
       Arguments.of("HOMOPHOBIC_VIEWS", "Is there evidence known to the subject having homophobic views"),
       Arguments.of("UNDER_18", "Under 18 living at property"),
+    )
+
+    @JvmStatic
+    fun disabilityValues() = listOf(
+      Arguments.of("VISION", "Vision"),
+      Arguments.of("HEARING", "Hearing"),
+      Arguments.of("MOBILITY", "Mobility"),
+      Arguments.of("DEXTERITY", "Dexterity"),
+      Arguments.of("SKIN_CONDITION", "Skin condition"),
+      Arguments.of("LEARNING_UNDERSTANDING_OR_CONCENTRATING", "Learning, understanding or concentrating"),
+      Arguments.of("MEMORY", "Memory"),
+      Arguments.of("MENTAL_HEALTH", "Mental health"),
+      Arguments.of("STAMINA_OR_BREATHING_OR_FATIGUE", "Stamina or breathing or fatigue"),
+      Arguments.of("SOCIALLY_OR_BEHAVIORALLY", "Socially or behaviourally"),
+      Arguments.of("OTHER", "Other"),
+      Arguments.of("NONE_OF_THE_ABOVE", "None of the above"),
+      Arguments.of("PREFER_NOT_TO_SAY", "Prefer Not to Say"),
     )
   }
 }

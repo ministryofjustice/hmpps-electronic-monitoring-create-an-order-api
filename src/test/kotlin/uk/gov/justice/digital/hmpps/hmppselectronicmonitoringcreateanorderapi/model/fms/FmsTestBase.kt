@@ -76,7 +76,7 @@ abstract class FmsTestBase {
     adultAtTimeOfInstallation: Boolean = true,
     sex: String = "MALE",
     gender: String = "Male",
-    disabilities: String = "VISION,LEARNING_UNDERSTANDING_CONCENTRATING",
+    disabilities: String = "VISION,LEARNING_UNDERSTANDING_OR_CONCENTRATING",
     interpreterRequired: Boolean = true,
     language: String = "British Sign",
     pncId: String = "pncId",

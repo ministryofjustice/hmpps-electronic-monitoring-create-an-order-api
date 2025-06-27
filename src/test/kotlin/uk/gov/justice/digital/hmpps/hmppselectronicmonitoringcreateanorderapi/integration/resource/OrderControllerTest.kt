@@ -1924,7 +1924,7 @@ class OrderControllerTest : IntegrationTestBase() {
       adultAtTimeOfInstallation = true,
       sex = "MALE",
       gender = "MALE",
-      disabilities = "VISION,LEARNING_UNDERSTANDING_CONCENTRATING",
+      disabilities = "VISION,LEARNING_UNDERSTANDING_OR_CONCENTRATING",
       interpreterRequired = true,
       language = "British Sign",
       pncId = "pncId",
