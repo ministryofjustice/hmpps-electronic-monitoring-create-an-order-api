@@ -1,10 +1,11 @@
-package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums
+package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ddv5
 
-enum class Disability(val value: String) {
+enum class DisabilityDDv5(val value: String) {
   VISION("Vision"),
   HEARING("Hearing"),
   MOBILITY("Mobility"),
   DEXTERITY("Dexterity"),
+  SKIN_CONDITION("Skin condition"),
   LEARNING_UNDERSTANDING_OR_CONCENTRATING("Learning, understanding or concentrating"),
   MEMORY("Memory"),
   MENTAL_HEALTH("Mental health"),
