@@ -5,13 +5,14 @@ enum class Disability(val value: String) {
   HEARING("Hearing"),
   MOBILITY("Mobility"),
   DEXTERITY("Dexterity"),
-  LEARNING_UNDERSTANDING_OR_CONCENTRATING("Learning, understanding or concentrating"),
+  SKIN_CONDITION("Skin condition"),
+  LEARNING_UNDERSTANDING_CONCENTRATING("Learning, understanding or concentrating"),
   MEMORY("Memory"),
   MENTAL_HEALTH("Mental health"),
-  STAMINA_OR_BREATHING_OR_FATIGUE("Stamina or breathing or fatigue"),
-  SOCIALLY_OR_BEHAVIORALLY("Socially or behaviourally"),
+  STAMINA_BREATHING_FATIGUE("Stamina or breathing or fatigue"),
+  SOCIAL_BEHAVIOURAL("Socially or behaviourally"),
   OTHER("Other"),
-  NONE_OF_THE_ABOVE("None of the above"),
+  NONE("None of the above"),
   PREFER_NOT_TO_SAY("Prefer Not to Say"),
   ;
 

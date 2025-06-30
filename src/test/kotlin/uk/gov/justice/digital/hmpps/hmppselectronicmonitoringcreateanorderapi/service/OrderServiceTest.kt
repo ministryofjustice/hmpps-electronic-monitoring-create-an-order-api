@@ -143,7 +143,7 @@ class OrderServiceTest {
       adultAtTimeOfInstallation = true,
       sex = "Male",
       gender = "Male",
-      disabilities = "VISION,LEARNING_UNDERSTANDING_OR_CONCENTRATING",
+      disabilities = "VISION,LEARNING_UNDERSTANDING_CONCENTRATING",
       interpreterRequired = true,
       language = "British Sign",
       pncId = "pncId",

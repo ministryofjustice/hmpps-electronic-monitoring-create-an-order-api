@@ -111,13 +111,13 @@ class DeviceWearerTest : FmsTestBase() {
       Arguments.of("MOBILITY", "Mobility"),
       Arguments.of("DEXTERITY", "Dexterity"),
       Arguments.of("SKIN_CONDITION", "Skin condition"),
-      Arguments.of("LEARNING_UNDERSTANDING_OR_CONCENTRATING", "Learning, understanding or concentrating"),
+      Arguments.of("LEARNING_UNDERSTANDING_CONCENTRATING", "Learning, understanding or concentrating"),
       Arguments.of("MEMORY", "Memory"),
       Arguments.of("MENTAL_HEALTH", "Mental health"),
-      Arguments.of("STAMINA_OR_BREATHING_OR_FATIGUE", "Stamina or breathing or fatigue"),
-      Arguments.of("SOCIALLY_OR_BEHAVIORALLY", "Socially or behaviourally"),
+      Arguments.of("STAMINA_BREATHING_FATIGUE", "Stamina or breathing or fatigue"),
+      Arguments.of("SOCIAL_BEHAVIOURAL", "Socially or behaviourally"),
       Arguments.of("OTHER", "Other"),
-      Arguments.of("NONE_OF_THE_ABOVE", "None of the above"),
+      Arguments.of("NONE", "None of the above"),
       Arguments.of("PREFER_NOT_TO_SAY", "Prefer Not to Say"),
     )
   }

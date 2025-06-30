@@ -5,9 +5,9 @@ import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Past
 import jakarta.validation.constraints.Size
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.data.ValidationErrors
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Disability
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Gender
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Sex
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ddv5.DisabilityDDv5
 import java.time.ZonedDateTime
 
 data class UpdateDeviceWearerDto(
@@ -55,12 +55,24 @@ data class UpdateDeviceWearerDto(
   @AssertTrue(message = ValidationErrors.DeviceWearer.OTHER_DISABILITY)
   fun isOtherDisability(): Boolean {
     if (this.disabilities != null) {
-      val disabilities = DisabilityDDv5.getValuesFromEnumString(this.disabilities)
-      if (disabilities.contains(DisabilityDDv5.OTHER.value)) {
+      val disabilities = Disability.getValuesFromEnumString(this.disabilities)
+      if (disabilities.contains(Disability.OTHER.value)) {
         return !this.otherDisability.isNullOrBlank()
       }
     }
     return true
+  }
+
+  @AssertTrue(message = ValidationErrors.DeviceWearer.DISABILITIES_INVALID)
+  fun isDisabilities(): Boolean {
+    if (this.disabilities.isNullOrEmpty()) {
+      return true
+    }
+    val submittedDisabilities = this.disabilities.split(",").map { it.trim() }.filter { it.isNotBlank() }
+
+    return submittedDisabilities.all { submittedDisability ->
+      Disability.entries.any { it.name == submittedDisability }
+    }
   }
 
   @AssertTrue(message = ValidationErrors.DeviceWearer.SEX_REQUIRED)
