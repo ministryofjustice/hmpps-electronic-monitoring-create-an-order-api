@@ -29,7 +29,7 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
   private val mockAlias: String = "mockAlias"
   private val mockSex: String = "MALE"
   private val mockGender: String = "MALE"
-  private val mockDisabilities: String = "mockDisabilities"
+  private val mockDisabilities: String = "DEXTERITY"
   private val mockOtherDisability: String = "mockOtherDisabilities"
   private val mockLanguage: String = "mockLanguage"
   private val mockHomeOfficeReferenceNumber: String = "mockHomeOfficeReferenceNumber"

@@ -5,6 +5,7 @@ enum class Disability(val value: String) {
   HEARING("Hearing"),
   MOBILITY("Mobility"),
   DEXTERITY("Dexterity"),
+  SKIN_CONDITION("Skin condition"),
   LEARNING_UNDERSTANDING_CONCENTRATING("Learning, understanding or concentrating"),
   MEMORY("Memory"),
   MENTAL_HEALTH("Mental health"),

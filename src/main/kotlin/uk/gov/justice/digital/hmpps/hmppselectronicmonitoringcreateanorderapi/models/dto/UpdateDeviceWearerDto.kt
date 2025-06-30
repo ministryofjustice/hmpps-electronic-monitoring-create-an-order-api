@@ -63,6 +63,18 @@ data class UpdateDeviceWearerDto(
     return true
   }
 
+  @AssertTrue(message = ValidationErrors.DeviceWearer.DISABILITIES_INVALID)
+  fun isDisabilities(): Boolean {
+    if (this.disabilities.isNullOrEmpty()) {
+      return true
+    }
+    val submittedDisabilities = this.disabilities.split(",").map { it.trim() }.filter { it.isNotBlank() }
+
+    return submittedDisabilities.all { submittedDisability ->
+      Disability.entries.any { it.name == submittedDisability }
+    }
+  }
+
   @AssertTrue(message = ValidationErrors.DeviceWearer.SEX_REQUIRED)
   fun isSex(): Boolean = Sex.from(sex) != null
 
