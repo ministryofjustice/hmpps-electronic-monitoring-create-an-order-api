@@ -54,7 +54,11 @@ class OrderSpecification(private val criteria: OrderSearchCriteria) : Specificat
     var fullName = criteriaBuilder.concat(deviceWearer.get(DeviceWearer::firstName.name), " ")
     fullName = criteriaBuilder.concat(fullName, deviceWearer.get(DeviceWearer::lastName.name))
 
-    return criteriaBuilder.like(criteriaBuilder.lower(fullName), wildcard(keyword))
+    val normalizedKeyword = keyword.trim().replace(Regex("\\s+"), " ").lowercase()
+    return criteriaBuilder.like(
+      criteriaBuilder.lower(fullName),
+      wildcard(normalizedKeyword),
+    )
   }
 
   override fun toPredicate(
