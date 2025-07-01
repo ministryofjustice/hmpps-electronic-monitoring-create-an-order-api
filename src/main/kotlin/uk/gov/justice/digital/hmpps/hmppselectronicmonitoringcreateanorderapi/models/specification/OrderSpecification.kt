@@ -46,6 +46,21 @@ class OrderSpecification(private val criteria: OrderSearchCriteria) : Specificat
     wildcard(keyword).lowercase(),
   )
 
+  private fun isLikeFullName(
+    deviceWearer: Join<OrderVersion, DeviceWearer>,
+    criteriaBuilder: CriteriaBuilder,
+    keyword: String,
+  ): Predicate {
+    var fullName = criteriaBuilder.concat(deviceWearer.get(DeviceWearer::firstName.name), " ")
+    fullName = criteriaBuilder.concat(fullName, deviceWearer.get(DeviceWearer::lastName.name))
+
+    val normalizedKeyword = keyword.trim().replace(Regex("\\s+"), " ").lowercase()
+    return criteriaBuilder.like(
+      criteriaBuilder.lower(fullName),
+      wildcard(normalizedKeyword),
+    )
+  }
+
   override fun toPredicate(
     root: Root<Order>,
     @Nullable query: CriteriaQuery<*>?,
@@ -64,6 +79,7 @@ class OrderSpecification(private val criteria: OrderSearchCriteria) : Specificat
     if (this.criteria.searchTerm.isNotEmpty()) {
       predicates.add(isLikeFirstName(deviceWearer, criteriaBuilder, this.criteria.searchTerm))
       predicates.add(isLikeLastName(deviceWearer, criteriaBuilder, this.criteria.searchTerm))
+      predicates.add(isLikeFullName(deviceWearer, criteriaBuilder, this.criteria.searchTerm))
     }
 
     if (predicates.isNotEmpty()) {

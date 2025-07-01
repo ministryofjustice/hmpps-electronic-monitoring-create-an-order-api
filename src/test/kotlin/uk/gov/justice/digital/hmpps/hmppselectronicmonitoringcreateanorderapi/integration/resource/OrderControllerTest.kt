@@ -329,6 +329,47 @@ class OrderControllerTest : IntegrationTestBase() {
     }
 
     @Test
+    fun `It should return orders where the first and last names match`() {
+      val order = createOrder("AUTH_ADM")
+
+      // Create the device wearer
+      webTestClient.put()
+        .uri("/api/orders/${order.id}/device-wearer")
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(
+          BodyInserters.fromValue(
+            """
+            {
+              "firstName": "John",
+              "lastName": "Smith",
+              "alias": "",
+              "adultAtTimeOfInstallation": "false",
+              "sex": "MALE",
+              "gender": "MALE",
+              "dateOfBirth": "2024-01-01T00:00:00.000Z",
+              "disabilities": "",
+              "interpreterRequired": true,
+              "language": "French"
+            }
+            """.trimIndent(),
+          ),
+        )
+        .headers(setAuthorisation("AUTH_ADM"))
+        .exchange()
+        .expectStatus()
+        .isOk
+
+      webTestClient.get()
+        .uri("/api/orders?searchTerm=john smith")
+        .headers(setAuthorisation("AUTH_ADM"))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBodyList(OrderDto::class.java)
+        .hasSize(1)
+    }
+
+    @Test
     fun `It should only return orders belonging to user`() {
       createOrder("AUTH_ADM")
       createOrder("AUTH_ADM")
@@ -701,6 +742,7 @@ class OrderControllerTest : IntegrationTestBase() {
       assertThat(updatedOrder.fmsResultId).isEqualTo(submitResult!!.id)
       assertThat(updatedOrder.status).isEqualTo(OrderStatus.ERROR)
     }
+
     fun String.removeWhitespaceAndNewlines(): String = this.replace("(\"[^\"]*\")|\\s".toRegex(), "\$1")
 
     @Test
