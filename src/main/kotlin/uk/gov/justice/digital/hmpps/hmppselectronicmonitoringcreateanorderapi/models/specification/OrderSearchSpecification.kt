@@ -10,7 +10,9 @@ import org.springframework.lang.Nullable
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.OrderListCriteria
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.OrderSearchCriteria
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 
 class OrderSearchSpecification(private val criteria: OrderSearchCriteria) : Specification<Order> {
   private fun wildcard(str: String): String = "%$str%"
@@ -52,6 +54,7 @@ class OrderSearchSpecification(private val criteria: OrderSearchCriteria) : Spec
     if (predicates.isNotEmpty()) {
       return criteriaBuilder.and(
         criteriaBuilder.equal(version.get<Int>("versionId"), subquery),
+        criteriaBuilder.equal(version.get<String>("status"), OrderStatus.SUBMITTED),
         criteriaBuilder.or(*predicates.toTypedArray()),
       )
     }

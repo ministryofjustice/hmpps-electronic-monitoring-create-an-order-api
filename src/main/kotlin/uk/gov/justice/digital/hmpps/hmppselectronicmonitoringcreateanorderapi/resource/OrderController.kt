@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.OrderListCriteria
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.OrderSearchCriteria
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.CreateOrderDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderDto
@@ -67,7 +68,17 @@ class OrderController(@Autowired val orderService: OrderService) {
     authentication: Authentication,
   ): ResponseEntity<List<OrderDto>> {
     val username = authentication.name
-    val orders = orderService.listOrders(OrderSearchCriteria(searchTerm, username))
+    val orders = orderService.listOrders(OrderListCriteria(searchTerm, username))
+
+    return ResponseEntity(orders.map { convertToDto(it) }, HttpStatus.OK)
+  }
+
+  @GetMapping("/orders/search")
+  fun searchOrders(
+    @RequestParam searchTerm: String = "",
+    authentication: Authentication,
+  ): ResponseEntity<List<OrderDto>> {
+    val orders = orderService.searchOrders(OrderSearchCriteria(searchTerm))
 
     return ResponseEntity(orders.map { convertToDto(it) }, HttpStatus.OK)
   }

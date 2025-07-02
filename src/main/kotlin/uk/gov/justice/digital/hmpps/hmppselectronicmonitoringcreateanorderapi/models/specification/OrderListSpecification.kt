@@ -10,9 +10,9 @@ import org.springframework.lang.Nullable
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.OrderSearchCriteria
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.OrderListCriteria
 
-class OrderListSpecification(private val criteria: OrderSearchCriteria) : Specification<Order> {
+class OrderListSpecification(private val criteria: OrderListCriteria) : Specification<Order> {
   private fun wildcard(str: String): String = "%$str%"
 
   private fun isOwnedByUser(

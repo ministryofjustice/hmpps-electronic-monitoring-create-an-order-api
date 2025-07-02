@@ -12,7 +12,6 @@ import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.boot.test.autoconfigure.json.JsonTest
-import org.springframework.data.jpa.domain.Specification
 import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Address
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AlcoholMonitoringConditions
@@ -29,6 +28,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ResponsibleAdult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.TrailMonitoringConditions
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.OrderListCriteria
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.OrderSearchCriteria
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.CreateOrderDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
@@ -115,7 +115,7 @@ class OrderServiceTest {
   @Test
   fun `Should be able to list all orders`() {
     val mockOrder = createReadyToSubmitOrder()
-    val mockCriteria = OrderSearchCriteria(username = "test")
+    val mockCriteria = OrderListCriteria(username = "test")
 
     whenever(repo.findAll(ArgumentMatchers.any(OrderListSpecification::class.java))).thenReturn(listOf(mockOrder))
 
@@ -127,7 +127,7 @@ class OrderServiceTest {
   @Test
   fun `Should be able to search for orders`() {
     val mockOrder = createReadyToSubmitOrder()
-    val mockCriteria = OrderSearchCriteria(searchTerm = "bob", username = "test")
+    val mockCriteria = OrderSearchCriteria(searchTerm = "Bob Smith")
 
     whenever(repo.findAll(ArgumentMatchers.any(OrderSearchSpecification::class.java))).thenReturn(listOf(mockOrder))
 
