@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.s
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.mockito.ArgumentMatchers
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.reset
 import org.mockito.kotlin.any
@@ -28,6 +29,8 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ResponsibleAdult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.TrailMonitoringConditions
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.OrderListCriteria
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.OrderSearchCriteria
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.CreateOrderDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
@@ -44,6 +47,8 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsMonitoringOrderSubmissionResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsSubmissionResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsSubmissionStrategyKind
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.specification.OrderListSpecification
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.specification.OrderSearchSpecification
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 import java.time.DayOfWeek
 import java.time.ZoneId
@@ -106,6 +111,30 @@ class OrderServiceTest {
       verify(repo, times(1)).save(capture())
       Assertions.assertThat(firstValue.fmsResultId).isEqualTo(mockFmsResult.id)
     }
+  }
+
+  @Test
+  fun `Should be able to list all orders`() {
+    val mockOrder = createReadyToSubmitOrder()
+    val mockCriteria = OrderListCriteria(username = "test")
+
+    whenever(repo.findAll(ArgumentMatchers.any(OrderListSpecification::class.java))).thenReturn(listOf(mockOrder))
+
+    val result = service.listOrders(mockCriteria)
+
+    Assertions.assertThat(result).isEqualTo(listOf(mockOrder))
+  }
+
+  @Test
+  fun `Should be able to search for orders`() {
+    val mockOrder = createReadyToSubmitOrder()
+    val mockCriteria = OrderSearchCriteria(searchTerm = "Bob Smith")
+
+    whenever(repo.findAll(ArgumentMatchers.any(OrderSearchSpecification::class.java))).thenReturn(listOf(mockOrder))
+
+    val result = service.searchOrders(mockCriteria)
+
+    Assertions.assertThat(result).isEqualTo(listOf(mockOrder))
   }
 
   val mockStartDate: ZonedDateTime = ZonedDateTime.now().plusMonths(1)

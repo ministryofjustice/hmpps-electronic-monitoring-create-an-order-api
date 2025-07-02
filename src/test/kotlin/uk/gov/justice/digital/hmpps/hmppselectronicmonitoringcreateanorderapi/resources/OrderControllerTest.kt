@@ -10,6 +10,7 @@ import org.springframework.security.core.Authentication
 import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.OrderListCriteria
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.OrderSearchCriteria
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.CreateOrderDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderDto
@@ -136,7 +137,7 @@ class OrderControllerTest {
       ),
     )
 
-    `when`(orderService.listOrders(OrderSearchCriteria(username = "mockUser"))).thenReturn(orders)
+    `when`(orderService.listOrders(OrderListCriteria(username = "mockUser"))).thenReturn(orders)
     `when`(authentication.name).thenReturn("mockUser")
 
     val result = controller.listOrders("", authentication)
@@ -191,6 +192,101 @@ class OrderControllerTest {
           monitoringConditionsAlcohol = null,
           monitoringConditionsTrail = null,
           status = OrderStatus.IN_PROGRESS,
+          type = RequestType.REQUEST,
+          username = "mockUser",
+          variationDetails = null,
+          probationDeliveryUnit = null,
+          installationLocation = null,
+          installationAppointment = null,
+        ),
+      ),
+    )
+  }
+
+  @Test
+  fun `Search for orders given a full name`() {
+    val orderId = UUID.randomUUID()
+    val orderId2 = UUID.randomUUID()
+    val orders: List<Order> = listOf(
+      Order(
+        id = orderId,
+        versions = mutableListOf(
+          OrderVersion(
+            orderId = orderId,
+            username = "mockUser",
+            status = OrderStatus.SUBMITTED,
+            type = RequestType.REQUEST,
+          ),
+        ),
+      ),
+      Order(
+        id = orderId2,
+        versions = mutableListOf(
+          OrderVersion(
+            orderId = orderId2,
+            username = "mockUser",
+            status = OrderStatus.SUBMITTED,
+            type = RequestType.REQUEST,
+          ),
+        ),
+      ),
+    )
+
+    `when`(orderService.searchOrders(OrderSearchCriteria(searchTerm = "Bob Smith"))).thenReturn(orders)
+    `when`(authentication.name).thenReturn("mockUser")
+
+    val result = controller.searchOrders("Bob Smith", authentication)
+    Assertions.assertThat(result.body).isEqualTo(
+      listOf(
+        OrderDto(
+          id = orderId,
+          additionalDocuments = mutableListOf(),
+          addresses = mutableListOf(),
+          contactDetails = null,
+          curfewConditions = null,
+          curfewReleaseDateConditions = null,
+          curfewTimeTable = mutableListOf(),
+          deviceWearer = null,
+          deviceWearerResponsibleAdult = null,
+          enforcementZoneConditions = mutableListOf(),
+          fmsResultId = null,
+          fmsResultDate = null,
+          installationAndRisk = null,
+          interestedParties = null,
+          isValid = false,
+          mandatoryAttendanceConditions = mutableListOf(),
+          monitoringConditions = null,
+          monitoringConditionsAlcohol = null,
+          monitoringConditionsTrail = null,
+          status = OrderStatus.SUBMITTED,
+          type = RequestType.REQUEST,
+          username = "mockUser",
+          variationDetails = null,
+          probationDeliveryUnit = null,
+          installationLocation = null,
+          installationAppointment = null,
+        ),
+        OrderDto(
+          id = orderId2,
+          additionalDocuments = mutableListOf(),
+          addresses = mutableListOf(),
+          contactDetails = null,
+          curfewConditions = null,
+          curfewReleaseDateConditions = null,
+          curfewTimeTable = mutableListOf(),
+          deviceWearer = null,
+          deviceWearerResponsibleAdult = null,
+          enforcementZoneConditions = mutableListOf(),
+          fmsResultId = null,
+          fmsResultDate = null,
+          installationAndRisk = null,
+          interestedParties = null,
+          isValid = false,
+          mandatoryAttendanceConditions = mutableListOf(),
+          monitoringConditions = null,
+          monitoringConditionsAlcohol = null,
+          monitoringConditionsTrail = null,
+          status = OrderStatus.SUBMITTED,
           type = RequestType.REQUEST,
           username = "mockUser",
           variationDetails = null,

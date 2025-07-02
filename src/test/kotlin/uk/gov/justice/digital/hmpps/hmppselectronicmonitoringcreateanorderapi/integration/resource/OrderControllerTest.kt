@@ -387,6 +387,108 @@ class OrderControllerTest : IntegrationTestBase() {
   }
 
   @Nested
+  @DisplayName("GET /api/orders/search")
+  inner class SearchOrders {
+    @Test
+    fun `It should return orders where the first and last names match`() {
+      createAndPersistReadyToSubmitOrder(status = OrderStatus.SUBMITTED)
+
+      webTestClient.get()
+        .uri("/api/orders/search?searchTerm=john smith")
+        .headers(setAuthorisation("AUTH_ADM"))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBodyList(OrderDto::class.java)
+        .hasSize(1)
+    }
+
+    @Test
+    fun `It should return orders created by a different user`() {
+      createAndPersistReadyToSubmitOrder(status = OrderStatus.SUBMITTED)
+
+      webTestClient.get()
+        .uri("/api/orders/search?searchTerm=john smith")
+        .headers(setAuthorisation("SOME_OTHER_USER"))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBodyList(OrderDto::class.java)
+        .hasSize(1)
+    }
+
+    @Test
+    fun `It should only return submitted orders`() {
+      createAndPersistReadyToSubmitOrder(status = OrderStatus.IN_PROGRESS)
+
+      webTestClient.get()
+        .uri("/api/orders/search?searchTerm=john smith")
+        .headers(setAuthorisation("AUTH_ADM"))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBodyList(OrderDto::class.java)
+        .hasSize(0)
+    }
+
+    @Test
+    fun `It should only return orders that match full name`() {
+      createAndPersistReadyToSubmitOrder(status = OrderStatus.SUBMITTED)
+
+      webTestClient.get()
+        .uri("/api/orders/search?searchTerm=john")
+        .headers(setAuthorisation("AUTH_ADM"))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBodyList(OrderDto::class.java)
+        .hasSize(0)
+    }
+
+    @Test
+    fun `Should only return the most recent order version`() {
+      val order = createReadyToSubmitOrder()
+      val versionId1 = UUID.randomUUID()
+      val versionId2 = UUID.randomUUID()
+      order.versions.add(
+        OrderVersion(
+          id = versionId1,
+          username = "AUTH_ADM",
+          status = OrderStatus.SUBMITTED,
+          type = RequestType.REQUEST,
+          orderId = order.id,
+          versionId = 2,
+          deviceWearer = DeviceWearer(versionId = versionId1, firstName = "John", lastName = "Smith"),
+        ),
+      )
+      order.versions.add(
+        OrderVersion(
+          id = versionId2,
+          username = "AUTH_ADM",
+          status = OrderStatus.SUBMITTED,
+          type = RequestType.REQUEST,
+          orderId = order.id,
+          versionId = 3,
+          deviceWearer = DeviceWearer(versionId = versionId2, firstName = "John", lastName = "Smith"),
+        ),
+      )
+
+      repo.save(order)
+
+      val result = webTestClient.get()
+        .uri("/api/orders?searchTerm=john smith")
+        .headers(setAuthorisation("AUTH_ADM"))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBodyList(OrderDto::class.java)
+        .hasSize(1).returnResult().responseBody
+
+      assertThat(result.first().deviceWearer?.versionId).isEqualTo(versionId2)
+    }
+  }
+
+  @Nested
   @DisplayName("GET /api/orders/{orderId}")
   inner class GetOrderVersion {
     @Test
