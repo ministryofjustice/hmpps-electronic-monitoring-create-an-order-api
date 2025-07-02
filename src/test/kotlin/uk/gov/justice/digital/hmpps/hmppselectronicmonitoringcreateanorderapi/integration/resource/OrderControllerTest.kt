@@ -476,14 +476,16 @@ class OrderControllerTest : IntegrationTestBase() {
 
       repo.save(order)
 
-      webTestClient.get()
+      val result = webTestClient.get()
         .uri("/api/orders?searchTerm=john smith")
         .headers(setAuthorisation("AUTH_ADM"))
         .exchange()
         .expectStatus()
         .isOk
         .expectBodyList(OrderDto::class.java)
-        .hasSize(1)
+        .hasSize(1).returnResult().responseBody
+
+      assertThat(result.first().deviceWearer?.versionId).isEqualTo(versionId2)
     }
   }
 
