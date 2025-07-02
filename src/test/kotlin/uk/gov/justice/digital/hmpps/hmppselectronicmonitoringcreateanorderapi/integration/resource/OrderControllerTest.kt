@@ -387,6 +387,66 @@ class OrderControllerTest : IntegrationTestBase() {
   }
 
   @Nested
+  @DisplayName("GET /api/orders/search")
+  inner class SearchOrders {
+    @Test
+    fun `It should return orders where the first and last names match`() {
+      createAndPersistReadyToSubmitOrder(status = OrderStatus.SUBMITTED)
+
+      webTestClient.get()
+        .uri("/api/orders/search?searchTerm=john smith")
+        .headers(setAuthorisation("AUTH_ADM"))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBodyList(OrderDto::class.java)
+        .hasSize(1)
+    }
+
+    @Test
+    fun `It should return orders created by a different user`() {
+      createAndPersistReadyToSubmitOrder(status = OrderStatus.SUBMITTED)
+
+      webTestClient.get()
+        .uri("/api/orders/search?searchTerm=john smith")
+        .headers(setAuthorisation("SOME_OTHER_USER"))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBodyList(OrderDto::class.java)
+        .hasSize(1)
+    }
+
+    @Test
+    fun `It should only return submitted orders`() {
+      createAndPersistReadyToSubmitOrder(status = OrderStatus.IN_PROGRESS)
+
+      webTestClient.get()
+        .uri("/api/orders/search?searchTerm=john smith")
+        .headers(setAuthorisation("AUTH_ADM"))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBodyList(OrderDto::class.java)
+        .hasSize(0)
+    }
+
+    @Test
+    fun `It should only return orders that match full name`() {
+      createAndPersistReadyToSubmitOrder(status = OrderStatus.IN_PROGRESS)
+
+      webTestClient.get()
+        .uri("/api/orders/search?searchTerm=john")
+        .headers(setAuthorisation("AUTH_ADM"))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBodyList(OrderDto::class.java)
+        .hasSize(0)
+    }
+  }
+
+  @Nested
   @DisplayName("GET /api/orders/{orderId}")
   inner class GetOrderVersion {
     @Test
