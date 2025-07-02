@@ -12,7 +12,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.OrderSearchCriteria
 
-class OrderSpecification(private val criteria: OrderSearchCriteria) : Specification<Order> {
+class OrderListSpecification(private val criteria: OrderSearchCriteria) : Specification<Order> {
   private fun wildcard(str: String): String = "%$str%"
 
   private fun isOwnedByUser(

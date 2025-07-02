@@ -11,7 +11,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.CreateOrderDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.specification.OrderSpecification
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.specification.OrderListSpecification
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 import java.util.*
 
@@ -112,6 +112,6 @@ class OrderService(val repo: OrderRepository, val fmsService: FmsService) {
   }
 
   fun listOrders(searchCriteria: OrderSearchCriteria): List<Order> = repo.findAll(
-    OrderSpecification(searchCriteria),
+    OrderListSpecification(searchCriteria),
   )
 }
