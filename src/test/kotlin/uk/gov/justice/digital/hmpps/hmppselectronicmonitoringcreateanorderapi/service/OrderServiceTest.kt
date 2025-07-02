@@ -47,6 +47,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsSubmissionResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsSubmissionStrategyKind
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.specification.OrderListSpecification
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.specification.OrderSearchSpecification
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 import java.time.DayOfWeek
 import java.time.ZoneId
@@ -119,6 +120,18 @@ class OrderServiceTest {
     whenever(repo.findAll(ArgumentMatchers.any(OrderListSpecification::class.java))).thenReturn(listOf(mockOrder))
 
     val result = service.listOrders(mockCriteria)
+
+    Assertions.assertThat(result).isEqualTo(listOf(mockOrder))
+  }
+
+  @Test
+  fun `Should be able to search for orders`() {
+    val mockOrder = createReadyToSubmitOrder()
+    val mockCriteria = OrderSearchCriteria(searchTerm = "bob", username = "test")
+
+    whenever(repo.findAll(ArgumentMatchers.any(OrderSearchSpecification::class.java))).thenReturn(listOf(mockOrder))
+
+    val result = service.searchOrders(mockCriteria)
 
     Assertions.assertThat(result).isEqualTo(listOf(mockOrder))
   }
