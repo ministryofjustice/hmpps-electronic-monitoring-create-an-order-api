@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.resource
 
+
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
@@ -433,7 +434,7 @@ class OrderControllerTest : IntegrationTestBase() {
 
     @Test
     fun `It should only return orders that match full name`() {
-      createAndPersistReadyToSubmitOrder(status = OrderStatus.IN_PROGRESS)
+      createAndPersistReadyToSubmitOrder(status = OrderStatus.SUBMITTED)
 
       webTestClient.get()
         .uri("/api/orders/search?searchTerm=john")
@@ -443,6 +444,46 @@ class OrderControllerTest : IntegrationTestBase() {
         .isOk
         .expectBodyList(OrderDto::class.java)
         .hasSize(0)
+    }
+
+    @Test
+    fun `Should only return the most recent order version`() {
+      val order = createReadyToSubmitOrder()
+      val versionId1 = UUID.randomUUID()
+      val versionId2 = UUID.randomUUID()
+      order.versions.add(
+        OrderVersion(
+          id = versionId1,
+          username = "AUTH_ADM",
+          status = OrderStatus.SUBMITTED,
+          type = RequestType.REQUEST,
+          orderId = order.id,
+          versionId = 2,
+          deviceWearer = DeviceWearer(versionId = versionId1, firstName = "John", lastName = "Smith"),
+        ),
+      )
+      order.versions.add(
+        OrderVersion(
+          id = versionId2,
+          username = "AUTH_ADM",
+          status = OrderStatus.SUBMITTED,
+          type = RequestType.REQUEST,
+          orderId = order.id,
+          versionId = 3,
+          deviceWearer = DeviceWearer(versionId = versionId2, firstName = "John", lastName = "Smith"),
+        ),
+      )
+
+      repo.save(order)
+
+      webTestClient.get()
+        .uri("/api/orders?searchTerm=john smith")
+        .headers(setAuthorisation("AUTH_ADM"))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBodyList(OrderDto::class.java)
+        .hasSize(1)
     }
   }
 

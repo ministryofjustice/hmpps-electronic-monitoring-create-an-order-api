@@ -14,8 +14,6 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 
 class OrderSearchSpecification(private val criteria: OrderSearchCriteria) : Specification<Order> {
-  private fun wildcard(str: String): String = "%$str%"
-
   private fun isLikeFullName(
     deviceWearer: Join<OrderVersion, DeviceWearer>,
     criteriaBuilder: CriteriaBuilder,
@@ -27,7 +25,7 @@ class OrderSearchSpecification(private val criteria: OrderSearchCriteria) : Spec
     val normalizedKeyword = keyword.trim().replace(Regex("\\s+"), " ").lowercase()
     return criteriaBuilder.like(
       criteriaBuilder.lower(fullName),
-      wildcard(normalizedKeyword),
+      normalizedKeyword,
     )
   }
 
