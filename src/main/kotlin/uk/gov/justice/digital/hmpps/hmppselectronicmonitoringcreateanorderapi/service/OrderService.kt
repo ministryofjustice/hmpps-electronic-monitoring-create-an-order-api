@@ -60,7 +60,7 @@ class OrderService(val repo: OrderRepository, val fmsService: FmsService) {
       EntityNotFoundException("Order with id $id does not exist")
     }
 
-    if (order.username != username) {
+    if (order.status != OrderStatus.SUBMITTED && order.username != username) {
       throw EntityNotFoundException("Order ($id) for $username not found")
     }
 

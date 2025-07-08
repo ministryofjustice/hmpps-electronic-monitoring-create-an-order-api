@@ -526,6 +526,18 @@ class OrderControllerTest : IntegrationTestBase() {
         .expectStatus()
         .isNotFound()
     }
+
+    @Test
+    fun `It should return if order belongs to another user but the order is submitted`() {
+      val order = createSubmittedOrder()
+
+      webTestClient.get()
+        .uri("/api/orders/${order.id}")
+        .headers(setAuthorisation("AUTH_ADM_2"))
+        .exchange()
+        .expectStatus()
+        .isOk
+    }
   }
 
   @Nested
