@@ -23,14 +23,12 @@ class VariationService(@Value("\${toggle.data-dictionary.v5-1.enabled:false}") v
     val order = this.findEditableOrder(orderId, username)
 
     val type = VariationType.entries.firstOrNull { it.name == updateRecord.variationType }
-    if (ddV5Enabled && VariationType.DDv4_TYPES.contains(type)) {
-      throw ValidationException(ValidationErrors.VariationDetails.typeObsolete(updateRecord.variationType))
-    }
     with(updateRecord) {
       order.variationDetails = VariationDetails(
         versionId = order.getCurrentVersion().id,
         variationType = VariationType.valueOf(variationType),
         variationDate = ZonedDateTime.parse(variationDate),
+        variationReason = updateRecord.variationReason,
       )
     }
 

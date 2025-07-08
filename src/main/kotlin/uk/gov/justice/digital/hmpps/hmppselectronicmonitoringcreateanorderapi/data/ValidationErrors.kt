@@ -136,6 +136,8 @@ object ValidationErrors {
     const val TYPE_MUST_BE_VALID: String = "Variation type must be a valid variation type"
     fun typeObsolete(type: String): String = "Variation type $type is obsolete"
     const val DATE_MUST_BE_VALID: String = "Variation date must be a valid date"
+    const val REASON_REQUIRED: String = "Variation reason is required"
+    const val REASON_TOO_LONG: String = "Variation reason is too long"
   }
 
   object InstallationLocation {

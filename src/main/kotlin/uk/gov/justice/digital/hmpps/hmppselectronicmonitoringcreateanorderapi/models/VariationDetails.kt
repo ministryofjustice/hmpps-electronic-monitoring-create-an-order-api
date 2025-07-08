@@ -30,6 +30,9 @@ data class VariationDetails(
   @Column(name = "VARIATION_DATE", nullable = false)
   var variationDate: ZonedDateTime,
 
+  @Column(name = "VARIATION_REASON", nullable = false, length = 200)
+  val variationReason: String,
+
   @Schema(hidden = true)
   @OneToOne
   @JoinColumn(name = "VERSION_ID", updatable = false, insertable = false)
