@@ -15,6 +15,7 @@ import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
 import jakarta.persistence.UniqueConstraint
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.InstallationLocationType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
@@ -29,6 +30,7 @@ import java.util.UUID
   ],
 )
 data class OrderVersion(
+
   @Id
   @Column(name = "ID", nullable = false, unique = true)
   val id: UUID = UUID.randomUUID(),
@@ -45,6 +47,10 @@ data class OrderVersion(
   @Enumerated(EnumType.STRING)
   @Column(name = "STATUS", nullable = false)
   var status: OrderStatus,
+
+  @Enumerated(EnumType.STRING)
+  @Column(name = "DATA_DICTIONARY_VERSION", nullable = false)
+  var dataDictionaryVersion: DataDictionaryVersion,
 
   @Enumerated(EnumType.STRING)
   @Column(name = "TYPE", nullable = false)

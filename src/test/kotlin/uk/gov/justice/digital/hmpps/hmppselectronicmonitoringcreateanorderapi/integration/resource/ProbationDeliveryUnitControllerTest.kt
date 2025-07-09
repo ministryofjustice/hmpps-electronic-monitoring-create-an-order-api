@@ -9,10 +9,7 @@ import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InterestedParties
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ProbationServiceRegion
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ResponsibleOrganisation
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 import java.util.*
@@ -200,21 +197,9 @@ class ProbationDeliveryUnitControllerTest : IntegrationTestBase() {
     responsibleOrganisation: ResponsibleOrganisation,
     probationServiceRegion: ProbationServiceRegion,
   ): Order {
-    val orderId = UUID.randomUUID()
-    var version = OrderVersion(
-      orderId = orderId,
-      status = OrderStatus.IN_PROGRESS,
-      type = RequestType.REQUEST,
-      username = testUser,
-    )
-    val order = Order(
-      id = orderId,
-      versions = mutableListOf(
-        version,
-      ),
-    )
+    val order = createStoredOrder()
     order.interestedParties = InterestedParties(
-      versionId = version.id,
+      versionId = order.versions.first().id,
       responsibleOfficerName = "John Smith",
       responsibleOfficerPhoneNumber = "07401111111",
       responsibleOrganisation = responsibleOrganisation.name,

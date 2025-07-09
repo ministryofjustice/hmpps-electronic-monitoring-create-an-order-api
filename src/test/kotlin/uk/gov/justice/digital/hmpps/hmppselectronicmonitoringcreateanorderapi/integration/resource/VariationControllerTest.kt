@@ -12,6 +12,8 @@ import org.springframework.http.MediaType
 import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.VariationDetails
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.VariationType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidationError
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
@@ -192,7 +194,8 @@ class VariationControllerTest : IntegrationTestBase() {
     @ParameterizedTest(name = "it should not be possible to update the variation details with DDv4 variationType = {0}")
     @ValueSource(strings = ["CURFEW_HOURS", "ADDRESS", "ENFORCEMENT_ADD", "ENFORCEMENT_UPDATE", "SUSPENSION"])
     fun `it should not be possible to update the variation details with DDv4 variation types`(variationType: String) {
-      val variation = createVariation()
+      val variation =
+        createStoredOrder(type = RequestType.VARIATION, dataDictionaryVersion = DataDictionaryVersion.DDV5)
 
       val result = webTestClient.put()
         .uri("/api/orders/${variation.id}/variation")

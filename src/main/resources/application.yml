@@ -67,7 +67,8 @@ toggle:
   data-dictionary:
     v5-1:
       enabled: ${DATA_DICTIONARY_V5_1_ENABLED:false}
-
+settings:
+  data-dictionary-version: DDV4
 management:
   endpoints:
     web:
