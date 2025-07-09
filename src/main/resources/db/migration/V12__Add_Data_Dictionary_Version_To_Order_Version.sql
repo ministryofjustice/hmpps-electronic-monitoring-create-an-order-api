@@ -3,7 +3,7 @@ ALTER TABLE order_version
 
 UPDATE order_version
     SET data_dictionary_version = 'DDV4'
-WHERE postgres.public.order_version.data_dictionary_version IS NULL;
+WHERE data_dictionary_version IS NULL;
 
 ALTER TABLE order_version
     ALTER COLUMN data_dictionary_version SET NOT NULL;
