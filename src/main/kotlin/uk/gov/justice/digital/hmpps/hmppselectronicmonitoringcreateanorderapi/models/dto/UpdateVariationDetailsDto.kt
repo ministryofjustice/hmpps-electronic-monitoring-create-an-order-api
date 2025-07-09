@@ -17,7 +17,7 @@ data class UpdateVariationDetailsDto(
 
   @field:NotEmpty(message = ValidationErrors.VariationDetails.REASON_REQUIRED)
   @field:Size(max = 200, message = ValidationErrors.VariationDetails.REASON_TOO_LONG)
-  val variationReason: String = "",
+  val variationDescription: String = "",
 
 ) {
   @AssertTrue(message = ValidationErrors.VariationDetails.TYPE_MUST_BE_VALID)
