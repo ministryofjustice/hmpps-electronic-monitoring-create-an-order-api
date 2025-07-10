@@ -15,6 +15,4 @@ enum class VariationType(val value: String) {
   ENFORCEABLE_CONDITION("Change to Enforceable Condition"),
   ADMIN_ERROR("Admin Error "),
   OTHER("Other "),
-  ;
-
 }

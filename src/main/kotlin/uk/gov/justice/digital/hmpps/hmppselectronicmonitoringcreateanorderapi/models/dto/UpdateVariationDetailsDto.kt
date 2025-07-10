@@ -15,8 +15,8 @@ data class UpdateVariationDetailsDto(
   @field:NotEmpty(message = ValidationErrors.VariationDetails.DATE_REQUIRED)
   val variationDate: String = "",
 
-  @field:NotEmpty(message = ValidationErrors.VariationDetails.REASON_REQUIRED)
-  @field:Size(max = 200, message = ValidationErrors.VariationDetails.REASON_TOO_LONG)
+  @field:NotEmpty(message = ValidationErrors.VariationDetails.DESCRIPTION_REQUIRED)
+  @field:Size(max = 200, message = ValidationErrors.VariationDetails.DESCRIPTION_TOO_LONG)
   val variationDescription: String = "",
 
 ) {
