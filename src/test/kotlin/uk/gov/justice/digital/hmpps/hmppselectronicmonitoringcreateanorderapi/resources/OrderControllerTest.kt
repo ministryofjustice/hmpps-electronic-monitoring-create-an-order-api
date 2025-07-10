@@ -109,6 +109,7 @@ class OrderControllerTest {
         probationDeliveryUnit = null,
         installationLocation = null,
         installationAppointment = null,
+        dataDictionaryVersion = mockDictionaryVersion,
       ),
     )
   }
@@ -177,6 +178,7 @@ class OrderControllerTest {
           probationDeliveryUnit = null,
           installationLocation = null,
           installationAppointment = null,
+          dataDictionaryVersion = mockDictionaryVersion,
         ),
         OrderDto(
           id = orderId2,
@@ -205,6 +207,7 @@ class OrderControllerTest {
           probationDeliveryUnit = null,
           installationLocation = null,
           installationAppointment = null,
+          dataDictionaryVersion = mockDictionaryVersion,
         ),
       ),
     )
@@ -274,6 +277,7 @@ class OrderControllerTest {
           probationDeliveryUnit = null,
           installationLocation = null,
           installationAppointment = null,
+          dataDictionaryVersion = mockDictionaryVersion,
         ),
         OrderDto(
           id = orderId2,
@@ -302,6 +306,7 @@ class OrderControllerTest {
           probationDeliveryUnit = null,
           installationLocation = null,
           installationAppointment = null,
+          dataDictionaryVersion = mockDictionaryVersion,
         ),
       ),
     )
