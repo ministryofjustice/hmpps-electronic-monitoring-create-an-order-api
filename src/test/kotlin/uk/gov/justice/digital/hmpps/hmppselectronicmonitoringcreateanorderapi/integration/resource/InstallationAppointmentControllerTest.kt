@@ -6,10 +6,6 @@ import org.junit.jupiter.api.Test
 import org.springframework.http.MediaType
 import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import java.time.ZonedDateTime
 import java.util.*
 
@@ -20,26 +16,9 @@ class InstallationAppointmentControllerTest : IntegrationTestBase() {
     repo.deleteAll()
   }
 
-  private fun createOrder(): Order {
-    val orderId = UUID.randomUUID()
-    val version = OrderVersion(
-      orderId = orderId,
-      status = OrderStatus.IN_PROGRESS,
-      type = RequestType.REQUEST,
-      username = testUser,
-    )
-    val order = Order(
-      id = orderId,
-      versions = mutableListOf(
-        version,
-      ),
-    )
-    return repo.save(order)
-  }
-
   @Test
   fun `Installation location cannot be updated by a different user`() {
-    val order = createOrder()
+    val order = createStoredOrder()
     webTestClient.put()
       .uri("/api/orders/${order.id}/installation-appointment")
       .contentType(MediaType.APPLICATION_JSON)
@@ -83,7 +62,7 @@ class InstallationAppointmentControllerTest : IntegrationTestBase() {
   }
 
   fun `It should store installation appointment to database`() {
-    val order = createOrder()
+    val order = createStoredOrder()
     webTestClient.put()
       .uri("/api/orders/${order.id}/installation-appointment")
       .contentType(MediaType.APPLICATION_JSON)

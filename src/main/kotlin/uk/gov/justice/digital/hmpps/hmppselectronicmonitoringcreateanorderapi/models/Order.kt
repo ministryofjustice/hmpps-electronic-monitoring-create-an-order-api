@@ -7,6 +7,7 @@ import jakarta.persistence.FetchType
 import jakarta.persistence.Id
 import jakarta.persistence.OneToMany
 import jakarta.persistence.Table
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import java.time.OffsetDateTime
@@ -25,24 +26,6 @@ data class Order(
 
 ) {
   fun getCurrentVersion(): OrderVersion = versions.maxBy { it.versionId }
-
-  fun createVariation(username: String): OrderVersion {
-    if (getCurrentVersion().status === OrderStatus.IN_PROGRESS) {
-      throw Exception("Order is already in progress")
-    }
-
-    val versionId = versions.size + 1
-    val version = OrderVersion(
-      orderId = id,
-      status = OrderStatus.IN_PROGRESS,
-      type = RequestType.VARIATION,
-      username = username,
-      versionId = versionId,
-    )
-
-    versions.add(version)
-    return version
-  }
 
   fun deleteCurrentVersion() {
     val version = getCurrentVersion()
@@ -228,5 +211,10 @@ data class Order(
     }
     set(installationAppointment) {
       getCurrentVersion().installationAppointment = installationAppointment
+    }
+
+  val dataDictionaryVersion: DataDictionaryVersion
+    get() {
+      return getCurrentVersion().dataDictionaryVersion
     }
 }

@@ -12,6 +12,7 @@ import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateInstallationAppointmentDto
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
@@ -39,7 +40,7 @@ class InstallationAppointmentServiceTest {
         orderId = mockOrderId,
         type = RequestType.REQUEST,
         username = mockUsername,
-
+        dataDictionaryVersion = DataDictionaryVersion.DDV4,
       ),
     ),
   )
@@ -88,7 +89,7 @@ class InstallationAppointmentServiceTest {
         orderId = mockOrderId,
         type = RequestType.REQUEST,
         username = "Not$mockUsername",
-
+        dataDictionaryVersion = DataDictionaryVersion.DDV4,
       ),
     )
     whenever(repo.findById(mockOrderId)).thenReturn(Optional.of(mockOrder))

@@ -27,6 +27,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.cl
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AdditionalDocument
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DocumentType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
@@ -44,6 +45,7 @@ class AdditionalDocumentServiceTest {
   val username: String = "username"
   val mockOrderId = UUID.randomUUID()
   val mockVersionId = UUID.randomUUID()
+  val mockDictionaryVersion = DataDictionaryVersion.DDV4
 
   val docType: DocumentType = DocumentType.LICENCE
   val doc: AdditionalDocument = AdditionalDocument(versionId = mockVersionId, fileType = docType)
@@ -75,6 +77,7 @@ class AdditionalDocumentServiceTest {
                 type = RequestType.REQUEST,
                 username = username,
                 orderId = mockOrderId,
+                dataDictionaryVersion = mockDictionaryVersion,
               ),
             ),
           ),
@@ -108,6 +111,7 @@ class AdditionalDocumentServiceTest {
                 additionalDocuments = mutableListOf(
                   doc,
                 ),
+                dataDictionaryVersion = mockDictionaryVersion,
               ),
             ),
           ),
@@ -151,6 +155,7 @@ class AdditionalDocumentServiceTest {
                 additionalDocuments = mutableListOf(
                   doc,
                 ),
+                dataDictionaryVersion = mockDictionaryVersion,
               ),
             ),
           ),
@@ -173,6 +178,7 @@ class AdditionalDocumentServiceTest {
               versionId = 0,
               orderId = mockOrderId,
               additionalDocuments = mutableListOf(),
+              dataDictionaryVersion = mockDictionaryVersion,
             ),
           ),
         ),
@@ -206,6 +212,7 @@ class AdditionalDocumentServiceTest {
                 type = RequestType.REQUEST,
                 username = username,
                 orderId = mockOrderId,
+                dataDictionaryVersion = mockDictionaryVersion,
               ),
             ),
           ),
@@ -254,6 +261,7 @@ class AdditionalDocumentServiceTest {
                   additionalDocuments = mutableListOf(
                     doc,
                   ),
+                  dataDictionaryVersion = mockDictionaryVersion,
                 ),
               ),
             ),
@@ -292,6 +300,7 @@ class AdditionalDocumentServiceTest {
                     fileName = "file-name.pdf",
                   ),
                 ),
+                dataDictionaryVersion = mockDictionaryVersion,
               ),
             ),
           ),
@@ -336,7 +345,9 @@ class AdditionalDocumentServiceTest {
                   type = RequestType.REQUEST,
                   username = username,
                   orderId = mockOrderId,
+                  dataDictionaryVersion = mockDictionaryVersion,
                 ),
+
               ),
             ),
           ),
@@ -374,6 +385,7 @@ class AdditionalDocumentServiceTest {
                     fileName = "file-name.pdf",
                   ),
                 ),
+                dataDictionaryVersion = mockDictionaryVersion,
               ),
             ),
           ),

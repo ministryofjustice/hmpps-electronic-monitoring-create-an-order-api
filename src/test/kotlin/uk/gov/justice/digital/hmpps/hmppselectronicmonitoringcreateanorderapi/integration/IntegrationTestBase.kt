@@ -20,6 +20,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.in
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderDto
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
@@ -111,22 +112,31 @@ abstract class IntegrationTestBase {
     .returnResult(OrderDto::class.java)
     .responseBody.blockFirst()!!
 
-  fun createSubmittedOrder(type: RequestType = RequestType.REQUEST): Order {
-    val orderId = UUID.randomUUID()
+  fun createStoredOrder(
+    orderId: UUID = UUID.randomUUID(),
+    username: String = testUser,
+    status: OrderStatus = OrderStatus.IN_PROGRESS,
+    type: RequestType = RequestType.REQUEST,
+    dataDictionaryVersion: DataDictionaryVersion = DataDictionaryVersion.DDV4,
+  ): Order {
     val order = Order(
       id = orderId,
       versions = mutableListOf(
         OrderVersion(
           orderId = orderId,
-          status = OrderStatus.SUBMITTED,
-          type = RequestType.REQUEST,
-          username = testUser,
+          status = status,
+          type = type,
+          username = username,
+          dataDictionaryVersion = dataDictionaryVersion,
         ),
       ),
     )
-
     return repo.save(order)
   }
+  fun createSubmittedOrder(
+    type: RequestType = RequestType.REQUEST,
+    dataDictionaryVersion: DataDictionaryVersion = DataDictionaryVersion.DDV4,
+  ): Order = createStoredOrder(status = OrderStatus.SUBMITTED, dataDictionaryVersion = dataDictionaryVersion)
 
   fun createSubmittedVariation() = createSubmittedOrder(RequestType.VARIATION)
 

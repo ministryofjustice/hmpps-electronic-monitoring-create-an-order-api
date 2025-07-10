@@ -11,6 +11,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DeviceWearerAddressUsage
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.InstallationLocationType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
@@ -95,6 +96,7 @@ class OrderVersionRepositoryTest {
           probationOfficeName = null,
         ),
         addresses = mutableListOf(mockAddress),
+        dataDictionaryVersion = DataDictionaryVersion.DDV4,
       ),
     ),
   )
@@ -120,6 +122,7 @@ class OrderVersionRepositoryTest {
           probationOfficeName = null,
         ),
         addresses = mutableListOf(updatedMockAddress),
+        dataDictionaryVersion = DataDictionaryVersion.DDV4,
       ),
     ),
   )

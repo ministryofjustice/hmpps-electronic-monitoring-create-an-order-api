@@ -17,6 +17,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateAddressDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DeviceWearerAddressUsage
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.InstallationLocationType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
@@ -42,6 +43,7 @@ class AddressServiceTest {
   private val mockUsername: String = "username"
   private val mockAddressId = UUID.randomUUID()
   private val mockAlcoholMonitoringConditionsId = UUID.randomUUID()
+  private val mockDictionaryVersion = DataDictionaryVersion.DDV4
 
   private val mockStartDate: ZonedDateTime = ZonedDateTime.of(
     LocalDate.of(2025, 1, 1),
@@ -108,6 +110,7 @@ class AddressServiceTest {
           probationOfficeName = null,
         ),
         addresses = mutableListOf(mockAddress),
+        dataDictionaryVersion = mockDictionaryVersion,
       ),
     ),
   )
@@ -134,6 +137,7 @@ class AddressServiceTest {
           probationOfficeName = null,
         ),
         addresses = mutableListOf(updatedMockAddress),
+        dataDictionaryVersion = mockDictionaryVersion,
       ),
     ),
   )
@@ -148,6 +152,7 @@ class AddressServiceTest {
         type = RequestType.REQUEST,
         orderId = mockOrderId,
         addresses = mutableListOf(),
+        dataDictionaryVersion = mockDictionaryVersion,
       ),
     ),
   )
@@ -191,12 +196,12 @@ class AddressServiceTest {
       )
 
       Assertions.assertThat(
-        addedPrimaryAddress?.addressType,
+        addedPrimaryAddress.addressType,
       ).isEqualTo(updatedMockAddress.addressType)
       Assertions.assertThat(
-        addedPrimaryAddress?.addressLine1,
+        addedPrimaryAddress.addressLine1,
       ).isEqualTo(updatedMockAddress.addressLine1)
-      Assertions.assertThat(addedPrimaryAddress?.postcode).isEqualTo(updatedMockAddress.postcode)
+      Assertions.assertThat(addedPrimaryAddress.postcode).isEqualTo(updatedMockAddress.postcode)
     }
   }
 }

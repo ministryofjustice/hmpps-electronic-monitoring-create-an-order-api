@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.courthearing
 
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.courthearingeventreceiver.model.Defendant
 import uk.gov.justice.digital.hmpps.courthearingeventreceiver.model.Gender
@@ -23,6 +24,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.courthearing.enums.CommunityOrderType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.EnforcementZoneType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MonitoringConditionType
@@ -39,7 +41,11 @@ import java.time.format.DateTimeFormatter
 import java.util.*
 
 @Service
-class HearingEventHandler(private val fmsService: FmsService, private val eventService: EventService) {
+class HearingEventHandler(
+  private val fmsService: FmsService,
+  private val eventService: EventService,
+  @Value("\${settings.data-dictionary-version}") val defaultDataDictionaryVersion: String,
+) {
   private val commentPlatformUsername = "COMMENT_PLATFORM"
   private val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
   private val dateTimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
@@ -221,6 +227,7 @@ class HearingEventHandler(private val fmsService: FmsService, private val eventS
     val judicialResults = offences.flatMap { it.judicialResults }.toList()
 
     val prompts = judicialResults.flatMap { it.judicialResultPrompts }.toList()
+    val dataDictionaryVersion = DataDictionaryVersion.entries.first { it.name == defaultDataDictionaryVersion }
     val order = Order(
       versions = mutableListOf(
         OrderVersion(
@@ -228,6 +235,7 @@ class HearingEventHandler(private val fmsService: FmsService, private val eventS
           status = OrderStatus.IN_PROGRESS,
           type = RequestType.REQUEST,
           orderId = UUID.randomUUID(),
+          dataDictionaryVersion = dataDictionaryVersion,
         ),
       ),
     )
