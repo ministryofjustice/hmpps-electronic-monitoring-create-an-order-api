@@ -197,6 +197,38 @@ class VariationControllerTest : IntegrationTestBase() {
       )
     }
 
+    @Test
+    fun `it should not be possible to update the variation details with an invalid variationDescription`() {
+      val variation = createVariation()
+
+      val result = webTestClient.put()
+        .uri("/api/orders/${variation.id}/variation")
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(
+          BodyInserters.fromValue(
+            """
+              {
+                "variationType": "CHANGE_TO_ADDRESS",
+                "variationDate": "2024-01-01T00:00:00.000Z",
+                "variationDescription": ""                
+              }
+            """.trimIndent(),
+          ),
+        )
+        .headers(setAuthorisation("AUTH_ADM"))
+        .exchange()
+        .expectStatus()
+        .isBadRequest
+        .expectBodyList(ValidationError::class.java)
+        .returnResult()
+
+      Assertions.assertThat(result.responseBody).isNotNull
+      Assertions.assertThat(result.responseBody).hasSize(1)
+      Assertions.assertThat(result.responseBody!!).contains(
+        ValidationError("variationDescription", "Enter information on what you have changed"),
+      )
+    }
+
     @ParameterizedTest(name = "it should not be possible to update the variation details with DDv4 variationType = {0}")
     @ValueSource(strings = ["CURFEW_HOURS", "ADDRESS", "ENFORCEMENT_ADD", "ENFORCEMENT_UPDATE", "SUSPENSION"])
     fun `it should not be possible to update the variation details with DDv4 variation types`(variationType: String) {
