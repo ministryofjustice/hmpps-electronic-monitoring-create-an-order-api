@@ -41,7 +41,8 @@ class VariationControllerTest : IntegrationTestBase() {
             """
               {
                 "variationType": "CHANGE_TO_ADDRESS",
-                "variationDate": "2024-01-01T00:00:00.000Z"
+                "variationDate": "2024-01-01T00:00:00.000Z",
+                "variationDescription": "Change to address"
               }
             """.trimIndent(),
           ),
@@ -62,7 +63,8 @@ class VariationControllerTest : IntegrationTestBase() {
             """
               {
                 "variationType": "CHANGE_TO_ADDRESS",
-                "variationDate": "2024-01-01T00:00:00.000Z"
+                "variationDate": "2024-01-01T00:00:00.000Z",
+                "variationDescription": "Change to address"
               }
             """.trimIndent(),
           ),
@@ -85,7 +87,8 @@ class VariationControllerTest : IntegrationTestBase() {
             """
               {
                 "variationType": "CHANGE_TO_ADDRESS",
-                "variationDate": "2024-01-01T00:00:00.000Z"
+                "variationDate": "2024-01-01T00:00:00.000Z",
+                "variationDescription": "Change to address"                
               }
             """.trimIndent(),
           ),
@@ -118,12 +121,15 @@ class VariationControllerTest : IntegrationTestBase() {
         .returnResult()
 
       Assertions.assertThat(result.responseBody).isNotNull
-      Assertions.assertThat(result.responseBody).hasSize(2)
+      Assertions.assertThat(result.responseBody).hasSize(3)
       Assertions.assertThat(result.responseBody!!).contains(
-        ValidationError("variationType", "Variation type is required"),
+        ValidationError("variationType", "Select what you have changed"),
       )
       Assertions.assertThat(result.responseBody!!).contains(
         ValidationError("variationDate", "Variation date is required"),
+      )
+      Assertions.assertThat(result.responseBody!!).contains(
+        ValidationError("variationDescription", "Enter information on what you have changed"),
       )
     }
 
@@ -139,7 +145,8 @@ class VariationControllerTest : IntegrationTestBase() {
             """
               {
                 "variationType": "UNKNOWN",
-                "variationDate": "2024-01-01T00:00:00.000Z"
+                "variationDate": "2024-01-01T00:00:00.000Z",
+                "variationDescription": "Change to address"
               }
             """.trimIndent(),
           ),
@@ -170,7 +177,8 @@ class VariationControllerTest : IntegrationTestBase() {
             """
               {
                 "variationType": "CHANGE_TO_ADDRESS",
-                "variationDate": "2024-02-31T00:00:00.000Z"
+                "variationDate": "2024-02-31T00:00:00.000Z",
+                "variationDescription": "Change to address"                
               }
             """.trimIndent(),
           ),
@@ -202,7 +210,8 @@ class VariationControllerTest : IntegrationTestBase() {
             """
               {
                 "variationType": "$variationType",
-                "variationDate": "2024-01-01T00:00:00.000Z"
+                "variationDate": "2024-01-01T00:00:00.000Z",
+                "variationDescription": "Change to address"                
               }
             """.trimIndent(),
           ),
@@ -251,7 +260,8 @@ class VariationControllerTest : IntegrationTestBase() {
             """
               {
                 "variationType": "$variationType",
-                "variationDate": "2024-01-01T00:00:00.000Z"
+                "variationDate": "2024-01-01T00:00:00.000Z",
+                "variationDescription": "Change to $variationType"
               }
             """.trimIndent(),
           ),
@@ -266,6 +276,7 @@ class VariationControllerTest : IntegrationTestBase() {
 
       Assertions.assertThat(result.variationType).isEqualTo(VariationType.valueOf(variationType))
       Assertions.assertThat(result.variationDate).isEqualTo(ZonedDateTime.parse("2024-01-01T00:00:00.000Z"))
+      Assertions.assertThat(result.variationDescription).isEqualTo("Change to $variationType")
     }
   }
 }

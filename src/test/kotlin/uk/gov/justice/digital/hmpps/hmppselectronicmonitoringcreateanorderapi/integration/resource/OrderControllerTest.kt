@@ -1034,7 +1034,7 @@ class OrderControllerTest : IntegrationTestBase() {
       	"order_type_description": "DAPOL",
       	"order_type_detail": "",
       	"order_variation_date": "",
-      	"order_variation_details": "",
+      	"order_variation_description": "",
       	"order_variation_req_received_date": "",
       	"order_variation_type": "",
       	"pdu_responsible": "Camden and Islington",
@@ -1407,7 +1407,7 @@ class OrderControllerTest : IntegrationTestBase() {
       	"order_type_description": "DAPOL",
       	"order_type_detail": "",
       	"order_variation_date": "",
-      	"order_variation_details": "",
+      	"order_variation_description": "",
       	"order_variation_req_received_date": "",
       	"order_variation_type": "",
       	"pdu_responsible": "Camden and Islington",
@@ -1750,7 +1750,7 @@ class OrderControllerTest : IntegrationTestBase() {
       	"order_type_description": "DAPOL",
       	"order_type_detail": "",
       	"order_variation_date": "${mockStartDate.format(dateTimeFormatter)}",
-      	"order_variation_details": "",
+      	"order_variation_description": "Change to address",
       	"order_variation_req_received_date": "",
       	"order_variation_type": "Change of address",
       	"pdu_responsible": "Camden and Islington",
@@ -2253,6 +2253,7 @@ class OrderControllerTest : IntegrationTestBase() {
         versionId = versionId,
         variationType = VariationType.ADDRESS,
         variationDate = mockStartDate,
+        variationDescription = "Change to address",
       )
     }
 
