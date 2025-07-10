@@ -1,7 +1,7 @@
 plugins {
   id("uk.gov.justice.hmpps.gradle-spring-boot") version "8.3.1"
-  kotlin("plugin.spring") version "2.1.21"
-  kotlin("plugin.jpa") version "2.1.21"
+  kotlin("plugin.spring") version "2.2.0"
+  kotlin("plugin.jpa") version "2.2.0"
 }
 
 configurations {
@@ -14,7 +14,7 @@ repositories {
 
 dependencies {
   implementation("commons-io:commons-io:2.19.0")
-  implementation("com.googlecode.libphonenumber:libphonenumber:9.0.7")
+  implementation("com.googlecode.libphonenumber:libphonenumber:9.0.9")
   implementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter:1.4.8")
   implementation("org.springframework.boot:spring-boot-starter-webflux")
   implementation("org.springframework.boot:spring-boot-starter-security")
@@ -24,7 +24,7 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
   implementation("io.awspring.cloud:spring-cloud-aws-starter-s3")
   implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:5.4.7")
-  implementation("io.sentry:sentry-spring-boot-starter-jakarta:8.14.0")
+  implementation("io.sentry:sentry-spring-boot-starter-jakarta:8.17.0")
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.9")
   runtimeOnly("org.flywaydb:flyway-database-postgresql")
   runtimeOnly("org.postgresql:postgresql:42.7.7")
