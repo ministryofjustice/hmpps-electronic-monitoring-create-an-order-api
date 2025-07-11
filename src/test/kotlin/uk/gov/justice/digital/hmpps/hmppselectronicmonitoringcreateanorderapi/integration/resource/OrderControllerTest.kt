@@ -35,6 +35,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DocumentType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.EnforcementZoneType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.InstallationLocationType
@@ -459,6 +460,7 @@ class OrderControllerTest : IntegrationTestBase() {
           orderId = order.id,
           versionId = 2,
           deviceWearer = DeviceWearer(versionId = versionId1, firstName = "John", lastName = "Smith"),
+          dataDictionaryVersion = DataDictionaryVersion.DDV4,
         ),
       )
       order.versions.add(
@@ -470,6 +472,7 @@ class OrderControllerTest : IntegrationTestBase() {
           orderId = order.id,
           versionId = 3,
           deviceWearer = DeviceWearer(versionId = versionId2, firstName = "John", lastName = "Smith"),
+          dataDictionaryVersion = DataDictionaryVersion.DDV4,
         ),
       )
 
@@ -525,6 +528,18 @@ class OrderControllerTest : IntegrationTestBase() {
         .exchange()
         .expectStatus()
         .isNotFound()
+    }
+
+    @Test
+    fun `It should return if order belongs to another user but the order is submitted`() {
+      val order = createSubmittedOrder()
+
+      webTestClient.get()
+        .uri("/api/orders/${order.id}")
+        .headers(setAuthorisation("AUTH_ADM_2"))
+        .exchange()
+        .expectStatus()
+        .isOk
     }
   }
 
@@ -2055,6 +2070,7 @@ class OrderControllerTest : IntegrationTestBase() {
           status = OrderStatus.IN_PROGRESS,
           type = requestType,
           orderId = id,
+          dataDictionaryVersion = DataDictionaryVersion.DDV4,
         ),
       ),
     )

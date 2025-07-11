@@ -9,11 +9,7 @@ import org.junit.jupiter.params.provider.MethodSource
 import org.springframework.http.MediaType
 import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.InstallationLocationType
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import java.util.*
 
 class InstallationLocationControllerTest : IntegrationTestBase() {
@@ -21,23 +17,6 @@ class InstallationLocationControllerTest : IntegrationTestBase() {
   @BeforeEach
   fun setup() {
     repo.deleteAll()
-  }
-
-  private fun createOrder(): Order {
-    val orderId = UUID.randomUUID()
-    val version = OrderVersion(
-      orderId = orderId,
-      status = OrderStatus.IN_PROGRESS,
-      type = RequestType.REQUEST,
-      username = testUser,
-    )
-    val order = Order(
-      id = orderId,
-      versions = mutableListOf(
-        version,
-      ),
-    )
-    return repo.save(order)
   }
 
   @Test

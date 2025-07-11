@@ -34,6 +34,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.CreateOrderDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.EnforcementZoneType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.InstallationLocationType
@@ -66,7 +67,7 @@ class OrderServiceTest {
   fun setup() {
     repo = mock(OrderRepository::class.java)
     fmsService = mock(FmsService::class.java)
-    service = OrderService(repo, fmsService)
+    service = OrderService(repo, fmsService, "DDV4")
   }
 
   @Test
@@ -77,6 +78,7 @@ class OrderServiceTest {
     Assertions.assertThat(UUID.fromString(result.id.toString())).isEqualTo(result.id)
     Assertions.assertThat(result.username).isEqualTo("mockUser")
     Assertions.assertThat(result.status).isEqualTo(OrderStatus.IN_PROGRESS)
+    Assertions.assertThat(result.dataDictionaryVersion).isEqualTo(DataDictionaryVersion.DDV4)
     argumentCaptor<Order>().apply {
       verify(repo, times(1)).save(capture())
       Assertions.assertThat(firstValue).isEqualTo(result)
@@ -151,6 +153,7 @@ class OrderServiceTest {
           username = "mockUser",
           status = OrderStatus.IN_PROGRESS,
           type = RequestType.REQUEST,
+          dataDictionaryVersion = DataDictionaryVersion.DDV4,
         ),
       ),
     )

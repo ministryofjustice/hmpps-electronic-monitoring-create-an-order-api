@@ -14,6 +14,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.OrderSearchCriteria
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.CreateOrderDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderDto
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.OrderController
@@ -26,6 +27,8 @@ class OrderControllerTest {
   private val orderService: OrderService = mock()
   private val controller = OrderController(orderService)
   private lateinit var authentication: Authentication
+
+  private val mockDictionaryVersion = DataDictionaryVersion.DDV4
 
   @BeforeEach
   fun setup() {
@@ -43,6 +46,7 @@ class OrderControllerTest {
           username = "mockUser",
           status = OrderStatus.IN_PROGRESS,
           type = RequestType.REQUEST,
+          dataDictionaryVersion = mockDictionaryVersion,
         ),
       ),
     )
@@ -68,6 +72,7 @@ class OrderControllerTest {
           username = "mockUser",
           status = OrderStatus.IN_PROGRESS,
           type = RequestType.REQUEST,
+          dataDictionaryVersion = mockDictionaryVersion,
         ),
       ),
     )
@@ -104,6 +109,7 @@ class OrderControllerTest {
         probationDeliveryUnit = null,
         installationLocation = null,
         installationAppointment = null,
+        dataDictionaryVersion = mockDictionaryVersion,
       ),
     )
   }
@@ -121,6 +127,7 @@ class OrderControllerTest {
             username = "mockUser",
             status = OrderStatus.IN_PROGRESS,
             type = RequestType.REQUEST,
+            dataDictionaryVersion = mockDictionaryVersion,
           ),
         ),
       ),
@@ -132,6 +139,7 @@ class OrderControllerTest {
             username = "mockUser",
             status = OrderStatus.IN_PROGRESS,
             type = RequestType.REQUEST,
+            dataDictionaryVersion = mockDictionaryVersion,
           ),
         ),
       ),
@@ -170,6 +178,7 @@ class OrderControllerTest {
           probationDeliveryUnit = null,
           installationLocation = null,
           installationAppointment = null,
+          dataDictionaryVersion = mockDictionaryVersion,
         ),
         OrderDto(
           id = orderId2,
@@ -198,6 +207,7 @@ class OrderControllerTest {
           probationDeliveryUnit = null,
           installationLocation = null,
           installationAppointment = null,
+          dataDictionaryVersion = mockDictionaryVersion,
         ),
       ),
     )
@@ -216,6 +226,7 @@ class OrderControllerTest {
             username = "mockUser",
             status = OrderStatus.SUBMITTED,
             type = RequestType.REQUEST,
+            dataDictionaryVersion = mockDictionaryVersion,
           ),
         ),
       ),
@@ -227,6 +238,7 @@ class OrderControllerTest {
             username = "mockUser",
             status = OrderStatus.SUBMITTED,
             type = RequestType.REQUEST,
+            dataDictionaryVersion = mockDictionaryVersion,
           ),
         ),
       ),
@@ -265,6 +277,7 @@ class OrderControllerTest {
           probationDeliveryUnit = null,
           installationLocation = null,
           installationAppointment = null,
+          dataDictionaryVersion = mockDictionaryVersion,
         ),
         OrderDto(
           id = orderId2,
@@ -293,6 +306,7 @@ class OrderControllerTest {
           probationDeliveryUnit = null,
           installationLocation = null,
           installationAppointment = null,
+          dataDictionaryVersion = mockDictionaryVersion,
         ),
       ),
     )

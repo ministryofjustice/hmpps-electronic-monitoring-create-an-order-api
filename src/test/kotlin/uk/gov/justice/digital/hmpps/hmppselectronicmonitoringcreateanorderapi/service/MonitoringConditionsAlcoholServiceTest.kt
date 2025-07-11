@@ -15,6 +15,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateAlcoholMonitoringConditionsDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DeviceWearerAddressUsage
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.InstallationLocationType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
@@ -40,6 +41,7 @@ class MonitoringConditionsAlcoholServiceTest {
   private val mockUsername: String = "username"
   private val mockAddressId = UUID.randomUUID()
   private val mockAlcoholMonitoringConditionsId = UUID.randomUUID()
+  private val mockDictionaryVersion = DataDictionaryVersion.DDV4
 
   private val mockStartDate: ZonedDateTime = ZonedDateTime.of(
     LocalDate.of(2025, 1, 1),
@@ -104,6 +106,7 @@ class MonitoringConditionsAlcoholServiceTest {
                   versionId = mockVersionId,
                 ),
                 addresses = mutableListOf(mockAddress),
+                dataDictionaryVersion = mockDictionaryVersion,
               ),
             ),
           ),
@@ -122,6 +125,7 @@ class MonitoringConditionsAlcoholServiceTest {
                 orderId = mockOrderId,
                 monitoringConditionsAlcohol = mockAlcoholMonitoringConditions,
                 addresses = mutableListOf(mockAddress),
+                dataDictionaryVersion = mockDictionaryVersion,
               ),
             ),
           ),
@@ -138,6 +142,7 @@ class MonitoringConditionsAlcoholServiceTest {
               orderId = mockOrderId,
               monitoringConditionsAlcohol = mockAlcoholMonitoringConditions,
               addresses = mutableListOf(mockAddress),
+              dataDictionaryVersion = mockDictionaryVersion,
             ),
           ),
         ),
@@ -201,7 +206,9 @@ class MonitoringConditionsAlcoholServiceTest {
                   versionId = mockVersionId,
                 ),
                 addresses = mutableListOf(mockAddress),
+                dataDictionaryVersion = mockDictionaryVersion,
               ),
+
             ),
           ),
         ),
@@ -219,6 +226,7 @@ class MonitoringConditionsAlcoholServiceTest {
                 orderId = mockOrderId,
                 monitoringConditionsAlcohol = mockAlcoholMonitoringConditions,
                 addresses = mutableListOf(mockAddress),
+                dataDictionaryVersion = mockDictionaryVersion,
               ),
             ),
           ),
@@ -235,6 +243,7 @@ class MonitoringConditionsAlcoholServiceTest {
               orderId = mockOrderId,
               monitoringConditionsAlcohol = mockAlcoholMonitoringConditions,
               addresses = mutableListOf(mockAddress),
+              dataDictionaryVersion = mockDictionaryVersion,
             ),
           ),
         ),

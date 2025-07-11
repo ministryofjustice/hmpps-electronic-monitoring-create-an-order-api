@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service
 
 import jakarta.persistence.EntityNotFoundException
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.SubmitOrderException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
@@ -10,6 +11,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.OrderListCriteria
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.OrderSearchCriteria
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.CreateOrderDto
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.specification.OrderListSpecification
@@ -18,16 +20,22 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.re
 import java.util.*
 
 @Service
-class OrderService(val repo: OrderRepository, val fmsService: FmsService) {
+class OrderService(
+  val repo: OrderRepository,
+  val fmsService: FmsService,
+  @Value("\${settings.data-dictionary-version}") val defaultDataDictionaryVersion: String,
+) {
+
   fun createOrder(username: String, createRecord: CreateOrderDto): Order {
     val order = Order()
-
+    val dataDictionaryVersion = DataDictionaryVersion.entries.first { it.name == defaultDataDictionaryVersion }
     order.versions.add(
       OrderVersion(
         username = username,
         status = OrderStatus.IN_PROGRESS,
         type = createRecord.type,
         orderId = order.id,
+        dataDictionaryVersion = dataDictionaryVersion,
       ),
     )
 
@@ -60,7 +68,7 @@ class OrderService(val repo: OrderRepository, val fmsService: FmsService) {
       EntityNotFoundException("Order with id $id does not exist")
     }
 
-    if (order.username != username) {
+    if (order.status != OrderStatus.SUBMITTED && order.username != username) {
       throw EntityNotFoundException("Order ($id) for $username not found")
     }
 
