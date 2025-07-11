@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.m
 
 import jakarta.validation.constraints.AssertTrue
 import jakarta.validation.constraints.NotEmpty
+import jakarta.validation.constraints.Size
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.data.ValidationErrors
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.VariationType
 import java.time.ZonedDateTime
@@ -13,6 +14,10 @@ data class UpdateVariationDetailsDto(
 
   @field:NotEmpty(message = ValidationErrors.VariationDetails.DATE_REQUIRED)
   val variationDate: String = "",
+
+  @field:NotEmpty(message = ValidationErrors.VariationDetails.DETAILS_REQUIRED)
+  @field:Size(max = 200, message = ValidationErrors.VariationDetails.DETAIL_TOO_LONG)
+  val variationDetails: String = "",
 
 ) {
   @AssertTrue(message = ValidationErrors.VariationDetails.TYPE_MUST_BE_VALID)
