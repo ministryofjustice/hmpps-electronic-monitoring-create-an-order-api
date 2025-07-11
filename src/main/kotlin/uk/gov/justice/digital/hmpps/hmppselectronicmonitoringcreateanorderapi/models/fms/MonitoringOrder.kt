@@ -97,7 +97,7 @@ data class MonitoringOrder(
   var orderTypeDetail: String? = "",
   @JsonProperty("order_variation_date")
   var orderVariationDate: String? = "",
-  @JsonProperty("order_variation_description")
+  @JsonProperty("order_variation_details")
   var orderVariationDescription: String? = "",
   @JsonProperty("order_variation_req_received_date")
   var orderVariationReqReceivedDate: String? = "",

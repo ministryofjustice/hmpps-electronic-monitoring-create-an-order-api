@@ -60,7 +60,7 @@ object ValidationErrors {
 
   // This may be "Exclusion Zone" in the front end, but also "Inclusion Zone"?
   object EnforcementZone {
-    const val DESCRIPTION_REQUIRED: String = "Enforcement zone description is required"
+    const val DETAILS_REQUIRED: String = "Enforcement zone description is required"
     const val DURATION_REQUIRED: String = "Enforcement zone duration is required"
     const val END_DATE_MUST_BE_IN_FUTURE: String = "Enforcement zone end date must be in the future"
     const val START_DATE_REQUIRED: String = "Enforcement zone start date is required"
@@ -133,11 +133,11 @@ object ValidationErrors {
   object VariationDetails {
     const val TYPE_REQUIRED: String = "Select what you have changed"
     const val DATE_REQUIRED: String = "Variation date is required"
-    const val DESCRIPTION_REQUIRED: String = "Enter information on what you have changed"
+    const val DETAILS_REQUIRED: String = "Enter information on what you have changed"
     const val TYPE_MUST_BE_VALID: String = "Variation type must be a valid variation type"
     fun typeObsolete(type: String): String = "Variation type $type is obsolete"
     const val DATE_MUST_BE_VALID: String = "Variation date must be a valid date"
-    const val DESCRIPTION_TOO_LONG: String = "Variation description is too long"
+    const val DETAIL_TOO_LONG: String = "Variation details is too long"
   }
 
   object InstallationLocation {
