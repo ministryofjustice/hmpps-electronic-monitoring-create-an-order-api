@@ -2269,7 +2269,7 @@ class OrderControllerTest : IntegrationTestBase() {
         versionId = versionId,
         variationType = VariationType.ADDRESS,
         variationDate = mockStartDate,
-        variationDescription = "Change to address",
+        variationDetails = "Change to address",
       )
     }
 

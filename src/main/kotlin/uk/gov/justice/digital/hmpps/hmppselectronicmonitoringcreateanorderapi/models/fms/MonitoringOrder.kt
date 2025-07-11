@@ -98,7 +98,7 @@ data class MonitoringOrder(
   @JsonProperty("order_variation_date")
   var orderVariationDate: String? = "",
   @JsonProperty("order_variation_details")
-  var orderVariationDescription: String? = "",
+  var orderVariationDetails: String? = "",
   @JsonProperty("order_variation_req_received_date")
   var orderVariationReqReceivedDate: String? = "",
   @JsonProperty("order_variation_type")
@@ -374,7 +374,7 @@ data class MonitoringOrder(
       if (order.type === RequestType.VARIATION) {
         monitoringOrder.orderVariationType = order.variationDetails!!.variationType.value
         monitoringOrder.orderVariationDate = order.variationDetails!!.variationDate.format(dateTimeFormatter)
-        monitoringOrder.orderVariationDescription = order.variationDetails!!.variationDescription
+        monitoringOrder.orderVariationDetails = order.variationDetails!!.variationDetails
       }
 
       return monitoringOrder

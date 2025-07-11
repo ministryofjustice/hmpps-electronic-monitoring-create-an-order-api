@@ -44,7 +44,7 @@ class VariationControllerTest : IntegrationTestBase() {
               {
                 "variationType": "CHANGE_TO_ADDRESS",
                 "variationDate": "2024-01-01T00:00:00.000Z",
-                "variationDescription": "Change to address"
+                "variationDetails": "Change to address"
               }
             """.trimIndent(),
           ),
@@ -66,7 +66,7 @@ class VariationControllerTest : IntegrationTestBase() {
               {
                 "variationType": "CHANGE_TO_ADDRESS",
                 "variationDate": "2024-01-01T00:00:00.000Z",
-                "variationDescription": "Change to address"
+                "variationDetails": "Change to address"
               }
             """.trimIndent(),
           ),
@@ -90,7 +90,7 @@ class VariationControllerTest : IntegrationTestBase() {
               {
                 "variationType": "CHANGE_TO_ADDRESS",
                 "variationDate": "2024-01-01T00:00:00.000Z",
-                "variationDescription": "Change to address"                
+                "variationDetails": "Change to address"                
               }
             """.trimIndent(),
           ),
@@ -131,7 +131,7 @@ class VariationControllerTest : IntegrationTestBase() {
         ValidationError("variationDate", "Variation date is required"),
       )
       Assertions.assertThat(result.responseBody!!).contains(
-        ValidationError("variationDescription", "Enter information on what you have changed"),
+        ValidationError("variationDetails", "Enter information on what you have changed"),
       )
     }
 
@@ -148,7 +148,7 @@ class VariationControllerTest : IntegrationTestBase() {
               {
                 "variationType": "UNKNOWN",
                 "variationDate": "2024-01-01T00:00:00.000Z",
-                "variationDescription": "Change to address"
+                "variationDetails": "Change to address"
               }
             """.trimIndent(),
           ),
@@ -180,7 +180,7 @@ class VariationControllerTest : IntegrationTestBase() {
               {
                 "variationType": "CHANGE_TO_ADDRESS",
                 "variationDate": "2024-02-31T00:00:00.000Z",
-                "variationDescription": "Change to address"                
+                "variationDetails": "Change to address"                
               }
             """.trimIndent(),
           ),
@@ -200,7 +200,7 @@ class VariationControllerTest : IntegrationTestBase() {
     }
 
     @Test
-    fun `it should not be possible to update the variation details with an invalid variationDescription`() {
+    fun `it should not be possible to update the variation details with an invalid variationDetails`() {
       val variation = createVariation()
 
       val result = webTestClient.put()
@@ -212,7 +212,7 @@ class VariationControllerTest : IntegrationTestBase() {
               {
                 "variationType": "CHANGE_TO_ADDRESS",
                 "variationDate": "2024-01-01T00:00:00.000Z",
-                "variationDescription": ""                
+                "variationDetails": ""                
               }
             """.trimIndent(),
           ),
@@ -227,7 +227,7 @@ class VariationControllerTest : IntegrationTestBase() {
       Assertions.assertThat(result.responseBody).isNotNull
       Assertions.assertThat(result.responseBody).hasSize(1)
       Assertions.assertThat(result.responseBody!!).contains(
-        ValidationError("variationDescription", "Enter information on what you have changed"),
+        ValidationError("variationDetails", "Enter information on what you have changed"),
       )
     }
 
@@ -246,7 +246,7 @@ class VariationControllerTest : IntegrationTestBase() {
               {
                 "variationType": "$variationType",
                 "variationDate": "2024-01-01T00:00:00.000Z",
-                "variationDescription": "Change to address"                
+                "variationDetails": "Change to address"                
               }
             """.trimIndent(),
           ),
@@ -296,7 +296,7 @@ class VariationControllerTest : IntegrationTestBase() {
               {
                 "variationType": "$variationType",
                 "variationDate": "2024-01-01T00:00:00.000Z",
-                "variationDescription": "Change to $variationType"
+                "variationDetails": "Change to $variationType"
               }
             """.trimIndent(),
           ),
@@ -311,7 +311,7 @@ class VariationControllerTest : IntegrationTestBase() {
 
       Assertions.assertThat(result.variationType).isEqualTo(VariationType.valueOf(variationType))
       Assertions.assertThat(result.variationDate).isEqualTo(ZonedDateTime.parse("2024-01-01T00:00:00.000Z"))
-      Assertions.assertThat(result.variationDescription).isEqualTo("Change to $variationType")
+      Assertions.assertThat(result.variationDetails).isEqualTo("Change to $variationType")
     }
   }
 }
