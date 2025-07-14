@@ -60,7 +60,7 @@ object ValidationErrors {
 
   // This may be "Exclusion Zone" in the front end, but also "Inclusion Zone"?
   object EnforcementZone {
-    const val DETAILS_REQUIRED: String = "Enforcement zone description is required"
+    const val DESCRIPTION_REQUIRED: String = "Enforcement zone description is required"
     const val DURATION_REQUIRED: String = "Enforcement zone duration is required"
     const val END_DATE_MUST_BE_IN_FUTURE: String = "Enforcement zone end date must be in the future"
     const val START_DATE_REQUIRED: String = "Enforcement zone start date is required"
