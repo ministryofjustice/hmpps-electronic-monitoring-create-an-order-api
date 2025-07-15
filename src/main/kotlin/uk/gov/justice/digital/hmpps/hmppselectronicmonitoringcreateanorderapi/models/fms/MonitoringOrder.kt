@@ -511,7 +511,6 @@ data class Schedule(val day: String? = "", val start: String? = "", val end: Str
       DayOfWeek.SATURDAY -> "Sa"
       DayOfWeek.SUNDAY -> "Su"
     }
-
     fun fromCurfewTimeTable(curfewTimeTable: CurfewTimeTable): Schedule =
       Schedule(getShortDayString(curfewTimeTable.dayOfWeek), curfewTimeTable.startTime, curfewTimeTable.endTime)
   }
