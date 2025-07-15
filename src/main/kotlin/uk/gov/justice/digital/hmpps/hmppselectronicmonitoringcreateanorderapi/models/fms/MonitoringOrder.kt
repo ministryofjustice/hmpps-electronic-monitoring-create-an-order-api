@@ -20,6 +20,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ResponsibleOrganisation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YesNoUnknown
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YouthJusticeServiceRegions
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderTypeDescription
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.formatters.PhoneNumberFormatter
 import java.time.DayOfWeek
 import java.time.ZoneId
@@ -222,7 +223,6 @@ data class MonitoringOrder(
         deviceWearer = "${order.deviceWearer!!.firstName} ${order.deviceWearer!!.lastName}",
         orderType = conditions.orderType!!.value,
         orderRequestType = order.type.value,
-        orderTypeDescription = conditions.orderTypeDescription?.value,
         orderStart = getBritishDateAndTime(conditions.startDate),
         orderEnd = getBritishDateAndTime(conditions.endDate) ?: "",
         serviceEndDate = getBritishDate(conditions.endDate) ?: "",
@@ -232,6 +232,12 @@ data class MonitoringOrder(
         orderStatus = "Not Started",
         offence = getOffence(order),
       )
+
+      monitoringOrder.orderTypeDescription = if (conditions.orderTypeDescription === OrderTypeDescription.UNKNOWN) {
+        null
+      } else {
+        conditions.orderTypeDescription?.value
+      }
 
       monitoringOrder.sentenceType = conditions.sentenceType?.value ?: ""
       monitoringOrder.issp = if (conditions.issp == YesNoUnknown.YES) {
@@ -269,7 +275,7 @@ data class MonitoringOrder(
             endDate = getBritishDateAndTime(order.monitoringConditionsTrail!!.endDate),
           ),
 
-        )
+          )
         monitoringOrder.trailMonitoring = "Yes"
       }
 
@@ -511,6 +517,7 @@ data class Schedule(val day: String? = "", val start: String? = "", val end: Str
       DayOfWeek.SATURDAY -> "Sa"
       DayOfWeek.SUNDAY -> "Su"
     }
+
     fun fromCurfewTimeTable(curfewTimeTable: CurfewTimeTable): Schedule =
       Schedule(getShortDayString(curfewTimeTable.dayOfWeek), curfewTimeTable.startTime, curfewTimeTable.endTime)
   }
