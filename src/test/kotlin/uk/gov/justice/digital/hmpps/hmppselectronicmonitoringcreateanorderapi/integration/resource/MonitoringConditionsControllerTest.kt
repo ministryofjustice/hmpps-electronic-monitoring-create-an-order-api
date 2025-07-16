@@ -33,7 +33,7 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
     const val END_DATE_REQUIRED: String = "Enter end date for monitoring"
     const val TYPE_REQUIRED: String = "Select order type"
     const val END_DATE_MUST_BE_AFTER_START_DATE: String = "End date must be after start date"
-    const val END_DATE_MUST_BE_IN_THE_FUTURE: String = "End date of monitoring must be in the future"
+    const val END_DATE_MUST_BE_IN_FUTURE: String = "End date of monitoring must be in the future"
   }
 
   @BeforeEach
@@ -328,7 +328,7 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
     Assertions.assertThat(result.responseBody).isNotNull
     Assertions.assertThat(result.responseBody).hasSize(1)
     Assertions.assertThat(result.responseBody!!).contains(
-      ValidationError("endDate", ErrorMessages.END_DATE_MUST_BE_IN_THE_FUTURE),
+      ValidationError("endDate", ErrorMessages.END_DATE_MUST_BE_IN_FUTURE),
     )
   }
 
