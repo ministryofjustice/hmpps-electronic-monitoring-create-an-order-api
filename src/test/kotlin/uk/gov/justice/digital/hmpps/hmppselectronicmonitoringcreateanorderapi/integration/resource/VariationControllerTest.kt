@@ -128,7 +128,7 @@ class VariationControllerTest : IntegrationTestBase() {
         ValidationError("variationType", "Select what you have changed"),
       )
       Assertions.assertThat(result.responseBody!!).contains(
-        ValidationError("variationDate", "Variation date is required"),
+        ValidationError("variationDate", "Enter the date you want the changes to take effect"),
       )
       Assertions.assertThat(result.responseBody!!).contains(
         ValidationError("variationDetails", "Enter information on what you have changed"),
