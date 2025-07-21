@@ -14,6 +14,8 @@ object ValidationErrors {
     const val MONITORING_TYPE_REQUIRED: String = "Select what alcohol monitoring the device wearer needs"
     const val START_DATE_REQUIRED: String = "Enter date alcohol monitoring starts"
     const val END_DATE_MUST_BE_IN_FUTURE: String = "Date alcohol monitoring ends must be in the future"
+    const val END_DATE_MUST_BE_AFTER_START_DATE: String =
+      "Date alcohol monitoring ends must be after the date alcohol monitoring starts"
     const val INSTALLATION_LOCATION_REQUIRED: String = "Select the address of the base station "
     const val PRISON_NAME_REQUIRED_LOCATION_IS_PRISON: String = "Enter prison name"
     const val OFFICE_NAME_REQUIRED_LOCATION_IS_PROBATION_OFFICE: String = "Enter probation office name"
@@ -23,14 +25,14 @@ object ValidationErrors {
     const val START_DATE_REQUIRED: String = "Enter date curfew starts"
     const val END_DATE_REQUIRED: String = "Enter date curfew ends"
     const val END_DATE_MUST_BE_IN_FUTURE: String = "Date curfew ends must be in the future"
-    const val END_DATE_MUST_BE_AFTER_START_DATE: String = "Date curfew ends be after the date curfew starts"
+    const val END_DATE_MUST_BE_AFTER_START_DATE: String = "Date curfew ends must be after the date curfew starts"
     const val ADDRESS_REQUIRED: String = "Select where the device wearer will be during curfew hours"
   }
 
   object CurfewReleaseDateConditions {
     const val START_DATE_REQUIRED: String = "Enter date device wearer is released from custody"
     const val START_TIME_REQUIRED: String = "Enter time curfew starts on day of release"
-    const val END_TIME_REQUIRED: String = "Enter time curfew ends on day of release"
+    const val END_TIME_REQUIRED: String = "Enter time curfew ends on day after release"
     const val ADDRESS_REQUIRED: String =
       "Select the address the device wearer will be during curfew hours on the day of release"
 
@@ -60,11 +62,11 @@ object ValidationErrors {
 
   // This may be "Exclusion Zone" in the front end, but also "Inclusion Zone"?
   object EnforcementZone {
-    const val DESCRIPTION_REQUIRED: String = "Enforcement zone description is required"
-    const val DURATION_REQUIRED: String = "Enforcement zone duration is required"
-    const val END_DATE_MUST_BE_IN_FUTURE: String = "Enforcement zone end date must be in the future"
-    const val START_DATE_REQUIRED: String = "Enforcement zone start date is required"
-    const val TYPE_REQUIRED: String = "Enforcement Zone type is required"
+    const val DESCRIPTION_REQUIRED: String = "Exclusion zone description is required"
+    const val DURATION_REQUIRED: String = "Exclusion zone duration is required"
+    const val END_DATE_MUST_BE_IN_FUTURE: String = "Exclusion zone end date must be in the future"
+    const val START_DATE_REQUIRED: String = "Exclusion zone start date is required"
+    const val TYPE_REQUIRED: String = "Exclusion Zone type is required"
   }
 
   object InterestedParties {
@@ -92,6 +94,9 @@ object ValidationErrors {
 
   object MandatoryAttendance {
     const val START_DATE_REQUIRED: String = "Enter date mandatory attendance monitoring starts"
+    const val END_DATE_MUST_BE_IN_FUTURE: String = "End date must be in the future"
+    const val END_DATE_MUST_BE_AFTER_START_DATE: String =
+      "Date attendance monitoring ends must be after the date attendance monitoring starts"
     const val PURPOSE_REQUIRED: String = "Enter what the appointment is for"
     const val APPOINTMENT_DAY_REQUIRED: String = "Enter the day the appointment is on"
     const val START_TIME_REQUIRED: String = "Enter time appointment starts"
@@ -105,7 +110,7 @@ object ValidationErrors {
     const val END_DATE_REQUIRED: String = "Enter end date for monitoring"
     const val TYPE_REQUIRED: String = "Select order type"
     const val END_DATE_MUST_BE_AFTER_START_DATE: String = "End date must be after start date"
-    const val END_DATE_MUST_BE_IN_THE_FUTURE: String = "End date of monitoring must be in the future"
+    const val END_DATE_MUST_BE_IN_FUTURE: String = "End date of monitoring must be in the future"
   }
 
   object NoFixedAbode {
@@ -128,6 +133,8 @@ object ValidationErrors {
     const val START_DATE_REQUIRED: String = "Enter date trail monitoring starts"
     const val END_DATE_REQUIRED: String = "Enter date trail monitoring ends"
     const val END_DATE_MUST_BE_IN_FUTURE: String = "End date must be in the future"
+    const val END_DATE_MUST_BE_AFTER_START_DATE: String =
+      "Date trail monitoring ends must be after the date trail monitoring starts"
   }
 
   object VariationDetails {

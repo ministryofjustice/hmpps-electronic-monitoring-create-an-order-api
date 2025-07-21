@@ -9,6 +9,9 @@ import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
+import jakarta.validation.constraints.AssertTrue
+import jakarta.validation.constraints.Future
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.data.ValidationErrors
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.InstallationLocationType
 import java.time.ZonedDateTime
@@ -31,6 +34,7 @@ data class AlcoholMonitoringConditions(
   @Column(name = "START_DATE", nullable = true)
   var startDate: ZonedDateTime? = null,
 
+  @field:Future(message = ValidationErrors.AlcoholMonitoring.END_DATE_MUST_BE_IN_FUTURE)
   @Column(name = "END_DATE", nullable = true)
   var endDate: ZonedDateTime? = null,
 
@@ -60,4 +64,12 @@ data class AlcoholMonitoringConditions(
     nullable = true,
   )
   private val address: Address? = null,
-)
+) {
+  @AssertTrue(message = ValidationErrors.AlcoholMonitoring.END_DATE_MUST_BE_AFTER_START_DATE)
+  fun isEndDate(): Boolean {
+    if (this.endDate != null && this.startDate != null) {
+      return this.endDate!! > this.startDate
+    }
+    return true
+  }
+}
