@@ -5,6 +5,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
+import java.time.DayOfWeek
 import java.util.*
 
 class OrderBuilder(
@@ -23,6 +24,26 @@ class OrderBuilder(
   var contactDetails: ContactDetails? = null
   var monitoringConditions: MonitoringConditions? = null
   var addresses: MutableList<Address> = mutableListOf()
+  val curfewTimeTables = DayOfWeek.entries.map {
+    CurfewTimeTable(
+      versionId = initialVersionId,
+      dayOfWeek = it,
+      startTime = "17:00",
+      endTime = "09:00",
+      curfewAddress = "PRIMARY_ADDRESS",
+    )
+  }
+  val secondTimeTable = DayOfWeek.entries.map {
+    CurfewTimeTable(
+      versionId = initialVersionId,
+      dayOfWeek = it,
+      startTime = "17:00",
+      endTime = "09:00",
+      curfewAddress = "SECONDARY_ADDRESS",
+    )
+  }
+  var curfewReleaseDateConditions: CurfewReleaseDateConditions? = null
+  var enforcementZoneConditions: MutableList<EnforcementZoneConditions> = mutableListOf()
 
   fun deviceWearer(block: DeviceWearerBuilder.() -> Unit) = apply {
     val builder = DeviceWearerBuilder(this.initialVersionId, false)
@@ -60,6 +81,18 @@ class OrderBuilder(
     this.monitoringConditions = builder.build()
   }
 
+  fun curfewReleaseDateConditions(block: CurfewReleaseDateConditionsBuilder.() -> Unit) = apply {
+    val builder = CurfewReleaseDateConditionsBuilder(this.initialVersionId)
+    builder.block()
+    this.curfewReleaseDateConditions = builder.build()
+  }
+
+  fun addEnforcementZoneConditions(block: EnforcementZoneConditionsBuilder.() -> Unit) = apply {
+    val builder = EnforcementZoneConditionsBuilder(this.initialVersionId)
+    builder.block()
+    this.enforcementZoneConditions.add(builder.build())
+  }
+
   fun build(): Order {
     val order = Order(
       id = this.orderId,
@@ -80,6 +113,11 @@ class OrderBuilder(
     order.contactDetails = contactDetails
     order.monitoringConditions = monitoringConditions
     order.addresses.addAll(addresses)
+    order.additionalDocuments.addAll(documents)
+    order.curfewTimeTable.addAll(curfewTimeTables)
+    order.curfewTimeTable.addAll(secondTimeTable)
+    order.curfewReleaseDateConditions = curfewReleaseDateConditions
+    order.enforcementZoneConditions.addAll(enforcementZoneConditions)
 
     if (!noFixedAddress && addresses.none { it.addressType == AddressType.PRIMARY || it.addressType == AddressType.SECONDARY }) {
       addresses.add(
