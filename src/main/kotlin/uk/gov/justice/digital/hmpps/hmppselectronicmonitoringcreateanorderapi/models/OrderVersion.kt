@@ -140,14 +140,8 @@ data class OrderVersion(
       )
 
   private val monitoringConditionsAreValid: Boolean
-    get() {
-      println("only curfew")
-      println(monitoringConditions?.isCurfewOnlyMonitoringConditions) // true
-      println((addresses.any { it.addressType == AddressType.PRIMARY })) // true
-      println(curfewReleaseDateConditions != null) // true
-      println(curfewConditions != null) // false
-      println(curfewTimeTable.isNotEmpty()) // true
-      return (
+    get() = (
+      (
         if (monitoringConditions?.isCurfewOnlyMonitoringConditions == true ||
           installationLocation?.location === InstallationLocationType.PRIMARY
         ) {
@@ -196,7 +190,7 @@ data class OrderVersion(
             (true)
           }
           )
-    }
+      )
 
   private val isOrderOrHasVariationDetails: Boolean
     get() = (
@@ -212,12 +206,12 @@ data class OrderVersion(
       )
 
   val isValid: Boolean
-    get() {
-      return deviceWearer?.isValid == true &&
+    get() = (
+      deviceWearer?.isValid == true &&
         monitoringConditions?.isValid == true &&
         adultOrHasResponsibleAdult &&
         hasPrimaryAddressOrNoFixedAbode &&
         monitoringConditionsAreValid &&
         isOrderOrHasVariationDetails
-    }
+      )
 }
