@@ -13,17 +13,15 @@ class InterestedPartiesBuilder(var versionId: UUID) {
   var notifyingOrganisationName: String = "WAYLAND_PRISON"
   var notifyingOrganisationEmail: String = ""
 
-  fun build(): InterestedParties {
-    return InterestedParties(
-      versionId = versionId,
-      responsibleOfficerName = responsibleOfficerName,
-      responsibleOfficerPhoneNumber = responsibleOfficerPhoneNumber,
-      responsibleOrganisation = responsibleOrganisation,
-      responsibleOrganisationRegion = responsibleOrganisationRegion,
-      responsibleOrganisationEmail = responsibleOrganisationEmail,
-      notifyingOrganisation = notifyingOrganisation,
-      notifyingOrganisationName = notifyingOrganisationName,
-      notifyingOrganisationEmail = notifyingOrganisationEmail,
-    )
-  }
+  fun build(): InterestedParties = InterestedParties(
+    versionId = versionId,
+    responsibleOfficerName = responsibleOfficerName,
+    responsibleOfficerPhoneNumber = responsibleOfficerPhoneNumber,
+    responsibleOrganisation = responsibleOrganisation,
+    responsibleOrganisationRegion = responsibleOrganisationRegion,
+    responsibleOrganisationEmail = responsibleOrganisationEmail,
+    notifyingOrganisation = notifyingOrganisation,
+    notifyingOrganisationName = notifyingOrganisationName,
+    notifyingOrganisationEmail = notifyingOrganisationEmail,
+  )
 }

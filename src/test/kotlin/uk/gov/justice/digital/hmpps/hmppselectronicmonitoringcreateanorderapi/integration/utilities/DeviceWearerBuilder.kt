@@ -22,25 +22,23 @@ class DeviceWearerBuilder(var versionId: UUID, var noFixedAbode: Boolean) {
   var prisonNumber: String? = "prisonNumber"
   var homeOfficeReferenceNumber: String? = "homeOfficeReferenceNumber"
 
-  fun build(): DeviceWearer {
-    return DeviceWearer(
-      versionId = versionId,
-      firstName = firstName,
-      lastName = lastName,
-      alias = alias,
-      dateOfBirth = dateOfBirth,
-      adultAtTimeOfInstallation = adultAtTimeOfInstallation,
-      sex = sex,
-      gender = gender,
-      disabilities = disabilities,
-      interpreterRequired = interpreterRequired,
-      language = language,
-      pncId = pncId,
-      deliusId = deliusId,
-      nomisId = nomisId,
-      prisonNumber = prisonNumber,
-      homeOfficeReferenceNumber = homeOfficeReferenceNumber,
-      noFixedAbode = noFixedAbode,
-    )
-  }
+  fun build(): DeviceWearer = DeviceWearer(
+    versionId = versionId,
+    firstName = firstName,
+    lastName = lastName,
+    alias = alias,
+    dateOfBirth = dateOfBirth,
+    adultAtTimeOfInstallation = adultAtTimeOfInstallation,
+    sex = sex,
+    gender = gender,
+    disabilities = disabilities,
+    interpreterRequired = interpreterRequired,
+    language = language,
+    pncId = pncId,
+    deliusId = deliusId,
+    nomisId = nomisId,
+    prisonNumber = prisonNumber,
+    homeOfficeReferenceNumber = homeOfficeReferenceNumber,
+    noFixedAbode = noFixedAbode,
+  )
 }

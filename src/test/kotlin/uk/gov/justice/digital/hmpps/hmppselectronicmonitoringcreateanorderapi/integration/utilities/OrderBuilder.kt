@@ -1,12 +1,30 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.utilities
 
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.*
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.*
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AdditionalDocument
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Address
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AlcoholMonitoringConditions
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ContactDetails
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewConditions
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewReleaseDateConditions
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewTimeTable
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.EnforcementZoneConditions
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationAndRisk
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InterestedParties
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.MonitoringConditions
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ProbationDeliveryUnit
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ResponsibleAdult
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.TrailMonitoringConditions
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import java.time.DayOfWeek
 import java.util.*
 
-class OrderBuilder(
-) {
+class OrderBuilder {
   var orderId: UUID = UUID.randomUUID()
   var noFixedAddress: Boolean = false
   var orderStatus: OrderStatus = OrderStatus.IN_PROGRESS
@@ -163,7 +181,9 @@ class OrderBuilder(
     }
     order.curfewTimeTable.addAll(curfewTimeTables)
 
-    if (!noFixedAddress && addresses.none { it.addressType == AddressType.PRIMARY || it.addressType == AddressType.SECONDARY }) {
+    if (!noFixedAddress &&
+      addresses.none { it.addressType == AddressType.PRIMARY || it.addressType == AddressType.SECONDARY }
+    ) {
       addresses.add(
         Address(
           versionId = initialVersionId,
@@ -207,10 +227,12 @@ class OrderBuilder(
     )
 
     order.enforcementZoneConditions.add(
-      EnforcementZoneConditionsBuilder(initialVersionId).apply { fileId = null; fileName = "" }.build(),
+      EnforcementZoneConditionsBuilder(initialVersionId).apply {
+        fileId = null
+        fileName = ""
+      }.build(),
     )
 
     return order
   }
 }
-

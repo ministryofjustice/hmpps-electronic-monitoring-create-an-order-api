@@ -7,7 +7,6 @@ class ResponsibleAdultBuilder(var versionId: UUID) {
   var fullName = "Mark Smith"
   var contactNumber = "+44740111111"
 
-  fun build(): ResponsibleAdult {
-    return ResponsibleAdult(versionId = versionId, fullName = fullName, contactNumber = contactNumber)
-  }
+  fun build(): ResponsibleAdult =
+    ResponsibleAdult(versionId = versionId, fullName = fullName, contactNumber = contactNumber)
 }

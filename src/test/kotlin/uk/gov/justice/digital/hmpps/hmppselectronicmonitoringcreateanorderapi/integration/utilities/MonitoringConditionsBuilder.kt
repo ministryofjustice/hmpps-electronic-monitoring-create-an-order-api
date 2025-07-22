@@ -1,7 +1,11 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.utilities
 
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.MonitoringConditions
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.*
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MonitoringConditionType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderTypeDescription
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.SentenceType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YesNoUnknown
 import java.time.ZonedDateTime
 import java.util.UUID
 
@@ -19,21 +23,19 @@ class MonitoringConditionsBuilder(var versionId: UUID) {
   var sentenceType: SentenceType = SentenceType.LIFE_SENTENCE
   var issp: YesNoUnknown = YesNoUnknown.YES
 
-  fun build(): MonitoringConditions {
-    return MonitoringConditions(
-      versionId = versionId,
-      orderType = orderType,
-      orderTypeDescription = orderTypeDescription,
-      startDate = startDate,
-      endDate = endDate,
-      curfew = curfew,
-      trail = trail,
-      exclusionZone = exclusionZone,
-      alcohol = alcohol,
-      caseId = caseId,
-      conditionType = conditionType,
-      sentenceType = sentenceType,
-      issp = issp,
-    )
-  }
+  fun build(): MonitoringConditions = MonitoringConditions(
+    versionId = versionId,
+    orderType = orderType,
+    orderTypeDescription = orderTypeDescription,
+    startDate = startDate,
+    endDate = endDate,
+    curfew = curfew,
+    trail = trail,
+    exclusionZone = exclusionZone,
+    alcohol = alcohol,
+    caseId = caseId,
+    conditionType = conditionType,
+    sentenceType = sentenceType,
+    issp = issp,
+  )
 }

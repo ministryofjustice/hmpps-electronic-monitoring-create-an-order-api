@@ -12,13 +12,11 @@ class MonitoringConditionsAlcoholBuilder(var versionId: UUID) {
   var monitoringType: AlcoholMonitoringType = AlcoholMonitoringType.ALCOHOL_ABSTINENCE
   var installationLocation: InstallationLocationType = InstallationLocationType.PRIMARY
 
-  fun build(): AlcoholMonitoringConditions {
-    return AlcoholMonitoringConditions(
-      versionId = versionId,
-      startDate = startDate,
-      endDate = endDate,
-      monitoringType = monitoringType,
-      installationLocation = installationLocation,
-    )
-  }
+  fun build(): AlcoholMonitoringConditions = AlcoholMonitoringConditions(
+    versionId = versionId,
+    startDate = startDate,
+    endDate = endDate,
+    monitoringType = monitoringType,
+    installationLocation = installationLocation,
+  )
 }

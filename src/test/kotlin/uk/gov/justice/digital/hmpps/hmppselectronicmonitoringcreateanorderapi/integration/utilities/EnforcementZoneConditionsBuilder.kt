@@ -14,16 +14,14 @@ class EnforcementZoneConditionsBuilder(var versionId: UUID) {
   var fileId = UUID.randomUUID()
   var fileName = "MockMapFile.jpeg"
 
-  fun build(): EnforcementZoneConditions {
-    return EnforcementZoneConditions(
-      versionId = versionId,
-      description = description,
-      duration = duration,
-      startDate = startDate,
-      endDate = endDate,
-      zoneType = zoneType,
-      fileId = fileId,
-      fileName = fileName,
-    )
-  }
+  fun build(): EnforcementZoneConditions = EnforcementZoneConditions(
+    versionId = versionId,
+    description = description,
+    duration = duration,
+    startDate = startDate,
+    endDate = endDate,
+    zoneType = zoneType,
+    fileId = fileId,
+    fileName = fileName,
+  )
 }

@@ -11,13 +11,11 @@ class CurfewReleaseDateConditionsBuilder(var versionId: UUID) {
   var endTime: String = "23:00"
   var curfewAddress: AddressType = AddressType.PRIMARY
 
-  fun build(): CurfewReleaseDateConditions {
-    return CurfewReleaseDateConditions(
-      versionId = versionId,
-      releaseDate = releaseDate,
-      startTime = startTime,
-      endTime = endTime,
-      curfewAddress = curfewAddress,
-    )
-  }
+  fun build(): CurfewReleaseDateConditions = CurfewReleaseDateConditions(
+    versionId = versionId,
+    releaseDate = releaseDate,
+    startTime = startTime,
+    endTime = endTime,
+    curfewAddress = curfewAddress,
+  )
 }

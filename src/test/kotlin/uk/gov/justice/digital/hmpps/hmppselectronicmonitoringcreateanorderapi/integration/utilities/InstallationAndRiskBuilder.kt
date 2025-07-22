@@ -10,14 +10,12 @@ class InstallationAndRiskBuilder(var versionId: UUID) {
   var mappaLevel: String = "MAPPA 1"
   var mappaCaseType: String? = "CPPC (Critical Public Protection Case)"
 
-  fun build(): InstallationAndRisk {
-    return InstallationAndRisk(
-      versionId = versionId,
-      offence = offence,
-      riskDetails = riskDetails,
-      riskCategory = riskCategory,
-      mappaLevel = mappaLevel,
-      mappaCaseType = mappaCaseType,
-    )
-  }
+  fun build(): InstallationAndRisk = InstallationAndRisk(
+    versionId = versionId,
+    offence = offence,
+    riskDetails = riskDetails,
+    riskCategory = riskCategory,
+    mappaLevel = mappaLevel,
+    mappaCaseType = mappaCaseType,
+  )
 }

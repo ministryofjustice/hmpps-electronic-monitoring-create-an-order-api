@@ -8,11 +8,9 @@ class MonitoringConditionsTrailBuilder(var versionId: UUID) {
   var startDate: ZonedDateTime = ZonedDateTime.now().plusMonths(1)
   var endDate: ZonedDateTime = ZonedDateTime.now().plusMonths(1)
 
-  fun build(): TrailMonitoringConditions {
-    return TrailMonitoringConditions(
-      versionId = versionId,
-      startDate = startDate,
-      endDate = endDate,
-    )
-  }
+  fun build(): TrailMonitoringConditions = TrailMonitoringConditions(
+    versionId = versionId,
+    startDate = startDate,
+    endDate = endDate,
+  )
 }

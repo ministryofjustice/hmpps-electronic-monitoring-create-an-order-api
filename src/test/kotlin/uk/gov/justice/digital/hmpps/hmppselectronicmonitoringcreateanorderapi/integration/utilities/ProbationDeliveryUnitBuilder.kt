@@ -6,10 +6,8 @@ import java.util.*
 class ProbationDeliveryUnitBuilder(var versionId: UUID) {
   var unit: String = "CAMDEN_AND_ISLINGTON"
 
-  fun build(): ProbationDeliveryUnit {
-    return ProbationDeliveryUnit(
-      versionId = versionId,
-      unit = unit,
-    )
-  }
+  fun build(): ProbationDeliveryUnit = ProbationDeliveryUnit(
+    versionId = versionId,
+    unit = unit,
+  )
 }

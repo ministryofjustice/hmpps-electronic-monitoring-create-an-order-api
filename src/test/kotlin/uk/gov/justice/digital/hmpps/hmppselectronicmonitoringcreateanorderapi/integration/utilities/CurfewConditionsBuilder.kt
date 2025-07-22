@@ -9,12 +9,10 @@ class CurfewConditionsBuilder(var versionId: UUID) {
   var endDate: ZonedDateTime = ZonedDateTime.now().plusMonths(1)
   var curfewAddress: String = "PRIMARY,SECONDARY"
 
-  fun build(): CurfewConditions {
-    return CurfewConditions(
-      versionId = versionId,
-      startDate = startDate,
-      endDate = endDate,
-      curfewAddress = curfewAddress,
-    )
-  }
+  fun build(): CurfewConditions = CurfewConditions(
+    versionId = versionId,
+    startDate = startDate,
+    endDate = endDate,
+    curfewAddress = curfewAddress,
+  )
 }

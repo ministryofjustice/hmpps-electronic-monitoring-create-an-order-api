@@ -124,7 +124,7 @@ data class OrderVersion(
   @JoinColumn(name = "ORDER_ID", updatable = false, insertable = false)
   private val order: Order? = null,
 
-  ) {
+) {
   private val adultOrHasResponsibleAdult: Boolean
     get() = (
       deviceWearer?.adultAtTimeOfInstallation == true ||
@@ -142,11 +142,11 @@ data class OrderVersion(
   private val monitoringConditionsAreValid: Boolean
     get() {
       println("only curfew")
-      println(monitoringConditions?.isCurfewOnlyMonitoringConditions) //true
-      println((addresses.any { it.addressType == AddressType.PRIMARY })) //true
-      println(curfewReleaseDateConditions != null) //true
-      println(curfewConditions != null) //false
-      println(curfewTimeTable.isNotEmpty()) //true
+      println(monitoringConditions?.isCurfewOnlyMonitoringConditions) // true
+      println((addresses.any { it.addressType == AddressType.PRIMARY })) // true
+      println(curfewReleaseDateConditions != null) // true
+      println(curfewConditions != null) // false
+      println(curfewTimeTable.isNotEmpty()) // true
       return (
         if (monitoringConditions?.isCurfewOnlyMonitoringConditions == true ||
           installationLocation?.location === InstallationLocationType.PRIMARY
