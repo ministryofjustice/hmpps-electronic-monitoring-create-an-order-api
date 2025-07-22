@@ -195,7 +195,7 @@ class VariationControllerTest : IntegrationTestBase() {
       Assertions.assertThat(result.responseBody).isNotNull
       Assertions.assertThat(result.responseBody).hasSize(1)
       Assertions.assertThat(result.responseBody!!).contains(
-        ValidationError("variationDate", "Variation date must be a valid date"),
+        ValidationError("variationDate", "Date you want changes to take effect must be a real date"),
       )
     }
 

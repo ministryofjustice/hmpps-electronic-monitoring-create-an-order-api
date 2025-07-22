@@ -143,7 +143,7 @@ object ValidationErrors {
     const val DETAILS_REQUIRED: String = "Enter information on what you have changed"
     const val TYPE_MUST_BE_VALID: String = "Variation type must be a valid variation type"
     fun typeObsolete(type: String): String = "Variation type $type is obsolete"
-    const val DATE_MUST_BE_VALID: String = "Variation date must be a valid date"
+    const val DATE_MUST_BE_VALID: String = "Date you want changes to take effect must be a real date"
     const val DETAIL_TOO_LONG: String = "Variation details is too long"
   }
 
