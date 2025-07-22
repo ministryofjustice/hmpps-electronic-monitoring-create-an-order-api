@@ -5,6 +5,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.mock
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
@@ -14,9 +15,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.in
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.SercoMockApiExtension.Companion.sercoApi
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AdditionalDocument
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DocumentType
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.*
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsAttachmentResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsAttachmentResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsResponse
@@ -120,40 +119,40 @@ class ScenarioTests : IntegrationTestBase() {
 
       val expectedDWJson = """
       {
-      	"title": "",
-      	"first_name": "John",
-      	"middle_name": "",
-      	"last_name": "Smith",
-      	"alias": "Johnny",
-      	"date_of_birth": "1990-01-01",
-      	"adult_child": "adult",
-      	"sex": "Male",
-      	"gender_identity": "Male",
-      	"disability": [
-      		{
-      			"disability": "Vision"
-      		},
-      		{
-      			"disability": "Learning, understanding or concentrating"
-      		}
-      	],
-      	"address_1": "20 Somewhere Street",
-      	"address_2": "Nowhere City",
-      	"address_3": "Random County",
-      	"address_4": "United Kingdom",
-      	"address_post_code": "SW11 1NC",
-      	"secondary_address_1": "22 Somewhere Street",
-        "secondary_address_2": "Nowhere City",
-        "secondary_address_3": "Random County",
-        "secondary_address_4": "United Kingdom",
-        "secondary_address_post_code": "SW11 1NC",
-      	"phone_number": "00447401111111",
-      	"risk_serious_harm": "",
-      	"risk_self_harm": "",
-      	"risk_details": "Danger",
-      	"mappa": "MAAPA 1",
-      	"mappa_case_type": "CPPC (Critical Public Protection Case)",
-      	"risk_categories": [
+        "title": "",
+        "first_name": "John",
+        "middle_name": "",
+        "last_name": "Smith",
+        "alias": "Johnny",
+        "date_of_birth": "1990-01-01",
+        "adult_child": "adult",
+        "sex": "Male",
+        "gender_identity": "Male",
+        "disability": [
+          {
+            "disability": "Vision"
+          },
+          {
+            "disability": "Learning, understanding or concentrating"
+          }
+        ],
+        "address_1": "10 downing street",
+        "address_2": "London",
+        "address_3": "",
+        "address_4": "N/A",
+        "address_post_code": "SW1A 2AA",
+        "secondary_address_1": "",
+        "secondary_address_2": "",
+        "secondary_address_3": "",
+        "secondary_address_4": "",
+        "secondary_address_post_code": "",
+        "phone_number": "00447401111111",
+        "risk_serious_harm": "",
+        "risk_self_harm": "",
+        "risk_details": "Danger",
+        "mappa": "MAPPA 1",
+        "mappa_case_type": "CPPC (Critical Public Protection Case)",
+        "risk_categories": [
           {
             "category": "Sexual Offences"
           },
@@ -161,234 +160,164 @@ class ScenarioTests : IntegrationTestBase() {
             "category": "Risk to Specific Gender"
           }
         ],
-      	"responsible_adult_required": "true",
-      	"parent": "Mark Smith",
-      	"guardian": "",
-      	"parent_address_1": "",
-      	"parent_address_2": "",
-      	"parent_address_3": "",
-      	"parent_address_4": "",
-      	"parent_address_post_code": "",
-      	"parent_phone_number": "00447401111111",
-      	"parent_dob": "",
-      	"pnc_id": "pncId",
-      	"nomis_id": "nomisId",
-      	"delius_id": "deliusId",
-      	"prison_number": "prisonNumber",
-      	"home_office_case_reference_number": "homeOfficeReferenceNumber",
-      	"interpreter_required": "true",
-      	"language": "British Sign"
+        "responsible_adult_required": "false",
+        "parent": "",
+        "guardian": "",
+        "parent_address_1": "",
+        "parent_address_2": "",
+        "parent_address_3": "",
+        "parent_address_4": "",
+        "parent_address_post_code": "",
+        "parent_phone_number": null,
+        "parent_dob": "",
+        "pnc_id": "pncId",
+        "nomis_id": "nomisId",
+        "delius_id": "deliusId",
+        "prison_number": "prisonNumber",
+        "home_office_case_reference_number": "homeOfficeReferenceNumber",
+        "interpreter_required": "true",
+        "language": "French"
       }
       """.trimIndent()
 
       val expectedOrderJson = """
       {
-      	"case_id": "MockDeviceWearerId",
-      	"allday_lockdown": "",
-      	"atv_allowance": "",
-      	"condition_type": "Requirement of a Community Order",
-      	"court": "",
-      	"court_order_email": "",      	
-      	"device_type": "",
-      	"device_wearer": "John Smith",
-      	"enforceable_condition": [
-      		{
+        "case_id": "MockDeviceWearerId",
+        "allday_lockdown": "",
+        "atv_allowance": "",
+        "condition_type": "License Condition of a Custodial Order",
+        "court": "",
+        "court_order_email": "",
+        "device_type": "",
+        "device_wearer": "John Smith",
+        "enforceable_condition": [
+          {
       			"condition": "Curfew with EM",
             "start_date": "$mockStartDateInBritishTime",
             "end_date": "$mockEndDateInBritishTime"
-      		},
-      		{
-      			"condition": "Location Monitoring (Fitted Device)",
-            "start_date": "$mockStartDateInBritishTime",
-            "end_date": "$mockEndDateInBritishTime"
-      		},
-      		{
-      			"condition": "EM Exclusion / Inclusion Zone",
-            "start_date": "$mockStartDateInBritishTime",
-            "end_date": "$mockEndDateInBritishTime"
-      		},          
-      		{
-      			"condition": "AAMR",
-            "start_date": "$mockStartDateInBritishTime",
-            "end_date": "$mockEndDateInBritishTime"
-      		}
-      	],
-      	"exclusion_allday": "",
-      	"interim_court_date": "",
-      	"issuing_organisation": "",
-      	"media_interest": "",
-      	"new_order_received": "",
-      	"notifying_officer_email": "",
-      	"notifying_officer_name": "",
-      	"notifying_organization": "Prison",
-      	"no_post_code": "",
-      	"no_address_1": "",
-      	"no_address_2": "",
-      	"no_address_3": "",
-      	"no_address_4": "",
-      	"no_email": "",
-      	"no_name": "Wayland Prison",
-      	"no_phone_number": "",
-      	"offence": "Fraud Offences",
-      	"offence_date": "",
+          }
+        ],
+        "exclusion_allday": "",
+        "interim_court_date": "",
+        "issuing_organisation": "",
+        "media_interest": "",
+        "new_order_received": "",
+        "notifying_officer_email": "",
+        "notifying_officer_name": "",
+        "notifying_organization": "Crown Court",
+        "no_post_code": "",
+        "no_address_1": "",
+        "no_address_2": "",
+        "no_address_3": "",
+        "no_address_4": "",
+        "no_email": "",
+        "no_name": "Bolton Crown Court",
+        "no_phone_number": "",
+        "offence": "Fraud Offences",
+        "offence_date": "",
       	"order_end": "$mockEndDateInBritishTime",
-      	"order_id": "$orderId",
-      	"order_request_type": "New Order",
+        "order_id": "$orderId",
+        "order_request_type": "New Order",
       	"order_start": "$mockStartDateInBritishTime",
-      	"order_type": "Community",
-      	"order_type_description": "DAPOL",
-      	"order_type_detail": "",
-      	"order_variation_date": "",
-      	"order_variation_details": "",
-      	"order_variation_req_received_date": "",
-      	"order_variation_type": "",
-      	"pdu_responsible": "Camden and Islington",
-      	"pdu_responsible_email": "",
-      	"planned_order_end_date": "",
-      	"responsible_officer_details_received": "",
-      	"responsible_officer_email": "",
-      	"responsible_officer_phone": "00447401111111",
-      	"responsible_officer_name": "John Smith",
-      	"responsible_organization": "Probation",
-      	"ro_post_code": "",
-      	"ro_address_1": "",
-      	"ro_address_2": "",
-      	"ro_address_3": "",
-      	"ro_address_4": "",
-      	"ro_email": "abc@def.com",
-      	"ro_phone": "",
-      	"ro_region": "London",
-      	"sentence_date": "",
-      	"sentence_expiry": "",
+        "order_type": "Pre-Trial",
+        "order_type_description": "DAPOL",
+        "order_type_detail": "",
+        "order_variation_date": "",
+        "order_variation_details": "",
+        "order_variation_req_received_date": "",
+        "order_variation_type": "",
+        "pdu_responsible": "",
+        "pdu_responsible_email": "",
+        "planned_order_end_date": "",
+        "responsible_officer_details_received": "",
+        "responsible_officer_email": "",
+        "responsible_officer_phone": "00447401111111",
+        "responsible_officer_name": "John Smith",
+        "responsible_organization": "Police",
+        "ro_post_code": "",
+        "ro_address_1": "",
+        "ro_address_2": "",
+        "ro_address_3": "",
+        "ro_address_4": "",
+        "ro_email": "abc@def.com",
+        "ro_phone": "",
+        "ro_region": "London",
+        "sentence_date": "",
+        "sentence_expiry": "",
         "sentence_type": "Life Sentence",
-      	"tag_at_source": "",
-      	"tag_at_source_details": "",
-      	"technical_bail": "",
-      	"trial_date": "",
-      	"trial_outcome": "",
+        "tag_at_source": "",
+        "tag_at_source_details": "",
+        "technical_bail": "",
+        "trial_date": "",
+        "trial_outcome": "",
       	"conditional_release_date": "${mockStartDate.format(formatter)}",
-      	"reason_for_order_ending_early": "",
-      	"business_unit": "",
+        "reason_for_order_ending_early": "",
+        "business_unit": "",
         "service_end_date": "${mockEndDate.format(formatter)}",
         "curfew_description": "",
       	"curfew_start": "$mockStartDateInBritishTime",
       	"curfew_end": "$mockEndDateInBritishTime",
-      	"curfew_duration": [
-      		{
-      			"location": "primary",
-      			"allday": "",
-      			"schedule": [
-      				{
-      					"day": "Mo",
-      					"start": "17:00",
-      					"end": "09:00"
-      				},
-      				{
-      					"day": "Tu",
-      					"start": "17:00",
-      					"end": "09:00"
-      				},
-      				{
-      					"day": "Wed",
-      					"start": "17:00",
-      					"end": "09:00"
-      				},
-      				{
-      					"day": "Th",
-      					"start": "17:00",
-      					"end": "09:00"
-      				},
-      				{
-      					"day": "Fr",
-      					"start": "17:00",
-      					"end": "09:00"
-      				},
-      				{
-      					"day": "Sa",
-      					"start": "17:00",
-      					"end": "09:00"
-      				},
-      				{
-      					"day": "Su",
-      					"start": "17:00",
-      					"end": "09:00"
-      				}
-      			]
-      		},
-      		{
-      			"location": "secondary",
-      			"allday": "",
-      			"schedule": [
-      				{
-      					"day": "Mo",
-      					"start": "17:00",
-      					"end": "09:00"
-      				},
-      				{
-      					"day": "Tu",
-      					"start": "17:00",
-      					"end": "09:00"
-      				},
-      				{
-      					"day": "Wed",
-      					"start": "17:00",
-      					"end": "09:00"
-      				},
-      				{
-      					"day": "Th",
-      					"start": "17:00",
-      					"end": "09:00"
-      				},
-      				{
-      					"day": "Fr",
-      					"start": "17:00",
-      					"end": "09:00"
-      				},
-      				{
-      					"day": "Sa",
-      					"start": "17:00",
-      					"end": "09:00"
-      				},
-      				{
-      					"day": "Su",
-      					"start": "17:00",
-      					"end": "09:00"
-      				}
-      			]
-      		}
-      	],
-      	"trail_monitoring": "No",
-      	"exclusion_zones": [
+        "curfew_duration": [
           {
-            "description": "Mock Exclusion Zone",
-            "duration": "Mock Exclusion Duration",
-            "start": "${mockStartDate.format(formatter)}",
-            "end": "${mockEndDate.format(formatter)}"
-          }
-        ],      	
-      	"inclusion_zones": [
-          {
-            "description": "Mock Inclusion Zone",
-            "duration": "Mock Inclusion Duration",
-            "start": "${mockStartDate.format(formatter)}",
-            "end": "${mockEndDate.format(formatter)}"
+            "location": "primary",
+            "allday": "",
+            "schedule": [
+              {
+                "day": "Mo",
+                "start": "17:00",
+                "end": "09:00"
+              },
+              {
+                "day": "Tu",
+                "start": "17:00",
+                "end": "09:00"
+              },
+              {
+                "day": "Wed",
+                "start": "17:00",
+                "end": "09:00"
+              },
+              {
+                "day": "Th",
+                "start": "17:00",
+                "end": "09:00"
+              },
+              {
+                "day": "Fr",
+                "start": "17:00",
+                "end": "09:00"
+              },
+              {
+                "day": "Sa",
+                "start": "17:00",
+                "end": "09:00"
+              },
+              {
+                "day": "Su",
+                "start": "17:00",
+                "end": "09:00"
+              }
+            ]
           }
         ],
-      	"abstinence": "Yes",
-      	"schedule": "",
-      	"checkin_schedule": [],
-      	"revocation_date": "",
-      	"revocation_type": "",
-        "installation_address_1": "24 Somewhere Street",
-        "installation_address_2": "Nowhere City",
-        "installation_address_3": "Random County",
-        "installation_address_4": "United Kingdom",
-        "installation_address_post_code": "SW11 1NC",
+        "trail_monitoring": "",
+        "exclusion_zones": [],
+        "inclusion_zones": [],
+        "abstinence": "",
+        "schedule": "",
+        "checkin_schedule": [],
+        "revocation_date": "",
+        "revocation_type": "",
+        "installation_address_1": "10 downing street",
+        "installation_address_2": "London",
+        "installation_address_3": "",
+        "installation_address_4": "",
+        "installation_address_post_code": "SW1A 2AA",
         "crown_court_case_reference_number": "",
         "magistrate_court_case_reference_number": "",
         "issp": "Yes",
         "hdc": "No",
-      	"order_status": "Not Started"
+        "order_status": "Not Started"
       }
       """.trimIndent()
 
@@ -410,24 +339,55 @@ class ScenarioTests : IntegrationTestBase() {
   fun String.removeWhitespaceAndNewlines(): String = this.replace("(\"[^\"]*\")|\\s".toRegex(), "\$1")
 
   fun createAndPersistReadyToSubmitOrder(
-    id: UUID = UUID.randomUUID(),
-    versionId: UUID = UUID.randomUUID(),
+    id: UUID,
+    versionId: UUID,
     noFixedAddress: Boolean = false,
     requestType: RequestType = RequestType.REQUEST,
     status: OrderStatus = OrderStatus.IN_PROGRESS,
     documents: MutableList<AdditionalDocument> = mutableListOf(),
   ): Order {
     val order = createReadyToSubmitOrder {
-      this.id = id
-      this.versionId = versionId
+      this.orderId = id
+      this.initialVersionId = versionId
       this.noFixedAddress = noFixedAddress
       this.initialRequestType = requestType
       this.orderStatus = status
       this.documents = documents
 
       deviceWearer {
-        firstName = "Bob"
+        interpreterRequired = true
+        language = "French"
+        noFixedAbode = false
       }
+      addAddress {
+        addressLine1 = "10 downing street"
+        addressLine2 = "London"
+        postcode = "SW1A 2AA"
+        addressType = AddressType.PRIMARY
+      }
+      installationAndRisk {}
+      contactDetails {}
+      monitoringConditions {
+        startDate = mockStartDate
+        endDate = mockEndDate
+        orderType = OrderType.PRE_TRIAL
+        conditionType = MonitoringConditionType.LICENSE_CONDITION_OF_A_CUSTODIAL_ORDER
+        sentenceType = SentenceType.LIFE_SENTENCE
+        curfew = true
+      }
+      curfewConditions {
+        startDate = mockStartDate
+        endDate = mockEndDate
+      }
+      curfewReleaseDateConditions {
+        releaseDate = mockStartDate
+      }
+      interestedParties {
+        notifyingOrganisation = "Crown Court"
+        responsibleOrganisation = "Police"
+        notifyingOrganisationName = "Bolton Crown Court"
+      }
+      probationDeliveryUnit {}
     }
     repo.save(order)
     return order

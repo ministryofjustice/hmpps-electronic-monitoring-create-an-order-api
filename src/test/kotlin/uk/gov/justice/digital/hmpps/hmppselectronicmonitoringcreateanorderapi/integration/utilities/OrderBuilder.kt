@@ -1,10 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.utilities
 
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.*
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.*
 import java.time.DayOfWeek
 import java.util.*
 
@@ -24,26 +21,14 @@ class OrderBuilder(
   var contactDetails: ContactDetails? = null
   var monitoringConditions: MonitoringConditions? = null
   var addresses: MutableList<Address> = mutableListOf()
-  val curfewTimeTables = DayOfWeek.entries.map {
-    CurfewTimeTable(
-      versionId = initialVersionId,
-      dayOfWeek = it,
-      startTime = "17:00",
-      endTime = "09:00",
-      curfewAddress = "PRIMARY_ADDRESS",
-    )
-  }
-  val secondTimeTable = DayOfWeek.entries.map {
-    CurfewTimeTable(
-      versionId = initialVersionId,
-      dayOfWeek = it,
-      startTime = "17:00",
-      endTime = "09:00",
-      curfewAddress = "SECONDARY_ADDRESS",
-    )
-  }
+  var curfewConditions: CurfewConditions? = null
+  val curfewTimeTables: List<CurfewTimeTable> = listOf()
   var curfewReleaseDateConditions: CurfewReleaseDateConditions? = null
   var enforcementZoneConditions: MutableList<EnforcementZoneConditions> = mutableListOf()
+  var monitoringConditionsAlcohol: AlcoholMonitoringConditions? = null
+  var monitoringConditionsTrail: TrailMonitoringConditions? = null
+  var interestedParties: InterestedParties? = null
+  var probationDeliveryUnit: ProbationDeliveryUnit? = null
 
   fun deviceWearer(block: DeviceWearerBuilder.() -> Unit) = apply {
     val builder = DeviceWearerBuilder(this.initialVersionId, false)
@@ -81,6 +66,12 @@ class OrderBuilder(
     this.monitoringConditions = builder.build()
   }
 
+  fun curfewConditions(block: CurfewConditionsBuilder.() -> Unit) = apply {
+    val builder = CurfewConditionsBuilder(this.initialVersionId)
+    builder.block()
+    this.curfewConditions = builder.build()
+  }
+
   fun curfewReleaseDateConditions(block: CurfewReleaseDateConditionsBuilder.() -> Unit) = apply {
     val builder = CurfewReleaseDateConditionsBuilder(this.initialVersionId)
     builder.block()
@@ -91,6 +82,30 @@ class OrderBuilder(
     val builder = EnforcementZoneConditionsBuilder(this.initialVersionId)
     builder.block()
     this.enforcementZoneConditions.add(builder.build())
+  }
+
+  fun monitoringConditionsAlcohol(block: MonitoringConditionsAlcoholBuilder.() -> Unit) = apply {
+    val builder = MonitoringConditionsAlcoholBuilder(this.initialVersionId)
+    builder.block()
+    this.monitoringConditionsAlcohol = builder.build()
+  }
+
+  fun monitoringConditionsTrail(block: MonitoringConditionsTrailBuilder.() -> Unit) = apply {
+    val builder = MonitoringConditionsTrailBuilder(this.initialVersionId)
+    builder.block()
+    this.monitoringConditionsTrail = builder.build()
+  }
+
+  fun interestedParties(block: InterestedPartiesBuilder.() -> Unit) = apply {
+    val builder = InterestedPartiesBuilder(this.initialVersionId)
+    builder.block()
+    this.interestedParties = builder.build()
+  }
+
+  fun probationDeliveryUnit(block: ProbationDeliveryUnitBuilder.() -> Unit) = apply {
+    val builder = ProbationDeliveryUnitBuilder(this.initialVersionId)
+    builder.block()
+    this.probationDeliveryUnit = builder.build()
   }
 
   fun build(): Order {
@@ -114,10 +129,39 @@ class OrderBuilder(
     order.monitoringConditions = monitoringConditions
     order.addresses.addAll(addresses)
     order.additionalDocuments.addAll(documents)
-    order.curfewTimeTable.addAll(curfewTimeTables)
-    order.curfewTimeTable.addAll(secondTimeTable)
+    order.curfewConditions = curfewConditions
     order.curfewReleaseDateConditions = curfewReleaseDateConditions
     order.enforcementZoneConditions.addAll(enforcementZoneConditions)
+    order.monitoringConditionsAlcohol = monitoringConditionsAlcohol
+    order.monitoringConditionsTrail = monitoringConditionsTrail
+    order.interestedParties = interestedParties
+    order.probationDeliveryUnit = probationDeliveryUnit
+
+    if (curfewTimeTables.isEmpty()) {
+      order.curfewTimeTable.addAll(
+        DayOfWeek.entries.map {
+          CurfewTimeTable(
+            versionId = initialVersionId,
+            dayOfWeek = it,
+            startTime = "17:00",
+            endTime = "09:00",
+            curfewAddress = "PRIMARY_ADDRESS",
+          )
+        },
+      )
+      order.curfewTimeTable.addAll(
+        DayOfWeek.entries.map {
+          CurfewTimeTable(
+            versionId = initialVersionId,
+            dayOfWeek = it,
+            startTime = "17:00",
+            endTime = "09:00",
+            curfewAddress = "SECONDARY_ADDRESS",
+          )
+        },
+      )
+    }
+    order.curfewTimeTable.addAll(curfewTimeTables)
 
     if (!noFixedAddress && addresses.none { it.addressType == AddressType.PRIMARY || it.addressType == AddressType.SECONDARY }) {
       addresses.add(
@@ -157,6 +201,14 @@ class OrderBuilder(
         ),
       )
     }
+
+    order.enforcementZoneConditions.add(
+      EnforcementZoneConditionsBuilder(initialVersionId).build(),
+    )
+
+    order.enforcementZoneConditions.add(
+      EnforcementZoneConditionsBuilder(initialVersionId).apply { fileId = null; fileName = "" }.build(),
+    )
 
     return order
   }
