@@ -1,0 +1,190 @@
+{
+  "id": "742c5a77-ffab-4893-84c5-0ffd0da1dcd2",
+  "versions": [
+    {
+      "id": "b31ff312-5193-449f-8ba1-6e24dff3fae1",
+      "orderId": "742c5a77-ffab-4893-84c5-0ffd0da1dcd2",
+      "versionId": 0,
+      "username": "AUTH_ADM",
+      "status": "IN_PROGRESS",
+      "dataDictionaryVersion": "DDV5",
+      "type": "REQUEST"
+    }
+  ],
+  "status": "IN_PROGRESS",
+  "fmsResultId": "34662c16-da3e-4819-981b-0b1c6040e352",
+  "addresses": [
+    {
+      "id": "a9abcbdb-fa42-426a-b6a3-747eccf46df0",
+      "versionId": "b31ff312-5193-449f-8ba1-6e24dff3fae1",
+      "addressType": "PRIMARY",
+      "addressUsage": "NA",
+      "addressLine1": "3 Kelvin Close",
+      "addressLine2": "Birchwood",
+      "addressLine3": "Warrington",
+      "addressLine4": "",
+      "postcode": "WA3 7PB"
+    }
+  ],
+  "fmsResultDate": 1753271792.348349,
+  "variationDetails": null,
+  "interestedParties": {
+    "id": "2e9da34f-1e24-4c5a-ba11-b3f28b8a3bdd",
+    "versionId": "b31ff312-5193-449f-8ba1-6e24dff3fae1",
+    "responsibleOfficerName": "Jacquelyn Zboncak",
+    "responsibleOfficerPhoneNumber": "0151 496 0234",
+    "responsibleOrganisation": "POLICE",
+    "responsibleOrganisationRegion": "",
+    "responsibleOrganisationEmail": "police@example.com",
+    "notifyingOrganisation": "MAGISTRATES_COURT",
+    "notifyingOrganisationName": "LINCOLN_MAGISTRATES_COURT",
+    "notifyingOrganisationEmail": ""
+  },
+  "additionalDocuments": [
+    {
+      "id": "90950d4a-921f-406a-bad6-d5550597c18c",
+      "versionId": "b31ff312-5193-449f-8ba1-6e24dff3fae1",
+      "fileName": "profile.jpeg",
+      "fileType": "PHOTO_ID"
+    }
+  ],
+  "contactDetails": {
+    "id": "5736db38-69f3-4aba-b690-14e01919290f",
+    "versionId": "b31ff312-5193-449f-8ba1-6e24dff3fae1",
+    "contactNumber": "0191 498 0398"
+  },
+  "curfewConditions": {
+    "id": "16ec3f8e-6ff8-4b1c-b513-d2651472423f",
+    "versionId": "b31ff312-5193-449f-8ba1-6e24dff3fae1",
+    "startDate": 1754521200,
+    "endDate": 1756335540,
+    "curfewAddress": "PRIMARY",
+    "curfewAdditionalDetails": "",
+    "curfewDescription": ""
+  },
+  "curfewTimeTable": [
+    {
+      "id": "f0cbdb46-7ece-4a74-bd75-da8d9f6b026e",
+      "versionId": "b31ff312-5193-449f-8ba1-6e24dff3fae1",
+      "dayOfWeek": "MONDAY",
+      "startTime": "19:00:00",
+      "endTime": "03:00:00",
+      "curfewAddress": "PRIMARY_ADDRESS"
+    },
+    {
+      "id": "270c08ab-8430-4ed3-aac6-af874df35895",
+      "versionId": "b31ff312-5193-449f-8ba1-6e24dff3fae1",
+      "dayOfWeek": "TUESDAY",
+      "startTime": "19:00:00",
+      "endTime": "03:00:00",
+      "curfewAddress": "PRIMARY_ADDRESS"
+    },
+    {
+      "id": "dff08af3-301d-4f0d-974f-dc317e959f6b",
+      "versionId": "b31ff312-5193-449f-8ba1-6e24dff3fae1",
+      "dayOfWeek": "WEDNESDAY",
+      "startTime": "19:00:00",
+      "endTime": "03:00:00",
+      "curfewAddress": "PRIMARY_ADDRESS"
+    },
+    {
+      "id": "ea5989a8-6ca0-4c52-ba5f-bd9f8f2aaf85",
+      "versionId": "b31ff312-5193-449f-8ba1-6e24dff3fae1",
+      "dayOfWeek": "THURSDAY",
+      "startTime": "19:00:00",
+      "endTime": "03:00:00",
+      "curfewAddress": "PRIMARY_ADDRESS"
+    },
+    {
+      "id": "29be2f3c-8287-481d-9272-ab64faffdb2e",
+      "versionId": "b31ff312-5193-449f-8ba1-6e24dff3fae1",
+      "dayOfWeek": "FRIDAY",
+      "startTime": "19:00:00",
+      "endTime": "03:00:00",
+      "curfewAddress": "PRIMARY_ADDRESS"
+    },
+    {
+      "id": "73dd1814-addb-4eaf-b3b8-d9ca87c6f403",
+      "versionId": "b31ff312-5193-449f-8ba1-6e24dff3fae1",
+      "dayOfWeek": "SATURDAY",
+      "startTime": "19:00:00",
+      "endTime": "03:00:00",
+      "curfewAddress": "PRIMARY_ADDRESS"
+    },
+    {
+      "id": "eee46fda-f59a-4d66-bbca-a954a6b037e8",
+      "versionId": "b31ff312-5193-449f-8ba1-6e24dff3fae1",
+      "dayOfWeek": "SUNDAY",
+      "startTime": "19:00:00",
+      "endTime": "03:00:00",
+      "curfewAddress": "PRIMARY_ADDRESS"
+    }
+  ],
+  "deviceWearer": {
+    "id": "853d57aa-6a33-4f1e-8523-eb3a962c6067",
+    "versionId": "b31ff312-5193-449f-8ba1-6e24dff3fae1",
+    "nomisId": "R3347UA",
+    "pncId": "OS51/987896E",
+    "deliusId": "X38282",
+    "homeOfficeReferenceNumber": "C3575402",
+    "prisonNumber": "O61613",
+    "firstName": "CEMO002 Wison",
+    "lastName": "Grimes",
+    "alias": "Alder Flycatcher",
+    "adultAtTimeOfInstallation": true,
+    "sex": "FEMALE",
+    "gender": "NOT_ABLE_TO_PROVIDE_THIS_INFORMATION",
+    "language": "",
+    "interpreterRequired": false,
+    "dateOfBirth": 845683200,
+    "disabilities": "",
+    "otherDisability": "",
+    "noFixedAbode": false
+  },
+  "installationAndRisk": {
+    "id": "55f80d3f-7613-4be8-97ce-d10efcf3617c",
+    "versionId": "b31ff312-5193-449f-8ba1-6e24dff3fae1",
+    "offence": "",
+    "offenceAdditionalDetails": "",
+    "riskCategory": null,
+    "riskDetails": "No risk",
+    "mappaLevel": null,
+    "mappaCaseType": null
+  },
+  "installationAppointment": null,
+  "installationLocation": null,
+  "probationDeliveryUnit": null,
+  "monitoringConditionsAlcohol": null,
+  "monitoringConditions": {
+    "id": "65ede3bf-e58e-414c-9d50-36d773a57d40",
+    "versionId": "b31ff312-5193-449f-8ba1-6e24dff3fae1",
+    "startDate": 1754135760,
+    "endDate": 1756727760,
+    "orderType": "PRE_TRIAL",
+    "orderTypeDescription": null,
+    "caseId": null,
+    "conditionType": "LICENSE_CONDITION_OF_A_CUSTODIAL_ORDER",
+    "curfew": true,
+    "exclusionZone": false,
+    "trail": false,
+    "mandatoryAttendance": false,
+    "alcohol": false,
+    "sentenceType": "LIFE_SENTENCE",
+    "issp": "UNKNOWN",
+    "hdc": "UNKNOWN",
+    "prarr": "UNKNOWN",
+    "pilot": "GPS_ACQUISITIVE_CRIME_PAROLE"
+  },
+  "monitoringConditionsTrail": null,
+  "curfewReleaseDateConditions": {
+    "id": "6e1ec66c-e05a-443d-9794-3fea800e6ba5",
+    "versionId": "b31ff312-5193-449f-8ba1-6e24dff3fae1",
+    "releaseDate": 1753315200,
+    "startTime": "19:00:00",
+    "endTime": "10:00:00",
+    "curfewAddress": "PRIMARY"
+  },
+  "enforcementZoneConditions": [],
+  "deviceWearerResponsibleAdult": null,
+  "mandatoryAttendanceConditions": []
+}
