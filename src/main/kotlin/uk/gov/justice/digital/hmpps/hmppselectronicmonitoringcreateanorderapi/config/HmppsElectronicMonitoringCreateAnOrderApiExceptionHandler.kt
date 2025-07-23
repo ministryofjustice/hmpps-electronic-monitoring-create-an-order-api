@@ -167,15 +167,16 @@ class HmppsElectronicMonitoringCreateAnOrderApiExceptionHandler {
     ).also { log.error("Illegal state exception", e) }
 
   @ExceptionHandler(MaxUploadSizeExceededException::class)
-  fun handleMaxUploadSizeExceededException(e: Exception): ResponseEntity<ErrorResponse> = ResponseEntity
-    .status(BAD_REQUEST)
-    .body(
-      ErrorResponse(
-        status = BAD_REQUEST,
-        userMessage = "File uploaded exceed max file size limit of 10MB",
-        developerMessage = e.message,
-      ),
-    ).also { log.error("Unexpected exception", e) }
+  fun handleMaxUploadSizeExceededException(e: MaxUploadSizeExceededException): ResponseEntity<ErrorResponse> =
+    ResponseEntity
+      .status(BAD_REQUEST)
+      .body(
+        ErrorResponse(
+          status = BAD_REQUEST,
+          userMessage = "File uploaded is larger than the max file size limit of ${e.maxUploadSize}MB",
+          developerMessage = "Maximum upload size of ${e.maxUploadSize}MB exceeded",
+        ),
+      ).also { log.error("Unexpected exception", e) }
 
   // The default exception handler returns a fixed text response to avoid leaking internal implementation
   // details. If you want to return a more sensible error,

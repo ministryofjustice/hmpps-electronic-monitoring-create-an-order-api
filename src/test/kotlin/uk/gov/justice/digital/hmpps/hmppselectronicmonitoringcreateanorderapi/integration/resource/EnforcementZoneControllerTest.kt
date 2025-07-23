@@ -21,7 +21,6 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
-import java.util.*
 
 class EnforcementZoneControllerTest : IntegrationTestBase() {
 
@@ -347,7 +346,7 @@ class EnforcementZoneControllerTest : IntegrationTestBase() {
     @Test
     fun `it should return a validation error for an invalid file extension`() {
       val order = createOrder()
-      val bodyBuilder = createMultiPartBodyBuilder(mockFile("filename2.txt"))
+      val bodyBuilder = createMultiPartBodyBuilder(mockFile("filename1.txt"))
 
       val result = webTestClient.post()
         .uri("/api/orders/${order.id}/enforcementZone/0/attachment")
@@ -364,6 +363,30 @@ class EnforcementZoneControllerTest : IntegrationTestBase() {
           status = BAD_REQUEST,
           developerMessage = "Unsupported or missing file type txt. Supported file types: pdf, jpeg, jpg",
           userMessage = validationMessage,
+        ),
+      )
+    }
+
+    @Test
+    fun `it should return a validation error for a file that is too large`() {
+      val order = createOrder()
+      val bodyBuilder = createMultiPartBodyBuilder(mockFile("filename2.pdf", 11))
+
+      val result = webTestClient.post()
+        .uri("/api/orders/${order.id}/enforcementZone/0/attachment")
+        .bodyValue(bodyBuilder.build())
+        .headers(setAuthorisation(mockUser))
+        .exchange()
+        .expectStatus()
+        .isBadRequest
+        .expectBodyList(ErrorResponse::class.java)
+        .returnResult()
+
+      Assertions.assertThat(result.responseBody!!).contains(
+        ErrorResponse(
+          status = BAD_REQUEST,
+          developerMessage = "Maximum upload size of 10MB exceeded",
+          userMessage = "File uploaded is larger than the max file size limit of 10MB",
         ),
       )
     }

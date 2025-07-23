@@ -234,7 +234,7 @@ class AdditionalDocumentServiceTest {
       }
       Assertions.assertThat(
         e.message,
-      ).isEqualTo("Unsupported or missing file type txt. Supported file types: pdf, png, jpeg, jpg")
+      ).isEqualTo("Unsupported or missing file type txt. Supported file types: pdf, doc, docx")
     }
 
     @Test

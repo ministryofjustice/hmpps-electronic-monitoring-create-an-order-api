@@ -1,17 +1,16 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service
 
 import jakarta.persistence.EntityNotFoundException
-import jakarta.validation.ValidationException
-import org.apache.commons.io.FilenameUtils
 import org.springframework.http.MediaType
 import org.springframework.http.client.MultipartBodyBuilder
 import org.springframework.stereotype.Service
-import org.springframework.util.StringUtils
 import org.springframework.web.multipart.MultipartFile
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.DocumentApiClient
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.EnforcementZoneConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.documentmanagement.DocumentMetadata
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateEnforcementZoneDto
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DocumentType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.validators.FileUploadValidator.validateFileExtensionAndSize
 import java.util.*
 
 @Service
@@ -49,7 +48,8 @@ class EnforcementZoneService(val webClient: DocumentApiClient) : OrderSectionSer
   }
 
   fun uploadEnforcementZoneAttachment(orderId: UUID, username: String, zoneId: Int, multipartFile: MultipartFile) {
-    validateFileExtension(multipartFile)
+    validateFileExtensionAndSize(multipartFile, DocumentType.ENFORCEMENT_ZONE_MAP)
+
     val order = findEditableOrder(orderId, username)
     val zone = order.enforcementZoneConditions.firstOrNull { it.zoneId == zoneId }
     if (zone == null) {
@@ -73,19 +73,5 @@ class EnforcementZoneService(val webClient: DocumentApiClient) : OrderSectionSer
 
     order.enforcementZoneConditions.add(zone)
     orderRepo.save(order)
-  }
-
-  private fun validateFileExtension(multipartFile: MultipartFile) {
-    val extension = FilenameUtils.getExtension(multipartFile.originalFilename)?.lowercase()
-    if (!StringUtils.hasLength(extension) || !allowedFileExtensions.contains(extension)
-    ) {
-      throw ValidationException(
-        String.format(
-          "Unsupported or missing file type %s. Supported file types: %s",
-          extension,
-          allowedFileExtensions.joinToString(),
-        ),
-      )
-    }
   }
 }
