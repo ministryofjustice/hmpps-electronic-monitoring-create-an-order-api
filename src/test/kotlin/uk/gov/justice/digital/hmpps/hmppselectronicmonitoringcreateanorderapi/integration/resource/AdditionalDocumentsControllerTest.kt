@@ -35,31 +35,113 @@ class AdditionalDocumentsControllerTest : IntegrationTestBase() {
   @Nested
   @DisplayName("POST /api/orders/{orderId}/document-type/{documentType}")
   inner class UploadDocument {
-    @Suppress("ktlint:standard:max-line-length")
-    private val validationMessage = "Validation failure: Unsupported or missing file type txt. Supported file types: pdf, png, jpeg, jpg"
 
-    @Test
-    fun `it should return a validation error for an invalid file extension`() {
-      val order = createOrder()
-      val bodyBuilder = createMultiPartBodyBuilder(mockFile("filename2.txt"))
+    @Nested
+    @DisplayName("Photo ID upload")
+    inner class PhotoIDUpload {
 
-      val result = webTestClient.post()
-        .uri("/api/orders/${order.id}/document-type/${DocumentType.PHOTO_ID}")
-        .bodyValue(bodyBuilder.build())
-        .headers(setAuthorisation("AUTH_ADM"))
-        .exchange()
-        .expectStatus()
-        .isBadRequest
-        .expectBodyList(ErrorResponse::class.java)
-        .returnResult()
+      @Test
+      fun `it should return a validation error for an invalid file extension`() {
+        val order = createOrder()
+        val bodyBuilder = createMultiPartBodyBuilder(mockFile("filename1.txt"))
 
-      Assertions.assertThat(result.responseBody!!).contains(
-        ErrorResponse(
-          status = BAD_REQUEST,
-          developerMessage = "Unsupported or missing file type txt. Supported file types: pdf, png, jpeg, jpg",
-          userMessage = validationMessage,
-        ),
-      )
+        val result = webTestClient.post()
+          .uri("/api/orders/${order.id}/document-type/${DocumentType.PHOTO_ID}")
+          .bodyValue(bodyBuilder.build())
+          .headers(setAuthorisation("AUTH_ADM"))
+          .exchange()
+          .expectStatus()
+          .isBadRequest
+          .expectBodyList(ErrorResponse::class.java)
+          .returnResult()
+
+        Assertions.assertThat(result.responseBody!!).contains(
+          ErrorResponse(
+            status = BAD_REQUEST,
+            developerMessage = "Unsupported or missing file type txt. Supported file types: pdf, png, jpeg, jpg",
+            userMessage =
+            "Validation failure: Unsupported or missing file type txt. Supported file types: pdf, png, jpeg, jpg",
+          ),
+        )
+      }
+
+      @Test
+      fun `it should return a validation error for a file that is too large`() {
+        val order = createOrder()
+        val bodyBuilder = createMultiPartBodyBuilder(mockFile("filename2.pdf", 11))
+
+        val result = webTestClient.post()
+          .uri("/api/orders/${order.id}/document-type/${DocumentType.PHOTO_ID}")
+          .bodyValue(bodyBuilder.build())
+          .headers(setAuthorisation("AUTH_ADM"))
+          .exchange()
+          .expectStatus()
+          .isBadRequest
+          .expectBodyList(ErrorResponse::class.java)
+          .returnResult()
+
+        Assertions.assertThat(result.responseBody!!).contains(
+          ErrorResponse(
+            status = BAD_REQUEST,
+            developerMessage = "Maximum upload size of 10MB exceeded",
+            userMessage = "File uploaded is larger than the max file size limit of 10MB",
+          ),
+        )
+      }
+    }
+
+    @Nested
+    @DisplayName("Licence upload")
+    inner class LicenceUpload {
+
+      @Test
+      fun `it should return a validation error for an invalid file extension`() {
+        val order = createOrder()
+        val bodyBuilder = createMultiPartBodyBuilder(mockFile("filename3.txt"))
+
+        val result = webTestClient.post()
+          .uri("/api/orders/${order.id}/document-type/${DocumentType.LICENCE}")
+          .bodyValue(bodyBuilder.build())
+          .headers(setAuthorisation("AUTH_ADM"))
+          .exchange()
+          .expectStatus()
+          .isBadRequest
+          .expectBodyList(ErrorResponse::class.java)
+          .returnResult()
+
+        Assertions.assertThat(result.responseBody!!).contains(
+          ErrorResponse(
+            status = BAD_REQUEST,
+            developerMessage = "Unsupported or missing file type txt. Supported file types: pdf, doc, docx",
+            userMessage =
+            "Validation failure: Unsupported or missing file type txt. Supported file types: pdf, doc, docx",
+          ),
+        )
+      }
+
+      @Test
+      fun `it should return a validation error for a file that is too large`() {
+        val order = createOrder()
+        val bodyBuilder = createMultiPartBodyBuilder(mockFile("filename4.pdf", 26))
+
+        val result = webTestClient.post()
+          .uri("/api/orders/${order.id}/document-type/${DocumentType.LICENCE}")
+          .bodyValue(bodyBuilder.build())
+          .headers(setAuthorisation("AUTH_ADM"))
+          .exchange()
+          .expectStatus()
+          .isBadRequest
+          .expectBodyList(ErrorResponse::class.java)
+          .returnResult()
+
+        Assertions.assertThat(result.responseBody!!).contains(
+          ErrorResponse(
+            status = BAD_REQUEST,
+            developerMessage = "Maximum upload size of 25MB exceeded",
+            userMessage = "File uploaded is larger than the max file size limit of 25MB",
+          ),
+        )
+      }
     }
 
     @Test
