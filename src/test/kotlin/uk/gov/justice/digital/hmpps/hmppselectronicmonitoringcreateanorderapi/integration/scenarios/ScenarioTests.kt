@@ -63,6 +63,14 @@ class ScenarioTests : IntegrationTestBase() {
     )
   }
 
+  fun String.removeWhitespaceAndNewlines(): String = this.replace("(\"[^\"]*\")|\\s".toRegex(), "\$1")
+
+  fun createReadyToSubmitOrder(block: OrderBuilder.() -> Unit): Order {
+    val builder = OrderBuilder()
+    builder.block()
+    return builder.build()
+  }
+
   @Nested
   @DisplayName("POST /api/orders/{orderId}/submit")
   inner class SubmitOrder {
@@ -70,18 +78,58 @@ class ScenarioTests : IntegrationTestBase() {
     fun cemo001() {
       val orderId = UUID.randomUUID()
       val versionId = UUID.randomUUID()
-      val order = createAndPersistReadyToSubmitOrder(
-        id = orderId,
-        versionId = versionId,
-        documents = mutableListOf(
+
+      val order = createReadyToSubmitOrder {
+        this.orderId = orderId
+        this.initialVersionId = versionId
+        this.noFixedAddress = false
+        this.initialRequestType = RequestType.REQUEST
+        this.orderStatus = OrderStatus.IN_PROGRESS
+        this.documents = mutableListOf(
           AdditionalDocument(
             id = UUID.fromString("550e8400-e29b-41d4-a716-446655440000"),
             versionId = versionId,
             fileType = DocumentType.LICENCE,
             fileName = "mockFile",
           ),
-        ),
-      )
+        )
+
+        deviceWearer {
+          interpreterRequired = true
+          language = "French"
+          noFixedAbode = false
+        }
+        addAddress {
+          addressLine1 = "10 downing street"
+          addressLine2 = "London"
+          postcode = "SW1A 2AA"
+          addressType = AddressType.PRIMARY
+        }
+        installationAndRisk {}
+        contactDetails {}
+        monitoringConditions {
+          startDate = mockStartDate
+          endDate = mockEndDate
+          orderType = OrderType.PRE_TRIAL
+          conditionType = MonitoringConditionType.LICENSE_CONDITION_OF_A_CUSTODIAL_ORDER
+          sentenceType = SentenceType.LIFE_SENTENCE
+          curfew = true
+        }
+        curfewConditions {
+          startDate = mockStartDate
+          endDate = mockEndDate
+        }
+        curfewReleaseDateConditions {
+          releaseDate = mockStartDate
+        }
+        interestedParties {
+          notifyingOrganisation = "Crown Court"
+          responsibleOrganisation = "Police"
+          notifyingOrganisationName = "Bolton Crown Court"
+        }
+        probationDeliveryUnit {}
+      }
+      repo.save(order)
 
       sercoApi.stubSubmitAttachment(
         HttpStatus.OK,
@@ -337,68 +385,5 @@ class ScenarioTests : IntegrationTestBase() {
       assertThat(updatedOrder.fmsResultId).isEqualTo(submitResult.id)
       assertThat(updatedOrder.status).isEqualTo(OrderStatus.SUBMITTED)
     }
-  }
-
-  fun String.removeWhitespaceAndNewlines(): String = this.replace("(\"[^\"]*\")|\\s".toRegex(), "\$1")
-
-  fun createAndPersistReadyToSubmitOrder(
-    id: UUID,
-    versionId: UUID,
-    noFixedAddress: Boolean = false,
-    requestType: RequestType = RequestType.REQUEST,
-    status: OrderStatus = OrderStatus.IN_PROGRESS,
-    documents: MutableList<AdditionalDocument> = mutableListOf(),
-  ): Order {
-    val order = createReadyToSubmitOrder {
-      this.orderId = id
-      this.initialVersionId = versionId
-      this.noFixedAddress = noFixedAddress
-      this.initialRequestType = requestType
-      this.orderStatus = status
-      this.documents = documents
-
-      deviceWearer {
-        interpreterRequired = true
-        language = "French"
-        noFixedAbode = false
-      }
-      addAddress {
-        addressLine1 = "10 downing street"
-        addressLine2 = "London"
-        postcode = "SW1A 2AA"
-        addressType = AddressType.PRIMARY
-      }
-      installationAndRisk {}
-      contactDetails {}
-      monitoringConditions {
-        startDate = mockStartDate
-        endDate = mockEndDate
-        orderType = OrderType.PRE_TRIAL
-        conditionType = MonitoringConditionType.LICENSE_CONDITION_OF_A_CUSTODIAL_ORDER
-        sentenceType = SentenceType.LIFE_SENTENCE
-        curfew = true
-      }
-      curfewConditions {
-        startDate = mockStartDate
-        endDate = mockEndDate
-      }
-      curfewReleaseDateConditions {
-        releaseDate = mockStartDate
-      }
-      interestedParties {
-        notifyingOrganisation = "Crown Court"
-        responsibleOrganisation = "Police"
-        notifyingOrganisationName = "Bolton Crown Court"
-      }
-      probationDeliveryUnit {}
-    }
-    repo.save(order)
-    return order
-  }
-
-  fun createReadyToSubmitOrder(block: OrderBuilder.() -> Unit): Order {
-    val builder = OrderBuilder()
-    builder.block()
-    return builder.build()
   }
 }
