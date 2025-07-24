@@ -105,8 +105,8 @@ class ProbationDeliveryUnitControllerTest : IntegrationTestBase() {
     Assertions.assertThat(result.responseBody!!).contains(
       ErrorResponse(
         status = BAD_REQUEST,
-        developerMessage = "Responsible organisation must be Probation",
-        userMessage = "Validation failure: Responsible organisation must be Probation",
+        developerMessage = "Validation failure: Responsible organisation must be Probation",
+        userMessage = "Responsible organisation must be Probation",
       ),
     )
   }
@@ -139,8 +139,8 @@ class ProbationDeliveryUnitControllerTest : IntegrationTestBase() {
     Assertions.assertThat(result.responseBody!!).contains(
       ErrorResponse(
         status = BAD_REQUEST,
-        developerMessage = "Select probation delivery unit within given probation region",
-        userMessage = "Validation failure: Select probation delivery unit within given probation region",
+        developerMessage = "Validation failure: Select probation delivery unit within given probation region",
+        userMessage = "Select probation delivery unit within given probation region",
       ),
     )
   }
