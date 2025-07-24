@@ -1,0 +1,128 @@
+{
+  "id": "c00a9710-a31d-4726-bc55-d60a15898f2a",
+  "versions": [
+    {
+      "id": "cd46046c-53ce-43d2-a1a2-9f130269cfb8",
+      "orderId": "c00a9710-a31d-4726-bc55-d60a15898f2a",
+      "versionId": 0,
+      "username": "AUTH_ADM",
+      "status": "IN_PROGRESS",
+      "dataDictionaryVersion": "DDV5",
+      "type": "REQUEST"
+    }
+  ],
+  "status": "IN_PROGRESS",
+  "deviceWearer": {
+    "versionId": "cd46046c-53ce-43d2-a1a2-9f130269cfb8",
+    "nomisId": "Q0066CM",
+    "pncId": "BK32/450813X",
+    "deliusId": "X56598",
+    "prisonNumber": "R50605",
+    "homeOfficeReferenceNumber": "C9564235",
+    "firstName": "CEMO005 Asher",
+    "lastName": "Cormier",
+    "alias": "Snail Kite",
+    "dateOfBirth": "1998-08-28T00:00:00Z",
+    "adultAtTimeOfInstallation": true,
+    "sex": "FEMALE",
+    "gender": "MALE",
+    "disabilities": "",
+    "otherDisability": "",
+    "noFixedAbode": false,
+    "language": "",
+    "interpreterRequired": false
+  },
+  "addresses": [
+    {
+      "versionId": "cd46046c-53ce-43d2-a1a2-9f130269cfb8",
+      "addressType": "PRIMARY",
+      "addressLine1": "2 Dunlin Close",
+      "addressLine2": "Bolton",
+      "addressLine3": "Greater Manchester",
+      "addressLine4": "",
+      "postcode": "BL2 1EW"
+    }
+  ],
+  "deviceWearerResponsibleAdult": null,
+  "contactDetails": {
+    "versionId": "cd46046c-53ce-43d2-a1a2-9f130269cfb8",
+    "contactNumber": "0161 496 0116"
+  },
+  "enforcementZoneConditions": [],
+  "additionalDocuments": [],
+  "installationAndRisk": {
+    "versionId": "cd46046c-53ce-43d2-a1a2-9f130269cfb8",
+    "offence": "",
+    "offenceAdditionalDetails": "",
+    "riskCategory": null,
+    "riskDetails": "No risk",
+    "mappaLevel": null,
+    "mappaCaseType": null
+  },
+  "monitoringConditions": {
+    "versionId": "cd46046c-53ce-43d2-a1a2-9f130269cfb8",
+    "startDate": "2025-08-03T10:27:00Z",
+    "endDate": "2025-09-02T10:27:00Z",
+    "orderType": "POST_RELEASE",
+    "curfew": true,
+    "exclusionZone": false,
+    "trail": false,
+    "mandatoryAttendance": false,
+    "alcohol": false,
+    "conditionType": "POST_SENTENCE_SUPERVISION_REQUIREMENT",
+    "orderTypeDescription": null,
+    "sentenceType": "LIFE_SENTENCE",
+    "issp": "UNKNOWN",
+    "hdc": "YES",
+    "prarr": "UNKNOWN",
+    "pilot": null
+  },
+  "monitoringConditionsTrail": null,
+  "mandatoryAttendanceConditions": [],
+  "monitoringConditionsAlcohol": null,
+  "curfewReleaseDateConditions": {
+    "versionId": "cd46046c-53ce-43d2-a1a2-9f130269cfb8",
+    "curfewAddress": "PRIMARY",
+    "releaseDate": "2025-07-25T00:00:00Z",
+    "startTime": "19:00:00",
+    "endTime": "07:00:00"
+  },
+  "curfewConditions": {
+    "versionId": "cd46046c-53ce-43d2-a1a2-9f130269cfb8",
+    "startDate": "2025-08-07T23:00:00Z",
+    "endDate": "2025-08-28T22:59:00Z",
+    "curfewAddress": "PRIMARY",
+    "curfewAdditionalDetails": ""
+  },
+  "curfewTimeTable": [
+    {
+      "versionId": "cd46046c-53ce-43d2-a1a2-9f130269cfb8",
+      "dayOfWeek": "SATURDAY",
+      "startTime": "19:00:00",
+      "endTime": "07:00:00",
+      "curfewAddress": "PRIMARY_ADDRESS"
+    },
+    {
+      "versionId": "cd46046c-53ce-43d2-a1a2-9f130269cfb8",
+      "dayOfWeek": "SUNDAY",
+      "startTime": "19:00:00",
+      "endTime": "07:00:00",
+      "curfewAddress": "PRIMARY_ADDRESS"
+    }
+  ],
+  "interestedParties": {
+    "versionId": "cd46046c-53ce-43d2-a1a2-9f130269cfb8",
+    "notifyingOrganisation": "PRISON",
+    "notifyingOrganisationName": "LIVERPOOL_PRISON",
+    "notifyingOrganisationEmail": "",
+    "responsibleOfficerName": "Annette Romaguera-Orn",
+    "responsibleOfficerPhoneNumber": "0114 496 0989",
+    "responsibleOrganisation": "PROBATION",
+    "responsibleOrganisationRegion": "NORTH_WEST",
+    "responsibleOrganisationEmail": "probation@example.com"
+  },
+  "probationDeliveryUnit": {
+    "versionId": "cd46046c-53ce-43d2-a1a2-9f130269cfb8",
+    "unit": "BLACKBURN"
+  }
+}
