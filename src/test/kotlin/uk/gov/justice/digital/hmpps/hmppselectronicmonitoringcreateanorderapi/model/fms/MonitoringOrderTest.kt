@@ -51,7 +51,7 @@ class MonitoringOrderTest : FmsTestBase() {
 
   @ParameterizedTest(name = "it should map probation delivery unit to Serco - {0} -> {1}")
   @MethodSource("getProbationDeliveryUnitValues")
-  fun `It should map correctly map map saved probation delivery unit values to Serco`(
+  fun `It should map correctly map saved probation delivery unit values to Serco`(
     savedValue: String,
     mappedValue: String,
   ) {
