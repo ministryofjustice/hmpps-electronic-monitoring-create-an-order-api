@@ -38,6 +38,7 @@ enum class Prison(val value: String) {
   FIVE_WELLS_PRISON("Five Wells Prison"),
   FORD_PRISON("Ford Prison"),
   FOREST_BANK_PRISON("Forest Bank Prison"),
+  FOSSE_WAY_PRISON("Fosse Way Prison"),
   FOSTON_HALL_PRISON_AND_YOUNG_OFFENDER_INSTITUTION("Foston Hall Prison and Young Offender Institution"),
   FRANKLAND_PRISON("Frankland Prison"),
   FULL_SUTTON_PRISON("Full Sutton Prison"),
