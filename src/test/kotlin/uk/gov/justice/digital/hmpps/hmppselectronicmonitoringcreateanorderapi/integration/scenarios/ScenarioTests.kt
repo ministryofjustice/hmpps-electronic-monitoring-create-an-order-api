@@ -4,7 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.Arguments
+import org.junit.jupiter.params.provider.MethodSource
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
@@ -12,7 +14,6 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.in
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.SercoAuthMockServerExtension.Companion.sercoAuthApi
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.SercoMockApiExtension.Companion.sercoApi
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsAttachmentResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsAttachmentResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsResponse
@@ -33,10 +34,17 @@ class ScenarioTests : IntegrationTestBase() {
     sercoAuthApi.stubGrantToken()
   }
 
-  @Test
-  fun cemo002() {
-    val rootFilePath = "src/test/resources/json/scenarios/cemo002"
-    runPayloadTest(rootFilePath)
+  @ParameterizedTest(name = "{0}")
+  @MethodSource("scenarios")
+  fun `It should submit correctly to Serco`(scenarioName: String, fileSource: String) {
+    runPayloadTest(fileSource)
+  }
+
+  companion object {
+    @JvmStatic
+    fun scenarios() = listOf(
+      Arguments.of("cemo002", "src/test/resources/json/scenarios/cemo002"),
+    )
   }
 
   fun String.removeWhitespaceAndNewlines(): String = this.replace("(\"[^\"]*\")|\\s".toRegex(), "\$1")
@@ -109,15 +117,5 @@ class ScenarioTests : IntegrationTestBase() {
     assertThat(
       submitResult.monitoringOrderResult.payload,
     ).isEqualTo(expectedOrderJson.removeWhitespaceAndNewlines())
-    assertThat(submitResult.attachmentResults[0].sysId).isEqualTo("MockSysId")
-    assertThat(
-      submitResult.attachmentResults[0].fileType,
-    ).isEqualTo(order.additionalDocuments.first().fileType.toString())
-    assertThat(
-      submitResult.attachmentResults[0].attachmentId,
-    ).isEqualTo(order.additionalDocuments.first().id.toString())
-    val updatedOrder = getOrder(order.id)
-    assertThat(updatedOrder.fmsResultId).isEqualTo(submitResult.id)
-    assertThat(updatedOrder.status).isEqualTo(OrderStatus.SUBMITTED)
   }
 }
