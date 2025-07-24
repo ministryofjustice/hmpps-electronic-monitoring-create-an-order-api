@@ -58,9 +58,8 @@ class AdditionalDocumentsControllerTest : IntegrationTestBase() {
         Assertions.assertThat(result.responseBody!!).contains(
           ErrorResponse(
             status = BAD_REQUEST,
-            developerMessage = "Unsupported or missing file type txt. Supported file types: pdf, png, jpeg, jpg",
-            userMessage =
-            "Validation failure: Unsupported or missing file type txt. Supported file types: pdf, png, jpeg, jpg",
+            developerMessage = "Validation failure: Select a PDF, PNG, JPEG or JPG",
+            userMessage = "Select a PDF, PNG, JPEG or JPG",
           ),
         )
       }
@@ -112,9 +111,9 @@ class AdditionalDocumentsControllerTest : IntegrationTestBase() {
         Assertions.assertThat(result.responseBody!!).contains(
           ErrorResponse(
             status = BAD_REQUEST,
-            developerMessage = "Unsupported or missing file type txt. Supported file types: pdf, doc, docx",
+            developerMessage = "Validation failure: Select a PDF or Word document",
             userMessage =
-            "Validation failure: Unsupported or missing file type txt. Supported file types: pdf, doc, docx",
+            "Select a PDF or Word document",
           ),
         )
       }
