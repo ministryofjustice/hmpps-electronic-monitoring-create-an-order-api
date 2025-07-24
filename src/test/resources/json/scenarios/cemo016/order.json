@@ -1,0 +1,120 @@
+{
+  "id": "01e3de87-c563-4411-98c9-7c337b09e193",
+  "versions": [
+    {
+      "id": "0db52c0a-6561-42f4-b490-d37831cb773a",
+      "orderId": "01e3de87-c563-4411-98c9-7c337b09e193",
+      "versionId": 0,
+      "username": "AUTH_ADM",
+      "status": "IN_PROGRESS",
+      "dataDictionaryVersion": "DDV5",
+      "type": "REQUEST"
+    }
+  ],
+  "status": "IN_PROGRESS",
+  "deviceWearer": {
+    "versionId": "0db52c0a-6561-42f4-b490-d37831cb773a",
+    "nomisId": "B3575BA",
+    "pncId": "JI07/071790H",
+    "deliusId": "X62420",
+    "prisonNumber": "J51202",
+    "homeOfficeReferenceNumber": "C8485550",
+    "firstName": "CEMO016 Coral",
+    "lastName": "Hahn",
+    "alias": "Thick-billed Vireo",
+    "dateOfBirth": "1979-12-16T00:00:00Z",
+    "adultAtTimeOfInstallation": true,
+    "sex": "PREFER_NOT_TO_SAY",
+    "gender": "NON_BINARY",
+    "disabilities": "",
+    "otherDisability": "",
+    "noFixedAbode": false,
+    "language": "",
+    "interpreterRequired": false
+  },
+  "addresses": [
+    {
+      "versionId": "0db52c0a-6561-42f4-b490-d37831cb773a",
+      "addressType": "INSTALLATION",
+      "addressLine1": "10 downing street",
+      "addressLine2": "",
+      "addressLine3": "London",
+      "addressLine4": "ENGLAND",
+      "postcode": "SW1A 2AA"
+    },
+    {
+      "versionId": "0db52c0a-6561-42f4-b490-d37831cb773a",
+      "addressType": "PRIMARY",
+      "addressLine1": "10 downing street",
+      "addressLine2": "",
+      "addressLine3": "London",
+      "addressLine4": "ENGLAND",
+      "postcode": "SW1A 2AA"
+    }
+  ],
+  "deviceWearerResponsibleAdult": null,
+  "contactDetails": {
+    "versionId": "0db52c0a-6561-42f4-b490-d37831cb773a",
+    "contactNumber": "0121 496 0752"
+  },
+  "enforcementZoneConditions": [],
+  "additionalDocuments": [],
+  "installationAndRisk": {
+    "versionId": "0db52c0a-6561-42f4-b490-d37831cb773a",
+    "offence": "",
+    "offenceAdditionalDetails": "",
+    "riskCategory": null,
+    "riskDetails": "No risk",
+    "mappaLevel": null,
+    "mappaCaseType": null
+  },
+  "monitoringConditions": {
+    "versionId": "0db52c0a-6561-42f4-b490-d37831cb773a",
+    "startDate": "2025-07-25T14:15:00Z",
+    "endDate": "2025-11-21T14:15:00Z",
+    "orderType": "POST_RELEASE",
+    "curfew": false,
+    "exclusionZone": false,
+    "trail": true,
+    "mandatoryAttendance": false,
+    "alcohol": false,
+    "conditionType": "POST_SENTENCE_SUPERVISION_REQUIREMENT",
+    "orderTypeDescription": null,
+    "sentenceType": "STANDARD_DETERMINATE_SENTENCE",
+    "issp": "UNKNOWN",
+    "hdc": "UNKNOWN",
+    "prarr": "UNKNOWN",
+    "pilot": "AQUISITIVE_CRIME_PROJECT"
+  },
+  "monitoringConditionsTrail": {
+    "versionId": "0db52c0a-6561-42f4-b490-d37831cb773a",
+    "startDate": "2025-08-07T23:00:00Z",
+    "endDate": "2025-08-28T22:59:00Z"
+  },
+  "mandatoryAttendanceConditions": [],
+  "monitoringConditionsAlcohol": null,
+  "curfewReleaseDateConditions": null,
+  "curfewConditions": null,
+  "curfewTimeTable": [],
+  "interestedParties": {
+    "versionId": "0db52c0a-6561-42f4-b490-d37831cb773a",
+    "notifyingOrganisation": "PRISON",
+    "notifyingOrganisationName": "ELMLEY_PRISON",
+    "notifyingOrganisationEmail": "",
+    "responsibleOfficerName": "Jenny Boyle-Langworth",
+    "responsibleOfficerPhoneNumber": "028 9649 6308",
+    "responsibleOrganisation": "PROBATION",
+    "responsibleOrganisationRegion": "KENT_SURREY_SUSSEX",
+    "responsibleOrganisationEmail": "probation@example.com"
+  },
+  "probationDeliveryUnit": {
+    "versionId": "0db52c0a-6561-42f4-b490-d37831cb773a",
+    "unit": "SURREY"
+  },
+  "variationDetails": null,
+  "installationLocation": {
+    "versionId": "0db52c0a-6561-42f4-b490-d37831cb773a",
+    "location": "INSTALLATION"
+  },
+  "installationAppointment": null
+}

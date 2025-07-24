@@ -1,0 +1,123 @@
+{
+  "id": "caf16c43-fd28-4a41-a5b6-00b3acbb7489",
+  "versions": [
+    {
+      "id": "775707cd-3c8a-4c8c-89e2-91c838823ab5",
+      "orderId": "caf16c43-fd28-4a41-a5b6-00b3acbb7489",
+      "versionId": 0,
+      "username": "AUTH_ADM",
+      "status": "IN_PROGRESS",
+      "dataDictionaryVersion": "DDV5",
+      "type": "REQUEST"
+    }
+  ],
+  "status": "IN_PROGRESS",
+  "deviceWearer": {
+    "versionId": "775707cd-3c8a-4c8c-89e2-91c838823ab5",
+    "nomisId": "T3736ZB",
+    "pncId": "BP92/090158Q",
+    "deliusId": "X67390",
+    "prisonNumber": "L55735",
+    "homeOfficeReferenceNumber": "C6108413",
+    "firstName": "CEMO011 James",
+    "lastName": "Wisozk",
+    "alias": "Common Chaffinch",
+    "dateOfBirth": "2010-02-14T00:00:00Z",
+    "adultAtTimeOfInstallation": false,
+    "sex": "FEMALE",
+    "gender": "NOT_ABLE_TO_PROVIDE_THIS_INFORMATION",
+    "disabilities": "",
+    "otherDisability": "",
+    "noFixedAbode": false,
+    "language": "",
+    "interpreterRequired": false
+  },
+  "addresses": [
+    {
+      "versionId": "775707cd-3c8a-4c8c-89e2-91c838823ab5",
+      "addressType": "INSTALLATION",
+      "addressLine1": "3 Kelvin Close",
+      "addressLine2": "Birchwood",
+      "addressLine3": "Warrington",
+      "addressLine4": "",
+      "postcode": "WA3 7PB"
+    },
+    {
+      "versionId": "775707cd-3c8a-4c8c-89e2-91c838823ab5",
+      "addressType": "PRIMARY",
+      "addressLine1": "3 Kelvin Close",
+      "addressLine2": "Birchwood",
+      "addressLine3": "Warrington",
+      "addressLine4": "",
+      "postcode": "WA3 7PB"
+    }
+  ],
+  "deviceWearerResponsibleAdult": {
+    "versionId": "775707cd-3c8a-4c8c-89e2-91c838823ab5",
+    "relationship": "parent",
+    "otherRelationshipDetails": "",
+    "fullName": "Alexandra Faith Beier",
+    "contactNumber": "0116 496 0300"
+  },
+  "contactDetails": {
+    "versionId": "775707cd-3c8a-4c8c-89e2-91c838823ab5",
+    "contactNumber": "0141 496 0761"
+  },
+  "enforcementZoneConditions": [],
+  "additionalDocuments": [],
+  "installationAndRisk": {
+    "versionId": "775707cd-3c8a-4c8c-89e2-91c838823ab5",
+    "offence": "",
+    "offenceAdditionalDetails": "",
+    "riskCategory": null,
+    "riskDetails": "No risk",
+    "mappaLevel": null,
+    "mappaCaseType": null
+  },
+  "monitoringConditions": {
+    "versionId": "775707cd-3c8a-4c8c-89e2-91c838823ab5",
+    "startDate": "2025-08-03T13:41:00Z",
+    "endDate": "2025-09-02T13:41:00Z",
+    "orderType": "POST_RELEASE",
+    "curfew": false,
+    "exclusionZone": false,
+    "trail": true,
+    "mandatoryAttendance": false,
+    "alcohol": false,
+    "conditionType": "LICENSE_CONDITION_OF_A_CUSTODIAL_ORDER",
+    "orderTypeDescription": null,
+    "sentenceType": "DTO",
+    "issp": "UNKNOWN",
+    "hdc": "UNKNOWN",
+    "prarr": "UNKNOWN",
+    "pilot": null
+  },
+  "monitoringConditionsTrail": {
+    "versionId": "775707cd-3c8a-4c8c-89e2-91c838823ab5",
+    "startDate": "2025-08-07T23:00:00Z",
+    "endDate": "2025-08-28T22:59:00Z"
+  },
+  "mandatoryAttendanceConditions": [],
+  "monitoringConditionsAlcohol": null,
+  "curfewReleaseDateConditions": null,
+  "curfewConditions": null,
+  "curfewTimeTable": [],
+  "interestedParties": {
+    "versionId": "775707cd-3c8a-4c8c-89e2-91c838823ab5",
+    "notifyingOrganisation": "PRISON",
+    "notifyingOrganisationName": "FELTHAM_YOUNG_OFFENDER_INSTITUTION",
+    "notifyingOrganisationEmail": "",
+    "responsibleOfficerName": "Kay Ledner",
+    "responsibleOfficerPhoneNumber": "0131 496 0491",
+    "responsibleOrganisation": "YJS",
+    "responsibleOrganisationRegion": "LONDON",
+    "responsibleOrganisationEmail": "yjs@example.com"
+  },
+  "probationDeliveryUnit": null,
+  "variationDetails": null,
+  "installationLocation": {
+    "versionId": "775707cd-3c8a-4c8c-89e2-91c838823ab5",
+    "location": "INSTALLATION"
+  },
+  "installationAppointment": null
+}

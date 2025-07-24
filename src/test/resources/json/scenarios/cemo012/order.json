@@ -1,0 +1,120 @@
+{
+  "id": "4978e76b-688d-4e30-ae2a-3d1892cd5d0b",
+  "versions": [
+    {
+      "id": "238f8cec-4ad5-4120-b8a8-9c56affb6a2a",
+      "orderId": "4978e76b-688d-4e30-ae2a-3d1892cd5d0b",
+      "versionId": 0,
+      "username": "AUTH_ADM",
+      "status": "IN_PROGRESS",
+      "dataDictionaryVersion": "DDV5",
+      "type": "REQUEST"
+    }
+  ],
+  "status": "IN_PROGRESS",
+  "deviceWearer": {
+    "versionId": "238f8cec-4ad5-4120-b8a8-9c56affb6a2a",
+    "nomisId": "I0352EK",
+    "pncId": "OY61/798472O",
+    "deliusId": "X71747",
+    "prisonNumber": "T14658",
+    "homeOfficeReferenceNumber": "C1860578",
+    "firstName": "CEMO012 Rae",
+    "lastName": "Pacocha",
+    "alias": "White-tailed Ptarmigan",
+    "dateOfBirth": "2000-10-17T00:00:00Z",
+    "adultAtTimeOfInstallation": true,
+    "sex": "PREFER_NOT_TO_SAY",
+    "gender": "MALE",
+    "disabilities": "",
+    "otherDisability": "",
+    "noFixedAbode": false,
+    "language": "",
+    "interpreterRequired": false
+  },
+  "addresses": [
+    {
+      "versionId": "238f8cec-4ad5-4120-b8a8-9c56affb6a2a",
+      "addressType": "INSTALLATION",
+      "addressLine1": "3 Kelvin Close",
+      "addressLine2": "Birchwood",
+      "addressLine3": "Warrington",
+      "addressLine4": "",
+      "postcode": "WA3 7PB"
+    },
+    {
+      "versionId": "238f8cec-4ad5-4120-b8a8-9c56affb6a2a",
+      "addressType": "PRIMARY",
+      "addressLine1": "3 Kelvin Close",
+      "addressLine2": "Birchwood",
+      "addressLine3": "Warrington",
+      "addressLine4": "",
+      "postcode": "WA3 7PB"
+    }
+  ],
+  "deviceWearerResponsibleAdult": null,
+  "contactDetails": {
+    "versionId": "238f8cec-4ad5-4120-b8a8-9c56affb6a2a",
+    "contactNumber": "029 2018 0533"
+  },
+  "enforcementZoneConditions": [],
+  "additionalDocuments": [],
+  "installationAndRisk": {
+    "versionId": "238f8cec-4ad5-4120-b8a8-9c56affb6a2a",
+    "offence": "",
+    "offenceAdditionalDetails": "",
+    "riskCategory": null,
+    "riskDetails": "No risk",
+    "mappaLevel": null,
+    "mappaCaseType": null
+  },
+  "monitoringConditions": {
+    "versionId": "238f8cec-4ad5-4120-b8a8-9c56affb6a2a",
+    "startDate": "2025-08-03T13:55:00Z",
+    "endDate": "2025-09-02T13:55:00Z",
+    "orderType": "POST_RELEASE",
+    "curfew": false,
+    "exclusionZone": false,
+    "trail": true,
+    "mandatoryAttendance": false,
+    "alcohol": false,
+    "conditionType": "LICENSE_CONDITION_OF_A_CUSTODIAL_ORDER",
+    "orderTypeDescription": null,
+    "sentenceType": "STANDARD_DETERMINATE_SENTENCE",
+    "issp": "UNKNOWN",
+    "hdc": "UNKNOWN",
+    "prarr": "UNKNOWN",
+    "pilot": "GPS_ACQUISITIVE_CRIME_PAROLE"
+  },
+  "monitoringConditionsTrail": {
+    "versionId": "238f8cec-4ad5-4120-b8a8-9c56affb6a2a",
+    "startDate": "2025-08-07T23:00:00Z",
+    "endDate": "2025-08-28T22:59:00Z"
+  },
+  "mandatoryAttendanceConditions": [],
+  "monitoringConditionsAlcohol": null,
+  "curfewReleaseDateConditions": null,
+  "curfewConditions": null,
+  "curfewTimeTable": [],
+  "interestedParties": {
+    "versionId": "238f8cec-4ad5-4120-b8a8-9c56affb6a2a",
+    "notifyingOrganisation": "PRISON",
+    "notifyingOrganisationName": "LIVERPOOL_PRISON",
+    "notifyingOrganisationEmail": "",
+    "responsibleOfficerName": "Crystal Gibson",
+    "responsibleOfficerPhoneNumber": "0151 496 0774",
+    "responsibleOrganisation": "PROBATION",
+    "responsibleOrganisationRegion": "NORTH_WEST",
+    "responsibleOrganisationEmail": "probation@example.com"
+  },
+  "probationDeliveryUnit": {
+    "versionId": "238f8cec-4ad5-4120-b8a8-9c56affb6a2a",
+    "unit": "BLACKBURN"
+  },
+  "variationDetails": null,
+  "installationLocation": {
+    "versionId": "238f8cec-4ad5-4120-b8a8-9c56affb6a2a",
+    "location": "INSTALLATION"
+  },
+  "installationAppointment": null
+}

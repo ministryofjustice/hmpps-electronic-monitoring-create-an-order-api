@@ -28,7 +28,7 @@ class ScenarioTests : IntegrationTestBase() {
 
   @BeforeEach
   fun setup() {
-//        repo.deleteAll()
+    repo.deleteAll()
     fmsResultRepository.deleteAll()
 
     sercoAuthApi.stubGrantToken()
@@ -53,13 +53,13 @@ class ScenarioTests : IntegrationTestBase() {
 //      Arguments.of("cemo008", "src/test/resources/json/scenarios/cemo008"),
 //      Arguments.of("cemo009", "src/test/resources/json/scenarios/cemo009"),
 //      Arguments.of("cemo010", "src/test/resources/json/scenarios/cemo010"),
-//      Arguments.of("cemo011", "src/test/resources/json/scenarios/cemo011"),
-//      Arguments.of("cemo012", "src/test/resources/json/scenarios/cemo012"),
+      Arguments.of("cemo011", "src/test/resources/json/scenarios/cemo011"),
+      Arguments.of("cemo012", "src/test/resources/json/scenarios/cemo012"),
 //      Arguments.of("cemo013", "src/test/resources/json/scenarios/cemo013"),
-//      Arguments.of("cemo014", "src/test/resources/json/scenarios/cemo014"),
+      Arguments.of("cemo014", "src/test/resources/json/scenarios/cemo014"),
 //      Arguments.of("cemo015", "src/test/resources/json/scenarios/cemo015"),
-//      Arguments.of("cemo016", "src/test/resources/json/scenarios/cemo016"),
-//      Arguments.of("cemo017", "src/test/resources/json/scenarios/cemo017"),
+      Arguments.of("cemo016", "src/test/resources/json/scenarios/cemo016"),
+      Arguments.of("cemo017", "src/test/resources/json/scenarios/cemo017"),
 //      Arguments.of("cemo018", "src/test/resources/json/scenarios/cemo018"),
 //      Arguments.of("cemo019", "src/test/resources/json/scenarios/cemo019"),
 //      Arguments.of("cemo020", "src/test/resources/json/scenarios/cemo020"),

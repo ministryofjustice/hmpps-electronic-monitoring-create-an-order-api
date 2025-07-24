@@ -1,0 +1,131 @@
+{
+  "id": "c314eba1-64e8-4295-a0cb-3238eb3ead81",
+  "versions": [
+    {
+      "id": "4af38a83-6c1e-4c5b-86bb-a3c80e7f2a88",
+      "orderId": "c314eba1-64e8-4295-a0cb-3238eb3ead81",
+      "versionId": 0,
+      "username": "AUTH_ADM",
+      "status": "IN_PROGRESS",
+      "dataDictionaryVersion": "DDV5",
+      "type": "REQUEST"
+    }
+  ],
+  "status": "IN_PROGRESS",
+  "deviceWearer": {
+    "versionId": "4af38a83-6c1e-4c5b-86bb-a3c80e7f2a88",
+    "nomisId": "A8300BH",
+    "pncId": "RL82/587918O",
+    "deliusId": "X18227",
+    "prisonNumber": "J63405",
+    "homeOfficeReferenceNumber": "C5498641",
+    "firstName": "CEMO014 Mae",
+    "lastName": "Hoppe",
+    "alias": "Stejneger's Petrel",
+    "dateOfBirth": "2007-10-30T00:00:00Z",
+    "adultAtTimeOfInstallation": false,
+    "sex": "PREFER_NOT_TO_SAY",
+    "gender": "FEMALE",
+    "disabilities": "",
+    "otherDisability": "",
+    "noFixedAbode": false,
+    "language": "",
+    "interpreterRequired": false
+  },
+  "addresses": [
+    {
+      "versionId": "4af38a83-6c1e-4c5b-86bb-a3c80e7f2a88",
+      "addressType": "INSTALLATION",
+      "addressLine1": "3 Kelvin Close",
+      "addressLine2": "Birchwood",
+      "addressLine3": "Warrington",
+      "addressLine4": "",
+      "postcode": "WA3 7PB"
+    },
+    {
+      "versionId": "4af38a83-6c1e-4c5b-86bb-a3c80e7f2a88",
+      "addressType": "PRIMARY",
+      "addressLine1": "3 Kelvin Close",
+      "addressLine2": "Birchwood",
+      "addressLine3": "Warrington",
+      "addressLine4": "",
+      "postcode": "WA3 7PB"
+    }
+  ],
+  "deviceWearerResponsibleAdult": {
+    "versionId": "4af38a83-6c1e-4c5b-86bb-a3c80e7f2a88",
+    "relationship": "guardian",
+    "otherRelationshipDetails": "",
+    "fullName": "Hector Samuel Littel",
+    "contactNumber": "0161 496 0724"
+  },
+  "contactDetails": {
+    "versionId": "4af38a83-6c1e-4c5b-86bb-a3c80e7f2a88",
+    "contactNumber": "0131 496 0601"
+  },
+  "enforcementZoneConditions": [
+    {
+      "versionId": "4af38a83-6c1e-4c5b-86bb-a3c80e7f2a88",
+      "zoneType": "EXCLUSION",
+      "startDate": "2025-08-02T23:00:00Z",
+      "endDate": "2025-11-01T23:59:00Z",
+      "description": "Excluded from Football Grounds",
+      "duration": "90 days",
+      "fileName": "test.pdf",
+      "fileId": "046f068d-6db9-4125-ab22-e565a7163642",
+      "zoneId": 0
+    }
+  ],
+  "additionalDocuments": [],
+  "installationAndRisk": {
+    "versionId": "4af38a83-6c1e-4c5b-86bb-a3c80e7f2a88",
+    "offence": "",
+    "offenceAdditionalDetails": "",
+    "riskCategory": null,
+    "riskDetails": "No risk",
+    "mappaLevel": null,
+    "mappaCaseType": null
+  },
+  "monitoringConditions": {
+    "versionId": "4af38a83-6c1e-4c5b-86bb-a3c80e7f2a88",
+    "startDate": "2025-07-25T14:11:00Z",
+    "endDate": "2025-11-21T14:11:00Z",
+    "orderType": "POST_RELEASE",
+    "curfew": false,
+    "exclusionZone": true,
+    "trail": false,
+    "mandatoryAttendance": false,
+    "alcohol": false,
+    "conditionType": "LICENSE_CONDITION_OF_A_CUSTODIAL_ORDER",
+    "orderTypeDescription": null,
+    "sentenceType": "DTO",
+    "issp": "UNKNOWN",
+    "hdc": "UNKNOWN",
+    "prarr": "UNKNOWN",
+    "pilot": null
+  },
+  "monitoringConditionsTrail": null,
+  "mandatoryAttendanceConditions": [],
+  "monitoringConditionsAlcohol": null,
+  "curfewReleaseDateConditions": null,
+  "curfewConditions": null,
+  "curfewTimeTable": [],
+  "interestedParties": {
+    "versionId": "4af38a83-6c1e-4c5b-86bb-a3c80e7f2a88",
+    "notifyingOrganisation": "PRISON",
+    "notifyingOrganisationName": "FELTHAM_YOUNG_OFFENDER_INSTITUTION",
+    "notifyingOrganisationEmail": "",
+    "responsibleOfficerName": "Beatrice Hudson",
+    "responsibleOfficerPhoneNumber": "029 2018 0706",
+    "responsibleOrganisation": "YJS",
+    "responsibleOrganisationRegion": "LONDON",
+    "responsibleOrganisationEmail": "yjs@example.com"
+  },
+  "probationDeliveryUnit": null,
+  "variationDetails": null,
+  "installationLocation": {
+    "versionId": "4af38a83-6c1e-4c5b-86bb-a3c80e7f2a88",
+    "location": "INSTALLATION"
+  },
+  "installationAppointment": null
+}
