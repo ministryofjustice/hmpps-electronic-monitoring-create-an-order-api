@@ -36,33 +36,36 @@ class ScenarioTests : IntegrationTestBase() {
 
   @ParameterizedTest(name = "{0}")
   @MethodSource("scenarios")
-  fun `It should submit correctly to Serco`(scenarioName: String, fileSource: String) {
-    runPayloadTest(fileSource)
+  fun `It should submit correctly to Serco`(scenarioName: String, fileSource: String, variation: Boolean = false) {
+    runOrderTest(fileSource)
+    if (variation) {
+      runVariationTest(fileSource)
+    }
   }
 
   companion object {
     @JvmStatic
     fun scenarios() = listOf(
 //      Arguments.of("cemo001", "src/test/resources/json/scenarios/cemo001"),
-      Arguments.of("cemo002", "src/test/resources/json/scenarios/cemo002"),
+      Arguments.of("cemo002", "src/test/resources/json/scenarios/cemo002", false),
 //      Arguments.of("cemo003", "src/test/resources/json/scenarios/cemo003"),
 //      Arguments.of("cemo004", "src/test/resources/json/scenarios/cemo004"),
-      Arguments.of("cemo005", "src/test/resources/json/scenarios/cemo005"),
+      Arguments.of("cemo005", "src/test/resources/json/scenarios/cemo005", false),
 //      Arguments.of("cemo006", "src/test/resources/json/scenarios/cemo006"),
-      Arguments.of("cemo007", "src/test/resources/json/scenarios/cemo007"),
+      Arguments.of("cemo007", "src/test/resources/json/scenarios/cemo007", false),
 //      Arguments.of("cemo008", "src/test/resources/json/scenarios/cemo008"),
 //      Arguments.of("cemo009", "src/test/resources/json/scenarios/cemo009"),
 //      Arguments.of("cemo010", "src/test/resources/json/scenarios/cemo010"),
-      Arguments.of("cemo011", "src/test/resources/json/scenarios/cemo011"),
-      Arguments.of("cemo012", "src/test/resources/json/scenarios/cemo012"),
+      Arguments.of("cemo011", "src/test/resources/json/scenarios/cemo011", false),
+      Arguments.of("cemo012", "src/test/resources/json/scenarios/cemo012", false),
 //      Arguments.of("cemo013", "src/test/resources/json/scenarios/cemo013"),
-      Arguments.of("cemo014", "src/test/resources/json/scenarios/cemo014"),
+      Arguments.of("cemo014", "src/test/resources/json/scenarios/cemo014", false),
 //      Arguments.of("cemo015", "src/test/resources/json/scenarios/cemo015"),
-      Arguments.of("cemo016", "src/test/resources/json/scenarios/cemo016"),
-      Arguments.of("cemo017", "src/test/resources/json/scenarios/cemo017"),
+      Arguments.of("cemo016", "src/test/resources/json/scenarios/cemo016", false),
+      Arguments.of("cemo017", "src/test/resources/json/scenarios/cemo017", false),
 //      Arguments.of("cemo018", "src/test/resources/json/scenarios/cemo018"),
 //      Arguments.of("cemo019", "src/test/resources/json/scenarios/cemo019"),
-//      Arguments.of("cemo020", "src/test/resources/json/scenarios/cemo020"),
+      Arguments.of("cemo020", "src/test/resources/json/scenarios/cemo020", true),
 //      Arguments.of("cemo021", "src/test/resources/json/scenarios/cemo021"),
 //      Arguments.of("cemo022", "src/test/resources/json/scenarios/cemo022"),
 //      Arguments.of("cemo023", "src/test/resources/json/scenarios/cemo023"),
@@ -77,7 +80,7 @@ class ScenarioTests : IntegrationTestBase() {
 
   fun String.removeWhitespaceAndNewlines(): String = this.replace("(\"[^\"]*\")|\\s".toRegex(), "\$1")
 
-  fun runPayloadTest(rootFilePath: String) {
+  fun runOrderTest(rootFilePath: String) {
     sercoApi.stubCreateDeviceWearer(
       HttpStatus.OK,
       FmsResponse(result = listOf(FmsResult(message = "", id = "MockDeviceWearerId"))),
@@ -147,5 +150,77 @@ class ScenarioTests : IntegrationTestBase() {
     assertThat(
       submitResult.monitoringOrderResult.payload,
     ).isEqualTo(expectedOrderJson.removeWhitespaceAndNewlines())
+  }
+
+  fun runVariationTest(rootFilePath: String) {
+    sercoApi.stubUpdateDeviceWearer(
+      HttpStatus.OK,
+      FmsResponse(result = listOf(FmsResult(message = "", id = "MockDeviceWearerId"))),
+    )
+    sercoApi.stubUpdateMonitoringOrder(
+      HttpStatus.OK,
+      FmsResponse(result = listOf(FmsResult(message = "", id = "MockMonitoringOrderId"))),
+    )
+
+    // Create variation from JSON and save to DB
+    val rawOrder = Files.readString(Paths.get("$rootFilePath/variation.json"))
+    val objectMapper = ObjectMapper().findAndRegisterModules()
+    val variation: Order = objectMapper.readValue(rawOrder)
+
+    repo.save(variation)
+
+    if (variation.additionalDocuments.isNotEmpty()) {
+      sercoApi.stubSubmitAttachment(
+        HttpStatus.OK,
+        FmsAttachmentResponse(
+          result = FmsAttachmentResult(
+            fileName = variation.additionalDocuments[0].fileName!!,
+            tableName = "x_serg2_ems_csm_sr_mo_new",
+            sysId = "MockSysId",
+            tableSysId = "MockDeviceWearerId",
+          ),
+        ),
+      )
+      documentApi.stubGetDocument(variation.additionalDocuments.first().id.toString())
+    }
+
+    if (variation.enforcementZoneConditions.isNotEmpty()) {
+      sercoApi.stubSubmitAttachment(
+        HttpStatus.OK,
+        FmsAttachmentResponse(
+          result = FmsAttachmentResult(
+            fileName = variation.enforcementZoneConditions[0].fileName!!,
+            tableName = "x_serg2_ems_csm_sr_mo_new",
+            sysId = "MockSysId",
+            tableSysId = "MockDeviceWearerId",
+          ),
+        ),
+      )
+      documentApi.stubGetDocument(variation.enforcementZoneConditions[0].fileId.toString())
+    }
+
+    // Submit order
+    webTestClient.post()
+      .uri("/api/orders/${variation.id}/submit")
+      .headers(setAuthorisation())
+      .exchange()
+      .expectStatus()
+      .isOk
+
+    val submitResult = fmsResultRepository.findAll().first()
+    assertThat(submitResult).isNotNull
+
+    // Read expected JSON
+    val expectedDeviceWearerJson = Files.readString(Paths.get("$rootFilePath/expected_updated_device_wearer.json"))
+    val expectedVariationJson = Files.readString(Paths.get("$rootFilePath/expected_variation.json"))
+      .replace("{expectedOderId}", submitResult.orderId.toString())
+
+    // Assert
+    assertThat(
+      submitResult!!.deviceWearerResult.payload,
+    ).isEqualTo(expectedDeviceWearerJson.removeWhitespaceAndNewlines())
+    assertThat(
+      submitResult.monitoringOrderResult.payload,
+    ).isEqualTo(expectedVariationJson.removeWhitespaceAndNewlines())
   }
 }
