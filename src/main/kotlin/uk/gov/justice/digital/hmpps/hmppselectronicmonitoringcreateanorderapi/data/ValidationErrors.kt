@@ -67,6 +67,7 @@ object ValidationErrors {
     const val END_DATE_MUST_BE_IN_FUTURE: String = "Exclusion zone end date must be in the future"
     const val START_DATE_REQUIRED: String = "Exclusion zone start date is required"
     const val TYPE_REQUIRED: String = "Exclusion Zone type is required"
+    const val INVALID_MAP_FILE_EXTENSION: String = "Select a PDF, JPEG or JPG"
   }
 
   object InterestedParties {
@@ -154,5 +155,10 @@ object ValidationErrors {
   object InstallationAppointment {
     const val PLACE_NAME_REQUIRED: String = "Enter name of the place where installation takes place"
     const val APPOINT_DATE_REQUIRED: String = "Enter date of installation"
+  }
+
+  object AdditionalDocuments {
+    const val INVALID_LICENSE_FILE_EXTENSION: String = "Select a PDF or Word document"
+    const val INVALID_PHOTO_ID_FILE_EXTENSION: String = "Select a PDF, PNG, JPEG or JPG"
   }
 }

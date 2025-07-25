@@ -341,8 +341,6 @@ class EnforcementZoneControllerTest : IntegrationTestBase() {
   @DisplayName("POST /api/orders/{orderId}/enforcementZone/{zoneId}/attachment")
   inner class UploadAttachment {
     @Suppress("ktlint:standard:max-line-length")
-    private val validationMessage = "Validation failure: Unsupported or missing file type txt. Supported file types: pdf, jpeg, jpg"
-
     @Test
     fun `it should return a validation error for an invalid file extension`() {
       val order = createOrder()
@@ -361,8 +359,8 @@ class EnforcementZoneControllerTest : IntegrationTestBase() {
       Assertions.assertThat(result.responseBody!!).contains(
         ErrorResponse(
           status = BAD_REQUEST,
-          developerMessage = "Unsupported or missing file type txt. Supported file types: pdf, jpeg, jpg",
-          userMessage = validationMessage,
+          developerMessage = "Validation failure: Select a PDF, JPEG or JPG",
+          userMessage = "Select a PDF, JPEG or JPG",
         ),
       )
     }

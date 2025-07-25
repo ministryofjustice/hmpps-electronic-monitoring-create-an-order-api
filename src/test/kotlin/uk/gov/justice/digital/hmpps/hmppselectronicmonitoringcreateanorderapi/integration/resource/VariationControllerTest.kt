@@ -263,8 +263,8 @@ class VariationControllerTest : IntegrationTestBase() {
       Assertions.assertThat(result.responseBody!!).contains(
         ErrorResponse(
           status = BAD_REQUEST,
-          developerMessage = "Variation type $variationType is obsolete",
-          userMessage = "Validation failure: Variation type $variationType is obsolete",
+          developerMessage = "Validation failure: Variation type $variationType is obsolete",
+          userMessage = "Variation type $variationType is obsolete",
         ),
       )
     }

@@ -15,13 +15,7 @@ object FileUploadValidator {
 
     if (!StringUtils.hasLength(extension) || !config.allowedExtensions.contains(extension)
     ) {
-      throw ValidationException(
-        String.format(
-          "Unsupported or missing file type %s. Supported file types: %s",
-          extension,
-          config.allowedExtensions.joinToString(),
-        ),
-      )
+      throw ValidationException(config.invalidExtensionMessage)
     }
 
     if (multipartFile.size > maxSizeInBytes) {
