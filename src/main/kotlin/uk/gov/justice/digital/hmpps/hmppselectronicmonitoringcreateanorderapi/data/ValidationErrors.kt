@@ -73,6 +73,14 @@ object ValidationErrors {
     const val INVALID_MAP_FILE_EXTENSION: String = "Select a PDF, JPEG or JPG"
   }
 
+  object IdentityNumbers {
+    const val NOMIS_ID_MAX_LENGTH: String = "Nomis ID must be 200 characters or less"
+    const val PNC_ID_MAX_LENGTH: String = "PNC ID must be 200 characters or less"
+    const val DELIUS_ID_MAX_LENGTH: String = "Delius ID must be 200 characters or less"
+    const val PRISON_NUMBER_MAX_LENGTH: String = "Prison number must be 200 characters or less"
+    const val HOME_OFFICE_REFERENCE_NUMBER_MAX_LENGTH: String = "Nomis ID must be 200 characters or less"
+  }
+
   object InterestedParties {
     const val NOTIFYING_ORGANISATION_REQUIRED: String = "Select the organisation you are part of"
     const val NOTIFYING_ORGANISATION_NAME_REQUIRED: String = "Select the name of the organisation you are part of"
