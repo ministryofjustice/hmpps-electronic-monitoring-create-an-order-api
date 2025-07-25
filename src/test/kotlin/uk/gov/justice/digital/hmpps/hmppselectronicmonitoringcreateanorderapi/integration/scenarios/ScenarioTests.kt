@@ -69,12 +69,10 @@ class ScenarioTests : IntegrationTestBase() {
 //      Arguments.of("cemo021", "src/test/resources/json/scenarios/cemo021"),
       Arguments.of("cemo022", "src/test/resources/json/scenarios/cemo022", true),
 //      Arguments.of("cemo023", "src/test/resources/json/scenarios/cemo023"),
-//      Arguments.of("cemo024", "src/test/resources/json/scenarios/cemo024"),
-//      Arguments.of("cemo025", "src/test/resources/json/scenarios/cemo025"),
-//      Arguments.of("cemo026", "src/test/resources/json/scenarios/cemo026"),
-//      Arguments.of("cemo027", "src/test/resources/json/scenarios/cemo027"),
-//      Arguments.of("cemo028", "src/test/resources/json/scenarios/cemo028"),
-//      Arguments.of("cemo029", "src/test/resources/json/scenarios/cemo029"),
+      Arguments.of("cemo024", "src/test/resources/json/scenarios/cemo024", true),
+//      Arguments.of("cemo034", "src/test/resources/json/scenarios/cemo034", true),
+//      Arguments.of("cemo035", "src/test/resources/json/scenarios/cemo035", true),
+      Arguments.of("cemo036", "src/test/resources/json/scenarios/cemo036", false),
     )
   }
 

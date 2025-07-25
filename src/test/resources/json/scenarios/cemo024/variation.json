@@ -1,0 +1,157 @@
+{
+  "id": "ddb45f55-17bc-4cd9-90e5-e835248a3662",
+  "versions": [
+    {
+      "id": "d5da32c2-1c67-472e-90bb-eeb18180532b",
+      "orderId": "ddb45f55-17bc-4cd9-90e5-e835248a3662",
+      "versionId": 0,
+      "username": "AUTH_ADM",
+      "status": "IN_PROGRESS",
+      "dataDictionaryVersion": "DDV5",
+      "type": "VARIATION"
+    }
+  ],
+  "status": "IN_PROGRESS",
+  "deviceWearer": {
+    "versionId": "d5da32c2-1c67-472e-90bb-eeb18180532b",
+    "nomisId": "R1412HM",
+    "pncId": "IW58/588465K",
+    "deliusId": "X05903",
+    "prisonNumber": "P46277",
+    "homeOfficeReferenceNumber": "C6125516",
+    "firstName": "CEMO024 Arya",
+    "lastName": "Reinger",
+    "alias": "Black-backed Woodpecker",
+    "dateOfBirth": "1991-01-16T00:00:00Z",
+    "adultAtTimeOfInstallation": true,
+    "sex": "UNKNOWN",
+    "gender": "NON_BINARY",
+    "disabilities": "",
+    "otherDisability": "",
+    "noFixedAbode": false,
+    "language": "",
+    "interpreterRequired": false
+  },
+  "addresses": [
+    {
+      "versionId": "d5da32c2-1c67-472e-90bb-eeb18180532b",
+      "addressType": "PRIMARY",
+      "addressLine1": "10 downing street",
+      "addressLine2": "",
+      "addressLine3": "London",
+      "addressLine4": "ENGLAND",
+      "postcode": "SW1A 2AA"
+    }
+  ],
+  "deviceWearerResponsibleAdult": null,
+  "contactDetails": {
+    "versionId": "d5da32c2-1c67-472e-90bb-eeb18180532b",
+    "contactNumber": "029 2018 0747"
+  },
+  "enforcementZoneConditions": [],
+  "additionalDocuments": [],
+  "installationAndRisk": {
+    "versionId": "d5da32c2-1c67-472e-90bb-eeb18180532b",
+    "offence": "",
+    "offenceAdditionalDetails": "",
+    "riskCategory": null,
+    "riskDetails": "No risk",
+    "mappaLevel": null,
+    "mappaCaseType": null
+  },
+  "monitoringConditions": {
+    "versionId": "d5da32c2-1c67-472e-90bb-eeb18180532b",
+    "startDate": "2025-08-04T09:54:00Z",
+    "endDate": "2025-09-03T09:54:00Z",
+    "orderType": "POST_RELEASE",
+    "curfew": true,
+    "exclusionZone": false,
+    "trail": false,
+    "mandatoryAttendance": false,
+    "alcohol": false,
+    "conditionType": "POST_SENTENCE_SUPERVISION_REQUIREMENT",
+    "orderTypeDescription": null,
+    "sentenceType": "LIFE_SENTENCE",
+    "issp": "UNKNOWN",
+    "hdc": "YES",
+    "prarr": "UNKNOWN",
+    "pilot": null
+  },
+  "monitoringConditionsTrail": null,
+  "mandatoryAttendanceConditions": [],
+  "monitoringConditionsAlcohol": null,
+  "curfewReleaseDateConditions": {
+    "versionId": "d5da32c2-1c67-472e-90bb-eeb18180532b",
+    "curfewAddress": "PRIMARY",
+    "releaseDate": "2025-07-26T00:00:00Z",
+    "startTime": "19:00:00",
+    "endTime": "07:00:00"
+  },
+  "curfewConditions": {
+    "versionId": "d5da32c2-1c67-472e-90bb-eeb18180532b",
+    "startDate": "2025-08-13T23:00:00Z",
+    "endDate": "2025-08-29T22:59:00Z",
+    "curfewAddress": "PRIMARY",
+    "curfewAdditionalDetails": ""
+  },
+  "curfewTimeTable": [
+    {
+      "versionId": "d5da32c2-1c67-472e-90bb-eeb18180532b",
+      "dayOfWeek": "MONDAY",
+      "startTime": "19:00:00",
+      "endTime": "07:00:00",
+      "curfewAddress": "PRIMARY_ADDRESS"
+    },
+    {
+      "versionId": "d5da32c2-1c67-472e-90bb-eeb18180532b",
+      "dayOfWeek": "TUESDAY",
+      "startTime": "19:00:00",
+      "endTime": "07:00:00",
+      "curfewAddress": "PRIMARY_ADDRESS"
+    },
+    {
+      "versionId": "d5da32c2-1c67-472e-90bb-eeb18180532b",
+      "dayOfWeek": "WEDNESDAY",
+      "startTime": "19:00:00",
+      "endTime": "07:00:00",
+      "curfewAddress": "PRIMARY_ADDRESS"
+    },
+    {
+      "versionId": "d5da32c2-1c67-472e-90bb-eeb18180532b",
+      "dayOfWeek": "THURSDAY",
+      "startTime": "19:00:00",
+      "endTime": "07:00:00",
+      "curfewAddress": "PRIMARY_ADDRESS"
+    },
+    {
+      "versionId": "d5da32c2-1c67-472e-90bb-eeb18180532b",
+      "dayOfWeek": "FRIDAY",
+      "startTime": "19:00:00",
+      "endTime": "07:00:00",
+      "curfewAddress": "PRIMARY_ADDRESS"
+    }
+  ],
+  "interestedParties": {
+    "versionId": "d5da32c2-1c67-472e-90bb-eeb18180532b",
+    "notifyingOrganisation": "PRISON",
+    "notifyingOrganisationName": "ELMLEY_PRISON",
+    "notifyingOrganisationEmail": "",
+    "responsibleOfficerName": "Elsa Little",
+    "responsibleOfficerPhoneNumber": "029 2018 0725",
+    "responsibleOrganisation": "PROBATION",
+    "responsibleOrganisationRegion": "KENT_SURREY_SUSSEX",
+    "responsibleOrganisationEmail": "probation@example.com"
+  },
+  "probationDeliveryUnit": {
+    "versionId": "d5da32c2-1c67-472e-90bb-eeb18180532b",
+    "unit": "SURREY"
+  },
+  "variationDetails": {
+    "versionId": "d5da32c2-1c67-472e-90bb-eeb18180532b",
+    "variationType": "CHANGE_TO_ADDRESS",
+    "variationDate": "2025-08-14T00:00:00Z",
+    "variationDetails": "Change to curfew hours"
+  },
+  "installationLocation": null,
+  "installationAppointment": null
+}
