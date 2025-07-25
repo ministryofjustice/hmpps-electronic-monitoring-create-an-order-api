@@ -126,6 +126,7 @@ object ValidationErrors {
     const val FIRST_NAME_REQUIRED: String = "Enter responsible adult's first name"
     const val LAST_NAME_REQUIRED: String = "Enter responsible adult's last name"
     const val FULL_NAME_REQUIRED: String = "Enter responsible adult's full name"
+    const val FULL_NAME_MAX_LENGTH: String = "Full name must be 200 characters or less"
     const val RELATIONSHIP_REQUIRED: String = "Select their relationship to the device wearer"
     const val RELATIONSHIP_DETAILS_REQUIRED: String = "Enter details of their relationship"
   }
