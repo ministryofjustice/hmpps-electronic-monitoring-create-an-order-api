@@ -143,7 +143,7 @@ class ScenarioTests : IntegrationTestBase() {
 
     // Assert
     assertThat(
-      submitResult!!.deviceWearerResult.payload,
+      submitResult.deviceWearerResult.payload,
     ).isEqualTo(expectedDeviceWearerJson.removeWhitespaceAndNewlines())
     assertThat(
       submitResult.monitoringOrderResult.payload,
@@ -215,7 +215,7 @@ class ScenarioTests : IntegrationTestBase() {
 
     // Assert
     assertThat(
-      submitResult!!.deviceWearerResult.payload,
+      submitResult.deviceWearerResult.payload,
     ).isEqualTo(expectedDeviceWearerJson.removeWhitespaceAndNewlines())
     assertThat(
       submitResult.monitoringOrderResult.payload,
