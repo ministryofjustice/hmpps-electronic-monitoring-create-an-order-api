@@ -37,6 +37,7 @@ enum class PrisonDDv5(val value: String) {
   FELTHAM_YOUNG_OFFENDER_INSTITUTION("Feltham Young Offender Institution"),
   FIVE_WELLS_PRISON("Five Wells Prison"),
   FORD_PRISON("Ford Prison"),
+  FOSSE_WAY_PRISON("Fosse Way Prison"),
   FOREST_BANK_PRISON("Forest Bank Prison"),
   FOSTON_HALL_PRISON_AND_YOUNG_OFFENDER_INSTITUTION("Foston Hall Prison and Young Offender Institution"),
   FRANKLAND_PRISON("Frankland Prison"),
