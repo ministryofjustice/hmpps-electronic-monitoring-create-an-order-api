@@ -1624,13 +1624,53 @@ class OrderControllerTest : IntegrationTestBase() {
 
     @Test
     fun `It should update order with device wearer id, monitoring id & order status, and return 200 for a variation`() {
-      val order = createAndPersistReadyToSubmitOrder(noFixedAddress = false, requestType = RequestType.VARIATION)
+      val orderId = UUID.randomUUID()
+      val versionId = UUID.randomUUID()
+      val order = createAndPersistReadyToSubmitOrder(
+        id = orderId,
+        versionId = versionId,
+        noFixedAddress = false,
+        requestType = RequestType.VARIATION,
+        documents = mutableListOf(
+          AdditionalDocument(
+            id = UUID.fromString("550e8400-e29b-41d4-a716-446655440000"),
+            versionId = versionId,
+            fileType = DocumentType.LICENCE,
+            fileName = "mockLicense.jpg",
+          ),
+        ),
+      )
       sercoAuthApi.stubGrantToken()
 
       sercoApi.stubUpdateDeviceWearer(
         HttpStatus.OK,
         FmsResponse(result = listOf(FmsResult(message = "", id = "MockDeviceWearerId"))),
       )
+
+      sercoApi.stubSubmitAttachment(
+        HttpStatus.OK,
+        FmsAttachmentResponse(
+          result = FmsAttachmentResult(
+            fileName = order.additionalDocuments[0].fileName!!,
+            tableName = "x_serg2_ems_csm_sr_mo_new",
+            sysId = "MockSysId",
+            tableSysId = "MockDeviceWearerId",
+          ),
+        ),
+      )
+      sercoApi.stubSubmitAttachment(
+        HttpStatus.OK,
+        FmsAttachmentResponse(
+          result = FmsAttachmentResult(
+            fileName = order.enforcementZoneConditions[0].fileName!!,
+            tableName = "x_serg2_ems_csm_sr_mo_new",
+            sysId = "MockSysId",
+            tableSysId = "MockDeviceWearerId",
+          ),
+        ),
+      )
+      documentApi.stubGetDocument(order.additionalDocuments[0].id.toString())
+      documentApi.stubGetDocument(order.enforcementZoneConditions[0].fileId.toString())
       sercoApi.stubUpdateMonitoringOrder(
         HttpStatus.OK,
         FmsResponse(result = listOf(FmsResult(message = "", id = "MockMonitoringOrderId"))),
@@ -1923,6 +1963,29 @@ class OrderControllerTest : IntegrationTestBase() {
       val updatedOrder = getOrder(order.id)
       assertThat(updatedOrder.fmsResultId).isEqualTo(submitResult.id)
       assertThat(updatedOrder.status).isEqualTo(OrderStatus.SUBMITTED)
+
+      assertThat(submitResult.attachmentResults[0])
+        .usingRecursiveComparison()
+        .ignoringFields("id")
+        .isEqualTo(
+          FmsAttachmentSubmissionResult(
+            status = SubmissionStatus.SUCCESS,
+            sysId = "MockSysId",
+            fileType = order.additionalDocuments[0].fileType.toString(),
+            attachmentId = order.additionalDocuments[0].id.toString(),
+          ),
+        )
+      assertThat(submitResult.attachmentResults[1])
+        .usingRecursiveComparison()
+        .ignoringFields("id")
+        .isEqualTo(
+          FmsAttachmentSubmissionResult(
+            status = SubmissionStatus.SUCCESS,
+            sysId = "MockSysId",
+            fileType = DocumentType.ENFORCEMENT_ZONE_MAP.toString(),
+            attachmentId = order.enforcementZoneConditions[0].fileId.toString(),
+          ),
+        )
     }
 
     @Test
