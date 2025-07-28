@@ -1,12 +1,16 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.strategy
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.DocumentApiClient
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.FmsClient
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AdditionalDocument
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Result
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DocumentType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.SubmissionStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.DeviceWearer
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsAttachmentSubmissionResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsDeviceWearerSubmissionResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsMonitoringOrderSubmissionResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsSubmissionResult
@@ -14,8 +18,11 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.MonitoringOrder
 import java.util.*
 
-class FmsVariationSubmissionStrategy(objectMapper: ObjectMapper, val fmsClient: FmsClient) :
-  FmsSubmissionStrategyBase(objectMapper) {
+class FmsVariationSubmissionStrategy(
+  objectMapper: ObjectMapper,
+  val fmsClient: FmsClient,
+  val documentApiClient: DocumentApiClient,
+) : FmsSubmissionStrategyBase(objectMapper) {
 
   private fun submitUpdateDeviceWearerRequest(deviceWearer: DeviceWearer, orderId: UUID): Result<String> = try {
     Result(
@@ -41,6 +48,53 @@ class FmsVariationSubmissionStrategy(objectMapper: ObjectMapper, val fmsClient: 
         error = Exception("Failed to submit FMS Monitoring Order", e),
       )
     }
+  private fun createAttachment(document: AdditionalDocument, deviceWearerId: String): FmsAttachmentSubmissionResult {
+    try {
+      val fileId = document.id.toString()
+      val fileName = document.fileName
+      val fileType = document.fileType.toString()
+      val fileStream = this.documentApiClient.getDocument(fileId)?.body?.blockFirst()
+      val result = fmsClient.createAttachment(
+        fileName = fileName!!,
+        caseId = deviceWearerId,
+        file = fileStream!!,
+        documentType = fileType,
+      )
+
+      return FmsAttachmentSubmissionResult(
+        status = SubmissionStatus.SUCCESS,
+        sysId = result.result.sysId,
+        fileType = fileType,
+        attachmentId = fileId,
+      )
+    } catch (e: Exception) {
+      return FmsAttachmentSubmissionResult(
+        status = SubmissionStatus.FAILURE,
+        error = Exception("Failed to submit FMS Attachment", e).toString(),
+      )
+    }
+  }
+
+  private fun createAttachments(order: Order, deviceWearerId: String): List<FmsAttachmentSubmissionResult> {
+    val documents = order.additionalDocuments.toMutableList()
+
+    if (order.enforcementZoneConditions.isNotEmpty()) {
+      documents.addAll(
+        order.enforcementZoneConditions.filter {
+          it.fileId !== null && it.fileName !== null
+        }.map {
+          AdditionalDocument(
+            id = it.fileId!!,
+            versionId = order.getCurrentVersion().id,
+            fileType = DocumentType.ENFORCEMENT_ZONE_MAP,
+            fileName = it.fileName!!,
+          )
+        },
+      )
+    }
+
+    return documents.map { this.createAttachment(it, deviceWearerId) }
+  }
 
   private fun updateDeviceWearer(order: Order): FmsDeviceWearerSubmissionResult {
     val deviceWearerResult = this.getDeviceWearer(order)
@@ -131,11 +185,24 @@ class FmsVariationSubmissionStrategy(objectMapper: ObjectMapper, val fmsClient: 
 
     val createMonitoringOrderResult = this.updateMonitoringOrder(order, deviceWearerId)
 
+    if (createMonitoringOrderResult.status == SubmissionStatus.FAILURE) {
+      return FmsSubmissionResult(
+        orderId = order.id,
+        strategy = FmsSubmissionStrategyKind.ORDER,
+        deviceWearerResult = createDeviceWearerResult,
+        monitoringOrderResult = createMonitoringOrderResult,
+        orderSource = orderSource,
+      )
+    }
+
+    val createAttachmentsResult = this.createAttachments(order, deviceWearerId)
+
     return FmsSubmissionResult(
       orderId = order.id,
       strategy = FmsSubmissionStrategyKind.VARIATION,
       deviceWearerResult = createDeviceWearerResult,
       monitoringOrderResult = createMonitoringOrderResult,
+      attachmentResults = createAttachmentsResult.toMutableList(),
       orderSource = orderSource,
     )
   }
