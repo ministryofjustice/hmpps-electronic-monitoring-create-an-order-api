@@ -88,42 +88,11 @@ class ScenarioTests : IntegrationTestBase() {
       FmsResponse(result = listOf(FmsResult(message = "", id = "MockMonitoringOrderId"))),
     )
 
-    // Create order from JSON and save to DB
-    val rawOrder = Files.readString(Paths.get("$rootFilePath/order.json"))
-    val objectMapper = ObjectMapper().findAndRegisterModules()
-    val order: Order = objectMapper.readValue(rawOrder)
+    val order = getOrderFromFile("$rootFilePath/order.json")
 
     repo.save(order)
 
-    if (order.additionalDocuments.isNotEmpty()) {
-      sercoApi.stubSubmitAttachment(
-        HttpStatus.OK,
-        FmsAttachmentResponse(
-          result = FmsAttachmentResult(
-            fileName = order.additionalDocuments[0].fileName!!,
-            tableName = "x_serg2_ems_csm_sr_mo_new",
-            sysId = "MockSysId",
-            tableSysId = "MockDeviceWearerId",
-          ),
-        ),
-      )
-      documentApi.stubGetDocument(order.additionalDocuments.first().id.toString())
-    }
-
-    if (order.enforcementZoneConditions.isNotEmpty()) {
-      sercoApi.stubSubmitAttachment(
-        HttpStatus.OK,
-        FmsAttachmentResponse(
-          result = FmsAttachmentResult(
-            fileName = order.enforcementZoneConditions[0].fileName!!,
-            tableName = "x_serg2_ems_csm_sr_mo_new",
-            sysId = "MockSysId",
-            tableSysId = "MockDeviceWearerId",
-          ),
-        ),
-      )
-      documentApi.stubGetDocument(order.enforcementZoneConditions[0].fileId.toString())
-    }
+    stubAttachments(order)
 
     // Submit order
     webTestClient.post()
@@ -160,42 +129,11 @@ class ScenarioTests : IntegrationTestBase() {
       FmsResponse(result = listOf(FmsResult(message = "", id = "MockMonitoringOrderId"))),
     )
 
-    // Create variation from JSON and save to DB
-    val rawOrder = Files.readString(Paths.get("$rootFilePath/variation.json"))
-    val objectMapper = ObjectMapper().findAndRegisterModules()
-    val variation: Order = objectMapper.readValue(rawOrder)
+    val variation: Order = getOrderFromFile("$rootFilePath/variation.json")
 
     repo.save(variation)
 
-    if (variation.additionalDocuments.isNotEmpty()) {
-      sercoApi.stubSubmitAttachment(
-        HttpStatus.OK,
-        FmsAttachmentResponse(
-          result = FmsAttachmentResult(
-            fileName = variation.additionalDocuments[0].fileName!!,
-            tableName = "x_serg2_ems_csm_sr_mo_new",
-            sysId = "MockSysId",
-            tableSysId = "MockDeviceWearerId",
-          ),
-        ),
-      )
-      documentApi.stubGetDocument(variation.additionalDocuments.first().id.toString())
-    }
-
-    if (variation.enforcementZoneConditions.isNotEmpty()) {
-      sercoApi.stubSubmitAttachment(
-        HttpStatus.OK,
-        FmsAttachmentResponse(
-          result = FmsAttachmentResult(
-            fileName = variation.enforcementZoneConditions[0].fileName!!,
-            tableName = "x_serg2_ems_csm_sr_mo_new",
-            sysId = "MockSysId",
-            tableSysId = "MockDeviceWearerId",
-          ),
-        ),
-      )
-      documentApi.stubGetDocument(variation.enforcementZoneConditions[0].fileId.toString())
-    }
+    stubAttachments(variation)
 
     // Submit order
     webTestClient.post()
@@ -220,5 +158,44 @@ class ScenarioTests : IntegrationTestBase() {
     assertThat(
       submitResult.monitoringOrderResult.payload,
     ).isEqualTo(expectedVariationJson.removeWhitespaceAndNewlines())
+  }
+
+  private fun getOrderFromFile(filePath: String): Order {
+    // Create variation from JSON and save to DB
+    val rawOrder = Files.readString(Paths.get(filePath))
+    val objectMapper = ObjectMapper().findAndRegisterModules()
+    return objectMapper.readValue(rawOrder)
+  }
+
+  private fun stubAttachments(order: Order) {
+    if (order.additionalDocuments.isNotEmpty()) {
+      sercoApi.stubSubmitAttachment(
+        HttpStatus.OK,
+        FmsAttachmentResponse(
+          result = FmsAttachmentResult(
+            fileName = order.additionalDocuments[0].fileName!!,
+            tableName = "x_serg2_ems_csm_sr_mo_new",
+            sysId = "MockSysId",
+            tableSysId = "MockDeviceWearerId",
+          ),
+        ),
+      )
+      documentApi.stubGetDocument(order.additionalDocuments.first().id.toString())
+    }
+
+    if (order.enforcementZoneConditions.isNotEmpty()) {
+      sercoApi.stubSubmitAttachment(
+        HttpStatus.OK,
+        FmsAttachmentResponse(
+          result = FmsAttachmentResult(
+            fileName = order.enforcementZoneConditions[0].fileName!!,
+            tableName = "x_serg2_ems_csm_sr_mo_new",
+            sysId = "MockSysId",
+            tableSysId = "MockDeviceWearerId",
+          ),
+        ),
+      )
+      documentApi.stubGetDocument(order.enforcementZoneConditions[0].fileId.toString())
+    }
   }
 }
