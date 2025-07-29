@@ -1,0 +1,178 @@
+{
+  "id": "5ebeca90-9153-4e8b-901f-1e197e884810",
+  "status": "IN_PROGRESS",
+  "versions": [
+    {
+      "id": "40412e7e-2128-4c21-8994-7973088cf766",
+      "orderId": "5ebeca90-9153-4e8b-901f-1e197e884810",
+      "versionId": 0,
+      "username": "AUTH_ADM",
+      "status": "IN_PROGRESS",
+      "dataDictionaryVersion": "DDV5",
+      "type": "VARIATION"
+    }
+  ],
+  "deviceWearer": {
+    "versionId": "40412e7e-2128-4c21-8994-7973088cf766",
+    "nomisId": "J8585XY",
+    "pncId": "SV80/554489H",
+    "deliusId": "X50716",
+    "prisonNumber": "D53038",
+    "homeOfficeReferenceNumber": "C1851847",
+    "firstName": "CEMO020 Candice",
+    "lastName": "Kuphal",
+    "alias": "Common Goldeneye",
+    "dateOfBirth": "1976-10-14T00:00:00Z",
+    "adultAtTimeOfInstallation": true,
+    "sex": "PREFER_NOT_TO_SAY",
+    "gender": "PREFER_TO_SELF_DESCRIBE",
+    "noFixedAbode": false,
+    "language": "",
+    "interpreterRequired": false
+  },
+  "addresses": [
+    {
+      "versionId": "40412e7e-2128-4c21-8994-7973088cf766",
+      "addressType": "PRIMARY",
+      "addressLine1": "3 Kelvin Close",
+      "addressLine2": "Birchwood",
+      "addressLine3": "Warrington",
+      "addressLine4": "",
+      "postcode": "WA3 7PB"
+    },
+    {
+      "versionId": "40412e7e-2128-4c21-8994-7973088cf766",
+      "addressType": "SECONDARY",
+      "addressLine1": "2 Dunlin Close",
+      "addressLine2": "Bolton",
+      "addressLine3": "Greater Manchester",
+      "addressLine4": "",
+      "postcode": "BL2 1EW"
+    }
+  ],
+  "deviceWearerResponsibleAdult": null,
+  "contactDetails": {
+    "versionId": "40412e7e-2128-4c21-8994-7973088cf766",
+    "contactNumber": "0121 496 0773"
+  },
+  "enforcementZoneConditions": [],
+  "additionalDocuments": [],
+  "installationAndRisk": {
+    "versionId": "40412e7e-2128-4c21-8994-7973088cf766",
+    "offence": "",
+    "offenceAdditionalDetails": "",
+    "riskCategory": null,
+    "riskDetails": "No risk",
+    "mappaLevel": null,
+    "mappaCaseType": null
+  },
+  "monitoringConditions": {
+    "versionId": "40412e7e-2128-4c21-8994-7973088cf766",
+    "startDate": "2025-08-04T08:16:00Z",
+    "endDate": "2025-09-03T08:16:00Z",
+    "orderType": "PRE_TRIAL",
+    "curfew": true,
+    "exclusionZone": false,
+    "trail": false,
+    "mandatoryAttendance": false,
+    "alcohol": false,
+    "conditionType": "LICENSE_CONDITION_OF_A_CUSTODIAL_ORDER",
+    "orderTypeDescription": null,
+    "sentenceType": "LIFE_SENTENCE",
+    "issp": "UNKNOWN",
+    "hdc": "YES",
+    "prarr": "UNKNOWN",
+    "pilot": null
+  },
+  "monitoringConditionsTrail": null,
+  "mandatoryAttendanceConditions": [],
+  "monitoringConditionsAlcohol": null,
+  "curfewReleaseDateConditions": {
+    "versionId": "40412e7e-2128-4c21-8994-7973088cf766",
+    "curfewAddress": "PRIMARY",
+    "releaseDate": "2025-07-26T00:00:00Z",
+    "startTime": "19:00:00",
+    "endTime": "03:00:00"
+  },
+  "curfewConditions": {
+    "versionId": "40412e7e-2128-4c21-8994-7973088cf766",
+    "startDate": "2025-08-13T23:00:00Z",
+    "endDate": "2025-08-29T22:59:00Z",
+    "curfewAddress": "PRIMARY,SECONDARY",
+    "curfewAdditionalDetails": ""
+  },
+  "curfewTimeTable": [
+    {
+      "versionId": "40412e7e-2128-4c21-8994-7973088cf766",
+      "dayOfWeek": "MONDAY",
+      "startTime": "19:00:00",
+      "endTime": "03:00:00",
+      "curfewAddress": "PRIMARY_ADDRESS,SECONDARY_ADDRESS"
+    },
+    {
+      "versionId": "40412e7e-2128-4c21-8994-7973088cf766",
+      "dayOfWeek": "TUESDAY",
+      "startTime": "19:00:00",
+      "endTime": "03:00:00",
+      "curfewAddress": "PRIMARY_ADDRESS,SECONDARY_ADDRESS"
+    },
+    {
+      "versionId": "40412e7e-2128-4c21-8994-7973088cf766",
+      "dayOfWeek": "WEDNESDAY",
+      "startTime": "19:00:00",
+      "endTime": "03:00:00",
+      "curfewAddress": "PRIMARY_ADDRESS,SECONDARY_ADDRESS"
+    },
+    {
+      "versionId": "40412e7e-2128-4c21-8994-7973088cf766",
+      "dayOfWeek": "THURSDAY",
+      "startTime": "19:00:00",
+      "endTime": "03:00:00",
+      "curfewAddress": "PRIMARY_ADDRESS,SECONDARY_ADDRESS"
+    },
+    {
+      "versionId": "40412e7e-2128-4c21-8994-7973088cf766",
+      "dayOfWeek": "FRIDAY",
+      "startTime": "19:00:00",
+      "endTime": "03:00:00",
+      "curfewAddress": "PRIMARY_ADDRESS,SECONDARY_ADDRESS"
+    },
+    {
+      "versionId": "40412e7e-2128-4c21-8994-7973088cf766",
+      "dayOfWeek": "SATURDAY",
+      "startTime": "19:00:00",
+      "endTime": "03:00:00",
+      "curfewAddress": "PRIMARY_ADDRESS,SECONDARY_ADDRESS"
+    },
+    {
+      "versionId": "40412e7e-2128-4c21-8994-7973088cf766",
+      "dayOfWeek": "SUNDAY",
+      "startTime": "19:00:00",
+      "endTime": "03:00:00",
+      "curfewAddress": "PRIMARY_ADDRESS,SECONDARY_ADDRESS"
+    }
+  ],
+  "interestedParties": {
+    "versionId": "40412e7e-2128-4c21-8994-7973088cf766",
+    "notifyingOrganisation": "PRISON",
+    "notifyingOrganisationName": "LIVERPOOL_PRISON",
+    "notifyingOrganisationEmail": "",
+    "responsibleOfficerName": "Krista Romaguera",
+    "responsibleOfficerPhoneNumber": "0114 496 0894",
+    "responsibleOrganisation": "PROBATION",
+    "responsibleOrganisationRegion": "NORTH_WEST",
+    "responsibleOrganisationEmail": "probation@example.com"
+  },
+  "probationDeliveryUnit": {
+    "versionId": "40412e7e-2128-4c21-8994-7973088cf766",
+    "unit": "BLACKBURN"
+  },
+  "variationDetails": {
+    "versionId": "40412e7e-2128-4c21-8994-7973088cf766",
+    "variationType": "CHANGE_TO_ADDRESS",
+    "variationDate": "2025-08-14T00:00:00Z",
+    "variationDetails": "Change to address"
+  },
+  "installationLocation": null,
+  "installationAppointment": null
+}

@@ -1,0 +1,152 @@
+{
+  "id": "9321147b-3dce-4fe8-92b5-321ab1c6ae5d",
+  "versions": [
+    {
+      "id": "5a42ee68-bb40-4f0e-9d4d-bdf3c380e94b",
+      "orderId": "9321147b-3dce-4fe8-92b5-321ab1c6ae5d",
+      "versionId": 0,
+      "username": "AUTH_ADM",
+      "status": "IN_PROGRESS",
+      "dataDictionaryVersion": "DDV5",
+      "type": "REQUEST"
+    }
+  ],
+  "status": "IN_PROGRESS",
+  "deviceWearer": {
+    "versionId": "5a42ee68-bb40-4f0e-9d4d-bdf3c380e94b",
+    "nomisId": "Y1477RE",
+    "pncId": "OQ27/472454X",
+    "deliusId": "X29300",
+    "prisonNumber": "O85515",
+    "homeOfficeReferenceNumber": "C4983911",
+    "firstName": "CEMO017 Ebony",
+    "lastName": "Schmidt",
+    "alias": "Gambel's Quail",
+    "dateOfBirth": "2006-06-15T00:00:00Z",
+    "adultAtTimeOfInstallation": true,
+    "sex": "MALE",
+    "gender": "NON_BINARY",
+    "disabilities": "",
+    "otherDisability": "",
+    "noFixedAbode": false,
+    "language": "",
+    "interpreterRequired": false
+  },
+  "addresses": [
+    {
+      "versionId": "5a42ee68-bb40-4f0e-9d4d-bdf3c380e94b",
+      "addressType": "PRIMARY",
+      "addressLine1": "2 Dunlin Close",
+      "addressLine2": "Bolton",
+      "addressLine3": "Greater Manchester",
+      "addressLine4": "",
+      "postcode": "BL2 1EW"
+    }
+  ],
+  "deviceWearerResponsibleAdult": null,
+  "contactDetails": {
+    "versionId": "5a42ee68-bb40-4f0e-9d4d-bdf3c380e94b",
+    "contactNumber": "029 2018 0430"
+  },
+  "enforcementZoneConditions": [],
+  "additionalDocuments": [],
+  "installationAndRisk": {
+    "versionId": "5a42ee68-bb40-4f0e-9d4d-bdf3c380e94b",
+    "offence": "",
+    "offenceAdditionalDetails": "",
+    "riskCategory": null,
+    "riskDetails": "No risk",
+    "mappaLevel": null,
+    "mappaCaseType": null
+  },
+  "monitoringConditions": {
+    "versionId": "5a42ee68-bb40-4f0e-9d4d-bdf3c380e94b",
+    "startDate": "2025-08-03T14:29:00Z",
+    "endDate": "2025-09-02T14:29:00Z",
+    "orderType": "POST_RELEASE",
+    "curfew": true,
+    "exclusionZone": false,
+    "trail": false,
+    "mandatoryAttendance": false,
+    "alcohol": false,
+    "conditionType": "POST_SENTENCE_SUPERVISION_REQUIREMENT",
+    "orderTypeDescription": null,
+    "sentenceType": "STANDARD_DETERMINATE_SENTENCE",
+    "issp": "UNKNOWN",
+    "hdc": "UNKNOWN",
+    "prarr": "UNKNOWN",
+    "pilot": "GPS_ACQUISITIVE_CRIME_PAROLE"
+  },
+  "monitoringConditionsTrail": null,
+  "mandatoryAttendanceConditions": [],
+  "monitoringConditionsAlcohol": null,
+  "curfewReleaseDateConditions": {
+    "versionId": "5a42ee68-bb40-4f0e-9d4d-bdf3c380e94b",
+    "curfewAddress": "PRIMARY",
+    "releaseDate": "2025-07-25T00:00:00Z",
+    "startTime": "19:00:00",
+    "endTime": "07:00:00"
+  },
+  "curfewConditions": {
+    "versionId": "5a42ee68-bb40-4f0e-9d4d-bdf3c380e94b",
+    "startDate": "2025-08-07T23:00:00Z",
+    "endDate": "2025-08-28T22:59:00Z",
+    "curfewAddress": "PRIMARY",
+    "curfewAdditionalDetails": ""
+  },
+  "curfewTimeTable": [
+    {
+      "versionId": "5a42ee68-bb40-4f0e-9d4d-bdf3c380e94b",
+      "dayOfWeek": "MONDAY",
+      "startTime": "19:00:00",
+      "endTime": "07:00:00",
+      "curfewAddress": "PRIMARY_ADDRESS"
+    },
+    {
+      "versionId": "5a42ee68-bb40-4f0e-9d4d-bdf3c380e94b",
+      "dayOfWeek": "TUESDAY",
+      "startTime": "19:00:00",
+      "endTime": "07:00:00",
+      "curfewAddress": "PRIMARY_ADDRESS"
+    },
+    {
+      "versionId": "5a42ee68-bb40-4f0e-9d4d-bdf3c380e94b",
+      "dayOfWeek": "WEDNESDAY",
+      "startTime": "19:00:00",
+      "endTime": "07:00:00",
+      "curfewAddress": "PRIMARY_ADDRESS"
+    },
+    {
+      "versionId": "5a42ee68-bb40-4f0e-9d4d-bdf3c380e94b",
+      "dayOfWeek": "THURSDAY",
+      "startTime": "19:00:00",
+      "endTime": "07:00:00",
+      "curfewAddress": "PRIMARY_ADDRESS"
+    },
+    {
+      "versionId": "5a42ee68-bb40-4f0e-9d4d-bdf3c380e94b",
+      "dayOfWeek": "FRIDAY",
+      "startTime": "19:00:00",
+      "endTime": "07:00:00",
+      "curfewAddress": "PRIMARY_ADDRESS"
+    }
+  ],
+  "interestedParties": {
+    "versionId": "5a42ee68-bb40-4f0e-9d4d-bdf3c380e94b",
+    "notifyingOrganisation": "PRISON",
+    "notifyingOrganisationName": "LIVERPOOL_PRISON",
+    "notifyingOrganisationEmail": "",
+    "responsibleOfficerName": "Lloyd Hickle",
+    "responsibleOfficerPhoneNumber": "0113 496 0954",
+    "responsibleOrganisation": "PROBATION",
+    "responsibleOrganisationRegion": "NORTH_WEST",
+    "responsibleOrganisationEmail": "probation@example.com"
+  },
+  "probationDeliveryUnit": {
+    "versionId": "5a42ee68-bb40-4f0e-9d4d-bdf3c380e94b",
+    "unit": "BLACKBURN"
+  },
+  "variationDetails": null,
+  "installationLocation": null,
+  "installationAppointment": null
+}

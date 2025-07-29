@@ -1,0 +1,145 @@
+{
+  "id": "456fd3c2-158b-49d4-8312-81920994950e",
+  "versions": [
+    {
+      "id": "d29a839c-377a-413c-a5a4-e640c579380a",
+      "orderId": "456fd3c2-158b-49d4-8312-81920994950e",
+      "versionId": 0,
+      "username": "AUTH_ADM",
+      "status": "IN_PROGRESS",
+      "dataDictionaryVersion": "DDV5",
+      "type": "VARIATION"
+    }
+  ],
+  "status": "IN_PROGRESS",
+  "deviceWearer": {
+    "versionId": "d29a839c-377a-413c-a5a4-e640c579380a",
+    "nomisId": "X0741VL",
+    "pncId": "WU43/056405Q",
+    "deliusId": "X40036",
+    "prisonNumber": "R73364",
+    "homeOfficeReferenceNumber": "C5030931",
+    "firstName": "CEMO022 Ellis",
+    "lastName": "Kirlin",
+    "alias": "Brown-headed Nuthatch",
+    "dateOfBirth": "2010-12-08T00:00:00Z",
+    "adultAtTimeOfInstallation": false,
+    "sex": "MALE",
+    "gender": "MALE",
+    "disabilities": "",
+    "otherDisability": "",
+    "noFixedAbode": false,
+    "language": "",
+    "interpreterRequired": false
+  },
+  "addresses": [
+    {
+      "versionId": "d29a839c-377a-413c-a5a4-e640c579380a",
+      "addressType": "INSTALLATION",
+      "addressLine1": "3 Kelvin Close",
+      "addressLine2": "Birchwood",
+      "addressLine3": "Warrington",
+      "addressLine4": "",
+      "postcode": "WA3 7PB"
+    },
+    {
+      "versionId": "d29a839c-377a-413c-a5a4-e640c579380a",
+      "addressType": "PRIMARY",
+      "addressLine1": "2 Dunlin Close",
+      "addressLine2": "Bolton",
+      "addressLine3": "Greater Manchester",
+      "addressLine4": "",
+      "postcode": "BL2 1EW"
+    },
+    {
+      "versionId": "d29a839c-377a-413c-a5a4-e640c579380a",
+      "addressType": "SECONDARY",
+      "addressLine1": "3 Kelvin Close",
+      "addressLine2": "Birchwood",
+      "addressLine3": "Warrington",
+      "addressLine4": "",
+      "postcode": "WA3 7PB"
+    }
+  ],
+  "deviceWearerResponsibleAdult": {
+    "versionId": "d29a839c-377a-413c-a5a4-e640c579380a",
+    "relationship": "parent",
+    "otherRelationshipDetails": "",
+    "fullName": "Aubrey Otto Ryan",
+    "contactNumber": "0191 498 0651"
+  },
+  "contactDetails": {
+    "versionId": "d29a839c-377a-413c-a5a4-e640c579380a",
+    "contactNumber": "028 9649 6339"
+  },
+  "enforcementZoneConditions": [
+    {
+      "versionId": "d29a839c-377a-413c-a5a4-e640c579380a",
+      "zoneType": "EXCLUSION",
+      "startDate": "2025-08-03T23:00:00Z",
+      "endDate": "2025-11-02T23:59:00Z",
+      "description": "Excluded from Football Grounds",
+      "duration": "90 days",
+      "fileName": "test.pdf",
+      "fileId": "50f85c95-19be-4c38-8565-613995aede77",
+      "zoneId": 0
+    }
+  ],
+  "additionalDocuments": [],
+  "installationAndRisk": {
+    "versionId": "d29a839c-377a-413c-a5a4-e640c579380a",
+    "offence": "",
+    "offenceAdditionalDetails": "",
+    "riskCategory": null,
+    "riskDetails": "No risk",
+    "mappaLevel": null,
+    "mappaCaseType": null
+  },
+  "monitoringConditions": {
+    "versionId": "d29a839c-377a-413c-a5a4-e640c579380a",
+    "startDate": "2025-07-26T09:23:00Z",
+    "endDate": "2025-11-22T09:23:00Z",
+    "orderType": "POST_RELEASE",
+    "curfew": false,
+    "exclusionZone": true,
+    "trail": false,
+    "mandatoryAttendance": false,
+    "alcohol": false,
+    "conditionType": "LICENSE_CONDITION_OF_A_CUSTODIAL_ORDER",
+    "orderTypeDescription": null,
+    "sentenceType": "DTO",
+    "issp": "UNKNOWN",
+    "hdc": "UNKNOWN",
+    "prarr": "UNKNOWN",
+    "pilot": null
+  },
+  "monitoringConditionsTrail": null,
+  "mandatoryAttendanceConditions": [],
+  "monitoringConditionsAlcohol": null,
+  "curfewReleaseDateConditions": null,
+  "curfewConditions": null,
+  "curfewTimeTable": [],
+  "interestedParties": {
+    "versionId": "d29a839c-377a-413c-a5a4-e640c579380a",
+    "notifyingOrganisation": "PRISON",
+    "notifyingOrganisationName": "FELTHAM_YOUNG_OFFENDER_INSTITUTION",
+    "notifyingOrganisationEmail": "",
+    "responsibleOfficerName": "Connie Hyatt",
+    "responsibleOfficerPhoneNumber": "028 9649 6096",
+    "responsibleOrganisation": "YJS",
+    "responsibleOrganisationRegion": "LONDON",
+    "responsibleOrganisationEmail": "yjs@example.com"
+  },
+  "probationDeliveryUnit": null,
+  "variationDetails": {
+    "versionId": "d29a839c-377a-413c-a5a4-e640c579380a",
+    "variationType": "CHANGE_TO_ADDRESS",
+    "variationDate": "2025-08-14T00:00:00Z",
+    "variationDetails": "Change to address"
+  },
+  "installationLocation": {
+    "versionId": "d29a839c-377a-413c-a5a4-e640c579380a",
+    "location": "INSTALLATION"
+  },
+  "installationAppointment": null
+}

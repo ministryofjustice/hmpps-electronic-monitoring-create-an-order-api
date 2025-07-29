@@ -1,0 +1,131 @@
+{
+  "id": "783c7a1e-4234-43c9-8157-e1a8df5239dc",
+  "versions": [
+    {
+      "id": "e89be9fc-3928-4cf5-ae50-ee361b085383",
+      "orderId": "783c7a1e-4234-43c9-8157-e1a8df5239dc",
+      "versionId": 0,
+      "username": "AUTH_ADM",
+      "status": "IN_PROGRESS",
+      "dataDictionaryVersion": "DDV5",
+      "type": "REQUEST"
+    }
+  ],
+  "status": "IN_PROGRESS",
+  "deviceWearer": {
+    "versionId": "e89be9fc-3928-4cf5-ae50-ee361b085383",
+    "nomisId": "R1412HM",
+    "pncId": "IW58/588465K",
+    "deliusId": "X05903",
+    "prisonNumber": "P46277",
+    "homeOfficeReferenceNumber": "C6125516",
+    "firstName": "CEMO024 Arya",
+    "lastName": "Reinger",
+    "alias": "Black-backed Woodpecker",
+    "dateOfBirth": "1991-01-16T00:00:00Z",
+    "adultAtTimeOfInstallation": true,
+    "sex": "UNKNOWN",
+    "gender": "NON_BINARY",
+    "disabilities": "",
+    "otherDisability": "",
+    "noFixedAbode": false,
+    "language": "",
+    "interpreterRequired": false
+  },
+  "addresses": [
+    {
+      "versionId": "e89be9fc-3928-4cf5-ae50-ee361b085383",
+      "addressType": "PRIMARY",
+      "addressLine1": "10 downing street",
+      "addressLine2": "",
+      "addressLine3": "London",
+      "addressLine4": "ENGLAND",
+      "postcode": "SW1A 2AA"
+    }
+  ],
+  "deviceWearerResponsibleAdult": null,
+  "contactDetails": {
+    "versionId": "e89be9fc-3928-4cf5-ae50-ee361b085383",
+    "contactNumber": "029 2018 0747"
+  },
+  "enforcementZoneConditions": [],
+  "additionalDocuments": [],
+  "installationAndRisk": {
+    "versionId": "e89be9fc-3928-4cf5-ae50-ee361b085383",
+    "offence": "",
+    "offenceAdditionalDetails": "",
+    "riskCategory": null,
+    "riskDetails": "No risk",
+    "mappaLevel": null,
+    "mappaCaseType": null
+  },
+  "monitoringConditions": {
+    "versionId": "e89be9fc-3928-4cf5-ae50-ee361b085383",
+    "startDate": "2025-08-04T09:54:00Z",
+    "endDate": "2025-09-03T09:54:00Z",
+    "orderType": "POST_RELEASE",
+    "curfew": true,
+    "exclusionZone": false,
+    "trail": false,
+    "mandatoryAttendance": false,
+    "alcohol": false,
+    "conditionType": "POST_SENTENCE_SUPERVISION_REQUIREMENT",
+    "orderTypeDescription": null,
+    "sentenceType": "LIFE_SENTENCE",
+    "issp": "UNKNOWN",
+    "hdc": "YES",
+    "prarr": "UNKNOWN",
+    "pilot": null
+  },
+  "monitoringConditionsTrail": null,
+  "mandatoryAttendanceConditions": [],
+  "monitoringConditionsAlcohol": null,
+  "curfewReleaseDateConditions": {
+    "versionId": "e89be9fc-3928-4cf5-ae50-ee361b085383",
+    "curfewAddress": "PRIMARY",
+    "releaseDate": "2025-07-26T00:00:00Z",
+    "startTime": "19:00:00",
+    "endTime": "07:00:00"
+  },
+  "curfewConditions": {
+    "versionId": "e89be9fc-3928-4cf5-ae50-ee361b085383",
+    "startDate": "2025-08-08T23:00:00Z",
+    "endDate": "2025-08-29T22:59:00Z",
+    "curfewAddress": "PRIMARY",
+    "curfewAdditionalDetails": ""
+  },
+  "curfewTimeTable": [
+    {
+      "versionId": "e89be9fc-3928-4cf5-ae50-ee361b085383",
+      "dayOfWeek": "SATURDAY",
+      "startTime": "19:00:00",
+      "endTime": "07:00:00",
+      "curfewAddress": "PRIMARY_ADDRESS"
+    },
+    {
+      "versionId": "e89be9fc-3928-4cf5-ae50-ee361b085383",
+      "dayOfWeek": "SUNDAY",
+      "startTime": "19:00:00",
+      "endTime": "07:00:00",
+      "curfewAddress": "PRIMARY_ADDRESS"
+    }
+  ],
+  "interestedParties": {
+    "versionId": "e89be9fc-3928-4cf5-ae50-ee361b085383",
+    "notifyingOrganisation": "PRISON",
+    "notifyingOrganisationName": "ELMLEY_PRISON",
+    "notifyingOrganisationEmail": "",
+    "responsibleOfficerName": "Elsa Little",
+    "responsibleOfficerPhoneNumber": "029 2018 0725",
+    "responsibleOrganisation": "PROBATION",
+    "responsibleOrganisationRegion": "KENT_SURREY_SUSSEX",
+    "responsibleOrganisationEmail": "probation@example.com"
+  },
+  "probationDeliveryUnit": {
+    "versionId": "e89be9fc-3928-4cf5-ae50-ee361b085383",
+    "unit": "SURREY"
+  },
+  "variationDetails": null,
+  "installationLocation": null,
+  "installationAppointment": null
+}
