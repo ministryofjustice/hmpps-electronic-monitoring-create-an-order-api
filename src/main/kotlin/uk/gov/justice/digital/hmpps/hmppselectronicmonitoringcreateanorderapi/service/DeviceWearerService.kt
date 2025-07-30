@@ -35,6 +35,11 @@ class DeviceWearerService : OrderSectionServiceBase() {
       homeOfficeReferenceNumber = order.deviceWearer?.homeOfficeReferenceNumber,
     )
 
+    // Clear responsible adult when device wearer is adult
+    if (updateRecord.adultAtTimeOfInstallation == true) {
+      order.deviceWearerResponsibleAdult = null
+    }
+
     return orderRepo.save(order).deviceWearer!!
   }
 
