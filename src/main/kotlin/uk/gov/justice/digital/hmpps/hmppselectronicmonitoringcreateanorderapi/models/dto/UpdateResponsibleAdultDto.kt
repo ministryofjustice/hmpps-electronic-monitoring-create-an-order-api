@@ -14,6 +14,7 @@ data class UpdateResponsibleAdultDto(
   @field:NotBlank(message = ValidationErrors.ResponsibleAdult.RELATIONSHIP_REQUIRED)
   val relationship: String,
 
+  @field:Size(max = 200, message = ValidationErrors.ResponsibleAdult.RELATIONSHIP_DETAILS_MAX_LENGTH)
   val otherRelationshipDetails: String?,
 
   @field:ValidPhoneNumber

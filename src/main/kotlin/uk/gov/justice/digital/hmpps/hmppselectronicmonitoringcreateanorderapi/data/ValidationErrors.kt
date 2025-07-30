@@ -154,6 +154,7 @@ object ValidationErrors {
     const val FULL_NAME_MAX_LENGTH: String = "Full name must be 200 characters or less"
     const val RELATIONSHIP_REQUIRED: String = "Select their relationship to the device wearer"
     const val RELATIONSHIP_DETAILS_REQUIRED: String = "Enter details of their relationship"
+    const val RELATIONSHIP_DETAILS_MAX_LENGTH: String = "Relationship description must be 200 characters or less"
   }
 
   object TrailMonitoringConditions {
