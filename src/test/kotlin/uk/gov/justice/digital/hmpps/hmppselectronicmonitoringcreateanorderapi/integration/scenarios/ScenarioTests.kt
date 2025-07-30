@@ -28,7 +28,7 @@ class ScenarioTests : IntegrationTestBase() {
 
   @BeforeEach
   fun setup() {
-//        repo.deleteAll()
+    repo.deleteAll()
     fmsResultRepository.deleteAll()
 
     sercoAuthApi.stubGrantToken()
@@ -36,20 +36,49 @@ class ScenarioTests : IntegrationTestBase() {
 
   @ParameterizedTest(name = "{0}")
   @MethodSource("scenarios")
-  fun `It should submit correctly to Serco`(scenarioName: String, fileSource: String) {
-    runPayloadTest(fileSource)
+  fun `It should submit correctly to Serco`(scenarioName: String, fileSource: String, variation: Boolean = false) {
+    runOrderTest(fileSource)
+    if (variation) {
+      runVariationTest(fileSource)
+    }
   }
 
   companion object {
     @JvmStatic
     fun scenarios() = listOf(
-      Arguments.of("cemo002", "src/test/resources/json/scenarios/cemo002"),
+//      Arguments.of("cemo001", "src/test/resources/json/scenarios/cemo001"),
+      Arguments.of("cemo002", "src/test/resources/json/scenarios/cemo002", false),
+//      Arguments.of("cemo003", "src/test/resources/json/scenarios/cemo003"),
+//      Arguments.of("cemo004", "src/test/resources/json/scenarios/cemo004"),
+      Arguments.of("cemo005", "src/test/resources/json/scenarios/cemo005", false),
+//      Arguments.of("cemo006", "src/test/resources/json/scenarios/cemo006"),
+      Arguments.of("cemo007", "src/test/resources/json/scenarios/cemo007", false),
+//      Arguments.of("cemo008", "src/test/resources/json/scenarios/cemo008"),
+//      Arguments.of("cemo009", "src/test/resources/json/scenarios/cemo009"),
+//      Arguments.of("cemo010", "src/test/resources/json/scenarios/cemo010"),
+      Arguments.of("cemo011", "src/test/resources/json/scenarios/cemo011", false),
+      Arguments.of("cemo012", "src/test/resources/json/scenarios/cemo012", false),
+//      Arguments.of("cemo013", "src/test/resources/json/scenarios/cemo013"),
+      Arguments.of("cemo014", "src/test/resources/json/scenarios/cemo014", false),
+//      Arguments.of("cemo015", "src/test/resources/json/scenarios/cemo015"),
+      Arguments.of("cemo016", "src/test/resources/json/scenarios/cemo016", false),
+      Arguments.of("cemo017", "src/test/resources/json/scenarios/cemo017", false),
+//      Arguments.of("cemo018", "src/test/resources/json/scenarios/cemo018"),
+//      Arguments.of("cemo019", "src/test/resources/json/scenarios/cemo019"),
+      Arguments.of("cemo020", "src/test/resources/json/scenarios/cemo020", true),
+//      Arguments.of("cemo021", "src/test/resources/json/scenarios/cemo021"),
+      Arguments.of("cemo022", "src/test/resources/json/scenarios/cemo022", true),
+//      Arguments.of("cemo023", "src/test/resources/json/scenarios/cemo023"),
+      Arguments.of("cemo024", "src/test/resources/json/scenarios/cemo024", true),
+//      Arguments.of("cemo034", "src/test/resources/json/scenarios/cemo034", true),
+//      Arguments.of("cemo035", "src/test/resources/json/scenarios/cemo035", true),
+      Arguments.of("cemo036", "src/test/resources/json/scenarios/cemo036", false),
     )
   }
 
   fun String.removeWhitespaceAndNewlines(): String = this.replace("(\"[^\"]*\")|\\s".toRegex(), "\$1")
 
-  fun runPayloadTest(rootFilePath: String) {
+  fun runOrderTest(rootFilePath: String) {
     sercoApi.stubCreateDeviceWearer(
       HttpStatus.OK,
       FmsResponse(result = listOf(FmsResult(message = "", id = "MockDeviceWearerId"))),
@@ -59,40 +88,11 @@ class ScenarioTests : IntegrationTestBase() {
       FmsResponse(result = listOf(FmsResult(message = "", id = "MockMonitoringOrderId"))),
     )
 
-    // Create order from JSON and save to DB
-    val rawOrder = Files.readString(Paths.get("$rootFilePath/order.json"))
-    val objectMapper = ObjectMapper().findAndRegisterModules()
-    val order: Order = objectMapper.readValue(rawOrder)
+    val order = getOrderFromFile("$rootFilePath/order.json")
 
     repo.save(order)
 
-    sercoApi.stubSubmitAttachment(
-      HttpStatus.OK,
-      FmsAttachmentResponse(
-        result = FmsAttachmentResult(
-          fileName = order.additionalDocuments[0].fileName!!,
-          tableName = "x_serg2_ems_csm_sr_mo_new",
-          sysId = "MockSysId",
-          tableSysId = "MockDeviceWearerId",
-        ),
-      ),
-    )
-    documentApi.stubGetDocument(order.additionalDocuments.first().id.toString())
-
-    if (order.enforcementZoneConditions.isNotEmpty()) {
-      sercoApi.stubSubmitAttachment(
-        HttpStatus.OK,
-        FmsAttachmentResponse(
-          result = FmsAttachmentResult(
-            fileName = order.enforcementZoneConditions[0].fileName!!,
-            tableName = "x_serg2_ems_csm_sr_mo_new",
-            sysId = "MockSysId",
-            tableSysId = "MockDeviceWearerId",
-          ),
-        ),
-      )
-      documentApi.stubGetDocument(order.enforcementZoneConditions[0].fileId.toString())
-    }
+    stubAttachments(order)
 
     // Submit order
     webTestClient.post()
@@ -112,10 +112,90 @@ class ScenarioTests : IntegrationTestBase() {
 
     // Assert
     assertThat(
-      submitResult!!.deviceWearerResult.payload,
+      submitResult.deviceWearerResult.payload,
     ).isEqualTo(expectedDeviceWearerJson.removeWhitespaceAndNewlines())
     assertThat(
       submitResult.monitoringOrderResult.payload,
     ).isEqualTo(expectedOrderJson.removeWhitespaceAndNewlines())
+  }
+
+  fun runVariationTest(rootFilePath: String) {
+    sercoApi.stubUpdateDeviceWearer(
+      HttpStatus.OK,
+      FmsResponse(result = listOf(FmsResult(message = "", id = "MockDeviceWearerId"))),
+    )
+    sercoApi.stubUpdateMonitoringOrder(
+      HttpStatus.OK,
+      FmsResponse(result = listOf(FmsResult(message = "", id = "MockMonitoringOrderId"))),
+    )
+
+    val variation: Order = getOrderFromFile("$rootFilePath/variation.json")
+
+    repo.save(variation)
+
+    stubAttachments(variation)
+
+    // Submit order
+    webTestClient.post()
+      .uri("/api/orders/${variation.id}/submit")
+      .headers(setAuthorisation())
+      .exchange()
+      .expectStatus()
+      .isOk
+
+    val submitResult = fmsResultRepository.findAll().first()
+    assertThat(submitResult).isNotNull
+
+    // Read expected JSON
+    val expectedDeviceWearerJson = Files.readString(Paths.get("$rootFilePath/expected_updated_device_wearer.json"))
+    val expectedVariationJson = Files.readString(Paths.get("$rootFilePath/expected_variation.json"))
+      .replace("{expectedOderId}", submitResult.orderId.toString())
+
+    // Assert
+    assertThat(
+      submitResult.deviceWearerResult.payload,
+    ).isEqualTo(expectedDeviceWearerJson.removeWhitespaceAndNewlines())
+    assertThat(
+      submitResult.monitoringOrderResult.payload,
+    ).isEqualTo(expectedVariationJson.removeWhitespaceAndNewlines())
+  }
+
+  private fun getOrderFromFile(filePath: String): Order {
+    // Create variation from JSON and save to DB
+    val rawOrder = Files.readString(Paths.get(filePath))
+    val objectMapper = ObjectMapper().findAndRegisterModules()
+    return objectMapper.readValue(rawOrder)
+  }
+
+  private fun stubAttachments(order: Order) {
+    if (order.additionalDocuments.isNotEmpty()) {
+      sercoApi.stubSubmitAttachment(
+        HttpStatus.OK,
+        FmsAttachmentResponse(
+          result = FmsAttachmentResult(
+            fileName = order.additionalDocuments[0].fileName!!,
+            tableName = "x_serg2_ems_csm_sr_mo_new",
+            sysId = "MockSysId",
+            tableSysId = "MockDeviceWearerId",
+          ),
+        ),
+      )
+      documentApi.stubGetDocument(order.additionalDocuments.first().id.toString())
+    }
+
+    if (order.enforcementZoneConditions.isNotEmpty()) {
+      sercoApi.stubSubmitAttachment(
+        HttpStatus.OK,
+        FmsAttachmentResponse(
+          result = FmsAttachmentResult(
+            fileName = order.enforcementZoneConditions[0].fileName!!,
+            tableName = "x_serg2_ems_csm_sr_mo_new",
+            sysId = "MockSysId",
+            tableSysId = "MockDeviceWearerId",
+          ),
+        ),
+      )
+      documentApi.stubGetDocument(order.enforcementZoneConditions[0].fileId.toString())
+    }
   }
 }

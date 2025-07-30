@@ -12,7 +12,6 @@
     }
   ],
   "status": "IN_PROGRESS",
-  "fmsResultId": "34662c16-da3e-4819-981b-0b1c6040e352",
   "addresses": [
     {
       "id": "a9abcbdb-fa42-426a-b6a3-747eccf46df0",
@@ -26,7 +25,6 @@
       "postcode": "WA3 7PB"
     }
   ],
-  "fmsResultDate": 1753271792.348349,
   "variationDetails": null,
   "interestedParties": {
     "id": "2e9da34f-1e24-4c5a-ba11-b3f28b8a3bdd",

@@ -1,0 +1,169 @@
+{
+  "id": "12250bc4-e92a-4073-ba91-b94c1afa6d3c ",
+  "versions": [
+    {
+      "id": "a44ac48d-d7ca-4888-bebf-59cc8daa39ae ",
+      "orderId": "12250bc4-e92a-4073-ba91-b94c1afa6d3c ",
+      "versionId": 0,
+      "username": "AUTH_ADM",
+      "status": "IN_PROGRESS",
+      "dataDictionaryVersion": "DDV5",
+      "type": "REQUEST"
+    }
+  ],
+  "status": "IN_PROGRESS",
+  "deviceWearer": {
+    "versionId": "a44ac48d-d7ca-4888-bebf-59cc8daa39ae ",
+    "nomisId": "P9652LI",
+    "pncId": "PP52/883315G",
+    "deliusId": "X39572",
+    "prisonNumber": "H46052",
+    "homeOfficeReferenceNumber": "C5709988",
+    "firstName": "CEMO007 Keva",
+    "lastName": "Klein",
+    "alias": "Lesser Frigatebird",
+    "dateOfBirth": "2008-04-09T00:00:00Z",
+    "adultAtTimeOfInstallation": false,
+    "sex": "UNKNOWN",
+    "gender": "NON_BINARY",
+    "disabilities": "",
+    "otherDisability": "",
+    "noFixedAbode": false,
+    "language": "",
+    "interpreterRequired": false
+  },
+  "addresses": [
+    {
+      "versionId": "a44ac48d-d7ca-4888-bebf-59cc8daa39ae ",
+      "addressType": "PRIMARY",
+      "addressLine1": "10 downing street",
+      "addressLine2": "",
+      "addressLine3": "London",
+      "addressLine4": "ENGLAND",
+      "postcode": "SW1A 2AA"
+    }
+  ],
+  "deviceWearerResponsibleAdult": {
+    "versionId": "a44ac48d-d7ca-4888-bebf-59cc8daa39ae ",
+    "relationship": "guardian",
+    "otherRelationshipDetails": "",
+    "fullName": "Blanca Kylie Schaefer",
+    "contactNumber": "0151 496 0012"
+  },
+  "contactDetails": {
+    "versionId": "a44ac48d-d7ca-4888-bebf-59cc8daa39ae ",
+    "contactNumber": "0141 496 0199"
+  },
+  "enforcementZoneConditions": [],
+  "additionalDocuments": [],
+  "installationAndRisk": {
+    "versionId": "a44ac48d-d7ca-4888-bebf-59cc8daa39ae ",
+    "offence": "",
+    "offenceAdditionalDetails": "",
+    "riskCategory": null,
+    "riskDetails": "No risk",
+    "mappaLevel": null,
+    "mappaCaseType": null
+  },
+  "monitoringConditions": {
+    "versionId": "a44ac48d-d7ca-4888-bebf-59cc8daa39ae ",
+    "startDate": "2025-08-03T13:28:00Z",
+    "endDate": "2025-09-02T13:28:00Z",
+    "orderType": "POST_RELEASE",
+    "curfew": true,
+    "exclusionZone": false,
+    "trail": false,
+    "mandatoryAttendance": false,
+    "alcohol": false,
+    "conditionType": "LICENSE_CONDITION_OF_A_CUSTODIAL_ORDER",
+    "orderTypeDescription": null,
+    "sentenceType": "DTO",
+    "issp": "UNKNOWN",
+    "hdc": "UNKNOWN",
+    "prarr": "UNKNOWN",
+    "pilot": null
+  },
+  "monitoringConditionsTrail": null,
+  "mandatoryAttendanceConditions": [],
+  "monitoringConditionsAlcohol": null,
+  "curfewReleaseDateConditions": {
+    "versionId": "a44ac48d-d7ca-4888-bebf-59cc8daa39ae ",
+    "curfewAddress": "PRIMARY",
+    "releaseDate": "2025-07-25T00:00:00Z",
+    "startTime": "19:00:00",
+    "endTime": "07:00:00"
+  },
+  "curfewConditions": {
+    "versionId": "a44ac48d-d7ca-4888-bebf-59cc8daa39ae ",
+    "startDate": "2025-08-07T23:00:00Z",
+    "endDate": "2025-08-28T22:59:00Z",
+    "curfewAddress": "PRIMARY",
+    "curfewAdditionalDetails": ""
+  },
+  "curfewTimeTable": [
+    {
+      "versionId": "a44ac48d-d7ca-4888-bebf-59cc8daa39ae ",
+      "dayOfWeek": "MONDAY",
+      "startTime": "19:00:00",
+      "endTime": "07:00:00",
+      "curfewAddress": "PRIMARY_ADDRESS"
+    },
+    {
+      "versionId": "a44ac48d-d7ca-4888-bebf-59cc8daa39ae ",
+      "dayOfWeek": "TUESDAY",
+      "startTime": "19:00:00",
+      "endTime": "07:00:00",
+      "curfewAddress": "PRIMARY_ADDRESS"
+    },
+    {
+      "versionId": "a44ac48d-d7ca-4888-bebf-59cc8daa39ae ",
+      "dayOfWeek": "WEDNESDAY",
+      "startTime": "19:00:00",
+      "endTime": "07:00:00",
+      "curfewAddress": "PRIMARY_ADDRESS"
+    },
+    {
+      "versionId": "a44ac48d-d7ca-4888-bebf-59cc8daa39ae ",
+      "dayOfWeek": "THURSDAY",
+      "startTime": "19:00:00",
+      "endTime": "07:00:00",
+      "curfewAddress": "PRIMARY_ADDRESS"
+    },
+    {
+      "versionId": "a44ac48d-d7ca-4888-bebf-59cc8daa39ae ",
+      "dayOfWeek": "FRIDAY",
+      "startTime": "19:00:00",
+      "endTime": "07:00:00",
+      "curfewAddress": "PRIMARY_ADDRESS"
+    },
+    {
+      "versionId": "a44ac48d-d7ca-4888-bebf-59cc8daa39ae ",
+      "dayOfWeek": "SATURDAY",
+      "startTime": "19:00:00",
+      "endTime": "07:00:00",
+      "curfewAddress": "PRIMARY_ADDRESS"
+    },
+    {
+      "versionId": "a44ac48d-d7ca-4888-bebf-59cc8daa39ae ",
+      "dayOfWeek": "SUNDAY",
+      "startTime": "19:00:00",
+      "endTime": "07:00:00",
+      "curfewAddress": "PRIMARY_ADDRESS"
+    }
+  ],
+  "interestedParties": {
+    "versionId": "a44ac48d-d7ca-4888-bebf-59cc8daa39ae ",
+    "notifyingOrganisation": "PRISON",
+    "notifyingOrganisationName": "FELTHAM_YOUNG_OFFENDER_INSTITUTION",
+    "notifyingOrganisationEmail": "",
+    "responsibleOfficerName": "Ivan Ledner",
+    "responsibleOfficerPhoneNumber": "028 9649 6269",
+    "responsibleOrganisation": "YJS",
+    "responsibleOrganisationRegion": "LONDON",
+    "responsibleOrganisationEmail": "yjs@example.com"
+  },
+  "probationDeliveryUnit": null,
+  "variationDetails": null,
+  "installationLocation": null,
+  "installationAppointment": null
+}

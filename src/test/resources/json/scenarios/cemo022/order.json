@@ -1,0 +1,131 @@
+{
+  "id": "daf9461b-b674-4d5a-9c20-ae74ed431e43",
+  "versions": [
+    {
+      "id": "511c1e76-a67e-4ceb-a852-7116dd27ddd4",
+      "orderId": "daf9461b-b674-4d5a-9c20-ae74ed431e43",
+      "versionId": 0,
+      "username": "AUTH_ADM",
+      "status": "IN_PROGRESS",
+      "dataDictionaryVersion": "DDV5",
+      "type": "REQUEST"
+    }
+  ],
+  "status": "IN_PROGRESS",
+  "deviceWearer": {
+    "versionId": "511c1e76-a67e-4ceb-a852-7116dd27ddd4",
+    "nomisId": "X0741VL",
+    "pncId": "WU43/056405Q",
+    "deliusId": "X40036",
+    "prisonNumber": "R73364",
+    "homeOfficeReferenceNumber": "C5030931",
+    "firstName": "CEMO022 Ellis",
+    "lastName": "Kirlin",
+    "alias": "Brown-headed Nuthatch",
+    "dateOfBirth": "2010-12-08T00:00:00Z",
+    "adultAtTimeOfInstallation": false,
+    "sex": "MALE",
+    "gender": "MALE",
+    "disabilities": "",
+    "otherDisability": "",
+    "noFixedAbode": false,
+    "language": "",
+    "interpreterRequired": false
+  },
+  "addresses": [
+    {
+      "versionId": "511c1e76-a67e-4ceb-a852-7116dd27ddd4",
+      "addressType": "INSTALLATION",
+      "addressLine1": "2 Dunlin Close",
+      "addressLine2": "Bolton",
+      "addressLine3": "Greater Manchester",
+      "addressLine4": "",
+      "postcode": "BL2 1EW"
+    },
+    {
+      "versionId": "511c1e76-a67e-4ceb-a852-7116dd27ddd4",
+      "addressType": "PRIMARY",
+      "addressLine1": "2 Dunlin Close",
+      "addressLine2": "Bolton",
+      "addressLine3": "Greater Manchester",
+      "addressLine4": "",
+      "postcode": "BL2 1EW"
+    }
+  ],
+  "deviceWearerResponsibleAdult": {
+    "versionId": "511c1e76-a67e-4ceb-a852-7116dd27ddd4",
+    "relationship": "parent",
+    "otherRelationshipDetails": "",
+    "fullName": "Aubrey Otto Ryan",
+    "contactNumber": "0191 498 0651"
+  },
+  "contactDetails": {
+    "versionId": "511c1e76-a67e-4ceb-a852-7116dd27ddd4",
+    "contactNumber": "028 9649 6339"
+  },
+  "enforcementZoneConditions": [
+    {
+      "versionId": "511c1e76-a67e-4ceb-a852-7116dd27ddd4",
+      "zoneType": "EXCLUSION",
+      "startDate": "2025-08-03T23:00:00Z",
+      "endDate": "2025-11-02T23:59:00Z",
+      "description": "Excluded from Football Grounds",
+      "duration": "90 days",
+      "fileName": "test.pdf",
+      "fileId": "95408ccb-63d0-4844-ac6e-9f81f8b42877",
+      "zoneId": 0
+    }
+  ],
+  "additionalDocuments": [],
+  "installationAndRisk": {
+    "versionId": "511c1e76-a67e-4ceb-a852-7116dd27ddd4",
+    "offence": "",
+    "offenceAdditionalDetails": "",
+    "riskCategory": null,
+    "riskDetails": "No risk",
+    "mappaLevel": null,
+    "mappaCaseType": null
+  },
+  "monitoringConditions": {
+    "versionId": "511c1e76-a67e-4ceb-a852-7116dd27ddd4",
+    "startDate": "2025-07-26T09:23:00Z",
+    "endDate": "2025-11-22T09:23:00Z",
+    "orderType": "POST_RELEASE",
+    "curfew": false,
+    "exclusionZone": true,
+    "trail": false,
+    "mandatoryAttendance": false,
+    "alcohol": false,
+    "conditionType": "LICENSE_CONDITION_OF_A_CUSTODIAL_ORDER",
+    "orderTypeDescription": null,
+    "sentenceType": "DTO",
+    "issp": "UNKNOWN",
+    "hdc": "UNKNOWN",
+    "prarr": "UNKNOWN",
+    "pilot": null
+  },
+  "monitoringConditionsTrail": null,
+  "mandatoryAttendanceConditions": [],
+  "monitoringConditionsAlcohol": null,
+  "curfewReleaseDateConditions": null,
+  "curfewConditions": null,
+  "curfewTimeTable": [],
+  "interestedParties": {
+    "versionId": "511c1e76-a67e-4ceb-a852-7116dd27ddd4",
+    "notifyingOrganisation": "PRISON",
+    "notifyingOrganisationName": "FELTHAM_YOUNG_OFFENDER_INSTITUTION",
+    "notifyingOrganisationEmail": "",
+    "responsibleOfficerName": "Connie Hyatt",
+    "responsibleOfficerPhoneNumber": "028 9649 6096",
+    "responsibleOrganisation": "YJS",
+    "responsibleOrganisationRegion": "LONDON",
+    "responsibleOrganisationEmail": "yjs@example.com"
+  },
+  "probationDeliveryUnit": null,
+  "variationDetails": null,
+  "installationLocation": {
+    "versionId": "511c1e76-a67e-4ceb-a852-7116dd27ddd4",
+    "location": "INSTALLATION"
+  },
+  "installationAppointment": null
+}

@@ -1,0 +1,138 @@
+{
+  "case_id": "MockDeviceWearerId",
+  "allday_lockdown": "",
+  "atv_allowance": "",
+  "condition_type": "License Condition of a Custodial Order",
+  "court": "",
+  "court_order_email": "",
+  "device_type": "",
+  "device_wearer": "CEMO020 Candice Kuphal",
+  "enforceable_condition": [
+    {
+      "condition": "Curfew with EM",
+      "start_date": "2025-08-09 00:00:00",
+      "end_date": "2025-08-29 23:59:00"
+    }
+  ],
+  "exclusion_allday": "",
+  "interim_court_date": "",
+  "issuing_organisation": "",
+  "media_interest": "",
+  "new_order_received": "",
+  "notifying_officer_email": "",
+  "notifying_officer_name": "",
+  "notifying_organization": "Prison",
+  "no_post_code": "",
+  "no_address_1": "",
+  "no_address_2": "",
+  "no_address_3": "",
+  "no_address_4": "",
+  "no_email": "",
+  "no_name": "Liverpool Prison",
+  "no_phone_number": "",
+  "offence": "",
+  "offence_date": "",
+  "order_end": "2025-09-03 09:16:00",
+  "order_id": "05f4c4a7-0226-45dd-bb94-e96985987960",
+  "order_request_type": "New Order",
+  "order_start": "2025-08-04 09:16:00",
+  "order_type": "Pre-Trial",
+  "order_type_description": null,
+  "order_type_detail": "",
+  "order_variation_date": "",
+  "order_variation_details": "",
+  "order_variation_req_received_date": "",
+  "order_variation_type": "",
+  "pdu_responsible": "Blackburn",
+  "pdu_responsible_email": "",
+  "planned_order_end_date": "",
+  "responsible_officer_details_received": "",
+  "responsible_officer_email": "",
+  "responsible_officer_phone": "00441144960894",
+  "responsible_officer_name": "Krista Romaguera",
+  "responsible_organization": "Probation",
+  "ro_post_code": "",
+  "ro_address_1": "",
+  "ro_address_2": "",
+  "ro_address_3": "",
+  "ro_address_4": "",
+  "ro_email": "probation@example.com",
+  "ro_phone": "",
+  "ro_region": "North West",
+  "sentence_date": "",
+  "sentence_expiry": "",
+  "sentence_type": "Life Sentence",
+  "tag_at_source": "",
+  "tag_at_source_details": "",
+  "technical_bail": "",
+  "trial_date": "",
+  "trial_outcome": "",
+  "conditional_release_date": "2025-07-26",
+  "reason_for_order_ending_early": "",
+  "business_unit": "",
+  "service_end_date": "2025-09-03",
+  "curfew_description": "",
+  "curfew_start": "2025-08-09 00:00:00",
+  "curfew_end": "2025-08-29 23:59:00",
+  "curfew_duration": [
+    {
+      "location": "primary",
+      "allday": "",
+      "schedule": [
+        {
+          "day": "Mo",
+          "start": "19:00:00",
+          "end": "03:00:00"
+        },
+        {
+          "day": "Tu",
+          "start": "19:00:00",
+          "end": "03:00:00"
+        },
+        {
+          "day": "Wed",
+          "start": "19:00:00",
+          "end": "03:00:00"
+        },
+        {
+          "day": "Th",
+          "start": "19:00:00",
+          "end": "03:00:00"
+        },
+        {
+          "day": "Fr",
+          "start": "19:00:00",
+          "end": "03:00:00"
+        },
+        {
+          "day": "Sa",
+          "start": "19:00:00",
+          "end": "03:00:00"
+        },
+        {
+          "day": "Su",
+          "start": "19:00:00",
+          "end": "03:00:00"
+        }
+      ]
+    }
+  ],
+  "trail_monitoring": "",
+  "exclusion_zones": [],
+  "inclusion_zones": [],
+  "abstinence": "",
+  "schedule": "",
+  "checkin_schedule": [],
+  "revocation_date": "",
+  "revocation_type": "",
+  "installation_address_1": "3 Kelvin Close",
+  "installation_address_2": "Birchwood",
+  "installation_address_3": "Warrington",
+  "installation_address_4": "",
+  "installation_address_post_code": "WA3 7PB",
+  "crown_court_case_reference_number": "",
+  "magistrate_court_case_reference_number": "",
+  "issp": "No",
+  "hdc": "Yes",
+  "order_status": "Not Started"
+}
