@@ -5,9 +5,14 @@ import java.util.UUID
 object ValidationErrors {
   object Address {
     const val ADDRESS_1_REQUIRED: String = "Enter address line 1, typically the building and street"
+    const val ADDRESS_1_MAX_LENGTH: String = "Address line 1 must be 200 characters or less"
+    const val ADDRESS_2_MAX_LENGTH: String = "Address line 2 must be 200 characters or less"
     const val ADDRESS_3_REQUIRED: String = "Enter town or city"
+    const val ADDRESS_3_MAX_LENGTH: String = "Address line 2 must be 200 characters or less"
+    const val ADDRESS_4_MAX_LENGTH: String = "Town or city must be 200 characters or less"
     const val POSTCODE_REQUIRED: String = "Enter postcode"
     const val POSTCODE_MUST_BE_VALID: String = "Enter a full UK postcode"
+    const val POSTCODE_MAX_LENGTH: String = "Postcode must be 200 characters or less"
   }
 
   object AlcoholMonitoring {
@@ -117,7 +122,9 @@ object ValidationErrors {
     const val END_DATE_MUST_BE_AFTER_START_DATE: String =
       "Date attendance monitoring ends must be after the date attendance monitoring starts"
     const val PURPOSE_REQUIRED: String = "Enter what the appointment is for"
-    const val APPOINTMENT_DAY_REQUIRED: String = "Enter the day the appointment is on"
+    const val PURPOSE_MAX_LENGTH: String = "Appointment purpose must be 200 characters or less"
+    const val APPOINTMENT_DAY_REQUIRED: String = "Enter the day and frequency of the appointment"
+    const val APPOINTMENT_DAY_MAX_LENGTH: String = "Appointment day and frequency must be 200 characters or less"
     const val START_TIME_REQUIRED: String = "Enter time appointment starts"
     const val END_TIME_REQUIRED: String = "Enter time appointment ends"
   }
