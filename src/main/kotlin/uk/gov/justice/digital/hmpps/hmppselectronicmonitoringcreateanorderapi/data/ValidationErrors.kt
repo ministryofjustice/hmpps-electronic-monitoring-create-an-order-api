@@ -87,11 +87,18 @@ object ValidationErrors {
     const val RESPONSIBLE_ORGANISATION_REQUIRED: String = "Select the responsible officer's organisation"
     const val RESPONSIBLE_ORGANISATION_REGION_REQUIRED: String = "Select the probation region"
     const val TEAM_EMAIL_REQUIRED: String = "Enter your team's email address"
+    const val TEAM_EMAIL_MAX_LENGTH: String = "Team email address must be 200 characters or less"
     const val RESPONSIBLE_OFFICER_FULL_NAME_REQUIRED: String = "Enter the Responsible Officer's full name"
+    const val RESPONSIBLE_OFFICER_NAME_MAX_LENGTH: String = "Responsible Officer's name must be 200 characters or less"
     const val RESPONSIBLE_OFFICER_TELEPHONE_NUMBER_REQUIRED: String = "Enter the Responsible Officer's telephone number"
+    const val RESPONSIBLE_OFFICER_TELEPHONE_NUMBER_MAX_LENGTH: String =
+      "Responsible Officer's telephone number must be 200 characters or less"
     const val RESPONSIBLE_ORGANISATION_TELEPHONE_NUMBER_REQUIRED: String =
       "Enter the Responsible Organisation's telephone number"
-    const val RESPONSIBLE_ORGANISATION_EMAIL_REQUIRED: String = "Enter the Responsible Organisation's email address"
+    const val RESPONSIBLE_ORGANISATION_EMAIL_REQUIRED: String =
+      "Enter the Responsible Organisation's email address"
+    const val RESPONSIBLE_ORGANISATION_EMAIL_MAX_LENGTH: String =
+      "Responsible Officer's email address must be 200 characters or less"
   }
 
   object ProbationDeliveryUnit {

@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.m
 import jakarta.validation.constraints.AssertTrue
 import jakarta.validation.constraints.NotEmpty
 import jakarta.validation.constraints.NotNull
+import jakarta.validation.constraints.Size
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.data.ValidationErrors
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.CivilCountyCourtDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.CrownCourtDDv5
@@ -21,14 +22,17 @@ data class UpdateInterestedPartiesDto(
   val notifyingOrganisation: NotifyingOrganisationDDv5? = null,
 
   @field:NotNull(message = ValidationErrors.InterestedParties.TEAM_EMAIL_REQUIRED)
+  @field:Size(max = 200, message = ValidationErrors.InterestedParties.TEAM_EMAIL_MAX_LENGTH)
   val notifyingOrganisationEmail: String = "",
 
   val notifyingOrganisationName: String = "",
 
   @field:NotEmpty(message = ValidationErrors.InterestedParties.RESPONSIBLE_OFFICER_FULL_NAME_REQUIRED)
+  @field:Size(max = 200, message = ValidationErrors.InterestedParties.RESPONSIBLE_OFFICER_NAME_MAX_LENGTH)
   val responsibleOfficerName: String = "",
 
-  @field:NotNull(message = ValidationErrors.InterestedParties.RESPONSIBLE_OFFICER_TELEPHONE_NUMBER_REQUIRED)
+  @field:NotEmpty(message = ValidationErrors.InterestedParties.RESPONSIBLE_OFFICER_TELEPHONE_NUMBER_REQUIRED)
+  @field:Size(max = 200, message = ValidationErrors.InterestedParties.RESPONSIBLE_OFFICER_TELEPHONE_NUMBER_MAX_LENGTH)
   val responsibleOfficerPhoneNumber: String? = null,
 
   @field:NotNull(message = ValidationErrors.InterestedParties.RESPONSIBLE_ORGANISATION_REQUIRED)
@@ -37,6 +41,7 @@ data class UpdateInterestedPartiesDto(
   val responsibleOrganisationRegion: String = "",
 
   @field:NotNull(message = ValidationErrors.InterestedParties.RESPONSIBLE_ORGANISATION_EMAIL_REQUIRED)
+  @field:Size(max = 200, message = ValidationErrors.InterestedParties.RESPONSIBLE_ORGANISATION_EMAIL_MAX_LENGTH)
   val responsibleOrganisationEmail: String = "",
 ) {
   @AssertTrue(message = ValidationErrors.InterestedParties.NOTIFYING_ORGANISATION_NAME_REQUIRED)
