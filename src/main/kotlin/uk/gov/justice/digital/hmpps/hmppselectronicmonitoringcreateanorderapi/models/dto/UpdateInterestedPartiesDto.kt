@@ -21,7 +21,7 @@ data class UpdateInterestedPartiesDto(
   @field:NotNull(message = ValidationErrors.InterestedParties.NOTIFYING_ORGANISATION_REQUIRED)
   val notifyingOrganisation: NotifyingOrganisationDDv5? = null,
 
-  @field:NotNull(message = ValidationErrors.InterestedParties.TEAM_EMAIL_REQUIRED)
+  @field:NotEmpty(message = ValidationErrors.InterestedParties.TEAM_EMAIL_REQUIRED)
   @field:Size(max = 200, message = ValidationErrors.InterestedParties.TEAM_EMAIL_MAX_LENGTH)
   val notifyingOrganisationEmail: String = "",
 
