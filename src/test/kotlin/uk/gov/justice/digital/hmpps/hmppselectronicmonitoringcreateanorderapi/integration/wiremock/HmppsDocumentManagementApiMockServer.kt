@@ -10,6 +10,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.post
 import com.github.tomakehurst.wiremock.client.WireMock.urlMatching
 import com.github.tomakehurst.wiremock.client.WireMock.urlPathTemplate
+import com.github.tomakehurst.wiremock.stubbing.Scenario.STARTED
 import org.junit.jupiter.api.extension.AfterAllCallback
 import org.junit.jupiter.api.extension.BeforeAllCallback
 import org.junit.jupiter.api.extension.BeforeEachCallback
@@ -79,7 +80,7 @@ class HmppsDocumentManagementApi : WireMockServer(WIREMOCK_PORT) {
     )
   }
 
-  fun stubGetDocument(uuid: String = "xxx") {
+  fun stubGetDocument(uuid: String = "xxx", fixedDelayMilliseconds: Int = 0) {
     val file = Files.readAllBytes(
       Paths.get(
         this.filePath,
@@ -87,6 +88,38 @@ class HmppsDocumentManagementApi : WireMockServer(WIREMOCK_PORT) {
     )
     stubFor(
       get(urlMatching("/documents/$uuid/file"))
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "image/jpeg")
+            .withHeader("Content-Length", file.size.toString())
+            .withBody(
+              file,
+            )
+            .withStatus(200)
+            .withFixedDelay(fixedDelayMilliseconds),
+        ),
+    )
+  }
+
+  fun stubRetryScenario(uuid: String = "xxx") {
+    val file = Files.readAllBytes(
+      Paths.get(
+        this.filePath,
+      ),
+    )
+    stubFor(
+      get(urlMatching("/documents/$uuid/file")).inScenario("retry scenario")
+        .whenScenarioStateIs(STARTED)
+        .willReturn(
+          aResponse()
+            .withStatus(500),
+        )
+        .willSetStateTo("Okay state"),
+    )
+
+    stubFor(
+      get(urlMatching("/documents/$uuid/file")).inScenario("retry scenario")
+        .whenScenarioStateIs("Okay state")
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "image/jpeg")

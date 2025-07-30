@@ -10,9 +10,11 @@ import org.springframework.web.reactive.function.BodyInserters
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.toEntity
 import reactor.core.publisher.Flux
+import reactor.util.retry.Retry
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.DocumentApiBadRequestException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.documentmanagement.DocumentUploadResponse
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
+import java.time.Duration
 
 @Component
 class DocumentApiClient(private val documentManagementApiWebClient: WebClient) {
@@ -54,6 +56,7 @@ class DocumentApiClient(private val documentManagementApiWebClient: WebClient) {
       },
     )
     .toEntityFlux(InputStreamResource::class.java)
+    .retryWhen(Retry.fixedDelay(1, Duration.ofMillis(250)))
     .block()
 
   fun deleteDocument(documentUuid: String): ResponseEntity<Any>? = documentManagementApiWebClient

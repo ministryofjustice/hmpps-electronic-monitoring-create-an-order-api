@@ -13,7 +13,7 @@ import java.time.Duration
 class WebClientConfiguration(
   @Value("\${services.hmppsauth.url}") val hmppsAuthBaseUri: String,
   @Value("\${api.health-timeout:2s}") val healthTimeout: Duration,
-  @Value("\${api.timeout:20s}") val timeout: Duration,
+  @Value("\${api.timeout:1s}") val timeout: Duration,
   @Value("\${services.document.url}") val hmppsDocumentManagementApiUrl: String,
 ) {
 
