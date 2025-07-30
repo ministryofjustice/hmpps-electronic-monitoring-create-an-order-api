@@ -41,6 +41,7 @@ data class UpdateMandatoryAttendanceDto(
   @field:Size(max = 200, message = ValidationErrors.Address.ADDRESS_1_MAX_LENGTH)
   var addressLine1: String? = null,
 
+  @field:Size(max = 200, message = ValidationErrors.Address.ADDRESS_2_MAX_LENGTH)
   @field:Size(message = ValidationErrors.Address.ADDRESS_2_MAX_LENGTH)
   var addressLine2: String? = null,
 
@@ -48,7 +49,7 @@ data class UpdateMandatoryAttendanceDto(
   @field:Size(max = 200, message = ValidationErrors.Address.ADDRESS_3_MAX_LENGTH)
   var addressLine3: String? = null,
 
-  @field:Size(message = ValidationErrors.Address.ADDRESS_4_MAX_LENGTH)
+  @field:Size(max = 200, message = ValidationErrors.Address.ADDRESS_4_MAX_LENGTH)
   var addressLine4: String? = null,
 
   @field:NotEmpty(message = ValidationErrors.Address.POSTCODE_REQUIRED)
