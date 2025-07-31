@@ -5,9 +5,14 @@ import java.util.UUID
 object ValidationErrors {
   object Address {
     const val ADDRESS_1_REQUIRED: String = "Enter address line 1, typically the building and street"
+    const val ADDRESS_1_MAX_LENGTH: String = "Address line 1 must be 200 characters or less"
+    const val ADDRESS_2_MAX_LENGTH: String = "Address line 2 must be 200 characters or less"
     const val ADDRESS_3_REQUIRED: String = "Enter town or city"
+    const val ADDRESS_3_MAX_LENGTH: String = "Town or city must be 200 characters or less"
+    const val ADDRESS_4_MAX_LENGTH: String = "County must be 200 characters or less"
     const val POSTCODE_REQUIRED: String = "Enter postcode"
     const val POSTCODE_MUST_BE_VALID: String = "Enter a full UK postcode"
+    const val POSTCODE_MAX_LENGTH: String = "Postcode must be 200 characters or less"
   }
 
   object AlcoholMonitoring {
@@ -47,7 +52,10 @@ object ValidationErrors {
 
   object DeviceWearer {
     const val FIRST_NAME_REQUIRED: String = "Enter device wearer's first name"
+    const val FIRST_NAME_MAX_LENGTH: String = "First name must be 200 characters or less"
     const val LAST_NAME_REQUIRED: String = "Enter device wearer's last name"
+    const val LAST_NAME_MAX_LENGTH: String = "Last name must be 200 characters or less"
+    const val ALIAS_MAX_LENGTH: String = "Preferred name must be 200 characters or less"
     const val IS_ADULT_REQUIRED: String = "Select yes if a responsible adult is required"
     const val SEX_REQUIRED: String = "Select the device wearer's sex, or select 'Not able to provide this information'"
     const val GENDER_REQUIRED: String =
@@ -70,17 +78,32 @@ object ValidationErrors {
     const val INVALID_MAP_FILE_EXTENSION: String = "Select a PDF, JPEG or JPG"
   }
 
+  object IdentityNumbers {
+    const val NOMIS_ID_MAX_LENGTH: String = "Nomis ID must be 200 characters or less"
+    const val PNC_ID_MAX_LENGTH: String = "PNC ID must be 200 characters or less"
+    const val DELIUS_ID_MAX_LENGTH: String = "Delius ID must be 200 characters or less"
+    const val PRISON_NUMBER_MAX_LENGTH: String = "Prison number must be 200 characters or less"
+    const val HOME_OFFICE_REFERENCE_NUMBER_MAX_LENGTH: String = "Nomis ID must be 200 characters or less"
+  }
+
   object InterestedParties {
     const val NOTIFYING_ORGANISATION_REQUIRED: String = "Select the organisation you are part of"
     const val NOTIFYING_ORGANISATION_NAME_REQUIRED: String = "Select the name of the organisation you are part of"
     const val RESPONSIBLE_ORGANISATION_REQUIRED: String = "Select the responsible officer's organisation"
     const val RESPONSIBLE_ORGANISATION_REGION_REQUIRED: String = "Select the probation region"
     const val TEAM_EMAIL_REQUIRED: String = "Enter your team's email address"
+    const val TEAM_EMAIL_MAX_LENGTH: String = "Team email address must be 200 characters or less"
     const val RESPONSIBLE_OFFICER_FULL_NAME_REQUIRED: String = "Enter the Responsible Officer's full name"
+    const val RESPONSIBLE_OFFICER_NAME_MAX_LENGTH: String = "Responsible Officer's name must be 200 characters or less"
     const val RESPONSIBLE_OFFICER_TELEPHONE_NUMBER_REQUIRED: String = "Enter the Responsible Officer's telephone number"
+    const val RESPONSIBLE_OFFICER_TELEPHONE_NUMBER_MAX_LENGTH: String =
+      "Responsible Officer's telephone number must be 200 characters or less"
     const val RESPONSIBLE_ORGANISATION_TELEPHONE_NUMBER_REQUIRED: String =
       "Enter the Responsible Organisation's telephone number"
-    const val RESPONSIBLE_ORGANISATION_EMAIL_REQUIRED: String = "Enter the Responsible Organisation's email address"
+    const val RESPONSIBLE_ORGANISATION_EMAIL_REQUIRED: String =
+      "Enter the Responsible Organisation's email address"
+    const val RESPONSIBLE_ORGANISATION_EMAIL_MAX_LENGTH: String =
+      "Responsible Officer's email address must be 200 characters or less"
   }
 
   object ProbationDeliveryUnit {
@@ -99,7 +122,9 @@ object ValidationErrors {
     const val END_DATE_MUST_BE_AFTER_START_DATE: String =
       "Date attendance monitoring ends must be after the date attendance monitoring starts"
     const val PURPOSE_REQUIRED: String = "Enter what the appointment is for"
-    const val APPOINTMENT_DAY_REQUIRED: String = "Enter the day the appointment is on"
+    const val PURPOSE_MAX_LENGTH: String = "Appointment purpose must be 200 characters or less"
+    const val APPOINTMENT_DAY_REQUIRED: String = "Enter the day and frequency of the appointment"
+    const val APPOINTMENT_DAY_MAX_LENGTH: String = "Appointment day and frequency must be 200 characters or less"
     const val START_TIME_REQUIRED: String = "Enter time appointment starts"
     const val END_TIME_REQUIRED: String = "Enter time appointment ends"
   }
@@ -126,8 +151,10 @@ object ValidationErrors {
     const val FIRST_NAME_REQUIRED: String = "Enter responsible adult's first name"
     const val LAST_NAME_REQUIRED: String = "Enter responsible adult's last name"
     const val FULL_NAME_REQUIRED: String = "Enter responsible adult's full name"
+    const val FULL_NAME_MAX_LENGTH: String = "Full name must be 200 characters or less"
     const val RELATIONSHIP_REQUIRED: String = "Select their relationship to the device wearer"
     const val RELATIONSHIP_DETAILS_REQUIRED: String = "Enter details of their relationship"
+    const val RELATIONSHIP_DETAILS_MAX_LENGTH: String = "Relationship description must be 200 characters or less"
   }
 
   object TrailMonitoringConditions {
