@@ -28,16 +28,25 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
   private val mockResponsibleOrganisationRegion = ""
   private val mockResponsibleOrganisationEmail = "mockResponsibleOrganisationEmail"
 
-  private val mockValidRequest = """
+  private fun buildMockRequest(
+    notifyingOrganisation: String? = mockNotifyingOrganisation,
+    notifyingOrganisationName: String? = mockNotifyingOrganisationName,
+    notifyingOrganisationEmail: String? = mockNotifyingOrganisationEmail,
+    responsibleOfficerName: String? = mockResponsibleOfficerName,
+    responsibleOfficerPhoneNumber: String? = mockResponsibleOfficerPhoneNumber,
+    responsibleOrganisation: String? = mockResponsibleOrganisation,
+    responsibleOrganisationRegion: String? = mockResponsibleOrganisationRegion,
+    responsibleOrganisationEmail: String? = mockResponsibleOrganisationEmail,
+  ): String = """
     {
-      "notifyingOrganisation": "$mockNotifyingOrganisation",
-      "notifyingOrganisationName": "$mockNotifyingOrganisationName",
-      "notifyingOrganisationEmail": "$mockNotifyingOrganisationEmail",
-      "responsibleOfficerName": "$mockResponsibleOfficerName",
-      "responsibleOfficerPhoneNumber": "$mockResponsibleOfficerPhoneNumber",
-      "responsibleOrganisation": "$mockResponsibleOrganisation",
-      "responsibleOrganisationRegion": "$mockResponsibleOrganisationRegion",
-      "responsibleOrganisationEmail": "$mockResponsibleOrganisationEmail"
+      "notifyingOrganisation": "$notifyingOrganisation",
+      "notifyingOrganisationName": "$notifyingOrganisationName",
+      "notifyingOrganisationEmail": "$notifyingOrganisationEmail",
+      "responsibleOfficerName": "$responsibleOfficerName",
+      "responsibleOfficerPhoneNumber": "$responsibleOfficerPhoneNumber",
+      "responsibleOrganisation": "$responsibleOrganisation",
+      "responsibleOrganisationRegion": "$responsibleOrganisationRegion",
+      "responsibleOrganisationEmail": "$responsibleOrganisationEmail"
     }
   """.trimIndent()
 
@@ -57,7 +66,7 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
         .uri("/api/orders/${order.id}/interested-parties")
         .contentType(MediaType.APPLICATION_JSON)
         .body(
-          BodyInserters.fromValue(mockValidRequest),
+          BodyInserters.fromValue(buildMockRequest()),
         )
         .headers(setAuthorisation("AUTH_ADM_2"))
         .exchange()
@@ -71,7 +80,7 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
         .uri("/api/orders/${UUID.randomUUID()}/interested-parties")
         .contentType(MediaType.APPLICATION_JSON)
         .body(
-          BodyInserters.fromValue(mockValidRequest),
+          BodyInserters.fromValue(buildMockRequest()),
         )
         .headers(setAuthorisation("AUTH_ADM"))
         .exchange()
@@ -87,7 +96,7 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
         .uri("/api/orders/${order.id}/interested-parties")
         .contentType(MediaType.APPLICATION_JSON)
         .body(
-          BodyInserters.fromValue(mockValidRequest),
+          BodyInserters.fromValue(buildMockRequest()),
         )
         .headers(setAuthorisation("AUTH_ADM"))
         .exchange()
@@ -103,7 +112,7 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
         .uri("/api/orders/${order.id}/interested-parties")
         .contentType(MediaType.APPLICATION_JSON)
         .body(
-          BodyInserters.fromValue(mockValidRequest),
+          BodyInserters.fromValue(buildMockRequest()),
         )
         .headers(setAuthorisation("AUTH_ADM"))
         .exchange()
@@ -137,14 +146,9 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
         .contentType(MediaType.APPLICATION_JSON)
         .body(
           BodyInserters.fromValue(
-            """
-            {
-              "notifyingOrganisation": "PROBATION",
-              "responsibleOrganisation": "HOME_OFFICE",
-              "responsibleOfficerName": "Jeff",
-              "responsibleOfficerPhoneNumber": "01234567890"
-            }
-            """.trimIndent(),
+            buildMockRequest(
+              responsibleOrganisationEmail = "",
+            ),
           ),
         )
         .headers(setAuthorisation("AUTH_ADM"))
@@ -155,13 +159,17 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
         .returnResult()
         .responseBody!!
 
-      Assertions.assertThat(interestedParties.notifyingOrganisation).isEqualTo("PROBATION")
+      Assertions.assertThat(interestedParties.notifyingOrganisation).isEqualTo(mockNotifyingOrganisation)
       Assertions.assertThat(interestedParties.notifyingOrganisationName).isEqualTo("")
-      Assertions.assertThat(interestedParties.notifyingOrganisationEmail).isEqualTo("")
-      Assertions.assertThat(interestedParties.responsibleOfficerName).isEqualTo("Jeff")
-      Assertions.assertThat(interestedParties.responsibleOfficerPhoneNumber).isEqualTo("01234567890")
-      Assertions.assertThat(interestedParties.responsibleOrganisation).isEqualTo("HOME_OFFICE")
-      Assertions.assertThat(interestedParties.responsibleOrganisationRegion).isEqualTo("")
+      Assertions.assertThat(interestedParties.notifyingOrganisationEmail).isEqualTo(mockNotifyingOrganisationEmail)
+      Assertions.assertThat(interestedParties.responsibleOfficerName).isEqualTo(mockResponsibleOfficerName)
+      Assertions.assertThat(
+        interestedParties.responsibleOfficerPhoneNumber,
+      ).isEqualTo(mockResponsibleOfficerPhoneNumber)
+      Assertions.assertThat(interestedParties.responsibleOrganisation).isEqualTo(mockResponsibleOrganisation)
+      Assertions.assertThat(
+        interestedParties.responsibleOrganisationRegion,
+      ).isEqualTo(mockResponsibleOrganisationRegion)
       Assertions.assertThat(interestedParties.responsibleOrganisationEmail).isEqualTo("")
     }
 
@@ -188,12 +196,15 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
         .responseBody
 
       Assertions.assertThat(result).isNotNull
-      Assertions.assertThat(result).hasSize(4)
       Assertions.assertThat(result?.sortedBy { it.field }).isEqualTo(
         listOf(
           ValidationError(
             "notifyingOrganisation",
             ValidationErrors.InterestedParties.NOTIFYING_ORGANISATION_REQUIRED,
+          ),
+          ValidationError(
+            "notifyingOrganisationEmail",
+            ValidationErrors.InterestedParties.TEAM_EMAIL_REQUIRED,
           ),
           ValidationError(
             "responsibleOfficerName",
@@ -213,7 +224,7 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
 
     @ParameterizedTest(name = "it should return a validation error for region={0} when responsible org is probation")
     @ValueSource(strings = ["", "NORTH_EAST_AND_CUMBRIA"])
-    fun `it should return a validation error for invalid regions when responsible organisation is probation`(
+    fun `it should return a validation error for invalid region when responsible organisation is probation`(
       value: String,
     ) {
       val order = createOrder()
@@ -223,13 +234,11 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
         .contentType(MediaType.APPLICATION_JSON)
         .body(
           BodyInserters.fromValue(
-            """
-            {
-              "notifyingOrganisation": "PROBATION",
-              "responsibleOrganisation": "PROBATION",
-              "responsibleOrganisationRegion": "$value"
-            }
-            """.trimIndent(),
+            buildMockRequest(
+              notifyingOrganisation = "PROBATION",
+              responsibleOrganisation = "PROBATION",
+              responsibleOrganisationRegion = value,
+            ),
           ),
         )
         .headers(setAuthorisation("AUTH_ADM"))
@@ -241,17 +250,8 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
         .responseBody
 
       Assertions.assertThat(result).isNotNull
-      Assertions.assertThat(result).hasSize(3)
       Assertions.assertThat(result?.sortedBy { it.field }).isEqualTo(
         listOf(
-          ValidationError(
-            "responsibleOfficerName",
-            ValidationErrors.InterestedParties.RESPONSIBLE_OFFICER_FULL_NAME_REQUIRED,
-          ),
-          ValidationError(
-            "responsibleOfficerPhoneNumber",
-            ValidationErrors.InterestedParties.RESPONSIBLE_OFFICER_TELEPHONE_NUMBER_REQUIRED,
-          ),
           ValidationError(
             "responsibleOrganisationRegion",
             ValidationErrors.InterestedParties.RESPONSIBLE_ORGANISATION_REGION_REQUIRED,
@@ -269,15 +269,10 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
         .contentType(MediaType.APPLICATION_JSON)
         .body(
           BodyInserters.fromValue(
-            """
-            {
-              "notifyingOrganisation": "PROBATION",
-              "responsibleOrganisation": "PROBATION",
-              "responsibleOrganisationRegion": "YORKSHIRE_AND_THE_HUMBER",
-              "responsibleOfficerName": "Jeff",
-              "responsibleOfficerPhoneNumber": "01234567890"
-            }
-            """.trimIndent(),
+            buildMockRequest(
+              responsibleOrganisation = "PROBATION",
+              responsibleOrganisationRegion = "YORKSHIRE_AND_THE_HUMBER",
+            ),
           ),
         )
         .headers(setAuthorisation("AUTH_ADM"))
@@ -288,14 +283,16 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
         .returnResult()
         .responseBody!!
 
-      Assertions.assertThat(interestedParties.notifyingOrganisation).isEqualTo("PROBATION")
-      Assertions.assertThat(interestedParties.notifyingOrganisationName).isEqualTo("")
-      Assertions.assertThat(interestedParties.notifyingOrganisationEmail).isEqualTo("")
-      Assertions.assertThat(interestedParties.responsibleOfficerName).isEqualTo("Jeff")
-      Assertions.assertThat(interestedParties.responsibleOfficerPhoneNumber).isEqualTo("01234567890")
+      Assertions.assertThat(interestedParties.notifyingOrganisation).isEqualTo(mockNotifyingOrganisation)
+      Assertions.assertThat(interestedParties.notifyingOrganisationName).isEqualTo(mockNotifyingOrganisationName)
+      Assertions.assertThat(interestedParties.notifyingOrganisationEmail).isEqualTo(mockNotifyingOrganisationEmail)
+      Assertions.assertThat(interestedParties.responsibleOfficerName).isEqualTo(mockResponsibleOfficerName)
+      Assertions.assertThat(
+        interestedParties.responsibleOfficerPhoneNumber,
+      ).isEqualTo(mockResponsibleOfficerPhoneNumber)
       Assertions.assertThat(interestedParties.responsibleOrganisation).isEqualTo("PROBATION")
       Assertions.assertThat(interestedParties.responsibleOrganisationRegion).isEqualTo("YORKSHIRE_AND_THE_HUMBER")
-      Assertions.assertThat(interestedParties.responsibleOrganisationEmail).isEqualTo("")
+      Assertions.assertThat(interestedParties.responsibleOrganisationEmail).isEqualTo(mockResponsibleOrganisationEmail)
     }
 
     @ParameterizedTest(name = "it should return a validation error for region={0} when responsible org is YJS")
@@ -326,9 +323,12 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
         .responseBody
 
       Assertions.assertThat(result).isNotNull
-      Assertions.assertThat(result).hasSize(3)
       Assertions.assertThat(result?.sortedBy { it.field }).isEqualTo(
         listOf(
+          ValidationError(
+            "notifyingOrganisationEmail",
+            ValidationErrors.InterestedParties.TEAM_EMAIL_REQUIRED,
+          ),
           ValidationError(
             "responsibleOfficerName",
             ValidationErrors.InterestedParties.RESPONSIBLE_OFFICER_FULL_NAME_REQUIRED,
@@ -394,13 +394,10 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
         .contentType(MediaType.APPLICATION_JSON)
         .body(
           BodyInserters.fromValue(
-            """
-            {
-              "notifyingOrganisation": "PRISON",
-              "notifyingOrganisationName": "$value",
-              "responsibleOrganisation": "FIELD_MONITORING_SERVICE"
-            }
-            """.trimIndent(),
+            buildMockRequest(
+              notifyingOrganisation = "PRISON",
+              notifyingOrganisationName = value,
+            ),
           ),
         )
         .headers(setAuthorisation("AUTH_ADM"))
@@ -412,20 +409,11 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
         .responseBody
 
       Assertions.assertThat(result).isNotNull
-      Assertions.assertThat(result).hasSize(3)
       Assertions.assertThat(result?.sortedBy { it.field }).isEqualTo(
         listOf(
           ValidationError(
             "notifyingOrganisationName",
             ValidationErrors.InterestedParties.NOTIFYING_ORGANISATION_NAME_REQUIRED,
-          ),
-          ValidationError(
-            "responsibleOfficerName",
-            ValidationErrors.InterestedParties.RESPONSIBLE_OFFICER_FULL_NAME_REQUIRED,
-          ),
-          ValidationError(
-            "responsibleOfficerPhoneNumber",
-            ValidationErrors.InterestedParties.RESPONSIBLE_OFFICER_TELEPHONE_NUMBER_REQUIRED,
           ),
         ),
       )
@@ -440,16 +428,10 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
         .contentType(MediaType.APPLICATION_JSON)
         .body(
           BodyInserters.fromValue(
-            """
-            {
-              "notifyingOrganisation": "PRISON",
-              "notifyingOrganisationName": "BELMARSH_PRISON",
-              "responsibleOrganisation": "FIELD_MONITORING_SERVICE",
-              "responsibleOfficerName": "Jeff Testberg",
-              "notifyingOrganisationEmail": "test@test.com",
-              "responsibleOfficerPhoneNumber": "01234567890"
-            }
-            """.trimIndent(),
+            buildMockRequest(
+              notifyingOrganisation = "PRISON",
+              notifyingOrganisationName = "BELMARSH_PRISON",
+            ),
           ),
         )
         .headers(setAuthorisation("AUTH_ADM"))
@@ -462,12 +444,16 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
 
       Assertions.assertThat(interestedParties.notifyingOrganisation).isEqualTo("PRISON")
       Assertions.assertThat(interestedParties.notifyingOrganisationName).isEqualTo("BELMARSH_PRISON")
-      Assertions.assertThat(interestedParties.notifyingOrganisationEmail).isEqualTo("test@test.com")
-      Assertions.assertThat(interestedParties.responsibleOfficerName).isEqualTo("Jeff Testberg")
-      Assertions.assertThat(interestedParties.responsibleOfficerPhoneNumber).isEqualTo("01234567890")
-      Assertions.assertThat(interestedParties.responsibleOrganisation).isEqualTo("FIELD_MONITORING_SERVICE")
-      Assertions.assertThat(interestedParties.responsibleOrganisationRegion).isEqualTo("")
-      Assertions.assertThat(interestedParties.responsibleOrganisationEmail).isEqualTo("")
+      Assertions.assertThat(interestedParties.notifyingOrganisationEmail).isEqualTo(mockNotifyingOrganisationEmail)
+      Assertions.assertThat(interestedParties.responsibleOfficerName).isEqualTo(mockResponsibleOfficerName)
+      Assertions.assertThat(
+        interestedParties.responsibleOfficerPhoneNumber,
+      ).isEqualTo(mockResponsibleOfficerPhoneNumber)
+      Assertions.assertThat(interestedParties.responsibleOrganisation).isEqualTo(mockResponsibleOrganisation)
+      Assertions.assertThat(
+        interestedParties.responsibleOrganisationRegion,
+      ).isEqualTo(mockResponsibleOrganisationRegion)
+      Assertions.assertThat(interestedParties.responsibleOrganisationEmail).isEqualTo(mockResponsibleOrganisationEmail)
     }
 
     @ParameterizedTest(name = "it should return a validation error for name={0} when notifying org is CROWN_COURT")
@@ -482,13 +468,10 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
         .contentType(MediaType.APPLICATION_JSON)
         .body(
           BodyInserters.fromValue(
-            """
-            {
-              "notifyingOrganisation": "CROWN_COURT",
-              "notifyingOrganisationName": "$value",
-              "responsibleOrganisation": "FIELD_MONITORING_SERVICE"
-            }
-            """.trimIndent(),
+            buildMockRequest(
+              notifyingOrganisation = "CROWN_COURT",
+              notifyingOrganisationName = value,
+            ),
           ),
         )
         .headers(setAuthorisation("AUTH_ADM"))
@@ -500,20 +483,11 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
         .responseBody
 
       Assertions.assertThat(result).isNotNull
-      Assertions.assertThat(result).hasSize(3)
       Assertions.assertThat(result?.sortedBy { it.field }).isEqualTo(
         listOf(
           ValidationError(
             "notifyingOrganisationName",
             ValidationErrors.InterestedParties.NOTIFYING_ORGANISATION_NAME_REQUIRED,
-          ),
-          ValidationError(
-            "responsibleOfficerName",
-            ValidationErrors.InterestedParties.RESPONSIBLE_OFFICER_FULL_NAME_REQUIRED,
-          ),
-          ValidationError(
-            "responsibleOfficerPhoneNumber",
-            ValidationErrors.InterestedParties.RESPONSIBLE_OFFICER_TELEPHONE_NUMBER_REQUIRED,
           ),
         ),
       )
@@ -528,15 +502,10 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
         .contentType(MediaType.APPLICATION_JSON)
         .body(
           BodyInserters.fromValue(
-            """
-            {
-              "notifyingOrganisation": "CROWN_COURT",
-              "notifyingOrganisationName": "YORK_CROWN_COURT",
-              "responsibleOrganisation": "FIELD_MONITORING_SERVICE",
-              "responsibleOfficerName": "Jeff",
-              "responsibleOfficerPhoneNumber": "01234567890"
-            }
-            """.trimIndent(),
+            buildMockRequest(
+              notifyingOrganisation = "CROWN_COURT",
+              notifyingOrganisationName = "YORK_CROWN_COURT",
+            ),
           ),
         )
         .headers(setAuthorisation("AUTH_ADM"))
@@ -549,12 +518,16 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
 
       Assertions.assertThat(interestedParties.notifyingOrganisation).isEqualTo("CROWN_COURT")
       Assertions.assertThat(interestedParties.notifyingOrganisationName).isEqualTo("YORK_CROWN_COURT")
-      Assertions.assertThat(interestedParties.notifyingOrganisationEmail).isEqualTo("")
-      Assertions.assertThat(interestedParties.responsibleOfficerName).isEqualTo("Jeff")
-      Assertions.assertThat(interestedParties.responsibleOfficerPhoneNumber).isEqualTo("01234567890")
-      Assertions.assertThat(interestedParties.responsibleOrganisation).isEqualTo("FIELD_MONITORING_SERVICE")
-      Assertions.assertThat(interestedParties.responsibleOrganisationRegion).isEqualTo("")
-      Assertions.assertThat(interestedParties.responsibleOrganisationEmail).isEqualTo("")
+      Assertions.assertThat(interestedParties.notifyingOrganisationEmail).isEqualTo(mockNotifyingOrganisationEmail)
+      Assertions.assertThat(interestedParties.responsibleOfficerName).isEqualTo(mockResponsibleOfficerName)
+      Assertions.assertThat(
+        interestedParties.responsibleOfficerPhoneNumber,
+      ).isEqualTo(mockResponsibleOfficerPhoneNumber)
+      Assertions.assertThat(interestedParties.responsibleOrganisation).isEqualTo(mockResponsibleOrganisation)
+      Assertions.assertThat(
+        interestedParties.responsibleOrganisationRegion,
+      ).isEqualTo(mockResponsibleOrganisationRegion)
+      Assertions.assertThat(interestedParties.responsibleOrganisationEmail).isEqualTo(mockResponsibleOrganisationEmail)
     }
 
     @ParameterizedTest(name = "it should return an error for name={0} when notifying org is MAGISTRATES_COURT")
@@ -569,13 +542,10 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
         .contentType(MediaType.APPLICATION_JSON)
         .body(
           BodyInserters.fromValue(
-            """
-            {
-              "notifyingOrganisation": "MAGISTRATES_COURT",
-              "notifyingOrganisationName": "$value",
-              "responsibleOrganisation": "FIELD_MONITORING_SERVICE"
-            }
-            """.trimIndent(),
+            buildMockRequest(
+              notifyingOrganisation = "MAGISTRATES_COURT",
+              notifyingOrganisationName = value,
+            ),
           ),
         )
         .headers(setAuthorisation("AUTH_ADM"))
@@ -587,20 +557,11 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
         .responseBody
 
       Assertions.assertThat(result).isNotNull
-      Assertions.assertThat(result).hasSize(3)
       Assertions.assertThat(result?.sortedBy { it.field }).isEqualTo(
         listOf(
           ValidationError(
             "notifyingOrganisationName",
             ValidationErrors.InterestedParties.NOTIFYING_ORGANISATION_NAME_REQUIRED,
-          ),
-          ValidationError(
-            "responsibleOfficerName",
-            ValidationErrors.InterestedParties.RESPONSIBLE_OFFICER_FULL_NAME_REQUIRED,
-          ),
-          ValidationError(
-            "responsibleOfficerPhoneNumber",
-            ValidationErrors.InterestedParties.RESPONSIBLE_OFFICER_TELEPHONE_NUMBER_REQUIRED,
           ),
         ),
       )
@@ -615,15 +576,10 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
         .contentType(MediaType.APPLICATION_JSON)
         .body(
           BodyInserters.fromValue(
-            """
-            {
-              "notifyingOrganisation": "MAGISTRATES_COURT",
-              "notifyingOrganisationName": "BRADFORD_AND_KEIGHLEY_MAGISTRATES_COURT",
-              "responsibleOrganisation": "FIELD_MONITORING_SERVICE",
-              "responsibleOfficerName": "Jeff",
-              "responsibleOfficerPhoneNumber": "01234567890"
-            }
-            """.trimIndent(),
+            buildMockRequest(
+              notifyingOrganisation = "MAGISTRATES_COURT",
+              notifyingOrganisationName = "BRADFORD_AND_KEIGHLEY_MAGISTRATES_COURT",
+            ),
           ),
         )
         .headers(setAuthorisation("AUTH_ADM"))
@@ -638,12 +594,16 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
       Assertions.assertThat(
         interestedParties.notifyingOrganisationName,
       ).isEqualTo("BRADFORD_AND_KEIGHLEY_MAGISTRATES_COURT")
-      Assertions.assertThat(interestedParties.notifyingOrganisationEmail).isEqualTo("")
-      Assertions.assertThat(interestedParties.responsibleOfficerName).isEqualTo("Jeff")
-      Assertions.assertThat(interestedParties.responsibleOfficerPhoneNumber).isEqualTo("01234567890")
-      Assertions.assertThat(interestedParties.responsibleOrganisation).isEqualTo("FIELD_MONITORING_SERVICE")
-      Assertions.assertThat(interestedParties.responsibleOrganisationRegion).isEqualTo("")
-      Assertions.assertThat(interestedParties.responsibleOrganisationEmail).isEqualTo("")
+      Assertions.assertThat(interestedParties.notifyingOrganisationEmail).isEqualTo(mockNotifyingOrganisationEmail)
+      Assertions.assertThat(interestedParties.responsibleOfficerName).isEqualTo(mockResponsibleOfficerName)
+      Assertions.assertThat(
+        interestedParties.responsibleOfficerPhoneNumber,
+      ).isEqualTo(mockResponsibleOfficerPhoneNumber)
+      Assertions.assertThat(interestedParties.responsibleOrganisation).isEqualTo(mockResponsibleOrganisation)
+      Assertions.assertThat(
+        interestedParties.responsibleOrganisationRegion,
+      ).isEqualTo(mockResponsibleOrganisationRegion)
+      Assertions.assertThat(interestedParties.responsibleOrganisationEmail).isEqualTo(mockResponsibleOrganisationEmail)
     }
   }
 }
