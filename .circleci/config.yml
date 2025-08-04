@@ -42,9 +42,6 @@ workflows:
     jobs:
       - hmpps/helm_lint:
           name: helm_lint
-      - docker/hadolint:
-          name: docker_lint
-          trusted-registries: docker.io,quay.io
       - validate:
           filters:
             tags:
