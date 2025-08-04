@@ -1,9 +1,10 @@
-package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms
+package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model
 
 import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Address
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationAndRisk
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationLocation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InterestedParties
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.MandatoryAttendanceConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.MonitoringConditions
@@ -11,6 +12,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ProbationDeliveryUnit
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ResponsibleAdult
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.TrailMonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MonitoringConditionType
@@ -22,10 +24,10 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YesNoUnknown
 import java.time.ZoneId
 import java.time.ZonedDateTime
-import java.util.*
+import java.util.UUID
 
 @ActiveProfiles("test")
-abstract class FmsTestBase {
+abstract class OrderTestBase {
   protected fun createOrder(
     deviceWearer: DeviceWearer = createDeviceWearer(),
     addresses: List<Address> = listOf(createAddress()),
@@ -35,6 +37,8 @@ abstract class FmsTestBase {
     mandatoryAttendanceConditions: List<MandatoryAttendanceConditions> = listOf(),
     interestedParties: InterestedParties? = null,
     probationDeliveryUnits: ProbationDeliveryUnit? = null,
+    trailMonitoringConditions: TrailMonitoringConditions? = null,
+    installationLocation: InstallationLocation? = null,
   ): Order {
     val orderId = UUID.randomUUID()
     val versionId = UUID.randomUUID()
@@ -66,6 +70,10 @@ abstract class FmsTestBase {
     if (mandatoryAttendanceConditions.isNotEmpty()) {
       order.monitoringConditions?.mandatoryAttendance = true
     }
+
+    order.monitoringConditionsTrail = trailMonitoringConditions
+
+    order.installationLocation = installationLocation
 
     return order
   }

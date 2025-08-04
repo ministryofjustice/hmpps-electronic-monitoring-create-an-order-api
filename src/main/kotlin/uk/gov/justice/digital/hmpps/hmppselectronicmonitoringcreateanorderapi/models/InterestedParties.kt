@@ -49,4 +49,10 @@ data class InterestedParties(
   @OneToOne
   @JoinColumn(name = "VERSION_ID", updatable = false, insertable = false)
   private val version: OrderVersion? = null,
-)
+) {
+  val isValid: Boolean
+    get() = (
+      notifyingOrganisation.isNotBlank() &&
+        responsibleOrganisation.isNotBlank()
+      )
+}
