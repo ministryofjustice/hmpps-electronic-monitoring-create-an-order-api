@@ -133,7 +133,7 @@ class ScenarioTests : IntegrationTestBase() {
 
     repo.save(variation)
 
-    stubAttachments(variation)
+    stubAttachments(variation, "x_serg2_ems_csm_sr_mo_existing")
 
     // Submit order
     webTestClient.post()
@@ -167,14 +167,14 @@ class ScenarioTests : IntegrationTestBase() {
     return objectMapper.readValue(rawOrder)
   }
 
-  private fun stubAttachments(order: Order) {
+  private fun stubAttachments(order: Order, tableName: String = "x_serg2_ems_csm_sr_mo_new") {
     if (order.additionalDocuments.isNotEmpty()) {
       sercoApi.stubSubmitAttachment(
         HttpStatus.OK,
         FmsAttachmentResponse(
           result = FmsAttachmentResult(
             fileName = order.additionalDocuments[0].fileName!!,
-            tableName = "x_serg2_ems_csm_sr_mo_new",
+            tableName = tableName,
             sysId = "MockSysId",
             tableSysId = "MockDeviceWearerId",
           ),
@@ -189,7 +189,7 @@ class ScenarioTests : IntegrationTestBase() {
         FmsAttachmentResponse(
           result = FmsAttachmentResult(
             fileName = order.enforcementZoneConditions[0].fileName!!,
-            tableName = "x_serg2_ems_csm_sr_mo_new",
+            tableName = tableName,
             sysId = "MockSysId",
             tableSysId = "MockDeviceWearerId",
           ),
