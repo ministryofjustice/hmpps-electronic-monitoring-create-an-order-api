@@ -54,7 +54,6 @@ workflows:
                 - main
           requires:
             - validate
-            - docker_lint
       - hmpps/deploy_env:
           name: deploy_dev
           env: "dev"
