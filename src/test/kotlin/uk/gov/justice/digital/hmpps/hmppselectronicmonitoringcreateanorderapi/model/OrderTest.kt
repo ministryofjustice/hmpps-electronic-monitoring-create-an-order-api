@@ -54,7 +54,6 @@ class OrderTest : OrderTestBase() {
       notifyingOrganisation = NotifyingOrganisationDDv5.PRISON.name,
       notifyingOrganisationName = PrisonDDv5.GARTH_PRISON.name,
       notifyingOrganisationEmail = "",
-
     ),
   )
 }

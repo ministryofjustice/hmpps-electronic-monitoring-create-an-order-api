@@ -13,6 +13,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.ex
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.SercoAuthMockServerExtension.Companion.sercoAuthApi
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.SercoMockApiExtension.Companion.sercoApi
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.DeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.ErrorResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsAttachmentResponse
@@ -270,6 +271,7 @@ class FmsClientTest : IntegrationTestBase() {
             ByteArrayInputStream("".toByteArray()),
           ),
           documentType = documentType,
+          orderRequestType = RequestType.REQUEST,
         )
       }
 
@@ -309,6 +311,7 @@ class FmsClientTest : IntegrationTestBase() {
             ByteArrayInputStream("".toByteArray()),
           ),
           documentType = documentType,
+          orderRequestType = RequestType.REQUEST,
         )
       }
 

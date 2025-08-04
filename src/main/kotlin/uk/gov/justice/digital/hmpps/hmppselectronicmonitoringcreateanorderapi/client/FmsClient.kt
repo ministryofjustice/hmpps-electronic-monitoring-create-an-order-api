@@ -10,6 +10,7 @@ import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import reactor.core.publisher.Mono
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.CreateSercoEntityException
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.DeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsAttachmentResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsErrorResponse
@@ -130,9 +131,13 @@ class FmsClient(
     caseId: String,
     file: InputStreamResource,
     documentType: String,
+    orderRequestType: RequestType,
   ): FmsAttachmentResponse {
     val token = fmsAuthClient.getClientToken()
-    val tableName = "x_serg2_ems_csm_sr_mo_new"
+    var tableName = "x_serg2_ems_csm_sr_mo_new"
+    if (orderRequestType === RequestType.VARIATION) {
+      tableName = "x_serg2_ems_csm_sr_mo_existing"
+    }
 
     val result = webClient.post()
       .uri { uriBuilder ->

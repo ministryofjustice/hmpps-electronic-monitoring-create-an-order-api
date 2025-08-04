@@ -1652,7 +1652,7 @@ class OrderControllerTest : IntegrationTestBase() {
         FmsAttachmentResponse(
           result = FmsAttachmentResult(
             fileName = order.additionalDocuments[0].fileName!!,
-            tableName = "x_serg2_ems_csm_sr_mo_new",
+            tableName = "x_serg2_ems_csm_sr_mo_existing",
             sysId = "MockSysId",
             tableSysId = "MockDeviceWearerId",
           ),
@@ -1663,7 +1663,7 @@ class OrderControllerTest : IntegrationTestBase() {
         FmsAttachmentResponse(
           result = FmsAttachmentResult(
             fileName = order.enforcementZoneConditions[0].fileName!!,
-            tableName = "x_serg2_ems_csm_sr_mo_new",
+            tableName = "x_serg2_ems_csm_sr_mo_existing",
             sysId = "MockSysId",
             tableSysId = "MockDeviceWearerId",
           ),
