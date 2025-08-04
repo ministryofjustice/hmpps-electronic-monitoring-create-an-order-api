@@ -46,8 +46,6 @@ data class UpdateInterestedPartiesDto(
 ) {
   @AssertTrue(message = ValidationErrors.InterestedParties.NOTIFYING_ORGANISATION_NAME_REQUIRED)
   fun isNotifyingOrganisationName(): Boolean {
-    val b = MagistrateCourtDDv5.entries.any { it.name == notifyingOrganisationName }
-
     if (notifyingOrganisation === NotifyingOrganisationDDv5.PRISON) {
       return PrisonDDv5.entries.any { it.name == notifyingOrganisationName }
     }

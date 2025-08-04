@@ -212,6 +212,7 @@ data class OrderVersion(
         adultOrHasResponsibleAdult &&
         hasPrimaryAddressOrNoFixedAbode &&
         monitoringConditionsAreValid &&
-        isOrderOrHasVariationDetails
+        isOrderOrHasVariationDetails &&
+        interestedParties?.isValid == true
       )
 }

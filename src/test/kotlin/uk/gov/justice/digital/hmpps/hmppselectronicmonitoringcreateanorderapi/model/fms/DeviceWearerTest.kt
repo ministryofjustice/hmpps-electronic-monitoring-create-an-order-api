@@ -6,10 +6,11 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 import org.springframework.test.context.ActiveProfiles
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.OrderTestBase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.DeviceWearer as FmsDeviceWearer
 
 @ActiveProfiles("test")
-class DeviceWearerTest : FmsTestBase() {
+class DeviceWearerTest : OrderTestBase() {
 
   @ParameterizedTest(name = "it should map saved sex values to Serco - {0} -> {1}")
   @MethodSource("sexValues")
