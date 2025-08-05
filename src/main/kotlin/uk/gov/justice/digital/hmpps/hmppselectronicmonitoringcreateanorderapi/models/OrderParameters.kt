@@ -16,6 +16,6 @@ data class OrderParameters(
   @Column(name = "VERSION_ID", nullable = false)
   val versionId: UUID,
 
-  @Column(name = "HAVE_PHOTO", nullable = false)
+  @Column(name = "HAVE_PHOTO", nullable = true)
   val havePhoto: Boolean,
 )
