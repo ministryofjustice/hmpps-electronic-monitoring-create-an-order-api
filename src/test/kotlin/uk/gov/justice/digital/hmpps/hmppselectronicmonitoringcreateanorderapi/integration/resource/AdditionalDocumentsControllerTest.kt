@@ -13,11 +13,13 @@ import org.springframework.http.HttpStatus.NOT_FOUND
 import org.springframework.http.MediaType
 import org.springframework.http.client.MultipartBodyBuilder
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
+import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.DocumentApiClient
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.HmppsDocumentManagementApiExtension.Companion.documentApi
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.documentmanagement.DocumentUploadResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DocumentType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidationError
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 import java.nio.file.Files
 import java.nio.file.Paths
@@ -301,7 +303,8 @@ class AdditionalDocumentsControllerTest : IntegrationTestBase() {
   @DisplayName("GET /api/orders/{orderId}/document-type/{documentType}/raw")
   inner class GetDocument {
     @Suppress("ktlint:standard:max-line-length")
-    private val filePath = "src/test/kotlin/uk/gov/justice/digital/hmpps/hmppselectronicmonitoringcreateanorderapi/integration/assets/profile.jpeg"
+    private val filePath =
+      "src/test/kotlin/uk/gov/justice/digital/hmpps/hmppselectronicmonitoringcreateanorderapi/integration/assets/profile.jpeg"
 
     @Test
     fun `it should return not found if the document does not exist`() {
@@ -453,6 +456,64 @@ class AdditionalDocumentsControllerTest : IntegrationTestBase() {
       val updatedOrder = getOrder(order.id)
 
       Assertions.assertThat(updatedOrder.additionalDocuments).hasSize(0)
+    }
+  }
+
+  @Nested
+  @DisplayName("PUT /api/orders/{orderId}/attachments/have-photo")
+  inner class HavePhoto {
+    @Test
+    fun `Should update the order parameters`() {
+      val order = createOrder()
+
+      webTestClient.put()
+        .uri("/api/orders/${order.id}/attachments/have-photo")
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(
+          BodyInserters.fromValue(
+            """
+            {
+              "havePhoto": true
+            }
+            """.trimIndent(),
+          ),
+        )
+        .headers(setAuthorisation("AUTH_ADM"))
+        .exchange()
+        .expectStatus()
+        .isOk
+
+      val updatedOrder = getOrder(order.id)
+
+      Assertions.assertThat(updatedOrder.orderParameters?.havePhoto).isEqualTo(true)
+    }
+
+    @Test
+    fun `Should return a 400 if there is no havePhoto field`() {
+      val order = createOrder()
+
+      val result = webTestClient.put()
+        .uri("/api/orders/${order.id}/attachments/have-photo")
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(
+          BodyInserters.fromValue(
+            """
+            {
+              "havePhoto": null
+            }
+            """.trimIndent(),
+          ),
+        )
+        .headers(setAuthorisation("AUTH_ADM"))
+        .exchange()
+        .expectStatus()
+        .isBadRequest()
+        .expectBodyList(ValidationError::class.java)
+        .returnResult()
+
+      Assertions.assertThat(result.responseBody!!).contains(
+        ValidationError("havePhoto", "Select if you have a photo to upload"),
+      )
     }
   }
 }
