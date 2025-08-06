@@ -6,7 +6,6 @@ import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.http.client.MultipartBodyBuilder
 import org.springframework.stereotype.Service
-import org.springframework.util.MultiValueMap
 import org.springframework.web.multipart.MultipartFile
 import reactor.core.publisher.Flux
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.DocumentApiClient
@@ -70,11 +69,7 @@ class AdditionalDocumentService(val webClient: DocumentApiClient) : OrderSection
     orderRepo.save(order)
   }
 
-  fun updateHavePhoto(
-    orderId: UUID,
-    username: String,
-    updateRecord: UpdateHavePhotoDto
-  ): OrderParameters {
+  fun updateHavePhoto(orderId: UUID, username: String, updateRecord: UpdateHavePhotoDto): OrderParameters {
     val order = this.findEditableOrder(orderId, username)
 
     // Either update current params or create a new record if one does not exist for this order version

@@ -83,9 +83,8 @@ class AdditionalDocumentsController(@Autowired val documentService: AdditionalDo
   fun havePhoto(
     @PathVariable orderId: UUID,
     @RequestBody @Valid updateRecord: UpdateHavePhotoDto,
-    authentication: Authentication
+    authentication: Authentication,
   ): ResponseEntity<OrderParameters> {
-
     val username = authentication.name
     val risk = documentService.updateHavePhoto(
       orderId,

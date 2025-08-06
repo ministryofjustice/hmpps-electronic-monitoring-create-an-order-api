@@ -24,7 +24,7 @@ data class Order(
   @OneToMany(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "order", orphanRemoval = true)
   var versions: MutableList<OrderVersion> = mutableListOf(),
 
-  ) {
+) {
   fun getCurrentVersion(): OrderVersion = versions.maxBy { it.versionId }
 
   fun deleteCurrentVersion() {

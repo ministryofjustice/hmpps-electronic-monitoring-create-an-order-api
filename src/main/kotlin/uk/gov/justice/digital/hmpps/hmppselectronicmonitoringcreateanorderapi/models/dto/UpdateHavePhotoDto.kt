@@ -5,5 +5,5 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.da
 
 class UpdateHavePhotoDto(
   @field:NotNull(message = ValidationErrors.AdditionalDocuments.HAVE_PHOTO_REQUIRED)
-  val havePhoto: Boolean
+  val havePhoto: Boolean,
 )
