@@ -77,6 +77,9 @@ class AdditionalDocumentService(val webClient: DocumentApiClient) : OrderSection
       order.orderParameters =
         OrderParameters(versionId = order.getCurrentVersion().id, havePhoto = updateRecord.havePhoto)
     } else {
+      if (order.orderParameters?.havePhoto == true && updateRecord.havePhoto == false) {
+        order.additionalDocuments.removeAll { it.fileType == DocumentType.PHOTO_ID }
+      }
       order.orderParameters?.havePhoto = updateRecord.havePhoto
     }
 

@@ -86,12 +86,12 @@ class AdditionalDocumentsController(@Autowired val documentService: AdditionalDo
     authentication: Authentication,
   ): ResponseEntity<OrderParameters> {
     val username = authentication.name
-    val risk = documentService.updateHavePhoto(
+    val parameters = documentService.updateHavePhoto(
       orderId,
       username,
       updateRecord,
     )
 
-    return ResponseEntity(risk, HttpStatus.OK)
+    return ResponseEntity(parameters, HttpStatus.OK)
   }
 }
