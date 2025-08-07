@@ -101,7 +101,7 @@ class HmppsDocumentManagementApi : WireMockServer(WIREMOCK_PORT) {
     )
   }
 
-  fun stubRetryScenario(uuid: String = "xxx") {
+  fun stubGetDocumentRetryScenario(uuid: String = "xxx") {
     val file = Files.readAllBytes(
       Paths.get(
         this.filePath,
@@ -126,6 +126,36 @@ class HmppsDocumentManagementApi : WireMockServer(WIREMOCK_PORT) {
             .withHeader("Content-Length", file.size.toString())
             .withBody(
               file,
+            )
+            .withStatus(200),
+        ),
+    )
+  }
+
+  fun stubUploadDocumentRetryScenario(result: DocumentUploadResponse) {
+    val file = Files.readAllBytes(
+      Paths.get(
+        this.filePath,
+      ),
+    )
+    stubFor(
+      post(urlPathTemplate("/documents/CEMO_ATTACHMENT/{uuid}")).inScenario("post document retry scenario")
+        .whenScenarioStateIs(STARTED)
+        .willReturn(
+          aResponse()
+            .withStatus(500),
+        )
+        .willSetStateTo("Okay state"),
+    )
+
+    stubFor(
+      post(urlPathTemplate("/documents/CEMO_ATTACHMENT/{uuid}")).inScenario("post document retry scenario")
+        .whenScenarioStateIs("Okay state")
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withBody(
+              mapper.writeValueAsString(result),
             )
             .withStatus(200),
         ),

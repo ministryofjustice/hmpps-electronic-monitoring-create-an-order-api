@@ -8,6 +8,7 @@ import org.springframework.http.client.MultipartBodyBuilder
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.BodyInserters
 import org.springframework.web.reactive.function.client.WebClient
+import org.springframework.web.reactive.function.client.WebClientResponseException
 import org.springframework.web.reactive.function.client.toEntity
 import reactor.core.publisher.Flux
 import reactor.util.retry.Retry
@@ -39,6 +40,13 @@ class DocumentApiClient(private val documentManagementApiWebClient: WebClient) {
         },
       )
       .bodyToMono(DocumentUploadResponse::class.java)
+      .retryWhen(
+        Retry.fixedDelay(1, Duration.ofMillis(250))
+          // Only retry on 5xx status error, do not retry for bad request
+          .filter {
+            it is WebClientResponseException && it.statusCode.is5xxServerError
+          },
+      )
       .block()
 
   fun getDocument(documentUuid: String): ResponseEntity<Flux<InputStreamResource>>? = documentManagementApiWebClient
