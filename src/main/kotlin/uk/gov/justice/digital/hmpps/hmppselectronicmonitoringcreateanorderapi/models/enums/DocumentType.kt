@@ -26,7 +26,7 @@ enum class DocumentType(val config: FileUploadConfig) {
   ENFORCEMENT_ZONE_MAP(
     FileUploadConfig(
       maxSizeInMB = 10,
-      allowedExtensions = listOf("pdf", "jpeg", "jpg"),
+      allowedExtensions = listOf("pdf", "png", "jpeg", "jpg"),
       invalidExtensionMessage = ValidationErrors.EnforcementZone.INVALID_MAP_FILE_EXTENSION,
     ),
   ),
