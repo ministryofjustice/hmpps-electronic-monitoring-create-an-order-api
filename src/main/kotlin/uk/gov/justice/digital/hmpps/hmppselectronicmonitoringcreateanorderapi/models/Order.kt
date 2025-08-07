@@ -217,4 +217,12 @@ data class Order(
     get() {
       return getCurrentVersion().dataDictionaryVersion
     }
+
+  var orderParameters: OrderParameters?
+    get() {
+      return getCurrentVersion().orderParameters
+    }
+    set(orderParameters) {
+      getCurrentVersion().orderParameters = orderParameters
+    }
 }

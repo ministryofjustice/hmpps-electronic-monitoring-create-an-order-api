@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource
 
+import jakarta.validation.Valid
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.io.InputStreamResource
 import org.springframework.http.HttpHeaders
@@ -12,11 +13,15 @@ import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.PutMapping
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AdditionalDocument
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderParameters
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateHavePhotoDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DocumentType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.AdditionalDocumentService
 import java.util.UUID
@@ -72,5 +77,21 @@ class AdditionalDocumentsController(@Autowired val documentService: AdditionalDo
     documentService.deleteDocument(orderId, username, fileType)
 
     return ResponseEntity(HttpStatus.NO_CONTENT)
+  }
+
+  @PutMapping("/orders/{orderId}/attachments/have-photo")
+  fun havePhoto(
+    @PathVariable orderId: UUID,
+    @RequestBody @Valid updateRecord: UpdateHavePhotoDto,
+    authentication: Authentication,
+  ): ResponseEntity<OrderParameters> {
+    val username = authentication.name
+    val parameters = documentService.updateHavePhoto(
+      orderId,
+      username,
+      updateRecord,
+    )
+
+    return ResponseEntity(parameters, HttpStatus.OK)
   }
 }
