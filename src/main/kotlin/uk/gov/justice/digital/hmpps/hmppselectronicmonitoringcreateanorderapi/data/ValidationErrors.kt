@@ -75,7 +75,7 @@ object ValidationErrors {
     const val END_DATE_MUST_BE_IN_FUTURE: String = "Exclusion zone end date must be in the future"
     const val START_DATE_REQUIRED: String = "Exclusion zone start date is required"
     const val TYPE_REQUIRED: String = "Exclusion Zone type is required"
-    const val INVALID_MAP_FILE_EXTENSION: String = "Select a PDF, JPEG or JPG"
+    const val INVALID_MAP_FILE_EXTENSION: String = "Select a PDF, PNG, JPEG or JPG"
   }
 
   object IdentityNumbers {

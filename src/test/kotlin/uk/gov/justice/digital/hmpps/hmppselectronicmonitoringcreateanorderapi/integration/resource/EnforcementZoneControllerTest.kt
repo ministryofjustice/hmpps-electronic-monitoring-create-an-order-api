@@ -359,8 +359,8 @@ class EnforcementZoneControllerTest : IntegrationTestBase() {
       Assertions.assertThat(result.responseBody!!).contains(
         ErrorResponse(
           status = BAD_REQUEST,
-          developerMessage = "Validation failure: Select a PDF, JPEG or JPG",
-          userMessage = "Select a PDF, JPEG or JPG",
+          developerMessage = "Validation failure: Select a PDF, PNG, JPEG or JPG",
+          userMessage = "Select a PDF, PNG, JPEG or JPG",
         ),
       )
     }

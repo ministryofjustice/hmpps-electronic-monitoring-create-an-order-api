@@ -16,8 +16,6 @@ import java.util.*
 @Service
 class EnforcementZoneService(val webClient: DocumentApiClient) : OrderSectionServiceBase() {
 
-  val allowedFileExtensions: List<String> = listOf("pdf", "jpeg", "jpg")
-
   fun updateEnforcementZone(orderId: UUID, username: String, updateRecord: UpdateEnforcementZoneDto) {
     val order = findEditableOrder(orderId, username)
     val zone = order.enforcementZoneConditions.firstOrNull { it.zoneId == updateRecord.zoneId }
