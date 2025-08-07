@@ -10,7 +10,9 @@ import org.springframework.web.multipart.MultipartFile
 import reactor.core.publisher.Flux
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.DocumentApiClient
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AdditionalDocument
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderParameters
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.documentmanagement.DocumentMetadata
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateHavePhotoDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DocumentType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.validators.FileUploadValidator.validateFileExtensionAndSize
 import java.util.*
@@ -65,5 +67,22 @@ class AdditionalDocumentService(val webClient: DocumentApiClient) : OrderSection
     order.additionalDocuments.add(document)
 
     orderRepo.save(order)
+  }
+
+  fun updateHavePhoto(orderId: UUID, username: String, updateRecord: UpdateHavePhotoDto): OrderParameters {
+    val order = this.findEditableOrder(orderId, username)
+
+    // Either update current params or create a new record if one does not exist for this order version
+    if (order.orderParameters == null) {
+      order.orderParameters =
+        OrderParameters(versionId = order.getCurrentVersion().id, havePhoto = updateRecord.havePhoto)
+    } else {
+      if (order.orderParameters?.havePhoto == true && updateRecord.havePhoto == false) {
+        order.additionalDocuments.removeAll { it.fileType == DocumentType.PHOTO_ID }
+      }
+      order.orderParameters?.havePhoto = updateRecord.havePhoto
+    }
+
+    return orderRepo.save(order).orderParameters!!
   }
 }
