@@ -70,7 +70,7 @@ class AdditionalDocumentService(val webClient: DocumentApiClient) : OrderSection
   }
 
   fun updateHavePhoto(orderId: UUID, username: String, updateRecord: UpdateHavePhotoDto): OrderParameters {
-    val order = this.findEditableOrder(orderId, username)
+    var order = findEditableOrder(orderId, username)
 
     // Either update current params or create a new record if one does not exist for this order version
     if (order.orderParameters == null) {
@@ -78,7 +78,8 @@ class AdditionalDocumentService(val webClient: DocumentApiClient) : OrderSection
         OrderParameters(versionId = order.getCurrentVersion().id, havePhoto = updateRecord.havePhoto)
     } else {
       if (order.orderParameters?.havePhoto == true && updateRecord.havePhoto == false) {
-        order.additionalDocuments.removeAll { it.fileType == DocumentType.PHOTO_ID }
+        deleteDocument(orderId, username, DocumentType.PHOTO_ID)
+        order = findEditableOrder(orderId, username)
       }
       order.orderParameters?.havePhoto = updateRecord.havePhoto
     }
