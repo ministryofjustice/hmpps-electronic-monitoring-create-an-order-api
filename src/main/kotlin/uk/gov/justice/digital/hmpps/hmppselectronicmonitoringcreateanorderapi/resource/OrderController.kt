@@ -46,7 +46,10 @@ class OrderController(@Autowired val orderService: OrderService) {
   }
 
   @PostMapping("/orders/{orderId}/copy-as-variation")
-  fun createVariationFromExisting(@PathVariable orderId: UUID, authentication: Authentication): ResponseEntity<OrderDto> {
+  fun createVariationFromExisting(
+    @PathVariable orderId: UUID,
+    authentication: Authentication,
+  ): ResponseEntity<OrderDto> {
     val username = authentication.name
     val newVariationOrder = orderService.createVariationFromExisting(orderId, username)
     return ResponseEntity(convertToDto(newVariationOrder), HttpStatus.OK)
