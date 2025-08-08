@@ -489,6 +489,71 @@ class AdditionalDocumentsControllerTest : IntegrationTestBase() {
     }
 
     @Test
+    fun `Should remove the document if selecting true then false`() {
+      val order = createOrder()
+      val bodyBuilder = createMultiPartBodyBuilder(mockFile())
+
+      // Stub the document api
+      documentApi.stubUploadDocument(DocumentUploadResponse())
+      documentApi.stubDeleteDocument("(.*)")
+
+      // Upload a document
+      webTestClient.post()
+        .uri("/api/orders/${order.id}/document-type/${DocumentType.PHOTO_ID}")
+        .bodyValue(bodyBuilder.build())
+        .headers(setAuthorisation("AUTH_ADM"))
+        .exchange()
+        .expectStatus()
+        .isOk
+
+      webTestClient.put()
+        .uri("/api/orders/${order.id}/attachments/have-photo")
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(
+          BodyInserters.fromValue(
+            """
+            {
+              "havePhoto": true
+            }
+            """.trimIndent(),
+          ),
+        )
+        .headers(setAuthorisation("AUTH_ADM"))
+        .exchange()
+        .expectStatus()
+        .isOk
+
+      webTestClient.put()
+        .uri("/api/orders/${order.id}/attachments/have-photo")
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(
+          BodyInserters.fromValue(
+            """
+            {
+              "havePhoto": false
+            }
+            """.trimIndent(),
+          ),
+        )
+        .headers(setAuthorisation("AUTH_ADM"))
+        .exchange()
+        .expectStatus()
+        .isOk
+
+      val updatedOrder = getOrder(order.id)
+
+      Assertions.assertThat(updatedOrder.additionalDocuments).hasSize(0)
+      Assertions.assertThat(updatedOrder.orderParameters?.havePhoto).isEqualTo(false)
+
+      webTestClient.delete()
+        .uri("/api/orders/${order.id}/document-type/${DocumentType.PHOTO_ID}")
+        .headers(setAuthorisation("AUTH_ADM"))
+        .exchange()
+        .expectStatus()
+        .isNoContent()
+    }
+
+    @Test
     fun `Should return a 400 if there is no havePhoto field`() {
       val order = createOrder()
 
