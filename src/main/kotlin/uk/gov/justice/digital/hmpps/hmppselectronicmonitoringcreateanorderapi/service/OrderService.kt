@@ -91,29 +91,58 @@ class OrderService(
       username = username,
       dataDictionaryVersion = originalVersion.dataDictionaryVersion,
       fmsResultId = null,
-      fmsResultDate = null
+      fmsResultDate = null,
     )
 
-    newOrderVersion.deviceWearer = originalVersion.deviceWearer?.copy(versionId = newOrderVersion.id)
-    newOrderVersion.deviceWearerResponsibleAdult = originalVersion.deviceWearerResponsibleAdult?.copy(versionId = newOrderVersion.id)
-    newOrderVersion.contactDetails = originalVersion.contactDetails?.copy(versionId = newOrderVersion.id)
-    newOrderVersion.curfewConditions = originalVersion.curfewConditions?.copy(versionId = newOrderVersion.id)
-    newOrderVersion.curfewReleaseDateConditions = originalVersion.curfewReleaseDateConditions?.copy(versionId = newOrderVersion.id)
-    newOrderVersion.installationAndRisk = originalVersion.installationAndRisk?.copy(versionId = newOrderVersion.id)
-    newOrderVersion.interestedParties = originalVersion.interestedParties?.copy(versionId = newOrderVersion.id)
-    newOrderVersion.probationDeliveryUnit = originalVersion.probationDeliveryUnit?.copy(versionId = newOrderVersion.id)
-    newOrderVersion.monitoringConditions = originalVersion.monitoringConditions?.copy(versionId = newOrderVersion.id)
-    newOrderVersion.monitoringConditionsAlcohol = originalVersion.monitoringConditionsAlcohol?.copy(versionId = newOrderVersion.id)
-    newOrderVersion.monitoringConditionsTrail = originalVersion.monitoringConditionsTrail?.copy(versionId = newOrderVersion.id)
-    newOrderVersion.variationDetails = originalVersion.variationDetails?.copy(versionId = newOrderVersion.id)
-    newOrderVersion.installationLocation = originalVersion.installationLocation?.copy(versionId = newOrderVersion.id)
-    newOrderVersion.installationAppointment = originalVersion.installationAppointment?.copy(versionId = newOrderVersion.id)
+    newOrderVersion.deviceWearer =
+      originalVersion.deviceWearer?.copy(id = UUID.randomUUID(), versionId = newOrderVersion.id)
+    newOrderVersion.deviceWearer =
+      originalVersion.deviceWearer?.copy(id = UUID.randomUUID(), versionId = newOrderVersion.id)
+    newOrderVersion.deviceWearerResponsibleAdult =
+      originalVersion.deviceWearerResponsibleAdult?.copy(id = UUID.randomUUID(), versionId = newOrderVersion.id)
+    newOrderVersion.contactDetails =
+      originalVersion.contactDetails?.copy(id = UUID.randomUUID(), versionId = newOrderVersion.id)
+    newOrderVersion.curfewConditions =
+      originalVersion.curfewConditions?.copy(id = UUID.randomUUID(), versionId = newOrderVersion.id)
+    newOrderVersion.curfewReleaseDateConditions =
+      originalVersion.curfewReleaseDateConditions?.copy(id = UUID.randomUUID(), versionId = newOrderVersion.id)
+    newOrderVersion.installationAndRisk =
+      originalVersion.installationAndRisk?.copy(id = UUID.randomUUID(), versionId = newOrderVersion.id)
+    newOrderVersion.interestedParties =
+      originalVersion.interestedParties?.copy(id = UUID.randomUUID(), versionId = newOrderVersion.id)
+    newOrderVersion.probationDeliveryUnit =
+      originalVersion.probationDeliveryUnit?.copy(id = UUID.randomUUID(), versionId = newOrderVersion.id)
+    newOrderVersion.monitoringConditions =
+      originalVersion.monitoringConditions?.copy(id = UUID.randomUUID(), versionId = newOrderVersion.id)
+    newOrderVersion.monitoringConditionsAlcohol =
+      originalVersion.monitoringConditionsAlcohol?.copy(id = UUID.randomUUID(), versionId = newOrderVersion.id)
+    newOrderVersion.monitoringConditionsTrail =
+      originalVersion.monitoringConditionsTrail?.copy(id = UUID.randomUUID(), versionId = newOrderVersion.id)
+    newOrderVersion.variationDetails =
+      originalVersion.variationDetails?.copy(id = UUID.randomUUID(), versionId = newOrderVersion.id)
+    newOrderVersion.installationLocation =
+      originalVersion.installationLocation?.copy(id = UUID.randomUUID(), versionId = newOrderVersion.id)
+    newOrderVersion.installationAppointment =
+      originalVersion.installationAppointment?.copy(id = UUID.randomUUID(), versionId = newOrderVersion.id)
 
-    newOrderVersion.additionalDocuments = originalVersion.additionalDocuments.map { it.copy(versionId = newOrderVersion.id) }.toMutableList()
-    newOrderVersion.addresses = originalVersion.addresses.map { it.copy(versionId = newOrderVersion.id) }.toMutableList()
-    newOrderVersion.curfewTimeTable = originalVersion.curfewTimeTable.map { it.copy(versionId = newOrderVersion.id) }.toMutableList()
-    newOrderVersion.enforcementZoneConditions = originalVersion.enforcementZoneConditions.map { it.copy(versionId = newOrderVersion.id) }.toMutableList()
-    newOrderVersion.mandatoryAttendanceConditions = originalVersion.mandatoryAttendanceConditions.map { it.copy(versionId = newOrderVersion.id) }.toMutableList()
+    newOrderVersion.additionalDocuments =
+      originalVersion.additionalDocuments.map {
+        it.copy(id = UUID.randomUUID(), versionId = newOrderVersion.id)
+      }.toMutableList()
+    newOrderVersion.addresses =
+      originalVersion.addresses.map { it.copy(id = UUID.randomUUID(), versionId = newOrderVersion.id) }.toMutableList()
+    newOrderVersion.curfewTimeTable =
+      originalVersion.curfewTimeTable.map {
+        it.copy(id = UUID.randomUUID(), versionId = newOrderVersion.id)
+      }.toMutableList()
+    newOrderVersion.enforcementZoneConditions =
+      originalVersion.enforcementZoneConditions.map {
+        it.copy(id = UUID.randomUUID(), versionId = newOrderVersion.id)
+      }.toMutableList()
+    newOrderVersion.mandatoryAttendanceConditions =
+      originalVersion.mandatoryAttendanceConditions.map {
+        it.copy(id = UUID.randomUUID(), versionId = newOrderVersion.id)
+      }.toMutableList()
 
     newVariationOrder.versions.add(newOrderVersion)
 
