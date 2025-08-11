@@ -49,7 +49,14 @@
     "contactNumber": "029 2018 0747"
   },
   "enforcementZoneConditions": [],
-  "additionalDocuments": [],
+  "additionalDocuments": [
+    {
+      "id": "238f8cec-4ad5-4120-b8a8-9c56affb6a2a",
+      "versionId": "d5da32c2-1c67-472e-90bb-eeb18180532b",
+      "fileName": "profile.jpeg",
+      "fileType": "LICENCE"
+    }
+  ],
   "installationAndRisk": {
     "versionId": "d5da32c2-1c67-472e-90bb-eeb18180532b",
     "offence": "",

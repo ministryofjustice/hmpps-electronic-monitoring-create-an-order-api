@@ -58,7 +58,14 @@
     "contactNumber": "0118 496 0073"
   },
   "enforcementZoneConditions": [],
-  "additionalDocuments": [],
+  "additionalDocuments": [
+    {
+      "id": "238f8cec-4ad5-4120-b8a8-9c56affb6a2a",
+      "versionId": "3d589ad5-c741-45c0-9f16-49a1c06913ff",
+      "fileName": "profile.jpeg",
+      "fileType": "LICENCE"
+    }
+  ],
   "installationAndRisk": {
     "versionId": "3d589ad5-c741-45c0-9f16-49a1c06913ff",
     "offence": "",
