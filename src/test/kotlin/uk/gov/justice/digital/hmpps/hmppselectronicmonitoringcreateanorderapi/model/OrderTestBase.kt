@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model
 
 import org.springframework.test.context.ActiveProfiles
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AdditionalDocument
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Address
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationAndRisk
@@ -39,6 +40,7 @@ abstract class OrderTestBase {
     probationDeliveryUnits: ProbationDeliveryUnit? = null,
     trailMonitoringConditions: TrailMonitoringConditions? = null,
     installationLocation: InstallationLocation? = null,
+    additionalDocuments: MutableList<AdditionalDocument> = mutableListOf(),
   ): Order {
     val orderId = UUID.randomUUID()
     val versionId = UUID.randomUUID()
@@ -74,6 +76,8 @@ abstract class OrderTestBase {
     order.monitoringConditionsTrail = trailMonitoringConditions
 
     order.installationLocation = installationLocation
+
+    order.additionalDocuments.addAll(additionalDocuments)
 
     return order
   }
