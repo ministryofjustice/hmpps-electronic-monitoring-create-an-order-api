@@ -99,14 +99,6 @@ data class MonitoringConditions(
           )
       )
 
-  val isCurfewOnlyMonitoringConditions: Boolean
-    get() = (
-      (
-        curfew == true &&
-          trail != true &&
-          exclusionZone != true &&
-          alcohol != true &&
-          mandatoryAttendance != true
-        )
-      )
+  val isTagAtSourceAvailable: Boolean
+    get() = alcohol == true
 }

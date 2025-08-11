@@ -380,17 +380,11 @@ data class MonitoringOrder(
       return monitoringOrder
     }
 
-    private fun getInstallationAddress(order: Order): Address? {
-      if (order.monitoringConditions?.isCurfewOnlyMonitoringConditions == true) {
-        return order.addresses.firstOrNull { it.addressType == AddressType.PRIMARY }
-      }
-
-      return when (order.installationLocation?.location) {
-        InstallationLocationType.PRIMARY -> order.addresses.firstOrNull { it.addressType == AddressType.PRIMARY }
-        InstallationLocationType.SECONDARY -> order.addresses.firstOrNull { it.addressType == AddressType.SECONDARY }
-        InstallationLocationType.TERTIARY -> order.addresses.firstOrNull { it.addressType == AddressType.TERTIARY }
-        else -> order.addresses.firstOrNull { it.addressType == AddressType.INSTALLATION }
-      }
+    private fun getInstallationAddress(order: Order): Address? = when (order.installationLocation?.location) {
+      InstallationLocationType.PRIMARY -> order.addresses.firstOrNull { it.addressType == AddressType.PRIMARY }
+      InstallationLocationType.SECONDARY -> order.addresses.firstOrNull { it.addressType == AddressType.SECONDARY }
+      InstallationLocationType.TERTIARY -> order.addresses.firstOrNull { it.addressType == AddressType.TERTIARY }
+      else -> order.addresses.firstOrNull { it.addressType == AddressType.INSTALLATION }
     }
 
     private fun getCurfewSchedules(order: Order, curfew: CurfewConditions): MutableList<CurfewSchedule> {
