@@ -58,7 +58,14 @@
     "contactNumber": "0121 496 0752"
   },
   "enforcementZoneConditions": [],
-  "additionalDocuments": [],
+  "additionalDocuments": [
+    {
+      "id": "238f8cec-4ad5-4120-b8a8-9c56affb6a2a",
+      "versionId": "0db52c0a-6561-42f4-b490-d37831cb773a",
+      "fileName": "profile.jpeg",
+      "fileType": "LICENCE"
+    }
+  ],
   "installationAndRisk": {
     "versionId": "0db52c0a-6561-42f4-b490-d37831cb773a",
     "offence": "",

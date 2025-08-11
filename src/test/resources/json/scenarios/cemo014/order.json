@@ -76,7 +76,14 @@
       "zoneId": 0
     }
   ],
-  "additionalDocuments": [],
+  "additionalDocuments": [
+    {
+      "id": "238f8cec-4ad5-4120-b8a8-9c56affb6a2a",
+      "versionId": "4af38a83-6c1e-4c5b-86bb-a3c80e7f2a88",
+      "fileName": "profile.jpeg",
+      "fileType": "LICENCE"
+    }
+  ],
   "installationAndRisk": {
     "versionId": "4af38a83-6c1e-4c5b-86bb-a3c80e7f2a88",
     "offence": "",

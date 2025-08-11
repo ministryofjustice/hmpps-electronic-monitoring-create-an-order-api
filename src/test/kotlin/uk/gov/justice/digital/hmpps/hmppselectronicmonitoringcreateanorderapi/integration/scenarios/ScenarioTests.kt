@@ -181,6 +181,21 @@ class ScenarioTests : IntegrationTestBase() {
         ),
       )
       documentApi.stubGetDocument(order.additionalDocuments.first().id.toString())
+
+      if (order.additionalDocuments.size == 2) {
+        sercoApi.stubSubmitAttachment(
+          HttpStatus.OK,
+          FmsAttachmentResponse(
+            result = FmsAttachmentResult(
+              fileName = order.additionalDocuments[1].fileName!!,
+              tableName = tableName,
+              sysId = "MockSysId",
+              tableSysId = "MockDeviceWearerId",
+            ),
+          ),
+        )
+        documentApi.stubGetDocument(order.additionalDocuments[1].id.toString())
+      }
     }
 
     if (order.enforcementZoneConditions.isNotEmpty()) {

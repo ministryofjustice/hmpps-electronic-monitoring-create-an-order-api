@@ -16,6 +16,7 @@ import jakarta.persistence.Table
 import jakarta.persistence.UniqueConstraint
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DocumentType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.InstallationLocationType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
@@ -202,10 +203,7 @@ data class OrderVersion(
 
   private val requiredDocuments: Boolean
     get() = (
-//      Add additional document validation here
-//      eg. if license is a mandatory attachment:
-//      additionalDocuments.any { it.fileType == DocumentType.LICENCE }
-      true
+      additionalDocuments.any { it.fileType == DocumentType.LICENCE }
       )
 
   val isValid: Boolean
@@ -216,6 +214,7 @@ data class OrderVersion(
         hasPrimaryAddressOrNoFixedAbode &&
         monitoringConditionsAreValid &&
         isOrderOrHasVariationDetails &&
-        interestedParties?.isValid == true
+        interestedParties?.isValid == true &&
+        requiredDocuments
       )
 }

@@ -56,7 +56,14 @@
     "contactNumber": "0121 496 0773"
   },
   "enforcementZoneConditions": [],
-  "additionalDocuments": [],
+  "additionalDocuments": [
+    {
+      "id": "238f8cec-4ad5-4120-b8a8-9c56affb6a2a",
+      "versionId": "40412e7e-2128-4c21-8994-7973088cf766",
+      "fileName": "profile.jpeg",
+      "fileType": "LICENCE"
+    }
+  ],
   "installationAndRisk": {
     "versionId": "40412e7e-2128-4c21-8994-7973088cf766",
     "offence": "",
