@@ -2015,7 +2015,20 @@ class OrderControllerTest : IntegrationTestBase() {
         ),
       )
 
+      sercoApi.stubSubmitAttachment(
+        HttpStatus.OK,
+        FmsAttachmentResponse(
+          result = FmsAttachmentResult(
+            fileName = order.additionalDocuments[0].fileName!!,
+            tableName = "x_serg2_ems_csm_sr_mo_new",
+            sysId = "MockSysId",
+            tableSysId = "MockDeviceWearerId",
+          ),
+        ),
+      )
+
       documentApi.stubGetDocument(order.enforcementZoneConditions[0].fileId.toString())
+      documentApi.stubGetDocument(order.additionalDocuments[0].id.toString())
 
       webTestClient.post()
         .uri("/api/orders/${order.id}/submit")
@@ -2099,7 +2112,7 @@ class OrderControllerTest : IntegrationTestBase() {
       JsonPathExpectationsHelper("installation_address_4").assertValue(fmsOrderRequest, "United Kingdom")
       JsonPathExpectationsHelper("installation_address_post_code").assertValue(fmsOrderRequest, "SW11 1NC")
 
-      assertThat(submitResult.attachmentResults[0])
+      assertThat(submitResult.attachmentResults[1])
         .usingRecursiveComparison()
         .ignoringFields("id")
         .isEqualTo(
@@ -2235,6 +2248,15 @@ class OrderControllerTest : IntegrationTestBase() {
 
     documents.forEach {
       order.additionalDocuments.add(it)
+    }
+    if (documents.isEmpty()) {
+      order.additionalDocuments.add(
+        AdditionalDocument(
+          versionId = versionId,
+          fileName = "Test file",
+          fileType = DocumentType.LICENCE,
+        ),
+      )
     }
 
     val curfewConditions = CurfewConditions(
