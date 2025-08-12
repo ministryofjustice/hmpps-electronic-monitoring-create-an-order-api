@@ -49,7 +49,14 @@
     "contactNumber": "029 2018 0430"
   },
   "enforcementZoneConditions": [],
-  "additionalDocuments": [],
+  "additionalDocuments": [
+    {
+      "id": "238f8cec-4ad5-4120-b8a8-9c56affb6a2a",
+      "versionId": "5a42ee68-bb40-4f0e-9d4d-bdf3c380e94b",
+      "fileName": "profile.jpeg",
+      "fileType": "LICENCE"
+    }
+  ],
   "installationAndRisk": {
     "versionId": "5a42ee68-bb40-4f0e-9d4d-bdf3c380e94b",
     "offence": "",

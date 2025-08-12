@@ -64,7 +64,14 @@
     "contactNumber": "0141 496 0761"
   },
   "enforcementZoneConditions": [],
-  "additionalDocuments": [],
+  "additionalDocuments": [
+    {
+      "id": "775707cd-3c8a-4c8c-89e2-91c838823ab5",
+      "versionId": "775707cd-3c8a-4c8c-89e2-91c838823ab5",
+      "fileName": "profile.jpeg",
+      "fileType": "LICENCE"
+    }
+  ],
   "installationAndRisk": {
     "versionId": "775707cd-3c8a-4c8c-89e2-91c838823ab5",
     "offence": "",

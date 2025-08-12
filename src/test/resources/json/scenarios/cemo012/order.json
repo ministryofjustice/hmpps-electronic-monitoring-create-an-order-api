@@ -58,7 +58,14 @@
     "contactNumber": "029 2018 0533"
   },
   "enforcementZoneConditions": [],
-  "additionalDocuments": [],
+  "additionalDocuments": [
+    {
+      "id": "238f8cec-4ad5-4120-b8a8-9c56affb6a2a",
+      "versionId": "238f8cec-4ad5-4120-b8a8-9c56affb6a2a",
+      "fileName": "profile.jpeg",
+      "fileType": "LICENCE"
+    }
+  ],
   "installationAndRisk": {
     "versionId": "238f8cec-4ad5-4120-b8a8-9c56affb6a2a",
     "offence": "",
