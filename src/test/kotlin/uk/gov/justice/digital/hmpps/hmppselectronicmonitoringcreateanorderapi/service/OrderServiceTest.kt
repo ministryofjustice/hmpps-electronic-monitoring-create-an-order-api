@@ -109,7 +109,7 @@ class OrderServiceTest {
     whenever(fmsService.submitOrder(any<Order>(), eq(FmsOrderSource.CEMO))).thenReturn(
       mockFmsResult,
     )
-    service.submitOrder(mockOrder.id, "mockUser")
+    service.submitOrder(mockOrder.id, "mockUser", "mockName")
 
     argumentCaptor<Order>().apply {
       verify(repo, times(1)).save(capture())

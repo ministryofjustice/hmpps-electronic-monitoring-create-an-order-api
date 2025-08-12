@@ -70,11 +70,18 @@ class AuthAwareTokenConverter : Converter<Jwt, AbstractAuthenticationToken> {
     val claims = jwt.claims
     val principal = findPrincipal(claims)
     val authorities = extractAuthorities(jwt)
-    return AuthAwareAuthenticationToken(jwt, principal, authorities)
+    val name = findName(claims)
+    return AuthAwareAuthenticationToken(jwt, principal, name, authorities)
   }
 
   private fun findPrincipal(claims: Map<String, Any?>): String = if (claims.containsKey(CLAIM_USERNAME)) {
     claims[CLAIM_USERNAME] as String
+  } else {
+    throw InvalidBearerTokenException("Username is not in token")
+  }
+
+  private fun findName(claims: Map<String, Any?>): String = if (claims.containsKey(CLAIM_NAME)) {
+    claims[CLAIM_NAME] as String
   } else {
     throw InvalidBearerTokenException("Username is not in token")
   }
@@ -94,13 +101,16 @@ class AuthAwareTokenConverter : Converter<Jwt, AbstractAuthenticationToken> {
   companion object {
     const val CLAIM_USERNAME = "user_name"
     const val CLAIM_AUTHORITY = "authorities"
+    const val CLAIM_NAME = "name"
   }
 }
 
 class AuthAwareAuthenticationToken(
   jwt: Jwt,
   private val aPrincipal: String,
+  private val fullName: String,
   authorities: Collection<GrantedAuthority>,
 ) : JwtAuthenticationToken(jwt, authorities, aPrincipal) {
   override fun getPrincipal(): String = aPrincipal
+  fun getUserFullName(): String = fullName
 }

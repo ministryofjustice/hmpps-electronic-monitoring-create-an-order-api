@@ -75,7 +75,7 @@ class OrderService(
     return order
   }
 
-  fun submitOrder(id: UUID, username: String): Order {
+  fun submitOrder(id: UUID, username: String, fullName: String): Order {
     val order = getOrder(id, username)
 
     if (order.status == OrderStatus.SUBMITTED) {
@@ -106,6 +106,7 @@ class OrderService(
           throw SubmitOrderException("Error submit attachments to Serco")
         } else {
           order.status = OrderStatus.SUBMITTED
+          order.getCurrentVersion().submittedBy = fullName
           repo.save(order)
         }
       } catch (e: Exception) {

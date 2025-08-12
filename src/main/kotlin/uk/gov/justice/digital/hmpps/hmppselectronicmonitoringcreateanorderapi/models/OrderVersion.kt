@@ -123,6 +123,9 @@ data class OrderVersion(
   @OneToOne(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "version", orphanRemoval = true)
   var orderParameters: OrderParameters? = null,
 
+  @Column(name = "SUBMITTED_BY", nullable = true)
+  var submittedBy: String? = null,
+
   @Schema(hidden = true)
   @ManyToOne
   @JoinColumn(name = "ORDER_ID", updatable = false, insertable = false)

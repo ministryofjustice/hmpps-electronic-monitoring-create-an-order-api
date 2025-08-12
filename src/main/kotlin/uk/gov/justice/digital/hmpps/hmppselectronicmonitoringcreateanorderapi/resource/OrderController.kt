@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.config.AuthAwareAuthenticationToken
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.OrderListCriteria
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.OrderSearchCriteria
@@ -39,9 +40,10 @@ class OrderController(@Autowired val orderService: OrderService) {
   }
 
   @PostMapping("/orders/{orderId}/submit")
-  fun submitOrder(@PathVariable orderId: UUID, authentication: Authentication): ResponseEntity<OrderDto> {
+  fun submitOrder(@PathVariable orderId: UUID, authentication: AuthAwareAuthenticationToken): ResponseEntity<OrderDto> {
     val username = authentication.name
-    val order = orderService.submitOrder(orderId, username)
+    val userFullName = authentication.getUserFullName()
+    val order = orderService.submitOrder(orderId, username, userFullName)
     return ResponseEntity(convertToDto(order), HttpStatus.OK)
   }
 
