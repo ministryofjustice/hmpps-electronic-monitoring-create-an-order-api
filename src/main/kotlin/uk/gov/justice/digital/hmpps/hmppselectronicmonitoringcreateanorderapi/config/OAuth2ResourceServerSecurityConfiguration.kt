@@ -83,7 +83,7 @@ class AuthAwareTokenConverter : Converter<Jwt, AbstractAuthenticationToken> {
   private fun findName(claims: Map<String, Any?>): String = if (claims.containsKey(CLAIM_NAME)) {
     claims[CLAIM_NAME] as String
   } else {
-    throw InvalidBearerTokenException("Username is not in token")
+    findPrincipal(claims)
   }
 
   private fun extractAuthorities(jwt: Jwt): Collection<GrantedAuthority> {
