@@ -146,12 +146,16 @@ data class OrderVersion(
   private val monitoringConditionsAreValid: Boolean
     get() = (
       (
-        if (monitoringConditions?.isCurfewOnlyMonitoringConditions == true ||
-          installationLocation?.location === InstallationLocationType.PRIMARY
+        if (monitoringConditions?.isTagAtSourceAvailable == true
+
         ) {
-          (addresses.any { it.addressType == AddressType.PRIMARY })
+          (
+            installationLocation?.location === InstallationLocationType.PRIMARY &&
+              addresses.any { it.addressType == AddressType.PRIMARY }
+            ) ||
+            (addresses.any { it.addressType == AddressType.INSTALLATION })
         } else {
-          (addresses.any { it.addressType == AddressType.INSTALLATION })
+          true
         }
 
         ) &&
@@ -161,21 +165,21 @@ data class OrderVersion(
               curfewConditions != null &&
               curfewTimeTable.isNotEmpty()
           } else {
-            (true)
+            true
           }
           ) &&
         (
           if (monitoringConditions?.exclusionZone == true) {
             enforcementZoneConditions.isNotEmpty()
           } else {
-            (true)
+            true
           }
           ) &&
         (
           if (monitoringConditions?.trail == true) {
             monitoringConditionsTrail != null
           } else {
-            (true)
+            true
           }
           ) &&
         (
@@ -184,14 +188,14 @@ data class OrderVersion(
             // mandatoryAttendanceConditions != null
             true
           } else {
-            (true)
+            true
           }
           ) &&
         (
           if (monitoringConditions?.alcohol == true) {
             monitoringConditionsAlcohol != null
           } else {
-            (true)
+            true
           }
           )
       )
