@@ -73,6 +73,8 @@ data class OrderDto(
 
   val username: String,
 
+  val submittedBy: String?,
+
   val variationDetails: VariationDetails?,
 
   val installationLocation: InstallationLocation?,

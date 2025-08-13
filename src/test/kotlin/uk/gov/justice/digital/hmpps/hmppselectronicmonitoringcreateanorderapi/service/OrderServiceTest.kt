@@ -88,6 +88,36 @@ class OrderServiceTest {
   }
 
   @Test
+  fun `Should save the name of the user who submitted the order`() {
+    val mockOrder = createReadyToSubmitOrder()
+    reset(repo)
+
+    val mockFmsResult = FmsSubmissionResult(
+      orderId = mockOrder.getCurrentVersion().id,
+      deviceWearerResult = FmsDeviceWearerSubmissionResult(
+        status = SubmissionStatus.SUCCESS,
+        deviceWearerId = "mockDeviceWearerId",
+      ),
+      monitoringOrderResult = FmsMonitoringOrderSubmissionResult(
+        status = SubmissionStatus.SUCCESS,
+        monitoringOrderId = "mockMonitoringOrderId",
+      ),
+      orderSource = FmsOrderSource.CEMO,
+      strategy = FmsSubmissionStrategyKind.ORDER,
+    )
+    whenever(repo.findById(mockOrder.id)).thenReturn(Optional.of(mockOrder))
+    whenever(fmsService.submitOrder(any<Order>(), eq(FmsOrderSource.CEMO))).thenReturn(
+      mockFmsResult,
+    )
+    service.submitOrder(mockOrder.id, "mockUser", "mockName")
+
+    argumentCaptor<Order>().apply {
+      verify(repo, times(1)).save(capture())
+      Assertions.assertThat(firstValue.getCurrentVersion().submittedBy).isEqualTo("mockName")
+    }
+  }
+
+  @Test
   fun `Should create fms device wearer and monitoring order and save both id to database`() {
     val mockOrder = createReadyToSubmitOrder()
     reset(repo)
@@ -109,7 +139,7 @@ class OrderServiceTest {
     whenever(fmsService.submitOrder(any<Order>(), eq(FmsOrderSource.CEMO))).thenReturn(
       mockFmsResult,
     )
-    service.submitOrder(mockOrder.id, "mockUser")
+    service.submitOrder(mockOrder.id, "mockUser", "mockName")
 
     argumentCaptor<Order>().apply {
       verify(repo, times(1)).save(capture())

@@ -4,10 +4,13 @@ import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
+import org.mockito.Mockito.times
+import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.springframework.boot.test.autoconfigure.json.JsonTest
 import org.springframework.security.core.Authentication
 import org.springframework.test.context.ActiveProfiles
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.config.AuthAwareAuthenticationToken
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.OrderListCriteria
@@ -27,12 +30,14 @@ class OrderControllerTest {
   private val orderService: OrderService = mock()
   private val controller = OrderController(orderService)
   private lateinit var authentication: Authentication
+  private lateinit var submitAuthentication: AuthAwareAuthenticationToken
 
   private val mockDictionaryVersion = DataDictionaryVersion.DDV4
 
   @BeforeEach
   fun setup() {
     authentication = mock(Authentication::class.java)
+    submitAuthentication = mock(AuthAwareAuthenticationToken::class.java)
   }
 
   @Test
@@ -105,6 +110,7 @@ class OrderControllerTest {
         status = OrderStatus.IN_PROGRESS,
         type = RequestType.REQUEST,
         username = "mockUser",
+        submittedBy = null,
         variationDetails = null,
         probationDeliveryUnit = null,
         installationLocation = null,
@@ -175,6 +181,7 @@ class OrderControllerTest {
           status = OrderStatus.IN_PROGRESS,
           type = RequestType.REQUEST,
           username = "mockUser",
+          submittedBy = null,
           variationDetails = null,
           probationDeliveryUnit = null,
           installationLocation = null,
@@ -205,6 +212,7 @@ class OrderControllerTest {
           status = OrderStatus.IN_PROGRESS,
           type = RequestType.REQUEST,
           username = "mockUser",
+          submittedBy = null,
           variationDetails = null,
           probationDeliveryUnit = null,
           installationLocation = null,
@@ -214,6 +222,29 @@ class OrderControllerTest {
         ),
       ),
     )
+  }
+
+  @Test
+  fun `Save the users name when submitting`() {
+    val mockOrderId = UUID.randomUUID()
+    val order = Order(
+      id = mockOrderId,
+      versions = mutableListOf(
+        OrderVersion(
+          orderId = mockOrderId,
+          username = "mockUser",
+          status = OrderStatus.SUBMITTED,
+          type = RequestType.REQUEST,
+          dataDictionaryVersion = mockDictionaryVersion,
+        ),
+      ),
+    )
+    `when`(orderService.submitOrder(mockOrderId, "mockUser", "mockName")).thenReturn(order)
+    `when`(submitAuthentication.name).thenReturn("mockUser")
+    `when`(submitAuthentication.getUserFullName()).thenReturn("mockName")
+
+    controller.submitOrder(mockOrderId, submitAuthentication)
+    verify(orderService, times(1)).submitOrder(mockOrderId, "mockUser", "mockName")
   }
 
   @Test
@@ -276,6 +307,7 @@ class OrderControllerTest {
           status = OrderStatus.SUBMITTED,
           type = RequestType.REQUEST,
           username = "mockUser",
+          submittedBy = null,
           variationDetails = null,
           probationDeliveryUnit = null,
           installationLocation = null,
@@ -306,6 +338,7 @@ class OrderControllerTest {
           status = OrderStatus.SUBMITTED,
           type = RequestType.REQUEST,
           username = "mockUser",
+          submittedBy = null,
           variationDetails = null,
           probationDeliveryUnit = null,
           installationLocation = null,

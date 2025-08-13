@@ -189,6 +189,11 @@ data class Order(
       return getCurrentVersion().username
     }
 
+  val submittedBy: String?
+    get() {
+      return getCurrentVersion().submittedBy
+    }
+
   var variationDetails: VariationDetails?
     get() {
       return getCurrentVersion().variationDetails
