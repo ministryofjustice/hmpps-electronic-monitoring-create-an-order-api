@@ -181,7 +181,8 @@ object ValidationErrors {
 
   object InstallationAppointment {
     const val PLACE_NAME_REQUIRED: String = "Enter name of the place where installation takes place"
-    const val APPOINT_DATE_REQUIRED: String = "Enter date of installation"
+    const val APPOINTMENT_DATE_REQUIRED: String = "Enter date of installation"
+    const val APPOINTMENT_DATE_MUST_BE_IN_FUTURE: String = "Date of installation must be in the future"
   }
 
   object AdditionalDocuments {

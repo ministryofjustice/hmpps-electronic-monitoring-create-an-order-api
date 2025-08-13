@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.s
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.MonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateMonitoringConditionsDto
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import java.util.*
 
 @Service
@@ -34,6 +35,12 @@ class MonitoringConditionsService : OrderSectionServiceBase() {
       pilot = updateRecord.pilot,
     )
 
+    if (order.monitoringConditions?.isTagAtSourceAvailable != true) {
+      order.installationLocation = null
+      order.installationAppointment = null
+      order.monitoringConditionsAlcohol = null
+      order.addresses.removeAll { it.addressType == AddressType.INSTALLATION }
+    }
     return orderRepo.save(order).monitoringConditions!!
   }
 }
