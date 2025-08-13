@@ -7,13 +7,21 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito.mock
 import org.mockito.kotlin.whenever
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Address
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AlcoholMonitoringConditions
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationAppointment
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationLocation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateMonitoringConditionsDto
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.InstallationLocationType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
+import java.time.ZoneId
+import java.time.ZonedDateTime
 import java.util.*
 
 class MonitoringConditionsServiceTest {
@@ -24,17 +32,18 @@ class MonitoringConditionsServiceTest {
 
   private val mockOrderId: UUID = UUID.randomUUID()
   private val mockUsername: String = "username"
+  private val mockVersion = OrderVersion(
+    versionId = 0,
+    status = OrderStatus.IN_PROGRESS,
+    orderId = mockOrderId,
+    type = RequestType.REQUEST,
+    username = mockUsername,
+    dataDictionaryVersion = DataDictionaryVersion.DDV4,
+  )
   private val mockOrder = Order(
     id = mockOrderId,
     versions = mutableListOf(
-      OrderVersion(
-        versionId = 0,
-        status = OrderStatus.IN_PROGRESS,
-        orderId = mockOrderId,
-        type = RequestType.REQUEST,
-        username = mockUsername,
-        dataDictionaryVersion = DataDictionaryVersion.DDV4,
-      ),
+      mockVersion,
     ),
   )
 
@@ -83,5 +92,40 @@ class MonitoringConditionsServiceTest {
     assertThat(mockOrder.monitoringConditions).isNotNull
     assertThat(mockOrder.monitoringConditions!!.pilot).isEqualTo("some pilot")
     assertThat(result.pilot).isEqualTo("some pilot")
+  }
+
+  @Test
+  fun `Should clear tag at source details if tag at source is not available`() {
+    mockVersion.installationLocation =
+      InstallationLocation(versionId = mockVersion.id, location = InstallationLocationType.PRISON)
+    mockVersion.installationAppointment =
+      InstallationAppointment(
+        versionId = mockVersion.id,
+        placeName = "MockPlace",
+        appointmentDate = ZonedDateTime.now(ZoneId.of("UTC")).plusMonths(2),
+      )
+    mockVersion.monitoringConditionsAlcohol = AlcoholMonitoringConditions(versionId = mockVersion.id)
+    mockVersion.addresses =
+      mutableListOf(
+        Address(
+          versionId = mockVersion.id,
+          addressType = AddressType.INSTALLATION,
+          addressLine1 = "Mock place",
+          addressLine2 = "",
+          addressLine3 = "Mock Town",
+          postcode = "Mock postcode",
+        ),
+      )
+    whenever(repo.findById(mockOrderId)).thenReturn(Optional.of(mockOrder))
+    whenever(repo.save(mockOrder)).thenReturn(mockOrder)
+
+    val result =
+      service.updateMonitoringConditions(mockOrderId, mockUsername, UpdateMonitoringConditionsDto(alcohol = false))
+
+    assertThat(mockOrder.monitoringConditions).isNotNull
+    assertThat(mockOrder.installationLocation).isNull()
+    assertThat(mockOrder.installationAppointment).isNull()
+    assertThat(mockOrder.monitoringConditionsAlcohol).isNull()
+    assertThat(mockOrder.addresses.firstOrNull { it.addressType == AddressType.INSTALLATION }).isNull()
   }
 }
