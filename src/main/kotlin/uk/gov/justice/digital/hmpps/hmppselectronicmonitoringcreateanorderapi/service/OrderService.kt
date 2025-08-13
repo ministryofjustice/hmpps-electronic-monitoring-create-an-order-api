@@ -79,13 +79,14 @@ class OrderService(
   fun createVariationFromExisting(originalOrderId: UUID, username: String): Order {
     val originalOrder = getOrder(originalOrderId, username)
     val originalVersion = originalOrder.getCurrentVersion()
+    val newVersionId = originalOrder.getCurrentVersion().versionId + 1
 
     val newVariationOrder = Order()
 
     val newOrderVersion = OrderVersion(
       order = newVariationOrder,
       orderId = newVariationOrder.id,
-      versionId = 1,
+      versionId = newVersionId,
       status = OrderStatus.IN_PROGRESS,
       type = RequestType.VARIATION,
       username = username,
@@ -94,8 +95,6 @@ class OrderService(
       fmsResultDate = null,
     )
 
-    newOrderVersion.deviceWearer =
-      originalVersion.deviceWearer?.copy(id = UUID.randomUUID(), versionId = newOrderVersion.id)
     newOrderVersion.deviceWearer =
       originalVersion.deviceWearer?.copy(id = UUID.randomUUID(), versionId = newOrderVersion.id)
     newOrderVersion.deviceWearerResponsibleAdult =
