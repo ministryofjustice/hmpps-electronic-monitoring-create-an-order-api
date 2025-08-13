@@ -114,5 +114,6 @@ class OrderController(@Autowired val orderService: OrderService) {
     installationAppointment = order.installationAppointment,
     dataDictionaryVersion = order.dataDictionaryVersion,
     orderParameters = order.orderParameters,
+    submittedBy = order.submittedBy,
   )
 }
