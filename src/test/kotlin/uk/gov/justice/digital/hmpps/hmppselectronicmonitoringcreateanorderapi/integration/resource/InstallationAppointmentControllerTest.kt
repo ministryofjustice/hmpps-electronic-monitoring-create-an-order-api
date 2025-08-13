@@ -12,11 +12,10 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.re
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
-import java.util.*
 
 class InstallationAppointmentControllerTest : IntegrationTestBase() {
 
-  private val apointmentDate = ZonedDateTime.now(ZoneId.of("UTC")).plusMonths(2).truncatedTo(ChronoUnit.SECONDS)
+  private val appointmentDate = ZonedDateTime.now(ZoneId.of("UTC")).plusMonths(2).truncatedTo(ChronoUnit.SECONDS)
 
   @BeforeEach
   fun setup() {
@@ -34,7 +33,7 @@ class InstallationAppointmentControllerTest : IntegrationTestBase() {
           """
             {
               "placeName": "Mock Place",
-              "appointmentDate": "$apointmentDate"
+              "appointmentDate": "$appointmentDate"
             }
           """.trimIndent(),
         ),
@@ -57,7 +56,7 @@ class InstallationAppointmentControllerTest : IntegrationTestBase() {
           """
             {
               "placeName": "Mock Place",
-              "appointmentDate": "$apointmentDate"
+              "appointmentDate": "$appointmentDate"
             }
           """.trimIndent(),
         ),
@@ -110,7 +109,7 @@ class InstallationAppointmentControllerTest : IntegrationTestBase() {
           """
             {
               "placeName": "Mock Place",
-              "appointmentDate": "$apointmentDate"
+              "appointmentDate": "$appointmentDate"
             }
           """.trimIndent(),
         ),
@@ -123,6 +122,6 @@ class InstallationAppointmentControllerTest : IntegrationTestBase() {
     assertThat(updatedOrder.installationAppointment!!.placeName).isEqualTo("Mock Place")
     assertThat(
       updatedOrder.installationAppointment.appointmentDate,
-    ).isEqualTo(apointmentDate)
+    ).isEqualTo(appointmentDate)
   }
 }
