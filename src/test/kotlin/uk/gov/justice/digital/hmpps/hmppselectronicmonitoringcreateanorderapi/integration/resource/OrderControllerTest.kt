@@ -158,7 +158,7 @@ class OrderControllerTest : IntegrationTestBase() {
     }
 
     @Test
-    fun `Most of the data from the original order should be duplicated in the new variation order, `() {
+    fun `A new id and variationId should be assigned to the new variation order`() {
       val order = createAndPersistPopulatedOrder()
 
       val variationOrder = webTestClient.post()
@@ -171,40 +171,71 @@ class OrderControllerTest : IntegrationTestBase() {
         .returnResult()
         .responseBody!!
 
-//      NB: There's probably a better way to do this rather than table by table. The difficulty is making it thorough byt not fragile.
-//      NB: Dates are excluded because they're procedurally generated in these tests, which can make them mismatch. A solution should be implemented.
-      assertThat(variationOrder.addresses)
+      assertThat(variationOrder.deviceWearer!!.id).isNotEqualTo(order.deviceWearer!!.id)
+      assertThat(variationOrder.deviceWearer.versionId).isNotEqualTo(order.deviceWearer!!.versionId)
+    }
+
+    @Test
+    fun `Details about the device wearer and order should be copied from the original order`() {
+      val order = createAndPersistPopulatedOrder()
+
+      val variationOrder = webTestClient.post()
+        .uri("/api/orders/${order.id}/copy-as-variation")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody(OrderDto::class.java)
+        .returnResult()
+        .responseBody!!
+
+      assertThat(variationOrder.deviceWearer)
         .usingRecursiveComparison()
-        .ignoringAllOverriddenEquals()
+        .ignoringCollectionOrder()
+        .ignoringFields(
+          "id",
+          "versionId",
+          "dateOfBirth",
+        )
+        .isEqualTo(order.deviceWearer)
+
+      assertThat(variationOrder.contactDetails)
+        .usingRecursiveComparison()
+        .ignoringCollectionOrder()
         .ignoringFields(
           "id",
           "versionId",
         )
+        .isEqualTo(order.contactDetails)
+
+      assertThat(variationOrder.interestedParties)
+        .usingRecursiveComparison()
         .ignoringCollectionOrder()
+        .ignoringFields(
+          "id",
+          "versionId",
+        )
+        .isEqualTo(order.interestedParties)
+
+      assertThat(variationOrder.addresses)
+        .usingRecursiveComparison()
+        .ignoringCollectionOrder()
+        .ignoringFields(
+          "id",
+          "versionId",
+        )
         .isEqualTo(order.addresses)
 
       assertThat(variationOrder.monitoringConditions)
         .usingRecursiveComparison()
-        .ignoringAllOverriddenEquals()
+        .ignoringCollectionOrder()
         .ignoringFields(
           "id",
           "versionId",
           "startDate",
           "endDate",
         )
-        .ignoringCollectionOrder()
         .isEqualTo(order.monitoringConditions)
-
-      assertThat(variationOrder.deviceWearer)
-        .usingRecursiveComparison()
-        .ignoringAllOverriddenEquals()
-        .ignoringFields(
-          "id",
-          "versionId",
-          "dateOfBirth",
-        )
-        .ignoringCollectionOrder()
-        .isEqualTo(order.deviceWearer)
     }
   }
 
