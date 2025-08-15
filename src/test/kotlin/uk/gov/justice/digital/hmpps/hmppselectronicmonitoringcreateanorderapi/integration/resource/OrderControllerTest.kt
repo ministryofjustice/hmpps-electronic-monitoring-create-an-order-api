@@ -135,6 +135,112 @@ class OrderControllerTest : IntegrationTestBase() {
   }
 
   @Nested
+  @DisplayName("POST /api/orders/copy-as-variation")
+  inner class PostVariation {
+    @Test
+    fun `It should should create an order with type VARIATION`() {
+      val order = createOrder("AUTH_ADM")
+
+      val variationOrder = webTestClient.post()
+        .uri("/api/orders/${order.id}/copy-as-variation")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody(OrderDto::class.java)
+        .returnResult()
+        .responseBody!!
+
+      assertThat(variationOrder.id).isNotNull()
+      assertThat(variationOrder.id).isNotEqualTo(order.id)
+      assertThat(variationOrder.status).isEqualTo(OrderStatus.IN_PROGRESS)
+      assertThat(variationOrder.type).isEqualTo(RequestType.VARIATION)
+      assertThat(variationOrder.username).isEqualTo(testUser)
+    }
+
+    @Test
+    fun `A new id and variationId should be assigned to the new variation order`() {
+      val order = createAndPersistPopulatedOrder()
+
+      val variationOrder = webTestClient.post()
+        .uri("/api/orders/${order.id}/copy-as-variation")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody(OrderDto::class.java)
+        .returnResult()
+        .responseBody!!
+
+      assertThat(variationOrder.deviceWearer!!.id).isNotEqualTo(order.deviceWearer!!.id)
+      assertThat(variationOrder.deviceWearer.versionId).isNotEqualTo(order.deviceWearer!!.versionId)
+    }
+
+    @Test
+    fun `Details about the device wearer and order should be copied from the original order`() {
+      val order = createAndPersistPopulatedOrder()
+
+      val variationOrder = webTestClient.post()
+        .uri("/api/orders/${order.id}/copy-as-variation")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody(OrderDto::class.java)
+        .returnResult()
+        .responseBody!!
+
+      assertThat(variationOrder.deviceWearer)
+        .usingRecursiveComparison()
+        .ignoringCollectionOrder()
+        .ignoringFields(
+          "id",
+          "versionId",
+          "dateOfBirth",
+        )
+        .isEqualTo(order.deviceWearer)
+
+      assertThat(variationOrder.contactDetails)
+        .usingRecursiveComparison()
+        .ignoringCollectionOrder()
+        .ignoringFields(
+          "id",
+          "versionId",
+        )
+        .isEqualTo(order.contactDetails)
+
+      assertThat(variationOrder.interestedParties)
+        .usingRecursiveComparison()
+        .ignoringCollectionOrder()
+        .ignoringFields(
+          "id",
+          "versionId",
+        )
+        .isEqualTo(order.interestedParties)
+
+      assertThat(variationOrder.addresses)
+        .usingRecursiveComparison()
+        .ignoringCollectionOrder()
+        .ignoringFields(
+          "id",
+          "versionId",
+        )
+        .isEqualTo(order.addresses)
+
+      assertThat(variationOrder.monitoringConditions)
+        .usingRecursiveComparison()
+        .ignoringCollectionOrder()
+        .ignoringFields(
+          "id",
+          "versionId",
+          "startDate",
+          "endDate",
+        )
+        .isEqualTo(order.monitoringConditions)
+    }
+  }
+
+  @Nested
   @DisplayName("GET /api/orders")
   inner class GetOrders {
     @Test
@@ -392,7 +498,7 @@ class OrderControllerTest : IntegrationTestBase() {
   inner class SearchOrders {
     @Test
     fun `It should return orders where the first and last names match`() {
-      createAndPersistReadyToSubmitOrder(status = OrderStatus.SUBMITTED)
+      createAndPersistPopulatedOrder(status = OrderStatus.SUBMITTED)
 
       webTestClient.get()
         .uri("/api/orders/search?searchTerm=john smith")
@@ -406,7 +512,7 @@ class OrderControllerTest : IntegrationTestBase() {
 
     @Test
     fun `It should return orders created by a different user`() {
-      createAndPersistReadyToSubmitOrder(status = OrderStatus.SUBMITTED)
+      createAndPersistPopulatedOrder(status = OrderStatus.SUBMITTED)
 
       webTestClient.get()
         .uri("/api/orders/search?searchTerm=john smith")
@@ -420,7 +526,7 @@ class OrderControllerTest : IntegrationTestBase() {
 
     @Test
     fun `It should only return submitted orders`() {
-      createAndPersistReadyToSubmitOrder(status = OrderStatus.IN_PROGRESS)
+      createAndPersistPopulatedOrder(status = OrderStatus.IN_PROGRESS)
 
       webTestClient.get()
         .uri("/api/orders/search?searchTerm=john smith")
@@ -434,7 +540,7 @@ class OrderControllerTest : IntegrationTestBase() {
 
     @Test
     fun `It should only return orders that match full name`() {
-      createAndPersistReadyToSubmitOrder(status = OrderStatus.SUBMITTED)
+      createAndPersistPopulatedOrder(status = OrderStatus.SUBMITTED)
 
       webTestClient.get()
         .uri("/api/orders/search?searchTerm=john")
@@ -641,7 +747,7 @@ class OrderControllerTest : IntegrationTestBase() {
 
     @Test
     fun `It should throw an error if an attempt is made to re-submit a submitted order`() {
-      val order = createAndPersistReadyToSubmitOrder(status = OrderStatus.SUBMITTED)
+      val order = createAndPersistPopulatedOrder(status = OrderStatus.SUBMITTED)
 
       val result = webTestClient.post()
         .uri("/api/orders/${order.id}/submit")
@@ -659,7 +765,7 @@ class OrderControllerTest : IntegrationTestBase() {
 
     @Test
     fun `It should throw an error if an attempt is made to submit an order with error status`() {
-      val order = createAndPersistReadyToSubmitOrder(status = OrderStatus.ERROR)
+      val order = createAndPersistPopulatedOrder(status = OrderStatus.ERROR)
 
       val result = webTestClient.post()
         .uri("/api/orders/${order.id}/submit")
@@ -713,7 +819,7 @@ class OrderControllerTest : IntegrationTestBase() {
 
     @Test
     fun `It should return an error if serco auth service returned error`() {
-      val order = createAndPersistReadyToSubmitOrder()
+      val order = createAndPersistPopulatedOrder()
 
       sercoAuthApi.stubError()
 
@@ -733,7 +839,7 @@ class OrderControllerTest : IntegrationTestBase() {
 
     @Test
     fun `It should return an error if serco create device wearer service returned error`() {
-      val order = createAndPersistReadyToSubmitOrder()
+      val order = createAndPersistPopulatedOrder()
 
       sercoAuthApi.stubGrantToken()
       sercoApi.stubCreateDeviceWearer(
@@ -764,7 +870,7 @@ class OrderControllerTest : IntegrationTestBase() {
 
     @Test
     fun `It should return an error if serco create monitoring order service returned error`() {
-      val order = createAndPersistReadyToSubmitOrder()
+      val order = createAndPersistPopulatedOrder()
       sercoAuthApi.stubGrantToken()
 
       sercoApi.stubCreateDeviceWearer(
@@ -806,7 +912,7 @@ class OrderControllerTest : IntegrationTestBase() {
     fun `It should return an error if submit attachment to serco returned error`() {
       val orderId = UUID.randomUUID()
       val versionId = UUID.randomUUID()
-      val order = createAndPersistReadyToSubmitOrder(
+      val order = createAndPersistPopulatedOrder(
         id = orderId,
         versionId = versionId,
         documents = mutableListOf(
@@ -866,7 +972,7 @@ class OrderControllerTest : IntegrationTestBase() {
     fun `It updates order with serco device wearer id, monitoring id, order status & attachments, and return 200`() {
       val orderId = UUID.randomUUID()
       val versionId = UUID.randomUUID()
-      val order = createAndPersistReadyToSubmitOrder(
+      val order = createAndPersistPopulatedOrder(
         id = orderId,
         versionId = versionId,
         documents = mutableListOf(
@@ -1220,7 +1326,7 @@ class OrderControllerTest : IntegrationTestBase() {
     fun `It should be possible to submit multiple attachments`() {
       val orderId = UUID.randomUUID()
       val versionId = UUID.randomUUID()
-      val order = createAndPersistReadyToSubmitOrder(
+      val order = createAndPersistPopulatedOrder(
         id = orderId,
         versionId = versionId,
         documents = mutableListOf(
@@ -1626,7 +1732,7 @@ class OrderControllerTest : IntegrationTestBase() {
     fun `It should update order with device wearer id, monitoring id & order status, and return 200 for a variation`() {
       val orderId = UUID.randomUUID()
       val versionId = UUID.randomUUID()
-      val order = createAndPersistReadyToSubmitOrder(
+      val order = createAndPersistPopulatedOrder(
         id = orderId,
         versionId = versionId,
         noFixedAddress = false,
@@ -1990,7 +2096,7 @@ class OrderControllerTest : IntegrationTestBase() {
 
     @Test
     fun `It should map installation address if device wearer no fixed Abode is true`() {
-      val order = createAndPersistReadyToSubmitOrder(noFixedAddress = true)
+      val order = createAndPersistPopulatedOrder(noFixedAddress = true)
       sercoAuthApi.stubGrantToken()
 
       sercoApi.stubCreateDeviceWearer(
@@ -2363,7 +2469,7 @@ class OrderControllerTest : IntegrationTestBase() {
     return order
   }
 
-  fun createAndPersistReadyToSubmitOrder(
+  fun createAndPersistPopulatedOrder(
     id: UUID = UUID.randomUUID(),
     versionId: UUID = UUID.randomUUID(),
     noFixedAddress: Boolean = false,
