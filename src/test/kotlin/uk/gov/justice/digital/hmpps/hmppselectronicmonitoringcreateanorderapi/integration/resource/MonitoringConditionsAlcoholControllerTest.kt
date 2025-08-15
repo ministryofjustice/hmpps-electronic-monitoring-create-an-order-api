@@ -211,41 +211,6 @@ class MonitoringConditionsAlcoholControllerTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `Installation location is mandatory for alcohol monitoring conditions`() {
-    val order = createOrder()
-
-    val result = webTestClient.put()
-      .uri("/api/orders/${order.id}/monitoring-conditions-alcohol")
-      .contentType(MediaType.APPLICATION_JSON)
-      .body(
-        BodyInserters.fromValue(
-          """
-            {
-              "monitoringType": "ALCOHOL_ABSTINENCE",
-              "startDate": "$mockStartDate",
-              "endDate": "$mockEndDate",
-              "installationLocation": null,
-              "prisonName": null,
-              "probationOfficeName": null
-            }
-          """.trimIndent(),
-        ),
-      )
-      .headers(setAuthorisation("AUTH_ADM"))
-      .exchange()
-      .expectStatus()
-      .isBadRequest
-      .expectBodyList(ValidationError::class.java)
-      .returnResult()
-
-    Assertions.assertThat(result.responseBody).isNotNull
-    Assertions.assertThat(result.responseBody).hasSize(1)
-    Assertions.assertThat(result.responseBody!!).contains(
-      ValidationError("installationLocation", ErrorMessages.INSTALLATION_LOCATION_REQUIRED),
-    )
-  }
-
-  @Test
   fun `Alcohol monitoring conditions can be updated with a startDate in the past`() {
     val mockPastStartDate: ZonedDateTime = ZonedDateTime.of(
       LocalDate.of(1990, 1, 1),

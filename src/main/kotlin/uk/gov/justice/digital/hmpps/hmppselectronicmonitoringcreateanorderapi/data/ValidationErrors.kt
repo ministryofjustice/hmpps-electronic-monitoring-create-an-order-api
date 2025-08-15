@@ -21,9 +21,6 @@ object ValidationErrors {
     const val END_DATE_MUST_BE_IN_FUTURE: String = "Date alcohol monitoring ends must be in the future"
     const val END_DATE_MUST_BE_AFTER_START_DATE: String =
       "Date alcohol monitoring ends must be after the date alcohol monitoring starts"
-    const val INSTALLATION_LOCATION_REQUIRED: String = "Select the address of the base station "
-    const val PRISON_NAME_REQUIRED_LOCATION_IS_PRISON: String = "Enter prison name"
-    const val OFFICE_NAME_REQUIRED_LOCATION_IS_PROBATION_OFFICE: String = "Enter probation office name"
   }
 
   object CurfewConditions {
