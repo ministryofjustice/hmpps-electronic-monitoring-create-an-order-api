@@ -338,12 +338,6 @@ data class MonitoringOrder(
           )
           monitoringOrder.abstinence = "No"
         }
-
-        if (!condition.prisonName.isNullOrBlank()) {
-          monitoringOrder.tagAtSourceDetails = condition.prisonName
-        } else if (!condition.probationOfficeName.isNullOrBlank()) {
-          monitoringOrder.tagAtSourceDetails = condition.probationOfficeName
-        }
       }
 
       if (order.interestedParties != null) {
@@ -505,6 +499,7 @@ data class Schedule(val day: String? = "", val start: String? = "", val end: Str
       DayOfWeek.SATURDAY -> "Sa"
       DayOfWeek.SUNDAY -> "Su"
     }
+
     fun fromCurfewTimeTable(curfewTimeTable: CurfewTimeTable): Schedule =
       Schedule(getShortDayString(curfewTimeTable.dayOfWeek), curfewTimeTable.startTime, curfewTimeTable.endTime)
   }
