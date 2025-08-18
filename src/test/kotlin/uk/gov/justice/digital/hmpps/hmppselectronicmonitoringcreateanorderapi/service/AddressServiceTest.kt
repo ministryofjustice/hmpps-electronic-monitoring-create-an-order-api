@@ -19,7 +19,6 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DeviceWearerAddressUsage
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.InstallationLocationType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
@@ -104,10 +103,6 @@ class AddressServiceTest {
           monitoringType = AlcoholMonitoringType.ALCOHOL_ABSTINENCE,
           startDate = mockStartDate,
           endDate = mockEndDate,
-          installationLocation = InstallationLocationType.PRIMARY,
-          installationAddressId = mockAddressId,
-          prisonName = null,
-          probationOfficeName = null,
         ),
         addresses = mutableListOf(mockAddress),
         dataDictionaryVersion = mockDictionaryVersion,
@@ -131,10 +126,6 @@ class AddressServiceTest {
           monitoringType = AlcoholMonitoringType.ALCOHOL_ABSTINENCE,
           startDate = mockStartDate,
           endDate = mockEndDate,
-          installationLocation = InstallationLocationType.PRIMARY,
-          installationAddressId = mockAddressId,
-          prisonName = null,
-          probationOfficeName = null,
         ),
         addresses = mutableListOf(updatedMockAddress),
         dataDictionaryVersion = mockDictionaryVersion,

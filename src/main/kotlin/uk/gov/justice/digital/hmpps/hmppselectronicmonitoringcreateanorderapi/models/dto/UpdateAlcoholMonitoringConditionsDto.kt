@@ -4,7 +4,6 @@ import jakarta.validation.constraints.Future
 import jakarta.validation.constraints.NotNull
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.data.ValidationErrors
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.InstallationLocationType
 import java.time.ZonedDateTime
 
 data class UpdateAlcoholMonitoringConditionsDto(
@@ -16,10 +15,4 @@ data class UpdateAlcoholMonitoringConditionsDto(
 
   @field:Future(message = ValidationErrors.AlcoholMonitoring.END_DATE_MUST_BE_IN_FUTURE)
   val endDate: ZonedDateTime? = null,
-
-  val installationLocation: InstallationLocationType? = null,
-
-  val prisonName: String? = null,
-
-  val probationOfficeName: String? = null,
 )
