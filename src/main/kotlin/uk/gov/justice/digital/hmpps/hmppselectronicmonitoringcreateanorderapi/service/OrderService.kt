@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service
 
+import jakarta.persistence.EntityManager
 import jakarta.persistence.EntityNotFoundException
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
@@ -18,12 +19,15 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.specification.OrderListSpecification
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.specification.OrderSearchSpecification
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderVersionRepository
 import java.util.*
 
 @Service
 class OrderService(
   val repo: OrderRepository,
+  val variationRepo: OrderVersionRepository,
   val fmsService: FmsService,
+  private val entityManager: EntityManager,
   @Value("\${settings.data-dictionary-version}") val defaultDataDictionaryVersion: String,
 ) {
 
@@ -76,77 +80,75 @@ class OrderService(
     return order
   }
 
-  fun createVariationFromExisting(originalOrderId: UUID, username: String): Order {
+  fun createVariationFromExisting(originalOrderId: UUID, username: String): OrderVersion {
     val originalOrder = getOrder(originalOrderId, username)
-    val originalVersion = originalOrder.getCurrentVersion()
-    val newVersionId = originalOrder.getCurrentVersion().versionId + 1
-
-    val newVariationOrder = Order()
+    val originalOrderRef = entityManager.getReference(Order::class.java, originalOrder.id)
+    val originalVersionNumber = originalOrder.getCurrentVersion()
+    val newVersionNumber = originalOrder.getCurrentVersion().versionId + 1
 
     val newOrderVersion = OrderVersion(
-      order = newVariationOrder,
-      orderId = newVariationOrder.id,
-      versionId = newVersionId,
+      order = originalOrderRef,
+      orderId = originalOrderId,
+      versionId = newVersionNumber,
       status = OrderStatus.IN_PROGRESS,
       type = RequestType.VARIATION,
       username = username,
-      dataDictionaryVersion = originalVersion.dataDictionaryVersion,
+      dataDictionaryVersion = originalVersionNumber.dataDictionaryVersion,
       fmsResultId = null,
       fmsResultDate = null,
-    )
+    ).apply {
+      orderParameters =
+        originalVersionNumber.orderParameters?.copy(id = UUID.randomUUID(), versionId = this.id)
+     deviceWearer =
+        originalVersionNumber.deviceWearer?.copy(id = UUID.randomUUID(), versionId = this.id)
+     deviceWearerResponsibleAdult =
+        originalVersionNumber.deviceWearerResponsibleAdult?.copy(id = UUID.randomUUID(), versionId = this.id)
+     contactDetails =
+        originalVersionNumber.contactDetails?.copy(id = UUID.randomUUID(), versionId = this.id)
+     curfewConditions =
+        originalVersionNumber.curfewConditions?.copy(id = UUID.randomUUID(), versionId = this.id)
+     curfewReleaseDateConditions =
+        originalVersionNumber.curfewReleaseDateConditions?.copy(id = UUID.randomUUID(), versionId = this.id)
+     installationAndRisk =
+        originalVersionNumber.installationAndRisk?.copy(id = UUID.randomUUID(), versionId = this.id)
+     interestedParties =
+        originalVersionNumber.interestedParties?.copy(id = UUID.randomUUID(), versionId = this.id)
+     probationDeliveryUnit =
+        originalVersionNumber.probationDeliveryUnit?.copy(id = UUID.randomUUID(), versionId = this.id)
+     monitoringConditions =
+        originalVersionNumber.monitoringConditions?.copy(id = UUID.randomUUID(), versionId = this.id)
+     monitoringConditionsAlcohol =
+        originalVersionNumber.monitoringConditionsAlcohol?.copy(id = UUID.randomUUID(), versionId = this.id)
+     monitoringConditionsTrail =
+        originalVersionNumber.monitoringConditionsTrail?.copy(id = UUID.randomUUID(), versionId = this.id)
+     variationDetails =
+        originalVersionNumber.variationDetails?.copy(id = UUID.randomUUID(), versionId = this.id)
+     installationLocation =
+        originalVersionNumber.installationLocation?.copy(id = UUID.randomUUID(), versionId = this.id)
+     installationAppointment =
+        originalVersionNumber.installationAppointment?.copy(id = UUID.randomUUID(), versionId = this.id)
 
-    newOrderVersion.deviceWearer =
-      originalVersion.deviceWearer?.copy(id = UUID.randomUUID(), versionId = newOrderVersion.id)
-    newOrderVersion.deviceWearerResponsibleAdult =
-      originalVersion.deviceWearerResponsibleAdult?.copy(id = UUID.randomUUID(), versionId = newOrderVersion.id)
-    newOrderVersion.contactDetails =
-      originalVersion.contactDetails?.copy(id = UUID.randomUUID(), versionId = newOrderVersion.id)
-    newOrderVersion.curfewConditions =
-      originalVersion.curfewConditions?.copy(id = UUID.randomUUID(), versionId = newOrderVersion.id)
-    newOrderVersion.curfewReleaseDateConditions =
-      originalVersion.curfewReleaseDateConditions?.copy(id = UUID.randomUUID(), versionId = newOrderVersion.id)
-    newOrderVersion.installationAndRisk =
-      originalVersion.installationAndRisk?.copy(id = UUID.randomUUID(), versionId = newOrderVersion.id)
-    newOrderVersion.interestedParties =
-      originalVersion.interestedParties?.copy(id = UUID.randomUUID(), versionId = newOrderVersion.id)
-    newOrderVersion.probationDeliveryUnit =
-      originalVersion.probationDeliveryUnit?.copy(id = UUID.randomUUID(), versionId = newOrderVersion.id)
-    newOrderVersion.monitoringConditions =
-      originalVersion.monitoringConditions?.copy(id = UUID.randomUUID(), versionId = newOrderVersion.id)
-    newOrderVersion.monitoringConditionsAlcohol =
-      originalVersion.monitoringConditionsAlcohol?.copy(id = UUID.randomUUID(), versionId = newOrderVersion.id)
-    newOrderVersion.monitoringConditionsTrail =
-      originalVersion.monitoringConditionsTrail?.copy(id = UUID.randomUUID(), versionId = newOrderVersion.id)
-    newOrderVersion.variationDetails =
-      originalVersion.variationDetails?.copy(id = UUID.randomUUID(), versionId = newOrderVersion.id)
-    newOrderVersion.installationLocation =
-      originalVersion.installationLocation?.copy(id = UUID.randomUUID(), versionId = newOrderVersion.id)
-    newOrderVersion.installationAppointment =
-      originalVersion.installationAppointment?.copy(id = UUID.randomUUID(), versionId = newOrderVersion.id)
+      additionalDocuments =
+        originalVersionNumber.additionalDocuments.map {
+          it.copy(id = UUID.randomUUID(), versionId = this.id)
+        }.toMutableList()
+      addresses =
+        originalVersionNumber.addresses.map { it.copy(id = UUID.randomUUID(), versionId = this.id) }.toMutableList()
+      curfewTimeTable =
+        originalVersionNumber.curfewTimeTable.map {
+          it.copy(id = UUID.randomUUID(), versionId = this.id)
+        }.toMutableList()
+      enforcementZoneConditions =
+        originalVersionNumber.enforcementZoneConditions.map {
+          it.copy(id = UUID.randomUUID(), versionId = this.id)
+        }.toMutableList()
+      mandatoryAttendanceConditions =
+        originalVersionNumber.mandatoryAttendanceConditions.map {
+          it.copy(id = UUID.randomUUID(), versionId = this.id)
+        }.toMutableList()
+    }
 
-    newOrderVersion.additionalDocuments =
-      originalVersion.additionalDocuments.map {
-        it.copy(id = UUID.randomUUID(), versionId = newOrderVersion.id)
-      }.toMutableList()
-    newOrderVersion.addresses =
-      originalVersion.addresses.map { it.copy(id = UUID.randomUUID(), versionId = newOrderVersion.id) }.toMutableList()
-    newOrderVersion.curfewTimeTable =
-      originalVersion.curfewTimeTable.map {
-        it.copy(id = UUID.randomUUID(), versionId = newOrderVersion.id)
-      }.toMutableList()
-    newOrderVersion.enforcementZoneConditions =
-      originalVersion.enforcementZoneConditions.map {
-        it.copy(id = UUID.randomUUID(), versionId = newOrderVersion.id)
-      }.toMutableList()
-    newOrderVersion.mandatoryAttendanceConditions =
-      originalVersion.mandatoryAttendanceConditions.map {
-        it.copy(id = UUID.randomUUID(), versionId = newOrderVersion.id)
-      }.toMutableList()
-
-    newVariationOrder.versions.add(newOrderVersion)
-
-    repo.save(newVariationOrder)
-    return newVariationOrder
+    return variationRepo.save(newOrderVersion)
   }
 
   fun submitOrder(id: UUID, username: String, fullName: String): Order {
