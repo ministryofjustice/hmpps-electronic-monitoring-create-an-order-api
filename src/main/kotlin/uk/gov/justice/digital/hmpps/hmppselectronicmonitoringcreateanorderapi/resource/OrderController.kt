@@ -128,7 +128,7 @@ class OrderController(@Autowired val orderService: OrderService) {
     submittedBy = order.submittedBy,
   )
 
-private fun convertToDto(order: OrderVersion): OrderDto = OrderDto(
+  private fun convertToDto(order: OrderVersion): OrderDto = OrderDto(
     id = order.id,
     additionalDocuments = order.additionalDocuments,
     addresses = order.addresses,

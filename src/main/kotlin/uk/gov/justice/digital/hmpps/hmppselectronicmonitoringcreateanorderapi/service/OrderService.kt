@@ -97,35 +97,35 @@ class OrderService(
       fmsResultId = null,
       fmsResultDate = null,
     ).apply {
+      variationDetails = null
+
       orderParameters =
         originalVersionNumber.orderParameters?.copy(id = UUID.randomUUID(), versionId = this.id)
-     deviceWearer =
+      deviceWearer =
         originalVersionNumber.deviceWearer?.copy(id = UUID.randomUUID(), versionId = this.id)
-     deviceWearerResponsibleAdult =
+      deviceWearerResponsibleAdult =
         originalVersionNumber.deviceWearerResponsibleAdult?.copy(id = UUID.randomUUID(), versionId = this.id)
-     contactDetails =
+      contactDetails =
         originalVersionNumber.contactDetails?.copy(id = UUID.randomUUID(), versionId = this.id)
-     curfewConditions =
+      curfewConditions =
         originalVersionNumber.curfewConditions?.copy(id = UUID.randomUUID(), versionId = this.id)
-     curfewReleaseDateConditions =
+      curfewReleaseDateConditions =
         originalVersionNumber.curfewReleaseDateConditions?.copy(id = UUID.randomUUID(), versionId = this.id)
-     installationAndRisk =
+      installationAndRisk =
         originalVersionNumber.installationAndRisk?.copy(id = UUID.randomUUID(), versionId = this.id)
-     interestedParties =
+      interestedParties =
         originalVersionNumber.interestedParties?.copy(id = UUID.randomUUID(), versionId = this.id)
-     probationDeliveryUnit =
+      probationDeliveryUnit =
         originalVersionNumber.probationDeliveryUnit?.copy(id = UUID.randomUUID(), versionId = this.id)
-     monitoringConditions =
+      monitoringConditions =
         originalVersionNumber.monitoringConditions?.copy(id = UUID.randomUUID(), versionId = this.id)
-     monitoringConditionsAlcohol =
+      monitoringConditionsAlcohol =
         originalVersionNumber.monitoringConditionsAlcohol?.copy(id = UUID.randomUUID(), versionId = this.id)
-     monitoringConditionsTrail =
+      monitoringConditionsTrail =
         originalVersionNumber.monitoringConditionsTrail?.copy(id = UUID.randomUUID(), versionId = this.id)
-     variationDetails =
-        originalVersionNumber.variationDetails?.copy(id = UUID.randomUUID(), versionId = this.id)
-     installationLocation =
+      installationLocation =
         originalVersionNumber.installationLocation?.copy(id = UUID.randomUUID(), versionId = this.id)
-     installationAppointment =
+      installationAppointment =
         originalVersionNumber.installationAppointment?.copy(id = UUID.randomUUID(), versionId = this.id)
 
       additionalDocuments =
@@ -133,7 +133,9 @@ class OrderService(
           it.copy(id = UUID.randomUUID(), versionId = this.id)
         }.toMutableList()
       addresses =
-        originalVersionNumber.addresses.map { it.copy(id = UUID.randomUUID(), versionId = this.id) }.toMutableList()
+        originalVersionNumber.addresses.map {
+          it.copy(id = UUID.randomUUID(), versionId = this.id)
+        }.toMutableList()
       curfewTimeTable =
         originalVersionNumber.curfewTimeTable.map {
           it.copy(id = UUID.randomUUID(), versionId = this.id)
