@@ -338,6 +338,14 @@ data class MonitoringOrder(
           )
           monitoringOrder.abstinence = "No"
         }
+        if (order.installationLocation?.location == InstallationLocationType.PROBATION_OFFICE ||
+          order.installationLocation?.location == InstallationLocationType.PRISON
+        ) {
+          monitoringOrder.tagAtSource = "Yes"
+        } else {
+          monitoringOrder.tagAtSource = "No"
+        }
+        monitoringOrder.tagAtSourceDetails = order.installationAppointment?.placeName
       }
 
       if (order.interestedParties != null) {
