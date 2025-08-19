@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service
 
+import jakarta.persistence.EntityManager
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -52,6 +53,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.specification.OrderListSpecification
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.specification.OrderSearchSpecification
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderVersionRepository
 import java.time.DayOfWeek
 import java.time.ZoneId
 import java.time.ZonedDateTime
@@ -61,14 +63,18 @@ import java.util.*
 @JsonTest
 class OrderServiceTest {
   private lateinit var repo: OrderRepository
+  private lateinit var orderVersionRepo: OrderVersionRepository
   private lateinit var fmsService: FmsService
   private lateinit var service: OrderService
+  private lateinit var entityManager: EntityManager
 
   @BeforeEach
   fun setup() {
     repo = mock(OrderRepository::class.java)
     fmsService = mock(FmsService::class.java)
-    service = OrderService(repo, fmsService, "DDV4")
+    orderVersionRepo = mock(OrderVersionRepository::class.java)
+    entityManager = mock(EntityManager::class.java)
+    service = OrderService(repo, orderVersionRepo, fmsService, entityManager, "DDV4")
   }
 
   @Test
