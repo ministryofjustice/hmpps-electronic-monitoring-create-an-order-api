@@ -144,7 +144,7 @@ There are a couple of options for doing so such as [curl](https://curl.se/) or
 The [Create an Electronic Monitoring Order UI](https://github.com/ministryofjustice/hmpps-electronic-monitoring-create-an-order) uses HMPPS Auth in development (rather than locally with Docker).
 
 To interact with the API using the front end, with both running locally:
-1. In the application-local.yml file in the API, change the HMPPS Auth URL value from http://localhost:8090/auth to https://sign-in-dev.hmpps.service.justice.gov.uk/auth
+1. In the application-local.yml file in the API, comment out the localhost URLs and uncomment the dev URLs for both HMPPS Auth and Document Management
 2. Run the UI locally, using [the UI documentation](https://github.com/ministryofjustice/hmpps-electronic-monitoring-create-an-order)
 3. Run the API locally using the same steps outlined in [get started](#get-started), but replacing the command in step 1 with `docker compose pull && docker compose up --scale hmpps-electronic-monitoring-create-an-order-api=0 --scale hmpps-auth=0` to start a docker instance of the database but not HMPPS Auth.
 
