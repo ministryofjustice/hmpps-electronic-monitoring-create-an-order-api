@@ -145,6 +145,10 @@ data class MonitoringOrder(
   var tagAtSource: String? = "",
   @JsonProperty("tag_at_source_details")
   var tagAtSourceDetails: String? = "",
+  @JsonProperty("date_and_time_installation_will_take_place")
+  var installationDateTime: String? = "",
+  @JsonProperty("released_under_prarr")
+  var prarrRelease: String? = "",
   @JsonProperty("technical_bail")
   var technicalBail: String? = "",
   @JsonProperty("trial_date")
@@ -346,6 +350,12 @@ data class MonitoringOrder(
           monitoringOrder.tagAtSource = "No"
         }
         monitoringOrder.tagAtSourceDetails = order.installationAppointment?.placeName
+        monitoringOrder.installationDateTime = getBritishDateAndTime(order.installationAppointment?.appointmentDate)
+        monitoringOrder.prarrRelease = if (conditions.prarr == YesNoUnknown.YES) {
+          "Yes"
+        } else {
+          "No"
+        }
       }
 
       if (order.interestedParties != null) {
