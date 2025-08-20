@@ -54,8 +54,8 @@ class OrderController(@Autowired val orderService: OrderService) {
     authentication: Authentication,
   ): ResponseEntity<OrderDto> {
     val username = authentication.name
-    val newVariation = orderService.createVariationFromExisting(orderId, username)
-    return ResponseEntity(convertToDto(newVariation), HttpStatus.OK)
+    val newVersion = orderService.createVersion(orderId, username)
+    return ResponseEntity(convertToDto(newVersion), HttpStatus.OK)
   }
 
   @GetMapping("/orders/{orderId}")
