@@ -157,4 +157,4 @@ There is no need to generate a HMPPS Auth token, as authentication is handled by
    `docker compose -f docker-compose-test.yml up`
 2.  Using command line to run integration test:
 
-    `./gradlew integration` 
+    `./gradlew integration`
