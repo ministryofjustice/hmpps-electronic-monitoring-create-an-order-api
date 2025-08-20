@@ -141,7 +141,7 @@ There are a couple of options for doing so such as [curl](https://curl.se/) or
 
 #### Running both the UI And the API locally
 
-The [Create an Electronic Monitoring Order UI](https://github.com/ministryofjustice/hmpps-electronic-monitoring-create-an-order) uses HMPPS Auth in development (rather than locally with Docker).
+The [Create an Electronic Monitoring Order UI](https://github.com/ministryofjustice/hmpps-electronic-monitoring-create-an-order) uses HMPPS Auth and Document api in development (rather than locally with Docker).
 
 To interact with the API using the front end, with both running locally:
 1. In the application-local.yml file in the API, comment out the localhost URLs and uncomment the dev URLs for both HMPPS Auth and Document Management
