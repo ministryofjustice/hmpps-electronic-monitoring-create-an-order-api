@@ -203,8 +203,8 @@ data class MonitoringOrder(
   var hdc: String = "",
   @JsonProperty("order_status")
   var orderStatus: String? = "",
-//  @JsonProperty("pilot")
-//  var pilot: String? = "",
+  @JsonProperty("pilot")
+  var pilot: String? = "",
 ) {
 
   companion object {
@@ -233,7 +233,7 @@ data class MonitoringOrder(
         orderId = order.id.toString(),
         orderStatus = "Not Started",
         offence = getOffence(order),
-        // pilot = conditions.pilot?.value?:"",
+        pilot = conditions.pilot?.value ?: "",
       )
 
       monitoringOrder.sentenceType = conditions.sentenceType?.value ?: ""

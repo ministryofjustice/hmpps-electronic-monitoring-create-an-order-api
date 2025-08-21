@@ -120,6 +120,7 @@ class ScenarioTests : IntegrationTestBase() {
     val expectedMonitoringOrder = objectMapper.readValue<MonitoringOrder>(expectedOrderJson)
 
     // Assert
+
     val storedDeviceWearer = objectMapper.readValue<DeviceWearer>(submitResult.deviceWearerResult.payload)
     assertThat(expectedDeviceWearer).isEqualTo(storedDeviceWearer)
 
@@ -159,13 +160,16 @@ class ScenarioTests : IntegrationTestBase() {
     val expectedVariationJson = Files.readString(Paths.get("$rootFilePath/expected_variation.json"))
       .replace("{expectedOderId}", submitResult.orderId.toString())
 
+    val expectedDeviceWearer = objectMapper.readValue<DeviceWearer>(expectedDeviceWearerJson)
+
+    val expectedMonitoringOrder = objectMapper.readValue<MonitoringOrder>(expectedVariationJson)
+
     // Assert
-    assertThat(
-      submitResult.deviceWearerResult.payload,
-    ).isEqualTo(expectedDeviceWearerJson.removeWhitespaceAndNewlines())
-    assertThat(
-      submitResult.monitoringOrderResult.payload,
-    ).isEqualTo(expectedVariationJson.removeWhitespaceAndNewlines())
+    val storedDeviceWearer = objectMapper.readValue<DeviceWearer>(submitResult.deviceWearerResult.payload)
+    assertThat(expectedDeviceWearer).isEqualTo(storedDeviceWearer)
+
+    val storedMonitoringOrder = objectMapper.readValue<MonitoringOrder>(submitResult.monitoringOrderResult.payload)
+    assertThat(expectedMonitoringOrder).isEqualTo(storedMonitoringOrder)
   }
 
   private fun getOrderFromFile(filePath: String): Order {

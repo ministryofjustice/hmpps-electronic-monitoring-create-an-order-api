@@ -20,6 +20,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderTypeDescription
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Pilot
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.SentenceType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YesNoUnknown
@@ -200,6 +201,7 @@ abstract class OrderTestBase {
     alcohol: Boolean = false,
     mandatoryAttendance: Boolean = false,
     exclusionZone: Boolean = false,
+    pilot: Pilot = Pilot.UNKNOWN,
   ): MonitoringConditions = MonitoringConditions(
     versionId = UUID.randomUUID(),
     orderType = orderType,
@@ -216,6 +218,7 @@ abstract class OrderTestBase {
     alcohol = alcohol,
     mandatoryAttendance = mandatoryAttendance,
     exclusionZone = exclusionZone,
+    pilot = pilot,
   )
 
   protected fun createMandatoryAttendanceCondition(
