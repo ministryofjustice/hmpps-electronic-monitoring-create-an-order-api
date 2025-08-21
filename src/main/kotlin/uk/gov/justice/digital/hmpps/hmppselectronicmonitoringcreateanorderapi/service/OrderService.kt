@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service
 
-import jakarta.persistence.EntityManager
 import jakarta.persistence.EntityNotFoundException
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
@@ -25,7 +24,6 @@ import java.util.*
 class OrderService(
   val repo: OrderRepository,
   val fmsService: FmsService,
-  private val entityManager: EntityManager,
   @Value("\${settings.data-dictionary-version}") val defaultDataDictionaryVersion: String,
 ) {
 

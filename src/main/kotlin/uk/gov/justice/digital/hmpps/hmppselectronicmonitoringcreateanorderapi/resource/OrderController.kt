@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.config.AuthAwareAuthenticationToken
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.OrderListCriteria
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.OrderSearchCriteria
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.CreateOrderDto
@@ -97,38 +96,6 @@ class OrderController(@Autowired val orderService: OrderService) {
   }
 
   private fun convertToDto(order: Order): OrderDto = OrderDto(
-    id = order.id,
-    additionalDocuments = order.additionalDocuments,
-    addresses = order.addresses,
-    contactDetails = order.contactDetails,
-    curfewConditions = order.curfewConditions,
-    curfewReleaseDateConditions = order.curfewReleaseDateConditions,
-    curfewTimeTable = order.curfewTimeTable,
-    deviceWearer = order.deviceWearer,
-    deviceWearerResponsibleAdult = order.deviceWearerResponsibleAdult,
-    enforcementZoneConditions = order.enforcementZoneConditions,
-    fmsResultId = order.fmsResultId,
-    fmsResultDate = order.fmsResultDate,
-    installationAndRisk = order.installationAndRisk,
-    interestedParties = order.interestedParties,
-    isValid = order.isValid,
-    mandatoryAttendanceConditions = order.mandatoryAttendanceConditions,
-    monitoringConditions = order.monitoringConditions,
-    monitoringConditionsAlcohol = order.monitoringConditionsAlcohol,
-    monitoringConditionsTrail = order.monitoringConditionsTrail,
-    status = order.status,
-    type = order.type,
-    username = order.username,
-    variationDetails = order.variationDetails,
-    probationDeliveryUnit = order.probationDeliveryUnit,
-    installationLocation = order.installationLocation,
-    installationAppointment = order.installationAppointment,
-    dataDictionaryVersion = order.dataDictionaryVersion,
-    orderParameters = order.orderParameters,
-    submittedBy = order.submittedBy,
-  )
-
-  private fun convertToDto(order: OrderVersion): OrderDto = OrderDto(
     id = order.id,
     additionalDocuments = order.additionalDocuments,
     addresses = order.addresses,
