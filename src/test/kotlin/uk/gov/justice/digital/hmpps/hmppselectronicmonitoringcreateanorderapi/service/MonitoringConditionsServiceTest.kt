@@ -18,6 +18,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.InstallationLocationType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Pilot
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 import java.time.ZoneId
@@ -87,11 +88,19 @@ class MonitoringConditionsServiceTest {
     whenever(repo.save(mockOrder)).thenReturn(mockOrder)
 
     val result =
-      service.updateMonitoringConditions(mockOrderId, mockUsername, UpdateMonitoringConditionsDto(pilot = "some pilot"))
+      service.updateMonitoringConditions(
+        mockOrderId,
+        mockUsername,
+        UpdateMonitoringConditionsDto(
+          pilot = Pilot.DOMESTIC_ABUSE_PERPETRATOR_ON_LICENCE_HOME_DETENTION_CURFEW_DAPOL_HDC,
+        ),
+      )
 
     assertThat(mockOrder.monitoringConditions).isNotNull
-    assertThat(mockOrder.monitoringConditions!!.pilot).isEqualTo("some pilot")
-    assertThat(result.pilot).isEqualTo("some pilot")
+    assertThat(
+      mockOrder.monitoringConditions!!.pilot,
+    ).isEqualTo(Pilot.DOMESTIC_ABUSE_PERPETRATOR_ON_LICENCE_HOME_DETENTION_CURFEW_DAPOL_HDC)
+    assertThat(result.pilot).isEqualTo(Pilot.DOMESTIC_ABUSE_PERPETRATOR_ON_LICENCE_HOME_DETENTION_CURFEW_DAPOL_HDC)
   }
 
   @Test

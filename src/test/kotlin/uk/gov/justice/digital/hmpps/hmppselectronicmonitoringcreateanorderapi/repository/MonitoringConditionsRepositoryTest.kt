@@ -11,6 +11,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Pilot
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import java.util.*
 
@@ -62,11 +63,16 @@ class MonitoringConditionsRepositoryTest {
       val order = orderRepo.findById(mockOrderId).get()
 
       order.monitoringConditions =
-        MonitoringConditions(versionId = mockVersionId, pilot = "some string")
+        MonitoringConditions(
+          versionId = mockVersionId,
+          pilot = Pilot.DOMESTIC_ABUSE_PERPETRATOR_ON_LICENCE_HOME_DETENTION_CURFEW_DAPOL_HDC,
+        )
 
       val finalMonitoringConditions = orderRepo.save(order).monitoringConditions
 
-      assert(finalMonitoringConditions?.pilot == "some string")
+      assert(
+        finalMonitoringConditions?.pilot == Pilot.DOMESTIC_ABUSE_PERPETRATOR_ON_LICENCE_HOME_DETENTION_CURFEW_DAPOL_HDC,
+      )
     }
   }
 }
