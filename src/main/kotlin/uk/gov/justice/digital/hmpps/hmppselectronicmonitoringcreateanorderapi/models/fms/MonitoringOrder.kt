@@ -146,7 +146,7 @@ data class MonitoringOrder(
   @JsonProperty("tag_at_source_details")
   var tagAtSourceDetails: String? = "",
   @JsonProperty("date_and_time_installation_will_take_place")
-  var installationDateTime: String? = "",
+  var dateAndTimeInstallationWillTakePlace: String? = "",
   @JsonProperty("released_under_prarr")
   var releasedUnderPrarr: String? = "",
   @JsonProperty("technical_bail")
@@ -350,7 +350,7 @@ data class MonitoringOrder(
           monitoringOrder.tagAtSource = "No"
         }
         monitoringOrder.tagAtSourceDetails = order.installationAppointment?.placeName ?: ""
-        monitoringOrder.installationDateTime =
+        monitoringOrder.dateAndTimeInstallationWillTakePlace =
           getBritishDateAndTime(order.installationAppointment?.appointmentDate) ?: ""
         monitoringOrder.releasedUnderPrarr = if (conditions.prarr == YesNoUnknown.YES) {
           "Yes"
