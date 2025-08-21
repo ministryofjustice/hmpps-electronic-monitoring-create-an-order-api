@@ -1,11 +1,17 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.listener
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
 import com.microsoft.applicationinsights.TelemetryClient
 import io.micrometer.core.instrument.util.StringEscapeUtils
 import org.assertj.core.api.Assertions.assertThat
 import org.awaitility.Awaitility.await
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.Arguments
+import org.junit.jupiter.params.provider.MethodSource
 import org.mockito.internal.verification.Times
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argThat
@@ -28,9 +34,11 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.in
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.SercoAuthMockServerExtension.Companion.sercoAuthApi
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.SercoMockApiExtension.Companion.sercoApi
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.listener.CourtHearingEventListener
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.DeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsSubmissionResult
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.MonitoringOrder
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.FmsSubmissionResultRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.courthearing.HearingEventHandler
 import uk.gov.justice.hmpps.sqs.HmppsQueueService
@@ -44,6 +52,9 @@ import java.util.concurrent.CompletableFuture
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @Transactional
 class CourtHearingEventListenerTest : IntegrationTestBase() {
+
+  private val objectMapper: ObjectMapper = jacksonObjectMapper()
+
   @MockitoSpyBean
   lateinit var fmsSubmissionRepo: FmsSubmissionResultRepository
 
@@ -133,159 +144,43 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
 
   fun String.removeWhitespaceAndNewlines(): String = this.replace("(\"[^\"]*\")|\\s".toRegex(), "\$1")
 
-  @Test
-  fun `Will map COEW_community_order_curfew request and submit to FMS`() {
-    val rootFilePath = "src/test/resources/json/COEW_community_order_curfew"
-    runPayloadTest(rootFilePath)
+  companion object {
+    @JvmStatic
+    fun scenarios() = listOf(
+      Arguments.of("COEW_community_order_curfew"),
+      Arguments.of("COEW_community_order_alcohol"),
+      Arguments.of("SUSPSD_community_order_exclusion"),
+      Arguments.of("SUSPS_community_order_inclusion"),
+      Arguments.of("COV_community_order_trail"),
+      Arguments.of("REMCB_bail_curfew"),
+      Arguments.of("CCSIB_bail_exclusion"),
+      Arguments.of("CCSIB_crown_court_bail_exclusion"),
+      Arguments.of("CCSIB_crown_court_week_commencing_next_hearing_date"),
+      Arguments.of("CCSIB_crown_court_no_fixed_next_hearing_date"),
+      Arguments.of("RILAB_bail_inclusion"),
+      Arguments.of("RIB_bail_exclusion_except_court_or_appointment"),
+      Arguments.of("RC_bail_inclusion"),
+      Arguments.of("RCCLAB_bail_exclusion"),
+      Arguments.of("CCIB_bail_curfew"),
+      Arguments.of("CCIC_bail_curfew"),
+      Arguments.of("YROEW_youth_curfew"),
+      Arguments.of("YROFEW_youth_trail"),
+      Arguments.of("YROISS_youth_exclusion"),
+      Arguments.of("SDO_supervision_curfew"),
+      Arguments.of("RCCCB_pre-trail_exclusion_and_curfew"),
+      Arguments.of("CCSILA_pre-trail_exclusions_and_curfew"),
+      Arguments.of("REMCBY_bail_exclusion_inclusion_and_curfew"),
+      Arguments.of("RILA_pre-trail_exclusions_and_curfew"),
+      Arguments.of("RCCLA_pre-trail_exclusions_and_curfew"),
+      Arguments.of("CCIILA_pre-trail_exclusions_and_curfew"),
+      Arguments.of("REMIL_pre-trail_exclusions_and_curfew"),
+    )
   }
 
-  @Test
-  fun `Will map COEW_community_order_alcohol request and submit to FMS`() {
-    val rootFilePath = "src/test/resources/json/COEW_community_order_alcohol"
-    runPayloadTest(rootFilePath)
-  }
-
-  @Test
-  fun `Will map SUSPSD_community_order_exclusion request and submit to FMS`() {
-    val rootFilePath = "src/test/resources/json/SUSPSD_community_order_exclusion"
-    runPayloadTest(rootFilePath)
-  }
-
-  @Test
-  fun `Will map SUSPS_community_order_inclusion request and submit to FMS`() {
-    val rootFilePath = "src/test/resources/json/SUSPS_community_order_inclusion"
-    runPayloadTest(rootFilePath)
-  }
-
-  @Test
-  fun `Will map COV_community_order_trail and submit to FMS`() {
-    val rootFilePath = "src/test/resources/json/COV_community_order_trail"
-    runPayloadTest(rootFilePath)
-  }
-
-  @Test
-  fun `Will map REMCB_bail_curfew request and submit to FMS`() {
-    val rootFilePath = "src/test/resources/json/REMCB_bail_curfew"
-    runPayloadTest(rootFilePath)
-  }
-
-  @Test
-  fun `Will map CCSIB_bail_exclusion request and submit to FMS`() {
-    val rootFilePath = "src/test/resources/json/CCSIB_bail_exclusion"
-    runPayloadTest(rootFilePath)
-  }
-
-  @Test
-  fun `Will map CCSIB_crown_court_bail_exclusion request and submit to FMS`() {
-    val rootFilePath = "src/test/resources/json/CCSIB_crown_court_bail_exclusion"
-    runPayloadTest(rootFilePath)
-  }
-
-  @Test
-  fun `Will map CCSIB_crown_court_week_commencing_next_hearing_date request and submit to FMS`() {
-    val rootFilePath = "src/test/resources/json/CCSIB_crown_court_week_commencing_next_hearing_date"
-    runPayloadTest(rootFilePath)
-  }
-
-  @Test
-  fun `Will map CCSIB_crown_court_no_fixed_next_hearing_date request and submit to FMS`() {
-    val rootFilePath = "src/test/resources/json/CCSIB_crown_court_no_fixed_next_hearing_date"
-    runPayloadTest(rootFilePath)
-  }
-
-  @Test
-  fun `Will map RILAB_bail_inclusion request and submit to FMS`() {
-    val rootFilePath = "src/test/resources/json/RILAB_bail_inclusion"
-    runPayloadTest(rootFilePath)
-  }
-
-  @Test
-  fun `Will map RIB_bail_exclusion_except_court_or_appointment request and submit to FMS`() {
-    val rootFilePath = "src/test/resources/json/RIB_bail_exclusion_except_court_or_appointment"
-    runPayloadTest(rootFilePath)
-  }
-
-  @Test
-  fun `Will map RC_bail_inclusion request and submit to FMS`() {
-    val rootFilePath = "src/test/resources/json/RC_bail_inclusion"
-    runPayloadTest(rootFilePath)
-  }
-
-  @Test
-  fun `Will map RCCLAB_bail_exclusion request and submit to FMS`() {
-    val rootFilePath = "src/test/resources/json/RCCLAB_bail_exclusion"
-    runPayloadTest(rootFilePath)
-  }
-
-  @Test
-  fun `Will map CCIB_bail_curfew request and submit to FMS`() {
-    val rootFilePath = "src/test/resources/json/CCIB_bail_curfew"
-    runPayloadTest(rootFilePath)
-  }
-
-  @Test
-  fun `Will map CCIC_bail_curfew request and submit to FMS`() {
-    val rootFilePath = "src/test/resources/json/CCIC_bail_curfew"
-    runPayloadTest(rootFilePath)
-  }
-
-  @Test
-  fun `Will map YROEW_youth_curfew request and submit to FMS`() {
-    val rootFilePath = "src/test/resources/json/YROEW_youth_curfew"
-    runPayloadTest(rootFilePath)
-  }
-
-  @Test
-  fun `Will map YROFEW_youth_trail request and submit to FMS`() {
-    val rootFilePath = "src/test/resources/json/YROFEW_youth_trail"
-    runPayloadTest(rootFilePath)
-  }
-
-  @Test
-  fun `Will map YROISS_youth_exclusion request and submit to FMS`() {
-    val rootFilePath = "src/test/resources/json/YROISS_youth_exclusion"
-    runPayloadTest(rootFilePath)
-  }
-
-  @Test
-  fun `Will map SDO_supervision_curfew request and submit to FMS`() {
-    val rootFilePath = "src/test/resources/json/SDO_supervision_curfew"
-    runPayloadTest(rootFilePath)
-  }
-
-  @Test
-  fun `Will map RCCCB_pre-trail_exclusion_and_curfew request and submit to FMS`() {
-    val rootFilePath = "src/test/resources/json/RCCCB_pre-trail_exclusion_and_curfew"
-    runPayloadTest(rootFilePath)
-  }
-
-  @Test
-  fun `Will map RCCCB_pre-CCSILA_pre-trail_exclusions_and_curfew request and submit to FMS`() {
-    val rootFilePath = "src/test/resources/json/CCSILA_pre-trail_exclusions_and_curfew"
-    runPayloadTest(rootFilePath)
-  }
-
-  @Test
-  fun `Will map REMCBY_bail_exclusion_inclusion_and_curfew request and submit to FMS`() {
-    val rootFilePath = "src/test/resources/json/REMCBY_bail_exclusion_inclusion_and_curfew"
-    runPayloadTest(rootFilePath)
-  }
-
-  @Test
-  fun `Will map RILA_pre-trail_exclusions_and_curfew request and submit to FMS`() {
-    val rootFilePath = "src/test/resources/json/RILA_pre-trail_exclusions_and_curfew"
-    runPayloadTest(rootFilePath)
-  }
-
-  @Test
-  fun `Will map RCCLA_pre-trail_exclusions_and_curfew request and submit to FMS`() {
-    val rootFilePath = "src/test/resources/json/RCCLA_pre-trail_exclusions_and_curfew"
-    runPayloadTest(rootFilePath)
-  }
-
-  @Test
-  fun `Will map CCIILA_pre-trail_exclusions_and_curfew request and submit to FMS`() {
-    val rootFilePath = "src/test/resources/json/CCIILA_pre-trail_exclusions_and_curfew"
+  @ParameterizedTest(name = "Will map {0} request and submit to FMS")
+  @MethodSource("scenarios")
+  fun `It should map correctly map saved disability values to Serco`(scenarioName: String) {
+    val rootFilePath = "src/test/resources/json/$scenarioName"
     runPayloadTest(rootFilePath)
   }
 
@@ -293,12 +188,6 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
   fun `Will map Multi_Defendant_only_one_with_EM_CCIILA_RILA_exclusion request and submit to FMS`() {
     val rootFilePath = "src/test/resources/json/Multi_Defendant_only_one_with_EM_CCIILA_RILA_exclusion"
     runPayloadTest(rootFilePath, false, 2)
-  }
-
-  @Test
-  fun `Will map REMIL_pre-trail_exclusions_and_curfew request and submit to FMS`() {
-    val rootFilePath = "src/test/resources/json/REMIL_pre-trail_exclusions_and_curfew"
-    runPayloadTest(rootFilePath)
   }
 
   @Test
@@ -353,8 +242,13 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
     mockDeviceWearerJson: String,
     mockOrderJson: String,
   ) {
-    assertThat(savedResult.deviceWearerResult.payload).isEqualTo(mockDeviceWearerJson.removeWhitespaceAndNewlines())
-    assertThat(savedResult.monitoringOrderResult.payload).isEqualTo(mockOrderJson.removeWhitespaceAndNewlines())
+    val expectedDeviceWearer = objectMapper.readValue<DeviceWearer>(mockDeviceWearerJson)
+    val storedDeviceWearer = objectMapper.readValue<DeviceWearer>(savedResult.deviceWearerResult.payload)
+    assertThat(expectedDeviceWearer).isEqualTo(storedDeviceWearer)
+
+    val expectedMonitoringOrder = objectMapper.readValue<MonitoringOrder>(mockOrderJson)
+    val storedMonitoringOrder = objectMapper.readValue<MonitoringOrder>(savedResult.monitoringOrderResult.payload)
+    assertThat(expectedMonitoringOrder).isEqualTo(storedMonitoringOrder)
     assertThat(savedResult.error).isEqualTo("")
     assertThat(savedResult.success).isTrue()
   }
