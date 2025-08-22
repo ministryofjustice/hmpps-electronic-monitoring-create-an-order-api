@@ -4,14 +4,13 @@ import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.http.MediaType
-import org.springframework.test.web.reactive.server.expectBody
-import org.springframework.test.web.reactive.server.returnResult
 import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.MonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MonitoringConditionType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderTypeDescription
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Pilot
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.SentenceType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YesNoUnknown
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidationError
@@ -526,7 +525,7 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
               "alcohol": null,
               "startDate": "$mockStartDate",
               "endDate": "$mockEndDate",
-              "pilot": "some pilot"
+              "pilot": "ACQUISITIVE_CRIME_PROJECT"
             }
           """.trimIndent(),
         ),
@@ -538,6 +537,6 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
       .expectBody(MonitoringConditions::class.java)
       .returnResult()
 
-    Assertions.assertThat(updateMonitoringConditions.responseBody?.pilot).isEqualTo("some pilot")
+    Assertions.assertThat(updateMonitoringConditions.responseBody?.pilot).isEqualTo(Pilot.ACQUISITIVE_CRIME_PROJECT)
   }
 }

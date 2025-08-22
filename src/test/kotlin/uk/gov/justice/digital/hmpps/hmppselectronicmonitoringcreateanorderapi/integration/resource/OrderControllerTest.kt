@@ -1,5 +1,8 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.resource
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
@@ -30,6 +33,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsErrorResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsResult
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.MonitoringOrder
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.FmsSubmissionResultRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.utilities.TestUtilities
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
@@ -37,13 +41,14 @@ import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.DeviceWearer as FmsDeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.ErrorResponse as FmsErrorResponseDetails
 
 class OrderControllerTest : IntegrationTestBase() {
 
   @Autowired
   lateinit var fmsResultRepository: FmsSubmissionResultRepository
-
+  private val objectMapper: ObjectMapper = jacksonObjectMapper()
   val mockStartDate: ZonedDateTime = ZonedDateTime.now().plusMonths(1)
   val mockEndDate: ZonedDateTime = ZonedDateTime.now().plusMonths(2)
 
@@ -1293,8 +1298,14 @@ class OrderControllerTest : IntegrationTestBase() {
       }
       """.trimIndent()
 
-      assertThat(submitResult!!.deviceWearerResult.payload).isEqualTo(expectedDWJson.removeWhitespaceAndNewlines())
-      assertThat(submitResult.monitoringOrderResult.payload).isEqualTo(expectedOrderJson.removeWhitespaceAndNewlines())
+      val expectedDeviceWearer = objectMapper.readValue<FmsDeviceWearer>(expectedDWJson)
+      val storedDeviceWearer = objectMapper.readValue<FmsDeviceWearer>(submitResult!!.deviceWearerResult.payload)
+      assertThat(expectedDeviceWearer).isEqualTo(storedDeviceWearer)
+
+      val expectedMonitoringOrder = objectMapper.readValue<MonitoringOrder>(expectedOrderJson)
+      val storedMonitoringOrder = objectMapper.readValue<MonitoringOrder>(submitResult.monitoringOrderResult.payload)
+      assertThat(expectedMonitoringOrder).isEqualTo(storedMonitoringOrder)
+
       assertThat(submitResult.attachmentResults[0].sysId).isEqualTo("MockSysId")
       assertThat(
         submitResult.attachmentResults[0].fileType,
@@ -1669,8 +1680,13 @@ class OrderControllerTest : IntegrationTestBase() {
       assertThat(submitResult!!.success).isEqualTo(true)
       assertThat(submitResult.error).isEqualTo("")
 
-      assertThat(submitResult.deviceWearerResult.payload).isEqualTo(expectedDWJson.removeWhitespaceAndNewlines())
-      assertThat(submitResult.monitoringOrderResult.payload).isEqualTo(expectedOrderJson.removeWhitespaceAndNewlines())
+      val expectedDeviceWearer = objectMapper.readValue<FmsDeviceWearer>(expectedDWJson)
+      val storedDeviceWearer = objectMapper.readValue<FmsDeviceWearer>(submitResult.deviceWearerResult.payload)
+      assertThat(expectedDeviceWearer).isEqualTo(storedDeviceWearer)
+
+      val expectedMonitoringOrder = objectMapper.readValue<MonitoringOrder>(expectedOrderJson)
+      val storedMonitoringOrder = objectMapper.readValue<MonitoringOrder>(submitResult.monitoringOrderResult.payload)
+      assertThat(expectedMonitoringOrder).isEqualTo(storedMonitoringOrder)
 
       assertThat(submitResult.attachmentResults[0])
         .usingRecursiveComparison()
@@ -2049,8 +2065,13 @@ class OrderControllerTest : IntegrationTestBase() {
       }
       """.trimIndent()
 
-      assertThat(submitResult!!.deviceWearerResult.payload).isEqualTo(expectedDWJson.removeWhitespaceAndNewlines())
-      assertThat(submitResult.monitoringOrderResult.payload).isEqualTo(expectedOrderJson.removeWhitespaceAndNewlines())
+      val expectedDeviceWearer = objectMapper.readValue<FmsDeviceWearer>(expectedDWJson)
+      val storedDeviceWearer = objectMapper.readValue<FmsDeviceWearer>(submitResult!!.deviceWearerResult.payload)
+      assertThat(expectedDeviceWearer).isEqualTo(storedDeviceWearer)
+
+      val expectedMonitoringOrder = objectMapper.readValue<MonitoringOrder>(expectedOrderJson)
+      val storedMonitoringOrder = objectMapper.readValue<MonitoringOrder>(submitResult.monitoringOrderResult.payload)
+      assertThat(expectedMonitoringOrder).isEqualTo(storedMonitoringOrder)
       val updatedOrder = getOrder(order.id)
       assertThat(updatedOrder.fmsResultId).isEqualTo(submitResult.id)
       assertThat(updatedOrder.status).isEqualTo(OrderStatus.SUBMITTED)

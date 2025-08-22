@@ -7,6 +7,7 @@ import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.OrderTestBase
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Pilot
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.EnforceableCondition
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.MonitoringOrder
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.Zone
@@ -81,6 +82,17 @@ class MonitoringOrderTest : OrderTestBase() {
     val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
 
     assertThat(fmsMonitoringOrder.noName).isEqualTo(mappedValue)
+  }
+
+  @ParameterizedTest(name = "it should map pilot to Serco - {0} -> {1}")
+  @MethodSource("getPilots")
+  fun `It should map correctly map saved pilots values to Serco`(savedValue: String, mappedValue: String) {
+    val order = createOrder(
+      monitoringConditions = createMonitoringConditions(pilot = Pilot.entries.first { it.name == savedValue }),
+    )
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
+
+    assertThat(fmsMonitoringOrder.pilot).isEqualTo(mappedValue)
   }
 
   companion object {
@@ -346,6 +358,22 @@ class MonitoringOrderTest : OrderTestBase() {
       Arguments.of("WOODHILL_PRISON", "Woodhill Prison"),
       Arguments.of("WORMWOOD_SCRUBS_PRISON", "Wormwood Scrubs Prison"),
       Arguments.of("WYMOTT_PRISON", "Wymott Prison"),
+    )
+
+    @JvmStatic
+    fun getPilots() = listOf(
+      Arguments.of("ACQUISITIVE_CRIME_PROJECT", "Acquisitive Crime Project"),
+      Arguments.of("DOMESTIC_ABUSE_PERPETRATOR_ON_LICENCE_PROJECT", "Domestic Abuse perpetrators on Licence Project"),
+      Arguments.of("LICENCE_VARIATION_PROJECT", "Licence Variation Project"),
+      Arguments.of("DOMESTIC_ABUSE_PROTECTION_ORDER", "Domestic Abuse Protection Order (DAPO)"),
+      Arguments.of("DOMESTIC_ABUSE_PERPETRATOR_ON_LICENCE_DAPOL", "Domestic Abuse Perpetrator on Licence (DAPOL)"),
+      Arguments.of(
+        "DOMESTIC_ABUSE_PERPETRATOR_ON_LICENCE_HOME_DETENTION_CURFEW_DAPOL_HDC",
+        "Domestic Abuse Perpetrator on Licence Home Detention Curfew (DAPOL HDC)",
+      ),
+      Arguments.of("GPS_ACQUISITIVE_CRIME_HOME_DETENTION_CURFEW", "GPS Acquisitive Crime Home Detention Curfew"),
+      Arguments.of("GPS_ACQUISITIVE_CRIME_PAROLE", "GPS Acquisitive Crime Parole"),
+      Arguments.of("UNKNOWN", ""),
     )
   }
 }

@@ -8,6 +8,7 @@ import org.mockito.Mockito.`when`
 import org.springframework.security.core.Authentication
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.MonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateMonitoringConditionsDto
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Pilot
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.MonitoringConditionsController
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.MonitoringConditionsService
 import java.util.*
@@ -36,14 +37,18 @@ class MonitoringConditionsControllerTest {
       monitoringConditionsService.updateMonitoringConditions(
         orderId = mockOrderId,
         username = mockUsername,
-        updateRecord = UpdateMonitoringConditionsDto(pilot = "some pilot"),
+        updateRecord = UpdateMonitoringConditionsDto(
+          pilot = Pilot.DOMESTIC_ABUSE_PERPETRATOR_ON_LICENCE_HOME_DETENTION_CURFEW_DAPOL_HDC,
+        ),
       ),
     ).thenReturn(mockMonitoringConditions)
     `when`(authentication.name).thenReturn("mockUser")
 
     val result = controller.updateMonitoringConditions(
       orderId = mockOrderId,
-      monitoringConditionsUpdateRecord = UpdateMonitoringConditionsDto(pilot = "some pilot"),
+      monitoringConditionsUpdateRecord = UpdateMonitoringConditionsDto(
+        pilot = Pilot.DOMESTIC_ABUSE_PERPETRATOR_ON_LICENCE_HOME_DETENTION_CURFEW_DAPOL_HDC,
+      ),
       authentication = authentication,
     )
 
