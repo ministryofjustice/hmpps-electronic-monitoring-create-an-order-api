@@ -1,7 +1,10 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service
 
 import org.assertj.core.api.Assertions
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito.mock
@@ -15,34 +18,17 @@ import org.mockito.kotlin.whenever
 import org.springframework.boot.test.autoconfigure.json.JsonTest
 import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AdditionalDocument
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Address
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AlcoholMonitoringConditions
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ContactDetails
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewConditions
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewReleaseDateConditions
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewTimeTable
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.EnforcementZoneConditions
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationAndRisk
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InterestedParties
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.MonitoringConditions
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationAppointment
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationLocation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ResponsibleAdult
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.TrailMonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.OrderListCriteria
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.OrderSearchCriteria
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.CreateOrderDto
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DocumentType
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.EnforcementZoneType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MonitoringConditionType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.InstallationLocationType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderType
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderTypeDescription
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.SubmissionStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsDeviceWearerSubmissionResult
@@ -52,8 +38,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.specification.OrderListSpecification
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.specification.OrderSearchSpecification
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
-import java.time.DayOfWeek
-import java.time.ZoneId
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.utilities.TestUtilities
 import java.time.ZonedDateTime
 import java.util.*
 
@@ -63,6 +48,8 @@ class OrderServiceTest {
   private lateinit var repo: OrderRepository
   private lateinit var fmsService: FmsService
   private lateinit var service: OrderService
+  val mockStartDate: ZonedDateTime = ZonedDateTime.now().plusMonths(1)
+  val mockEndDate: ZonedDateTime = ZonedDateTime.now().plusMonths(2)
 
   @BeforeEach
   fun setup() {
@@ -82,13 +69,17 @@ class OrderServiceTest {
     Assertions.assertThat(result.dataDictionaryVersion).isEqualTo(DataDictionaryVersion.DDV4)
     argumentCaptor<Order>().apply {
       verify(repo, times(1)).save(capture())
-      Assertions.assertThat(firstValue).isEqualTo(result)
+      assertThat(firstValue).isEqualTo(result)
     }
   }
 
   @Test
   fun `Should save the name of the user who submitted the order`() {
-    val mockOrder = createReadyToSubmitOrder()
+    val mockOrder = TestUtilities.createReadyToSubmitOrder(
+      startDate = mockStartDate,
+      endDate = mockEndDate,
+      username = "mockUser",
+    )
     reset(repo)
 
     val mockFmsResult = FmsSubmissionResult(
@@ -118,7 +109,11 @@ class OrderServiceTest {
 
   @Test
   fun `Should create fms device wearer and monitoring order and save both id to database`() {
-    val mockOrder = createReadyToSubmitOrder()
+    val mockOrder = TestUtilities.createReadyToSubmitOrder(
+      startDate = mockStartDate,
+      endDate = mockEndDate,
+      username = "mockUser",
+    )
     reset(repo)
 
     val mockFmsResult = FmsSubmissionResult(
@@ -148,7 +143,7 @@ class OrderServiceTest {
 
   @Test
   fun `Should be able to list all orders`() {
-    val mockOrder = createReadyToSubmitOrder()
+    val mockOrder = TestUtilities.createReadyToSubmitOrder(startDate = mockStartDate, endDate = mockEndDate)
     val mockCriteria = OrderListCriteria(username = "test")
 
     whenever(repo.findAll(ArgumentMatchers.any(OrderListSpecification::class.java))).thenReturn(listOf(mockOrder))
@@ -160,7 +155,7 @@ class OrderServiceTest {
 
   @Test
   fun `Should be able to search for orders`() {
-    val mockOrder = createReadyToSubmitOrder()
+    val mockOrder = TestUtilities.createReadyToSubmitOrder(startDate = mockStartDate, endDate = mockEndDate)
     val mockCriteria = OrderSearchCriteria(searchTerm = "Bob Smith")
 
     whenever(repo.findAll(ArgumentMatchers.any(OrderSearchSpecification::class.java))).thenReturn(listOf(mockOrder))
@@ -170,218 +165,441 @@ class OrderServiceTest {
     Assertions.assertThat(result).isEqualTo(listOf(mockOrder))
   }
 
-  val mockStartDate: ZonedDateTime = ZonedDateTime.now().plusMonths(1)
-  val mockEndDate: ZonedDateTime = ZonedDateTime.now().plusMonths(2)
-  fun createReadyToSubmitOrder(noFixedAddress: Boolean = false): Order {
-    val orderId = UUID.randomUUID()
-    val versionId = UUID.randomUUID()
-    val order = Order(
-      id = orderId,
-      versions = mutableListOf(
-        OrderVersion(
-          id = versionId,
-          orderId = orderId,
-          username = "mockUser",
-          status = OrderStatus.IN_PROGRESS,
-          type = RequestType.REQUEST,
-          dataDictionaryVersion = DataDictionaryVersion.DDV4,
+  @Nested
+  @DisplayName("Create Version")
+  inner class CreateVersion {
+    val originalVersionId: UUID = UUID.randomUUID()
+    val order = TestUtilities.createReadyToSubmitOrder(
+      versionId = originalVersionId,
+      startDate = mockStartDate,
+      endDate = mockEndDate,
+      status = OrderStatus.SUBMITTED,
+      installationLocation = InstallationLocation(
+        versionId = originalVersionId,
+        location = InstallationLocationType.PRISON,
+      ),
+      installationAppointment = InstallationAppointment(
+        versionId = originalVersionId,
+        appointmentDate = mockStartDate,
+      ),
+      documents = mutableListOf(
+        AdditionalDocument(
+          versionId = originalVersionId,
+          fileName = "MockFile",
+          fileType = DocumentType.LICENCE,
+        ),
+        AdditionalDocument(
+          versionId = originalVersionId,
+          fileName = "MockPhotoFile",
+          fileType = DocumentType.PHOTO_ID,
         ),
       ),
     )
-    order.deviceWearer = DeviceWearer(
-      versionId = versionId,
-      firstName = "John",
-      lastName = "Smith",
-      alias = "Johnny",
-      dateOfBirth = ZonedDateTime.of(
-        1990,
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        ZoneId.systemDefault(),
-      ),
-      adultAtTimeOfInstallation = true,
-      sex = "Male",
-      gender = "Male",
-      disabilities = "VISION,LEARNING_UNDERSTANDING_CONCENTRATING",
-      interpreterRequired = true,
-      language = "British Sign",
-      pncId = "pncId",
-      deliusId = "deliusId",
-      nomisId = "nomisId",
-      prisonNumber = "prisonNumber",
-      homeOfficeReferenceNumber = "homeOfficeReferenceNumber",
-      noFixedAbode = noFixedAddress,
-    )
+    val originalVersion = order.versions.find { it.id == originalVersionId }
 
-    order.deviceWearerResponsibleAdult = ResponsibleAdult(
-      versionId = versionId,
-      fullName = "Mark Smith",
-      contactNumber = "07401111111",
-    )
+    @BeforeEach
+    fun setup() {
+      whenever(repo.findById(order.id)).thenReturn(Optional.of(order))
+      whenever(repo.save(order)).thenReturn(order)
 
-    val installationAddress = Address(
-      versionId = versionId,
-      addressLine1 = "24 Somewhere Street",
-      addressLine2 = "Nowhere City",
-      addressLine3 = "Random County",
-      addressLine4 = "United Kingdom",
-      postcode = "SW11 1NC",
-      addressType = AddressType.INSTALLATION,
-    )
-
-    if (!noFixedAddress) {
-      order.addresses.addAll(
-        mutableListOf(
-          Address(
-            versionId = versionId,
-            addressLine1 = "20 Somewhere Street",
-            addressLine2 = "Nowhere City",
-            addressLine3 = "Random County",
-            addressLine4 = "United Kingdom",
-            postcode = "SW11 1NC",
-            addressType = AddressType.PRIMARY,
-          ),
-          Address(
-            versionId = versionId,
-            addressLine1 = "22 Somewhere Street",
-            addressLine2 = "Nowhere City",
-            addressLine3 = "Random County",
-            addressLine4 = "United Kingdom",
-            postcode = "SW11 1NC",
-            addressType = AddressType.SECONDARY,
-          ),
-          installationAddress,
-        ),
-      )
-    } else {
-      order.addresses.addAll(
-        mutableListOf(
-          installationAddress,
-        ),
-      )
+      service.createVersion(order.id, order.username)
     }
 
-    order.installationAndRisk = InstallationAndRisk(
-      versionId = versionId,
-      offence = "FRAUD_OFFENCES",
-      riskDetails = "Danger",
-      mappaLevel = "MAAPA 1",
-      mappaCaseType = "CPPC (Critical Public Protection Case)",
-    )
-
-    order.contactDetails = ContactDetails(
-      versionId = versionId,
-      contactNumber = "07401111111",
-    )
-    order.monitoringConditions = MonitoringConditions(
-      versionId = versionId,
-      orderType = OrderType.COMMUNITY,
-      orderTypeDescription = OrderTypeDescription.DAPOL,
-      startDate = mockStartDate,
-      endDate = mockEndDate,
-      curfew = true,
-      trail = true,
-      exclusionZone = true,
-      alcohol = true,
-      caseId = "d8ea62e61bb8d610a10c20e0b24bcb85",
-      conditionType = MonitoringConditionType.REQUIREMENT_OF_A_COMMUNITY_ORDER,
-    )
-    val curfewConditions = CurfewConditions(
-      versionId = versionId,
-      startDate = mockStartDate,
-      endDate = mockEndDate,
-      curfewAddress = "PRIMARY,SECONDARY",
-    )
-
-    val curfewTimeTables = DayOfWeek.entries.map {
-      CurfewTimeTable(
-        versionId = versionId,
-        dayOfWeek = it,
-        startTime = "17:00",
-        endTime = "09:00",
-        curfewAddress = "PRIMARY_ADDRESS",
-      )
+    @Test
+    fun `It should create an new order version with type VARIATION`() {
+      argumentCaptor<Order>().apply {
+        verify(repo, times(1)).save(capture())
+        assertThat(firstValue.id).isEqualTo(order.id)
+        assertThat(firstValue.versions.count()).isEqualTo(2)
+        assertThat(firstValue.versions.last().id).isNotEqualTo(originalVersionId)
+        assertThat(firstValue.versions.last().status).isEqualTo(OrderStatus.IN_PROGRESS)
+        assertThat(firstValue.versions.last().type).isEqualTo(RequestType.VARIATION)
+        assertThat(firstValue.versions.last().username).isEqualTo(order.username)
+        assertThat(firstValue.versions.last().versionId).isEqualTo(1)
+      }
     }
-    order.curfewTimeTable.addAll(curfewTimeTables)
-    val secondTimeTable = DayOfWeek.entries.map {
-      CurfewTimeTable(
-        versionId = versionId,
-        dayOfWeek = it,
-        startTime = "17:00",
-        endTime = "09:00",
-        curfewAddress = "SECONDARY_ADDRESS",
-      )
+
+    @Test
+    fun `It should create an new order version with type VARIATION and original version is not modified`() {
+      argumentCaptor<Order>().apply {
+        verify(repo, times(1)).save(capture())
+        assertThat(firstValue.versions.first())
+          .isEqualTo(originalVersion)
+      }
     }
-    order.curfewTimeTable.addAll(secondTimeTable)
-    order.curfewConditions = curfewConditions
 
-    order.curfewReleaseDateConditions = CurfewReleaseDateConditions(
-      versionId = versionId,
-      releaseDate = mockStartDate,
-      startTime = "19:00",
-      endTime = "23:00",
-      curfewAddress = AddressType.PRIMARY,
-    )
+    @Test
+    fun `It should create an new order version with empty variation details`() {
+      argumentCaptor<Order>().apply {
+        verify(repo, times(1)).save(capture())
+        assertThat(firstValue.versions.last().variationDetails).isNull()
+      }
+    }
 
-    order.enforcementZoneConditions.add(
-      EnforcementZoneConditions(
-        versionId = versionId,
-        description = "Mock Exclusion Zone",
-        duration = "Mock Exclusion Duration",
-        startDate = mockStartDate,
-        endDate = mockEndDate,
-        zoneType = EnforcementZoneType.EXCLUSION,
-      ),
-    )
+    @Test
+    fun `It should clone orderParameters referencing new version`() {
+      argumentCaptor<Order>().apply {
+        verify(repo, times(1)).save(capture())
+        assertThat(firstValue.versions.last().orderParameters).isNotNull()
+        assertThat(firstValue.versions.last().orderParameters?.versionId)
+          .isEqualTo(firstValue.versions.last().id)
+        assertThat(firstValue.versions.last().orderParameters?.versionId)
+          .isNotEqualTo(originalVersionId)
+        assertThat(
+          firstValue.versions.last().orderParameters?.havePhoto,
+        ).isEqualTo(originalVersion?.orderParameters?.havePhoto)
+      }
+    }
 
-    order.enforcementZoneConditions.add(
-      EnforcementZoneConditions(
-        versionId = versionId,
-        description = "Mock Inclusion Zone",
-        duration = "Mock Inclusion Duration",
-        startDate = mockStartDate,
-        endDate = mockEndDate,
-        zoneType = EnforcementZoneType.INCLUSION,
-      ),
-    )
+    @Test
+    fun `It should clone deviceWearer referencing new version`() {
+      argumentCaptor<Order>().apply {
+        verify(repo, times(1)).save(capture())
+        assertThat(firstValue.versions.last().deviceWearer).isNotNull()
+        assertThat(firstValue.versions.last().deviceWearer?.versionId).isEqualTo(firstValue.versions.last().id)
+        assertThat(firstValue.versions.last().deviceWearer?.versionId).isNotEqualTo(originalVersionId)
+        assertThat(firstValue.versions.last().deviceWearer)
+          .usingRecursiveComparison()
+          .ignoringCollectionOrder()
+          .ignoringFields(
+            "id",
+            "versionId",
+            "version",
+          )
+          .isEqualTo(originalVersion?.deviceWearer)
+      }
+    }
 
-    order.monitoringConditionsAlcohol = AlcoholMonitoringConditions(
-      versionId = versionId,
-      startDate = mockStartDate,
-      endDate = mockEndDate,
-      monitoringType = AlcoholMonitoringType.ALCOHOL_ABSTINENCE,
-    )
+    @Test
+    fun `It should clone deviceWearerResponsibleAdult referencing new version`() {
+      argumentCaptor<Order>().apply {
+        verify(repo, times(1)).save(capture())
+        assertThat(firstValue.versions.last().deviceWearerResponsibleAdult).isNotNull()
+        assertThat(
+          firstValue.versions.last().deviceWearerResponsibleAdult?.versionId,
+        ).isEqualTo(firstValue.versions.last().id)
+        assertThat(firstValue.versions.last().deviceWearerResponsibleAdult?.versionId).isNotEqualTo(originalVersionId)
+        assertThat(firstValue.versions.last().deviceWearerResponsibleAdult)
+          .usingRecursiveComparison()
+          .ignoringCollectionOrder()
+          .ignoringFields(
+            "id",
+            "versionId",
+            "version",
+          )
+          .isEqualTo(originalVersion?.deviceWearerResponsibleAdult)
+      }
+    }
 
-    order.monitoringConditionsTrail = TrailMonitoringConditions(
-      versionId = versionId,
-      startDate = mockStartDate,
-      endDate = mockEndDate,
-    )
+    @Test
+    fun `It should clone contactDetails referencing new version`() {
+      argumentCaptor<Order>().apply {
+        verify(repo, times(1)).save(capture())
+        assertThat(firstValue.versions.last().contactDetails).isNotNull()
+        assertThat(firstValue.versions.last().contactDetails?.versionId)
+          .isEqualTo(firstValue.versions.last().id)
+        assertThat(firstValue.versions.last().contactDetails?.versionId)
+          .isNotEqualTo(originalVersionId)
+        assertThat(firstValue.versions.last().contactDetails)
+          .usingRecursiveComparison()
+          .ignoringCollectionOrder()
+          .ignoringFields(
+            "id",
+            "versionId",
+            "version",
+          )
+          .isEqualTo(originalVersion?.contactDetails)
+      }
+    }
 
-    order.interestedParties = InterestedParties(
-      versionId = versionId,
-      responsibleOfficerName = "John Smith",
-      responsibleOfficerPhoneNumber = "07401111111",
-      responsibleOrganisation = "Avon and Somerset Constabulary",
-      responsibleOrganisationRegion = "Mock Region",
-      responsibleOrganisationEmail = "abc@def.com",
-      notifyingOrganisation = "Mock Organisation",
-      notifyingOrganisationName = "",
-      notifyingOrganisationEmail = "",
-    )
+    @Test
+    fun `It should clone curfewConditions referencing new version`() {
+      argumentCaptor<Order>().apply {
+        verify(repo, times(1)).save(capture())
+        assertThat(firstValue.versions.last().curfewConditions).isNotNull()
+        assertThat(firstValue.versions.last().curfewConditions?.versionId).isEqualTo(firstValue.versions.last().id)
+        assertThat(firstValue.versions.last().curfewConditions?.versionId).isNotEqualTo(originalVersionId)
+        assertThat(firstValue.versions.last().curfewConditions)
+          .usingRecursiveComparison()
+          .ignoringCollectionOrder()
+          .ignoringFields(
+            "id",
+            "versionId",
+            "version",
+          )
+          .isEqualTo(originalVersion?.curfewConditions)
+      }
+    }
 
-    order.additionalDocuments.add(
-      AdditionalDocument(
-        versionId = versionId,
-        fileName = "Test file",
-        fileType = DocumentType.LICENCE,
-      ),
-    )
+    @Test
+    fun `It should clone curfewReleaseDateConditions referencing new version`() {
+      argumentCaptor<Order>().apply {
+        verify(repo, times(1)).save(capture())
+        assertThat(firstValue.versions.last().curfewReleaseDateConditions).isNotNull()
+        assertThat(
+          firstValue.versions.last().curfewReleaseDateConditions?.versionId,
+        ).isEqualTo(firstValue.versions.last().id)
+        assertThat(firstValue.versions.last().curfewReleaseDateConditions?.versionId).isNotEqualTo(originalVersionId)
+        assertThat(firstValue.versions.last().curfewReleaseDateConditions)
+          .usingRecursiveComparison()
+          .ignoringCollectionOrder()
+          .ignoringFields(
+            "id",
+            "versionId",
+            "version",
+          )
+          .isEqualTo(originalVersion?.curfewReleaseDateConditions)
+      }
+    }
 
-    return order
+    @Test
+    fun `It should clone installationAndRisk referencing new version`() {
+      argumentCaptor<Order>().apply {
+        verify(repo, times(1)).save(capture())
+        assertThat(firstValue.versions.last().installationAndRisk).isNotNull()
+        assertThat(firstValue.versions.last().installationAndRisk?.versionId).isEqualTo(firstValue.versions.last().id)
+        assertThat(firstValue.versions.last().installationAndRisk?.versionId).isNotEqualTo(originalVersionId)
+        assertThat(firstValue.versions.last().installationAndRisk)
+          .usingRecursiveComparison()
+          .ignoringCollectionOrder()
+          .ignoringFields(
+            "id",
+            "versionId",
+            "version",
+          )
+          .isEqualTo(originalVersion?.installationAndRisk)
+      }
+    }
+
+    @Test
+    fun `It should clone interestedParties referencing new version`() {
+      argumentCaptor<Order>().apply {
+        verify(repo, times(1)).save(capture())
+        assertThat(firstValue.versions.last().interestedParties).isNotNull()
+        assertThat(firstValue.versions.last().interestedParties?.versionId).isEqualTo(firstValue.versions.last().id)
+        assertThat(firstValue.versions.last().interestedParties?.versionId).isNotEqualTo(originalVersionId)
+        assertThat(firstValue.versions.last().interestedParties)
+          .usingRecursiveComparison()
+          .ignoringCollectionOrder()
+          .ignoringFields(
+            "id",
+            "versionId",
+            "version",
+          )
+          .isEqualTo(originalVersion?.interestedParties)
+      }
+    }
+
+    @Test
+    fun `It should clone probationDeliveryUnit referencing new version`() {
+      argumentCaptor<Order>().apply {
+        verify(repo, times(1)).save(capture())
+        assertThat(firstValue.versions.last().probationDeliveryUnit).isNotNull()
+        assertThat(firstValue.versions.last().probationDeliveryUnit?.versionId).isEqualTo(firstValue.versions.last().id)
+        assertThat(firstValue.versions.last().probationDeliveryUnit?.versionId).isNotEqualTo(originalVersionId)
+        assertThat(firstValue.versions.last().probationDeliveryUnit)
+          .usingRecursiveComparison()
+          .ignoringCollectionOrder()
+          .ignoringFields(
+            "id",
+            "versionId",
+            "version",
+          )
+          .isEqualTo(originalVersion?.probationDeliveryUnit)
+      }
+    }
+
+    @Test
+    fun `It should clone monitoringConditions referencing new version`() {
+      argumentCaptor<Order>().apply {
+        verify(repo, times(1)).save(capture())
+        assertThat(firstValue.versions.last().monitoringConditions).isNotNull()
+        assertThat(firstValue.versions.last().monitoringConditions?.versionId).isEqualTo(firstValue.versions.last().id)
+        assertThat(firstValue.versions.last().monitoringConditions?.versionId).isNotEqualTo(originalVersionId)
+        assertThat(firstValue.versions.last().monitoringConditions)
+          .usingRecursiveComparison()
+          .ignoringCollectionOrder()
+          .ignoringFields(
+            "id",
+            "versionId",
+            "version",
+          )
+          .isEqualTo(originalVersion?.monitoringConditions)
+      }
+    }
+
+    @Test
+    fun `It should clone installationLocation referencing new version`() {
+      argumentCaptor<Order>().apply {
+        verify(repo, times(1)).save(capture())
+        assertThat(firstValue.versions.last().installationLocation?.versionId).isEqualTo(firstValue.versions.last().id)
+        assertThat(firstValue.versions.last().installationLocation?.versionId).isNotEqualTo(originalVersionId)
+        assertThat(firstValue.versions.last().installationLocation)
+          .usingRecursiveComparison()
+          .ignoringCollectionOrder()
+          .ignoringFields(
+            "id",
+            "versionId",
+            "version",
+          )
+          .isEqualTo(originalVersion?.installationLocation)
+      }
+    }
+
+    @Test
+    fun `It should clone installationAppointment referencing new version`() {
+      argumentCaptor<Order>().apply {
+        verify(repo, times(1)).save(capture())
+        assertThat(
+          firstValue.versions.last().installationAppointment?.versionId,
+        ).isEqualTo(firstValue.versions.last().id)
+        assertThat(firstValue.versions.last().installationAppointment?.versionId).isNotEqualTo(originalVersionId)
+        assertThat(firstValue.versions.last().installationAppointment)
+          .usingRecursiveComparison()
+          .ignoringCollectionOrder()
+          .ignoringFields(
+            "id",
+            "versionId",
+            "version",
+          )
+          .isEqualTo(originalVersion?.installationAppointment)
+      }
+    }
+
+    @Test
+    fun `It should clone additionalDocuments referencing new version`() {
+      argumentCaptor<Order>().apply {
+        verify(repo, times(1)).save(capture())
+        assertThat(firstValue.versions.last().additionalDocuments.count()).isEqualTo(2)
+
+        firstValue.versions.last().additionalDocuments.forEach {
+          assertThat(it.versionId).isEqualTo(firstValue.versions.last().id)
+          assertThat(it.versionId).isNotEqualTo(originalVersionId)
+        }
+        for (i in firstValue.versions.last().additionalDocuments.indices) {
+          val file = firstValue.versions.last().additionalDocuments[i]
+          val originalFile = originalVersion?.additionalDocuments[i]
+          assertThat(file)
+            .usingRecursiveComparison()
+            .ignoringCollectionOrder()
+            .ignoringFields(
+              "id",
+              "versionId",
+              "version",
+            )
+            .isEqualTo(originalFile)
+        }
+      }
+    }
+
+    @Test
+    fun `It should clone addresses referencing new version`() {
+      argumentCaptor<Order>().apply {
+        verify(repo, times(1)).save(capture())
+        assertThat(firstValue.versions.last().addresses.count()).isEqualTo(3)
+
+        firstValue.versions.last().addresses.forEach {
+          assertThat(it.versionId).isEqualTo(firstValue.versions.last().id)
+          assertThat(it.versionId).isNotEqualTo(originalVersionId)
+        }
+        for (i in firstValue.versions.last().addresses.indices) {
+          val file = firstValue.versions.last().addresses[i]
+          val originalFile = originalVersion?.addresses[i]
+          assertThat(file)
+            .usingRecursiveComparison()
+            .ignoringCollectionOrder()
+            .ignoringFields(
+              "id",
+              "versionId",
+              "version",
+            )
+            .isEqualTo(originalFile)
+        }
+      }
+    }
+
+    @Test
+    fun `It should clone curfewTimeTable referencing new version`() {
+      argumentCaptor<Order>().apply {
+        verify(repo, times(1)).save(capture())
+        assertThat(
+          firstValue.versions.last().curfewTimeTable.count(),
+        ).isEqualTo(originalVersion?.curfewTimeTable?.count())
+
+        firstValue.versions.last().curfewTimeTable.forEach {
+          assertThat(it.versionId).isEqualTo(firstValue.versions.last().id)
+          assertThat(it.versionId).isNotEqualTo(originalVersionId)
+        }
+        for (i in firstValue.versions.last().curfewTimeTable.indices) {
+          val file = firstValue.versions.last().curfewTimeTable[i]
+          val originalFile = originalVersion?.curfewTimeTable[i]
+          assertThat(file)
+            .usingRecursiveComparison()
+            .ignoringCollectionOrder()
+            .ignoringFields(
+              "id",
+              "versionId",
+              "version",
+            )
+            .isEqualTo(originalFile)
+        }
+      }
+    }
+
+    @Test
+    fun `It should clone enforcementZoneConditions referencing new version`() {
+      argumentCaptor<Order>().apply {
+        verify(repo, times(1)).save(capture())
+        assertThat(
+          firstValue.versions.last().enforcementZoneConditions.count(),
+        ).isEqualTo(originalVersion?.enforcementZoneConditions?.count())
+
+        firstValue.versions.last().enforcementZoneConditions.forEach {
+          assertThat(it.versionId).isEqualTo(firstValue.versions.last().id)
+          assertThat(it.versionId).isNotEqualTo(originalVersionId)
+        }
+        for (i in firstValue.versions.last().enforcementZoneConditions.indices) {
+          val file = firstValue.versions.last().enforcementZoneConditions[i]
+          val originalFile = originalVersion?.enforcementZoneConditions[i]
+          assertThat(file)
+            .usingRecursiveComparison()
+            .ignoringCollectionOrder()
+            .ignoringFields(
+              "id",
+              "versionId",
+              "version",
+            )
+            .isEqualTo(originalFile)
+        }
+      }
+    }
+
+    @Test
+    fun `It should clone mandatoryAttendanceConditions referencing new version`() {
+      argumentCaptor<Order>().apply {
+        verify(repo, times(1)).save(capture())
+        assertThat(
+          firstValue.versions.last().mandatoryAttendanceConditions.count(),
+        ).isEqualTo(originalVersion?.mandatoryAttendanceConditions?.count())
+
+        firstValue.versions.last().mandatoryAttendanceConditions.forEach {
+          assertThat(it.versionId).isEqualTo(firstValue.versions.last().id)
+          assertThat(it.versionId).isNotEqualTo(originalVersionId)
+        }
+        for (i in firstValue.versions.last().mandatoryAttendanceConditions.indices) {
+          val file = firstValue.versions.last().mandatoryAttendanceConditions[i]
+          val originalFile = originalVersion?.mandatoryAttendanceConditions[i]
+          assertThat(file)
+            .usingRecursiveComparison()
+            .ignoringCollectionOrder()
+            .ignoringFields(
+              "id",
+              "versionId",
+              "version",
+            )
+            .isEqualTo(originalFile)
+        }
+      }
+    }
   }
 }

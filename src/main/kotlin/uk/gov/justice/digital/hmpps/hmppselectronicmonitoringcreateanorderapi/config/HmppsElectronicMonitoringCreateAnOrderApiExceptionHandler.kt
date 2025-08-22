@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.method.annotation.HandlerMethodValidationException
 import org.springframework.web.multipart.MaxUploadSizeExceededException
 import org.springframework.web.servlet.resource.NoResourceFoundException
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.BadRequestException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.DocumentApiBadRequestException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.SercoConnectionException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.SubmitOrderException
@@ -140,6 +141,17 @@ class HmppsElectronicMonitoringCreateAnOrderApiExceptionHandler {
       ErrorResponse(
         status = BAD_REQUEST,
         userMessage = "Error submitting order: ${e.message}",
+        developerMessage = e.message,
+      ),
+    ).also { log.error("Unexpected exception", e) }
+
+  @ExceptionHandler(BadRequestException::class)
+  fun handleBadRequestException(e: Exception): ResponseEntity<ErrorResponse> = ResponseEntity
+    .status(BAD_REQUEST)
+    .body(
+      ErrorResponse(
+        status = BAD_REQUEST,
+        userMessage = "Bad Request: ${e.message}",
         developerMessage = e.message,
       ),
     ).also { log.error("Unexpected exception", e) }
