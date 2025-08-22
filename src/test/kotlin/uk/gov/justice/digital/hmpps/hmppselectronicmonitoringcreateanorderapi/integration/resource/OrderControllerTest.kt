@@ -15,38 +15,15 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.in
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.SercoAuthMockServerExtension.Companion.sercoAuthApi
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.SercoMockApiExtension.Companion.sercoApi
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AdditionalDocument
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Address
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AlcoholMonitoringConditions
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ContactDetails
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewConditions
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewReleaseDateConditions
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewTimeTable
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.EnforcementZoneConditions
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationAndRisk
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InterestedParties
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.MonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ProbationDeliveryUnit
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ResponsibleAdult
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.TrailMonitoringConditions
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.VariationDetails
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderDto
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DocumentType
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.EnforcementZoneType
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MonitoringConditionType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderType
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderTypeDescription
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.SentenceType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.SubmissionStatus
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.VariationType
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YesNoUnknown
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsAttachmentResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsAttachmentResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsAttachmentSubmissionResult
@@ -54,8 +31,8 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.FmsSubmissionResultRepository
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.utilities.TestUtilities
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
-import java.time.DayOfWeek
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
@@ -137,12 +114,12 @@ class OrderControllerTest : IntegrationTestBase() {
   @DisplayName("POST /api/orders/copy-as-variation")
   inner class PostVariation {
     @Test
-    fun `It should should create an order with type VARIATION`() {
-      val order = createOrder("AUTH_ADM")
+    fun `It should should create an order version with type VARIATION`() {
+      val order = createAndPersistPopulatedOrder()
 
       val variationOrder = webTestClient.post()
         .uri("/api/orders/${order.id}/copy-as-variation")
-        .headers(setAuthorisation())
+        .headers(setAuthorisation(username = "AUTH_ADM"))
         .exchange()
         .expectStatus()
         .isOk
@@ -151,7 +128,7 @@ class OrderControllerTest : IntegrationTestBase() {
         .responseBody!!
 
       assertThat(variationOrder.id).isNotNull()
-      assertThat(variationOrder.id).isNotEqualTo(order.id)
+      assertThat(variationOrder.id).isEqualTo(order.id)
       assertThat(variationOrder.status).isEqualTo(OrderStatus.IN_PROGRESS)
       assertThat(variationOrder.type).isEqualTo(RequestType.VARIATION)
       assertThat(variationOrder.username).isEqualTo(testUser)
@@ -196,6 +173,7 @@ class OrderControllerTest : IntegrationTestBase() {
           "id",
           "versionId",
           "dateOfBirth",
+          "version",
         )
         .isEqualTo(order.deviceWearer)
 
@@ -205,6 +183,7 @@ class OrderControllerTest : IntegrationTestBase() {
         .ignoringFields(
           "id",
           "versionId",
+          "version",
         )
         .isEqualTo(order.contactDetails)
 
@@ -214,6 +193,7 @@ class OrderControllerTest : IntegrationTestBase() {
         .ignoringFields(
           "id",
           "versionId",
+          "version",
         )
         .isEqualTo(order.interestedParties)
 
@@ -223,6 +203,7 @@ class OrderControllerTest : IntegrationTestBase() {
         .ignoringFields(
           "id",
           "versionId",
+          "version",
         )
         .isEqualTo(order.addresses)
 
@@ -234,6 +215,7 @@ class OrderControllerTest : IntegrationTestBase() {
           "versionId",
           "startDate",
           "endDate",
+          "version",
         )
         .isEqualTo(order.monitoringConditions)
     }
@@ -553,7 +535,11 @@ class OrderControllerTest : IntegrationTestBase() {
 
     @Test
     fun `Should only return the most recent order version`() {
-      val order = createReadyToSubmitOrder()
+      val order = TestUtilities.createReadyToSubmitOrder(
+
+        startDate = mockStartDate,
+        endDate = mockEndDate,
+      )
       val versionId1 = UUID.randomUUID()
       val versionId2 = UUID.randomUUID()
       order.versions.add(
@@ -2234,239 +2220,6 @@ class OrderControllerTest : IntegrationTestBase() {
     }
   }
 
-  fun createReadyToSubmitOrder(
-    id: UUID = UUID.randomUUID(),
-    versionId: UUID = UUID.randomUUID(),
-    noFixedAddress: Boolean = false,
-    requestType: RequestType = RequestType.REQUEST,
-    status: OrderStatus = OrderStatus.IN_PROGRESS,
-    documents: MutableList<AdditionalDocument> = mutableListOf(),
-  ): Order {
-    val order = Order(
-      id = id,
-      versions = mutableListOf(
-        OrderVersion(
-          id = versionId,
-          username = "AUTH_ADM",
-          status = OrderStatus.IN_PROGRESS,
-          type = requestType,
-          orderId = id,
-          dataDictionaryVersion = DataDictionaryVersion.DDV4,
-        ),
-      ),
-    )
-
-    order.deviceWearer = DeviceWearer(
-      versionId = versionId,
-      firstName = "John",
-      lastName = "Smith",
-      alias = "Johnny",
-      dateOfBirth = ZonedDateTime.of(1990, 1, 1, 1, 1, 1, 1, ZoneId.systemDefault()),
-      adultAtTimeOfInstallation = true,
-      sex = "MALE",
-      gender = "MALE",
-      disabilities = "VISION,LEARNING_UNDERSTANDING_CONCENTRATING",
-      interpreterRequired = true,
-      language = "British Sign",
-      pncId = "pncId",
-      deliusId = "deliusId",
-      nomisId = "nomisId",
-      prisonNumber = "prisonNumber",
-      homeOfficeReferenceNumber = "homeOfficeReferenceNumber",
-      noFixedAbode = noFixedAddress,
-    )
-
-    order.deviceWearerResponsibleAdult = ResponsibleAdult(
-      versionId = versionId,
-      fullName = "Mark Smith",
-      contactNumber = "+447401111111",
-    )
-
-    val installationAddress = Address(
-      versionId = versionId,
-      addressLine1 = "24 Somewhere Street",
-      addressLine2 = "Nowhere City",
-      addressLine3 = "Random County",
-      addressLine4 = "United Kingdom",
-      postcode = "SW11 1NC",
-      addressType = AddressType.INSTALLATION,
-    )
-
-    if (!noFixedAddress) {
-      order.addresses.add(
-        Address(
-          versionId = versionId,
-          addressLine1 = "20 Somewhere Street",
-          addressLine2 = "Nowhere City",
-          addressLine3 = "Random County",
-          addressLine4 = "United Kingdom",
-          postcode = "SW11 1NC",
-          addressType = AddressType.PRIMARY,
-        ),
-      )
-      order.addresses.add(
-        Address(
-          versionId = versionId,
-          addressLine1 = "22 Somewhere Street",
-          addressLine2 = "Nowhere City",
-          addressLine3 = "Random County",
-          addressLine4 = "United Kingdom",
-          postcode = "SW11 1NC",
-          addressType = AddressType.SECONDARY,
-        ),
-      )
-    }
-
-    order.addresses.add(
-      installationAddress,
-    )
-
-    order.installationAndRisk = InstallationAndRisk(
-      versionId = versionId,
-      offence = "FRAUD_OFFENCES",
-      riskDetails = "Danger",
-      riskCategory = arrayOf("SEXUAL_OFFENCES", "RISK_TO_GENDER"),
-      mappaLevel = "MAAPA 1",
-      mappaCaseType = "CPPC (Critical Public Protection Case)",
-    )
-
-    order.contactDetails = ContactDetails(
-      versionId = versionId,
-      contactNumber = "07401111111",
-    )
-
-    order.monitoringConditions = MonitoringConditions(
-      versionId = versionId,
-      orderType = OrderType.COMMUNITY,
-      orderTypeDescription = OrderTypeDescription.DAPOL,
-      startDate = mockStartDate,
-      endDate = mockEndDate,
-      curfew = true,
-      trail = true,
-      exclusionZone = true,
-      alcohol = true,
-      caseId = "d8ea62e61bb8d610a10c20e0b24bcb85",
-      conditionType = MonitoringConditionType.REQUIREMENT_OF_A_COMMUNITY_ORDER,
-      sentenceType = SentenceType.LIFE_SENTENCE,
-      issp = YesNoUnknown.YES,
-    )
-
-    documents.forEach {
-      order.additionalDocuments.add(it)
-    }
-    if (documents.isEmpty()) {
-      order.additionalDocuments.add(
-        AdditionalDocument(
-          versionId = versionId,
-          fileName = "Test file",
-          fileType = DocumentType.LICENCE,
-        ),
-      )
-    }
-
-    val curfewConditions = CurfewConditions(
-      versionId = versionId,
-      startDate = mockStartDate,
-      endDate = mockEndDate,
-      curfewAddress = "PRIMARY,SECONDARY",
-    )
-
-    val curfewTimeTables = DayOfWeek.entries.map {
-      CurfewTimeTable(
-        versionId = versionId,
-        dayOfWeek = it,
-        startTime = "17:00",
-        endTime = "09:00",
-        curfewAddress = "PRIMARY_ADDRESS",
-      )
-    }
-    order.curfewTimeTable.addAll(curfewTimeTables)
-    val secondTimeTable = DayOfWeek.entries.map {
-      CurfewTimeTable(
-        versionId = versionId,
-        dayOfWeek = it,
-        startTime = "17:00",
-        endTime = "09:00",
-        curfewAddress = "SECONDARY_ADDRESS",
-      )
-    }
-    order.curfewTimeTable.addAll(secondTimeTable)
-    order.curfewConditions = curfewConditions
-
-    order.curfewReleaseDateConditions = CurfewReleaseDateConditions(
-      versionId = versionId,
-      releaseDate = mockStartDate,
-      startTime = "19:00",
-      endTime = "23:00",
-      curfewAddress = AddressType.PRIMARY,
-    )
-
-    order.enforcementZoneConditions.add(
-      EnforcementZoneConditions(
-        versionId = versionId,
-        description = "Mock Exclusion Zone",
-        duration = "Mock Exclusion Duration",
-        startDate = mockStartDate,
-        endDate = mockEndDate,
-        zoneType = EnforcementZoneType.EXCLUSION,
-        fileId = UUID.randomUUID(),
-        fileName = "MockMapFile.jpeg",
-      ),
-    )
-
-    order.enforcementZoneConditions.add(
-      EnforcementZoneConditions(
-        versionId = versionId,
-        description = "Mock Inclusion Zone",
-        duration = "Mock Inclusion Duration",
-        startDate = mockStartDate,
-        endDate = mockEndDate,
-        zoneType = EnforcementZoneType.INCLUSION,
-      ),
-    )
-
-    order.monitoringConditionsAlcohol = AlcoholMonitoringConditions(
-      versionId = versionId,
-      startDate = mockStartDate,
-      endDate = mockEndDate,
-      monitoringType = AlcoholMonitoringType.ALCOHOL_ABSTINENCE,
-    )
-
-    order.monitoringConditionsTrail = TrailMonitoringConditions(
-      versionId = versionId,
-      startDate = mockStartDate,
-      endDate = mockEndDate,
-    )
-
-    order.interestedParties = InterestedParties(
-      versionId = versionId,
-      responsibleOfficerName = "John Smith",
-      responsibleOfficerPhoneNumber = "07401111111",
-      responsibleOrganisation = "PROBATION",
-      responsibleOrganisationRegion = "LONDON",
-      responsibleOrganisationEmail = "abc@def.com",
-      notifyingOrganisation = "PRISON",
-      notifyingOrganisationName = "WAYLAND_PRISON",
-      notifyingOrganisationEmail = "",
-    )
-    order.probationDeliveryUnit = ProbationDeliveryUnit(
-      versionId = versionId,
-      unit = "CAMDEN_AND_ISLINGTON",
-    )
-    if (order.getCurrentVersion().type === RequestType.VARIATION) {
-      order.variationDetails = VariationDetails(
-        versionId = versionId,
-        variationType = VariationType.ADDRESS,
-        variationDate = mockStartDate,
-        variationDetails = "Change to address",
-      )
-    }
-
-    order.versions[0].status = status
-
-    return order
-  }
-
   fun createAndPersistPopulatedOrder(
     id: UUID = UUID.randomUUID(),
     versionId: UUID = UUID.randomUUID(),
@@ -2475,13 +2228,15 @@ class OrderControllerTest : IntegrationTestBase() {
     status: OrderStatus = OrderStatus.IN_PROGRESS,
     documents: MutableList<AdditionalDocument> = mutableListOf(),
   ): Order {
-    val order = createReadyToSubmitOrder(
+    val order = TestUtilities.createReadyToSubmitOrder(
       id = id,
       versionId = versionId,
       noFixedAddress = noFixedAddress,
       requestType = requestType,
       status = status,
       documents = documents,
+      mockStartDate,
+      mockEndDate,
     )
     repo.save(order)
     return order

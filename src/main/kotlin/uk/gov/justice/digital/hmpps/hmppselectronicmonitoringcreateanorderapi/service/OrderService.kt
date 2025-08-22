@@ -94,53 +94,53 @@ class OrderService(
       variationDetails = null
 
       orderParameters =
-        currentVersion.orderParameters?.copy(versionId = this.id)
+        currentVersion.orderParameters?.copy(versionId = this.id, id = UUID.randomUUID())
       deviceWearer =
-        currentVersion.deviceWearer?.copy(versionId = this.id)
+        currentVersion.deviceWearer?.copy(versionId = this.id, id = UUID.randomUUID())
       deviceWearerResponsibleAdult =
-        currentVersion.deviceWearerResponsibleAdult?.copy(versionId = this.id)
+        currentVersion.deviceWearerResponsibleAdult?.copy(versionId = this.id, id = UUID.randomUUID())
       contactDetails =
-        currentVersion.contactDetails?.copy(versionId = this.id)
+        currentVersion.contactDetails?.copy(versionId = this.id, id = UUID.randomUUID())
       curfewConditions =
-        currentVersion.curfewConditions?.copy(versionId = this.id)
+        currentVersion.curfewConditions?.copy(versionId = this.id, id = UUID.randomUUID())
       curfewReleaseDateConditions =
-        currentVersion.curfewReleaseDateConditions?.copy(versionId = this.id)
+        currentVersion.curfewReleaseDateConditions?.copy(versionId = this.id, id = UUID.randomUUID())
       installationAndRisk =
-        currentVersion.installationAndRisk?.copy(versionId = this.id)
+        currentVersion.installationAndRisk?.copy(versionId = this.id, id = UUID.randomUUID())
       interestedParties =
-        currentVersion.interestedParties?.copy(versionId = this.id)
+        currentVersion.interestedParties?.copy(versionId = this.id, id = UUID.randomUUID())
       probationDeliveryUnit =
-        currentVersion.probationDeliveryUnit?.copy(versionId = this.id)
+        currentVersion.probationDeliveryUnit?.copy(versionId = this.id, id = UUID.randomUUID())
       monitoringConditions =
-        currentVersion.monitoringConditions?.copy(versionId = this.id)
+        currentVersion.monitoringConditions?.copy(versionId = this.id, id = UUID.randomUUID())
       monitoringConditionsAlcohol =
-        currentVersion.monitoringConditionsAlcohol?.copy(versionId = this.id)
+        currentVersion.monitoringConditionsAlcohol?.copy(versionId = this.id, id = UUID.randomUUID())
       monitoringConditionsTrail =
-        currentVersion.monitoringConditionsTrail?.copy(versionId = this.id)
+        currentVersion.monitoringConditionsTrail?.copy(versionId = this.id, id = UUID.randomUUID())
       installationLocation =
-        currentVersion.installationLocation?.copy(versionId = this.id)
+        currentVersion.installationLocation?.copy(versionId = this.id, id = UUID.randomUUID())
       installationAppointment =
-        currentVersion.installationAppointment?.copy(versionId = this.id)
+        currentVersion.installationAppointment?.copy(versionId = this.id, id = UUID.randomUUID())
 
       additionalDocuments =
         currentVersion.additionalDocuments.map {
-          it.copy(versionId = this.id)
+          it.copy(versionId = this.id, id = UUID.randomUUID())
         }.toMutableList()
       addresses =
         currentVersion.addresses.map {
-          it.copy(versionId = this.id)
+          it.copy(versionId = this.id, id = UUID.randomUUID())
         }.toMutableList()
       curfewTimeTable =
         currentVersion.curfewTimeTable.map {
-          it.copy(versionId = this.id)
+          it.copy(versionId = this.id, id = UUID.randomUUID())
         }.toMutableList()
       enforcementZoneConditions =
         currentVersion.enforcementZoneConditions.map {
-          it.copy(versionId = this.id)
+          it.copy(versionId = this.id, id = UUID.randomUUID())
         }.toMutableList()
       mandatoryAttendanceConditions =
         currentVersion.mandatoryAttendanceConditions.map {
-          it.copy(versionId = this.id)
+          it.copy(versionId = this.id, id = UUID.randomUUID())
         }.toMutableList()
     }
 
