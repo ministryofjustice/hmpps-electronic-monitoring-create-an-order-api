@@ -145,6 +145,10 @@ data class MonitoringOrder(
   var tagAtSource: String? = "",
   @JsonProperty("tag_at_source_details")
   var tagAtSourceDetails: String? = "",
+  @JsonProperty("date_and_time_installation_will_take_place")
+  var dateAndTimeInstallationWillTakePlace: String? = "",
+  @JsonProperty("released_under_prarr")
+  var releasedUnderPrarr: String? = "",
   @JsonProperty("technical_bail")
   var technicalBail: String? = "",
   @JsonProperty("trial_date")
@@ -340,6 +344,21 @@ data class MonitoringOrder(
             ),
           )
           monitoringOrder.abstinence = "No"
+        }
+        if (order.installationLocation?.location == InstallationLocationType.PROBATION_OFFICE ||
+          order.installationLocation?.location == InstallationLocationType.PRISON
+        ) {
+          monitoringOrder.tagAtSource = "Yes"
+        } else {
+          monitoringOrder.tagAtSource = "No"
+        }
+        monitoringOrder.tagAtSourceDetails = order.installationAppointment?.placeName ?: ""
+        monitoringOrder.dateAndTimeInstallationWillTakePlace =
+          getBritishDateAndTime(order.installationAppointment?.appointmentDate) ?: ""
+        monitoringOrder.releasedUnderPrarr = if (conditions.prarr == YesNoUnknown.YES) {
+          "Yes"
+        } else {
+          "No"
         }
       }
 
