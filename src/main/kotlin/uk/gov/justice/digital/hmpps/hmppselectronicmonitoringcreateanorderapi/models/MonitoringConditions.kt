@@ -12,6 +12,7 @@ import jakarta.persistence.Table
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MonitoringConditionType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderTypeDescription
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Pilot
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.SentenceType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YesNoUnknown
 import java.time.ZonedDateTime
@@ -79,8 +80,9 @@ data class MonitoringConditions(
   @Column(name = "PRARR", nullable = true)
   var prarr: YesNoUnknown? = null,
 
+  @Enumerated(EnumType.STRING)
   @Column(name = "PILOT", nullable = true)
-  var pilot: String? = null,
+  var pilot: Pilot? = null,
 
   @Schema(hidden = true)
   @OneToOne

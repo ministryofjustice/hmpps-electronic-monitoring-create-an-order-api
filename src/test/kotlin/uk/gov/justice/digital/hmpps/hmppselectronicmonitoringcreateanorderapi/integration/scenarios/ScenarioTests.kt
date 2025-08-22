@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.scenarios
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -14,10 +15,12 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.in
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.SercoAuthMockServerExtension.Companion.sercoAuthApi
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.SercoMockApiExtension.Companion.sercoApi
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.DeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsAttachmentResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsAttachmentResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsResult
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.MonitoringOrder
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.FmsSubmissionResultRepository
 import java.nio.file.Files
 import java.nio.file.Paths
@@ -25,6 +28,8 @@ import java.nio.file.Paths
 class ScenarioTests : IntegrationTestBase() {
   @Autowired
   lateinit var fmsResultRepository: FmsSubmissionResultRepository
+
+  private val objectMapper: ObjectMapper = jacksonObjectMapper()
 
   @BeforeEach
   fun setup() {
@@ -110,13 +115,17 @@ class ScenarioTests : IntegrationTestBase() {
     val expectedOrderJson = Files.readString(Paths.get("$rootFilePath/expected_order.json"))
       .replace("{expectedOderId}", submitResult.orderId.toString())
 
+    val expectedDeviceWearer = objectMapper.readValue<DeviceWearer>(expectedDeviceWearerJson)
+
+    val expectedMonitoringOrder = objectMapper.readValue<MonitoringOrder>(expectedOrderJson)
+
     // Assert
-    assertThat(
-      submitResult.deviceWearerResult.payload,
-    ).isEqualTo(expectedDeviceWearerJson.removeWhitespaceAndNewlines())
-    assertThat(
-      submitResult.monitoringOrderResult.payload,
-    ).isEqualTo(expectedOrderJson.removeWhitespaceAndNewlines())
+
+    val storedDeviceWearer = objectMapper.readValue<DeviceWearer>(submitResult.deviceWearerResult.payload)
+    assertThat(expectedDeviceWearer).isEqualTo(storedDeviceWearer)
+
+    val storedMonitoringOrder = objectMapper.readValue<MonitoringOrder>(submitResult.monitoringOrderResult.payload)
+    assertThat(expectedMonitoringOrder).isEqualTo(storedMonitoringOrder)
   }
 
   fun runVariationTest(rootFilePath: String) {
@@ -151,13 +160,16 @@ class ScenarioTests : IntegrationTestBase() {
     val expectedVariationJson = Files.readString(Paths.get("$rootFilePath/expected_variation.json"))
       .replace("{expectedOderId}", submitResult.orderId.toString())
 
+    val expectedDeviceWearer = objectMapper.readValue<DeviceWearer>(expectedDeviceWearerJson)
+
+    val expectedMonitoringOrder = objectMapper.readValue<MonitoringOrder>(expectedVariationJson)
+
     // Assert
-    assertThat(
-      submitResult.deviceWearerResult.payload,
-    ).isEqualTo(expectedDeviceWearerJson.removeWhitespaceAndNewlines())
-    assertThat(
-      submitResult.monitoringOrderResult.payload,
-    ).isEqualTo(expectedVariationJson.removeWhitespaceAndNewlines())
+    val storedDeviceWearer = objectMapper.readValue<DeviceWearer>(submitResult.deviceWearerResult.payload)
+    assertThat(expectedDeviceWearer).isEqualTo(storedDeviceWearer)
+
+    val storedMonitoringOrder = objectMapper.readValue<MonitoringOrder>(submitResult.monitoringOrderResult.payload)
+    assertThat(expectedMonitoringOrder).isEqualTo(storedMonitoringOrder)
   }
 
   private fun getOrderFromFile(filePath: String): Order {
