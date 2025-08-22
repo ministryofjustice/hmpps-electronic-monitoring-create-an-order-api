@@ -248,7 +248,7 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
 
     val expectedMonitoringOrder = objectMapper.readValue<MonitoringOrder>(mockOrderJson)
     val storedMonitoringOrder = objectMapper.readValue<MonitoringOrder>(savedResult.monitoringOrderResult.payload)
-    assertThat(expectedMonitoringOrder).isEqualTo(storedMonitoringOrder)
+    assertThat(storedMonitoringOrder).isEqualTo(expectedMonitoringOrder)
     assertThat(savedResult.error).isEqualTo("")
     assertThat(savedResult.success).isTrue()
   }
