@@ -1,6 +1,7 @@
 #!/bin/sh
 
 SECRETS=$(kubectl get secret serco-secret -o json -n hmpps-ems-cemo-ui-dev)
+DOCUMENT_SECRETS=$(kubectl get secret hmpps-electronic-monitoring-create-an-order-api -o json -n hmpps-ems-cemo-ui-dev)
 
 # Auth
 echo "HMPPS_AUTH_URL=https://sign-in-dev.hmpps.service.justice.gov.uk/auth" > .env
@@ -13,6 +14,8 @@ echo "DB_PASS=postgres" >> .env
 
 # Document Management API
 echo "DOCUMENT_MANAGEMENT_URL=http://localhost:8081/" >> .env
+echo "CLIENT_ID=$(jq -r '.data.API_CLIENT_ID' <<< "${DOCUMENT_SECRETS}" | base64 -d)" >> .env
+echo "CLIENT_SECRET=$(jq -r '.data.API_CLIENT_SECRET' <<< "${DOCUMENT_SECRETS}" | base64 -d)" >> .env
 
 # FMS Integration
 echo "SERCO_AUTH_URL=$(jq -r '.data.SERCO_AUTH_URL' <<< "${SECRETS}" | base64 -d)" >> .env
