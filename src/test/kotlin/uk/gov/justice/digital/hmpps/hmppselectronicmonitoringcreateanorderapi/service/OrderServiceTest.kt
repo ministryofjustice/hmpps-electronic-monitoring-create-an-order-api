@@ -69,7 +69,7 @@ class OrderServiceTest {
     Assertions.assertThat(result.dataDictionaryVersion).isEqualTo(DataDictionaryVersion.DDV4)
     argumentCaptor<Order>().apply {
       verify(repo, times(1)).save(capture())
-      Assertions.assertThat(firstValue).isEqualTo(result)
+      assertThat(firstValue).isEqualTo(result)
     }
   }
 
@@ -166,13 +166,14 @@ class OrderServiceTest {
   }
 
   @Nested
-  @DisplayName("POST /api/orders/copy-as-variation")
+  @DisplayName("Create Version")
   inner class CreateVersion {
-    val originalVersionId = UUID.randomUUID()
+    val originalVersionId: UUID = UUID.randomUUID()
     val order = TestUtilities.createReadyToSubmitOrder(
       versionId = originalVersionId,
       startDate = mockStartDate,
       endDate = mockEndDate,
+      status = OrderStatus.SUBMITTED,
       installationLocation = InstallationLocation(
         versionId = originalVersionId,
         location = InstallationLocationType.PRISON,

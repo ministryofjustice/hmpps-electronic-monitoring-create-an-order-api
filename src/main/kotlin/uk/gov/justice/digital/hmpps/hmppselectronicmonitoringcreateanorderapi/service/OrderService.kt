@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.s
 import jakarta.persistence.EntityNotFoundException
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.BadRequestException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.SubmitOrderException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.MonitoringConditions
@@ -79,6 +80,9 @@ class OrderService(
   fun createVersion(orderId: UUID, username: String): Order {
     val order = getOrder(orderId, username)
     val currentVersion = order.getCurrentVersion()
+    if (currentVersion.status != OrderStatus.SUBMITTED) {
+      throw BadRequestException("Order latest version not submitted")
+    }
     val newVersionNumber = currentVersion.versionId + 1
 
     val newOrderVersion = OrderVersion(

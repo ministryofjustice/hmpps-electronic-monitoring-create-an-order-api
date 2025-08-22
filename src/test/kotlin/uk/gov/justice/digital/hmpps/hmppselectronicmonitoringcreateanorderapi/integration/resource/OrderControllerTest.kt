@@ -120,7 +120,7 @@ class OrderControllerTest : IntegrationTestBase() {
   inner class PostVariation {
     @Test
     fun `It should should create an order version with type VARIATION`() {
-      val order = createAndPersistPopulatedOrder()
+      val order = createAndPersistPopulatedOrder(status = OrderStatus.SUBMITTED)
 
       val variationOrder = webTestClient.post()
         .uri("/api/orders/${order.id}/copy-as-variation")
@@ -141,7 +141,7 @@ class OrderControllerTest : IntegrationTestBase() {
 
     @Test
     fun `A new id and variationId should be assigned to the new variation order`() {
-      val order = createAndPersistPopulatedOrder()
+      val order = createAndPersistPopulatedOrder(status = OrderStatus.SUBMITTED)
 
       val variationOrder = webTestClient.post()
         .uri("/api/orders/${order.id}/copy-as-variation")
@@ -159,7 +159,7 @@ class OrderControllerTest : IntegrationTestBase() {
 
     @Test
     fun `Details about the device wearer and order should be copied from the original order`() {
-      val order = createAndPersistPopulatedOrder()
+      val order = createAndPersistPopulatedOrder(status = OrderStatus.SUBMITTED)
 
       val variationOrder = webTestClient.post()
         .uri("/api/orders/${order.id}/copy-as-variation")
@@ -223,6 +223,24 @@ class OrderControllerTest : IntegrationTestBase() {
           "version",
         )
         .isEqualTo(order.monitoringConditions)
+    }
+
+    @Test
+    fun `It return bad request when latest version is not in SUBMITTED state`() {
+      val order = createAndPersistPopulatedOrder(status = OrderStatus.IN_PROGRESS)
+
+      val result = webTestClient.post()
+        .uri("/api/orders/${order.id}/copy-as-variation")
+        .headers(setAuthorisation(username = "AUTH_ADM"))
+        .exchange()
+        .expectStatus()
+        .is4xxClientError
+        .expectBody(ErrorResponse::class.java)
+        .returnResult()
+
+      val error = result.responseBody!!
+      assertThat(error.userMessage)
+        .isEqualTo("Bad Request: Order latest version not submitted")
     }
   }
 
