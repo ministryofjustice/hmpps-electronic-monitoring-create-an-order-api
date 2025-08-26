@@ -340,7 +340,7 @@ data class MonitoringOrder(
             EnforceableCondition(
               "AML",
               startDate = getBritishDateAndTime(condition.startDate),
-              endDate = getBritishDateAndTime(conditions.endDate) ?: "",
+              endDate = getBritishDateAndTime(condition.endDate) ?: "",
             ),
           )
           monitoringOrder.abstinence = "No"
