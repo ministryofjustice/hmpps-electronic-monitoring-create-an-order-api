@@ -12,6 +12,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.InstallationLocationType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MagistrateCourt
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisation
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisationDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Offence
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Prison
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ProbationDeliveryUnits
@@ -343,9 +344,11 @@ data class MonitoringOrder(
 
       if (conditions.alcohol != null && conditions.alcohol!!) {
         val condition = order.monitoringConditionsAlcohol!!
-        var conditionType = "AML"
-        if (monitoringOrder.notifyingOrganization!!.contains("Court")) {
-          conditionType = "AAMR"
+        var conditionType = "AAMR"
+        if (monitoringOrder.notifyingOrganization == NotifyingOrganisationDDv5.PRISON.value ||
+          monitoringOrder.notifyingOrganization == NotifyingOrganisationDDv5.PROBATION.value
+        ) {
+          conditionType = "AML"
         }
 
         monitoringOrder.enforceableCondition!!.add(

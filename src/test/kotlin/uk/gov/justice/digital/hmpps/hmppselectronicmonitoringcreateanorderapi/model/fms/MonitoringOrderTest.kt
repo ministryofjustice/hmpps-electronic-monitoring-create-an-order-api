@@ -426,12 +426,12 @@ class MonitoringOrderTest : OrderTestBase() {
       Arguments.of(NotifyingOrganisationDDv5.MAGISTRATES_COURT, "AAMR"),
       Arguments.of(NotifyingOrganisationDDv5.MILITARY_COURT, "AAMR"),
       Arguments.of(NotifyingOrganisationDDv5.PRISON, "AML"),
-      Arguments.of(NotifyingOrganisationDDv5.HOME_OFFICE, "AML"),
+      Arguments.of(NotifyingOrganisationDDv5.HOME_OFFICE, "AAMR"),
       Arguments.of(NotifyingOrganisationDDv5.SCOTTISH_COURT, "AAMR"),
       Arguments.of(NotifyingOrganisationDDv5.FAMILY_COURT, "AAMR"),
       Arguments.of(NotifyingOrganisationDDv5.PROBATION, "AML"),
       Arguments.of(NotifyingOrganisationDDv5.YOUTH_COURT, "AAMR"),
-      Arguments.of(NotifyingOrganisationDDv5.YOUTH_CUSTODY_SERVICE, "AML"),
+      Arguments.of(NotifyingOrganisationDDv5.YOUTH_CUSTODY_SERVICE, "AAMR"),
     )
 
     @JvmStatic
