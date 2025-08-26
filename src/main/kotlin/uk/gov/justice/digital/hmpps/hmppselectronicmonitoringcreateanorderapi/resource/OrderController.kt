@@ -47,6 +47,16 @@ class OrderController(@Autowired val orderService: OrderService) {
     return ResponseEntity(convertToDto(order), HttpStatus.OK)
   }
 
+  @PostMapping("/orders/{orderId}/copy-as-variation")
+  fun createVariationFromExisting(
+    @PathVariable orderId: UUID,
+    authentication: Authentication,
+  ): ResponseEntity<OrderDto> {
+    val username = authentication.name
+    val newVersion = orderService.createVersion(orderId, username)
+    return ResponseEntity(convertToDto(newVersion), HttpStatus.OK)
+  }
+
   @GetMapping("/orders/{orderId}")
   fun getOrder(@PathVariable orderId: UUID, authentication: Authentication): ResponseEntity<OrderDto> {
     val username = authentication.name
