@@ -97,7 +97,7 @@ class MonitoringOrderTest : OrderTestBase() {
     assertThat(fmsMonitoringOrder.pilot).isEqualTo(mappedValue)
   }
 
-  @ParameterizedTest(name = "it should map pilot to alcohol condition types - {0} -> {1}")
+  @ParameterizedTest(name = "it should map alcohol condition types - {0} -> {1}")
   @MethodSource("getAlcoholNotifiyingOrganisations")
   fun `It should map correctly map alcohol condition types to Serco`(
     savedValue: NotifyingOrganisationDDv5,
