@@ -1132,7 +1132,7 @@ class OrderControllerTest : IntegrationTestBase() {
             "end_date": "$mockEndDateInBritishTime"
       		},          
       		{
-      			"condition": "AAMR",
+      			"condition": "AML",
             "start_date": "$mockStartDateInBritishTime",
             "end_date": "$mockEndDateInBritishTime"
       		}
@@ -1513,7 +1513,7 @@ class OrderControllerTest : IntegrationTestBase() {
             "end_date": "$mockEndDateInBritishTime"
       		},          
       		{
-      			"condition": "AAMR",
+      			"condition": "AML",
             "start_date": "$mockStartDateInBritishTime",
            "end_date": "$mockEndDateInBritishTime"
       		}
@@ -1903,7 +1903,7 @@ class OrderControllerTest : IntegrationTestBase() {
             "end_date": "$mockEndDateInBritishTime"
       		},          
       		{
-      			"condition": "AAMR",
+      			"condition": "AML",
             "start_date": "$mockStartDateInBritishTime",
             "end_date": "$mockEndDateInBritishTime"
       		}

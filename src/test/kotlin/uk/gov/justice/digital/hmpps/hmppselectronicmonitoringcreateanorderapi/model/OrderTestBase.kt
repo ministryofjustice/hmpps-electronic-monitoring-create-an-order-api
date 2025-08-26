@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.m
 import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AdditionalDocument
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Address
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AlcoholMonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationAndRisk
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationLocation
@@ -15,6 +16,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ResponsibleAdult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.TrailMonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MonitoringConditionType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
@@ -42,6 +44,7 @@ abstract class OrderTestBase {
     trailMonitoringConditions: TrailMonitoringConditions? = null,
     installationLocation: InstallationLocation? = null,
     additionalDocuments: MutableList<AdditionalDocument> = mutableListOf(),
+    alcoholMonitoringConditions: AlcoholMonitoringConditions? = null,
   ): Order {
     val orderId = UUID.randomUUID()
     val versionId = UUID.randomUUID()
@@ -79,6 +82,8 @@ abstract class OrderTestBase {
     order.installationLocation = installationLocation
 
     order.additionalDocuments.addAll(additionalDocuments)
+
+    order.monitoringConditionsAlcohol = alcoholMonitoringConditions
 
     return order
   }
@@ -246,5 +251,16 @@ abstract class OrderTestBase {
     purpose = purpose,
     appointmentDay = appointmentDay,
     startTime = startTime,
+  )
+
+  protected fun createAlcoholMonitoringConditions(
+    endDate: ZonedDateTime = ZonedDateTime.of(2025, 2, 1, 0, 0, 0, 0, ZoneId.of("UTC")),
+    startDate: ZonedDateTime = ZonedDateTime.of(2025, 1, 1, 23, 59, 0, 0, ZoneId.of("UTC")),
+    monitoringType: AlcoholMonitoringType? = AlcoholMonitoringType.ALCOHOL_LEVEL,
+  ): AlcoholMonitoringConditions = AlcoholMonitoringConditions(
+    versionId = UUID.randomUUID(),
+    endDate = endDate,
+    startDate = startDate,
+    monitoringType = monitoringType,
   )
 }

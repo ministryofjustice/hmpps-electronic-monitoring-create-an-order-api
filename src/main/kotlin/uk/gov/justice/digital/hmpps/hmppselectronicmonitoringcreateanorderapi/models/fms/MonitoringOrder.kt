@@ -252,6 +252,23 @@ data class MonitoringOrder(
         "No"
       }
 
+      if (order.interestedParties != null) {
+        val interestedParties = order.interestedParties!!
+        monitoringOrder.responsibleOfficerName = interestedParties.responsibleOfficerName
+        monitoringOrder.responsibleOfficerPhone = getResponsibleOfficerPhoneNumber(order)
+        monitoringOrder.responsibleOrganization = getResponsibleOrganisation(order)
+        monitoringOrder.roRegion = getResponsibleOrganisationRegion(order)
+        if (ResponsibleOrganisation.from(order.interestedParties?.responsibleOrganisation) ===
+          ResponsibleOrganisation.PROBATION
+        ) {
+          monitoringOrder.pduResponsible = getProbationDeliveryUnit(order)
+        }
+        monitoringOrder.roEmail = interestedParties.responsibleOrganisationEmail
+        monitoringOrder.notifyingOrganization = getNotifyingOrganisation(order)
+        monitoringOrder.noName = getNotifyingOrganisationName(order)
+        monitoringOrder.noEmail = interestedParties.notifyingOrganisationEmail
+      }
+
       if (conditions.curfew != null && conditions.curfew!!) {
         val curfew = order.curfewConditions!!
         monitoringOrder.enforceableCondition!!.add(
@@ -326,25 +343,24 @@ data class MonitoringOrder(
 
       if (conditions.alcohol != null && conditions.alcohol!!) {
         val condition = order.monitoringConditionsAlcohol!!
+        var conditionType = "AML"
+        if (monitoringOrder.notifyingOrganization!!.contains("Court")) {
+          conditionType = "AAMR"
+        }
+
+        monitoringOrder.enforceableCondition!!.add(
+          EnforceableCondition(
+            conditionType,
+            startDate = getBritishDateAndTime(condition.startDate),
+            endDate = getBritishDateAndTime(condition.endDate) ?: "",
+          ),
+        )
         if (condition.monitoringType == AlcoholMonitoringType.ALCOHOL_ABSTINENCE) {
-          monitoringOrder.enforceableCondition!!.add(
-            EnforceableCondition(
-              "AAMR",
-              startDate = getBritishDateAndTime(condition.startDate),
-              endDate = getBritishDateAndTime(condition.endDate) ?: "",
-            ),
-          )
           monitoringOrder.abstinence = "Yes"
         } else {
-          monitoringOrder.enforceableCondition!!.add(
-            EnforceableCondition(
-              "AML",
-              startDate = getBritishDateAndTime(condition.startDate),
-              endDate = getBritishDateAndTime(conditions.endDate) ?: "",
-            ),
-          )
           monitoringOrder.abstinence = "No"
         }
+
         if (order.installationLocation?.location == InstallationLocationType.PROBATION_OFFICE ||
           order.installationLocation?.location == InstallationLocationType.PRISON
         ) {
@@ -360,23 +376,6 @@ data class MonitoringOrder(
         } else {
           "No"
         }
-      }
-
-      if (order.interestedParties != null) {
-        val interestedParties = order.interestedParties!!
-        monitoringOrder.responsibleOfficerName = interestedParties.responsibleOfficerName
-        monitoringOrder.responsibleOfficerPhone = getResponsibleOfficerPhoneNumber(order)
-        monitoringOrder.responsibleOrganization = getResponsibleOrganisation(order)
-        monitoringOrder.roRegion = getResponsibleOrganisationRegion(order)
-        if (ResponsibleOrganisation.from(order.interestedParties?.responsibleOrganisation) ===
-          ResponsibleOrganisation.PROBATION
-        ) {
-          monitoringOrder.pduResponsible = getProbationDeliveryUnit(order)
-        }
-        monitoringOrder.roEmail = interestedParties.responsibleOrganisationEmail
-        monitoringOrder.notifyingOrganization = getNotifyingOrganisation(order)
-        monitoringOrder.noName = getNotifyingOrganisationName(order)
-        monitoringOrder.noEmail = interestedParties.notifyingOrganisationEmail
       }
 
       getInstallationAddress(order)?.let {
