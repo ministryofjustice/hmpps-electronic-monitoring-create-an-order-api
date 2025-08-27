@@ -9,9 +9,9 @@
   "device_wearer": "CEMO003 Bear Boyer",
   "enforceable_condition": [
     {
-      "condition": "AML",
+      "condition": "AAMR",
       "start_date": "2025-09-11 00:00:00",
-      "end_date": "2025-10-06 12:11:00"
+      "end_date": "2025-10-01 23:59:00"
     }
   ],
   "exclusion_allday": "",
