@@ -1,0 +1,137 @@
+{
+  "id": "46c0c295-a4a0-4eaf-a058-484085ab54d6",
+  "versions": [
+    {
+      "id": "742c5a77-ffab-4893-84c5-0ffd0da1dcd2",
+      "orderId": "46c0c295-a4a0-4eaf-a058-484085ab54d6",
+      "versionId": 0,
+      "username": "AUTH_ADM",
+      "status": "IN_PROGRESS",
+      "dataDictionaryVersion": "DDV5",
+      "type": "REQUEST"
+    }
+  ],
+  "status": "IN_PROGRESS",
+  "deviceWearer": {
+    "versionId": "742c5a77-ffab-4893-84c5-0ffd0da1dcd2",
+    "nomisId": "X2610EO",
+    "pncId": "LD85/285316J",
+    "deliusId": "X97628",
+    "prisonNumber": "Q39126",
+    "homeOfficeReferenceNumber": "C0774993",
+    "firstName": "CEMO003 Bear",
+    "lastName": "Boyer",
+    "alias": "Marsh Sandpiper",
+    "dateOfBirth": "1984-11-13T00:00:00Z",
+    "adultAtTimeOfInstallation": true,
+    "sex": "MALE",
+    "gender": "MALE",
+    "otherDisability": "",
+    "noFixedAbode": false,
+    "language": "",
+    "interpreterRequired": false
+  },
+  "addresses": [
+    {
+      "versionId": "742c5a77-ffab-4893-84c5-0ffd0da1dcd2",
+      "addressType": "PRIMARY",
+      "addressLine1": "10 downing street",
+      "addressLine2": "",
+      "addressLine3": "London",
+      "addressLine4": "ENGLAND",
+      "postcode": "SW1A 2AA"
+    },
+    {
+      "versionId": "742c5a77-ffab-4893-84c5-0ffd0da1dcd2",
+      "addressType": "INSTALLATION",
+      "addressLine1": "10 downing street",
+      "addressLine2": "",
+      "addressLine3": "London",
+      "addressLine4": "ENGLAND",
+      "postcode": "SW1A 2AA"
+    }
+  ],
+  "deviceWearerResponsibleAdult": null,
+  "contactDetails": {
+    "versionId": "742c5a77-ffab-4893-84c5-0ffd0da1dcd2",
+    "contactNumber": "0118 496 0944"
+  },
+  "enforcementZoneConditions": [],
+  "additionalDocuments": [
+    {
+      "versionId": "742c5a77-ffab-4893-84c5-0ffd0da1dcd2",
+      "id": "f7b3735f-d6f3-4bd4-8a3c-759aad1d9cf0",
+      "fileType": "LICENCE",
+      "fileName": "test.pdf"
+    }
+  ],
+  "installationAndRisk": {
+    "versionId": "742c5a77-ffab-4893-84c5-0ffd0da1dcd2",
+    "offence": "",
+    "offenceAdditionalDetails": "",
+    "riskCategory": [
+      "NO_RISK"
+    ],
+    "riskDetails": "No risk",
+    "mappaLevel": null,
+    "mappaCaseType": null
+  },
+  "monitoringConditions": {
+    "versionId": "742c5a77-ffab-4893-84c5-0ffd0da1dcd2",
+    "startDate": "2025-09-06T11:11:00Z",
+    "endDate": "2025-10-06T11:11:00Z",
+    "orderType": "COMMUNITY",
+    "curfew": false,
+    "exclusionZone": false,
+    "trail": false,
+    "mandatoryAttendance": false,
+    "alcohol": true,
+    "conditionType": "LICENSE_CONDITION_OF_A_CUSTODIAL_ORDER",
+    "orderTypeDescription": null,
+    "sentenceType": "STANDARD_DETERMINATE_SENTENCE",
+    "issp": "UNKNOWN",
+    "hdc": "UNKNOWN",
+    "prarr": "UNKNOWN",
+    "pilot": "UNKNOWN"
+  },
+  "monitoringConditionsTrail": null,
+  "mandatoryAttendanceConditions": [],
+  "monitoringConditionsAlcohol": {
+    "versionId": "742c5a77-ffab-4893-84c5-0ffd0da1dcd2",
+    "monitoringType": "ALCOHOL_LEVEL",
+    "startDate": "2025-09-10T23:00:00Z",
+    "endDate": "2025-10-01T22:59:00Z"
+  },
+  "curfewReleaseDateConditions": null,
+  "curfewConditions": null,
+  "curfewTimeTable": [],
+  "interestedParties": {
+    "versionId": "742c5a77-ffab-4893-84c5-0ffd0da1dcd2",
+    "notifyingOrganisation": "CROWN_COURT",
+    "notifyingOrganisationName": "BIRMINGHAM_CROWN_COURT",
+    "notifyingOrganisationEmail": "notifying-org@example.com",
+    "responsibleOfficerName": "Melvin Gutmann",
+    "responsibleOfficerPhoneNumber": "020 7946 0129",
+    "responsibleOrganisation": "PROBATION",
+    "responsibleOrganisationRegion": "GREATER_MANCHESTER",
+    "responsibleOrganisationEmail": "responsible-org@example.com"
+  },
+  "probationDeliveryUnit": {
+    "versionId": "742c5a77-ffab-4893-84c5-0ffd0da1dcd2",
+    "unit": "MANCHESTER_NORTH"
+  },
+  "variationDetails": null,
+  "installationLocation": {
+    "versionId": "742c5a77-ffab-4893-84c5-0ffd0da1dcd2",
+    "location": "PRISON"
+  },
+  "installationAppointment": {
+    "versionId": "742c5a77-ffab-4893-84c5-0ffd0da1dcd2",
+    "placeName": "at installation address: 10 downing street, , SW1A 2AA",
+    "appointmentDate": "2025-09-10T23:00:00Z"
+  },
+  "orderParameters": {
+    "versionId": "742c5a77-ffab-4893-84c5-0ffd0da1dcd2",
+    "havePhoto": false
+  }
+}

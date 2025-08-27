@@ -53,8 +53,8 @@ class ScenarioTests : IntegrationTestBase() {
     fun scenarios() = listOf(
 //      Arguments.of("cemo001", "src/test/resources/json/scenarios/cemo001"),
       Arguments.of("cemo002", "src/test/resources/json/scenarios/cemo002", false),
-//      Arguments.of("cemo003", "src/test/resources/json/scenarios/cemo003"),
-//      Arguments.of("cemo004", "src/test/resources/json/scenarios/cemo004"),
+      Arguments.of("cemo003", "src/test/resources/json/scenarios/cemo003", false),
+      Arguments.of("cemo004", "src/test/resources/json/scenarios/cemo004", false),
       Arguments.of("cemo005", "src/test/resources/json/scenarios/cemo005", false),
 //      Arguments.of("cemo006", "src/test/resources/json/scenarios/cemo006"),
       Arguments.of("cemo007", "src/test/resources/json/scenarios/cemo007", false),
@@ -63,7 +63,7 @@ class ScenarioTests : IntegrationTestBase() {
 //      Arguments.of("cemo010", "src/test/resources/json/scenarios/cemo010"),
       Arguments.of("cemo011", "src/test/resources/json/scenarios/cemo011", false),
       Arguments.of("cemo012", "src/test/resources/json/scenarios/cemo012", false),
-//      Arguments.of("cemo013", "src/test/resources/json/scenarios/cemo013"),
+      Arguments.of("cemo013", "src/test/resources/json/scenarios/cemo013", false),
       Arguments.of("cemo014", "src/test/resources/json/scenarios/cemo014", false),
 //      Arguments.of("cemo015", "src/test/resources/json/scenarios/cemo015"),
       Arguments.of("cemo016", "src/test/resources/json/scenarios/cemo016", false),
@@ -80,8 +80,6 @@ class ScenarioTests : IntegrationTestBase() {
       Arguments.of("cemo036", "src/test/resources/json/scenarios/cemo036", false),
     )
   }
-
-  fun String.removeWhitespaceAndNewlines(): String = this.replace("(\"[^\"]*\")|\\s".toRegex(), "\$1")
 
   fun runOrderTest(rootFilePath: String) {
     sercoApi.stubCreateDeviceWearer(
@@ -122,10 +120,10 @@ class ScenarioTests : IntegrationTestBase() {
     // Assert
 
     val storedDeviceWearer = objectMapper.readValue<DeviceWearer>(submitResult.deviceWearerResult.payload)
-    assertThat(expectedDeviceWearer).isEqualTo(storedDeviceWearer)
+    assertThat(storedDeviceWearer).isEqualTo(expectedDeviceWearer)
 
     val storedMonitoringOrder = objectMapper.readValue<MonitoringOrder>(submitResult.monitoringOrderResult.payload)
-    assertThat(expectedMonitoringOrder).isEqualTo(storedMonitoringOrder)
+    assertThat(storedMonitoringOrder).isEqualTo(expectedMonitoringOrder)
   }
 
   fun runVariationTest(rootFilePath: String) {
