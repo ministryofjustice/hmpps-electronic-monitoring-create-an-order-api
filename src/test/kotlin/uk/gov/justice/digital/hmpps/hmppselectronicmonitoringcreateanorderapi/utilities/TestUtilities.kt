@@ -56,6 +56,7 @@ class TestUtilities {
       installationLocation: InstallationLocation? = null,
       installationAppointment: InstallationAppointment? = null,
       username: String = "AUTH_ADM",
+      dataDictionaryVersion: DataDictionaryVersion = DataDictionaryVersion.DDV4,
     ): Order {
       val order = Order(
         id = id,
@@ -68,7 +69,7 @@ class TestUtilities {
           status = OrderStatus.IN_PROGRESS,
           type = requestType,
           orderId = id,
-          dataDictionaryVersion = DataDictionaryVersion.DDV4,
+          dataDictionaryVersion = dataDictionaryVersion,
         ),
       )
 

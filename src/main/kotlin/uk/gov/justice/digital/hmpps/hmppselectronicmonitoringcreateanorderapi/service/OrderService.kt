@@ -84,14 +84,14 @@ class OrderService(
       throw BadRequestException("Order latest version not submitted")
     }
     val newVersionNumber = currentVersion.versionId + 1
-
+    val dataDictionaryVersion = DataDictionaryVersion.entries.first { it.name == defaultDataDictionaryVersion }
     val newOrderVersion = OrderVersion(
       orderId = orderId,
       versionId = newVersionNumber,
       status = OrderStatus.IN_PROGRESS,
       type = RequestType.VARIATION,
       username = username,
-      dataDictionaryVersion = currentVersion.dataDictionaryVersion,
+      dataDictionaryVersion = dataDictionaryVersion,
       fmsResultId = null,
       fmsResultDate = null,
     ).apply {
