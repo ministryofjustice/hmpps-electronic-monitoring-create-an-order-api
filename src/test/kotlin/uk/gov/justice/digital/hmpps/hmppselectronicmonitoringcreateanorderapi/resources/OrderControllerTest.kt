@@ -69,16 +69,17 @@ class OrderControllerTest {
   @Test
   fun `Query a single order and return`() {
     val orderId = UUID.randomUUID()
+    val version = OrderVersion(
+      orderId = orderId,
+      username = "mockUser",
+      status = OrderStatus.IN_PROGRESS,
+      type = RequestType.REQUEST,
+      dataDictionaryVersion = mockDictionaryVersion,
+    )
     val order = Order(
       id = orderId,
       versions = mutableListOf(
-        OrderVersion(
-          orderId = orderId,
-          username = "mockUser",
-          status = OrderStatus.IN_PROGRESS,
-          type = RequestType.REQUEST,
-          dataDictionaryVersion = mockDictionaryVersion,
-        ),
+        version,
       ),
     )
 
@@ -117,6 +118,7 @@ class OrderControllerTest {
         installationAppointment = null,
         dataDictionaryVersion = mockDictionaryVersion,
         orderParameters = null,
+        versionId = version.id,
       ),
     )
   }
@@ -124,30 +126,32 @@ class OrderControllerTest {
   @Test
   fun `Query orders for current user and return`() {
     val orderId = UUID.randomUUID()
+    val orderVersion = OrderVersion(
+      orderId = orderId,
+      username = "mockUser",
+      status = OrderStatus.IN_PROGRESS,
+      type = RequestType.REQUEST,
+      dataDictionaryVersion = mockDictionaryVersion,
+    )
     val orderId2 = UUID.randomUUID()
+    val orderVersion2 = OrderVersion(
+      orderId = orderId2,
+      username = "mockUser",
+      status = OrderStatus.IN_PROGRESS,
+      type = RequestType.REQUEST,
+      dataDictionaryVersion = mockDictionaryVersion,
+    )
     val orders: List<Order> = listOf(
       Order(
         id = orderId,
         versions = mutableListOf(
-          OrderVersion(
-            orderId = orderId,
-            username = "mockUser",
-            status = OrderStatus.IN_PROGRESS,
-            type = RequestType.REQUEST,
-            dataDictionaryVersion = mockDictionaryVersion,
-          ),
+          orderVersion,
         ),
       ),
       Order(
         id = orderId2,
         versions = mutableListOf(
-          OrderVersion(
-            orderId = orderId2,
-            username = "mockUser",
-            status = OrderStatus.IN_PROGRESS,
-            type = RequestType.REQUEST,
-            dataDictionaryVersion = mockDictionaryVersion,
-          ),
+          orderVersion2,
         ),
       ),
     )
@@ -188,6 +192,7 @@ class OrderControllerTest {
           installationAppointment = null,
           dataDictionaryVersion = mockDictionaryVersion,
           orderParameters = null,
+          versionId = orderVersion.id,
         ),
         OrderDto(
           id = orderId2,
@@ -219,6 +224,7 @@ class OrderControllerTest {
           installationAppointment = null,
           dataDictionaryVersion = mockDictionaryVersion,
           orderParameters = null,
+          versionId = orderVersion2.id,
         ),
       ),
     )
@@ -251,29 +257,31 @@ class OrderControllerTest {
   fun `Search for orders given a full name`() {
     val orderId = UUID.randomUUID()
     val orderId2 = UUID.randomUUID()
+    val orderVersion = OrderVersion(
+      orderId = orderId,
+      username = "mockUser",
+      status = OrderStatus.SUBMITTED,
+      type = RequestType.REQUEST,
+      dataDictionaryVersion = mockDictionaryVersion,
+    )
+    val orderVersion2 = OrderVersion(
+      orderId = orderId2,
+      username = "mockUser",
+      status = OrderStatus.SUBMITTED,
+      type = RequestType.REQUEST,
+      dataDictionaryVersion = mockDictionaryVersion,
+    )
     val orders: List<Order> = listOf(
       Order(
         id = orderId,
         versions = mutableListOf(
-          OrderVersion(
-            orderId = orderId,
-            username = "mockUser",
-            status = OrderStatus.SUBMITTED,
-            type = RequestType.REQUEST,
-            dataDictionaryVersion = mockDictionaryVersion,
-          ),
+          orderVersion,
         ),
       ),
       Order(
         id = orderId2,
         versions = mutableListOf(
-          OrderVersion(
-            orderId = orderId2,
-            username = "mockUser",
-            status = OrderStatus.SUBMITTED,
-            type = RequestType.REQUEST,
-            dataDictionaryVersion = mockDictionaryVersion,
-          ),
+          orderVersion2,
         ),
       ),
     )
@@ -314,6 +322,7 @@ class OrderControllerTest {
           installationAppointment = null,
           dataDictionaryVersion = mockDictionaryVersion,
           orderParameters = null,
+          versionId = orderVersion.id,
         ),
         OrderDto(
           id = orderId2,
@@ -345,6 +354,7 @@ class OrderControllerTest {
           installationAppointment = null,
           dataDictionaryVersion = mockDictionaryVersion,
           orderParameters = null,
+          versionId = orderVersion2.id,
         ),
       ),
     )

@@ -174,6 +174,7 @@ class OrderServiceTest {
       startDate = mockStartDate,
       endDate = mockEndDate,
       status = OrderStatus.SUBMITTED,
+      dataDictionaryVersion = DataDictionaryVersion.DDV4,
       installationLocation = InstallationLocation(
         versionId = originalVersionId,
         location = InstallationLocationType.PRISON,
@@ -199,6 +200,7 @@ class OrderServiceTest {
 
     @BeforeEach
     fun setup() {
+      service = OrderService(repo, fmsService, "DDV5")
       whenever(repo.findById(order.id)).thenReturn(Optional.of(order))
       whenever(repo.save(order)).thenReturn(order)
 
@@ -216,6 +218,16 @@ class OrderServiceTest {
         assertThat(firstValue.versions.last().type).isEqualTo(RequestType.VARIATION)
         assertThat(firstValue.versions.last().username).isEqualTo(order.username)
         assertThat(firstValue.versions.last().versionId).isEqualTo(1)
+      }
+    }
+
+    @Test
+    fun `It should create an new order version with current default data dictionary version`() {
+      argumentCaptor<Order>().apply {
+        verify(repo, times(1)).save(capture())
+        assertThat(firstValue.id).isEqualTo(order.id)
+
+        assertThat(firstValue.versions.last().dataDictionaryVersion).isEqualTo(DataDictionaryVersion.DDV5)
       }
     }
 

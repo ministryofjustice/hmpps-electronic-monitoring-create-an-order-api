@@ -59,6 +59,8 @@ data class OrderDto(
 
   val isValid: Boolean,
 
+  val versionId: UUID,
+
   val mandatoryAttendanceConditions: MutableList<MandatoryAttendanceConditions>,
 
   val monitoringConditions: MonitoringConditions?,
