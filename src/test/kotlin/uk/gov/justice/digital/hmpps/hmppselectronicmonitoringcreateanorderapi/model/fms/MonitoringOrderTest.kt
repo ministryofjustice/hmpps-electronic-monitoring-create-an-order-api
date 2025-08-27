@@ -7,6 +7,8 @@ import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.OrderTestBase
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisationDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Pilot
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.EnforceableCondition
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.MonitoringOrder
@@ -93,6 +95,47 @@ class MonitoringOrderTest : OrderTestBase() {
     val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
 
     assertThat(fmsMonitoringOrder.pilot).isEqualTo(mappedValue)
+  }
+
+  @ParameterizedTest(name = "it should map alcohol condition types - {0} -> {1}")
+  @MethodSource("getAlcoholNotifiyingOrganisations")
+  fun `It should map correctly map alcohol condition types to Serco`(
+    savedValue: NotifyingOrganisationDDv5,
+    mappedValue: String,
+  ) {
+    val order = createOrder(
+      interestedParties = createInterestedParty(notifyingOrganisation = savedValue.value),
+
+      monitoringConditions = createMonitoringConditions(alcohol = true),
+      alcoholMonitoringConditions = createAlcoholMonitoringConditions(
+        monitoringType = AlcoholMonitoringType.ALCOHOL_LEVEL,
+      ),
+    )
+
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "")
+
+    assertThat(fmsMonitoringOrder.enforceableCondition!!.first().condition).isEqualTo(mappedValue)
+  }
+
+  @ParameterizedTest(name = "it should map alcohol abstinence - {0} -> {1}")
+  @MethodSource("getAlcoholAbstinence")
+  fun `It should map correctly map alcohol abstinence to Serco`(
+    savedValue: AlcoholMonitoringType,
+    mappedValue: String,
+  ) {
+    NotifyingOrganisationDDv5.entries.forEach {
+      val order = createOrder(
+        interestedParties = createInterestedParty(notifyingOrganisation = it.value),
+
+        monitoringConditions = createMonitoringConditions(alcohol = true),
+        alcoholMonitoringConditions = createAlcoholMonitoringConditions(
+          monitoringType = savedValue,
+        ),
+      )
+
+      val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "")
+      assertThat(fmsMonitoringOrder.abstinence).isEqualTo(mappedValue)
+    }
   }
 
   companion object {
@@ -374,6 +417,28 @@ class MonitoringOrderTest : OrderTestBase() {
       Arguments.of("GPS_ACQUISITIVE_CRIME_HOME_DETENTION_CURFEW", "GPS Acquisitive Crime Home Detention Curfew"),
       Arguments.of("GPS_ACQUISITIVE_CRIME_PAROLE", "GPS Acquisitive Crime Parole"),
       Arguments.of("UNKNOWN", ""),
+    )
+
+    @JvmStatic
+    fun getAlcoholNotifiyingOrganisations() = listOf(
+      Arguments.of(NotifyingOrganisationDDv5.CIVIL_COUNTY_COURT, "AAMR"),
+      Arguments.of(NotifyingOrganisationDDv5.CROWN_COURT, "AAMR"),
+      Arguments.of(NotifyingOrganisationDDv5.MAGISTRATES_COURT, "AAMR"),
+      Arguments.of(NotifyingOrganisationDDv5.MILITARY_COURT, "AAMR"),
+      Arguments.of(NotifyingOrganisationDDv5.PRISON, "AML"),
+      Arguments.of(NotifyingOrganisationDDv5.HOME_OFFICE, "AAMR"),
+      Arguments.of(NotifyingOrganisationDDv5.SCOTTISH_COURT, "AAMR"),
+      Arguments.of(NotifyingOrganisationDDv5.FAMILY_COURT, "AAMR"),
+      Arguments.of(NotifyingOrganisationDDv5.PROBATION, "AML"),
+      Arguments.of(NotifyingOrganisationDDv5.YOUTH_COURT, "AAMR"),
+      Arguments.of(NotifyingOrganisationDDv5.YOUTH_CUSTODY_SERVICE, "AAMR"),
+    )
+
+    @JvmStatic
+    fun getAlcoholAbstinence() = listOf(
+      Arguments.of(AlcoholMonitoringType.ALCOHOL_ABSTINENCE, "Yes"),
+      Arguments.of(AlcoholMonitoringType.ALCOHOL_LEVEL, "No"),
+
     )
   }
 }
