@@ -21,6 +21,7 @@ enum class PrisonDDv5(val value: String) {
   CHELMSFORD_PRISON("Chelmsford Prison"),
   COLDINGLEY_PRISON("Coldingley Prison"),
   COOKHAM_WOOD_YOUNG_OFFENDER_INSTITUTION("Cookham Wood Young Offender Institution"),
+  COOKHAM_WOOD_PRISON("Cookham Wood Prison"),
   DARTMOOR_PRISON("Dartmoor Prison"),
   DEERBOLT_PRISON("Deerbolt Prison"),
   DONCASTER_PRISON("Doncaster Prison"),
