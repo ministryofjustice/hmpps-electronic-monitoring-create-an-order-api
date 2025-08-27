@@ -259,8 +259,7 @@ data class MonitoringOrder(
         monitoringOrder.responsibleOfficerPhone = getResponsibleOfficerPhoneNumber(order)
         monitoringOrder.responsibleOrganization = getResponsibleOrganisation(order)
         monitoringOrder.roRegion = getResponsibleOrganisationRegion(order)
-        if (ResponsibleOrganisation.from(order.interestedParties?.responsibleOrganisation) ===
-          ResponsibleOrganisation.PROBATION
+        if (monitoringOrder.responsibleOrganization == ResponsibleOrganisation.PROBATION.value
         ) {
           monitoringOrder.pduResponsible = getProbationDeliveryUnit(order)
         }

@@ -4,6 +4,9 @@ import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AdditionalDocument
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Address
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AlcoholMonitoringConditions
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewConditions
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewReleaseDateConditions
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewTimeTable
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationAndRisk
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationLocation
@@ -26,6 +29,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.SentenceType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YesNoUnknown
+import java.time.DayOfWeek
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.util.UUID
@@ -45,6 +49,9 @@ abstract class OrderTestBase {
     installationLocation: InstallationLocation? = null,
     additionalDocuments: MutableList<AdditionalDocument> = mutableListOf(),
     alcoholMonitoringConditions: AlcoholMonitoringConditions? = null,
+    curfewConditions: CurfewConditions? = createCurfewConditions(),
+    curfewDayOfRelease: CurfewReleaseDateConditions? = createCurfewDayOfReslse(),
+    curfewTimetable: MutableList<CurfewTimeTable> = createCurfewTimeTable(),
   ): Order {
     val orderId = UUID.randomUUID()
     val versionId = UUID.randomUUID()
@@ -84,6 +91,12 @@ abstract class OrderTestBase {
     order.additionalDocuments.addAll(additionalDocuments)
 
     order.monitoringConditionsAlcohol = alcoholMonitoringConditions
+
+    order.curfewConditions = curfewConditions
+
+    order.curfewReleaseDateConditions = curfewDayOfRelease
+
+    order.curfewTimeTable = curfewTimetable
 
     return order
   }
@@ -263,4 +276,51 @@ abstract class OrderTestBase {
     startDate = startDate,
     monitoringType = monitoringType,
   )
+
+  protected fun createCurfewConditions(
+    startDate: ZonedDateTime = ZonedDateTime.of(2025, 1, 1, 1, 1, 1, 1, ZoneId.of("UTC")),
+    endDate: ZonedDateTime = ZonedDateTime.of(2025, 2, 1, 1, 1, 1, 1, ZoneId.of("UTC")),
+    curfewAddress: String = "PRIMARY",
+    curfewAdditionalDetails: String = "",
+  ): CurfewConditions = CurfewConditions(
+    versionId = UUID.randomUUID(),
+    startDate = startDate,
+    endDate = endDate,
+    curfewAddress = curfewAddress,
+    curfewAdditionalDetails = curfewAdditionalDetails,
+  )
+
+  protected fun createCurfewDayOfReslse(
+    startTime: String = "19:00:00",
+    endTime: String = "03:00:00",
+    curfewAddress: AddressType = AddressType.PRIMARY,
+    releaseDate: ZonedDateTime = ZonedDateTime.of(2025, 1, 1, 1, 1, 1, 1, ZoneId.of("UTC")),
+  ): CurfewReleaseDateConditions = CurfewReleaseDateConditions(
+    versionId = UUID.randomUUID(),
+    startTime = startTime,
+    endTime = endTime,
+    releaseDate = releaseDate,
+    curfewAddress = curfewAddress,
+  )
+
+  protected fun createCurfewTimeTable(
+    days: List<DayOfWeek> = DayOfWeek.entries,
+    startTime: String = "19:00:00",
+    endTime: String = "03:00:00",
+    curfewAddress: String = "PRIMARY_ADDRESS",
+  ): MutableList<CurfewTimeTable> {
+    val timeTable: MutableList<CurfewTimeTable> = mutableListOf()
+    days.forEach { day ->
+      timeTable.add(
+        CurfewTimeTable(
+          versionId = UUID.randomUUID(),
+          startTime = startTime,
+          endTime = endTime,
+          dayOfWeek = day,
+          curfewAddress = curfewAddress,
+        ),
+      )
+    }
+    return timeTable
+  }
 }
