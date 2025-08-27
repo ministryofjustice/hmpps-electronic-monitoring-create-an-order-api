@@ -403,7 +403,7 @@ class HearingEventHandler(
       }
       val defendantRemainAt = getPromptValue(prompts, "Defendant to remain at") ?: ""
       val detailsAndTiming = getPromptValue(prompts, "Details and timings") ?: ""
-      condition.curfewDescription = "$defendantRemainAt $detailsAndTiming"
+      condition.curfewAdditionalDetails = "$defendantRemainAt $detailsAndTiming"
       order.curfewConditions = condition
       monitoringConditions.endDate = condition.endDate
     }
@@ -469,7 +469,7 @@ class HearingEventHandler(
       val condition = CurfewConditions(versionId = order.getCurrentVersion().id)
       condition.startDate = ZonedDateTime.of(it.orderedDate, LocalTime.MIDNIGHT, ZoneId.of("Europe/London"))
       condition.endDate = monitoringConditions.endDate
-      condition.curfewDescription = conditionPrompt.value
+      condition.curfewAdditionalDetails = conditionPrompt.value
       order.curfewConditions = condition
     }
 

@@ -279,7 +279,7 @@ data class MonitoringOrder(
             endDate = getBritishDateAndTime(curfew.endDate) ?: "",
           ),
         )
-        monitoringOrder.curfewDescription = curfew.curfewDescription
+        monitoringOrder.curfewDescription = curfew.curfewAdditionalDetails
         monitoringOrder.conditionalReleaseDate = order.curfewReleaseDateConditions?.releaseDate?.format(dateFormatter)
         monitoringOrder.curfewStart = getBritishDateAndTime(curfew.startDate)
         monitoringOrder.curfewEnd = getBritishDateAndTime(curfew.endDate)
@@ -430,6 +430,20 @@ data class MonitoringOrder(
             location = "secondary",
             allday = "",
             secondaryTimeTable.map { Schedule.fromCurfewTimeTable(it) }.toMutableList(),
+          ),
+        )
+      }
+
+      val tertiaryAddress = order.addresses.firstOrNull { it.addressType === AddressType.TERTIARY }
+      if (tertiaryAddress != null) {
+        val tertiaryTimeTable = order.curfewTimeTable.filter {
+          it.curfewAddress!!.uppercase().contains("TERTIARY_ADDRESS")
+        }
+        schedules.add(
+          CurfewSchedule(
+            location = "tertiary",
+            allday = "",
+            tertiaryTimeTable.map { Schedule.fromCurfewTimeTable(it) }.toMutableList(),
           ),
         )
       }
