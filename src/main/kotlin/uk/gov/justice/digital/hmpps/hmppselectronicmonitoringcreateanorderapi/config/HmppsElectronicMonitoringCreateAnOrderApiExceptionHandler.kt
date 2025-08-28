@@ -20,6 +20,7 @@ import org.springframework.web.multipart.MaxUploadSizeExceededException
 import org.springframework.web.servlet.resource.NoResourceFoundException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.BadRequestException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.DocumentApiBadRequestException
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.FormValidationException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.SercoConnectionException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.SubmitOrderException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ListItemValidationError
@@ -125,6 +126,10 @@ class HmppsElectronicMonitoringCreateAnOrderApiExceptionHandler {
       fieldErrors + globalErrors,
     )
   }
+
+  @ExceptionHandler(FormValidationException::class)
+  fun handleFormValidationException(e: FormValidationException): ResponseEntity<List<ValidationError>> =
+    ResponseEntity.badRequest().body(e.errors)
 
   @ExceptionHandler(DocumentApiBadRequestException::class)
   fun handleDocumentApiBadRequestException(e: DocumentApiBadRequestException): ResponseEntity<ErrorResponse> =
