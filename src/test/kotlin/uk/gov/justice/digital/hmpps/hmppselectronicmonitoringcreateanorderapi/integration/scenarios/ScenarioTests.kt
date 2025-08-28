@@ -190,7 +190,7 @@ class ScenarioTests : IntegrationTestBase() {
           ),
         ),
       )
-      documentApi.stubGetDocument(order.additionalDocuments.first().id.toString())
+      documentApi.stubGetDocument(order.additionalDocuments.first().documentId.toString())
 
       if (order.additionalDocuments.size == 2) {
         sercoApi.stubSubmitAttachment(
@@ -204,7 +204,7 @@ class ScenarioTests : IntegrationTestBase() {
             ),
           ),
         )
-        documentApi.stubGetDocument(order.additionalDocuments[1].id.toString())
+        documentApi.stubGetDocument(order.additionalDocuments[1].documentId.toString())
       }
     }
 

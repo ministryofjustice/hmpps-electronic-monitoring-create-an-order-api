@@ -62,13 +62,15 @@
       "versionId": "56f3133c-f3e3-4e4b-971c-5d6265f822a4",
       "id": "96e120fa-acc4-44af-a16c-9a67e4d1cd62",
       "fileType": "LICENCE",
-      "fileName": "test.pdf"
+      "fileName": "test.pdf",
+      "documentId": "90950d4a-921f-406a-bad6-d5550597c19c"
     },
     {
       "versionId": "56f3133c-f3e3-4e4b-971c-5d6265f822a4",
       "id": "666fddd2-f259-4209-9346-09533ee5a3db",
       "fileType": "PHOTO_ID",
-      "fileName": "profile.jpeg"
+      "fileName": "profile.jpeg",
+      "documentId": "90950d4a-921f-406a-bad6-d5550597c20c"
     }
   ],
   "installationAndRisk": {

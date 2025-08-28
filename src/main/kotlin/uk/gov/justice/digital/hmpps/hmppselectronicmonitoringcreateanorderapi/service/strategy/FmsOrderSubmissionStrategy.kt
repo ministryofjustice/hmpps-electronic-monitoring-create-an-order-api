@@ -52,7 +52,7 @@ class FmsOrderSubmissionStrategy(
 
   private fun createAttachment(document: AdditionalDocument, deviceWearerId: String): FmsAttachmentSubmissionResult {
     try {
-      val fileId = document.id.toString()
+      val fileId = document.documentId.toString()
       val fileName = document.fileName
       val fileType = document.fileType.toString()
       val fileStream = this.documentApiClient.getDocument(fileId)?.body?.blockFirst()
@@ -91,6 +91,7 @@ class FmsOrderSubmissionStrategy(
             versionId = order.getCurrentVersion().id,
             fileType = DocumentType.ENFORCEMENT_ZONE_MAP,
             fileName = it.fileName!!,
+            documentId = it.fileId!!,
           )
         },
       )

@@ -43,13 +43,15 @@
       "id": "90950d4a-921f-406a-bad6-d5550597c18c",
       "versionId": "b31ff312-5193-449f-8ba1-6e24dff3fae1",
       "fileName": "profile.jpeg",
-      "fileType": "PHOTO_ID"
+      "fileType": "PHOTO_ID",
+      "documentId": "90950d4a-921f-406a-bad6-d5550597c19c"
     },
     {
       "id": "90950d4a-921f-406a-bad6-d5550597c18d",
       "versionId": "b31ff312-5193-449f-8ba1-6e24dff3fae1",
       "fileName": "profile.jpeg",
-      "fileType": "LICENCE"
+      "fileType": "LICENCE",
+      "documentId": "90950d4a-921f-406a-bad6-d5550597c19e"
     }
   ],
   "contactDetails": {

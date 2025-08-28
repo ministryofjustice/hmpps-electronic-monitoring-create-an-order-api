@@ -177,6 +177,7 @@ class TestUtilities {
             versionId = versionId,
             fileName = "Test file",
             fileType = DocumentType.LICENCE,
+            documentId = UUID.randomUUID(),
           ),
         )
       }

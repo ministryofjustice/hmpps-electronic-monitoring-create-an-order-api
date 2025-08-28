@@ -32,7 +32,7 @@ class AdditionalDocumentService(val webClient: DocumentApiClient) : OrderSection
       throw EntityNotFoundException("Document for $orderId with type $documentType not found")
     }
 
-    return webClient.getDocument(doc.id.toString())
+    return webClient.getDocument(doc.documentId.toString())
   }
 
   fun deleteDocument(orderId: UUID, username: String, documentType: DocumentType) {
@@ -41,7 +41,7 @@ class AdditionalDocumentService(val webClient: DocumentApiClient) : OrderSection
     if (doc != null) {
       order.additionalDocuments.remove(doc)
       orderRepo.save(order)
-      webClient.deleteDocument(doc.id.toString())
+      webClient.deleteDocument(doc.documentId.toString())
     }
   }
 
@@ -56,13 +56,14 @@ class AdditionalDocumentService(val webClient: DocumentApiClient) : OrderSection
         versionId = order.getCurrentVersion().id,
         fileType = documentType,
         fileName = multipartFile.originalFilename,
+        documentId = UUID.randomUUID(),
       )
     val builder = MultipartBodyBuilder()
     builder.part("file", multipartFile.resource)
       .contentType(MediaType.valueOf(multipartFile.contentType!!))
       .filename(multipartFile.originalFilename!!)
     builder.part("metadata", DocumentMetadata(orderId, documentType))
-    webClient.createDocument(document.id.toString(), builder)
+    webClient.createDocument(document.documentId.toString(), builder)
 
     order.additionalDocuments.add(document)
 

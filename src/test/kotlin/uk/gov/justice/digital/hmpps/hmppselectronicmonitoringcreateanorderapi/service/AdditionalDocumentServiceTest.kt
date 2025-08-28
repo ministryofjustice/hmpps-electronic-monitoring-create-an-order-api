@@ -48,9 +48,11 @@ class AdditionalDocumentServiceTest {
   val mockOrderId = UUID.randomUUID()
   val mockVersionId = UUID.randomUUID()
   val mockDictionaryVersion = DataDictionaryVersion.DDV4
+  var mockDocumentId = UUID.randomUUID()
 
   val docType: DocumentType = DocumentType.LICENCE
-  val doc: AdditionalDocument = AdditionalDocument(versionId = mockVersionId, fileType = docType)
+  val doc: AdditionalDocument =
+    AdditionalDocument(versionId = mockVersionId, fileType = docType, documentId = mockDocumentId)
 
   @BeforeEach
   fun setup() {
@@ -131,7 +133,7 @@ class AdditionalDocumentServiceTest {
       val result = service.getDocument(mockOrderId, username, docType)
 
       // Verify the document api was called
-      verify(client, times(1)).getDocument(doc.id.toString())
+      verify(client, times(1)).getDocument(doc.documentId.toString())
     }
   }
 
@@ -190,7 +192,7 @@ class AdditionalDocumentServiceTest {
       // Verify that the file was deleted from document api
       argumentCaptor<String>().apply {
         verify(client, times(1)).deleteDocument(capture())
-        Assertions.assertThat(firstValue).isEqualTo(doc.id.toString())
+        Assertions.assertThat(firstValue).isEqualTo(doc.documentId.toString())
       }
     }
   }
@@ -300,6 +302,7 @@ class AdditionalDocumentServiceTest {
                     versionId = mockVersionId,
                     fileType = docType,
                     fileName = "file-name.pdf",
+                    documentId = defaultUuid,
                   ),
                 ),
                 dataDictionaryVersion = mockDictionaryVersion,
@@ -311,7 +314,7 @@ class AdditionalDocumentServiceTest {
         // Verify that the old file was deleted from document api
         argumentCaptor<String>().apply {
           verify(client, times(1)).deleteDocument(capture())
-          Assertions.assertThat(firstValue).isEqualTo(doc.id.toString())
+          Assertions.assertThat(firstValue).isEqualTo(doc.documentId.toString())
         }
 
         // Verify the new file was uploaded to the document api
@@ -385,6 +388,7 @@ class AdditionalDocumentServiceTest {
                     versionId = mockVersionId,
                     fileType = docType,
                     fileName = "file-name.pdf",
+                    documentId = defaultUuid,
                   ),
                 ),
                 dataDictionaryVersion = mockDictionaryVersion,
@@ -491,8 +495,16 @@ class AdditionalDocumentServiceTest {
             dataDictionaryVersion = mockDictionaryVersion,
             orderParameters = OrderParameters(havePhoto = true, versionId = mockVersionId),
             additionalDocuments = mutableListOf(
-              AdditionalDocument(versionId = mockVersionId, fileType = DocumentType.PHOTO_ID),
-              AdditionalDocument(versionId = mockVersionId, fileType = DocumentType.LICENCE),
+              AdditionalDocument(
+                versionId = mockVersionId,
+                fileType = DocumentType.PHOTO_ID,
+                documentId = mockDocumentId,
+              ),
+              AdditionalDocument(
+                versionId = mockVersionId,
+                fileType = DocumentType.LICENCE,
+                documentId = mockDocumentId,
+              ),
             ),
           ),
         ),

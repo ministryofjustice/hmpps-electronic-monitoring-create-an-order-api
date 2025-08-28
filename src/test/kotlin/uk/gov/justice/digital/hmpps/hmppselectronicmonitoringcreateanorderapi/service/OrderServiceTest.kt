@@ -169,6 +169,8 @@ class OrderServiceTest {
   @DisplayName("Create Version")
   inner class CreateVersion {
     val originalVersionId: UUID = UUID.randomUUID()
+    val mockLicenceDocumentId = UUID.randomUUID()
+    val mockPhotoDocumentId = UUID.randomUUID()
     val order = TestUtilities.createReadyToSubmitOrder(
       versionId = originalVersionId,
       startDate = mockStartDate,
@@ -188,11 +190,13 @@ class OrderServiceTest {
           versionId = originalVersionId,
           fileName = "MockFile",
           fileType = DocumentType.LICENCE,
+          documentId = mockLicenceDocumentId,
         ),
         AdditionalDocument(
           versionId = originalVersionId,
           fileName = "MockPhotoFile",
           fileType = DocumentType.PHOTO_ID,
+          documentId = mockPhotoDocumentId,
         ),
       ),
     )
