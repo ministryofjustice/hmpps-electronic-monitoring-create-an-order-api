@@ -1,0 +1,138 @@
+{
+  "id": "2f5fd7b3-125d-4971-8aaf-402c122a38c9",
+  "versions": [
+    {
+      "id": "78635e85-13d4-4b77-b42a-9f2ca8334754",
+      "orderId": "2f5fd7b3-125d-4971-8aaf-402c122a38c9",
+      "versionId": 0,
+      "username": "AUTH_ADM",
+      "status": "IN_PROGRESS",
+      "dataDictionaryVersion": "DDV5",
+      "type": "REQUEST"
+    }
+  ],
+  "status": "IN_PROGRESS",
+  "deviceWearer": {
+    "versionId": "78635e85-13d4-4b77-b42a-9f2ca8334754",
+    "nomisId": "M1068RI",
+    "pncId": "FS78/789091G",
+    "deliusId": "X12239",
+    "prisonNumber": "W27369",
+    "homeOfficeReferenceNumber": "C6040020",
+    "firstName": "CEMO013 Leona",
+    "lastName": "Thiel",
+    "alias": "Canyon Towhee",
+    "dateOfBirth": "2003-08-01T00:00:00Z",
+    "adultAtTimeOfInstallation": true,
+    "sex": "PREFER_NOT_TO_SAY",
+    "gender": "PREFER_TO_SELF_DESCRIBE",
+    "otherDisability": "",
+    "noFixedAbode": false,
+    "language": "",
+    "interpreterRequired": false
+  },
+  "addresses": [
+    {
+      "versionId": "78635e85-13d4-4b77-b42a-9f2ca8334754",
+      "addressType": "PRIMARY",
+      "addressLine1": "2 Dunlin Close",
+      "addressLine2": "Bolton",
+      "addressLine3": "Greater Manchester",
+      "addressLine4": "",
+      "postcode": "BL2 1EW"
+    },
+    {
+      "versionId": "78635e85-13d4-4b77-b42a-9f2ca8334754",
+      "addressType": "INSTALLATION",
+      "addressLine1": "2 Dunlin Close",
+      "addressLine2": "Bolton",
+      "addressLine3": "Greater Manchester",
+      "addressLine4": "",
+      "postcode": "BL2 1EW"
+    }
+  ],
+  "deviceWearerResponsibleAdult": null,
+  "contactDetails": {
+    "versionId": "78635e85-13d4-4b77-b42a-9f2ca8334754",
+    "contactNumber": "028 9649 6259"
+  },
+  "enforcementZoneConditions": [],
+  "additionalDocuments": [
+    {
+      "versionId": "78635e85-13d4-4b77-b42a-9f2ca8334754",
+      "id": "3efae6a8-686f-4092-9a73-d45f66407db2",
+      "fileType": "LICENCE",
+      "fileName": "test.pdf",
+      "documentId": "90950d4a-921f-406a-bad6-d5550597c20c"
+    }
+  ],
+  "installationAndRisk": {
+    "versionId": "78635e85-13d4-4b77-b42a-9f2ca8334754",
+    "offence": "",
+    "offenceAdditionalDetails": "",
+    "riskCategory": [
+      "NO_RISK"
+    ],
+    "riskDetails": "No risk",
+    "mappaLevel": null,
+    "mappaCaseType": null
+  },
+  "monitoringConditions": {
+    "versionId": "78635e85-13d4-4b77-b42a-9f2ca8334754",
+    "startDate": "2025-09-06T10:06:00Z",
+    "endDate": "2025-10-06T10:06:00Z",
+    "orderType": "POST_RELEASE",
+    "curfew": false,
+    "exclusionZone": false,
+    "trail": false,
+    "mandatoryAttendance": false,
+    "alcohol": true,
+    "conditionType": "LICENSE_CONDITION_OF_A_CUSTODIAL_ORDER",
+    "orderTypeDescription": null,
+    "sentenceType": "STANDARD_DETERMINATE_SENTENCE",
+    "issp": "UNKNOWN",
+    "hdc": "UNKNOWN",
+    "prarr": "UNKNOWN",
+    "pilot": "UNKNOWN"
+  },
+  "monitoringConditionsTrail": null,
+  "mandatoryAttendanceConditions": [],
+  "monitoringConditionsAlcohol": {
+    "versionId": "78635e85-13d4-4b77-b42a-9f2ca8334754",
+    "monitoringType": "ALCOHOL_LEVEL",
+    "startDate": "2025-09-10T23:00:00Z",
+    "endDate": "2025-10-01T22:59:00Z"
+  },
+  "curfewReleaseDateConditions": null,
+  "curfewConditions": null,
+  "curfewTimeTable": [],
+  "interestedParties": {
+    "versionId": "78635e85-13d4-4b77-b42a-9f2ca8334754",
+    "notifyingOrganisation": "MAGISTRATES_COURT",
+    "notifyingOrganisationName": "WARRINGTON_MAGISTRATES_COURT",
+    "notifyingOrganisationEmail": "notifying-org@example.com",
+    "responsibleOfficerName": "Matthew Williamson",
+    "responsibleOfficerPhoneNumber": "020 7946 0741",
+    "responsibleOrganisation": "PROBATION",
+    "responsibleOrganisationRegion": "NORTH_WEST",
+    "responsibleOrganisationEmail": "responsible-org@example.com"
+  },
+  "probationDeliveryUnit": {
+    "versionId": "78635e85-13d4-4b77-b42a-9f2ca8334754",
+    "unit": "BLACKBURN"
+  },
+  "variationDetails": null,
+  "installationLocation": {
+    "versionId": "78635e85-13d4-4b77-b42a-9f2ca8334754",
+    "location": "PRISON"
+  },
+  "installationAppointment": {
+    "versionId": "78635e85-13d4-4b77-b42a-9f2ca8334754",
+    "placeName": "at installation address: 2 Dunlin Close, Bolton, BL2 1EW",
+    "appointmentDate": "2025-09-10T23:00:00Z"
+  },
+  "orderParameters": {
+    "versionId": "78635e85-13d4-4b77-b42a-9f2ca8334754",
+    "havePhoto": false
+  }
+}

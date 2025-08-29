@@ -29,6 +29,9 @@ data class AdditionalDocument(
   @Column(name = "FILE_TYPE", nullable = true)
   var fileType: DocumentType,
 
+  @Column(name = "DOCUMENT_ID", nullable = false)
+  val documentId: UUID,
+
   @Schema(hidden = true)
   @ManyToOne(optional = true)
   @JoinColumn(name = "VERSION_ID", updatable = false, insertable = false)

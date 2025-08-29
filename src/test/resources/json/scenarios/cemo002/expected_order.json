@@ -11,7 +11,7 @@
     {
       "condition": "Curfew with EM",
       "start_date": "2025-08-07 00:00:00",
-      "end_date": "2025-08-27 23:59:00"
+      "end_date": "2030-08-27 23:59:00"
     }
   ],
   "exclusion_allday": "",
@@ -73,7 +73,7 @@
   "service_end_date": "2025-09-01",
   "curfew_description": "",
   "curfew_start": "2025-08-07 00:00:00",
-  "curfew_end": "2025-08-27 23:59:00",
+  "curfew_end": "2030-08-27 23:59:00",
   "curfew_duration": [
     {
       "location": "primary",

@@ -69,6 +69,7 @@ class OrderTest : OrderTestBase() {
         versionId = UUID.randomUUID(),
         fileType = DocumentType.LICENCE,
         fileName = "test file",
+        documentId = UUID.randomUUID(),
       ),
     ),
   )

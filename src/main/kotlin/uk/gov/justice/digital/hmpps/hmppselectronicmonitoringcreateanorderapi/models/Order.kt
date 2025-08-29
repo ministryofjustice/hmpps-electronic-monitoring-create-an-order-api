@@ -233,4 +233,9 @@ data class Order(
     set(orderParameters) {
       getCurrentVersion().orderParameters = orderParameters
     }
+
+  val versionId: UUID
+    get() {
+      return getCurrentVersion().id
+    }
 }

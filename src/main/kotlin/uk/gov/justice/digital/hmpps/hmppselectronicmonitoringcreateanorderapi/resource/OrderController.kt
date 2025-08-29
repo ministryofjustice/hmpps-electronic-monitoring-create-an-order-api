@@ -125,5 +125,6 @@ class OrderController(@Autowired val orderService: OrderService) {
     dataDictionaryVersion = order.dataDictionaryVersion,
     orderParameters = order.orderParameters,
     submittedBy = order.submittedBy,
+    versionId = order.versionId,
   )
 }

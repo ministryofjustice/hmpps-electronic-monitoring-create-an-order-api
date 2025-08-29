@@ -75,7 +75,6 @@ data class UpdateInterestedPartiesDto(
       return notifyingOrganisationName == "" || YouthCourtDDv5.entries.any { it.name == notifyingOrganisationName }
     }
 
-    // NB: The setters below are for DDv5. Remove 'notifyingOrganisationName == ""' from the return clause to make the organisation name mandatory for these organisation types.
     if (notifyingOrganisation === NotifyingOrganisationDDv5.FAMILY_COURT) {
       return notifyingOrganisationName == "" || FamilyCourtDDv5.entries.any { it.name == notifyingOrganisationName }
     }

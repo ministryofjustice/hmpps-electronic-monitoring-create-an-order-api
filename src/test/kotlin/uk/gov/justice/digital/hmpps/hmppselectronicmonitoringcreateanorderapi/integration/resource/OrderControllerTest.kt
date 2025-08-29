@@ -51,6 +51,7 @@ class OrderControllerTest : IntegrationTestBase() {
   private val objectMapper: ObjectMapper = jacksonObjectMapper()
   val mockStartDate: ZonedDateTime = ZonedDateTime.now().plusMonths(1)
   val mockEndDate: ZonedDateTime = ZonedDateTime.now().plusMonths(2)
+  val mockDocumentId = UUID.randomUUID()
 
   private val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
   private val dateTimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
@@ -929,6 +930,7 @@ class OrderControllerTest : IntegrationTestBase() {
             versionId = versionId,
             fileType = DocumentType.LICENCE,
             fileName = "mockLicense.jpg",
+            documentId = mockDocumentId,
           ),
         ),
       )
@@ -950,7 +952,7 @@ class OrderControllerTest : IntegrationTestBase() {
         FmsErrorResponse(error = FmsErrorResponseDetails("", "Mock Create Attachment Error")),
       )
 
-      documentApi.stubGetDocument(order.additionalDocuments[0].id.toString())
+      documentApi.stubGetDocument(order.additionalDocuments[0].documentId.toString())
       val result = webTestClient.post()
         .uri("/api/orders/${order.id}/submit")
         .headers(setAuthorisation())
@@ -989,6 +991,7 @@ class OrderControllerTest : IntegrationTestBase() {
             versionId = versionId,
             fileType = DocumentType.LICENCE,
             fileName = "mockFile",
+            documentId = mockDocumentId,
           ),
         ),
       )
@@ -1029,7 +1032,7 @@ class OrderControllerTest : IntegrationTestBase() {
         ),
       )
 
-      documentApi.stubGetDocument(order.additionalDocuments.first().id.toString())
+      documentApi.stubGetDocument(order.additionalDocuments.first().documentId.toString())
       documentApi.stubGetDocument(order.enforcementZoneConditions[0].fileId.toString())
 
       webTestClient.post()
@@ -1332,7 +1335,7 @@ class OrderControllerTest : IntegrationTestBase() {
       ).isEqualTo(order.additionalDocuments.first().fileType.toString())
       assertThat(
         submitResult.attachmentResults[0].attachmentId,
-      ).isEqualTo(order.additionalDocuments.first().id.toString())
+      ).isEqualTo(order.additionalDocuments.first().documentId.toString())
       val updatedOrder = getOrder(order.id)
       assertThat(updatedOrder.fmsResultId).isEqualTo(submitResult.id)
       assertThat(updatedOrder.status).isEqualTo(OrderStatus.SUBMITTED)
@@ -1351,12 +1354,16 @@ class OrderControllerTest : IntegrationTestBase() {
             versionId = versionId,
             fileType = DocumentType.LICENCE,
             fileName = "mockLicense.jpg",
+
+            documentId = mockDocumentId,
           ),
           AdditionalDocument(
             id = UUID.fromString("550e8400-e29b-41d4-a716-446655440001"),
             versionId = versionId,
             fileType = DocumentType.PHOTO_ID,
             fileName = "mockPhotoId.jpg",
+
+            documentId = mockDocumentId,
           ),
         ),
       )
@@ -1409,8 +1416,8 @@ class OrderControllerTest : IntegrationTestBase() {
         ),
       )
 
-      documentApi.stubGetDocument(order.additionalDocuments[0].id.toString())
-      documentApi.stubGetDocument(order.additionalDocuments[1].id.toString())
+      documentApi.stubGetDocument(order.additionalDocuments[0].documentId.toString())
+      documentApi.stubGetDocument(order.additionalDocuments[1].documentId.toString())
       documentApi.stubGetDocument(order.enforcementZoneConditions[0].fileId.toString())
 
       webTestClient.post()
@@ -1718,7 +1725,7 @@ class OrderControllerTest : IntegrationTestBase() {
             status = SubmissionStatus.SUCCESS,
             sysId = "MockSysId",
             fileType = order.additionalDocuments[0].fileType.toString(),
-            attachmentId = order.additionalDocuments[0].id.toString(),
+            attachmentId = order.additionalDocuments[0].documentId.toString(),
           ),
         )
 
@@ -1730,7 +1737,7 @@ class OrderControllerTest : IntegrationTestBase() {
             status = SubmissionStatus.SUCCESS,
             sysId = "MockSysId",
             fileType = order.additionalDocuments[1].fileType.toString(),
-            attachmentId = order.additionalDocuments[1].id.toString(),
+            attachmentId = order.additionalDocuments[1].documentId.toString(),
           ),
         )
 
@@ -1766,6 +1773,8 @@ class OrderControllerTest : IntegrationTestBase() {
             versionId = versionId,
             fileType = DocumentType.LICENCE,
             fileName = "mockLicense.jpg",
+
+            documentId = mockDocumentId,
           ),
         ),
       )
@@ -1798,7 +1807,7 @@ class OrderControllerTest : IntegrationTestBase() {
           ),
         ),
       )
-      documentApi.stubGetDocument(order.additionalDocuments[0].id.toString())
+      documentApi.stubGetDocument(order.additionalDocuments[0].documentId.toString())
       documentApi.stubGetDocument(order.enforcementZoneConditions[0].fileId.toString())
       sercoApi.stubUpdateMonitoringOrder(
         HttpStatus.OK,
@@ -2108,7 +2117,7 @@ class OrderControllerTest : IntegrationTestBase() {
             status = SubmissionStatus.SUCCESS,
             sysId = "MockSysId",
             fileType = order.additionalDocuments[0].fileType.toString(),
-            attachmentId = order.additionalDocuments[0].id.toString(),
+            attachmentId = order.additionalDocuments[0].documentId.toString(),
           ),
         )
       assertThat(submitResult.attachmentResults[1])
@@ -2164,7 +2173,7 @@ class OrderControllerTest : IntegrationTestBase() {
       )
 
       documentApi.stubGetDocument(order.enforcementZoneConditions[0].fileId.toString())
-      documentApi.stubGetDocument(order.additionalDocuments[0].id.toString())
+      documentApi.stubGetDocument(order.additionalDocuments[0].documentId.toString())
 
       webTestClient.post()
         .uri("/api/orders/${order.id}/submit")
