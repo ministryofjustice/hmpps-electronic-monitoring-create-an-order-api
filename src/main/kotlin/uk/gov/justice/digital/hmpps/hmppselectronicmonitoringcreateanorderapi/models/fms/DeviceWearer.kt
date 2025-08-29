@@ -68,6 +68,21 @@ data class DeviceWearer(
   @JsonProperty("secondary_address_post_code")
   var secondaryAddressPostCode: String? = "",
 
+  @JsonProperty("tertiary_address_1")
+  var tertiaryAddress1: String? = "",
+
+  @JsonProperty("tertiary_address_2")
+  var tertiaryAddress2: String? = "",
+
+  @JsonProperty("tertiary_address_3")
+  var tertiaryAddress3: String? = "",
+
+  @JsonProperty("tertiary_address_4")
+  var tertiaryAddress4: String? = "",
+
+  @JsonProperty("tertiary_address_post_code")
+  var tertiaryAddressPostCode: String? = "",
+
   @JsonProperty("phone_number")
   var phoneNumber: String? = "",
 
@@ -193,6 +208,14 @@ data class DeviceWearer(
         deviceWearer.secondaryAddress3 = it.addressLine3
         deviceWearer.secondaryAddress4 = if (it.addressLine4 == "") "N/A" else it.addressLine4
         deviceWearer.secondaryAddressPostCode = it.postcode
+      }
+
+      order.addresses.firstOrNull { it.addressType == AddressType.TERTIARY }?.let {
+        deviceWearer.tertiaryAddress1 = it.addressLine1
+        deviceWearer.tertiaryAddress2 = if (it.addressLine2 == "") "N/A" else it.addressLine2
+        deviceWearer.tertiaryAddress3 = it.addressLine3
+        deviceWearer.tertiaryAddress4 = if (it.addressLine4 == "") "N/A" else it.addressLine4
+        deviceWearer.tertiaryAddressPostCode = it.postcode
       }
 
       return deviceWearer

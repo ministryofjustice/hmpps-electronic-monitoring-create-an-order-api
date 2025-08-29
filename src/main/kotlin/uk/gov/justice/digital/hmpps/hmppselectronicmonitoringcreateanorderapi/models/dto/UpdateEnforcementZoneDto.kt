@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.m
 
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
+import jakarta.validation.constraints.AssertTrue
 import jakarta.validation.constraints.Future
 import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Size
@@ -28,4 +29,12 @@ data class UpdateEnforcementZoneDto(
   @Enumerated(EnumType.STRING)
   @field:NotNull(message = "Enforcement zone type is required")
   var zoneType: EnforcementZoneType? = null,
-)
+) {
+  @AssertTrue(message = "End date must be after start date")
+  fun isEndDate(): Boolean {
+    if (this.endDate != null && this.startDate != null) {
+      return this.endDate!! > this.startDate
+    }
+    return true
+  }
+}

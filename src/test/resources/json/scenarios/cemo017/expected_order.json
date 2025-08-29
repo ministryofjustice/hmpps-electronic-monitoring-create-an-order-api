@@ -68,6 +68,8 @@
   "trial_date": "",
   "trial_outcome": "",
   "conditional_release_date": "2025-07-25",
+  "conditional_release_start_time": "19:00:00",
+  "conditional_release_end_time": "07:00:00",
   "reason_for_order_ending_early": "",
   "business_unit": "",
   "service_end_date": "2025-09-02",
