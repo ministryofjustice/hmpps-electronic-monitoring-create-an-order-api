@@ -16,7 +16,7 @@ data class UpdateTrailMonitoringConditionsDto(
   @AssertTrue(message = ValidationErrors.TrailMonitoringConditions.END_DATE_MUST_BE_AFTER_START_DATE)
   fun isEndDate(): Boolean {
     if (this.endDate != null && this.startDate != null) {
-      return this.endDate!! > this.startDate
+      return this.endDate > this.startDate
     }
     return true
   }

@@ -195,6 +195,7 @@ abstract class OrderTestBase {
     mappaLevel: String = "MAAPA 1",
     mappaCaseType: String = "CPPC (Critical Public Protection Case)",
     riskCategory: String = "THREATS_OF_VIOLENCE",
+    offenceAdditionalDetails: String = "",
   ) = InstallationAndRisk(
     versionId = UUID.randomUUID(),
     offence = offence,
@@ -202,6 +203,7 @@ abstract class OrderTestBase {
     mappaLevel = mappaLevel,
     mappaCaseType = mappaCaseType,
     riskCategory = arrayOf(riskCategory),
+    offenceAdditionalDetails = offenceAdditionalDetails,
   )
 
   protected fun createMonitoringConditions(
