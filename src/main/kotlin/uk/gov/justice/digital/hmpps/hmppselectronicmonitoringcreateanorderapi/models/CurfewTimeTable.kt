@@ -9,9 +9,6 @@ import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
-import jakarta.validation.constraints.NotNull
-import jakarta.validation.constraints.Size
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.data.ValidationErrors
 import java.time.DayOfWeek
 import java.util.*
 
@@ -30,18 +27,12 @@ data class CurfewTimeTable(
   var dayOfWeek: DayOfWeek,
 
   @Column(name = "START_TIME", nullable = true)
-  @field:NotNull(message = ValidationErrors.CurfewTimetable.START_TIME_REQUIRED)
-  @field:Size(min = 1, message = ValidationErrors.CurfewTimetable.START_TIME_REQUIRED)
   var startTime: String? = null,
 
   @Column(name = "END_TIME", nullable = true)
-  @field:NotNull(message = ValidationErrors.CurfewTimetable.END_TIME_REQUIRED)
-  @field:Size(min = 1, message = ValidationErrors.CurfewTimetable.END_TIME_REQUIRED)
   var endTime: String? = null,
 
   @Column(name = "CURFEW_ADDRESS", nullable = true)
-  @field:NotNull(message = ValidationErrors.CurfewTimetable.ADDRESS_REQUIRED)
-  @field:Size(min = 1, message = ValidationErrors.CurfewTimetable.ADDRESS_REQUIRED)
   var curfewAddress: String? = null,
 
   @Schema(hidden = true)
