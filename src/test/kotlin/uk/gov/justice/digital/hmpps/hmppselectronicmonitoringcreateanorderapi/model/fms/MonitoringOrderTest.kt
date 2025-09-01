@@ -10,6 +10,7 @@ import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.OrderTestBase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.CivilAndCountyCourtArgumentsProvider
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.CrownCourtArgumentsProvider
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.FamilyCourtArgumentsProvider
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
@@ -260,7 +261,6 @@ class MonitoringOrderTest : OrderTestBase() {
         responsibleOrganisation = "PROBATION",
         notifyingOrganisationName = savedValue,
       ),
-
     )
     val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
 
@@ -277,7 +277,22 @@ class MonitoringOrderTest : OrderTestBase() {
         responsibleOrganisation = "PROBATION",
         notifyingOrganisationName = savedValue,
       ),
+    )
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
 
+    assertThat(fmsMonitoringOrder.noName).isEqualTo(mappedValue)
+  }
+
+  @ParameterizedTest(name = "it should map familyCourt - {0} -> {1}")
+  @ArgumentsSource(FamilyCourtArgumentsProvider::class)
+  fun `It should correctly map saved familyCourt values to Serco`(savedValue: String, mappedValue: String) {
+    val order = createOrder(
+      dataDictionaryVersion = DataDictionaryVersion.DDV5,
+      deviceWearer = createDeviceWearer(),
+      interestedParties = createInterestedParty(
+        responsibleOrganisation = "PROBATION",
+        notifyingOrganisationName = savedValue,
+      ),
     )
     val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
 
