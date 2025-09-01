@@ -4,9 +4,12 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
+import org.junit.jupiter.params.provider.ArgumentsSource
 import org.junit.jupiter.params.provider.MethodSource
 import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.OrderTestBase
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.CivilAndCountyCourtArgumentsProvider
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.CrownCourtArgumentsProvider
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
@@ -232,7 +235,7 @@ class MonitoringOrderTest : OrderTestBase() {
 
   @ParameterizedTest(name = "it should map probation delivery unit to Serco - {0} -> {1}")
   @MethodSource("getProbationDeliveryUnitValues")
-  fun `It should map correctly map saved probation delivery unit values to Serco`(
+  fun `It should correctly map saved probation delivery unit values to Serco`(
     savedValue: String,
     mappedValue: String,
   ) {
@@ -248,8 +251,25 @@ class MonitoringOrderTest : OrderTestBase() {
   }
 
   @ParameterizedTest(name = "it should map civilCountyCourt - {0} -> {1}")
-  @MethodSource("getCivilCountyCourtValues")
-  fun `It should map correctly map saved civilCountyCourt values to Serco`(savedValue: String, mappedValue: String) {
+  @ArgumentsSource(CivilAndCountyCourtArgumentsProvider::class)
+  fun `It should correctly map saved civilCountyCourt values to Serco`(savedValue: String, mappedValue: String) {
+    val order = createOrder(
+      dataDictionaryVersion = DataDictionaryVersion.DDV5,
+      deviceWearer = createDeviceWearer(),
+      interestedParties = createInterestedParty(
+        responsibleOrganisation = "PROBATION",
+        notifyingOrganisationName = savedValue,
+      ),
+
+    )
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
+
+    assertThat(fmsMonitoringOrder.noName).isEqualTo(mappedValue)
+  }
+
+  @ParameterizedTest(name = "it should map crownCourt - {0} -> {1}")
+  @ArgumentsSource(CrownCourtArgumentsProvider::class)
+  fun `It should correctly map saved crownCourt values to Serco`(savedValue: String, mappedValue: String) {
     val order = createOrder(
       dataDictionaryVersion = DataDictionaryVersion.DDV5,
       deviceWearer = createDeviceWearer(),
@@ -266,8 +286,9 @@ class MonitoringOrderTest : OrderTestBase() {
 
   @ParameterizedTest(name = "it should map prison - {0} -> {1}")
   @MethodSource("getPrisonValues")
-  fun `It should map correctly map saved prison values to Serco`(savedValue: String, mappedValue: String) {
+  fun `It should correctly map saved prison values to Serco`(savedValue: String, mappedValue: String) {
     val order = createOrder(
+      dataDictionaryVersion = DataDictionaryVersion.DDV5,
       deviceWearer = createDeviceWearer(),
       interestedParties = createInterestedParty(
         responsibleOrganisation = "PROBATION",
@@ -282,7 +303,7 @@ class MonitoringOrderTest : OrderTestBase() {
 
   @ParameterizedTest(name = "it should map pilot to Serco - {0} -> {1}")
   @MethodSource("getPilots")
-  fun `It should map correctly map saved pilots values to Serco`(savedValue: String, mappedValue: String) {
+  fun `It should correctly map saved pilots values to Serco`(savedValue: String, mappedValue: String) {
     val order = createOrder(
       monitoringConditions = createMonitoringConditions(pilot = Pilot.entries.first { it.name == savedValue }),
     )
@@ -293,7 +314,7 @@ class MonitoringOrderTest : OrderTestBase() {
 
   @ParameterizedTest(name = "it should map alcohol condition types - {0} -> {1}")
   @MethodSource("getAlcoholNotifiyingOrganisations")
-  fun `It should map correctly map alcohol condition types to Serco`(
+  fun `It should correctly map alcohol condition types to Serco`(
     savedValue: NotifyingOrganisationDDv5,
     mappedValue: String,
   ) {
@@ -313,10 +334,7 @@ class MonitoringOrderTest : OrderTestBase() {
 
   @ParameterizedTest(name = "it should map alcohol abstinence - {0} -> {1}")
   @MethodSource("getAlcoholAbstinence")
-  fun `It should map correctly map alcohol abstinence to Serco`(
-    savedValue: AlcoholMonitoringType,
-    mappedValue: String,
-  ) {
+  fun `It should correctly map alcohol abstinence to Serco`(savedValue: AlcoholMonitoringType, mappedValue: String) {
     NotifyingOrganisationDDv5.entries.forEach {
       val order = createOrder(
         interestedParties = createInterestedParty(notifyingOrganisation = it.value),
@@ -333,169 +351,6 @@ class MonitoringOrderTest : OrderTestBase() {
   }
 
   companion object {
-    @JvmStatic
-    fun getCivilCountyCourtValues() = listOf(
-      Arguments.of("ABERYSTWYTH_COUNTY_AND_CIVIL_COURT", "Aberystwyth County and Civil Court"),
-      Arguments.of("ALDERSHOT_COUNTY_AND_CIVIL_COURT", "Aldershot County and Civil Court"),
-      Arguments.of("BARNET_COUNTY_AND_CIVIL_COURT", "Barnet County and Civil Court"),
-      Arguments.of("BARNSLEY_COUNTY_AND_CIVIL_COURT", "Barnsley County and Civil Court"),
-      Arguments.of("BARNSTABLE_COUNTY_AND_CIVIL_COURT", "Barnstable County and Civil Court"),
-      Arguments.of("BARROW_COUNTY_AND_CIVIL_COURT", "Barrow County and Civil Court"),
-      Arguments.of("BASILDON_COUNTY_AND_CIVIL_COURT", "Basildon County and Civil Court"),
-      Arguments.of("BASINGSTOKE_COUNTY_AND_CIVIL_COURT", "Basingstoke County and Civil Court"),
-      Arguments.of("BATH_COUNTY_AND_CIVIL_COURT", "Bath County and Civil Court"),
-      Arguments.of("BEDFORD_COUNTY_AND_CIVIL_COURT", "Bedford County and Civil Court"),
-      Arguments.of("BIRKENHEAD_COUNTY_AND_CIVIL_COURT", "Birkenhead County and Civil Court"),
-      Arguments.of("BIRMINGHAM_COUNTY_AND_CIVIL_COURT", "Birmingham County and Civil Court"),
-      Arguments.of("BLACKBURN_COUNTY_AND_CIVIL_COURT", "Blackburn County and Civil Court"),
-      Arguments.of("BLACKPOOL_COUNTY_AND_CIVIL_COURT", "Blackpool County and Civil Court"),
-      Arguments.of("BLACKWOOD_COUNTY_AND_CIVIL_COURT", "Blackwood County and Civil Court"),
-      Arguments.of("BODMIN_COUNTY_AND_CIVIL_COURT", "Bodmin County and Civil Court"),
-      Arguments.of("BOSTON_COUNTY_AND_CIVIL_COURT", "Boston County and Civil Court"),
-      Arguments.of("BOURNEMOUTH_COUNTY_AND_CIVIL_COURT", "Bournemouth County and Civil Court"),
-      Arguments.of("BRADFORD_COUNTY_AND_CIVIL_COURT", "Bradford County and Civil Court"),
-      Arguments.of("BRENTFORD_COUNTY_AND_CIVIL_COURT", "Brentford County and Civil Court"),
-      Arguments.of("BRIGHTON_COUNTY_AND_CIVIL_COURT", "Brighton County and Civil Court"),
-      Arguments.of("BRISTOL_COUNTY_AND_CIVIL_COURT", "Bristol County and Civil Court"),
-      Arguments.of("BROMLEY_COUNTY_AND_CIVIL_COURT", "Bromley County and Civil Court"),
-      Arguments.of("BURNLEY_COUNTY_AND_CIVIL_COURT", "Burnley County and Civil Court"),
-      Arguments.of("BURY_ST_EDMONDS_COUNTY_AND_CIVIL_COURT", "Bury St Edmonds County and Civil Court"),
-      Arguments.of("CAERNARFON_COUNTY_AND_CIVIL_COURT", "Caernarfon County and Civil Court"),
-      Arguments.of("CAMBRIDGE_COUNTY_AND_CIVIL_COURT", "Cambridge County and Civil Court"),
-      Arguments.of("CANTERBURY_COUNTY_AND_CIVIL_COURT", "Canterbury County and Civil Court"),
-      Arguments.of("CARDIFF_COUNTY_AND_CIVIL_COURT", "Cardiff County and Civil Court"),
-      Arguments.of("CARLISLE_COUNTY_AND_CIVIL_COURT", "Carlisle County and Civil Court"),
-      Arguments.of("CARMARTHEN_COUNTY_AND_CIVIL_COURT", "Carmarthen (hearings only) County and Civil Court"),
-      Arguments.of("CENTRAL_LONDON_COUNTY_AND_CIVIL_COURT", "Central London County and Civil Court"),
-      Arguments.of("CHELMSFORD_COUNTY_AND_CIVIL_COURT", "Chelmsford County and Civil Court"),
-      Arguments.of("CHESTER_COUNTY_AND_CIVIL_COURT", "Chester County and Civil Court"),
-      Arguments.of("CHESTERFIELD_COUNTY_AND_CIVIL_COURT", "Chesterfield County and Civil Court"),
-      Arguments.of(
-        "CLERKENWELL_AND_SHOREDITCH_COUNTY_AND_CIVIL_COURT",
-        "Clerkenwell & Shoreditch County and Civil Court",
-      ),
-      Arguments.of(
-        "COURT_OF_PROTECTION_COURT_COUNTY_AND_CIVIL_COURT",
-        "Court of Protection Court County and Civil Court",
-      ),
-      Arguments.of("COVENTRY_COUNTY_AND_CIVIL_COURT", "Coventry County and Civil Court"),
-      Arguments.of("CREWE_COUNTY_AND_CIVIL_COURT", "Crewe County and Civil Court"),
-      Arguments.of("CROYDON_COUNTY_AND_CIVIL_COURT", "Croydon County and Civil Court"),
-      Arguments.of("DARLINGTON_COUNTY_AND_CIVIL_COURT", "Darlington County and Civil Court"),
-      Arguments.of("DARTFORD_COUNTY_AND_CIVIL_COURT", "Dartford County and Civil Court"),
-      Arguments.of("DERBY_COUNTY_AND_CIVIL_COURT", "Derby County and Civil Court"),
-      Arguments.of("DONCASTER_COUNTY_AND_CIVIL_COURT", "Doncaster County and Civil Court"),
-      Arguments.of("DUDLEY_COUNTY_AND_CIVIL_COURT", "Dudley County and Civil Court"),
-      Arguments.of("DURHAM_COUNTY_AND_CIVIL_COURT", "Durham County and Civil Court"),
-      Arguments.of("EDMONTON_COUNTY_AND_CIVIL_COURT", "Edmonton County and Civil Court"),
-      Arguments.of("EXETER_COUNTY_AND_CIVIL_COURT", "Exeter County and Civil Court"),
-      Arguments.of("GATESHEAD_COUNTY_AND_CIVIL_COURT", "Gateshead County and Civil Court"),
-      Arguments.of("GLOUCESTER_COUNTY_AND_CIVIL_COURT", "Gloucester County and Civil Court"),
-      Arguments.of("GRIMSBY_COUNTY_AND_CIVIL_COURT", "Grimsby County and Civil Court"),
-      Arguments.of("GUILDFORD_COUNTY_AND_CIVIL_COURT", "Guildford County and Civil Court"),
-      Arguments.of("HARROGATE_COUNTY_AND_CIVIL_COURT", "Harrogate County and Civil Court"),
-      Arguments.of("HASTINGS_COUNTY_AND_CIVIL_COURT", "Hastings County and Civil Court"),
-      Arguments.of("HAVERFORDWEST_COUNTY_AND_CIVIL_COURT", "Haverfordwest County and Civil Court"),
-      Arguments.of("HEREFORD_COUNTY_AND_CIVIL_COURT", "Hereford County and Civil Court"),
-      Arguments.of("HERTFORD_COUNTY_AND_CIVIL_COURT", "Hertford County and Civil Court"),
-      Arguments.of("HIGH_WYCOMBE_COUNTY_AND_CIVIL_COURT", "High Wycombe County and Civil Court"),
-      Arguments.of("HORSHAM_COUNTY_AND_CIVIL_COURT", "Horsham County and Civil Court"),
-      Arguments.of("HUDDERSFIELD_COUNTY_AND_CIVIL_COURT", "Huddersfield County and Civil Court"),
-      Arguments.of("IPSWICH_COUNTY_AND_CIVIL_COURT", "Ipswich County and Civil Court"),
-      Arguments.of("KINGSTON_UPON_HULL_COUNTY_AND_CIVIL_COURT", "Kingston Upon Hull County and Civil Court"),
-      Arguments.of("KINGSTON_UPON_THAMES_COUNTY_AND_CIVIL_COURT", "Kingston upon Thames County and Civil Court"),
-      Arguments.of("LANCASTER_COUNTY_AND_CIVIL_COURT", "Lancaster County and Civil Court"),
-      Arguments.of("LEEDS_COUNTY_AND_CIVIL_COURT", "Leeds County and Civil Court"),
-      Arguments.of("LEICESTER_COUNTY_AND_CIVIL_COURT", "Leicester County and Civil Court"),
-      Arguments.of("LEWES_COUNTY_AND_CIVIL_COURT", "Lewes County and Civil Court"),
-      Arguments.of("LINCOLN_COUNTY_AND_CIVIL_COURT", "Lincoln County and Civil Court"),
-      Arguments.of("LIVERPOOL_COUNTY_AND_CIVIL_COURT", "Liverpool County and Civil Court"),
-      Arguments.of(
-        "LLANDRINDOD_WELLS__COUNTY_AND_CIVIL_COURT",
-        "Llandrindod Wells (hearings only) County and Civil Court",
-      ),
-      Arguments.of(
-        "LLANELLI_COUNTY_AND_CIVIL_COURT",
-        "Llanelli County and Civil Court",
-      ),
-      Arguments.of("LUTON_COUNTY_AND_CIVIL_COURT", "Luton County and Civil Court"),
-      Arguments.of("MAIDSTONE_COUNTY_AND_CIVIL_COURT", "Maidstone County and Civil Court"),
-      Arguments.of("MANCHESTER_COUNTY_AND_CIVIL_COURT", "Manchester County and Civil Court"),
-      Arguments.of("MANSFIELD__COUNTY_AND_CIVIL_COURT", "Mansfield  County and Civil Court"),
-      Arguments.of(
-        "MAYORS_AND_CITY_OF_LONDON_COUNTY_AND_CIVIL_COURT",
-        "Mayors & City of London County and Civil Court",
-      ),
-      Arguments.of("MEDWAY_COUNTY_AND_CIVIL_COURT", "Medway County and Civil Court"),
-      Arguments.of("MERTHYR_COUNTY_AND_CIVIL_COURT", "Merthyr County and Civil Court"),
-      Arguments.of("MILTON_KEYNES_COUNTY_AND_CIVIL_COURT", "Milton Keynes County and Civil Court"),
-      Arguments.of("MOLD_COUNTY_AND_CIVIL_COURT", "Mold (hearings only)  County and Civil Court"),
-      Arguments.of("NEWCASTLE_COUNTY_AND_CIVIL_COURT", "Newcastle County and Civil Court"),
-      Arguments.of("NEWPORT_IOW_COUNTY_AND_CIVIL_COURT", "Newport (IOW) County and Civil Court"),
-      Arguments.of("NEWPORT_SOUTH_WALES_COUNTY_AND_CIVIL_COURT", "Newport (South Wales)  County and Civil Court"),
-      Arguments.of("NORTH_SHIELDS_COUNTY_AND_CIVIL_COURT", "North Shields County and Civil Court"),
-      Arguments.of("NORTHAMPTON_COUNTY_AND_CIVIL_COURT", "Northampton County and Civil Court"),
-      Arguments.of("NORWICH_COUNTY_AND_CIVIL_COURT", "Norwich County and Civil Court"),
-      Arguments.of("NOTTINGHAM_COUNTY_AND_CIVIL_COURT", "Nottingham County and Civil Court"),
-      Arguments.of("NUNEATON_COUNTY_AND_CIVIL_COURT", "Nuneaton County and Civil Court"),
-      Arguments.of("OXFORD_COUNTY_AND_CIVIL_COURT", "Oxford County and Civil Court"),
-      Arguments.of("PETERBOROUGH_COUNTY_AND_CIVIL_COURT", "Peterborough County and Civil Court"),
-      Arguments.of("PLYMOUTH_COUNTY_AND_CIVIL_COURT", "Plymouth County and Civil Court"),
-      Arguments.of("PONTYPRIDD_COUNTY_AND_CIVIL_COURT", "Pontypridd County and Civil Court"),
-      Arguments.of("PORT_TALBOT_COUNTY_AND_CIVIL_COURT", "Port Talbot County and Civil Court"),
-      Arguments.of("PORTSMOUTH_COUNTY_AND_CIVIL_COURT", "Portsmouth County and Civil Court"),
-      Arguments.of("PRESTATYN_COUNTY_AND_CIVIL_COURT", "Prestatyn County and Civil Court"),
-      Arguments.of("PRESTON_COUNTY_AND_CIVIL_COURT", "Preston County and Civil Court"),
-      Arguments.of("READING_COUNTY_AND_CIVIL_COURT", "Reading County and Civil Court"),
-      Arguments.of("ROMFORD_COUNTY_AND_CIVIL_COURT", "Romford County and Civil Court"),
-      Arguments.of("SALISBURY_COUNTY_AND_CIVIL_COURT", "Salisbury County and Civil Court"),
-      Arguments.of("SCARBOROUGH_COUNTY_AND_CIVIL_COURT", "Scarborough County and Civil Court"),
-      Arguments.of("SHEFFIELD_COUNTY_AND_CIVIL_COURT", "Sheffield County and Civil Court"),
-      Arguments.of("SKIPTON_COUNTY_AND_CIVIL_COURT", "Skipton County and Civil Court"),
-      Arguments.of("SLOUGH_COUNTY_AND_CIVIL_COURT", "Slough County and Civil Court"),
-      Arguments.of("SOUTH_SHIELDS_COUNTY_AND_CIVIL_COURT", "South Shields County and Civil Court"),
-      Arguments.of("SOUTHAMPTON_COUNTY_AND_CIVIL_COURT", "Southampton County and Civil Court"),
-      Arguments.of("SOUTHEND_COUNTY_AND_CIVIL_COURT", "Southend County and Civil Court"),
-      Arguments.of("ST_HELENS_COUNTY_AND_CIVIL_COURT", "St Helens County and Civil Court"),
-      Arguments.of(
-        "STAINES_COUNTY_AND_CIVIL_COURT",
-        "Staines County and Civil Court",
-      ),
-      Arguments.of("STOCKPORT_COUNTY_AND_CIVIL_COURT", "Stockport County and Civil Court"),
-      Arguments.of("STOKE_ON_TRENT_COUNTY_AND_CIVIL_COURT", "Stoke on Trent County and Civil Court"),
-      Arguments.of("SUNDERLAND_COUNTY_AND_CIVIL_COURT", "Sunderland County and Civil Court"),
-      Arguments.of("SWANSEA_COUNTY_AND_CIVIL_COURT", "Swansea County and Civil Court"),
-      Arguments.of("SWINDON_COUNTY_AND_CIVIL_COURT", "Swindon County and Civil Court"),
-      Arguments.of("TAUNTON_COUNTY_AND_CIVIL_COURT", "Taunton County and Civil Court"),
-      Arguments.of("TEESIDE_COUNTY_AND_CIVIL_COURT", "Teeside County and Civil Court"),
-      Arguments.of("TELFORD_COUNTY_AND_CIVIL_COURT", "Telford County and Civil Court"),
-      Arguments.of("THANET_COUNTY_AND_CIVIL_COURT", "Thanet County and Civil Court"),
-      Arguments.of(
-        "TORQUAY_AND_NEWTON_ABBOTT_COUNTY_AND_CIVIL_COURT",
-        "Torquay & Newton Abbott County and Civil Court",
-      ),
-      Arguments.of("TRURO_COUNTY_AND_CIVIL_COURT", "Truro County and Civil Court"),
-      Arguments.of("UXBRIDGE_COUNTY_AND_CIVIL_COURT", "Uxbridge County and Civil Court"),
-      Arguments.of("WAKEFIELD_COUNTY_AND_CIVIL_COURT", "Wakefield County and Civil Court"),
-      Arguments.of("WALSALL_COUNTY_AND_CIVIL_COURT", "Walsall County and Civil Court"),
-      Arguments.of("WANDSWORTH_COUNTY_AND_CIVIL_COURT", "Wandsworth County and Civil Court"),
-      Arguments.of("WARWICK_COUNTY_AND_CIVIL_COURT", "Warwick County and Civil Court"),
-      Arguments.of("WATFORD_COUNTY_AND_CIVIL_COURT", "Watford County and Civil Court"),
-      Arguments.of("WELSHPOOL_COUNTY_AND_CIVIL_COURT", "Welshpool (hearings only) County and Civil Court"),
-      Arguments.of("WEST_CUMBRIA_COUNTY_AND_CIVIL_COURT", "West Cumbria (aka Workington) County and Civil Court"),
-      Arguments.of("WESTON_SUPER_MARE_COUNTY_AND_CIVIL_COURT", "Weston Super Mare County and Civil Court"),
-      Arguments.of("WEYMOUTH_COUNTY_AND_CIVIL_COURT", "Weymouth County and Civil Court"),
-      Arguments.of("WIGAN_COUNTY_AND_CIVIL_COURT", "Wigan County and Civil Court"),
-      Arguments.of("WILLESDEN_COUNTY_AND_CIVIL_COURT", "Willesden County and Civil Court"),
-      Arguments.of("WINCHESTER_COUNTY_AND_CIVIL_COURT", "Winchester County and Civil Court"),
-      Arguments.of("WOLVERHAMPTON_COUNTY_AND_CIVIL_COURT", "Wolverhampton County and Civil Court"),
-      Arguments.of("WORCESTER_COUNTY_AND_CIVIL_COURT", "Worcester County and Civil Court"),
-      Arguments.of("WORTHING_COUNTY_AND_CIVIL_COURT", "Worthing County and Civil Court"),
-      Arguments.of("WREXHAM_COUNTY_AND_CIVIL_COURT", "Wrexham County and Civil Court"),
-      Arguments.of("YEOVIL_COUNTY_AND_CIVIL_COURT", "Yeovil County and Civil Court"),
-      Arguments.of("YORK_COUNTY_AND_CIVIL_COURT", "York County and Civil Court"),
-    )
-
     @JvmStatic
     fun getProbationDeliveryUnitValues() = listOf(
       Arguments.of("BARKING_AND_DAGENHAM_AND_HAVERING", "Barking and Dagenham and Havering"),
