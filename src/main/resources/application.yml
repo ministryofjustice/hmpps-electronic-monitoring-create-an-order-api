@@ -68,6 +68,8 @@ toggle:
   cemo:
     fms-integration:
       enabled: ${CEMO_FMS_INTEGRATION_ENABLED:false}
+  tag-at-source:
+    enabled: ${TAG_AT_SOURCE_ENABLED:false}
 
 settings:
   data-dictionary-version: DDV4
