@@ -1188,7 +1188,7 @@ class OrderControllerTest : IntegrationTestBase() {
       	"sentence_date": "",
       	"sentence_expiry": "",
         "sentence_type": "Life Sentence",
-      	"tag_at_source": "No",
+      	"tag_at_source": "",
       	"tag_at_source_details": "",
         "date_and_time_installation_will_take_place": "",
         "released_under_prarr":"No",
@@ -1325,11 +1325,11 @@ class OrderControllerTest : IntegrationTestBase() {
 
       val expectedDeviceWearer = objectMapper.readValue<FmsDeviceWearer>(expectedDWJson)
       val storedDeviceWearer = objectMapper.readValue<FmsDeviceWearer>(submitResult!!.deviceWearerResult.payload)
-      assertThat(expectedDeviceWearer).isEqualTo(storedDeviceWearer)
+      assertThat(storedDeviceWearer).isEqualTo(expectedDeviceWearer)
 
       val expectedMonitoringOrder = objectMapper.readValue<MonitoringOrder>(expectedOrderJson)
       val storedMonitoringOrder = objectMapper.readValue<MonitoringOrder>(submitResult.monitoringOrderResult.payload)
-      assertThat(expectedMonitoringOrder).isEqualTo(storedMonitoringOrder)
+      assertThat(storedMonitoringOrder).isEqualTo(expectedMonitoringOrder)
 
       assertThat(submitResult.attachmentResults[0].sysId).isEqualTo("MockSysId")
       assertThat(
@@ -1575,7 +1575,7 @@ class OrderControllerTest : IntegrationTestBase() {
       	"sentence_date": "",
       	"sentence_expiry": "",
         "sentence_type": "Life Sentence",
-      	"tag_at_source": "No",
+      	"tag_at_source": "",
       	"tag_at_source_details": "",
         "date_and_time_installation_will_take_place": "",
         "released_under_prarr":"No",
@@ -1715,11 +1715,11 @@ class OrderControllerTest : IntegrationTestBase() {
 
       val expectedDeviceWearer = objectMapper.readValue<FmsDeviceWearer>(expectedDWJson)
       val storedDeviceWearer = objectMapper.readValue<FmsDeviceWearer>(submitResult.deviceWearerResult.payload)
-      assertThat(expectedDeviceWearer).isEqualTo(storedDeviceWearer)
+      assertThat(storedDeviceWearer).isEqualTo(expectedDeviceWearer)
 
       val expectedMonitoringOrder = objectMapper.readValue<MonitoringOrder>(expectedOrderJson)
       val storedMonitoringOrder = objectMapper.readValue<MonitoringOrder>(submitResult.monitoringOrderResult.payload)
-      assertThat(expectedMonitoringOrder).isEqualTo(storedMonitoringOrder)
+      assertThat(storedMonitoringOrder).isEqualTo(expectedMonitoringOrder)
 
       assertThat(submitResult.attachmentResults[0])
         .usingRecursiveComparison()
@@ -1969,7 +1969,7 @@ class OrderControllerTest : IntegrationTestBase() {
       	"sentence_date": "",
       	"sentence_expiry": "",
         "sentence_type": "Life Sentence",
-      	"tag_at_source": "No",
+      	"tag_at_source": "",
       	"tag_at_source_details": "",
         "date_and_time_installation_will_take_place": "",
         "released_under_prarr":"No",
@@ -2106,11 +2106,11 @@ class OrderControllerTest : IntegrationTestBase() {
 
       val expectedDeviceWearer = objectMapper.readValue<FmsDeviceWearer>(expectedDWJson)
       val storedDeviceWearer = objectMapper.readValue<FmsDeviceWearer>(submitResult!!.deviceWearerResult.payload)
-      assertThat(expectedDeviceWearer).isEqualTo(storedDeviceWearer)
+      assertThat(storedDeviceWearer).isEqualTo(expectedDeviceWearer)
 
       val expectedMonitoringOrder = objectMapper.readValue<MonitoringOrder>(expectedOrderJson)
       val storedMonitoringOrder = objectMapper.readValue<MonitoringOrder>(submitResult.monitoringOrderResult.payload)
-      assertThat(expectedMonitoringOrder).isEqualTo(storedMonitoringOrder)
+      assertThat(storedMonitoringOrder).isEqualTo(expectedMonitoringOrder)
       val updatedOrder = getOrder(order.id)
       assertThat(updatedOrder.fmsResultId).isEqualTo(submitResult.id)
       assertThat(updatedOrder.status).isEqualTo(OrderStatus.SUBMITTED)
