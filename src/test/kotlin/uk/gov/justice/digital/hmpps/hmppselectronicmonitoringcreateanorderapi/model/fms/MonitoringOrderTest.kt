@@ -13,6 +13,8 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.FamilyCourtArgumentsProvider
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.MagistratesCourtArgumentsProvider
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.MilitaryCourtArgumentsProvider
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.PrisonArgumentsProvider
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.ProbationServiceRegionArgumentsProvider
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
@@ -334,8 +336,24 @@ class MonitoringOrderTest : OrderTestBase() {
   }
 
   @ParameterizedTest(name = "it should map prison - {0} -> {1}")
-  @MethodSource("getPrisonValues")
+  @ArgumentsSource(PrisonArgumentsProvider::class)
   fun `It should correctly map saved prison values to Serco`(savedValue: String, mappedValue: String) {
+    val order = createOrder(
+      dataDictionaryVersion = DataDictionaryVersion.DDV5,
+      deviceWearer = createDeviceWearer(),
+      interestedParties = createInterestedParty(
+        responsibleOrganisation = "PROBATION",
+        notifyingOrganisationName = savedValue,
+      ),
+    )
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
+
+    assertThat(fmsMonitoringOrder.noName).isEqualTo(mappedValue)
+  }
+
+  @ParameterizedTest(name = "it should map probationServiceRegion - {0} -> {1}")
+  @ArgumentsSource(ProbationServiceRegionArgumentsProvider::class)
+  fun `It should correctly map saved probationServiceRegion values to Serco`(savedValue: String, mappedValue: String) {
     val order = createOrder(
       dataDictionaryVersion = DataDictionaryVersion.DDV5,
       deviceWearer = createDeviceWearer(),
@@ -515,153 +533,6 @@ class MonitoringOrderTest : OrderTestBase() {
       Arguments.of("WIRRAL_AND_ISC_TEAM", "Wirral and ISC Team"),
       Arguments.of("WORCESTERSHIRE", "Worcestershire"),
       Arguments.of("YORK", "York"),
-    )
-
-    @JvmStatic
-    fun getPrisonValues() = listOf(
-      Arguments.of("ALTCOURSE_PRISON", "Altcourse Prison"),
-      Arguments.of("ASHFIELD_PRISON", "Ashfield Prison"),
-      Arguments.of(
-        "ASKHAM_GRANGE_PRISON_AND_YOUNG_OFFENDER_INSTITUTION",
-        "Askham Grange Prison and Young Offender Institution",
-      ),
-      Arguments.of(
-        "AYLESBURY_PRISON_AND_YOUNG_OFFENDER_INSTITUTION",
-        "Aylesbury Prison and Young Offender Institution",
-      ),
-      Arguments.of("BEDFORD_PRISON", "Bedford Prison"),
-      Arguments.of("BELMARSH_PRISON", "Belmarsh Prison"),
-      Arguments.of("BERWYN_PRISON", "Berwyn Prison"),
-      Arguments.of("BIRMINGHAM_PRISON", "Birmingham Prison"),
-      Arguments.of("BRINSFORD_PRISON", "Brinsford Prison"),
-      Arguments.of("BRISTOL_PRISON", "Bristol Prison"),
-      Arguments.of("BRIXTON_PRISON", "Brixton Prison"),
-      Arguments.of("BRONZEFIELD_PRISON", "Bronzefield Prison"),
-      Arguments.of("BUCKLEY_HALL_PRISON", "Buckley Hall Prison"),
-      Arguments.of("BULLINGDON_PRISON", "Bullingdon Prison"),
-      Arguments.of("BURE_PRISON", "Bure Prison"),
-      Arguments.of("CARDIFF_PRISON", "Cardiff Prison"),
-      Arguments.of("CHANNINGS_WOOD_PRISON", "Channings Wood Prison"),
-      Arguments.of("CHELMSFORD_PRISON", "Chelmsford Prison"),
-      Arguments.of("COLDINGLEY_PRISON", "Coldingley Prison"),
-      Arguments.of("COOKHAM_WOOD_YOUNG_OFFENDER_INSTITUTION", "Cookham Wood Young Offender Institution"),
-      Arguments.of("DARTMOOR_PRISON", "Dartmoor Prison"),
-      Arguments.of("DEERBOLT_PRISON", "Deerbolt Prison"),
-      Arguments.of("DONCASTER_PRISON", "Doncaster Prison"),
-      Arguments.of("DOVEGATE_PRISON", "Dovegate Prison"),
-      Arguments.of("DOWNVIEW_PRISON_AND_YOUNG_OFFENDER_INSTITUTION", "Downview Prison and Young Offender Institution"),
-      Arguments.of(
-        "DRAKE_HALL_PRISON_AND_YOUNG_OFFENDER_INSTITUTION",
-        "Drake Hall Prison and Young Offender Institution",
-      ),
-      Arguments.of("DURHAM_PRISON", "Durham Prison"),
-      Arguments.of(
-        "EAST_SUTTON_PARK_PRISON_AND_YOUNG_OFFENDERS_INSTITUTION",
-        "East Sutton Park Prison and Young Offender Institution",
-      ),
-      Arguments.of(
-        "EASTWOOD_PARK_PRISON_AND_YOUNG_OFFENDER_INSTITUTION",
-        "Eastwood Park Prison and Young Offender Institution",
-      ),
-      Arguments.of("ELMLEY_PRISON", "Elmley Prison"),
-      Arguments.of("ERLESTOKE_PRISON", "Erlestoke Prison"),
-      Arguments.of("EXETER_PRISON", "Exeter Prison"),
-      Arguments.of("FEATHERSTONE_PRISON", "Featherstone Prison"),
-      Arguments.of("FELTHAM_YOUNG_OFFENDER_INSTITUTION", "Feltham Young Offender Institution"),
-      Arguments.of("FIVE_WELLS_PRISON", "Five Wells Prison"),
-      Arguments.of("FORD_PRISON", "Ford Prison"),
-      Arguments.of("FOREST_BANK_PRISON", "Forest Bank Prison"),
-      Arguments.of("FOSSE_WAY_PRISON", "Fosse Way Prison"),
-      Arguments.of(
-        "FOSTON_HALL_PRISON_AND_YOUNG_OFFENDER_INSTITUTION",
-        "Foston Hall Prison and Young Offender Institution",
-      ),
-      Arguments.of("FRANKLAND_PRISON", "Frankland Prison"),
-      Arguments.of("FULL_SUTTON_PRISON", "Full Sutton Prison"),
-      Arguments.of("GARTH_PRISON", "Garth Prison"),
-      Arguments.of("GARTREE_PRISON", "Gartree Prison"),
-      Arguments.of("GRENDON_PRISON", "Grendon Prison"),
-      Arguments.of("GUYS_MARSH_PRISON", "Guys Marsh Prison"),
-      Arguments.of("HATFIELD_PRISON", "Hatfield Prison"),
-      Arguments.of("HAVERIGG_PRISON", "Haverigg Prison"),
-      Arguments.of("HEWELL_PRISON", "Hewell Prison"),
-      Arguments.of("HIGH_DOWN_PRISON", "High Down Prison"),
-      Arguments.of("HIGHPOINT_PRISON", "Highpoint Prison"),
-      Arguments.of("HINDLEY_PRISON", "Hindley Prison"),
-      Arguments.of("HOLLESLEY_BAY_PRISON", "Hollesley Bay Prison"),
-      Arguments.of("HOLME_HOUSE_PRISON", "Holme House Prison"),
-      Arguments.of("HULL_PRISON", "Hull Prison"),
-      Arguments.of("HUMBER_PRISON", "Humber Prison"),
-      Arguments.of("HUNTERCOMBE_PRISON", "Huntercombe Prison"),
-      Arguments.of("ISIS_PRISON", "Isis Prison"),
-      Arguments.of("ISLE_OF_WIGHT_PRISON", "Isle of Wight Prison"),
-      Arguments.of("KIRKHAM_PRISON", "Kirkham Prison"),
-      Arguments.of("KIRKLEVINGTON_GRANGE_PRISON", "Kirklevington Grange Prison"),
-      Arguments.of("LANCASTER_FARMS_PRISON", "Lancaster Farms Prison"),
-      Arguments.of("LEEDS_PRISON", "Leeds Prison"),
-      Arguments.of("LEICESTER_PRISON", "Leicester Prison"),
-      Arguments.of("LEWES_PRISON", "Lewes Prison"),
-      Arguments.of("LEYHILL_PRISON", "Leyhill Prison"),
-      Arguments.of("LINCOLN_PRISON", "Lincoln Prison"),
-      Arguments.of("LINDHOLME_PRISON", "Lindholme Prison"),
-      Arguments.of("LITTLEHEY_PRISON", "Littlehey Prison"),
-      Arguments.of("LIVERPOOL_PRISON", "Liverpool Prison"),
-      Arguments.of("LONG_LARTIN_PRISON", "Long Lartin Prison"),
-      Arguments.of(
-        "LOW_NEWTON_PRISON_AND_YOUNG_OFFENDER_INSTITUTION",
-        "Low Newton Prison and Young Offender Institution",
-      ),
-      Arguments.of("LOWDHAM_GRANGE_PRISON", "Lowdham Grange Prison"),
-      Arguments.of("MAIDSTONE_PRISON", "Maidstone Prison"),
-      Arguments.of("MANCHESTER_PRISON", "Manchester Prison"),
-      Arguments.of("MOORLAND_PRISON", "Moorland Prison"),
-      Arguments.of("MORTON_HALL_PRISON", "Morton Hall Prison"),
-      Arguments.of("NEW_HALL_PRISON_AND_YOUNG_OFFENDER_INSTITUTION", "New Hall Prison and Young Offender Institution"),
-      Arguments.of("NORTH_SEA_CAMP_PRISON", "North Sea Camp Prison"),
-      Arguments.of("NORTHUMBERLAND_PRISON", "Northumberland Prison"),
-      Arguments.of("NORWICH_PRISON", "Norwich Prison"),
-      Arguments.of("NOTTINGHAM_PRISON", "Nottingham Prison"),
-      Arguments.of("OAKWOOD_PRISON", "Oakwood Prison"),
-      Arguments.of("ONLEY_PRISON", "Onley Prison"),
-      Arguments.of("PARC_PRISON_AND_YOUNG_OFFENDER_INSTITUTION", "Parc Prison and Young Offender Institute"),
-      Arguments.of("PENTONVILLE_PRISON", "Pentonville Prison"),
-      Arguments.of("PETERBOROUGH_PRISON", "Peterborough Prison"),
-      Arguments.of("PORTLAND_PRISON_AND_YOUNG_OFFENDER_INSTITUTION", "Portland Prison and Young Offender Institution"),
-      Arguments.of("PRESCOED_PRISON", "Prescoed Prison"),
-      Arguments.of("PRESTON_PRISON", "Preston Prison"),
-      Arguments.of("RANBY_PRISON", "Ranby Prison"),
-      Arguments.of("RISLEY_PRISON", "Risley Prison"),
-      Arguments.of("ROCHESTER_PRISON", "Rochester Prison"),
-      Arguments.of("RYE_HILL_PRISON", "Rye Hill Prison"),
-      Arguments.of("SEND_PRISON", "Send Prison"),
-      Arguments.of("SPRING_HILL_PRISON", "Spring Hill Prison"),
-      Arguments.of("STAFFORD_PRISON", "Stafford Prison"),
-      Arguments.of("STANDFORD_HILL_PRISON", "Standford Hill Prison"),
-      Arguments.of("STOCKEN_PRISON", "Stocken Prison"),
-      Arguments.of("STOKE_HEATH_PRISON", "Stoke Heath Prison"),
-      Arguments.of("STYAL_PRISON_AND_YOUNG_OFFENDER_INSTITUTION", "Styal Prison and Young Offender Institution"),
-      Arguments.of("SUDBURY_PRISON", "Sudbury Prison"),
-      Arguments.of("SWALESIDE_PRISON", "Swaleside Prison"),
-      Arguments.of("SWANSEA_PRISON", "Swansea Prison"),
-      Arguments.of("SWINFEN_HALL_PRISON", "Swinfen Hall Prison"),
-      Arguments.of("THAMESIDE_PRISON", "Thameside Prison"),
-      Arguments.of("THE_MOUNT_PRISON", "The Mount Prison"),
-      Arguments.of("THE_VERNE_PRISON", "The Verne Prison"),
-      Arguments.of("THORN_CROSS_PRISON", "Thorn Cross Prison"),
-      Arguments.of("USK_PRISON", "Usk Prison"),
-      Arguments.of("WAKEFIELD_PRISON", "Wakefield Prison"),
-      Arguments.of("WANDSWORTH_PRISON", "Wandsworth Prison"),
-      Arguments.of("WARREN_HILL_PRISON", "Warren Hill Prison"),
-      Arguments.of("WAYLAND_PRISON", "Wayland Prison"),
-      Arguments.of("WEALSTUN_PRISON", "Wealstun Prison"),
-      Arguments.of("WERRINGTON_YOUNG_OFFENDER_INSTITUTION", "Werrington Young Offender Institution"),
-      Arguments.of("WETHERBY_YOUNG_OFFENDER_INSTITUTION", "Wetherby Young Offender Institution"),
-      Arguments.of("WHATTON_PRISON", "Whatton Prison"),
-      Arguments.of("WHITEMOOR_PRISON", "Whitemoor Prison"),
-      Arguments.of("WINCHESTER_PRISON", "Winchester Prison"),
-      Arguments.of("WOODHILL_PRISON", "Woodhill Prison"),
-      Arguments.of("WORMWOOD_SCRUBS_PRISON", "Wormwood Scrubs Prison"),
-      Arguments.of("WYMOTT_PRISON", "Wymott Prison"),
     )
 
     @JvmStatic
