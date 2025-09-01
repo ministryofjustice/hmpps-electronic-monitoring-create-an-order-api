@@ -15,6 +15,8 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.MilitaryCourtArgumentsProvider
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.PrisonArgumentsProvider
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.ProbationServiceRegionArgumentsProvider
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.YouthCourtArgumentsProvider
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.YouthCustodyServiceRegionArgumentsProvider
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
@@ -362,6 +364,41 @@ class MonitoringOrderTest : OrderTestBase() {
         notifyingOrganisationName = savedValue,
       ),
 
+    )
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
+
+    assertThat(fmsMonitoringOrder.noName).isEqualTo(mappedValue)
+  }
+
+  @ParameterizedTest(name = "it should map youthCourt - {0} -> {1}")
+  @ArgumentsSource(YouthCourtArgumentsProvider::class)
+  fun `It should correctly map saved youthCourt values to Serco`(savedValue: String, mappedValue: String) {
+    val order = createOrder(
+      dataDictionaryVersion = DataDictionaryVersion.DDV5,
+      deviceWearer = createDeviceWearer(),
+      interestedParties = createInterestedParty(
+        responsibleOrganisation = "PROBATION",
+        notifyingOrganisationName = savedValue,
+      ),
+    )
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
+
+    assertThat(fmsMonitoringOrder.noName).isEqualTo(mappedValue)
+  }
+
+  @ParameterizedTest(name = "it should map youthCustodyServiceRegion - {0} -> {1}")
+  @ArgumentsSource(YouthCustodyServiceRegionArgumentsProvider::class)
+  fun `It should correctly map saved youthCustodyServiceRegion values to Serco`(
+    savedValue: String,
+    mappedValue: String,
+  ) {
+    val order = createOrder(
+      dataDictionaryVersion = DataDictionaryVersion.DDV5,
+      deviceWearer = createDeviceWearer(),
+      interestedParties = createInterestedParty(
+        responsibleOrganisation = "PROBATION",
+        notifyingOrganisationName = savedValue,
+      ),
     )
     val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
 
