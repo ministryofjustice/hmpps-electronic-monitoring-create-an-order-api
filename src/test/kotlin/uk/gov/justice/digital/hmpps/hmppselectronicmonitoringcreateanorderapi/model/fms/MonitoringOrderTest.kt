@@ -3,17 +3,19 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.m
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.ArgumentsSource
-import org.junit.jupiter.params.provider.MethodSource
 import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.OrderTestBase
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.AlcoholAbstinenceArgumentsProvider
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.AlcoholNotifyingOrganisationArgumentsProvider
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.CivilAndCountyCourtArgumentsProvider
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.CrownCourtArgumentsProvider
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.FamilyCourtArgumentsProvider
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.MagistratesCourtArgumentsProvider
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.MilitaryCourtArgumentsProvider
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.PilotArgumentsProvider
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.PrisonArgumentsProvider
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.ProbationDeliveryUnitArgumentsProvider
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.ProbationServiceRegionArgumentsProvider
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.YouthCourtArgumentsProvider
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.YouthCustodyServiceRegionArgumentsProvider
@@ -241,7 +243,7 @@ class MonitoringOrderTest : OrderTestBase() {
     dateTime?.toInstant()?.atZone(londonTimeZone)?.format(dateFormatter)
 
   @ParameterizedTest(name = "it should map probation delivery unit to Serco - {0} -> {1}")
-  @MethodSource("getProbationDeliveryUnitValues")
+  @ArgumentsSource(ProbationDeliveryUnitArgumentsProvider::class)
   fun `It should correctly map saved probation delivery unit values to Serco`(
     savedValue: String,
     mappedValue: String,
@@ -406,7 +408,7 @@ class MonitoringOrderTest : OrderTestBase() {
   }
 
   @ParameterizedTest(name = "it should map pilot to Serco - {0} -> {1}")
-  @MethodSource("getPilots")
+  @ArgumentsSource(PilotArgumentsProvider::class)
   fun `It should correctly map saved pilots values to Serco`(savedValue: String, mappedValue: String) {
     val order = createOrder(
       monitoringConditions = createMonitoringConditions(pilot = Pilot.entries.first { it.name == savedValue }),
@@ -417,7 +419,7 @@ class MonitoringOrderTest : OrderTestBase() {
   }
 
   @ParameterizedTest(name = "it should map alcohol condition types - {0} -> {1}")
-  @MethodSource("getAlcoholNotifiyingOrganisations")
+  @ArgumentsSource(AlcoholNotifyingOrganisationArgumentsProvider::class)
   fun `It should correctly map alcohol condition types to Serco`(
     savedValue: NotifyingOrganisationDDv5,
     mappedValue: String,
@@ -437,7 +439,7 @@ class MonitoringOrderTest : OrderTestBase() {
   }
 
   @ParameterizedTest(name = "it should map alcohol abstinence - {0} -> {1}")
-  @MethodSource("getAlcoholAbstinence")
+  @ArgumentsSource(AlcoholAbstinenceArgumentsProvider::class)
   fun `It should correctly map alcohol abstinence to Serco`(savedValue: AlcoholMonitoringType, mappedValue: String) {
     NotifyingOrganisationDDv5.entries.forEach {
       val order = createOrder(
@@ -452,162 +454,5 @@ class MonitoringOrderTest : OrderTestBase() {
       val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "")
       assertThat(fmsMonitoringOrder.abstinence).isEqualTo(mappedValue)
     }
-  }
-
-  companion object {
-    @JvmStatic
-    fun getProbationDeliveryUnitValues() = listOf(
-      Arguments.of("BARKING_AND_DAGENHAM_AND_HAVERING", "Barking and Dagenham and Havering"),
-      Arguments.of("BARNSLEY_AND_ROTHERHAM", "Barnsley and Rotherham"),
-      Arguments.of("BATH_AND_NORTH_SOMERSET", "Bath and North Somerset"),
-      Arguments.of("BEDFORDSHIRE", "Bedfordshire"),
-      Arguments.of("BIRMINGHAM_CENTRAL_AND_SOUTH", "Birmingham Central and South"),
-      Arguments.of("BIRMINGHAM_COURTS_AND_DENTRALISED_FUNCTIONS", "Birmingham Courts and Centralised Functions"),
-      Arguments.of("BIRMINGHAM_NORTH_EAST_AND_SOLIHULL", "Birmingham North, East and Solihull"),
-      Arguments.of("BLACKBURN", "Blackburn"),
-      Arguments.of("BOLTON", "Bolton"),
-      Arguments.of("BRADFORD_AND_CALDERDALE", "Bradford and Calderdale"),
-      Arguments.of("BRENT", "Brent"),
-      Arguments.of("BRISTOL_AND_SOUTH_GLOUCESTERSHIRE", "Bristol and South Gloucestershire"),
-      Arguments.of("BUCKINGHAM_AND_MILTON_KEYNES", "Buckinghamshire and Milton Keynes"),
-      Arguments.of("BURY_AND_ROCHDALE", "Bury and Rochdale"),
-      Arguments.of("CAMBRIDGESHIRE", "Cambridgeshire"),
-      Arguments.of("CAMDEN_AND_ISLINGTON", "Camden and Islington"),
-      Arguments.of("CARDIFF_AND_THE_VALE", "Cardiff and the Vale"),
-      Arguments.of("CENTRAL_LANCASHIRE", "Central Lancashire"),
-      Arguments.of("CHESHIRE_EAST", "Cheshire East"),
-      Arguments.of("CHESHIRE_WEST", "Cheshire West"),
-      Arguments.of("CORNWALL_AND_ISLES_OF_SCILLY", "Cornwall and Isles of Scilly"),
-      Arguments.of("COUNTY_DURHAM_AND_DARLINGTON", "County Durham and Darlington"),
-      Arguments.of("COVENTRY", "Coventry"),
-      Arguments.of("CROYDON", "Croydon"),
-      Arguments.of("CUMBRIA", "Cumbria"),
-      Arguments.of("CWM_TAF_MORGANNWG", "Cwm Taf Morgannwg"),
-      Arguments.of("DERBY_CITY", "Derby City"),
-      Arguments.of("DERBYSHIRE", "Derbyshire"),
-      Arguments.of("DEVON_AND_TORBAY", "Devon and Torbay"),
-      Arguments.of("DONCASTER", "Doncaster"),
-      Arguments.of("DORSET", "Dorset"),
-      Arguments.of("DUDLEY_AND_SANDWELL", "Dudley and Sandwell"),
-      Arguments.of("DYFED_POWYS", "Dyfed Powys"),
-      Arguments.of("EALING_AND_HILLINGDOM", "Ealing and Hillingdom"),
-      Arguments.of("EAST_AND_WEST_LINCOLNSHIRE", "East and West Lincolnshire"),
-      Arguments.of("EAST_BERKSHIRE", "East Berkshire"),
-      Arguments.of("EAST_KENT", "East Kent"),
-      Arguments.of("EAST_LANCASHIRE", "East Lancashire"),
-      Arguments.of("EAST_SUSSEX", "East Sussex"),
-      Arguments.of("ENFIELD_AND_HARINGEY", "Enfield and Haringey"),
-      Arguments.of("ESSEX_NORTH", "Essex North"),
-      Arguments.of("ESSEX_SOUTH", "Essex South"),
-      Arguments.of("GATESHEAD_AND_SOUTH_TYNESIDE", "Gateshead and South Tyneside"),
-      Arguments.of("GLOUCESTERSHIRE", "Gloucestershire"),
-      Arguments.of("GREENWICH_AND_BEXLEY", "Greenwich and Bexley"),
-      Arguments.of("GWENT", "Gwent"),
-      Arguments.of("HACKNEY_AND_CITY", "Hackney and City"),
-      Arguments.of(
-        "HAMMERSMITH_FULHAM_KENSINGTON_CHELSEA_AND_WESTMINSTER",
-        "Hammersmith, Fulham, Kensington, Chelsea and Westminster",
-      ),
-      Arguments.of("HAMPSHIRE_NORTH_AND_EAST", "Hampshire North and East"),
-      Arguments.of("HAMPSHIRE_SOUTH_AND_ISLE_OF_WHITE", "Hampshire South and Isle of White"),
-      Arguments.of("HAMPSHIRE_SOUTH_WEST", "Hampshire South West"),
-      Arguments.of("HARROW_AND_BARNET", "Harrow and Barnet"),
-      Arguments.of("HEREFORD_SHROPSHIRE_AND_TELFORD", "Hereford, Shropshire and Telford"),
-      Arguments.of("HERTFORDSHIRE", "Hertfordshire"),
-      Arguments.of("HULL_AND_EAST_RIDING", "Hull and East Riding"),
-      Arguments.of("KINGSTON_RICHMOND_AND_HOUNSLOW", "Kingston, Richmond and Hounslow"),
-      Arguments.of("KIRKLEES", "Kirklees"),
-      Arguments.of("KNOWSLEY_AND_ST_HELENS", "Knowsley and St Helens"),
-      Arguments.of("LAMBETH", "Lambeth"),
-      Arguments.of("LEEDS", "Leeds"),
-      Arguments.of("LEICESTER_LEICESTERSHIRE_AND_RUTLAND", "Leicester, Leicestershire and Rutland"),
-      Arguments.of("LEWISHAM_AND_BROMLEY", "Lewisham and Bromley"),
-      Arguments.of("LIVERPOOL_NORTH", "Liverpool North"),
-      Arguments.of("LIVERPOOL_SOUTH", "Liverpool South"),
-      Arguments.of("MANCHESTER_NORTH", "Manchester North"),
-      Arguments.of("MANCHESTER_SOUTH", "Manchester South"),
-      Arguments.of("NEWCASTLE_UPON_TYNE", "Newcastle Upon Tyne"),
-      Arguments.of("NEWHAM", "Newham"),
-      Arguments.of("NORFOLK", "Norfolk"),
-      Arguments.of("NORTH_AND_NORTH_EAST_LINCS", "North and North East Lincs"),
-      Arguments.of("NORTH_KENT_AND_MEDWAY", "North Kent and Medway"),
-      Arguments.of("NORTH_TYNESIDE_AND_NORTHUMBERLAND", "North Tyneside and Northumberland"),
-      Arguments.of("NORTH_WALES", "North Wales"),
-      Arguments.of("NORTH_WEST_LANCASHIRE", "North West Lancashire"),
-      Arguments.of("NORTH_YORKSHIRE", "North Yorkshire"),
-      Arguments.of("NORTHAMPTONSHIRE", "Northamptonshire"),
-      Arguments.of("NOTTINGHAM_CITY", "Nottingham City"),
-      Arguments.of("NOTTINGHAMSHIRE", "Nottinghamshire"),
-      Arguments.of("OLDHAM", "Oldham"),
-      Arguments.of("OXFORDSHIRE", "Oxfordshire"),
-      Arguments.of("PLYMOUTH", "Plymouth"),
-      Arguments.of("REDBRIDGE_AND_WALTHAM_FOREST", "Redbridge and Waltham Forest"),
-      Arguments.of("REDCAR_CLEVELAND_AND_MIDDLESBROUGH", "Redcar, Cleveland and Middlesbrough"),
-      Arguments.of("SALFORD", "Salford"),
-      Arguments.of("SEFTON_AND_MERSEYSIDE_WOMENS", "Sefton and Merseyside Womens"),
-      Arguments.of("SHEFFIELD", "Sheffield"),
-      Arguments.of("SOMERSET", "Somerset"),
-      Arguments.of("SOUTHWARK", "Southwark"),
-      Arguments.of("STAFFORDSHIRE_AND_STOKE", "Staffordshire and Stoke"),
-      Arguments.of("STOCKPORT_AND_TRAFFORD", "Stockport and Trafford"),
-      Arguments.of("STOCKTON_AND_HARTLEPOOL", "Stockton and Hartlepool"),
-      Arguments.of("SUFFOLK", "Suffolk"),
-      Arguments.of("SUNDERLAND", "Sunderland"),
-      Arguments.of("SURREY", "Surrey"),
-      Arguments.of("SWANSEA_NEATH_PORT_TALBOT", "Swansea, Neath and Port-Talbot"),
-      Arguments.of("SWINDON_AND_WILTSHIRE", "Swindon and Wiltshire"),
-      Arguments.of("TAMESIDE", "Tameside"),
-      Arguments.of("TOWER_HAMLETS", "Tower Hamlets"),
-      Arguments.of("WAKEFIELD", "Wakefield"),
-      Arguments.of("WALSALL_AND_WOLVERHAMPTON", "Walsall and Wolverhampton"),
-      Arguments.of("WANDSWORTH_MERTON_AND_SUTTON", "Wandsworth, Merton and Sutton"),
-      Arguments.of("WARRINGTON_AND_HALTON", "Warrington and Halton"),
-      Arguments.of("WARWICKSHIRE", "Warwickshire"),
-      Arguments.of("WEST_BERKSHIRE", "West Berkshire"),
-      Arguments.of("WEST_KENT", "West Kent"),
-      Arguments.of("WEST_SUSSEX", "West Sussex"),
-      Arguments.of("WIGAN", "Wigan"),
-      Arguments.of("WIRRAL_AND_ISC_TEAM", "Wirral and ISC Team"),
-      Arguments.of("WORCESTERSHIRE", "Worcestershire"),
-      Arguments.of("YORK", "York"),
-    )
-
-    @JvmStatic
-    fun getPilots() = listOf(
-      Arguments.of("ACQUISITIVE_CRIME_PROJECT", "Acquisitive Crime Project"),
-      Arguments.of("DOMESTIC_ABUSE_PERPETRATOR_ON_LICENCE_PROJECT", "Domestic Abuse perpetrators on Licence Project"),
-      Arguments.of("LICENCE_VARIATION_PROJECT", "Licence Variation Project"),
-      Arguments.of("DOMESTIC_ABUSE_PROTECTION_ORDER", "Domestic Abuse Protection Order (DAPO)"),
-      Arguments.of("DOMESTIC_ABUSE_PERPETRATOR_ON_LICENCE_DAPOL", "Domestic Abuse Perpetrator on Licence (DAPOL)"),
-      Arguments.of(
-        "DOMESTIC_ABUSE_PERPETRATOR_ON_LICENCE_HOME_DETENTION_CURFEW_DAPOL_HDC",
-        "Domestic Abuse Perpetrator on Licence Home Detention Curfew (DAPOL HDC)",
-      ),
-      Arguments.of("GPS_ACQUISITIVE_CRIME_HOME_DETENTION_CURFEW", "GPS Acquisitive Crime Home Detention Curfew"),
-      Arguments.of("GPS_ACQUISITIVE_CRIME_PAROLE", "GPS Acquisitive Crime Parole"),
-      Arguments.of("UNKNOWN", ""),
-    )
-
-    @JvmStatic
-    fun getAlcoholNotifiyingOrganisations() = listOf(
-      Arguments.of(NotifyingOrganisationDDv5.CIVIL_COUNTY_COURT, "AAMR"),
-      Arguments.of(NotifyingOrganisationDDv5.CROWN_COURT, "AAMR"),
-      Arguments.of(NotifyingOrganisationDDv5.MAGISTRATES_COURT, "AAMR"),
-      Arguments.of(NotifyingOrganisationDDv5.MILITARY_COURT, "AAMR"),
-      Arguments.of(NotifyingOrganisationDDv5.PRISON, "AML"),
-      Arguments.of(NotifyingOrganisationDDv5.HOME_OFFICE, "AAMR"),
-      Arguments.of(NotifyingOrganisationDDv5.SCOTTISH_COURT, "AAMR"),
-      Arguments.of(NotifyingOrganisationDDv5.FAMILY_COURT, "AAMR"),
-      Arguments.of(NotifyingOrganisationDDv5.PROBATION, "AML"),
-      Arguments.of(NotifyingOrganisationDDv5.YOUTH_COURT, "AAMR"),
-      Arguments.of(NotifyingOrganisationDDv5.YOUTH_CUSTODY_SERVICE, "AAMR"),
-    )
-
-    @JvmStatic
-    fun getAlcoholAbstinence() = listOf(
-      Arguments.of(AlcoholMonitoringType.ALCOHOL_ABSTINENCE, "Yes"),
-      Arguments.of(AlcoholMonitoringType.ALCOHOL_LEVEL, "No"),
-
-    )
   }
 }
