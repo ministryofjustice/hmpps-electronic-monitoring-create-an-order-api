@@ -71,9 +71,12 @@ data class Order(
       getCurrentVersion().curfewReleaseDateConditions = curfewReleaseDateConditions
     }
 
-  val curfewTimeTable: MutableList<CurfewTimeTable>
+  var curfewTimeTable: MutableList<CurfewTimeTable>
     get() {
       return getCurrentVersion().curfewTimeTable
+    }
+    set(curfewTimeTable) {
+      getCurrentVersion().curfewTimeTable = curfewTimeTable
     }
 
   var deviceWearer: DeviceWearer?

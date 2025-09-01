@@ -16,6 +16,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YouthCourtDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YouthCustodyServiceRegionDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YouthJusticeServiceRegions
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidPhoneNumber
 
 data class UpdateInterestedPartiesDto(
   @field:NotNull(message = ValidationErrors.InterestedParties.NOTIFYING_ORGANISATION_REQUIRED)
@@ -33,6 +34,7 @@ data class UpdateInterestedPartiesDto(
 
   @field:NotEmpty(message = ValidationErrors.InterestedParties.RESPONSIBLE_OFFICER_TELEPHONE_NUMBER_REQUIRED)
   @field:Size(max = 200, message = ValidationErrors.InterestedParties.RESPONSIBLE_OFFICER_TELEPHONE_NUMBER_MAX_LENGTH)
+  @field:ValidPhoneNumber
   val responsibleOfficerPhoneNumber: String? = null,
 
   @field:NotNull(message = ValidationErrors.InterestedParties.RESPONSIBLE_ORGANISATION_REQUIRED)

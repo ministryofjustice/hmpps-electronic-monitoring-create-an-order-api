@@ -214,8 +214,8 @@ class TestUtilities {
       order.curfewReleaseDateConditions = CurfewReleaseDateConditions(
         versionId = versionId,
         releaseDate = startDate,
-        startTime = "19:00",
-        endTime = "23:00",
+        startTime = "19:00:00",
+        endTime = "23:00:00",
         curfewAddress = AddressType.PRIMARY,
       )
 

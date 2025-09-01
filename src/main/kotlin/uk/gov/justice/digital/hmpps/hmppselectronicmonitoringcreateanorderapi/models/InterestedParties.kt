@@ -7,7 +7,6 @@ import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidPhoneNumber
 import java.util.*
 
 @Entity
@@ -24,7 +23,6 @@ data class InterestedParties(
   var responsibleOfficerName: String,
 
   @Column(name = "RESPONSIBLE_OFFICER_PHONE_NUMBER", nullable = true)
-  @field:ValidPhoneNumber
   var responsibleOfficerPhoneNumber: String?,
 
   @Column(name = "RESPONSIBLE_ORGANISATION", nullable = true)

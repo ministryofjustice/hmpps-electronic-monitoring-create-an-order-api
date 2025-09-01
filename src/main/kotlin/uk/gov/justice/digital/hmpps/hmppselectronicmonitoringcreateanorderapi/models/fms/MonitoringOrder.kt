@@ -89,6 +89,8 @@ data class MonitoringOrder(
   var noPhoneNumber: String? = "",
   @JsonProperty("offence")
   var offence: String? = "",
+  @JsonProperty("offence_additional_details")
+  val offenceAdditionalDetails: String? = "",
   @JsonProperty("offence_date")
   var offenceDate: String? = "",
   @JsonProperty("order_end")
@@ -167,6 +169,10 @@ data class MonitoringOrder(
   var trialOutcome: String? = "",
   @JsonProperty("conditional_release_date")
   var conditionalReleaseDate: String? = "",
+  @JsonProperty("conditional_release_start_time")
+  var conditionalReleaseStartTime: String? = "",
+  @JsonProperty("conditional_release_end_time")
+  var conditionalReleaseEndTime: String? = "",
   @JsonProperty("reason_for_order_ending_early")
   var reasonForOrderEndingEarly: String? = "",
   @JsonProperty("business_unit")
@@ -247,6 +253,7 @@ data class MonitoringOrder(
         orderId = order.id.toString(),
         orderStatus = "Not Started",
         offence = getOffence(order),
+        offenceAdditionalDetails = order.installationAndRisk?.offenceAdditionalDetails ?: "",
         pilot = conditions.pilot?.value ?: "",
       )
 
@@ -268,8 +275,7 @@ data class MonitoringOrder(
         monitoringOrder.responsibleOfficerPhone = getResponsibleOfficerPhoneNumber(order)
         monitoringOrder.responsibleOrganization = getResponsibleOrganisation(order)
         monitoringOrder.roRegion = getResponsibleOrganisationRegion(order)
-        if (ResponsibleOrganisation.from(order.interestedParties?.responsibleOrganisation) ===
-          ResponsibleOrganisation.PROBATION
+        if (monitoringOrder.responsibleOrganization == ResponsibleOrganisation.PROBATION.value
         ) {
           monitoringOrder.pduResponsible = getProbationDeliveryUnit(order)
         }
@@ -288,8 +294,10 @@ data class MonitoringOrder(
             endDate = getBritishDateAndTime(curfew.endDate) ?: "",
           ),
         )
-        monitoringOrder.curfewDescription = curfew.curfewDescription
-        monitoringOrder.conditionalReleaseDate = order.curfewReleaseDateConditions?.releaseDate?.format(dateFormatter)
+        monitoringOrder.curfewDescription = curfew.curfewAdditionalDetails
+        monitoringOrder.conditionalReleaseDate = getBritishDate(order.curfewReleaseDateConditions?.releaseDate)
+        monitoringOrder.conditionalReleaseStartTime = order.curfewReleaseDateConditions?.startTime ?: ""
+        monitoringOrder.conditionalReleaseEndTime = order.curfewReleaseDateConditions?.endTime ?: ""
         monitoringOrder.curfewStart = getBritishDateAndTime(curfew.startDate)
         monitoringOrder.curfewEnd = getBritishDateAndTime(curfew.endDate)
         monitoringOrder.curfewDuration = getCurfewSchedules(order, curfew)
@@ -439,6 +447,20 @@ data class MonitoringOrder(
             location = "secondary",
             allday = "",
             secondaryTimeTable.map { Schedule.fromCurfewTimeTable(it) }.toMutableList(),
+          ),
+        )
+      }
+
+      val tertiaryAddress = order.addresses.firstOrNull { it.addressType === AddressType.TERTIARY }
+      if (tertiaryAddress != null) {
+        val tertiaryTimeTable = order.curfewTimeTable.filter {
+          it.curfewAddress!!.uppercase().contains("TERTIARY_ADDRESS")
+        }
+        schedules.add(
+          CurfewSchedule(
+            location = "tertiary",
+            allday = "",
+            tertiaryTimeTable.map { Schedule.fromCurfewTimeTable(it) }.toMutableList(),
           ),
         )
       }
