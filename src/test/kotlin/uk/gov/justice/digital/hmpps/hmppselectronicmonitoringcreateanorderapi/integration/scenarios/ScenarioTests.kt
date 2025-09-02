@@ -164,10 +164,10 @@ class ScenarioTests : IntegrationTestBase() {
 
     // Assert
     val storedDeviceWearer = objectMapper.readValue<DeviceWearer>(submitResult.deviceWearerResult.payload)
-    assertThat(expectedDeviceWearer).isEqualTo(storedDeviceWearer)
+    assertThat(storedDeviceWearer).isEqualTo(expectedDeviceWearer)
 
     val storedMonitoringOrder = objectMapper.readValue<MonitoringOrder>(submitResult.monitoringOrderResult.payload)
-    assertThat(expectedMonitoringOrder).isEqualTo(storedMonitoringOrder)
+    assertThat(storedMonitoringOrder).isEqualTo(expectedMonitoringOrder)
   }
 
   private fun getOrderFromFile(filePath: String): Order {

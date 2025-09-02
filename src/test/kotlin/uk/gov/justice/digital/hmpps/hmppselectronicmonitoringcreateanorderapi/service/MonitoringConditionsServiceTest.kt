@@ -13,6 +13,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationLocation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.TrailMonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateMonitoringConditionsDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
@@ -51,7 +52,7 @@ class MonitoringConditionsServiceTest {
   @BeforeEach
   fun setup() {
     repo = mock(OrderRepository::class.java)
-    service = MonitoringConditionsService()
+    service = MonitoringConditionsService(tagAtSourceEnabled = false)
     service.orderRepo = repo
   }
 
@@ -136,5 +137,42 @@ class MonitoringConditionsServiceTest {
     assertThat(mockOrder.installationAppointment).isNull()
     assertThat(mockOrder.monitoringConditionsAlcohol).isNull()
     assertThat(mockOrder.addresses.firstOrNull { it.addressType == AddressType.INSTALLATION }).isNull()
+  }
+
+  @Test
+  fun `When Tag at Source is ENABLED, should populate tag at source details for non-alcohol order`() {
+    service = MonitoringConditionsService(tagAtSourceEnabled = true)
+    service.orderRepo = repo
+
+    mockVersion.installationLocation =
+      InstallationLocation(versionId = mockVersion.id, location = InstallationLocationType.PRISON)
+    mockVersion.installationAppointment =
+      InstallationAppointment(
+        versionId = mockVersion.id,
+        placeName = "MockPlace",
+        appointmentDate = ZonedDateTime.now(ZoneId.of("UTC")).plusMonths(2),
+      )
+    mockVersion.monitoringConditionsTrail = TrailMonitoringConditions(versionId = mockVersion.id)
+    mockVersion.addresses =
+      mutableListOf(
+        Address(
+          versionId = mockVersion.id,
+          addressType = AddressType.INSTALLATION,
+          addressLine1 = "Mock place",
+          addressLine2 = "",
+          addressLine3 = "Mock Town",
+          postcode = "Mock postcode",
+        ),
+      )
+    whenever(repo.findById(mockOrderId)).thenReturn(Optional.of(mockOrder))
+    whenever(repo.save(mockOrder)).thenReturn(mockOrder)
+
+    service.updateMonitoringConditions(mockOrderId, mockUsername, UpdateMonitoringConditionsDto(trail = true))
+
+    assertThat(mockOrder.monitoringConditions).isNotNull
+    assertThat(mockOrder.monitoringConditionsTrail).isNotNull
+    assertThat(mockOrder.installationLocation).isNotNull
+    assertThat(mockOrder.installationAppointment).isNotNull
+    assertThat(mockOrder.addresses.firstOrNull { it.addressType == AddressType.INSTALLATION }).isNotNull
   }
 }

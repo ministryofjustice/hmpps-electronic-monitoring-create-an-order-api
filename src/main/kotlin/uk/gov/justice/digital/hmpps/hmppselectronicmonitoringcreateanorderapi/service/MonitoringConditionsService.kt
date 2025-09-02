@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service
 
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.MonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateMonitoringConditionsDto
@@ -7,7 +8,14 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import java.util.*
 
 @Service
-class MonitoringConditionsService : OrderSectionServiceBase() {
+class MonitoringConditionsService(@Value("\${toggle.tag-at-source.enabled}") private val tagAtSourceEnabled: Boolean) :
+  OrderSectionServiceBase() {
+
+  private fun isTagAtSourceAvailable(monitoringConditions: MonitoringConditions?): Boolean {
+    val isAlcohol = monitoringConditions?.alcohol == true
+    return tagAtSourceEnabled || isAlcohol
+  }
+
   fun updateMonitoringConditions(
     orderId: UUID,
     username: String,
@@ -35,7 +43,7 @@ class MonitoringConditionsService : OrderSectionServiceBase() {
       pilot = updateRecord.pilot,
     )
 
-    if (order.monitoringConditions?.isTagAtSourceAvailable != true) {
+    if (!isTagAtSourceAvailable(order.monitoringConditions)) {
       order.installationLocation = null
       order.installationAppointment = null
       order.monitoringConditionsAlcohol = null

@@ -1325,11 +1325,11 @@ class OrderControllerTest : IntegrationTestBase() {
 
       val expectedDeviceWearer = objectMapper.readValue<FmsDeviceWearer>(expectedDWJson)
       val storedDeviceWearer = objectMapper.readValue<FmsDeviceWearer>(submitResult!!.deviceWearerResult.payload)
-      assertThat(expectedDeviceWearer).isEqualTo(storedDeviceWearer)
+      assertThat(storedDeviceWearer).isEqualTo(expectedDeviceWearer)
 
       val expectedMonitoringOrder = objectMapper.readValue<MonitoringOrder>(expectedOrderJson)
       val storedMonitoringOrder = objectMapper.readValue<MonitoringOrder>(submitResult.monitoringOrderResult.payload)
-      assertThat(expectedMonitoringOrder).isEqualTo(storedMonitoringOrder)
+      assertThat(storedMonitoringOrder).isEqualTo(expectedMonitoringOrder)
 
       assertThat(submitResult.attachmentResults[0].sysId).isEqualTo("MockSysId")
       assertThat(
@@ -1715,11 +1715,11 @@ class OrderControllerTest : IntegrationTestBase() {
 
       val expectedDeviceWearer = objectMapper.readValue<FmsDeviceWearer>(expectedDWJson)
       val storedDeviceWearer = objectMapper.readValue<FmsDeviceWearer>(submitResult.deviceWearerResult.payload)
-      assertThat(expectedDeviceWearer).isEqualTo(storedDeviceWearer)
+      assertThat(storedDeviceWearer).isEqualTo(expectedDeviceWearer)
 
       val expectedMonitoringOrder = objectMapper.readValue<MonitoringOrder>(expectedOrderJson)
       val storedMonitoringOrder = objectMapper.readValue<MonitoringOrder>(submitResult.monitoringOrderResult.payload)
-      assertThat(expectedMonitoringOrder).isEqualTo(storedMonitoringOrder)
+      assertThat(storedMonitoringOrder).isEqualTo(expectedMonitoringOrder)
 
       assertThat(submitResult.attachmentResults[0])
         .usingRecursiveComparison()
@@ -2106,11 +2106,11 @@ class OrderControllerTest : IntegrationTestBase() {
 
       val expectedDeviceWearer = objectMapper.readValue<FmsDeviceWearer>(expectedDWJson)
       val storedDeviceWearer = objectMapper.readValue<FmsDeviceWearer>(submitResult!!.deviceWearerResult.payload)
-      assertThat(expectedDeviceWearer).isEqualTo(storedDeviceWearer)
+      assertThat(storedDeviceWearer).isEqualTo(expectedDeviceWearer)
 
       val expectedMonitoringOrder = objectMapper.readValue<MonitoringOrder>(expectedOrderJson)
       val storedMonitoringOrder = objectMapper.readValue<MonitoringOrder>(submitResult.monitoringOrderResult.payload)
-      assertThat(expectedMonitoringOrder).isEqualTo(storedMonitoringOrder)
+      assertThat(storedMonitoringOrder).isEqualTo(expectedMonitoringOrder)
       val updatedOrder = getOrder(order.id)
       assertThat(updatedOrder.fmsResultId).isEqualTo(submitResult.id)
       assertThat(updatedOrder.status).isEqualTo(OrderStatus.SUBMITTED)

@@ -380,7 +380,14 @@ data class MonitoringOrder(
         } else {
           monitoringOrder.abstinence = "No"
         }
+        monitoringOrder.releasedUnderPrarr = if (conditions.prarr == YesNoUnknown.YES) {
+          "Yes"
+        } else {
+          "No"
+        }
+      }
 
+      if (order.installationLocation != null) {
         if (order.installationLocation?.location == InstallationLocationType.PROBATION_OFFICE ||
           order.installationLocation?.location == InstallationLocationType.PRISON
         ) {
@@ -391,11 +398,6 @@ data class MonitoringOrder(
         monitoringOrder.tagAtSourceDetails = order.installationAppointment?.placeName ?: ""
         monitoringOrder.dateAndTimeInstallationWillTakePlace =
           getBritishDateAndTime(order.installationAppointment?.appointmentDate) ?: ""
-        monitoringOrder.releasedUnderPrarr = if (conditions.prarr == YesNoUnknown.YES) {
-          "Yes"
-        } else {
-          "No"
-        }
       }
 
       getInstallationAddress(order)?.let {

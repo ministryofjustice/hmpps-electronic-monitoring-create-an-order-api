@@ -100,7 +100,4 @@ data class MonitoringConditions(
             alcohol == true
           )
       )
-
-  val isTagAtSourceAvailable: Boolean
-    get() = alcohol == true
 }
