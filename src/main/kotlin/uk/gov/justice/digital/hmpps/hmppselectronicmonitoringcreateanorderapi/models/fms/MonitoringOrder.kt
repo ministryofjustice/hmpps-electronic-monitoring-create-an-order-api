@@ -469,10 +469,16 @@ data class MonitoringOrder(
       return schedules
     }
 
-    private fun getNotifyingOrganisation(order: Order): String =
-      NotifyingOrganisation.from(order.interestedParties?.notifyingOrganisation)?.value
-        ?: order.interestedParties?.notifyingOrganisation
-        ?: "N/A"
+    private fun getNotifyingOrganisation(order: Order): String {
+      val notifyingOrganisation = order.interestedParties?.notifyingOrganisation
+      val resolvedNotifyingOrganisation =
+        when (order.dataDictionaryVersion) {
+          DataDictionaryVersion.DDV4 -> NotifyingOrganisation.from(notifyingOrganisation)?.value
+          else -> NotifyingOrganisationDDv5.from(notifyingOrganisation)?.value
+        }
+
+      return resolvedNotifyingOrganisation ?: notifyingOrganisation ?: "N/A"
+    }
 
     private fun getNotifyingOrganisationName(order: Order): String {
       if (order.dataDictionaryVersion === DataDictionaryVersion.DDV4) {
