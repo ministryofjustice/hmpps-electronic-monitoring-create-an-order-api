@@ -48,42 +48,42 @@ data class UpdateInterestedPartiesDto(
 ) {
   @AssertTrue(message = ValidationErrors.InterestedParties.NOTIFYING_ORGANISATION_NAME_REQUIRED)
   fun isNotifyingOrganisationName(): Boolean {
-    if (notifyingOrganisation === NotifyingOrganisationDDv5.PRISON) {
-      return PrisonDDv5.entries.any { it.name == notifyingOrganisationName }
+    if (notifyingOrganisation === NotifyingOrganisationDDv5.CIVIL_COUNTY_COURT) {
+      return CivilCountyCourtDDv5.entries.any { it.name == notifyingOrganisationName }
     }
 
     if (notifyingOrganisation === NotifyingOrganisationDDv5.CROWN_COURT) {
       return CrownCourtDDv5.entries.any { it.name == notifyingOrganisationName }
     }
 
-    if (notifyingOrganisation === NotifyingOrganisationDDv5.MAGISTRATES_COURT) {
-      return MagistrateCourtDDv5.entries.any { it.name == notifyingOrganisationName }
+    if (notifyingOrganisation === NotifyingOrganisationDDv5.FAMILY_COURT) {
+      return notifyingOrganisationName == "" || FamilyCourtDDv5.entries.any { it.name == notifyingOrganisationName }
     }
 
-    if (notifyingOrganisation === NotifyingOrganisationDDv5.CIVIL_COUNTY_COURT) {
-      return CivilCountyCourtDDv5.entries.any { it.name == notifyingOrganisationName }
+    if (notifyingOrganisation === NotifyingOrganisationDDv5.MAGISTRATES_COURT) {
+      return MagistrateCourtDDv5.entries.any { it.name == notifyingOrganisationName }
     }
 
     if (notifyingOrganisation === NotifyingOrganisationDDv5.MILITARY_COURT) {
       return notifyingOrganisationName == "" || MilitaryCourtDDv5.entries.any { it.name == notifyingOrganisationName }
     }
 
-    if (notifyingOrganisation === NotifyingOrganisationDDv5.YOUTH_CUSTODY_SERVICE) {
+    if (notifyingOrganisation === NotifyingOrganisationDDv5.PRISON) {
+      return PrisonDDv5.entries.any { it.name == notifyingOrganisationName }
+    }
+
+    if (notifyingOrganisation === NotifyingOrganisationDDv5.PROBATION) {
       return notifyingOrganisationName == "" ||
-        YouthCustodyServiceRegionDDv5.entries.any { it.name == notifyingOrganisationName }
+        ProbationServiceRegion.entries.any { it.name == notifyingOrganisationName }
     }
 
     if (notifyingOrganisation === NotifyingOrganisationDDv5.YOUTH_COURT) {
       return notifyingOrganisationName == "" || YouthCourtDDv5.entries.any { it.name == notifyingOrganisationName }
     }
 
-    if (notifyingOrganisation === NotifyingOrganisationDDv5.FAMILY_COURT) {
-      return notifyingOrganisationName == "" || FamilyCourtDDv5.entries.any { it.name == notifyingOrganisationName }
-    }
-
-    if (notifyingOrganisation === NotifyingOrganisationDDv5.PROBATION) {
+    if (notifyingOrganisation === NotifyingOrganisationDDv5.YOUTH_CUSTODY_SERVICE) {
       return notifyingOrganisationName == "" ||
-        ProbationServiceRegion.entries.any { it.name == notifyingOrganisationName }
+        YouthCustodyServiceRegionDDv5.entries.any { it.name == notifyingOrganisationName }
     }
 
     return notifyingOrganisationName == ""
