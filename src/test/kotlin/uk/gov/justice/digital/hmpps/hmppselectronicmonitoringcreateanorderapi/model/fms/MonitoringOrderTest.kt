@@ -259,152 +259,64 @@ class MonitoringOrderTest : OrderTestBase() {
     assertThat(fmsMonitoringOrder.pduResponsible).isEqualTo(mappedValue)
   }
 
-  @ParameterizedTest(name = "it should map civilCountyCourt - {0} -> {1}")
+  @ParameterizedTest(name = "it should map civil county court - {0} -> {1}")
   @ArgumentsSource(CivilAndCountyCourtArgumentsProvider::class)
-  fun `It should correctly map saved civilCountyCourt values to Serco`(savedValue: String, mappedValue: String) {
-    val order = createOrder(
-      dataDictionaryVersion = DataDictionaryVersion.DDV5,
-      deviceWearer = createDeviceWearer(),
-      interestedParties = createInterestedParty(
-        responsibleOrganisation = "PROBATION",
-        notifyingOrganisationName = savedValue,
-      ),
-    )
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
-
-    assertThat(fmsMonitoringOrder.noName).isEqualTo(mappedValue)
+  fun `It should correctly map saved civil county court values to Serco`(savedValue: String, mappedValue: String) {
+    assertNotifyingOrgMapping(savedValue, mappedValue)
   }
 
-  @ParameterizedTest(name = "it should map crownCourt - {0} -> {1}")
+  @ParameterizedTest(name = "it should map crown court - {0} -> {1}")
   @ArgumentsSource(CrownCourtArgumentsProvider::class)
-  fun `It should correctly map saved crownCourt values to Serco`(savedValue: String, mappedValue: String) {
-    val order = createOrder(
-      dataDictionaryVersion = DataDictionaryVersion.DDV5,
-      deviceWearer = createDeviceWearer(),
-      interestedParties = createInterestedParty(
-        responsibleOrganisation = "PROBATION",
-        notifyingOrganisationName = savedValue,
-      ),
-    )
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
-
-    assertThat(fmsMonitoringOrder.noName).isEqualTo(mappedValue)
+  fun `It should correctly map saved crown court values to Serco`(savedValue: String, mappedValue: String) {
+    assertNotifyingOrgMapping(savedValue, mappedValue)
   }
 
-  @ParameterizedTest(name = "it should map familyCourt - {0} -> {1}")
+  @ParameterizedTest(name = "it should map family court - {0} -> {1}")
   @ArgumentsSource(FamilyCourtArgumentsProvider::class)
-  fun `It should correctly map saved familyCourt values to Serco`(savedValue: String, mappedValue: String) {
-    val order = createOrder(
-      dataDictionaryVersion = DataDictionaryVersion.DDV5,
-      deviceWearer = createDeviceWearer(),
-      interestedParties = createInterestedParty(
-        responsibleOrganisation = "PROBATION",
-        notifyingOrganisationName = savedValue,
-      ),
-    )
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
-
-    assertThat(fmsMonitoringOrder.noName).isEqualTo(mappedValue)
+  fun `It should correctly map saved family court values to Serco`(savedValue: String, mappedValue: String) {
+    assertNotifyingOrgMapping(savedValue, mappedValue)
   }
 
-  @ParameterizedTest(name = "it should map magistratesCourt - {0} -> {1}")
+  @ParameterizedTest(name = "it should map magistrates court - {0} -> {1}")
   @ArgumentsSource(MagistratesCourtArgumentsProvider::class)
-  fun `It should correctly map saved magistratesCourt values to Serco`(savedValue: String, mappedValue: String) {
-    val order = createOrder(
-      dataDictionaryVersion = DataDictionaryVersion.DDV5,
-      deviceWearer = createDeviceWearer(),
-      interestedParties = createInterestedParty(
-        responsibleOrganisation = "PROBATION",
-        notifyingOrganisationName = savedValue,
-      ),
-    )
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
-
-    assertThat(fmsMonitoringOrder.noName).isEqualTo(mappedValue)
+  fun `It should correctly map saved magistrates court values to Serco`(savedValue: String, mappedValue: String) {
+    assertNotifyingOrgMapping(savedValue, mappedValue)
   }
 
-  @ParameterizedTest(name = "it should map militaryCourt - {0} -> {1}")
+  @ParameterizedTest(name = "it should map military court - {0} -> {1}")
   @ArgumentsSource(MilitaryCourtArgumentsProvider::class)
-  fun `It should correctly map saved militaryCourt values to Serco`(savedValue: String, mappedValue: String) {
-    val order = createOrder(
-      dataDictionaryVersion = DataDictionaryVersion.DDV5,
-      deviceWearer = createDeviceWearer(),
-      interestedParties = createInterestedParty(
-        responsibleOrganisation = "PROBATION",
-        notifyingOrganisationName = savedValue,
-      ),
-    )
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
-
-    assertThat(fmsMonitoringOrder.noName).isEqualTo(mappedValue)
+  fun `It should correctly map saved military court values to Serco`(savedValue: String, mappedValue: String) {
+    assertNotifyingOrgMapping(savedValue, mappedValue)
   }
 
   @ParameterizedTest(name = "it should map prison - {0} -> {1}")
   @ArgumentsSource(PrisonArgumentsProvider::class)
   fun `It should correctly map saved prison values to Serco`(savedValue: String, mappedValue: String) {
-    val order = createOrder(
-      dataDictionaryVersion = DataDictionaryVersion.DDV5,
-      deviceWearer = createDeviceWearer(),
-      interestedParties = createInterestedParty(
-        responsibleOrganisation = "PROBATION",
-        notifyingOrganisationName = savedValue,
-      ),
-    )
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
-
-    assertThat(fmsMonitoringOrder.noName).isEqualTo(mappedValue)
+    assertNotifyingOrgMapping(savedValue, mappedValue)
   }
 
-  @ParameterizedTest(name = "it should map probationServiceRegion - {0} -> {1}")
+  @ParameterizedTest(name = "it should map probation service region - {0} -> {1}")
   @ArgumentsSource(ProbationServiceRegionArgumentsProvider::class)
-  fun `It should correctly map saved probationServiceRegion values to Serco`(savedValue: String, mappedValue: String) {
-    val order = createOrder(
-      dataDictionaryVersion = DataDictionaryVersion.DDV5,
-      deviceWearer = createDeviceWearer(),
-      interestedParties = createInterestedParty(
-        responsibleOrganisation = "PROBATION",
-        notifyingOrganisationName = savedValue,
-      ),
-
-    )
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
-
-    assertThat(fmsMonitoringOrder.noName).isEqualTo(mappedValue)
-  }
-
-  @ParameterizedTest(name = "it should map youthCourt - {0} -> {1}")
-  @ArgumentsSource(YouthCourtArgumentsProvider::class)
-  fun `It should correctly map saved youthCourt values to Serco`(savedValue: String, mappedValue: String) {
-    val order = createOrder(
-      dataDictionaryVersion = DataDictionaryVersion.DDV5,
-      deviceWearer = createDeviceWearer(),
-      interestedParties = createInterestedParty(
-        responsibleOrganisation = "PROBATION",
-        notifyingOrganisationName = savedValue,
-      ),
-    )
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
-
-    assertThat(fmsMonitoringOrder.noName).isEqualTo(mappedValue)
-  }
-
-  @ParameterizedTest(name = "it should map youthCustodyServiceRegion - {0} -> {1}")
-  @ArgumentsSource(YouthCustodyServiceRegionArgumentsProvider::class)
-  fun `It should correctly map saved youthCustodyServiceRegion values to Serco`(
+  fun `It should correctly map saved probation service region values to Serco`(
     savedValue: String,
     mappedValue: String,
   ) {
-    val order = createOrder(
-      dataDictionaryVersion = DataDictionaryVersion.DDV5,
-      deviceWearer = createDeviceWearer(),
-      interestedParties = createInterestedParty(
-        responsibleOrganisation = "PROBATION",
-        notifyingOrganisationName = savedValue,
-      ),
-    )
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
+    assertNotifyingOrgMapping(savedValue, mappedValue)
+  }
 
-    assertThat(fmsMonitoringOrder.noName).isEqualTo(mappedValue)
+  @ParameterizedTest(name = "it should map youth court - {0} -> {1}")
+  @ArgumentsSource(YouthCourtArgumentsProvider::class)
+  fun `It should correctly map saved youth court values to Serco`(savedValue: String, mappedValue: String) {
+    assertNotifyingOrgMapping(savedValue, mappedValue)
+  }
+
+  @ParameterizedTest(name = "it should map youth custody service region - {0} -> {1}")
+  @ArgumentsSource(YouthCustodyServiceRegionArgumentsProvider::class)
+  fun `It should correctly map saved youth custody service region values to Serco`(
+    savedValue: String,
+    mappedValue: String,
+  ) {
+    assertNotifyingOrgMapping(savedValue, mappedValue)
   }
 
   @ParameterizedTest(name = "it should map pilot to Serco - {0} -> {1}")
@@ -426,7 +338,6 @@ class MonitoringOrderTest : OrderTestBase() {
   ) {
     val order = createOrder(
       interestedParties = createInterestedParty(notifyingOrganisation = savedValue.value),
-
       monitoringConditions = createMonitoringConditions(alcohol = true),
       alcoholMonitoringConditions = createAlcoholMonitoringConditions(
         monitoringType = AlcoholMonitoringType.ALCOHOL_LEVEL,
@@ -444,7 +355,6 @@ class MonitoringOrderTest : OrderTestBase() {
     NotifyingOrganisationDDv5.entries.forEach {
       val order = createOrder(
         interestedParties = createInterestedParty(notifyingOrganisation = it.value),
-
         monitoringConditions = createMonitoringConditions(alcohol = true),
         alcoholMonitoringConditions = createAlcoholMonitoringConditions(
           monitoringType = savedValue,
@@ -454,5 +364,19 @@ class MonitoringOrderTest : OrderTestBase() {
       val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "")
       assertThat(fmsMonitoringOrder.abstinence).isEqualTo(mappedValue)
     }
+  }
+
+  private fun assertNotifyingOrgMapping(savedValue: String, mappedValue: String) {
+    val order = createOrder(
+      dataDictionaryVersion = DataDictionaryVersion.DDV5,
+      deviceWearer = createDeviceWearer(),
+      interestedParties = createInterestedParty(
+        responsibleOrganisation = "PROBATION",
+        notifyingOrganisationName = savedValue,
+      ),
+    )
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
+
+    assertThat(fmsMonitoringOrder.noName).isEqualTo(mappedValue)
   }
 }
