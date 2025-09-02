@@ -37,6 +37,7 @@ import java.util.UUID
 @ActiveProfiles("test")
 abstract class OrderTestBase {
   protected fun createOrder(
+    dataDictionaryVersion: DataDictionaryVersion = DataDictionaryVersion.DDV4,
     deviceWearer: DeviceWearer = createDeviceWearer(),
     addresses: List<Address> = listOf(createAddress()),
     responsibleAdult: ResponsibleAdult? = null,
@@ -64,7 +65,7 @@ abstract class OrderTestBase {
           status = OrderStatus.IN_PROGRESS,
           type = RequestType.REQUEST,
           orderId = orderId,
-          dataDictionaryVersion = DataDictionaryVersion.DDV4,
+          dataDictionaryVersion = dataDictionaryVersion,
         ),
       ),
     )

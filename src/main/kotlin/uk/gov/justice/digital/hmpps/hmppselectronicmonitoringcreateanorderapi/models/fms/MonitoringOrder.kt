@@ -7,19 +7,28 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.CivilCountyCourtDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.CrownCourt
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.CrownCourtDDv5
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.EnforcementZoneType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FamilyCourtDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.InstallationLocationType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MagistrateCourt
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MagistrateCourtDDv5
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MilitaryCourtDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisationDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Offence
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Prison
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.PrisonDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ProbationDeliveryUnits
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ProbationServiceRegion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ResponsibleOrganisation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YesNoUnknown
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YouthCourtDDv5
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YouthCustodyServiceRegionDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YouthJusticeServiceRegions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.formatters.PhoneNumberFormatter
 import java.time.DayOfWeek
@@ -463,12 +472,27 @@ data class MonitoringOrder(
         ?: order.interestedParties?.notifyingOrganisation
         ?: "N/A"
 
-    private fun getNotifyingOrganisationName(order: Order): String =
-      Prison.from(order.interestedParties?.notifyingOrganisationName)?.value
-        ?: CrownCourt.from(order.interestedParties?.notifyingOrganisationName)?.value
-        ?: MagistrateCourt.from(order.interestedParties?.notifyingOrganisationName)?.value
+    private fun getNotifyingOrganisationName(order: Order): String {
+      if (order.dataDictionaryVersion === DataDictionaryVersion.DDV4) {
+        return Prison.from(order.interestedParties?.notifyingOrganisationName)?.value
+          ?: CrownCourt.from(order.interestedParties?.notifyingOrganisationName)?.value
+          ?: MagistrateCourt.from(order.interestedParties?.notifyingOrganisationName)?.value
+          ?: order.interestedParties?.notifyingOrganisationName
+          ?: ""
+      }
+
+      return CivilCountyCourtDDv5.from(order.interestedParties?.notifyingOrganisationName)?.value
+        ?: CrownCourtDDv5.from(order.interestedParties?.notifyingOrganisationName)?.value
+        ?: FamilyCourtDDv5.from(order.interestedParties?.notifyingOrganisationName)?.value
+        ?: MagistrateCourtDDv5.from(order.interestedParties?.notifyingOrganisationName)?.value
+        ?: MilitaryCourtDDv5.from(order.interestedParties?.notifyingOrganisationName)?.value
+        ?: PrisonDDv5.from(order.interestedParties?.notifyingOrganisationName)?.value
+        ?: ProbationServiceRegion.from(order.interestedParties?.notifyingOrganisationName)?.value
+        ?: YouthCourtDDv5.from(order.interestedParties?.notifyingOrganisationName)?.value
+        ?: YouthCustodyServiceRegionDDv5.from(order.interestedParties?.notifyingOrganisationName)?.value
         ?: order.interestedParties?.notifyingOrganisationName
         ?: ""
+    }
 
     private fun getResponsibleOrganisation(order: Order): String =
       ResponsibleOrganisation.from(order.interestedParties?.responsibleOrganisation)?.value
