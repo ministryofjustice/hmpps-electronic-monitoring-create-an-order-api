@@ -17,7 +17,6 @@ import jakarta.persistence.UniqueConstraint
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DocumentType
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.InstallationLocationType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import java.time.OffsetDateTime
@@ -149,28 +148,14 @@ data class OrderVersion(
   private val monitoringConditionsAreValid: Boolean
     get() = (
       (
-        if (monitoringConditions?.isTagAtSourceAvailable == true
-
-        ) {
-          (
-            installationLocation?.location === InstallationLocationType.PRIMARY &&
-              addresses.any { it.addressType == AddressType.PRIMARY }
-            ) ||
-            (addresses.any { it.addressType == AddressType.INSTALLATION })
+        if (monitoringConditions?.curfew == true) {
+          curfewReleaseDateConditions != null &&
+            curfewConditions != null &&
+            curfewTimeTable.isNotEmpty()
         } else {
           true
         }
-
         ) &&
-        (
-          if (monitoringConditions?.curfew == true) {
-            curfewReleaseDateConditions != null &&
-              curfewConditions != null &&
-              curfewTimeTable.isNotEmpty()
-          } else {
-            true
-          }
-          ) &&
         (
           if (monitoringConditions?.exclusionZone == true) {
             enforcementZoneConditions.isNotEmpty()

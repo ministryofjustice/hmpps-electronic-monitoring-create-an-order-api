@@ -16,6 +16,7 @@ generic-service:
     CEMO_FMS_INTEGRATION_ENABLED: true
     DATA_DICTIONARY_V5_1_ENABLED: false
     SETTINGS_DATA_DICTIONARY_VERSION: DDV5
+    TAG_AT_SOURCE_ENABLED: true
 
 
 # CloudPlatform AlertManager receiver to route prometheus alerts to slack
