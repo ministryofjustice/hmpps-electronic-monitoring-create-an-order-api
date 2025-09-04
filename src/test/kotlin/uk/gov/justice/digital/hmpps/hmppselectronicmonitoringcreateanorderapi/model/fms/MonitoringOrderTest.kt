@@ -20,9 +20,11 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.ProbationServiceRegionArgumentsProvider
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.YouthCourtArgumentsProvider
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.YouthCustodyServiceRegionArgumentsProvider
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationLocation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.InstallationLocationType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisationDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Pilot
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.EnforceableCondition
@@ -31,6 +33,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
+import java.util.UUID
 
 @ActiveProfiles("test")
 class MonitoringOrderTest : OrderTestBase() {
@@ -242,6 +245,25 @@ class MonitoringOrderTest : OrderTestBase() {
 
   private fun getBritishDate(dateTime: ZonedDateTime?): String? =
     dateTime?.toInstant()?.atZone(londonTimeZone)?.format(dateFormatter)
+
+  @Test
+  fun `should map Tag At Source as 'No' when location is primary address`() {
+    val installationLocation = InstallationLocation(
+      versionId = UUID.randomUUID(),
+      location = InstallationLocationType.PRIMARY,
+    )
+    val order = createOrder(
+      monitoringConditions = createMonitoringConditions(curfew = true, alcohol = false),
+      installationLocation = installationLocation,
+    )
+
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "")
+
+    assertThat(fmsMonitoringOrder.tagAtSource).isEqualTo("No")
+
+    assertThat(fmsMonitoringOrder.tagAtSourceDetails).isEqualTo("")
+    assertThat(fmsMonitoringOrder.dateAndTimeInstallationWillTakePlace).isEqualTo("")
+  }
 
   @ParameterizedTest(name = "it should map probation delivery unit to Serco - {0} -> {1}")
   @ArgumentsSource(ProbationDeliveryUnitArgumentsProvider::class)
