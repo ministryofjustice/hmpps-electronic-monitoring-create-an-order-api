@@ -1,6 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.resource
 
-import org.assertj.core.api.Assertions
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
@@ -12,14 +12,14 @@ import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.data.ValidationErrors
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InterestedParties
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisation
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisationDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ResponsibleOrganisation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidationError
 import java.util.*
 
 class InterestedPartiesControllerTest : IntegrationTestBase() {
 
-  private val mockNotifyingOrganisation = NotifyingOrganisation.HOME_OFFICE.toString()
+  private val mockNotifyingOrganisation = NotifyingOrganisationDDv5.HOME_OFFICE.toString()
   private val mockNotifyingOrganisationName = ""
   private val mockNotifyingOrganisationEmail = "mockNotifyingOrganisationEmail"
   private val mockResponsibleOfficerName = "mockResponsibleOfficerName"
@@ -123,18 +123,25 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
 
       val interestedParties = result.responseBody!!
 
-      Assertions.assertThat(interestedParties.notifyingOrganisation).isEqualTo(mockNotifyingOrganisation)
-      Assertions.assertThat(interestedParties.notifyingOrganisationName).isEqualTo(mockNotifyingOrganisationName)
-      Assertions.assertThat(interestedParties.notifyingOrganisationEmail).isEqualTo(mockNotifyingOrganisationEmail)
-      Assertions.assertThat(interestedParties.responsibleOfficerName).isEqualTo(mockResponsibleOfficerName)
-      Assertions.assertThat(
+      assertThat(interestedParties.notifyingOrganisation).isEqualTo(mockNotifyingOrganisation)
+
+      assertThat(interestedParties.notifyingOrganisationName).isEqualTo(mockNotifyingOrganisationName)
+
+      assertThat(interestedParties.notifyingOrganisationEmail).isEqualTo(mockNotifyingOrganisationEmail)
+
+      assertThat(interestedParties.responsibleOfficerName).isEqualTo(mockResponsibleOfficerName)
+
+      assertThat(
         interestedParties.responsibleOfficerPhoneNumber,
       ).isEqualTo(mockResponsibleOfficerPhoneNumber)
-      Assertions.assertThat(interestedParties.responsibleOrganisation).isEqualTo(mockResponsibleOrganisation)
-      Assertions.assertThat(
+
+      assertThat(interestedParties.responsibleOrganisation).isEqualTo(mockResponsibleOrganisation)
+
+      assertThat(
         interestedParties.responsibleOrganisationRegion,
       ).isEqualTo(mockResponsibleOrganisationRegion)
-      Assertions.assertThat(interestedParties.responsibleOrganisationEmail).isEqualTo(mockResponsibleOrganisationEmail)
+
+      assertThat(interestedParties.responsibleOrganisationEmail).isEqualTo(mockResponsibleOrganisationEmail)
     }
 
     @Test
@@ -159,18 +166,18 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
         .returnResult()
         .responseBody!!
 
-      Assertions.assertThat(interestedParties.notifyingOrganisation).isEqualTo(mockNotifyingOrganisation)
-      Assertions.assertThat(interestedParties.notifyingOrganisationName).isEqualTo("")
-      Assertions.assertThat(interestedParties.notifyingOrganisationEmail).isEqualTo(mockNotifyingOrganisationEmail)
-      Assertions.assertThat(interestedParties.responsibleOfficerName).isEqualTo(mockResponsibleOfficerName)
-      Assertions.assertThat(
+      assertThat(interestedParties.notifyingOrganisation).isEqualTo(mockNotifyingOrganisation)
+      assertThat(interestedParties.notifyingOrganisationName).isEqualTo("")
+      assertThat(interestedParties.notifyingOrganisationEmail).isEqualTo(mockNotifyingOrganisationEmail)
+      assertThat(interestedParties.responsibleOfficerName).isEqualTo(mockResponsibleOfficerName)
+      assertThat(
         interestedParties.responsibleOfficerPhoneNumber,
       ).isEqualTo(mockResponsibleOfficerPhoneNumber)
-      Assertions.assertThat(interestedParties.responsibleOrganisation).isEqualTo(mockResponsibleOrganisation)
-      Assertions.assertThat(
+      assertThat(interestedParties.responsibleOrganisation).isEqualTo(mockResponsibleOrganisation)
+      assertThat(
         interestedParties.responsibleOrganisationRegion,
       ).isEqualTo(mockResponsibleOrganisationRegion)
-      Assertions.assertThat(interestedParties.responsibleOrganisationEmail).isEqualTo("")
+      assertThat(interestedParties.responsibleOrganisationEmail).isEqualTo("")
     }
 
     @Test
@@ -195,8 +202,8 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
         .returnResult()
         .responseBody
 
-      Assertions.assertThat(result).isNotNull
-      Assertions.assertThat(result?.sortedBy { it.field }).isEqualTo(
+      assertThat(result).isNotNull
+      assertThat(result?.sortedBy { it.field }).isEqualTo(
         listOf(
           ValidationError(
             "notifyingOrganisation",
@@ -222,139 +229,143 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
       )
     }
 
-    @ParameterizedTest(name = "it should return a validation error for region={0} when responsible org is probation")
-    @ValueSource(strings = ["", "NORTH_EAST_AND_CUMBRIA"])
-    fun `it should return a validation error for invalid region when responsible organisation is probation`(
-      value: String,
-    ) {
-      val order = createOrder()
+    @Nested
+    inner class ResponsibleOrganisation {
+      @ParameterizedTest(name = "it should return a validation error for region={0} when responsible org is probation")
+      @ValueSource(strings = ["", "NORTH_EAST_AND_CUMBRIA"])
+      fun `it should return a validation error for invalid region when responsible organisation is probation`(
+        value: String,
+      ) {
+        val order = createOrder()
 
-      val result = webTestClient.put()
-        .uri("/api/orders/${order.id}/interested-parties")
-        .contentType(MediaType.APPLICATION_JSON)
-        .body(
-          BodyInserters.fromValue(
-            buildMockRequest(
-              notifyingOrganisation = "PROBATION",
-              responsibleOrganisation = "PROBATION",
-              responsibleOrganisationRegion = value,
+        val result = webTestClient.put()
+          .uri("/api/orders/${order.id}/interested-parties")
+          .contentType(MediaType.APPLICATION_JSON)
+          .body(
+            BodyInserters.fromValue(
+              buildMockRequest(
+                notifyingOrganisation = "PROBATION",
+                responsibleOrganisation = "PROBATION",
+                responsibleOrganisationRegion = value,
+              ),
+            ),
+          )
+          .headers(setAuthorisation("AUTH_ADM"))
+          .exchange()
+          .expectStatus()
+          .isBadRequest
+          .expectBodyList(ValidationError::class.java)
+          .returnResult()
+          .responseBody
+
+        assertThat(result).isNotNull
+        assertThat(result?.sortedBy { it.field }).isEqualTo(
+          listOf(
+            ValidationError(
+              "responsibleOrganisationRegion",
+              ValidationErrors.InterestedParties.RESPONSIBLE_ORGANISATION_REGION_REQUIRED,
             ),
           ),
         )
-        .headers(setAuthorisation("AUTH_ADM"))
-        .exchange()
-        .expectStatus()
-        .isBadRequest
-        .expectBodyList(ValidationError::class.java)
-        .returnResult()
-        .responseBody
+      }
 
-      Assertions.assertThat(result).isNotNull
-      Assertions.assertThat(result?.sortedBy { it.field }).isEqualTo(
-        listOf(
-          ValidationError(
-            "responsibleOrganisationRegion",
-            ValidationErrors.InterestedParties.RESPONSIBLE_ORGANISATION_REGION_REQUIRED,
-          ),
-        ),
-      )
-    }
+      @Test
+      fun `it should accept a probation region when responsible organisation is probation`() {
+        val order = createOrder()
 
-    @Test
-    fun `it should accept a probation region when responsible organisation is probation`() {
-      val order = createOrder()
-
-      val interestedParties = webTestClient.put()
-        .uri("/api/orders/${order.id}/interested-parties")
-        .contentType(MediaType.APPLICATION_JSON)
-        .body(
-          BodyInserters.fromValue(
-            buildMockRequest(
-              responsibleOrganisation = "PROBATION",
-              responsibleOrganisationRegion = "YORKSHIRE_AND_THE_HUMBER",
+        val interestedParties = webTestClient.put()
+          .uri("/api/orders/${order.id}/interested-parties")
+          .contentType(MediaType.APPLICATION_JSON)
+          .body(
+            BodyInserters.fromValue(
+              buildMockRequest(
+                responsibleOrganisation = "PROBATION",
+                responsibleOrganisationRegion = "YORKSHIRE_AND_THE_HUMBER",
+              ),
             ),
-          ),
-        )
-        .headers(setAuthorisation("AUTH_ADM"))
-        .exchange()
-        .expectStatus()
-        .isOk
-        .expectBody(InterestedParties::class.java)
-        .returnResult()
-        .responseBody!!
+          )
+          .headers(setAuthorisation("AUTH_ADM"))
+          .exchange()
+          .expectStatus()
+          .isOk
+          .expectBody(InterestedParties::class.java)
+          .returnResult()
+          .responseBody!!
 
-      Assertions.assertThat(interestedParties.notifyingOrganisation).isEqualTo(mockNotifyingOrganisation)
-      Assertions.assertThat(interestedParties.notifyingOrganisationName).isEqualTo(mockNotifyingOrganisationName)
-      Assertions.assertThat(interestedParties.notifyingOrganisationEmail).isEqualTo(mockNotifyingOrganisationEmail)
-      Assertions.assertThat(interestedParties.responsibleOfficerName).isEqualTo(mockResponsibleOfficerName)
-      Assertions.assertThat(
-        interestedParties.responsibleOfficerPhoneNumber,
-      ).isEqualTo(mockResponsibleOfficerPhoneNumber)
-      Assertions.assertThat(interestedParties.responsibleOrganisation).isEqualTo("PROBATION")
-      Assertions.assertThat(interestedParties.responsibleOrganisationRegion).isEqualTo("YORKSHIRE_AND_THE_HUMBER")
-      Assertions.assertThat(interestedParties.responsibleOrganisationEmail).isEqualTo(mockResponsibleOrganisationEmail)
-    }
+        assertThat(interestedParties.notifyingOrganisation).isEqualTo(mockNotifyingOrganisation)
+        assertThat(interestedParties.notifyingOrganisationName).isEqualTo(mockNotifyingOrganisationName)
+        assertThat(interestedParties.notifyingOrganisationEmail).isEqualTo(mockNotifyingOrganisationEmail)
+        assertThat(interestedParties.responsibleOfficerName).isEqualTo(mockResponsibleOfficerName)
+        assertThat(
+          interestedParties.responsibleOfficerPhoneNumber,
+        ).isEqualTo(mockResponsibleOfficerPhoneNumber)
+        assertThat(interestedParties.responsibleOrganisation).isEqualTo("PROBATION")
+        assertThat(interestedParties.responsibleOrganisationRegion).isEqualTo("YORKSHIRE_AND_THE_HUMBER")
+        assertThat(interestedParties.responsibleOrganisationEmail).isEqualTo(mockResponsibleOrganisationEmail)
+      }
 
-    @ParameterizedTest(name = "it should return a validation error for region={0} when responsible org is YJS")
-    @ValueSource(strings = ["", "KENT_SURREY_SUSSEX"])
-    fun `it should return a validation error for invalid regions when responsible organisation is YJS`(value: String) {
-      val order = createOrder()
+      @ParameterizedTest(name = "it should return a validation error for region={0} when responsible org is YJS")
+      @ValueSource(strings = ["", "KENT_SURREY_SUSSEX"])
+      fun `it should return a validation error for invalid regions when responsible organisation is YJS`(
+        value: String,
+      ) {
+        val order = createOrder()
 
-      val result = webTestClient.put()
-        .uri("/api/orders/${order.id}/interested-parties")
-        .contentType(MediaType.APPLICATION_JSON)
-        .body(
-          BodyInserters.fromValue(
-            """
+        val result = webTestClient.put()
+          .uri("/api/orders/${order.id}/interested-parties")
+          .contentType(MediaType.APPLICATION_JSON)
+          .body(
+            BodyInserters.fromValue(
+              """
             {
               "notifyingOrganisation": "PROBATION",
               "responsibleOrganisation": "YJS",
               "responsibleOrganisationRegion": "$value"
             }
-            """.trimIndent(),
+              """.trimIndent(),
+            ),
+          )
+          .headers(setAuthorisation("AUTH_ADM"))
+          .exchange()
+          .expectStatus()
+          .isBadRequest
+          .expectBodyList(ValidationError::class.java)
+          .returnResult()
+          .responseBody
+
+        assertThat(result).isNotNull
+        assertThat(result?.sortedBy { it.field }).isEqualTo(
+          listOf(
+            ValidationError(
+              "notifyingOrganisationEmail",
+              ValidationErrors.InterestedParties.TEAM_EMAIL_REQUIRED,
+            ),
+            ValidationError(
+              "responsibleOfficerName",
+              ValidationErrors.InterestedParties.RESPONSIBLE_OFFICER_FULL_NAME_REQUIRED,
+            ),
+            ValidationError(
+              "responsibleOfficerPhoneNumber",
+              ValidationErrors.InterestedParties.RESPONSIBLE_OFFICER_TELEPHONE_NUMBER_REQUIRED,
+            ),
+            ValidationError(
+              "responsibleOrganisationRegion",
+              ValidationErrors.InterestedParties.RESPONSIBLE_ORGANISATION_REGION_REQUIRED,
+            ),
           ),
         )
-        .headers(setAuthorisation("AUTH_ADM"))
-        .exchange()
-        .expectStatus()
-        .isBadRequest
-        .expectBodyList(ValidationError::class.java)
-        .returnResult()
-        .responseBody
+      }
 
-      Assertions.assertThat(result).isNotNull
-      Assertions.assertThat(result?.sortedBy { it.field }).isEqualTo(
-        listOf(
-          ValidationError(
-            "notifyingOrganisationEmail",
-            ValidationErrors.InterestedParties.TEAM_EMAIL_REQUIRED,
-          ),
-          ValidationError(
-            "responsibleOfficerName",
-            ValidationErrors.InterestedParties.RESPONSIBLE_OFFICER_FULL_NAME_REQUIRED,
-          ),
-          ValidationError(
-            "responsibleOfficerPhoneNumber",
-            ValidationErrors.InterestedParties.RESPONSIBLE_OFFICER_TELEPHONE_NUMBER_REQUIRED,
-          ),
-          ValidationError(
-            "responsibleOrganisationRegion",
-            ValidationErrors.InterestedParties.RESPONSIBLE_ORGANISATION_REGION_REQUIRED,
-          ),
-        ),
-      )
-    }
+      @Test
+      fun `it should accept a yjs region when responsible organisation is YJS`() {
+        val order = createOrder()
 
-    @Test
-    fun `it should accept a yjs region when responsible organisation is YJS`() {
-      val order = createOrder()
-
-      val interestedParties = webTestClient.put()
-        .uri("/api/orders/${order.id}/interested-parties")
-        .contentType(MediaType.APPLICATION_JSON)
-        .body(
-          BodyInserters.fromValue(
-            """
+        val interestedParties = webTestClient.put()
+          .uri("/api/orders/${order.id}/interested-parties")
+          .contentType(MediaType.APPLICATION_JSON)
+          .body(
+            BodyInserters.fromValue(
+              """
             {
               "notifyingOrganisation": "PROBATION",
               "responsibleOrganisation": "YJS",
@@ -363,30 +374,123 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
               "notifyingOrganisationEmail": "test@test.com",
               "responsibleOfficerPhoneNumber": "01234567890"
             }
-            """.trimIndent(),
-          ),
-        )
-        .headers(setAuthorisation("AUTH_ADM"))
-        .exchange()
-        .expectStatus()
-        .isOk
-        .expectBody(InterestedParties::class.java)
-        .returnResult()
-        .responseBody!!
+              """.trimIndent(),
+            ),
+          )
+          .headers(setAuthorisation("AUTH_ADM"))
+          .exchange()
+          .expectStatus()
+          .isOk
+          .expectBody(InterestedParties::class.java)
+          .returnResult()
+          .responseBody!!
 
-      Assertions.assertThat(interestedParties.notifyingOrganisation).isEqualTo("PROBATION")
-      Assertions.assertThat(interestedParties.notifyingOrganisationName).isEqualTo("")
-      Assertions.assertThat(interestedParties.notifyingOrganisationEmail).isEqualTo("test@test.com")
-      Assertions.assertThat(interestedParties.responsibleOfficerName).isEqualTo("Jeff Testberg")
-      Assertions.assertThat(interestedParties.responsibleOfficerPhoneNumber).isEqualTo("01234567890")
-      Assertions.assertThat(interestedParties.responsibleOrganisation).isEqualTo("YJS")
-      Assertions.assertThat(interestedParties.responsibleOrganisationRegion).isEqualTo("NORTH_EAST_AND_CUMBRIA")
-      Assertions.assertThat(interestedParties.responsibleOrganisationEmail).isEqualTo("")
+        assertThat(interestedParties.notifyingOrganisation).isEqualTo("PROBATION")
+        assertThat(interestedParties.notifyingOrganisationName).isEqualTo("")
+        assertThat(interestedParties.notifyingOrganisationEmail).isEqualTo("test@test.com")
+        assertThat(interestedParties.responsibleOfficerName).isEqualTo("Jeff Testberg")
+        assertThat(interestedParties.responsibleOfficerPhoneNumber).isEqualTo("01234567890")
+        assertThat(interestedParties.responsibleOrganisation).isEqualTo("YJS")
+        assertThat(interestedParties.responsibleOrganisationRegion).isEqualTo("NORTH_EAST_AND_CUMBRIA")
+        assertThat(interestedParties.responsibleOrganisationEmail).isEqualTo("")
+      }
     }
 
-    @ParameterizedTest(name = "it should return a validation error for name={0} when notifying org is PRISON")
-    @ValueSource(strings = ["", "YORK_CROWN_COURT", "BELMARSH_MAGISTRATES_COURT"])
-    fun `it should return a validation error for invalid names when notifying organisation is PRISON`(value: String) {
+    @Nested
+    inner class NotifyingOrganisation {
+      @ParameterizedTest(
+        name = "it should return a validation error for name={0} when notifying org is CIVIL_COUNTY_COURT",
+      )
+      @ValueSource(strings = ["", "BELMARSH_PRISON", "BELMARSH_MAGISTRATES_COURT"])
+      fun `it should return a validation error for invalid names when notifying organisation is CIVIL_COUNTY_COURT`(
+        value: String,
+      ) {
+        assertInvalidNotifyingOrg("CIVIL_COUNTY_COURT", value)
+      }
+
+      @Test
+      fun `it should accept a civil county court name when notifying organisation is CIVIL_COUNTY_COURT`() {
+        assertValidNotifyingOrg("CIVIL_COUNTY_COURT", "THANET_COUNTY_AND_CIVIL_COURT")
+      }
+
+      @ParameterizedTest(name = "it should return a validation error for name={0} when notifying org is CROWN_COURT")
+      @ValueSource(strings = ["", "BELMARSH_PRISON", "BELMARSH_MAGISTRATES_COURT"])
+      fun `it should return a validation error for invalid names when notifying organisation is CROWN_COURT`(
+        value: String,
+      ) {
+        assertInvalidNotifyingOrg("CROWN_COURT", value)
+      }
+
+      @Test
+      fun `it should accept a crown court name when notifying organisation is CROWN_COURT`() {
+        assertValidNotifyingOrg("CROWN_COURT", "YORK_CROWN_COURT")
+      }
+
+      @ParameterizedTest(name = "it should return an error for name={0} when notifying org is MAGISTRATES_COURT")
+      @ValueSource(strings = ["", "BELMARSH_PRISON", "CARDIFF_CROWN_COURT"])
+      fun `it should return a validation error for invalid names when notifying organisation is MAGISTRATES_COURT`(
+        value: String,
+      ) {
+        assertInvalidNotifyingOrg("MAGISTRATES_COURT", value)
+      }
+
+      @Test
+      fun `it should accept a magistrates court name when notifying organisation is MAGISTRATES_COURT`() {
+        assertValidNotifyingOrg("MAGISTRATES_COURT", "BRADFORD_AND_KEIGHLEY_MAGISTRATES_COURT")
+      }
+
+      @ParameterizedTest(name = "it should return a validation error for name={0} when notifying org is MILITARY_COURT")
+      @ValueSource(strings = ["", "BELMARSH_PRISON", "BELMARSH_MAGISTRATES_COURT"])
+      fun `it should return a validation error for invalid names when notifying organisation is MILITARY_COURT`(
+        value: String,
+      ) {
+        assertInvalidNotifyingOrg("MILITARY_COURT", value)
+      }
+
+      @Test
+      fun `it should accept a military court name when notifying organisation is MILITARY_COURT`() {
+        assertValidNotifyingOrg("MILITARY_COURT", "CATTERICK_MILITARY_COURT_CENTRE")
+      }
+
+      @ParameterizedTest(name = "it should return a validation error for name={0} when notifying org is PRISON")
+      @ValueSource(strings = ["", "YORK_CROWN_COURT", "BELMARSH_MAGISTRATES_COURT"])
+      fun `it should return a validation error for invalid names when notifying organisation is PRISON`(value: String) {
+        assertInvalidNotifyingOrg("PRISON", value)
+      }
+
+      @Test
+      fun `it should accept a prison name when notifying organisation is PRISON`() {
+        assertValidNotifyingOrg("PRISON", "BELMARSH_PRISON")
+      }
+
+      @ParameterizedTest(name = "it should return an error for name={0} when notifying org is YOUTH_COURT")
+      @ValueSource(strings = ["", "BELMARSH_PRISON", "CARDIFF_CROWN_COURT"])
+      fun `it should return a validation error for invalid names when notifying organisation is YOUTH_COURT`(
+        value: String,
+      ) {
+        assertInvalidNotifyingOrg("YOUTH_COURT", value)
+      }
+
+      @Test
+      fun `it should accept a youth court name when notifying organisation is YOUTH_COURT`() {
+        assertValidNotifyingOrg("YOUTH_COURT", "WITHAM_YOUTH_COURT")
+      }
+
+      @ParameterizedTest(name = "it should return an error for name={0} when notifying org is YOUTH_CUSTODY_SERVICE")
+      @ValueSource(strings = ["", "BELMARSH_PRISON", "CARDIFF_CROWN_COURT"])
+      fun `it should return a validation error for invalid names when notifying organisation is YOUTH_CUSTODY_SERVICE`(
+        value: String,
+      ) {
+        assertInvalidNotifyingOrg("YOUTH_CUSTODY_SERVICE", value)
+      }
+
+      @Test
+      fun `it should accept a youth custody service name when notifying organisation is YOUTH_CUSTODY_SERVICE`() {
+        assertValidNotifyingOrg("YOUTH_CUSTODY_SERVICE", "LONDON")
+      }
+    }
+
+    private fun assertInvalidNotifyingOrg(notifyingOrg: String, notifyingOrgName: String) {
       val order = createOrder()
 
       val result = webTestClient.put()
@@ -395,8 +499,8 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
         .body(
           BodyInserters.fromValue(
             buildMockRequest(
-              notifyingOrganisation = "PRISON",
-              notifyingOrganisationName = value,
+              notifyingOrganisation = notifyingOrg,
+              notifyingOrganisationName = notifyingOrgName,
             ),
           ),
         )
@@ -408,8 +512,8 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
         .returnResult()
         .responseBody
 
-      Assertions.assertThat(result).isNotNull
-      Assertions.assertThat(result?.sortedBy { it.field }).isEqualTo(
+      assertThat(result).isNotNull
+      assertThat(result?.sortedBy { it.field }).isEqualTo(
         listOf(
           ValidationError(
             "notifyingOrganisationName",
@@ -419,8 +523,7 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
       )
     }
 
-    @Test
-    fun `it should accept a prison name when notifying organisation is PRISON`() {
+    private fun assertValidNotifyingOrg(notifyingOrg: String, notifyingOrgName: String) {
       val order = createOrder()
 
       val interestedParties = webTestClient.put()
@@ -429,8 +532,8 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
         .body(
           BodyInserters.fromValue(
             buildMockRequest(
-              notifyingOrganisation = "PRISON",
-              notifyingOrganisationName = "BELMARSH_PRISON",
+              notifyingOrganisation = notifyingOrg,
+              notifyingOrganisationName = notifyingOrgName,
             ),
           ),
         )
@@ -442,168 +545,18 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
         .returnResult()
         .responseBody!!
 
-      Assertions.assertThat(interestedParties.notifyingOrganisation).isEqualTo("PRISON")
-      Assertions.assertThat(interestedParties.notifyingOrganisationName).isEqualTo("BELMARSH_PRISON")
-      Assertions.assertThat(interestedParties.notifyingOrganisationEmail).isEqualTo(mockNotifyingOrganisationEmail)
-      Assertions.assertThat(interestedParties.responsibleOfficerName).isEqualTo(mockResponsibleOfficerName)
-      Assertions.assertThat(
+      assertThat(interestedParties.notifyingOrganisation).isEqualTo(notifyingOrg)
+      assertThat(interestedParties.notifyingOrganisationName).isEqualTo(notifyingOrgName)
+      assertThat(interestedParties.notifyingOrganisationEmail).isEqualTo(mockNotifyingOrganisationEmail)
+      assertThat(interestedParties.responsibleOfficerName).isEqualTo(mockResponsibleOfficerName)
+      assertThat(
         interestedParties.responsibleOfficerPhoneNumber,
       ).isEqualTo(mockResponsibleOfficerPhoneNumber)
-      Assertions.assertThat(interestedParties.responsibleOrganisation).isEqualTo(mockResponsibleOrganisation)
-      Assertions.assertThat(
+      assertThat(interestedParties.responsibleOrganisation).isEqualTo(mockResponsibleOrganisation)
+      assertThat(
         interestedParties.responsibleOrganisationRegion,
       ).isEqualTo(mockResponsibleOrganisationRegion)
-      Assertions.assertThat(interestedParties.responsibleOrganisationEmail).isEqualTo(mockResponsibleOrganisationEmail)
-    }
-
-    @ParameterizedTest(name = "it should return a validation error for name={0} when notifying org is CROWN_COURT")
-    @ValueSource(strings = ["", "BELMARSH_PRISON", "BELMARSH_MAGISTRATES_COURT"])
-    fun `it should return a validation error for invalid names when notifying organisation is CROWN_COURT`(
-      value: String,
-    ) {
-      val order = createOrder()
-
-      val result = webTestClient.put()
-        .uri("/api/orders/${order.id}/interested-parties")
-        .contentType(MediaType.APPLICATION_JSON)
-        .body(
-          BodyInserters.fromValue(
-            buildMockRequest(
-              notifyingOrganisation = "CROWN_COURT",
-              notifyingOrganisationName = value,
-            ),
-          ),
-        )
-        .headers(setAuthorisation("AUTH_ADM"))
-        .exchange()
-        .expectStatus()
-        .isBadRequest
-        .expectBodyList(ValidationError::class.java)
-        .returnResult()
-        .responseBody
-
-      Assertions.assertThat(result).isNotNull
-      Assertions.assertThat(result?.sortedBy { it.field }).isEqualTo(
-        listOf(
-          ValidationError(
-            "notifyingOrganisationName",
-            ValidationErrors.InterestedParties.NOTIFYING_ORGANISATION_NAME_REQUIRED,
-          ),
-        ),
-      )
-    }
-
-    @Test
-    fun `it should accept a crown court name when notifying organisation is CROWN_COURT`() {
-      val order = createOrder()
-
-      val interestedParties = webTestClient.put()
-        .uri("/api/orders/${order.id}/interested-parties")
-        .contentType(MediaType.APPLICATION_JSON)
-        .body(
-          BodyInserters.fromValue(
-            buildMockRequest(
-              notifyingOrganisation = "CROWN_COURT",
-              notifyingOrganisationName = "YORK_CROWN_COURT",
-            ),
-          ),
-        )
-        .headers(setAuthorisation("AUTH_ADM"))
-        .exchange()
-        .expectStatus()
-        .isOk
-        .expectBody(InterestedParties::class.java)
-        .returnResult()
-        .responseBody!!
-
-      Assertions.assertThat(interestedParties.notifyingOrganisation).isEqualTo("CROWN_COURT")
-      Assertions.assertThat(interestedParties.notifyingOrganisationName).isEqualTo("YORK_CROWN_COURT")
-      Assertions.assertThat(interestedParties.notifyingOrganisationEmail).isEqualTo(mockNotifyingOrganisationEmail)
-      Assertions.assertThat(interestedParties.responsibleOfficerName).isEqualTo(mockResponsibleOfficerName)
-      Assertions.assertThat(
-        interestedParties.responsibleOfficerPhoneNumber,
-      ).isEqualTo(mockResponsibleOfficerPhoneNumber)
-      Assertions.assertThat(interestedParties.responsibleOrganisation).isEqualTo(mockResponsibleOrganisation)
-      Assertions.assertThat(
-        interestedParties.responsibleOrganisationRegion,
-      ).isEqualTo(mockResponsibleOrganisationRegion)
-      Assertions.assertThat(interestedParties.responsibleOrganisationEmail).isEqualTo(mockResponsibleOrganisationEmail)
-    }
-
-    @ParameterizedTest(name = "it should return an error for name={0} when notifying org is MAGISTRATES_COURT")
-    @ValueSource(strings = ["", "BELMARSH_PRISON", "CARDIFF_CROWN_COURT"])
-    fun `it should return a validation error for invalid names when notifying organisation is MAGISTRATES_COURT`(
-      value: String,
-    ) {
-      val order = createOrder()
-
-      val result = webTestClient.put()
-        .uri("/api/orders/${order.id}/interested-parties")
-        .contentType(MediaType.APPLICATION_JSON)
-        .body(
-          BodyInserters.fromValue(
-            buildMockRequest(
-              notifyingOrganisation = "MAGISTRATES_COURT",
-              notifyingOrganisationName = value,
-            ),
-          ),
-        )
-        .headers(setAuthorisation("AUTH_ADM"))
-        .exchange()
-        .expectStatus()
-        .isBadRequest
-        .expectBodyList(ValidationError::class.java)
-        .returnResult()
-        .responseBody
-
-      Assertions.assertThat(result).isNotNull
-      Assertions.assertThat(result?.sortedBy { it.field }).isEqualTo(
-        listOf(
-          ValidationError(
-            "notifyingOrganisationName",
-            ValidationErrors.InterestedParties.NOTIFYING_ORGANISATION_NAME_REQUIRED,
-          ),
-        ),
-      )
-    }
-
-    @Test
-    fun `it should accept a magistrate court name when notifying organisation is MAGISTRATES_COURT`() {
-      val order = createOrder()
-
-      val interestedParties = webTestClient.put()
-        .uri("/api/orders/${order.id}/interested-parties")
-        .contentType(MediaType.APPLICATION_JSON)
-        .body(
-          BodyInserters.fromValue(
-            buildMockRequest(
-              notifyingOrganisation = "MAGISTRATES_COURT",
-              notifyingOrganisationName = "BRADFORD_AND_KEIGHLEY_MAGISTRATES_COURT",
-            ),
-          ),
-        )
-        .headers(setAuthorisation("AUTH_ADM"))
-        .exchange()
-        .expectStatus()
-        .isOk
-        .expectBody(InterestedParties::class.java)
-        .returnResult()
-        .responseBody!!
-
-      Assertions.assertThat(interestedParties.notifyingOrganisation).isEqualTo("MAGISTRATES_COURT")
-      Assertions.assertThat(
-        interestedParties.notifyingOrganisationName,
-      ).isEqualTo("BRADFORD_AND_KEIGHLEY_MAGISTRATES_COURT")
-      Assertions.assertThat(interestedParties.notifyingOrganisationEmail).isEqualTo(mockNotifyingOrganisationEmail)
-      Assertions.assertThat(interestedParties.responsibleOfficerName).isEqualTo(mockResponsibleOfficerName)
-      Assertions.assertThat(
-        interestedParties.responsibleOfficerPhoneNumber,
-      ).isEqualTo(mockResponsibleOfficerPhoneNumber)
-      Assertions.assertThat(interestedParties.responsibleOrganisation).isEqualTo(mockResponsibleOrganisation)
-      Assertions.assertThat(
-        interestedParties.responsibleOrganisationRegion,
-      ).isEqualTo(mockResponsibleOrganisationRegion)
-      Assertions.assertThat(interestedParties.responsibleOrganisationEmail).isEqualTo(mockResponsibleOrganisationEmail)
+      assertThat(interestedParties.responsibleOrganisationEmail).isEqualTo(mockResponsibleOrganisationEmail)
     }
   }
 }
