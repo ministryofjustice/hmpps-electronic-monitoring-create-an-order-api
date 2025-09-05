@@ -20,7 +20,9 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.ProbationServiceRegionArgumentsProvider
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.YouthCourtArgumentsProvider
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.YouthCustodyServiceRegionArgumentsProvider
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationAppointment
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationLocation
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.TrailMonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
@@ -247,12 +249,22 @@ class MonitoringOrderTest : OrderTestBase() {
     dateTime?.toInstant()?.atZone(londonTimeZone)?.format(dateFormatter)
 
   @Test
-  fun `should map Tag At Source as 'No' when location is primary address`() {
+  fun `should map Tag At Source as 'No' when installation location is primary address`() {
+    val primaryAddress = createAddress(
+      addressLine1 = "Primary Line 1",
+      addressLine2 = "Primary Line 2",
+      addressLine3 = "Primary Line 3",
+      addressLine4 = "Primary Line 4",
+      postcode = "Primary Post code",
+      addressType = AddressType.PRIMARY,
+    )
+
     val installationLocation = InstallationLocation(
       versionId = UUID.randomUUID(),
       location = InstallationLocationType.PRIMARY,
     )
     val order = createOrder(
+      addresses = mutableListOf(primaryAddress),
       monitoringConditions = createMonitoringConditions(curfew = true, alcohol = false),
       installationLocation = installationLocation,
     )
@@ -263,6 +275,93 @@ class MonitoringOrderTest : OrderTestBase() {
 
     assertThat(fmsMonitoringOrder.tagAtSourceDetails).isEqualTo("")
     assertThat(fmsMonitoringOrder.dateAndTimeInstallationWillTakePlace).isEqualTo("")
+
+    assertThat(fmsMonitoringOrder.installationAddress1).isEqualTo("Primary Line 1")
+    assertThat(fmsMonitoringOrder.installationAddressPostcode).isEqualTo("Primary Post code")
+  }
+
+  @Test
+  fun `It should correctly map Tag At Source when installation location is a prison`() {
+    val installationLocation = InstallationLocation(
+      versionId = UUID.randomUUID(),
+      location = InstallationLocationType.PRISON,
+    )
+    val installationAppointment = InstallationAppointment(
+      versionId = UUID.randomUUID(),
+      placeName = "HMP Wandsworth",
+      appointmentDate = ZonedDateTime.of(2026, 10, 1, 10, 30, 0, 0, ZoneId.of("Europe/London")),
+    )
+    val trailMonitoringConditions = TrailMonitoringConditions(
+      versionId = UUID.randomUUID(),
+      startDate = ZonedDateTime.now(),
+      endDate = ZonedDateTime.now().plusMonths(1),
+    )
+
+    val installationAddress = createAddress(
+      addressType = AddressType.INSTALLATION,
+      addressLine1 = "Installation Line 1",
+      postcode = "Installation Post code",
+    )
+
+    val order = createOrder(
+      addresses = mutableListOf(installationAddress),
+      monitoringConditions = createMonitoringConditions(trail = true, alcohol = false),
+      installationLocation = installationLocation,
+      trailMonitoringConditions = trailMonitoringConditions,
+    )
+
+    order.installationAppointment = installationAppointment
+
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
+
+    assertThat(fmsMonitoringOrder.tagAtSource).isEqualTo("Yes")
+    assertThat(fmsMonitoringOrder.tagAtSourceDetails).isEqualTo("HMP Wandsworth")
+    assertThat(fmsMonitoringOrder.dateAndTimeInstallationWillTakePlace).isEqualTo("2026-10-01 10:30:00")
+
+    assertThat(fmsMonitoringOrder.installationAddress1).isEqualTo("Installation Line 1")
+    assertThat(fmsMonitoringOrder.installationAddressPostcode).isEqualTo("Installation Post code")
+  }
+
+  @Test
+  fun `It should correctly map Tag At Source when installation location is a probation`() {
+    val installationLocation = InstallationLocation(
+      versionId = UUID.randomUUID(),
+      location = InstallationLocationType.PROBATION_OFFICE,
+    )
+    val installationAppointment = InstallationAppointment(
+      versionId = UUID.randomUUID(),
+      placeName = "HMP Wandsworth",
+      appointmentDate = ZonedDateTime.of(2026, 10, 1, 10, 30, 0, 0, ZoneId.of("Europe/London")),
+    )
+    val trailMonitoringConditions = TrailMonitoringConditions(
+      versionId = UUID.randomUUID(),
+      startDate = ZonedDateTime.now(),
+      endDate = ZonedDateTime.now().plusMonths(1),
+    )
+
+    val installationAddress = createAddress(
+      addressType = AddressType.INSTALLATION,
+      addressLine1 = "Installation Line 1",
+      postcode = "Installation Post code",
+    )
+
+    val order = createOrder(
+      addresses = mutableListOf(installationAddress),
+      monitoringConditions = createMonitoringConditions(trail = true, alcohol = false),
+      installationLocation = installationLocation,
+      trailMonitoringConditions = trailMonitoringConditions,
+    )
+
+    order.installationAppointment = installationAppointment
+
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
+
+    assertThat(fmsMonitoringOrder.tagAtSource).isEqualTo("Yes")
+    assertThat(fmsMonitoringOrder.tagAtSourceDetails).isEqualTo("HMP Wandsworth")
+    assertThat(fmsMonitoringOrder.dateAndTimeInstallationWillTakePlace).isEqualTo("2026-10-01 10:30:00")
+
+    assertThat(fmsMonitoringOrder.installationAddress1).isEqualTo("Installation Line 1")
+    assertThat(fmsMonitoringOrder.installationAddressPostcode).isEqualTo("Installation Post code")
   }
 
   @ParameterizedTest(name = "it should map probation delivery unit to Serco - {0} -> {1}")
