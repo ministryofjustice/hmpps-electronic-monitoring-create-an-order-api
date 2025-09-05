@@ -9,9 +9,12 @@ import org.mockito.Mockito.mock
 import org.mockito.kotlin.whenever
 import org.springframework.boot.test.autoconfigure.json.JsonTest
 import org.springframework.test.context.ActiveProfiles
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Address
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationAppointment
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateInstallationLocationDto
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.InstallationLocationType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
@@ -116,5 +119,31 @@ class InstallationLocationServiceTest {
     assertThat(mockOrder.installationLocation).isNotNull
     assertThat(mockOrder.installationLocation!!.location).isEqualTo(InstallationLocationType.INSTALLATION)
     assertThat(result.location).isEqualTo(InstallationLocationType.INSTALLATION)
+  }
+
+  @Test
+  fun `Should clear old data when switching to primary address`() {
+    mockOrder.installationAppointment = InstallationAppointment(versionId = mockVersionId)
+    mockOrder.addresses.add(
+      Address(
+        versionId = mockVersionId,
+        addressType = AddressType.INSTALLATION,
+        addressLine1 = "Mock place",
+        addressLine2 = "",
+        addressLine3 = "Mock Town",
+        postcode = "Mock postcode",
+      ),
+    )
+
+    whenever(repo.findById(mockOrderId)).thenReturn(Optional.of(mockOrder))
+    whenever(repo.save(mockOrder)).thenReturn(mockOrder)
+    val result = service.createOrUpdateInstallationLocation(
+      mockOrderId,
+      mockUsername,
+      UpdateInstallationLocationDto(location = InstallationLocationType.PRIMARY),
+    )
+
+    assertThat(mockOrder.installationAppointment).isNull()
+    assertThat(mockOrder.addresses.any { it.addressType == AddressType.INSTALLATION }).isFalse()
   }
 }

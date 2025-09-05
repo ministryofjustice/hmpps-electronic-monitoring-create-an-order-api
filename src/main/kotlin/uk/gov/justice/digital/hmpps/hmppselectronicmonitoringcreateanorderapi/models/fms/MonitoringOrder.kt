@@ -392,12 +392,12 @@ data class MonitoringOrder(
           order.installationLocation?.location == InstallationLocationType.PRISON
         ) {
           monitoringOrder.tagAtSource = "Yes"
+          monitoringOrder.tagAtSourceDetails = order.installationAppointment?.placeName ?: ""
+          monitoringOrder.dateAndTimeInstallationWillTakePlace =
+            getBritishDateAndTime(order.installationAppointment?.appointmentDate) ?: ""
         } else {
           monitoringOrder.tagAtSource = "No"
         }
-        monitoringOrder.tagAtSourceDetails = order.installationAppointment?.placeName ?: ""
-        monitoringOrder.dateAndTimeInstallationWillTakePlace =
-          getBritishDateAndTime(order.installationAppointment?.appointmentDate) ?: ""
       }
 
       getInstallationAddress(order)?.let {
