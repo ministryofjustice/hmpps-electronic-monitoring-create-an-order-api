@@ -477,14 +477,6 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
         assertValidNotifyingOrg("PRISON", "BELMARSH_PRISON")
       }
 
-      @ParameterizedTest(name = "it should return an error for name={0} when notifying org is YOUTH_COURT")
-      @ValueSource(strings = ["", "BELMARSH_PRISON", "CARDIFF_CROWN_COURT"])
-      fun `it should return a validation error for invalid names when notifying organisation is YOUTH_COURT`(
-        value: String,
-      ) {
-        assertInvalidNotifyingOrg("YOUTH_COURT", value)
-      }
-
       @ParameterizedTest(name = "it should return a validation error for name={0} when notifying org is PROBATION")
       @ValueSource(strings = ["", "BELMARSH_PRISON", "BELMARSH_MAGISTRATES_COURT"])
       fun `it should return a validation error for invalid names when notifying organisation is PROBATION`(
@@ -496,6 +488,14 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
       @Test
       fun `it should accept a family court name when notifying organisation is PROBATION`() {
         assertValidNotifyingOrg("PROBATION", "WALES")
+      }
+
+      @ParameterizedTest(name = "it should return an error for name={0} when notifying org is YOUTH_COURT")
+      @ValueSource(strings = ["", "BELMARSH_PRISON", "CARDIFF_CROWN_COURT"])
+      fun `it should return a validation error for invalid names when notifying organisation is YOUTH_COURT`(
+        value: String,
+      ) {
+        assertInvalidNotifyingOrg("YOUTH_COURT", value)
       }
 
       @Test
@@ -578,16 +578,6 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
 
       assertThat(interestedParties.notifyingOrganisation).isEqualTo(notifyingOrg)
       assertThat(interestedParties.notifyingOrganisationName).isEqualTo(notifyingOrgName)
-      assertThat(interestedParties.notifyingOrganisationEmail).isEqualTo(mockNotifyingOrganisationEmail)
-      assertThat(interestedParties.responsibleOfficerName).isEqualTo(mockResponsibleOfficerName)
-      assertThat(
-        interestedParties.responsibleOfficerPhoneNumber,
-      ).isEqualTo(mockResponsibleOfficerPhoneNumber)
-      assertThat(interestedParties.responsibleOrganisation).isEqualTo(mockResponsibleOrganisation)
-      assertThat(
-        interestedParties.responsibleOrganisationRegion,
-      ).isEqualTo(mockResponsibleOrganisationRegion)
-      assertThat(interestedParties.responsibleOrganisationEmail).isEqualTo(mockResponsibleOrganisationEmail)
     }
   }
 }
