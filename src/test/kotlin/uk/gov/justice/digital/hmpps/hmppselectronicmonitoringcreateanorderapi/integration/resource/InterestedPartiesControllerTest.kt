@@ -12,6 +12,7 @@ import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.data.ValidationErrors
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InterestedParties
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisationDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ResponsibleOrganisation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidationError
@@ -426,6 +427,19 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
         assertValidNotifyingOrg("CROWN_COURT", "YORK_CROWN_COURT")
       }
 
+      @ParameterizedTest(name = "it should return a validation error for name={0} when notifying org is FAMILY_COURT")
+      @ValueSource(strings = ["", "BELMARSH_PRISON", "BELMARSH_MAGISTRATES_COURT"])
+      fun `it should return a validation error for invalid names when notifying organisation is FAMILY_COURT`(
+        value: String,
+      ) {
+        assertInvalidNotifyingOrg("FAMILY_COURT", value)
+      }
+
+      @Test
+      fun `it should accept a family court name when notifying organisation is FAMILY_COURT`() {
+        assertValidNotifyingOrg("FAMILY_COURT", "MERTHYR_FAMILY_COURT")
+      }
+
       @ParameterizedTest(name = "it should return an error for name={0} when notifying org is MAGISTRATES_COURT")
       @ValueSource(strings = ["", "BELMARSH_PRISON", "CARDIFF_CROWN_COURT"])
       fun `it should return a validation error for invalid names when notifying organisation is MAGISTRATES_COURT`(
@@ -471,6 +485,19 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
         assertInvalidNotifyingOrg("YOUTH_COURT", value)
       }
 
+      @ParameterizedTest(name = "it should return a validation error for name={0} when notifying org is PROBATION")
+      @ValueSource(strings = ["", "BELMARSH_PRISON", "BELMARSH_MAGISTRATES_COURT"])
+      fun `it should return a validation error for invalid names when notifying organisation is PROBATION`(
+        value: String,
+      ) {
+        assertInvalidNotifyingOrg("PROBATION", value)
+      }
+
+      @Test
+      fun `it should accept a family court name when notifying organisation is PROBATION`() {
+        assertValidNotifyingOrg("PROBATION", "WALES")
+      }
+
       @Test
       fun `it should accept a youth court name when notifying organisation is YOUTH_COURT`() {
         assertValidNotifyingOrg("YOUTH_COURT", "WITHAM_YOUTH_COURT")
@@ -491,7 +518,9 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
     }
 
     private fun assertInvalidNotifyingOrg(notifyingOrg: String, notifyingOrgName: String) {
-      val order = createOrder()
+      val order = createStoredOrder(
+        dataDictionaryVersion = DataDictionaryVersion.DDV5,
+      )
 
       val result = webTestClient.put()
         .uri("/api/orders/${order.id}/interested-parties")
@@ -524,7 +553,9 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
     }
 
     private fun assertValidNotifyingOrg(notifyingOrg: String, notifyingOrgName: String) {
-      val order = createOrder()
+      val order = createStoredOrder(
+        dataDictionaryVersion = DataDictionaryVersion.DDV5,
+      )
 
       val interestedParties = webTestClient.put()
         .uri("/api/orders/${order.id}/interested-parties")
