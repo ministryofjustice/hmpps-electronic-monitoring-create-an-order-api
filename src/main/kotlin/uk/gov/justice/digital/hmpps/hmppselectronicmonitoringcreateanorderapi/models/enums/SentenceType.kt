@@ -9,4 +9,5 @@ enum class SentenceType(val value: String) {
   SECTION_85_EXTENDED_SENTENCES("Section 85 Extended Sentences"),
   STANDARD_DETERMINATE_SENTENCE("Standard Determinate Sentence"),
   DTO("Detention & Training Order"),
+  SECTION_91("HDC (Section 91)"),
 }

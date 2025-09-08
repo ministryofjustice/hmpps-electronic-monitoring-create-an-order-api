@@ -18,6 +18,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.PrisonArgumentsProvider
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.ProbationDeliveryUnitArgumentsProvider
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.ProbationServiceRegionArgumentsProvider
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.SentenceArgumentsProvider
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.YouthCourtArgumentsProvider
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.YouthCustodyServiceRegionArgumentsProvider
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
@@ -25,6 +26,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisationDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Pilot
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.SentenceType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.EnforceableCondition
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.MonitoringOrder
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.Zone
@@ -381,6 +383,18 @@ class MonitoringOrderTest : OrderTestBase() {
       val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "")
       assertThat(fmsMonitoringOrder.abstinence).isEqualTo(mappedValue)
     }
+  }
+
+  @ParameterizedTest(name = "it should map sentence type - {0} -> {1}")
+  @ArgumentsSource(SentenceArgumentsProvider::class)
+  fun `It should correctly map sentence type to Serco`(savedValue: String, mappedValue: String) {
+    val sentenceType = SentenceType.entries.first { it.name == savedValue }
+    val order = createOrder(
+      monitoringConditions = createMonitoringConditions(sentenceType = sentenceType),
+    )
+
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "")
+    assertThat(fmsMonitoringOrder.sentenceType).isEqualTo(mappedValue)
   }
 
   private fun assertNotifyingOrgNameMapping(savedValue: String, mappedValue: String) {
