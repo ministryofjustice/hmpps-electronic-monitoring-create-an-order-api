@@ -14,20 +14,6 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 
 class OrderSearchSpecification(private val criteria: OrderSearchCriteria) : Specification<Order> {
-  private fun isLikeFullName(
-    deviceWearer: Join<OrderVersion, DeviceWearer>,
-    criteriaBuilder: CriteriaBuilder,
-    keyword: String,
-  ): Predicate {
-    var fullName = criteriaBuilder.concat(deviceWearer.get(DeviceWearer::firstName.name), " ")
-    fullName = criteriaBuilder.concat(fullName, deviceWearer.get(DeviceWearer::lastName.name))
-
-    return criteriaBuilder.like(
-      criteriaBuilder.lower(fullName),
-      keyword,
-    )
-  }
-
   private fun isLikeFirstName(
     deviceWearer: Join<OrderVersion, DeviceWearer>,
     criteriaBuilder: CriteriaBuilder,
@@ -79,12 +65,21 @@ class OrderSearchSpecification(private val criteria: OrderSearchCriteria) : Spec
     )
   }
 
+  private fun isMatch(
+    deviceWearer: Join<OrderVersion, DeviceWearer>,
+    criteriaBuilder: CriteriaBuilder,
+    keyword: String,
+  ): Predicate = criteriaBuilder.or(
+    isLikeFirstName(deviceWearer, criteriaBuilder, keyword),
+    isLikeLastName(deviceWearer, criteriaBuilder, keyword),
+    isLikePIN(deviceWearer, criteriaBuilder, keyword),
+  )
+
   override fun toPredicate(
     root: Root<Order>,
     @Nullable query: CriteriaQuery<*>?,
     criteriaBuilder: CriteriaBuilder,
   ): Predicate? {
-    val predicates = mutableListOf<Predicate>()
     val version: Join<Order, OrderVersion> = root.join("versions")
     val deviceWearer: Join<OrderVersion, DeviceWearer> = version.join("deviceWearer")
 
@@ -95,19 +90,14 @@ class OrderSearchSpecification(private val criteria: OrderSearchCriteria) : Spec
     subquery?.where(criteriaBuilder.equal(subqueryRoot?.get<Order>("order"), root))
 
     val normalizedKeyword = this.criteria.searchTerm.trim().replace(Regex("\\s+"), " ").lowercase()
-    predicates.add(isLikeFullName(deviceWearer, criteriaBuilder, normalizedKeyword))
-    predicates.add(isLikeFirstName(deviceWearer, criteriaBuilder, normalizedKeyword))
-    predicates.add(isLikeLastName(deviceWearer, criteriaBuilder, normalizedKeyword))
-    predicates.add(isLikePIN(deviceWearer, criteriaBuilder, normalizedKeyword))
 
-    if (predicates.isNotEmpty()) {
-      return criteriaBuilder.and(
-        criteriaBuilder.equal(version.get<Int>("versionId"), subquery),
-        criteriaBuilder.equal(version.get<String>("status"), OrderStatus.SUBMITTED),
-        criteriaBuilder.or(*predicates.toTypedArray()),
-      )
-    }
+    val predicates =
+      normalizedKeyword.split(" ").map { keywordPart -> isMatch(deviceWearer, criteriaBuilder, keywordPart) }
 
-    return criteriaBuilder.equal(version.get<Int>("versionId"), subquery)
+    return criteriaBuilder.and(
+      criteriaBuilder.equal(version.get<Int>("versionId"), subquery),
+      criteriaBuilder.equal(version.get<String>("status"), OrderStatus.SUBMITTED),
+      criteriaBuilder.and(*predicates.toTypedArray()),
+    )
   }
 }
