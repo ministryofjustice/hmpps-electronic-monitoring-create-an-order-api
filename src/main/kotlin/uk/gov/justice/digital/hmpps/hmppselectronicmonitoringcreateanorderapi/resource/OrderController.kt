@@ -58,6 +58,16 @@ class OrderController(@Autowired val orderService: OrderService) {
     return ResponseEntity(convertToDto(newVersion), HttpStatus.OK)
   }
 
+  @PostMapping("/orders/{orderId}/amend-rejected-order")
+  fun amendOriginalOrderVersion(
+    @PathVariable orderId: UUID,
+    authentication: Authentication,
+  ): ResponseEntity<OrderDto> {
+    val username = authentication.name
+    val newVersion = orderService.createVersion(orderId, username, RequestType.AMEND_ORIGINAL_REQUEST)
+    return ResponseEntity(convertToDto(newVersion), HttpStatus.OK)
+  }
+
   @GetMapping("/orders/{orderId}")
   fun getOrder(@PathVariable orderId: UUID, authentication: Authentication): ResponseEntity<OrderDto> {
     val username = authentication.name

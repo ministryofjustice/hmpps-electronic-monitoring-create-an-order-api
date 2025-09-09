@@ -248,6 +248,31 @@ class OrderControllerTest : IntegrationTestBase() {
   }
 
   @Nested
+  @DisplayName("POST /api/order/amend-rejected-order")
+  inner class AmendRejectedOrder {
+    @Test
+    fun `It should create a new version with type AMEND_ORIGINAL_REQUEST`() {
+      val order = createAndPersistPopulatedOrder(status = OrderStatus.SUBMITTED)
+
+      val variationOrder = webTestClient.post()
+        .uri("/api/orders/${order.id}/amend-rejected-order")
+        .headers(setAuthorisation(username = "AUTH_ADM"))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody(OrderDto::class.java)
+        .returnResult()
+        .responseBody!!
+
+      assertThat(variationOrder.id).isNotNull()
+      assertThat(variationOrder.id).isEqualTo(order.id)
+      assertThat(variationOrder.status).isEqualTo(OrderStatus.IN_PROGRESS)
+      assertThat(variationOrder.type).isEqualTo(RequestType.AMEND_ORIGINAL_REQUEST)
+      assertThat(variationOrder.username).isEqualTo(testUser)
+    }
+  }
+
+  @Nested
   @DisplayName("GET /api/orders")
   inner class GetOrders {
     @Test
