@@ -190,7 +190,11 @@ data class OrderVersion(
 
   private val isOrderOrHasVariationDetails: Boolean
     get() = (
-      type === RequestType.REQUEST || variationDetails != null
+      if (type === RequestType.VARIATION) {
+        variationDetails != null
+      } else {
+        true
+      }
       )
 
   private val requiredDocuments: Boolean
