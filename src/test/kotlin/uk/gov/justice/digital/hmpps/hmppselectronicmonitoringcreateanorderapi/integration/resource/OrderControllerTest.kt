@@ -1073,11 +1073,11 @@ class OrderControllerTest : IntegrationTestBase() {
       val submitResult = fmsResultRepository.findAll().firstOrNull()
       assertThat(submitResult).isNotNull
       val rawExpectedDWJson = Files.readString(
-        Paths.get("src/test/resources/json/integration/resource/orderControllerTest/ExpectedDW.json"),
+        Paths.get("src/test/resources/json/orderControllerTest/ExpectedDW.json"),
       ).trimIndent()
 
       val rawExpectedOrderJson = Files.readString(
-        Paths.get("src/test/resources/json/integration/resource/orderControllerTest/ExpectedMo.json"),
+        Paths.get("src/test/resources/json/orderControllerTest/ExpectedMo.json"),
       ).trimIndent()
 
       val expectedOrderJson = rawExpectedOrderJson
@@ -1194,11 +1194,11 @@ class OrderControllerTest : IntegrationTestBase() {
         .isOk
 
       val rawExpectedDWJson = Files.readString(
-        Paths.get("src/test/resources/json/integration/resource/orderControllerTest/ExpectedDW.json"),
+        Paths.get("src/test/resources/json/orderControllerTest/ExpectedDW.json"),
       ).trimIndent()
 
       val rawExpectedOrderJson = Files.readString(
-        Paths.get("src/test/resources/json/integration/resource/orderControllerTest/ExpectedMo.json"),
+        Paths.get("src/test/resources/json/orderControllerTest/ExpectedMo.json"),
       ).trimIndent()
 
       val expectedOrderJson = rawExpectedOrderJson
@@ -1328,11 +1328,11 @@ class OrderControllerTest : IntegrationTestBase() {
       assertThat(submitResult).isNotNull
 
       val rawExpectedDWJson = Files.readString(
-        Paths.get("src/test/resources/json/integration/resource/orderControllerTest/ExpectedDW.json"),
+        Paths.get("src/test/resources/json/orderControllerTest/ExpectedDW.json"),
       ).trimIndent()
       val expectedOrderJson = Files
         .readString(
-          Paths.get("src/test/resources/json/integration/resource/orderControllerTest/ExpectedVariationMo.json"),
+          Paths.get("src/test/resources/json/orderControllerTest/ExpectedVariationMo.json"),
         )
         .trimIndent()
         .replace("{mockStartDateInBritishTime}", mockStartDateInBritishTime)
@@ -1428,7 +1428,7 @@ class OrderControllerTest : IntegrationTestBase() {
       val submitResult = fmsResultRepository.findAll().firstOrNull()
       assertThat(submitResult).isNotNull
       val expectedDwJson = Files.readString(
-        Paths.get("src/test/resources/json/integration/resource/orderControllerTest/ExpectedNoFixAddressDW.json"),
+        Paths.get("src/test/resources/json/orderControllerTest/ExpectedNoFixAddressDW.json"),
       ).trimIndent()
       assertThat(submitResult!!.deviceWearerResult.payload).isEqualTo(expectedDwJson.removeWhitespaceAndNewlines())
       val fmsOrderRequest = submitResult.monitoringOrderResult.payload
@@ -1523,11 +1523,11 @@ class OrderControllerTest : IntegrationTestBase() {
       val submitResult = fmsResultRepository.findAll().firstOrNull()
       assertThat(submitResult).isNotNull
       val rawExpectedDWJson = Files.readString(
-        Paths.get("src/test/resources/json/integration/resource/orderControllerTest/ExpectedDW.json"),
+        Paths.get("src/test/resources/json/orderControllerTest/ExpectedDW.json"),
       ).trimIndent()
 
       val rawExpectedOrderJson = Files.readString(
-        Paths.get("src/test/resources/json/integration/resource/orderControllerTest/ExpectedMo.json"),
+        Paths.get("src/test/resources/json/orderControllerTest/ExpectedMo.json"),
       ).trimIndent()
 
       val expectedOrderJson = rawExpectedOrderJson
