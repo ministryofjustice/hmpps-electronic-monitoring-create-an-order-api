@@ -39,6 +39,17 @@ class OrderSearchSpecification(private val criteria: OrderSearchCriteria) : Spec
     keyword,
   )
 
+  private fun isLikeLastName(
+    deviceWearer: Join<OrderVersion, DeviceWearer>,
+    criteriaBuilder: CriteriaBuilder,
+    keyword: String,
+  ): Predicate = criteriaBuilder.like(
+    criteriaBuilder.lower(
+      deviceWearer.get(DeviceWearer::lastName.name),
+    ),
+    keyword,
+  )
+
   override fun toPredicate(
     root: Root<Order>,
     @Nullable query: CriteriaQuery<*>?,
@@ -57,6 +68,7 @@ class OrderSearchSpecification(private val criteria: OrderSearchCriteria) : Spec
     val normalizedKeyword = this.criteria.searchTerm.trim().replace(Regex("\\s+"), " ").lowercase()
     predicates.add(isLikeFullName(deviceWearer, criteriaBuilder, normalizedKeyword))
     predicates.add(isLikeFirstName(deviceWearer, criteriaBuilder, normalizedKeyword))
+    predicates.add(isLikeLastName(deviceWearer, criteriaBuilder, normalizedKeyword))
 
     if (predicates.isNotEmpty()) {
       return criteriaBuilder.and(

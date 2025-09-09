@@ -585,6 +585,20 @@ class OrderControllerTest : IntegrationTestBase() {
     }
 
     @Test
+    fun `It should return orders that match the last name`() {
+      createAndPersistPopulatedOrder(status = OrderStatus.SUBMITTED)
+
+      webTestClient.get()
+        .uri("/api/orders/search?searchTerm=smith")
+        .headers(setAuthorisation("AUTH_ADM"))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBodyList(OrderDto::class.java)
+        .hasSize(1)
+    }
+
+    @Test
     fun `Should only return the most recent order version`() {
       val order = TestUtilities.createReadyToSubmitOrder(
 
