@@ -14,27 +14,72 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 
 class OrderSearchSpecification(private val criteria: OrderSearchCriteria) : Specification<Order> {
-  private fun isLikeFullName(
+  private fun isLikeFirstName(
+    deviceWearer: Join<OrderVersion, DeviceWearer>,
+    criteriaBuilder: CriteriaBuilder,
+    keyword: String,
+  ): Predicate = criteriaBuilder.like(
+    criteriaBuilder.lower(
+      deviceWearer.get(DeviceWearer::firstName.name),
+    ),
+    keyword,
+  )
+
+  private fun isLikeLastName(
+    deviceWearer: Join<OrderVersion, DeviceWearer>,
+    criteriaBuilder: CriteriaBuilder,
+    keyword: String,
+  ): Predicate = criteriaBuilder.like(
+    criteriaBuilder.lower(
+      deviceWearer.get(DeviceWearer::lastName.name),
+    ),
+    keyword,
+  )
+
+  private fun isLikePIN(
     deviceWearer: Join<OrderVersion, DeviceWearer>,
     criteriaBuilder: CriteriaBuilder,
     keyword: String,
   ): Predicate {
-    var fullName = criteriaBuilder.concat(deviceWearer.get(DeviceWearer::firstName.name), " ")
-    fullName = criteriaBuilder.concat(fullName, deviceWearer.get(DeviceWearer::lastName.name))
+    val matchesNomisId = criteriaBuilder.like(
+      criteriaBuilder.lower(deviceWearer.get(DeviceWearer::nomisId.name)),
+      keyword,
+    )
+    val matchesPncId = criteriaBuilder.like(criteriaBuilder.lower(deviceWearer.get(DeviceWearer::pncId.name)), keyword)
+    val matchesDeliusId =
+      criteriaBuilder.like(criteriaBuilder.lower(deviceWearer.get(DeviceWearer::deliusId.name)), keyword)
+    val matchesPrisonNumber =
+      criteriaBuilder.like(criteriaBuilder.lower(deviceWearer.get(DeviceWearer::prisonNumber.name)), keyword)
+    val matchesHomeOfficeRefNumber =
+      criteriaBuilder.like(
+        criteriaBuilder.lower(deviceWearer.get(DeviceWearer::homeOfficeReferenceNumber.name)),
+        keyword,
+      )
 
-    val normalizedKeyword = keyword.trim().replace(Regex("\\s+"), " ").lowercase()
-    return criteriaBuilder.like(
-      criteriaBuilder.lower(fullName),
-      normalizedKeyword,
+    return criteriaBuilder.or(
+      matchesNomisId,
+      matchesPncId,
+      matchesDeliusId,
+      matchesPrisonNumber,
+      matchesHomeOfficeRefNumber,
     )
   }
+
+  private fun isMatch(
+    deviceWearer: Join<OrderVersion, DeviceWearer>,
+    criteriaBuilder: CriteriaBuilder,
+    keyword: String,
+  ): Predicate = criteriaBuilder.or(
+    isLikeFirstName(deviceWearer, criteriaBuilder, keyword),
+    isLikeLastName(deviceWearer, criteriaBuilder, keyword),
+    isLikePIN(deviceWearer, criteriaBuilder, keyword),
+  )
 
   override fun toPredicate(
     root: Root<Order>,
     @Nullable query: CriteriaQuery<*>?,
     criteriaBuilder: CriteriaBuilder,
   ): Predicate? {
-    val predicates = mutableListOf<Predicate>()
     val version: Join<Order, OrderVersion> = root.join("versions")
     val deviceWearer: Join<OrderVersion, DeviceWearer> = version.join("deviceWearer")
 
@@ -44,18 +89,15 @@ class OrderSearchSpecification(private val criteria: OrderSearchCriteria) : Spec
     subquery?.select(criteriaBuilder.max(subqueryRoot?.get<Int>("versionId")))
     subquery?.where(criteriaBuilder.equal(subqueryRoot?.get<Order>("order"), root))
 
-    if (this.criteria.searchTerm.isNotEmpty()) {
-      predicates.add(isLikeFullName(deviceWearer, criteriaBuilder, this.criteria.searchTerm))
-    }
+    val normalizedKeyword = this.criteria.searchTerm.trim().replace(Regex("\\s+"), " ").lowercase()
 
-    if (predicates.isNotEmpty()) {
-      return criteriaBuilder.and(
-        criteriaBuilder.equal(version.get<Int>("versionId"), subquery),
-        criteriaBuilder.equal(version.get<String>("status"), OrderStatus.SUBMITTED),
-        criteriaBuilder.or(*predicates.toTypedArray()),
-      )
-    }
+    val predicates =
+      normalizedKeyword.split(" ").map { keywordPart -> isMatch(deviceWearer, criteriaBuilder, keywordPart) }
 
-    return criteriaBuilder.equal(version.get<Int>("versionId"), subquery)
+    return criteriaBuilder.and(
+      criteriaBuilder.equal(version.get<Int>("versionId"), subquery),
+      criteriaBuilder.equal(version.get<String>("status"), OrderStatus.SUBMITTED),
+      criteriaBuilder.and(*predicates.toTypedArray()),
+    )
   }
 }
