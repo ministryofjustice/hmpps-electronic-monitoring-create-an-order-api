@@ -599,6 +599,34 @@ class OrderControllerTest : IntegrationTestBase() {
     }
 
     @Test
+    fun `It should return orders that match the NOMIS`() {
+      createAndPersistPopulatedOrder(status = OrderStatus.SUBMITTED)
+
+      webTestClient.get()
+        .uri("/api/orders/search?searchTerm=nomisId")
+        .headers(setAuthorisation("AUTH_ADM"))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBodyList(OrderDto::class.java)
+        .hasSize(1)
+    }
+
+    @Test
+    fun `It should return orders that match the PNC`() {
+      createAndPersistPopulatedOrder(status = OrderStatus.SUBMITTED)
+
+      webTestClient.get()
+        .uri("/api/orders/search?searchTerm=pncId")
+        .headers(setAuthorisation("AUTH_ADM"))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBodyList(OrderDto::class.java)
+        .hasSize(1)
+    }
+
+    @Test
     fun `Should only return the most recent order version`() {
       val order = TestUtilities.createReadyToSubmitOrder(
 

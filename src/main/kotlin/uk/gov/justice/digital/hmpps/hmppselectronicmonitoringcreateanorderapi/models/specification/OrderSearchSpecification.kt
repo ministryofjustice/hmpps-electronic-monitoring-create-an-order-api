@@ -50,6 +50,19 @@ class OrderSearchSpecification(private val criteria: OrderSearchCriteria) : Spec
     keyword,
   )
 
+  private fun isLikePIN(
+    deviceWearer: Join<OrderVersion, DeviceWearer>,
+    criteriaBuilder: CriteriaBuilder,
+    keyword: String,
+  ): Predicate {
+    val matchesNomisId = criteriaBuilder.like(
+      criteriaBuilder.lower(deviceWearer.get(DeviceWearer::nomisId.name)),
+      keyword,
+    )
+    val matchesPncId = criteriaBuilder.like(criteriaBuilder.lower(deviceWearer.get(DeviceWearer::pncId.name)), keyword)
+    return criteriaBuilder.or(matchesNomisId, matchesPncId)
+  }
+
   override fun toPredicate(
     root: Root<Order>,
     @Nullable query: CriteriaQuery<*>?,
@@ -69,6 +82,7 @@ class OrderSearchSpecification(private val criteria: OrderSearchCriteria) : Spec
     predicates.add(isLikeFullName(deviceWearer, criteriaBuilder, normalizedKeyword))
     predicates.add(isLikeFirstName(deviceWearer, criteriaBuilder, normalizedKeyword))
     predicates.add(isLikeLastName(deviceWearer, criteriaBuilder, normalizedKeyword))
+    predicates.add(isLikePIN(deviceWearer, criteriaBuilder, normalizedKeyword))
 
     if (predicates.isNotEmpty()) {
       return criteriaBuilder.and(
