@@ -542,6 +542,7 @@ class OrderControllerTest : IntegrationTestBase() {
         "prisonNumber",
         "homeOfficeReferenceNumber",
         "john", "nomisId",
+        "john", "prisonNumber", "smith",
       ],
     )
     fun `Can search for orders given a valid search term`(searchTerm: String) {
