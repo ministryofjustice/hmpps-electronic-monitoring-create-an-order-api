@@ -559,6 +559,20 @@ class OrderControllerTest : IntegrationTestBase() {
     }
 
     @Test
+    fun `Should not return the order if only part of the keyword matches`() {
+      createAndPersistPopulatedOrder(status = OrderStatus.SUBMITTED)
+
+      webTestClient.get()
+        .uri("/api/orders/search?searchTerm=john invalidNomisId")
+        .headers(setAuthorisation("SOME_OTHER_USER"))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBodyList(OrderDto::class.java)
+        .hasSize(0)
+    }
+
+    @Test
     fun `It should return orders created by a different user`() {
       createAndPersistPopulatedOrder(status = OrderStatus.SUBMITTED)
 
