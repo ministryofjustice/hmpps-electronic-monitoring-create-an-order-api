@@ -410,7 +410,7 @@ data class MonitoringOrder(
 
       if (order.type === RequestType.VARIATION) {
         monitoringOrder.orderVariationType = order.variationDetails!!.variationType.value
-        monitoringOrder.orderVariationDate = order.variationDetails!!.variationDate.format(dateTimeFormatter)
+        monitoringOrder.orderVariationDate = getBritishDateAndTime(order.variationDetails!!.variationDate)
         monitoringOrder.orderVariationDetails = order.variationDetails!!.variationDetails
       }
 

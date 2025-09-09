@@ -1428,7 +1428,7 @@ class OrderControllerTest : IntegrationTestBase() {
       val submitResult = fmsResultRepository.findAll().firstOrNull()
       assertThat(submitResult).isNotNull
       val expectedDwJson = Files.readString(
-        Paths.get("src/test/resources/json/orderControllerTest/ExpectedNoFixAddressDW.json"),
+        Paths.get("src/test/resources/json/orderControllerTest/DwWithNoFixedAddress.json"),
       ).trimIndent()
       assertThat(submitResult!!.deviceWearerResult.payload).isEqualTo(expectedDwJson.removeWhitespaceAndNewlines())
       val fmsOrderRequest = submitResult.monitoringOrderResult.payload
