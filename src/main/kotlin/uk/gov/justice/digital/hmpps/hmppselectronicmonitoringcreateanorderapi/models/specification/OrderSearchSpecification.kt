@@ -22,12 +22,22 @@ class OrderSearchSpecification(private val criteria: OrderSearchCriteria) : Spec
     var fullName = criteriaBuilder.concat(deviceWearer.get(DeviceWearer::firstName.name), " ")
     fullName = criteriaBuilder.concat(fullName, deviceWearer.get(DeviceWearer::lastName.name))
 
-    val normalizedKeyword = keyword.trim().replace(Regex("\\s+"), " ").lowercase()
     return criteriaBuilder.like(
       criteriaBuilder.lower(fullName),
-      normalizedKeyword,
+      keyword,
     )
   }
+
+  private fun isLikeFirstName(
+    deviceWearer: Join<OrderVersion, DeviceWearer>,
+    criteriaBuilder: CriteriaBuilder,
+    keyword: String,
+  ): Predicate = criteriaBuilder.like(
+    criteriaBuilder.lower(
+      deviceWearer.get(DeviceWearer::firstName.name),
+    ),
+    keyword,
+  )
 
   override fun toPredicate(
     root: Root<Order>,
@@ -44,9 +54,9 @@ class OrderSearchSpecification(private val criteria: OrderSearchCriteria) : Spec
     subquery?.select(criteriaBuilder.max(subqueryRoot?.get<Int>("versionId")))
     subquery?.where(criteriaBuilder.equal(subqueryRoot?.get<Order>("order"), root))
 
-    if (this.criteria.searchTerm.isNotEmpty()) {
-      predicates.add(isLikeFullName(deviceWearer, criteriaBuilder, this.criteria.searchTerm))
-    }
+    val normalizedKeyword = this.criteria.searchTerm.trim().replace(Regex("\\s+"), " ").lowercase()
+    predicates.add(isLikeFullName(deviceWearer, criteriaBuilder, normalizedKeyword))
+    predicates.add(isLikeFirstName(deviceWearer, criteriaBuilder, normalizedKeyword))
 
     if (predicates.isNotEmpty()) {
       return criteriaBuilder.and(

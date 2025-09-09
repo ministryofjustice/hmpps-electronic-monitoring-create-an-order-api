@@ -571,7 +571,7 @@ class OrderControllerTest : IntegrationTestBase() {
     }
 
     @Test
-    fun `It should only return orders that match full name`() {
+    fun `It should return orders that match the first name`() {
       createAndPersistPopulatedOrder(status = OrderStatus.SUBMITTED)
 
       webTestClient.get()
@@ -581,7 +581,7 @@ class OrderControllerTest : IntegrationTestBase() {
         .expectStatus()
         .isOk
         .expectBodyList(OrderDto::class.java)
-        .hasSize(0)
+        .hasSize(1)
     }
 
     @Test
