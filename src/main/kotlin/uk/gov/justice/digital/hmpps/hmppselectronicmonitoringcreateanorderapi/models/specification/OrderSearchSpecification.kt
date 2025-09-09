@@ -60,7 +60,23 @@ class OrderSearchSpecification(private val criteria: OrderSearchCriteria) : Spec
       keyword,
     )
     val matchesPncId = criteriaBuilder.like(criteriaBuilder.lower(deviceWearer.get(DeviceWearer::pncId.name)), keyword)
-    return criteriaBuilder.or(matchesNomisId, matchesPncId)
+    val matchesDeliusId =
+      criteriaBuilder.like(criteriaBuilder.lower(deviceWearer.get(DeviceWearer::deliusId.name)), keyword)
+    val matchesPrisonNumber =
+      criteriaBuilder.like(criteriaBuilder.lower(deviceWearer.get(DeviceWearer::prisonNumber.name)), keyword)
+    val matchesHomeOfficeRefNumber =
+      criteriaBuilder.like(
+        criteriaBuilder.lower(deviceWearer.get(DeviceWearer::homeOfficeReferenceNumber.name)),
+        keyword,
+      )
+
+    return criteriaBuilder.or(
+      matchesNomisId,
+      matchesPncId,
+      matchesDeliusId,
+      matchesPrisonNumber,
+      matchesHomeOfficeRefNumber,
+    )
   }
 
   override fun toPredicate(
