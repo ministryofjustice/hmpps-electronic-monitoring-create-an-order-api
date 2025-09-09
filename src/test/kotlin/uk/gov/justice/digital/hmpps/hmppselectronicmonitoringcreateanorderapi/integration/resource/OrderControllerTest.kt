@@ -8,6 +8,8 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.ValueSource
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
@@ -528,12 +530,24 @@ class OrderControllerTest : IntegrationTestBase() {
   @Nested
   @DisplayName("GET /api/orders/search")
   inner class SearchOrders {
-    @Test
-    fun `It should return orders where the first and last names match`() {
+    @ParameterizedTest(name = "It should return order that matches {0}")
+    @ValueSource(
+      strings = [
+        "John",
+        "Smith",
+        "john smith",
+        "nomisId",
+        "pncId",
+        "deliusId",
+        "prisonNumber",
+        "homeOfficeReferenceNumber",
+      ],
+    )
+    fun `Can search for orders given a valid search term`(searchTerm: String) {
       createAndPersistPopulatedOrder(status = OrderStatus.SUBMITTED)
 
       webTestClient.get()
-        .uri("/api/orders/search?searchTerm=john smith")
+        .uri("/api/orders/search?searchTerm=$searchTerm")
         .headers(setAuthorisation("AUTH_ADM"))
         .exchange()
         .expectStatus()
@@ -568,104 +582,6 @@ class OrderControllerTest : IntegrationTestBase() {
         .isOk
         .expectBodyList(OrderDto::class.java)
         .hasSize(0)
-    }
-
-    @Test
-    fun `It should return orders that match the first name`() {
-      createAndPersistPopulatedOrder(status = OrderStatus.SUBMITTED)
-
-      webTestClient.get()
-        .uri("/api/orders/search?searchTerm=john")
-        .headers(setAuthorisation("AUTH_ADM"))
-        .exchange()
-        .expectStatus()
-        .isOk
-        .expectBodyList(OrderDto::class.java)
-        .hasSize(1)
-    }
-
-    @Test
-    fun `It should return orders that match the last name`() {
-      createAndPersistPopulatedOrder(status = OrderStatus.SUBMITTED)
-
-      webTestClient.get()
-        .uri("/api/orders/search?searchTerm=smith")
-        .headers(setAuthorisation("AUTH_ADM"))
-        .exchange()
-        .expectStatus()
-        .isOk
-        .expectBodyList(OrderDto::class.java)
-        .hasSize(1)
-    }
-
-    @Test
-    fun `It should return orders that match the NOMIS`() {
-      createAndPersistPopulatedOrder(status = OrderStatus.SUBMITTED)
-
-      webTestClient.get()
-        .uri("/api/orders/search?searchTerm=nomisId")
-        .headers(setAuthorisation("AUTH_ADM"))
-        .exchange()
-        .expectStatus()
-        .isOk
-        .expectBodyList(OrderDto::class.java)
-        .hasSize(1)
-    }
-
-    @Test
-    fun `It should return orders that match the PNC`() {
-      createAndPersistPopulatedOrder(status = OrderStatus.SUBMITTED)
-
-      webTestClient.get()
-        .uri("/api/orders/search?searchTerm=pncId")
-        .headers(setAuthorisation("AUTH_ADM"))
-        .exchange()
-        .expectStatus()
-        .isOk
-        .expectBodyList(OrderDto::class.java)
-        .hasSize(1)
-    }
-
-    @Test
-    fun `It should return orders that match the Delius ID`() {
-      createAndPersistPopulatedOrder(status = OrderStatus.SUBMITTED)
-
-      webTestClient.get()
-        .uri("/api/orders/search?searchTerm=deliusId")
-        .headers(setAuthorisation("AUTH_ADM"))
-        .exchange()
-        .expectStatus()
-        .isOk
-        .expectBodyList(OrderDto::class.java)
-        .hasSize(1)
-    }
-
-    @Test
-    fun `It should return orders that match the Prison number`() {
-      createAndPersistPopulatedOrder(status = OrderStatus.SUBMITTED)
-
-      webTestClient.get()
-        .uri("/api/orders/search?searchTerm=prisonNumber")
-        .headers(setAuthorisation("AUTH_ADM"))
-        .exchange()
-        .expectStatus()
-        .isOk
-        .expectBodyList(OrderDto::class.java)
-        .hasSize(1)
-    }
-
-    @Test
-    fun `It should return orders that match the Home office reference number`() {
-      createAndPersistPopulatedOrder(status = OrderStatus.SUBMITTED)
-
-      webTestClient.get()
-        .uri("/api/orders/search?searchTerm=homeOfficeReferenceNumber")
-        .headers(setAuthorisation("AUTH_ADM"))
-        .exchange()
-        .expectStatus()
-        .isOk
-        .expectBodyList(OrderDto::class.java)
-        .hasSize(1)
     }
 
     @Test
@@ -713,7 +629,7 @@ class OrderControllerTest : IntegrationTestBase() {
         .expectBodyList(OrderDto::class.java)
         .hasSize(1).returnResult().responseBody
 
-      assertThat(result.first().deviceWearer?.versionId).isEqualTo(versionId2)
+      assertThat(result!!.first().deviceWearer?.versionId).isEqualTo(versionId2)
     }
   }
 
