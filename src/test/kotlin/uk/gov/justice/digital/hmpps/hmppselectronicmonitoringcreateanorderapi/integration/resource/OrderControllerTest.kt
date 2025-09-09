@@ -37,6 +37,8 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.FmsSubmissionResultRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.utilities.TestUtilities
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
+import java.nio.file.Files
+import java.nio.file.Paths
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
@@ -744,6 +746,7 @@ class OrderControllerTest : IntegrationTestBase() {
   @Nested
   @DisplayName("POST /api/orders/{orderId}/submit")
   inner class SubmitOrder {
+
     @Test
     fun `It should return not found if order does not exist when submitting order`() {
       webTestClient.post()
@@ -1044,286 +1047,22 @@ class OrderControllerTest : IntegrationTestBase() {
 
       val submitResult = fmsResultRepository.findAll().firstOrNull()
       assertThat(submitResult).isNotNull
+      val rawExpectedDWJson = Files.readString(
+        Paths.get("src/test/resources/json/integration/resource/orderControllerTest/ExpectedDW.json"),
+      ).trimIndent()
 
-      val expectedDWJson = """
-      {
-      	"title": "",
-      	"first_name": "John",
-      	"middle_name": "",
-      	"last_name": "Smith",
-      	"alias": "Johnny",
-      	"date_of_birth": "1990-01-01",
-      	"adult_child": "adult",
-      	"sex": "Male",
-      	"gender_identity": "Male",
-      	"disability": [
-      		{
-      			"disability": "Vision"
-      		},
-      		{
-      			"disability": "Learning, understanding or concentrating"
-      		}
-      	],
-      	"address_1": "20 Somewhere Street",
-      	"address_2": "Nowhere City",
-      	"address_3": "Random County",
-      	"address_4": "United Kingdom",
-      	"address_post_code": "SW11 1NC",
-      	"secondary_address_1": "22 Somewhere Street",
-        "secondary_address_2": "Nowhere City",
-        "secondary_address_3": "Random County",
-        "secondary_address_4": "United Kingdom",
-        "secondary_address_post_code": "SW11 1NC",
-      	"phone_number": "00447401111111",
-      	"risk_serious_harm": "",
-      	"risk_self_harm": "",
-      	"risk_details": "Danger",
-      	"mappa": "MAAPA 1",
-      	"mappa_case_type": "CPPC (Critical Public Protection Case)",
-      	"risk_categories": [
-          {
-            "category": "Sexual Offences"
-          },
-          {
-            "category": "Risk to Specific Gender"
-          }
-        ],
-      	"responsible_adult_required": "true",
-      	"parent": "Mark Smith",
-      	"guardian": "",
-      	"parent_address_1": "",
-      	"parent_address_2": "",
-      	"parent_address_3": "",
-      	"parent_address_4": "",
-      	"parent_address_post_code": "",
-      	"parent_phone_number": "00447401111111",
-      	"parent_dob": "",
-      	"pnc_id": "pncId",
-      	"nomis_id": "nomisId",
-      	"delius_id": "deliusId",
-      	"prison_number": "prisonNumber",
-      	"home_office_case_reference_number": "homeOfficeReferenceNumber",
-      	"interpreter_required": "true",
-      	"language": "British Sign"
-      }
-      """.trimIndent()
+      val rawExpectedOrderJson = Files.readString(
+        Paths.get("src/test/resources/json/integration/resource/orderControllerTest/ExpectedMo.json"),
+      ).trimIndent()
 
-      val expectedOrderJson = """
-      {
-      	"case_id": "MockDeviceWearerId",
-      	"allday_lockdown": "",
-      	"atv_allowance": "",
-      	"condition_type": "Requirement of a Community Order",
-      	"court": "",
-      	"court_order_email": "",      	
-      	"device_type": "",
-      	"device_wearer": "John Smith",
-      	"enforceable_condition": [
-      		{
-      			"condition": "Curfew with EM",
-            "start_date": "$mockStartDateInBritishTime",
-            "end_date": "$mockEndDateInBritishTime"
-      		},
-      		{
-      			"condition": "Location Monitoring (Fitted Device)",
-            "start_date": "$mockStartDateInBritishTime",
-            "end_date": "$mockEndDateInBritishTime"
-      		},
-      		{
-      			"condition": "EM Exclusion / Inclusion Zone",
-            "start_date": "$mockStartDateInBritishTime",
-            "end_date": "$mockEndDateInBritishTime"
-      		},          
-      		{
-      			"condition": "AML",
-            "start_date": "$mockStartDateInBritishTime",
-            "end_date": "$mockEndDateInBritishTime"
-      		}
-      	],
-      	"exclusion_allday": "",
-      	"interim_court_date": "",
-      	"issuing_organisation": "",
-      	"media_interest": "",
-      	"new_order_received": "",
-      	"notifying_officer_email": "",
-      	"notifying_officer_name": "",
-      	"notifying_organization": "Prison",
-      	"no_post_code": "",
-      	"no_address_1": "",
-      	"no_address_2": "",
-      	"no_address_3": "",
-      	"no_address_4": "",
-      	"no_email": "",
-      	"no_name": "Wayland Prison",
-      	"no_phone_number": "",
-      	"offence": "Fraud Offences",
-      	"offence_date": "",
-      	"order_end": "$mockEndDateInBritishTime",
-      	"order_id": "$orderId",
-      	"order_request_type": "New Order",
-      	"order_start": "$mockStartDateInBritishTime",
-      	"order_type": "Community",
-      	"order_type_description": "DAPOL",
-      	"order_type_detail": "",
-      	"order_variation_date": "",
-      	"order_variation_details": "",
-      	"order_variation_req_received_date": "",
-      	"order_variation_type": "",
-      	"pdu_responsible": "Camden and Islington",
-      	"pdu_responsible_email": "",
-      	"planned_order_end_date": "",
-      	"responsible_officer_details_received": "",
-      	"responsible_officer_email": "",
-      	"responsible_officer_phone": "00447401111111",
-      	"responsible_officer_name": "John Smith",
-      	"responsible_organization": "Probation",
-      	"ro_post_code": "",
-      	"ro_address_1": "",
-      	"ro_address_2": "",
-      	"ro_address_3": "",
-      	"ro_address_4": "",
-      	"ro_email": "abc@def.com",
-      	"ro_phone": "",
-      	"ro_region": "London",
-      	"sentence_date": "",
-      	"sentence_expiry": "",
-        "sentence_type": "Life Sentence",
-      	"tag_at_source": "No",
-      	"tag_at_source_details": "",
-        "date_and_time_installation_will_take_place": "",
-        "released_under_prarr":"No",
-      	"technical_bail": "",
-      	"trial_date": "",
-      	"trial_outcome": "",
-      	"conditional_release_date": "${mockStartDate.format(formatter)}",
-        "conditional_release_start_time": "19:00:00",
-        "conditional_release_end_time": "23:00:00",
-      	"reason_for_order_ending_early": "",
-      	"business_unit": "",
-        "service_end_date": "${mockEndDate.format(formatter)}",
-        "curfew_description": "",
-      	"curfew_start": "$mockStartDateInBritishTime",
-      	"curfew_end": "$mockEndDateInBritishTime",
-      	"curfew_duration": [
-      		{
-      			"location": "primary",
-      			"allday": "",
-      			"schedule": [
-      				{
-      					"day": "Mo",
-      					"start": "17:00",
-      					"end": "09:00"
-      				},
-      				{
-      					"day": "Tu",
-      					"start": "17:00",
-      					"end": "09:00"
-      				},
-      				{
-      					"day": "Wed",
-      					"start": "17:00",
-      					"end": "09:00"
-      				},
-      				{
-      					"day": "Th",
-      					"start": "17:00",
-      					"end": "09:00"
-      				},
-      				{
-      					"day": "Fr",
-      					"start": "17:00",
-      					"end": "09:00"
-      				},
-      				{
-      					"day": "Sa",
-      					"start": "17:00",
-      					"end": "09:00"
-      				},
-      				{
-      					"day": "Su",
-      					"start": "17:00",
-      					"end": "09:00"
-      				}
-      			]
-      		},
-      		{
-      			"location": "secondary",
-      			"allday": "",
-      			"schedule": [
-      				{
-      					"day": "Mo",
-      					"start": "17:00",
-      					"end": "09:00"
-      				},
-      				{
-      					"day": "Tu",
-      					"start": "17:00",
-      					"end": "09:00"
-      				},
-      				{
-      					"day": "Wed",
-      					"start": "17:00",
-      					"end": "09:00"
-      				},
-      				{
-      					"day": "Th",
-      					"start": "17:00",
-      					"end": "09:00"
-      				},
-      				{
-      					"day": "Fr",
-      					"start": "17:00",
-      					"end": "09:00"
-      				},
-      				{
-      					"day": "Sa",
-      					"start": "17:00",
-      					"end": "09:00"
-      				},
-      				{
-      					"day": "Su",
-      					"start": "17:00",
-      					"end": "09:00"
-      				}
-      			]
-      		}
-      	],
-      	"trail_monitoring": "No",
-      	"exclusion_zones": [
-          {
-            "description": "Mock Exclusion Zone",
-            "duration": "Mock Exclusion Duration",
-            "start": "${mockStartDate.format(formatter)}",
-            "end": "${mockEndDate.format(formatter)}"
-          }
-        ],      	
-      	"inclusion_zones": [
-          {
-            "description": "Mock Inclusion Zone",
-            "duration": "Mock Inclusion Duration",
-            "start": "${mockStartDate.format(formatter)}",
-            "end": "${mockEndDate.format(formatter)}"
-          }
-        ],
-      	"abstinence": "Yes",
-      	"schedule": "",
-      	"checkin_schedule": [],
-      	"revocation_date": "",
-      	"revocation_type": "",
-        "installation_address_1": "24 Somewhere Street",
-        "installation_address_2": "Nowhere City",
-        "installation_address_3": "Random County",
-        "installation_address_4": "United Kingdom",
-        "installation_address_post_code": "SW11 1NC",
-        "crown_court_case_reference_number": "",
-        "magistrate_court_case_reference_number": "",
-        "issp": "Yes",
-        "hdc": "No",
-      	"order_status": "Not Started"
-      }
-      """.trimIndent()
+      val expectedOrderJson = rawExpectedOrderJson
+        .replace("{mockStartDateInBritishTime}", mockStartDateInBritishTime)
+        .replace("{mockEndDateInBritishTime}", mockEndDateInBritishTime)
+        .replace("{orderId}", orderId.toString())
+        .replace("{mockStartDate}", mockStartDate.format(formatter))
+        .replace("{mockEndDate}", mockEndDate.format(formatter))
 
-      val expectedDeviceWearer = objectMapper.readValue<FmsDeviceWearer>(expectedDWJson)
+      val expectedDeviceWearer = objectMapper.readValue<FmsDeviceWearer>(rawExpectedDWJson)
       val storedDeviceWearer = objectMapper.readValue<FmsDeviceWearer>(submitResult!!.deviceWearerResult.payload)
       assertThat(storedDeviceWearer).isEqualTo(expectedDeviceWearer)
 
@@ -1429,291 +1168,27 @@ class OrderControllerTest : IntegrationTestBase() {
         .expectStatus()
         .isOk
 
+      val rawExpectedDWJson = Files.readString(
+        Paths.get("src/test/resources/json/integration/resource/orderControllerTest/ExpectedDW.json"),
+      ).trimIndent()
+
+      val rawExpectedOrderJson = Files.readString(
+        Paths.get("src/test/resources/json/integration/resource/orderControllerTest/ExpectedMo.json"),
+      ).trimIndent()
+
+      val expectedOrderJson = rawExpectedOrderJson
+        .replace("{mockStartDateInBritishTime}", mockStartDateInBritishTime)
+        .replace("{mockEndDateInBritishTime}", mockEndDateInBritishTime)
+        .replace("{orderId}", orderId.toString())
+        .replace("{mockStartDate}", mockStartDate.format(formatter))
+        .replace("{mockEndDate}", mockEndDate.format(formatter))
       val submitResult = fmsResultRepository.findAll().firstOrNull()
       assertThat(submitResult).isNotNull
-
-      val expectedDWJson = """
-      {
-      	"title": "",
-      	"first_name": "John",
-      	"middle_name": "",
-      	"last_name": "Smith",
-      	"alias": "Johnny",
-      	"date_of_birth": "1990-01-01",
-      	"adult_child": "adult",
-      	"sex": "Male",
-      	"gender_identity": "Male",
-      	"disability": [
-      		{
-      			"disability": "Vision"
-      		},
-      		{
-      			"disability": "Learning, understanding or concentrating"
-      		}
-      	],
-      	"address_1": "20 Somewhere Street",
-      	"address_2": "Nowhere City",
-      	"address_3": "Random County",
-      	"address_4": "United Kingdom",
-      	"address_post_code": "SW11 1NC",
-      	"secondary_address_1": "22 Somewhere Street",
-        "secondary_address_2": "Nowhere City",
-        "secondary_address_3": "Random County",
-        "secondary_address_4": "United Kingdom",
-        "secondary_address_post_code": "SW11 1NC",
-      	"phone_number": "00447401111111",
-      	"risk_serious_harm": "",
-      	"risk_self_harm": "",
-      	"risk_details": "Danger",
-      	"mappa": "MAAPA 1",
-      	"mappa_case_type": "CPPC (Critical Public Protection Case)",
-      	"risk_categories": [
-          {
-            "category": "Sexual Offences"
-          },
-          {
-            "category": "Risk to Specific Gender"
-          }
-        ],
-      	"responsible_adult_required": "true",
-      	"parent": "Mark Smith",
-      	"guardian": "",
-      	"parent_address_1": "",
-      	"parent_address_2": "",
-      	"parent_address_3": "",
-      	"parent_address_4": "",
-      	"parent_address_post_code": "",
-      	"parent_phone_number": "00447401111111",
-      	"parent_dob": "",
-      	"pnc_id": "pncId",
-      	"nomis_id": "nomisId",
-      	"delius_id": "deliusId",
-      	"prison_number": "prisonNumber",
-      	"home_office_case_reference_number": "homeOfficeReferenceNumber",
-      	"interpreter_required": "true",
-      	"language": "British Sign"
-      }
-      """.trimIndent()
-
-      val expectedOrderJson = """
-      {
-      	"case_id": "MockDeviceWearerId",
-      	"allday_lockdown": "",
-      	"atv_allowance": "",
-      	"condition_type": "Requirement of a Community Order",
-      	"court": "",
-      	"court_order_email": "",      	
-      	"device_type": "",
-      	"device_wearer": "John Smith",
-      	"enforceable_condition": [
-      		{
-      			"condition": "Curfew with EM",
-            "start_date": "$mockStartDateInBritishTime",
-            "end_date": "$mockEndDateInBritishTime"
-      		},
-      		{
-      			"condition": "Location Monitoring (Fitted Device)",
-            "start_date": "$mockStartDateInBritishTime",
-            "end_date": "$mockEndDateInBritishTime"
-      		},
-      		{
-      			"condition": "EM Exclusion / Inclusion Zone",
-            "start_date": "$mockStartDateInBritishTime",
-            "end_date": "$mockEndDateInBritishTime"
-      		},          
-      		{
-      			"condition": "AML",
-            "start_date": "$mockStartDateInBritishTime",
-           "end_date": "$mockEndDateInBritishTime"
-      		}
-      	],
-      	"exclusion_allday": "",
-      	"interim_court_date": "",
-      	"issuing_organisation": "",
-      	"media_interest": "",
-      	"new_order_received": "",
-      	"notifying_officer_email": "",
-      	"notifying_officer_name": "",
-      	"notifying_organization": "Prison",
-      	"no_post_code": "",
-      	"no_address_1": "",
-      	"no_address_2": "",
-      	"no_address_3": "",
-      	"no_address_4": "",
-      	"no_email": "",
-      	"no_name": "Wayland Prison",
-      	"no_phone_number": "",
-      	"offence": "Fraud Offences",
-      	"offence_date": "",
-      	"order_end": "$mockEndDateInBritishTime",
-      	"order_id": "$orderId",
-      	"order_request_type": "New Order",
-      	"order_start": "$mockStartDateInBritishTime",
-      	"order_type": "Community",
-      	"order_type_description": "DAPOL",
-      	"order_type_detail": "",
-      	"order_variation_date": "",
-      	"order_variation_details": "",
-      	"order_variation_req_received_date": "",
-      	"order_variation_type": "",
-      	"pdu_responsible": "Camden and Islington",
-      	"pdu_responsible_email": "",
-      	"planned_order_end_date": "",
-      	"responsible_officer_details_received": "",
-      	"responsible_officer_email": "",
-      	"responsible_officer_phone": "00447401111111",
-      	"responsible_officer_name": "John Smith",
-      	"responsible_organization": "Probation",
-      	"ro_post_code": "",
-      	"ro_address_1": "",
-      	"ro_address_2": "",
-      	"ro_address_3": "",
-      	"ro_address_4": "",
-      	"ro_email": "abc@def.com",
-      	"ro_phone": "",
-      	"ro_region": "London",
-      	"sentence_date": "",
-      	"sentence_expiry": "",
-        "sentence_type": "Life Sentence",
-      	"tag_at_source": "No",
-      	"tag_at_source_details": "",
-        "date_and_time_installation_will_take_place": "",
-        "released_under_prarr":"No",
-      	"technical_bail": "",
-      	"trial_date": "",
-      	"trial_outcome": "",
-      	"conditional_release_date": "${mockStartDate.format(formatter)}",
-        "conditional_release_start_time": "19:00:00",
-        "conditional_release_end_time": "23:00:00",
-      	"reason_for_order_ending_early": "",
-      	"business_unit": "",
-        "service_end_date": "${mockEndDate.format(formatter)}",
-        "curfew_description": "",
-      	"curfew_start": "$mockStartDateInBritishTime",
-      	"curfew_end": "$mockEndDateInBritishTime",
-      	"curfew_duration": [
-      		{
-      			"location": "primary",
-      			"allday": "",
-      			"schedule": [
-      				{
-      					"day": "Mo",
-      					"start": "17:00",
-      					"end": "09:00"
-      				},
-      				{
-      					"day": "Tu",
-      					"start": "17:00",
-      					"end": "09:00"
-      				},
-      				{
-      					"day": "Wed",
-      					"start": "17:00",
-      					"end": "09:00"
-      				},
-      				{
-      					"day": "Th",
-      					"start": "17:00",
-      					"end": "09:00"
-      				},
-      				{
-      					"day": "Fr",
-      					"start": "17:00",
-      					"end": "09:00"
-      				},
-      				{
-      					"day": "Sa",
-      					"start": "17:00",
-      					"end": "09:00"
-      				},
-      				{
-      					"day": "Su",
-      					"start": "17:00",
-      					"end": "09:00"
-      				}
-      			]
-      		},
-      		{
-      			"location": "secondary",
-      			"allday": "",
-      			"schedule": [
-      				{
-      					"day": "Mo",
-      					"start": "17:00",
-      					"end": "09:00"
-      				},
-      				{
-      					"day": "Tu",
-      					"start": "17:00",
-      					"end": "09:00"
-      				},
-      				{
-      					"day": "Wed",
-      					"start": "17:00",
-      					"end": "09:00"
-      				},
-      				{
-      					"day": "Th",
-      					"start": "17:00",
-      					"end": "09:00"
-      				},
-      				{
-      					"day": "Fr",
-      					"start": "17:00",
-      					"end": "09:00"
-      				},
-      				{
-      					"day": "Sa",
-      					"start": "17:00",
-      					"end": "09:00"
-      				},
-      				{
-      					"day": "Su",
-      					"start": "17:00",
-      					"end": "09:00"
-      				}
-      			]
-      		}
-      	],
-      	"trail_monitoring": "No",
-      	"exclusion_zones": [
-          {
-            "description": "Mock Exclusion Zone",
-            "duration": "Mock Exclusion Duration",
-            "start": "${mockStartDate.format(formatter)}",
-            "end": "${mockEndDate.format(formatter)}"
-          }
-        ],      	
-      	"inclusion_zones": [
-          {
-            "description": "Mock Inclusion Zone",
-            "duration": "Mock Inclusion Duration",
-            "start": "${mockStartDate.format(formatter)}",
-            "end": "${mockEndDate.format(formatter)}"
-          }
-        ],
-      	"abstinence": "Yes",
-      	"schedule": "",
-      	"checkin_schedule": [],
-      	"revocation_date": "",
-      	"revocation_type": "",
-        "installation_address_1": "24 Somewhere Street",
-        "installation_address_2": "Nowhere City",
-        "installation_address_3": "Random County",
-        "installation_address_4": "United Kingdom",
-        "installation_address_post_code": "SW11 1NC",
-        "crown_court_case_reference_number": "",
-        "magistrate_court_case_reference_number": "",
-        "issp": "Yes",
-        "hdc": "No",
-      	"order_status": "Not Started"
-      }
-      """.trimIndent()
 
       assertThat(submitResult!!.success).isEqualTo(true)
       assertThat(submitResult.error).isEqualTo("")
 
-      val expectedDeviceWearer = objectMapper.readValue<FmsDeviceWearer>(expectedDWJson)
+      val expectedDeviceWearer = objectMapper.readValue<FmsDeviceWearer>(rawExpectedDWJson)
       val storedDeviceWearer = objectMapper.readValue<FmsDeviceWearer>(submitResult.deviceWearerResult.payload)
       assertThat(storedDeviceWearer).isEqualTo(expectedDeviceWearer)
 
@@ -1827,284 +1302,21 @@ class OrderControllerTest : IntegrationTestBase() {
       val submitResult = fmsResultRepository.findAll().firstOrNull()
       assertThat(submitResult).isNotNull
 
-      val expectedDWJson = """
-      {
-      	"title": "",
-      	"first_name": "John",
-      	"middle_name": "",
-      	"last_name": "Smith",
-      	"alias": "Johnny",
-      	"date_of_birth": "1990-01-01",
-      	"adult_child": "adult",
-      	"sex": "Male",
-      	"gender_identity": "Male",
-      	"disability": [
-      		{
-      			"disability": "Vision"
-      		},
-      		{
-      			"disability": "Learning, understanding or concentrating"
-      		}
-      	],
-      	"address_1": "20 Somewhere Street",
-      	"address_2": "Nowhere City",
-      	"address_3": "Random County",
-      	"address_4": "United Kingdom",
-      	"address_post_code": "SW11 1NC",
-      	"secondary_address_1": "22 Somewhere Street",
-        "secondary_address_2": "Nowhere City",
-        "secondary_address_3": "Random County",
-        "secondary_address_4": "United Kingdom",
-        "secondary_address_post_code": "SW11 1NC",
-      	"phone_number": "00447401111111",
-      	"risk_serious_harm": "",
-      	"risk_self_harm": "",
-      	"risk_details": "Danger",
-      	"mappa": "MAAPA 1",
-      	"mappa_case_type": "CPPC (Critical Public Protection Case)",
-      	"risk_categories": [
-          {
-            "category": "Sexual Offences"
-          },
-          {
-            "category": "Risk to Specific Gender"
-          }
-        ],
-      	"responsible_adult_required": "true",
-      	"parent": "Mark Smith",
-      	"guardian": "",
-      	"parent_address_1": "",
-      	"parent_address_2": "",
-      	"parent_address_3": "",
-      	"parent_address_4": "",
-      	"parent_address_post_code": "",
-      	"parent_phone_number": "00447401111111",
-      	"parent_dob": "",
-      	"pnc_id": "pncId",
-      	"nomis_id": "nomisId",
-      	"delius_id": "deliusId",
-      	"prison_number": "prisonNumber",
-      	"home_office_case_reference_number": "homeOfficeReferenceNumber",
-      	"interpreter_required": "true",
-      	"language": "British Sign"
-      }
-      """.trimIndent()
-      val expectedOrderJson = """
-      {
-      	"case_id": "MockDeviceWearerId",
-      	"allday_lockdown": "",
-      	"atv_allowance": "",
-      	"condition_type": "Requirement of a Community Order",
-      	"court": "",
-      	"court_order_email": "",      	
-      	"device_type": "",
-      	"device_wearer": "John Smith",
-      	"enforceable_condition": [
-      		{
-      			"condition": "Curfew with EM",
-            "start_date": "$mockStartDateInBritishTime",
-            "end_date": "$mockEndDateInBritishTime"
-      		},
-      		{
-      			"condition": "Location Monitoring (Fitted Device)",
-            "start_date": "$mockStartDateInBritishTime",
-            "end_date": "$mockEndDateInBritishTime"
-      		},
-      		{
-      			"condition": "EM Exclusion / Inclusion Zone",
-            "start_date": "$mockStartDateInBritishTime",
-            "end_date": "$mockEndDateInBritishTime"
-      		},          
-      		{
-      			"condition": "AML",
-            "start_date": "$mockStartDateInBritishTime",
-            "end_date": "$mockEndDateInBritishTime"
-      		}
-      	],
-      	"exclusion_allday": "",
-      	"interim_court_date": "",
-      	"issuing_organisation": "",
-      	"media_interest": "",
-      	"new_order_received": "",
-      	"notifying_officer_email": "",
-      	"notifying_officer_name": "",
-      	"notifying_organization": "Prison",
-      	"no_post_code": "",
-      	"no_address_1": "",
-      	"no_address_2": "",
-      	"no_address_3": "",
-      	"no_address_4": "",
-      	"no_email": "",
-      	"no_name": "Wayland Prison",
-      	"no_phone_number": "",
-      	"offence": "Fraud Offences",
-      	"offence_date": "",
-      	"order_end": "$mockEndDateInBritishTime",
-      	"order_id": "${order.id}",
-      	"order_request_type": "Variation",
-      	"order_start": "$mockStartDateInBritishTime",
-      	"order_type": "Community",
-      	"order_type_description": "DAPOL",
-      	"order_type_detail": "",
-      	"order_variation_date": "${mockStartDate.format(dateTimeFormatter)}",
-      	"order_variation_details": "Change to address",
-      	"order_variation_req_received_date": "",
-      	"order_variation_type": "Change of address",
-      	"pdu_responsible": "Camden and Islington",
-      	"pdu_responsible_email": "",
-      	"planned_order_end_date": "",
-      	"responsible_officer_details_received": "",
-      	"responsible_officer_email": "",
-      	"responsible_officer_phone": "00447401111111",
-      	"responsible_officer_name": "John Smith",
-      	"responsible_organization": "Probation",
-      	"ro_post_code": "",
-      	"ro_address_1": "",
-      	"ro_address_2": "",
-      	"ro_address_3": "",
-      	"ro_address_4": "",
-      	"ro_email": "abc@def.com",
-      	"ro_phone": "",
-      	"ro_region": "London",
-      	"sentence_date": "",
-      	"sentence_expiry": "",
-        "sentence_type": "Life Sentence",
-      	"tag_at_source": "No",
-      	"tag_at_source_details": "",
-        "date_and_time_installation_will_take_place": "",
-        "released_under_prarr":"No",
-      	"technical_bail": "",
-      	"trial_date": "",
-      	"trial_outcome": "",
-      	"conditional_release_date": "${mockStartDate.format(formatter)}",
-        "conditional_release_start_time": "19:00:00",
-        "conditional_release_end_time": "23:00:00",
-      	"reason_for_order_ending_early": "",
-      	"business_unit": "",
-        "service_end_date": "${mockEndDate.format(formatter)}",
-        "curfew_description": "",
-      	"curfew_start": "$mockStartDateInBritishTime",
-      	"curfew_end": "$mockEndDateInBritishTime",
-      	"curfew_duration": [
-      		{
-      			"location": "primary",
-      			"allday": "",
-      			"schedule": [
-      				{
-      					"day": "Mo",
-      					"start": "17:00",
-      					"end": "09:00"
-      				},
-      				{
-      					"day": "Tu",
-      					"start": "17:00",
-      					"end": "09:00"
-      				},
-      				{
-      					"day": "Wed",
-      					"start": "17:00",
-      					"end": "09:00"
-      				},
-      				{
-      					"day": "Th",
-      					"start": "17:00",
-      					"end": "09:00"
-      				},
-      				{
-      					"day": "Fr",
-      					"start": "17:00",
-      					"end": "09:00"
-      				},
-      				{
-      					"day": "Sa",
-      					"start": "17:00",
-      					"end": "09:00"
-      				},
-      				{
-      					"day": "Su",
-      					"start": "17:00",
-      					"end": "09:00"
-      				}
-      			]
-      		},
-      		{
-      			"location": "secondary",
-      			"allday": "",
-      			"schedule": [
-      				{
-      					"day": "Mo",
-      					"start": "17:00",
-      					"end": "09:00"
-      				},
-      				{
-      					"day": "Tu",
-      					"start": "17:00",
-      					"end": "09:00"
-      				},
-      				{
-      					"day": "Wed",
-      					"start": "17:00",
-      					"end": "09:00"
-      				},
-      				{
-      					"day": "Th",
-      					"start": "17:00",
-      					"end": "09:00"
-      				},
-      				{
-      					"day": "Fr",
-      					"start": "17:00",
-      					"end": "09:00"
-      				},
-      				{
-      					"day": "Sa",
-      					"start": "17:00",
-      					"end": "09:00"
-      				},
-      				{
-      					"day": "Su",
-      					"start": "17:00",
-      					"end": "09:00"
-      				}
-      			]
-      		}
-      	],
-      	"trail_monitoring": "No",
-      	"exclusion_zones": [
-          {
-            "description": "Mock Exclusion Zone",
-            "duration": "Mock Exclusion Duration",
-            "start": "${mockStartDate.format(formatter)}",
-            "end": "${mockEndDate.format(formatter)}"
-          }
-        ],      	
-      	"inclusion_zones": [
-          {
-            "description": "Mock Inclusion Zone",
-            "duration": "Mock Inclusion Duration",
-            "start": "${mockStartDate.format(formatter)}",
-            "end": "${mockEndDate.format(formatter)}"
-          }
-        ],
-      	"abstinence": "Yes",
-      	"schedule": "",
-      	"checkin_schedule": [],
-      	"revocation_date": "",
-      	"revocation_type": "",
-        "installation_address_1": "24 Somewhere Street",
-        "installation_address_2": "Nowhere City",
-        "installation_address_3": "Random County",
-        "installation_address_4": "United Kingdom",
-        "installation_address_post_code": "SW11 1NC",
-        "crown_court_case_reference_number": "",
-        "magistrate_court_case_reference_number": "",
-        "issp": "Yes",
-        "hdc": "No",
-      	"order_status": "Not Started"
-      }
-      """.trimIndent()
+      val rawExpectedDWJson = Files.readString(
+        Paths.get("src/test/resources/json/integration/resource/orderControllerTest/ExpectedDW.json"),
+      ).trimIndent()
+      val expectedOrderJson = Files
+        .readString(
+          Paths.get("src/test/resources/json/integration/resource/orderControllerTest/ExpectedVariationMo.json"),
+        )
+        .trimIndent()
+        .replace("{mockStartDateInBritishTime}", mockStartDateInBritishTime)
+        .replace("{mockEndDateInBritishTime}", mockEndDateInBritishTime)
+        .replace("{orderId}", orderId.toString())
+        .replace("{mockStartDate}", mockStartDate.format(formatter))
+        .replace("{mockEndDate}", mockEndDate.format(formatter))
 
-      val expectedDeviceWearer = objectMapper.readValue<FmsDeviceWearer>(expectedDWJson)
+      val expectedDeviceWearer = objectMapper.readValue<FmsDeviceWearer>(rawExpectedDWJson)
       val storedDeviceWearer = objectMapper.readValue<FmsDeviceWearer>(submitResult!!.deviceWearerResult.payload)
       assertThat(storedDeviceWearer).isEqualTo(expectedDeviceWearer)
 
@@ -2190,76 +1402,10 @@ class OrderControllerTest : IntegrationTestBase() {
 
       val submitResult = fmsResultRepository.findAll().firstOrNull()
       assertThat(submitResult).isNotNull
-
-      val expectedDWJson = """
-      {
-      	"title": "",
-      	"first_name": "John",
-      	"middle_name": "",
-      	"last_name": "Smith",
-      	"alias": "Johnny",
-      	"date_of_birth": "1990-01-01",
-      	"adult_child": "adult",
-      	"sex": "Male",
-      	"gender_identity": "Male",
-      	"disability": [
-      		{
-      			"disability": "Vision"
-      		},
-      		{
-      			"disability": "Learning, understanding or concentrating"
-      		}
-      	],
-      	"address_1": "",
-      	"address_2": "",
-      	"address_3": "",
-      	"address_4": "",
-      	"address_post_code": "",
-      	"secondary_address_1": "",
-      	"secondary_address_2": "",
-      	"secondary_address_3": "",
-      	"secondary_address_4": "",
-      	"secondary_address_post_code": "",
-        "tertiary_address_1": "",
-      	"tertiary_address_2": "",
-      	"tertiary_address_3": "",
-      	"tertiary_address_4": "",
-      	"tertiary_address_post_code": "",
-      	"phone_number": "00447401111111",
-      	"risk_serious_harm": "",
-      	"risk_self_harm": "",
-      	"risk_details": "Danger",
-      	"mappa": "MAAPA 1",
-      	"mappa_case_type": "CPPC (Critical Public Protection Case)",
-      	"risk_categories": [
-          {
-            "category": "Sexual Offences"
-          },
-          {
-            "category": "Risk to Specific Gender"
-          }
-        ],
-      	"responsible_adult_required": "true",
-      	"parent": "Mark Smith",
-      	"guardian": "",
-      	"parent_address_1": "",
-      	"parent_address_2": "",
-      	"parent_address_3": "",
-      	"parent_address_4": "",
-      	"parent_address_post_code": "",
-      	"parent_phone_number": "00447401111111",
-      	"parent_dob": "",
-      	"pnc_id": "pncId",
-      	"nomis_id": "nomisId",
-      	"delius_id": "deliusId",
-      	"prison_number": "prisonNumber",
-      	"home_office_case_reference_number": "homeOfficeReferenceNumber",
-      	"interpreter_required": "true",
-      	"language": "British Sign"
-      }
-      """.trimIndent()
-
-      assertThat(submitResult!!.deviceWearerResult.payload).isEqualTo(expectedDWJson.removeWhitespaceAndNewlines())
+      val expectedDwJson = Files.readString(
+        Paths.get("src/test/resources/json/integration/resource/orderControllerTest/ExpectedNoFixAddressDW.json"),
+      ).trimIndent()
+      assertThat(submitResult!!.deviceWearerResult.payload).isEqualTo(expectedDwJson.removeWhitespaceAndNewlines())
       val fmsOrderRequest = submitResult.monitoringOrderResult.payload
 
       JsonPathExpectationsHelper("installation_address_1").assertValue(fmsOrderRequest, "24 Somewhere Street")
@@ -2282,6 +1428,108 @@ class OrderControllerTest : IntegrationTestBase() {
 
       val updatedOrder = getOrder(order.id)
       assertThat(updatedOrder.fmsResultId).isEqualTo(submitResult.id)
+    }
+
+    @Test
+    fun `It updates order and return 200 for a amend orginal request`() {
+      val orderId = UUID.randomUUID()
+      val versionId = UUID.randomUUID()
+      val order = createAndPersistPopulatedOrder(
+        id = orderId,
+        versionId = versionId,
+        requestType = RequestType.AMEND_ORIGINAL_REQUEST,
+        documents = mutableListOf(
+          AdditionalDocument(
+            id = UUID.fromString("550e8400-e29b-41d4-a716-446655440000"),
+            versionId = versionId,
+            fileType = DocumentType.LICENCE,
+            fileName = "mockFile",
+            documentId = mockDocumentId,
+          ),
+        ),
+      )
+
+      sercoAuthApi.stubGrantToken()
+
+      sercoApi.stubCreateDeviceWearer(
+        HttpStatus.OK,
+        FmsResponse(result = listOf(FmsResult(message = "", id = "MockDeviceWearerId"))),
+      )
+
+      sercoApi.stubCreateMonitoringOrder(
+        HttpStatus.OK,
+        FmsResponse(result = listOf(FmsResult(message = "", id = "MockMonitoringOrderId"))),
+      )
+
+      sercoApi.stubSubmitAttachment(
+        HttpStatus.OK,
+        FmsAttachmentResponse(
+          result = FmsAttachmentResult(
+            fileName = order.additionalDocuments[0].fileName!!,
+            tableName = "x_serg2_ems_csm_sr_mo_new",
+            sysId = "MockSysId",
+            tableSysId = "MockDeviceWearerId",
+          ),
+        ),
+      )
+
+      sercoApi.stubSubmitAttachment(
+        HttpStatus.OK,
+        FmsAttachmentResponse(
+          result = FmsAttachmentResult(
+            fileName = order.enforcementZoneConditions[0].fileName!!,
+            tableName = "x_serg2_ems_csm_sr_mo_new",
+            sysId = "MockSysId",
+            tableSysId = "MockDeviceWearerId",
+          ),
+        ),
+      )
+
+      documentApi.stubGetDocument(order.additionalDocuments.first().documentId.toString())
+      documentApi.stubGetDocument(order.enforcementZoneConditions[0].fileId.toString())
+
+      webTestClient.post()
+        .uri("/api/orders/${order.id}/submit")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .isOk
+
+      val submitResult = fmsResultRepository.findAll().firstOrNull()
+      assertThat(submitResult).isNotNull
+      val rawExpectedDWJson = Files.readString(
+        Paths.get("src/test/resources/json/integration/resource/orderControllerTest/ExpectedDW.json"),
+      ).trimIndent()
+
+      val rawExpectedOrderJson = Files.readString(
+        Paths.get("src/test/resources/json/integration/resource/orderControllerTest/ExpectedMo.json"),
+      ).trimIndent()
+
+      val expectedOrderJson = rawExpectedOrderJson
+        .replace("{mockStartDateInBritishTime}", mockStartDateInBritishTime)
+        .replace("{mockEndDateInBritishTime}", mockEndDateInBritishTime)
+        .replace("{orderId}", orderId.toString())
+        .replace("{mockStartDate}", mockStartDate.format(formatter))
+        .replace("{mockEndDate}", mockEndDate.format(formatter))
+
+      val expectedDeviceWearer = objectMapper.readValue<FmsDeviceWearer>(rawExpectedDWJson)
+      val storedDeviceWearer = objectMapper.readValue<FmsDeviceWearer>(submitResult!!.deviceWearerResult.payload)
+      assertThat(storedDeviceWearer).isEqualTo(expectedDeviceWearer)
+
+      val expectedMonitoringOrder = objectMapper.readValue<MonitoringOrder>(expectedOrderJson)
+      val storedMonitoringOrder = objectMapper.readValue<MonitoringOrder>(submitResult.monitoringOrderResult.payload)
+      assertThat(storedMonitoringOrder).isEqualTo(expectedMonitoringOrder)
+
+      assertThat(submitResult.attachmentResults[0].sysId).isEqualTo("MockSysId")
+      assertThat(
+        submitResult.attachmentResults[0].fileType,
+      ).isEqualTo(order.additionalDocuments.first().fileType.toString())
+      assertThat(
+        submitResult.attachmentResults[0].attachmentId,
+      ).isEqualTo(order.additionalDocuments.first().documentId.toString())
+      val updatedOrder = getOrder(order.id)
+      assertThat(updatedOrder.fmsResultId).isEqualTo(submitResult.id)
+      assertThat(updatedOrder.status).isEqualTo(OrderStatus.SUBMITTED)
     }
   }
 
