@@ -54,7 +54,7 @@
   "order_type": "Community",
   "order_type_description": "DAPOL",
   "order_type_detail": "",
-  "order_variation_date": "{mockStartDateInBritishTime}",
+  "order_variation_date": "{mockVariationDate}",
   "order_variation_details": "Change to address",
   "order_variation_req_received_date": "",
   "order_variation_type": "Change of address",
