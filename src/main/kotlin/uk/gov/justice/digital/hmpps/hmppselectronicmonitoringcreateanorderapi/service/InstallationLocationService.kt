@@ -23,9 +23,7 @@ class InstallationLocationService : OrderSectionServiceBase() {
     )
 
     if (
-      updateRecord.location == InstallationLocationType.PRIMARY ||
-      updateRecord.location == InstallationLocationType.SECONDARY ||
-      updateRecord.location == InstallationLocationType.TERTIARY
+      updateRecord.location != InstallationLocationType.INSTALLATION
     ) {
       order.installationAppointment = null
       order.addresses.removeAll { it.addressType == AddressType.INSTALLATION }
