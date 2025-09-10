@@ -1353,6 +1353,7 @@ class OrderControllerTest : IntegrationTestBase() {
         .trimIndent()
         .replace("{mockStartDateInBritishTime}", mockStartDateInBritishTime)
         .replace("{mockEndDateInBritishTime}", mockEndDateInBritishTime)
+        .replace("{mockVariationDate}", mockStartDate.format(dateTimeFormatter))
         .replace("{orderId}", orderId.toString())
         .replace("{mockStartDate}", mockStartDate.format(formatter))
         .replace("{mockEndDate}", mockEndDate.format(formatter))
