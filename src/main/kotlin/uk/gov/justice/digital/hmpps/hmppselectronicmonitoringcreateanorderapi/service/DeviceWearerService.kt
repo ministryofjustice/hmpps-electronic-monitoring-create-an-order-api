@@ -6,6 +6,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateDeviceWearerDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateIdentityNumbersDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateNoFixedAbodeDto
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import java.util.*
 
 @Service
@@ -53,8 +54,34 @@ class DeviceWearerService : OrderSectionServiceBase() {
 
     order.deviceWearer?.noFixedAbode = updateRecord.noFixedAbode
 
+    if (updateRecord.noFixedAbode == true) {
+      val personalAddressTypes = setOf(
+        AddressType.PRIMARY,
+        AddressType.SECONDARY,
+        AddressType.TERTIARY,
+      )
+      order.addresses.removeAll { it.addressType in personalAddressTypes }
+    }
+
     orderRepo.save(order)
 
+    return order.deviceWearer!!
+  }
+
+  fun removeSubsequentAddresses(orderId: UUID, username: String, lastValidAddressType: AddressType): DeviceWearer {
+    val order = this.findEditableOrder(orderId, username)
+
+    val addressTypesToRemove = when (lastValidAddressType) {
+      AddressType.PRIMARY -> setOf(AddressType.SECONDARY, AddressType.TERTIARY)
+      AddressType.SECONDARY -> setOf(AddressType.TERTIARY)
+      else -> emptySet()
+    }
+
+    if (addressTypesToRemove.isNotEmpty()) {
+      order.addresses.removeAll { it.addressType in addressTypesToRemove }
+    }
+
+    orderRepo.save(order)
     return order.deviceWearer!!
   }
 

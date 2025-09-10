@@ -7,10 +7,14 @@ import org.mockito.Mockito.mock
 import org.mockito.kotlin.whenever
 import org.springframework.boot.test.autoconfigure.json.JsonTest
 import org.springframework.test.context.ActiveProfiles
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Address
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ResponsibleAdult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateDeviceWearerDto
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateNoFixedAbodeDto
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
@@ -103,5 +107,153 @@ class DeviceWearerServiceTest {
 
     service.updateDeviceWearer(mockOrderId, mockUsername, mockUpdateRecord)
     assertThat(mockOrder.deviceWearerResponsibleAdult).isNull()
+  }
+
+  @Test
+  fun `Should clear primary, secondary and tertiary addresses when noFixedAbode is updated from false to true`() {
+    whenever(orderRepo.findById(mockOrderId)).thenReturn(Optional.of(mockOrder))
+    whenever(orderRepo.save(mockOrder)).thenReturn(mockOrder)
+    mockOrder.deviceWearer = DeviceWearer(
+      versionId = mockVersionId,
+      firstName = "MockFirstName",
+      lastName = "MockLastName",
+    )
+
+    mockOrder.addresses.addAll(
+      listOf(
+        Address(
+          versionId = mockVersionId,
+          addressType = AddressType.PRIMARY,
+          addressLine1 = "MockPrimary",
+          addressLine2 = "",
+          postcode = "MockPrimaryPostcode",
+        ),
+        Address(
+          versionId = mockVersionId,
+          addressType = AddressType.SECONDARY,
+          addressLine1 = "MockSecondary",
+          addressLine2 = "",
+          postcode = "MockSecondaryPostcode",
+        ),
+        Address(
+          versionId = mockVersionId,
+          addressType = AddressType.TERTIARY,
+          addressLine1 = "MockTertiary",
+          addressLine2 = "",
+          postcode = "MockTertiaryPostcode",
+        ),
+        Address(
+          versionId = mockVersionId,
+          addressType = AddressType.INSTALLATION,
+          addressLine1 = "mockInstallation",
+          addressLine2 = "",
+          postcode = "MockInstallationPostcode",
+        ),
+      ),
+    )
+
+    val mockUpdateRecord = UpdateNoFixedAbodeDto(
+      noFixedAbode = true,
+    )
+
+    service.updateNoFixedAbode(mockOrderId, mockUsername, mockUpdateRecord)
+
+    val remainingAddresses = mockOrder.addresses
+    assertThat(mockOrder.deviceWearer?.noFixedAbode).isTrue
+
+    assertThat(remainingAddresses).hasSize(1)
+    assertThat(remainingAddresses.first().addressType).isEqualTo(AddressType.INSTALLATION)
+    assertThat(remainingAddresses).noneMatch {
+      it.addressType == AddressType.PRIMARY ||
+        it.addressType == AddressType.SECONDARY ||
+        it.addressType == AddressType.TERTIARY
+    }
+  }
+
+  @Test
+  fun `should remove secondary and tertiary addresses if user says no additional addresses on primary address page`() {
+    whenever(orderRepo.findById(mockOrderId)).thenReturn(Optional.of(mockOrder))
+    whenever(orderRepo.save(mockOrder)).thenReturn(mockOrder)
+
+    mockOrder.deviceWearer = DeviceWearer(
+      versionId = mockVersionId,
+      firstName = "Test",
+      lastName = "User",
+    )
+    mockOrder.addresses.addAll(
+      listOf(
+        Address(
+          versionId = mockVersionId,
+          addressType = AddressType.PRIMARY,
+          addressLine1 = "MockPrimary",
+          addressLine2 = "",
+          postcode = "MockPrimaryPostcode",
+        ),
+        Address(
+          versionId = mockVersionId,
+          addressType = AddressType.SECONDARY,
+          addressLine1 = "MockSecondary",
+          addressLine2 = "",
+          postcode = "MockSecondaryPostcode",
+        ),
+        Address(
+          versionId = mockVersionId,
+          addressType = AddressType.TERTIARY,
+          addressLine1 = "MockTertiary",
+          addressLine2 = "",
+          postcode = "MockTertiaryPostcode",
+        ),
+      ),
+    )
+
+    service.removeSubsequentAddresses(mockOrderId, mockUsername, AddressType.PRIMARY)
+
+    val remainingAddresses = mockOrder.addresses
+    assertThat(remainingAddresses).hasSize(1)
+    assertThat(remainingAddresses.first().addressType).isEqualTo(AddressType.PRIMARY)
+  }
+
+  @Test
+  fun `should remove only tertiary address if user says no to another address on second address page`() {
+    whenever(orderRepo.findById(mockOrderId)).thenReturn(Optional.of(mockOrder))
+    whenever(orderRepo.save(mockOrder)).thenReturn(mockOrder)
+
+    mockOrder.deviceWearer = DeviceWearer(
+      versionId = mockVersionId,
+      firstName = "Test",
+      lastName = "User",
+    )
+    mockOrder.addresses.addAll(
+      listOf(
+        Address(
+          versionId = mockVersionId,
+          addressType = AddressType.PRIMARY,
+          addressLine1 = "MockPrimary",
+          addressLine2 = "",
+          postcode = "MockPrimaryPostcode",
+        ),
+        Address(
+          versionId = mockVersionId,
+          addressType = AddressType.SECONDARY,
+          addressLine1 = "MockSecondary",
+          addressLine2 = "",
+          postcode = "MockSecondaryPostcode",
+        ),
+        Address(
+          versionId = mockVersionId,
+          addressType = AddressType.TERTIARY,
+          addressLine1 = "MockTertiary",
+          addressLine2 = "",
+          postcode = "MockTertiaryPostcode",
+        ),
+      ),
+    )
+
+    service.removeSubsequentAddresses(mockOrderId, mockUsername, AddressType.SECONDARY)
+
+    val remainingAddresses = mockOrder.addresses
+    assertThat(remainingAddresses).hasSize(2)
+    assertThat(remainingAddresses).extracting("addressType")
+      .containsExactlyInAnyOrder(AddressType.PRIMARY, AddressType.SECONDARY)
   }
 }
