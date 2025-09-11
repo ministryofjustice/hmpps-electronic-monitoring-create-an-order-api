@@ -251,7 +251,7 @@ class MonitoringOrderTest : OrderTestBase() {
     dateTime?.toInstant()?.atZone(londonTimeZone)?.format(dateFormatter)
 
   @Test
-  fun `should map Tag At Source as 'No' when installation location is primary address`() {
+  fun `should map Tag At Source as 'false' when installation location is primary address`() {
     val primaryAddress = createAddress(
       addressLine1 = "Primary Line 1",
       addressLine2 = "Primary Line 2",
@@ -273,7 +273,7 @@ class MonitoringOrderTest : OrderTestBase() {
 
     val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "")
 
-    assertThat(fmsMonitoringOrder.tagAtSource).isEqualTo("False")
+    assertThat(fmsMonitoringOrder.tagAtSource).isEqualTo("false")
 
     assertThat(fmsMonitoringOrder.tagAtSourceDetails).isEqualTo("")
     assertThat(fmsMonitoringOrder.dateAndTimeInstallationWillTakePlace).isEqualTo("")
@@ -316,7 +316,7 @@ class MonitoringOrderTest : OrderTestBase() {
 
     val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
 
-    assertThat(fmsMonitoringOrder.tagAtSource).isEqualTo("True")
+    assertThat(fmsMonitoringOrder.tagAtSource).isEqualTo("true")
     assertThat(fmsMonitoringOrder.tagAtSourceDetails).isEqualTo("HMP Wandsworth")
     assertThat(fmsMonitoringOrder.dateAndTimeInstallationWillTakePlace).isEqualTo("2026-10-01 10:30:00")
 
@@ -358,7 +358,7 @@ class MonitoringOrderTest : OrderTestBase() {
 
     val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
 
-    assertThat(fmsMonitoringOrder.tagAtSource).isEqualTo("True")
+    assertThat(fmsMonitoringOrder.tagAtSource).isEqualTo("true")
     assertThat(fmsMonitoringOrder.tagAtSourceDetails).isEqualTo("HMP Wandsworth")
     assertThat(fmsMonitoringOrder.dateAndTimeInstallationWillTakePlace).isEqualTo("2026-10-01 10:30:00")
 
