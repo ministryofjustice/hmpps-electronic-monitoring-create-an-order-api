@@ -391,12 +391,12 @@ data class MonitoringOrder(
         if (order.installationLocation?.location == InstallationLocationType.PROBATION_OFFICE ||
           order.installationLocation?.location == InstallationLocationType.PRISON
         ) {
-          monitoringOrder.tagAtSource = "True"
+          monitoringOrder.tagAtSource = "true"
           monitoringOrder.tagAtSourceDetails = order.installationAppointment?.placeName ?: ""
           monitoringOrder.dateAndTimeInstallationWillTakePlace =
             getBritishDateAndTime(order.installationAppointment?.appointmentDate) ?: ""
         } else {
-          monitoringOrder.tagAtSource = "False"
+          monitoringOrder.tagAtSource = "false"
         }
       }
 
