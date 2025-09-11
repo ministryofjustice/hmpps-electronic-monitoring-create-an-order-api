@@ -194,5 +194,95 @@ class AddressServiceTest {
       ).isEqualTo(updatedMockAddress.addressLine1)
       Assertions.assertThat(addedPrimaryAddress.postcode).isEqualTo(updatedMockAddress.postcode)
     }
+
+    @Test
+    fun `should update primary address and clear secondary, tertiary address when user indicates no more`() {
+      val secondaryAddress = Address(
+        id = UUID.randomUUID(),
+        versionId = mockVersionId,
+        addressType = AddressType.SECONDARY,
+        addressLine1 = "Mock Secondary Address Line 1",
+        addressLine2 = "Mock Secondary Address Line 2",
+        postcode = "SS1 2SS",
+      )
+      val tertiaryAddress = Address(
+        id = UUID.randomUUID(),
+        versionId = mockVersionId,
+        addressType = AddressType.TERTIARY,
+        addressLine1 = "Mock Tertiary Address Line 1",
+        addressLine2 = "Mock Tertiary Address Line 2",
+        postcode = "TT1 2TT",
+      )
+
+      orderWithExistingPrimaryAddressAndRelation.addresses.addAll(listOf(secondaryAddress, tertiaryAddress))
+
+      whenever(orderRepo.findById(mockOrderId)).thenReturn(Optional.of(orderWithExistingPrimaryAddressAndRelation))
+
+      val mockUpdateRecord = UpdateAddressDto(
+        addressType = AddressType.PRIMARY,
+        addressLine1 = "updatedMockAddressLine1",
+        addressLine2 = "updatedMockAddressLine2",
+        addressLine3 = "",
+        addressLine4 = "",
+        postcode = "updatedMockPostcode",
+        hasAnotherAddress = false,
+      )
+
+      addressService.updateAddress(mockOrderId, mockUsername, mockUpdateRecord)
+
+      val savedAddresses = orderWithExistingPrimaryAddressAndRelation.addresses
+
+      Assertions.assertThat(savedAddresses).hasSize(1)
+
+      val remainingAddress = savedAddresses.first()
+      Assertions.assertThat(remainingAddress.addressType).isEqualTo(AddressType.PRIMARY)
+      Assertions.assertThat(remainingAddress.addressLine1).isEqualTo(mockUpdateRecord.addressLine1)
+    }
+
+    @Test
+    fun `should update secondary address and clear only tertiary address when user indicates no more`() {
+      val secondaryAddress = Address(
+        id = UUID.randomUUID(),
+        versionId = mockVersionId,
+        addressType = AddressType.SECONDARY,
+        addressLine1 = "Mock Secondary Address Line 1",
+        addressLine2 = "Mock Secondary Address Line 2",
+        postcode = "SS1 2SS",
+      )
+      val tertiaryAddress = Address(
+        id = UUID.randomUUID(),
+        versionId = mockVersionId,
+        addressType = AddressType.TERTIARY,
+        addressLine1 = "Mock Tertiary Address Line 1",
+        addressLine2 = "Mock Tertiary Address Line 2",
+        postcode = "TT1 2TT",
+      )
+
+      orderWithExistingPrimaryAddressAndRelation.addresses.addAll(listOf(secondaryAddress, tertiaryAddress))
+      whenever(orderRepo.findById(mockOrderId)).thenReturn(Optional.of(orderWithExistingPrimaryAddressAndRelation))
+
+      val mockUpdateRecord = UpdateAddressDto(
+        addressType = AddressType.SECONDARY,
+        addressLine1 = "Updated Mock Secondary Address Line 1",
+        addressLine2 = "UpdatedMock Secondary Address Line 2",
+        postcode = "SS2 2SS",
+        hasAnotherAddress = false,
+      )
+
+      addressService.updateAddress(mockOrderId, mockUsername, mockUpdateRecord)
+
+      val savedAddresses = orderWithExistingPrimaryAddressAndRelation.addresses
+      val primaryAddress = savedAddresses.find { it.addressType == AddressType.PRIMARY }
+      val updatedSecondary = savedAddresses.find { it.addressType == AddressType.SECONDARY }
+
+      Assertions.assertThat(savedAddresses).hasSize(2)
+
+      Assertions.assertThat(primaryAddress?.addressLine1).isEqualTo(mockAddress.addressLine1)
+      Assertions.assertThat(primaryAddress?.postcode).isEqualTo(mockAddress.postcode)
+
+      Assertions.assertThat(savedAddresses).extracting("addressType")
+        .containsExactlyInAnyOrder(AddressType.PRIMARY, AddressType.SECONDARY)
+      Assertions.assertThat(updatedSecondary?.addressLine1).isEqualTo(mockUpdateRecord.addressLine1)
+    }
   }
 }

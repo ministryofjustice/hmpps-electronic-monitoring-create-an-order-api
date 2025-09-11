@@ -68,23 +68,6 @@ class DeviceWearerService : OrderSectionServiceBase() {
     return order.deviceWearer!!
   }
 
-  fun removeSubsequentAddresses(orderId: UUID, username: String, lastValidAddressType: AddressType): DeviceWearer {
-    val order = this.findEditableOrder(orderId, username)
-
-    val addressTypesToRemove = when (lastValidAddressType) {
-      AddressType.PRIMARY -> setOf(AddressType.SECONDARY, AddressType.TERTIARY)
-      AddressType.SECONDARY -> setOf(AddressType.TERTIARY)
-      else -> emptySet()
-    }
-
-    if (addressTypesToRemove.isNotEmpty()) {
-      order.addresses.removeAll { it.addressType in addressTypesToRemove }
-    }
-
-    orderRepo.save(order)
-    return order.deviceWearer!!
-  }
-
   fun updateIdentityNumbers(orderId: UUID, username: String, updateRecord: UpdateIdentityNumbersDto): DeviceWearer {
     // Verify the order belongs to the user and is in draft state
     val order = this.findEditableOrder(orderId, username)

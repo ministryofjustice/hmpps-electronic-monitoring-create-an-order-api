@@ -95,13 +95,14 @@ class MonitoringConditionsServiceTest {
     whenever(repo.findById(mockOrderId)).thenReturn(Optional.of(mockOrder))
     whenever(repo.save(mockOrder)).thenReturn(mockOrder)
 
-    val result = service.updateMonitoringConditions(
-      mockOrderId,
-      mockUsername,
-      UpdateMonitoringConditionsDto(
-        pilot = Pilot.DOMESTIC_ABUSE_PERPETRATOR_ON_LICENCE_HOME_DETENTION_CURFEW_DAPOL_HDC,
-      ),
-    )
+    val result =
+      service.updateMonitoringConditions(
+        mockOrderId,
+        mockUsername,
+        UpdateMonitoringConditionsDto(
+          pilot = Pilot.DOMESTIC_ABUSE_PERPETRATOR_ON_LICENCE_HOME_DETENTION_CURFEW_DAPOL_HDC,
+        ),
+      )
 
     assertThat(mockOrder.monitoringConditions).isNotNull
     assertThat(
