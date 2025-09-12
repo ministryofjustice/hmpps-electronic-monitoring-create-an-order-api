@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.s
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.MonitoringConditions
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateMonitoringConditionsDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import java.util.*
@@ -43,12 +44,35 @@ class MonitoringConditionsService(@Value("\${toggle.tag-at-source.enabled}") pri
       pilot = updateRecord.pilot,
     )
 
-    if (!isTagAtSourceAvailable(order.monitoringConditions)) {
+    clearDeselectedConditionDetails(order)
+
+    return orderRepo.save(order).monitoringConditions!!
+  }
+
+  private fun clearDeselectedConditionDetails(order: Order) {
+    val conditions = order.monitoringConditions
+
+    if (conditions?.curfew == false) {
+      order.curfewConditions = null
+      order.curfewReleaseDateConditions = null
+      order.curfewTimeTable.clear()
+    }
+    if (conditions?.exclusionZone == false) {
+      order.enforcementZoneConditions.clear()
+    }
+    if (conditions?.trail == false) {
+      order.monitoringConditionsTrail = null
+    }
+    if (conditions?.mandatoryAttendance == false) {
+      order.mandatoryAttendanceConditions.clear()
+    }
+    if (conditions?.alcohol == false) {
+      order.monitoringConditionsAlcohol = null
+    }
+    if (!isTagAtSourceAvailable(conditions)) {
       order.installationLocation = null
       order.installationAppointment = null
-      order.monitoringConditionsAlcohol = null
       order.addresses.removeAll { it.addressType == AddressType.INSTALLATION }
     }
-    return orderRepo.save(order).monitoringConditions!!
   }
 }

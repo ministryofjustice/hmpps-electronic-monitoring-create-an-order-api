@@ -3,7 +3,9 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.s
 import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Address
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateAddressDto
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import java.util.UUID
 
 @Service
@@ -34,7 +36,25 @@ class AddressService : OrderSectionServiceBase() {
       )
       order.addresses.add(newAddress)
     }
+
+    if (updateRecord.hasAnotherAddress == false) {
+      removeSubsequentAddresses(order, updateRecord.addressType)
+    }
     orderRepo.save(order)
     return (existingAddress ?: newAddress)!!
+  }
+
+  private fun removeSubsequentAddresses(order: Order, lastValidAddressType: AddressType) {
+    val addressTypesToRemove = when (lastValidAddressType) {
+      AddressType.PRIMARY -> setOf(AddressType.SECONDARY, AddressType.TERTIARY)
+      AddressType.SECONDARY -> setOf(AddressType.TERTIARY)
+      else -> emptySet()
+    }
+
+    if (addressTypesToRemove.isNotEmpty()) {
+      order.addresses.removeAll {
+        it.addressType in addressTypesToRemove
+      }
+    }
   }
 }

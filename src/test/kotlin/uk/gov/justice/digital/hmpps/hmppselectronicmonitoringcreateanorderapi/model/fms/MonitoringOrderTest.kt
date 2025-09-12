@@ -366,6 +366,69 @@ class MonitoringOrderTest : OrderTestBase() {
     assertThat(fmsMonitoringOrder.installationAddressPostcode).isEqualTo("Installation Post code")
   }
 
+  @Test
+  fun `It should map new details when changing between tag at source locations`() {
+    val installationAddress = createAddress(
+      addressType = AddressType.INSTALLATION,
+      addressLine1 = "Installation Line 1",
+      postcode = "Installation Post code",
+    )
+
+    val installationLocation = InstallationLocation(
+      versionId = UUID.randomUUID(),
+      location = InstallationLocationType.PRISON,
+    )
+
+    val installationAppointment = InstallationAppointment(
+      versionId = UUID.randomUUID(),
+      placeName = "HMP Wandsworth",
+      appointmentDate = ZonedDateTime.of(2026, 10, 1, 10, 30, 0, 0, ZoneId.of("Europe/London")),
+    )
+
+    val trailMonitoringConditions = TrailMonitoringConditions(
+      versionId = UUID.randomUUID(),
+      startDate = ZonedDateTime.now(),
+      endDate = ZonedDateTime.now().plusMonths(1),
+    )
+
+    val order = createOrder(
+      addresses = mutableListOf(
+        installationAddress,
+      ),
+      monitoringConditions = createMonitoringConditions(trail = true),
+      installationLocation = installationLocation,
+      trailMonitoringConditions = trailMonitoringConditions,
+    )
+    order.installationAppointment = installationAppointment
+
+    order.installationLocation!!.location = InstallationLocationType.PROBATION_OFFICE
+    order.installationAppointment = null
+    order.addresses.removeAll { it.addressType == AddressType.INSTALLATION }
+
+    order.addresses.add(
+      createAddress(
+        addressType = AddressType.INSTALLATION,
+        addressLine1 = "New Probation Address Line 1",
+        addressLine2 = "New Probation Address Line 2",
+        postcode = "New Probation Postcode",
+      ),
+    )
+    order.installationAppointment = InstallationAppointment(
+      versionId = UUID.randomUUID(),
+      placeName = "London",
+      appointmentDate = ZonedDateTime.of(2026, 11, 15, 14, 30, 0, 0, ZoneId.of("Europe/London")),
+    )
+
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
+
+    assertThat(fmsMonitoringOrder.tagAtSource).isEqualTo("true")
+    assertThat(fmsMonitoringOrder.tagAtSourceDetails).isEqualTo("London")
+    assertThat(fmsMonitoringOrder.dateAndTimeInstallationWillTakePlace).isEqualTo("2026-11-15 14:30:00")
+    assertThat(fmsMonitoringOrder.installationAddress1).isEqualTo("New Probation Address Line 1")
+    assertThat(fmsMonitoringOrder.installationAddress2).isEqualTo("New Probation Address Line 2")
+    assertThat(fmsMonitoringOrder.installationAddressPostcode).isEqualTo("New Probation Postcode")
+  }
+
   @ParameterizedTest(name = "it should map probation delivery unit to Serco - {0} -> {1}")
   @ArgumentsSource(ProbationDeliveryUnitArgumentsProvider::class)
   fun `It should correctly map saved probation delivery unit values to Serco`(

@@ -6,6 +6,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 
 data class UpdateAddressDto(
   val addressType: AddressType,
+  val hasAnotherAddress: Boolean? = null,
 
   @field:NotBlank(message = ValidationErrors.Address.ADDRESS_1_REQUIRED)
   @field:Size(max = 200, message = ValidationErrors.Address.ADDRESS_1_MAX_LENGTH)
