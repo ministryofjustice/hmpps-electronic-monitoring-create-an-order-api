@@ -391,13 +391,13 @@ data class MonitoringOrder(
         if (order.installationLocation?.location == InstallationLocationType.PROBATION_OFFICE ||
           order.installationLocation?.location == InstallationLocationType.PRISON
         ) {
-          monitoringOrder.tagAtSource = "Yes"
+          monitoringOrder.tagAtSource = "true"
+          monitoringOrder.tagAtSourceDetails = order.installationAppointment?.placeName ?: ""
+          monitoringOrder.dateAndTimeInstallationWillTakePlace =
+            getBritishDateAndTime(order.installationAppointment?.appointmentDate) ?: ""
         } else {
-          monitoringOrder.tagAtSource = "No"
+          monitoringOrder.tagAtSource = "false"
         }
-        monitoringOrder.tagAtSourceDetails = order.installationAppointment?.placeName ?: ""
-        monitoringOrder.dateAndTimeInstallationWillTakePlace =
-          getBritishDateAndTime(order.installationAppointment?.appointmentDate) ?: ""
       }
 
       getInstallationAddress(order)?.let {

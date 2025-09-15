@@ -3,6 +3,8 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.s
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationLocation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateInstallationLocationDto
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.InstallationLocationType
 import java.util.*
 
 @Service
@@ -19,6 +21,13 @@ class InstallationLocationService : OrderSectionServiceBase() {
       versionId = order.getCurrentVersion().id,
       location = updateRecord.location,
     )
+
+    if (
+      updateRecord.location != InstallationLocationType.INSTALLATION
+    ) {
+      order.installationAppointment = null
+      order.addresses.removeAll { it.addressType == AddressType.INSTALLATION }
+    }
     return orderRepo.save(order).installationLocation!!
   }
 }

@@ -18,19 +18,26 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.PrisonArgumentsProvider
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.ProbationDeliveryUnitArgumentsProvider
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.ProbationServiceRegionArgumentsProvider
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.SentenceArgumentsProvider
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.YouthCourtArgumentsProvider
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.YouthCustodyServiceRegionArgumentsProvider
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationAppointment
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationLocation
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.TrailMonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.InstallationLocationType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisationDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Pilot
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.SentenceType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.EnforceableCondition
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.MonitoringOrder
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.Zone
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
+import java.util.UUID
 
 @ActiveProfiles("test")
 class MonitoringOrderTest : OrderTestBase() {
@@ -243,6 +250,185 @@ class MonitoringOrderTest : OrderTestBase() {
   private fun getBritishDate(dateTime: ZonedDateTime?): String? =
     dateTime?.toInstant()?.atZone(londonTimeZone)?.format(dateFormatter)
 
+  @Test
+  fun `should map Tag At Source as 'false' when installation location is primary address`() {
+    val primaryAddress = createAddress(
+      addressLine1 = "Primary Line 1",
+      addressLine2 = "Primary Line 2",
+      addressLine3 = "Primary Line 3",
+      addressLine4 = "Primary Line 4",
+      postcode = "Primary Post code",
+      addressType = AddressType.PRIMARY,
+    )
+
+    val installationLocation = InstallationLocation(
+      versionId = UUID.randomUUID(),
+      location = InstallationLocationType.PRIMARY,
+    )
+    val order = createOrder(
+      addresses = mutableListOf(primaryAddress),
+      monitoringConditions = createMonitoringConditions(curfew = true, alcohol = false),
+      installationLocation = installationLocation,
+    )
+
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "")
+
+    assertThat(fmsMonitoringOrder.tagAtSource).isEqualTo("false")
+
+    assertThat(fmsMonitoringOrder.tagAtSourceDetails).isEqualTo("")
+    assertThat(fmsMonitoringOrder.dateAndTimeInstallationWillTakePlace).isEqualTo("")
+
+    assertThat(fmsMonitoringOrder.installationAddress1).isEqualTo("Primary Line 1")
+    assertThat(fmsMonitoringOrder.installationAddressPostcode).isEqualTo("Primary Post code")
+  }
+
+  @Test
+  fun `It should correctly map Tag At Source when installation location is a prison`() {
+    val installationLocation = InstallationLocation(
+      versionId = UUID.randomUUID(),
+      location = InstallationLocationType.PRISON,
+    )
+    val installationAppointment = InstallationAppointment(
+      versionId = UUID.randomUUID(),
+      placeName = "HMP Wandsworth",
+      appointmentDate = ZonedDateTime.of(2026, 10, 1, 10, 30, 0, 0, ZoneId.of("Europe/London")),
+    )
+    val trailMonitoringConditions = TrailMonitoringConditions(
+      versionId = UUID.randomUUID(),
+      startDate = ZonedDateTime.now(),
+      endDate = ZonedDateTime.now().plusMonths(1),
+    )
+
+    val installationAddress = createAddress(
+      addressType = AddressType.INSTALLATION,
+      addressLine1 = "Installation Line 1",
+      postcode = "Installation Post code",
+    )
+
+    val order = createOrder(
+      addresses = mutableListOf(installationAddress),
+      monitoringConditions = createMonitoringConditions(trail = true, alcohol = false),
+      installationLocation = installationLocation,
+      trailMonitoringConditions = trailMonitoringConditions,
+    )
+
+    order.installationAppointment = installationAppointment
+
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
+
+    assertThat(fmsMonitoringOrder.tagAtSource).isEqualTo("true")
+    assertThat(fmsMonitoringOrder.tagAtSourceDetails).isEqualTo("HMP Wandsworth")
+    assertThat(fmsMonitoringOrder.dateAndTimeInstallationWillTakePlace).isEqualTo("2026-10-01 10:30:00")
+
+    assertThat(fmsMonitoringOrder.installationAddress1).isEqualTo("Installation Line 1")
+    assertThat(fmsMonitoringOrder.installationAddressPostcode).isEqualTo("Installation Post code")
+  }
+
+  @Test
+  fun `It should correctly map Tag At Source when installation location is a probation`() {
+    val installationLocation = InstallationLocation(
+      versionId = UUID.randomUUID(),
+      location = InstallationLocationType.PROBATION_OFFICE,
+    )
+    val installationAppointment = InstallationAppointment(
+      versionId = UUID.randomUUID(),
+      placeName = "HMP Wandsworth",
+      appointmentDate = ZonedDateTime.of(2026, 10, 1, 10, 30, 0, 0, ZoneId.of("Europe/London")),
+    )
+    val trailMonitoringConditions = TrailMonitoringConditions(
+      versionId = UUID.randomUUID(),
+      startDate = ZonedDateTime.now(),
+      endDate = ZonedDateTime.now().plusMonths(1),
+    )
+
+    val installationAddress = createAddress(
+      addressType = AddressType.INSTALLATION,
+      addressLine1 = "Installation Line 1",
+      postcode = "Installation Post code",
+    )
+
+    val order = createOrder(
+      addresses = mutableListOf(installationAddress),
+      monitoringConditions = createMonitoringConditions(trail = true, alcohol = false),
+      installationLocation = installationLocation,
+      trailMonitoringConditions = trailMonitoringConditions,
+    )
+
+    order.installationAppointment = installationAppointment
+
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
+
+    assertThat(fmsMonitoringOrder.tagAtSource).isEqualTo("true")
+    assertThat(fmsMonitoringOrder.tagAtSourceDetails).isEqualTo("HMP Wandsworth")
+    assertThat(fmsMonitoringOrder.dateAndTimeInstallationWillTakePlace).isEqualTo("2026-10-01 10:30:00")
+
+    assertThat(fmsMonitoringOrder.installationAddress1).isEqualTo("Installation Line 1")
+    assertThat(fmsMonitoringOrder.installationAddressPostcode).isEqualTo("Installation Post code")
+  }
+
+  @Test
+  fun `It should map new details when changing between tag at source locations`() {
+    val installationAddress = createAddress(
+      addressType = AddressType.INSTALLATION,
+      addressLine1 = "Installation Line 1",
+      postcode = "Installation Post code",
+    )
+
+    val installationLocation = InstallationLocation(
+      versionId = UUID.randomUUID(),
+      location = InstallationLocationType.PRISON,
+    )
+
+    val installationAppointment = InstallationAppointment(
+      versionId = UUID.randomUUID(),
+      placeName = "HMP Wandsworth",
+      appointmentDate = ZonedDateTime.of(2026, 10, 1, 10, 30, 0, 0, ZoneId.of("Europe/London")),
+    )
+
+    val trailMonitoringConditions = TrailMonitoringConditions(
+      versionId = UUID.randomUUID(),
+      startDate = ZonedDateTime.now(),
+      endDate = ZonedDateTime.now().plusMonths(1),
+    )
+
+    val order = createOrder(
+      addresses = mutableListOf(
+        installationAddress,
+      ),
+      monitoringConditions = createMonitoringConditions(trail = true),
+      installationLocation = installationLocation,
+      trailMonitoringConditions = trailMonitoringConditions,
+    )
+    order.installationAppointment = installationAppointment
+
+    order.installationLocation!!.location = InstallationLocationType.PROBATION_OFFICE
+    order.installationAppointment = null
+    order.addresses.removeAll { it.addressType == AddressType.INSTALLATION }
+
+    order.addresses.add(
+      createAddress(
+        addressType = AddressType.INSTALLATION,
+        addressLine1 = "New Probation Address Line 1",
+        addressLine2 = "New Probation Address Line 2",
+        postcode = "New Probation Postcode",
+      ),
+    )
+    order.installationAppointment = InstallationAppointment(
+      versionId = UUID.randomUUID(),
+      placeName = "London",
+      appointmentDate = ZonedDateTime.of(2026, 11, 15, 14, 30, 0, 0, ZoneId.of("Europe/London")),
+    )
+
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
+
+    assertThat(fmsMonitoringOrder.tagAtSource).isEqualTo("true")
+    assertThat(fmsMonitoringOrder.tagAtSourceDetails).isEqualTo("London")
+    assertThat(fmsMonitoringOrder.dateAndTimeInstallationWillTakePlace).isEqualTo("2026-11-15 14:30:00")
+    assertThat(fmsMonitoringOrder.installationAddress1).isEqualTo("New Probation Address Line 1")
+    assertThat(fmsMonitoringOrder.installationAddress2).isEqualTo("New Probation Address Line 2")
+    assertThat(fmsMonitoringOrder.installationAddressPostcode).isEqualTo("New Probation Postcode")
+  }
+
   @ParameterizedTest(name = "it should map probation delivery unit to Serco - {0} -> {1}")
   @ArgumentsSource(ProbationDeliveryUnitArgumentsProvider::class)
   fun `It should correctly map saved probation delivery unit values to Serco`(
@@ -381,6 +567,18 @@ class MonitoringOrderTest : OrderTestBase() {
       val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "")
       assertThat(fmsMonitoringOrder.abstinence).isEqualTo(mappedValue)
     }
+  }
+
+  @ParameterizedTest(name = "it should map sentence type - {0} -> {1}")
+  @ArgumentsSource(SentenceArgumentsProvider::class)
+  fun `It should correctly map sentence type to Serco`(savedValue: String, mappedValue: String) {
+    val sentenceType = SentenceType.entries.first { it.name == savedValue }
+    val order = createOrder(
+      monitoringConditions = createMonitoringConditions(sentenceType = sentenceType),
+    )
+
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "")
+    assertThat(fmsMonitoringOrder.sentenceType).isEqualTo(mappedValue)
   }
 
   private fun assertNotifyingOrgNameMapping(savedValue: String, mappedValue: String) {

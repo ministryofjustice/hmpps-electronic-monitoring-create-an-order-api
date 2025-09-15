@@ -50,7 +50,7 @@ class InterestedPartiesService(private val addressService: AddressService) : Ord
       responsibleOrganisationEmail = updateRecord.responsibleOrganisationEmail,
     )
 
-    if (newInterestedParties.responsibleOrganisation != order.interestedParties?.responsibleOfficerName ||
+    if (newInterestedParties.responsibleOrganisation != order.interestedParties?.responsibleOrganisation ||
       newInterestedParties.responsibleOrganisationRegion != order.interestedParties?.responsibleOrganisationRegion
     ) {
       order.probationDeliveryUnit = null
