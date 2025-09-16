@@ -1,10 +1,12 @@
 # hmpps-electronic-monitoring-create-an-order-api
+
 [![repo standards badge](https://img.shields.io/badge/endpoint.svg?&style=flat&logo=github&url=https%3A%2F%2Foperations-engineering-reports.cloud-platform.service.justice.gov.uk%2Fapi%2Fv1%2Fcompliant_public_repositories%2Fhmpps-electronic-monitoring-create-an-order-api)](https://operations-engineering-reports.cloud-platform.service.justice.gov.uk/public-report/hmpps-electronic-monitoring-create-an-order-api "Link to report")
 [![CircleCI](https://circleci.com/gh/ministryofjustice/hmpps-electronic-monitoring-create-an-order-api/tree/main.svg?style=svg)](https://circleci.com/gh/ministryofjustice/hmpps-electronic-monitoring-create-an-order-api)
 [![Docker Repository on Quay](https://img.shields.io/badge/quay.io-repository-2496ED.svg?logo=docker)](https://quay.io/repository/hmpps/hmpps-electronic-monitoring-create-an-order-api)
 [![API docs](https://img.shields.io/badge/API_docs_-view-85EA2D.svg?logo=swagger)](https://hmpps-electronic-monitoring-create-an-order-api-dev.hmpps.service.justice.gov.uk/swagger-ui/index.html?configUrl=/v3/api-docs)
 
 ## Contents
+
 - [About this project](#about-this-project)
 - [Get started](#get-started)
     - [Using IntelliJ IDEA](#using-intellij-idea)
@@ -14,92 +16,109 @@
         - [Generate a token for a HMPPS Auth client](#generate-a-token-for-a-hmpps-auth-client)
       - [Running the application locally with the UI](#running-both-the-ui-and-the-api-locally)
 
+---
+
 
 ## About this project
+This service validates and persists EM order forms, and submits them to the field monitoring service (FMS).
 
-An API used by the [Create an Electronic Monitoring Order UI](https://github.com/ministryofjustice/hmpps-electronic-monitoring-create-an-order), 
-a service that allows users to create electronic monitoring orders.
-It's built using [Spring Boot](https://spring.io/projects/spring-boot/) and [Kotlin](https://kotlinlang.org/)
-as well as the following technologies for its infrastructure:
-- [AWS](https://aws.amazon.com/) - Services utilise AWS features through Cloud Platform.
-- [CircleCI](https://circleci.com/developer) - Used for our build platform, responsible for executing workflows to
-  build, validate, test and deploy our project.
-- [Cloud Platform](https://user-guide.cloud-platform.service.justice.gov.uk/#cloud-platform-user-guide) - Ministry of
-  Justice's (MOJ) cloud hosting platform built on top of AWS which offers numerous tools such as logging, monitoring and
-  alerting for our services.
-- [Docker](https://www.docker.com/) - The API is built into docker images which are deployed to our containers.
-- [Kubernetes](https://kubernetes.io/docs/home/) - Creates 'pods' to host our environment. Manages auto-scaling, load
-  balancing and networking to our application.
+Features include:
+- API endpoints that accept EM order form data from validated clients
+- Validation and persistance of submitted EM order form data
+- Transformation of complete EM order forms into the models expected by FMS
+- Submission of complete EM order forms to FMS API endpopints, and persistance of submission response data
+- Endpoints for other EM order activities such as creating new versions of existing orders.
 
-## Get started
+This service is hosted in MoJ's [Cloud Platform](https://user-guide.cloud-platform.service.justice.gov.uk/#cloud-platform-user-guide).
+
+---
+
+
+## First time setup
 
 ### Using IntelliJ IDEA
 
-When using an IDE like [IntelliJ IDEA](https://www.jetbrains.com/idea/), getting started is very simple as it will
-handle installing the required Java SDK and [Gradle](https://gradle.org/) versions. The following are the steps for
-using IntelliJ but other IDEs will prove similar.
+IntelliJ IDEA is a good choice of IDE for this Kotlin repo.  
+It integrates smoothly with Kotlin, Sping Boot and Gradle,  
+making the service relatively easy to run locally.
 
-1. Clone the repo.
+This readme assumes use of IntelliJ IDEA, but other IDEs can be used.
+
+### 1. Clone the repo
 
 ```bash
 git clone git@github.com:ministryofjustice/hmpps-electronic-monitoring-create-an-order-api.git
 ```
 
-2. Launch IntelliJ and open the `hmpps-electronic-monitoring-create-an-order-api` project by navigating to the location 
-of the repository.
+### 2. Open the project & install dependencies
 
-Upon opening the project, IntelliJ will begin downloading and installing necessary dependencies which may take a few
-minutes.
+Once the project is open in IntelliJ IDEA the IDE will automatically download and install dependencies.  
+This may take a few minutes.
 
-3. Enable pre-commit hooks for formatting and linting code.
+### 3. Enable pre-commit hooks for formatting and linting code
 
 ```bash
 ./gradlew addKtlintFormatGitPreCommitHook addKtlintCheckGitPreCommitHook
 ```
 
-## Usage
+---
 
-### Running the application locally
 
-To run the application using IntelliJ:
+## Running the service locally
 
-1. Run `docker compose pull && docker compose up --scale hmpps-electronic-monitoring-create-an-order-api=0`
-, which will just start a docker instance of the database and HMPPS Auth.
-2. Create a .env file in the root level of the repository with the following contents. Populate variable values from Kubernetes secret `serco-secret` 
-```
-SERCO_AUTH_URL=
-SERCO_CLIENT_ID=
-SERCO_CLIENT_SECRET=
-SERCO_USERNAME=
-SERCO_PASSWORD=
-SERCO_URL=
-```
-3. Click the drop-down button for the `HmppsElectronicMonitoringCreateAnOrderApi` run configuration file in the top 
-right corner, and select Edit Configurations. 
-    - For the 'Active Profiles' field, put 'local'
-    - You may also need to set the JDK to openjdk-23 or openjdk-21
-    - Click on Modify options -> Choose Environment Variables
-    - For the 'Environment Variables' field, put path to .env file
-    - Apply these changes
-4. Click the run button.
+To run the service using IntelliJ IDEA:
+
+### 1. Start the database and HMPPS Auth in Docker
+    ```bash
+    docker compose pull && docker compose up --scale hmpps-electronic-monitoring-create-an-order-api=0`
+    ```
+
+### 2. Configure .env
+1. Create a .env file in the root level of the repository.
+
+2. Use this automated script to populate the .env file with the required secrets:
+    ```bash
+    ./scripts/create-env.sh
+    ```
+
+The secrets can also be obtained manually using kubectl.  
+[See this section of the Cloud Platform User Guide](https://user-guide.cloud-platform.service.justice.gov.uk/documentation/getting-started/kubectl-config.html) for guidance on accessing kubernetes resources.
+
+### 3. Configure run
+In the top-right corener of the IDE,  
+click the text `HmppsElectronicMonitoringCreateAnOrderApi` to reveal a drop-down menu.  
+Select `edit configurations...`
+
+- In the `Active Profiles` text field, write `local`.
+- You may also need to set the JDK to `openjdk-23` or `openjdk-21`.  
+  You may need to download the required JDK before the option is shown in the menu.
+- Click on `Modify options` -> `Choose Environment Variables`.  
+  For the 'Environment Variables' field, enter the path to your `.env` file.
+- Click the `Apply` button.
+
+### 4. Run the service
+To run the appliation using the UI:
+1. Click the run button in the top-right corner of the IDE (a green 'play' symbol).  
+2. Visit [http://localhost:8080/health](hhttp://localhost:8081/health).  
+This endpoint should return data indicating that the service is running.
 
 Or, to run the application using the command line:
 
-setup environment variables:
+1. Set up environment variables:
+    ```bash
+    ./scripts/create-env.sh
+    ```
 
-run setup script
-```bash
-./scripts/create-env.sh
-```
-and then
-```bash
-SPRING_PROFILES_ACTIVE=local ./gradlew bootRun
-```
+2. Run the service:
+    ```bash
+    SPRING_PROFILES_ACTIVE=local ./gradlew bootRun
+    ```
 
-Then visit [http://localhost:8080/health](hhttp://localhost:8081/health).
+3. Visit [http://localhost:8080/health](hhttp://localhost:8081/health).  
+This endpoint should return data indicating that the service is running.
 
 
-#### Calling endpoints
+## Calling endpoints
 
 As part of getting the HMPPS Auth service running locally, 
 [the in-memory database is seeded with data including a number of clients](https://github.com/ministryofjustice/hmpps-auth/blob/main/src/main/resources/db/dev/data/auth/V900_0__clients.sql). 
@@ -107,7 +126,7 @@ A client can have different permissions i.e. read, write, reporting, although st
 
 If you wish to call an endpoint of the API, an access token must be provided that is generated from the HMPPS Auth service.
 
-##### Generate a token for a HMPPS Auth client
+## Generate a token for a HMPPS Auth client
 
 ```bash
 curl -X POST "http://localhost:8090/auth/oauth/token?grant_type=client_credentials" \ 
