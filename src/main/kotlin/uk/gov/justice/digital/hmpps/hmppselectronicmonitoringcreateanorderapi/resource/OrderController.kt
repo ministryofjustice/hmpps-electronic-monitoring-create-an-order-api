@@ -86,12 +86,9 @@ class OrderController(@Autowired val orderService: OrderService) {
   }
 
   @GetMapping("/orders")
-  fun listOrders(
-    @RequestParam searchTerm: String = "",
-    authentication: Authentication,
-  ): ResponseEntity<List<OrderDto>> {
+  fun listOrders(authentication: Authentication): ResponseEntity<List<OrderDto>> {
     val username = authentication.name
-    val orders = orderService.listOrders(OrderListCriteria(searchTerm, username))
+    val orders = orderService.listOrders(OrderListCriteria(username))
 
     return ResponseEntity(orders.map { convertToDto(it) }, HttpStatus.OK)
   }

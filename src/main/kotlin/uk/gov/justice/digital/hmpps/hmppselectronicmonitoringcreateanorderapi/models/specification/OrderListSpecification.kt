@@ -7,14 +7,12 @@ import jakarta.persistence.criteria.Predicate
 import jakarta.persistence.criteria.Root
 import org.springframework.data.jpa.domain.Specification
 import org.springframework.lang.Nullable
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.OrderListCriteria
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 
 class OrderListSpecification(private val criteria: OrderListCriteria) : Specification<Order> {
-  private fun wildcard(str: String): String = "%$str%"
-
   private fun isOwnedByUser(
     version: Join<Order, OrderVersion>,
     criteriaBuilder: CriteriaBuilder,
@@ -24,41 +22,10 @@ class OrderListSpecification(private val criteria: OrderListCriteria) : Specific
     username,
   )
 
-  private fun isLikeFirstName(
-    deviceWearer: Join<OrderVersion, DeviceWearer>,
-    criteriaBuilder: CriteriaBuilder,
-    keyword: String,
-  ): Predicate = criteriaBuilder.like(
-    criteriaBuilder.lower(
-      deviceWearer.get(DeviceWearer::firstName.name),
-    ),
-    wildcard(keyword).lowercase(),
-  )
-
-  private fun isLikeLastName(
-    deviceWearer: Join<OrderVersion, DeviceWearer>,
-    criteriaBuilder: CriteriaBuilder,
-    keyword: String,
-  ): Predicate = criteriaBuilder.like(
-    criteriaBuilder.lower(
-      deviceWearer.get(DeviceWearer::lastName.name),
-    ),
-    wildcard(keyword).lowercase(),
-  )
-
-  private fun isLikeFullName(
-    deviceWearer: Join<OrderVersion, DeviceWearer>,
-    criteriaBuilder: CriteriaBuilder,
-    keyword: String,
-  ): Predicate {
-    var fullName = criteriaBuilder.concat(deviceWearer.get(DeviceWearer::firstName.name), " ")
-    fullName = criteriaBuilder.concat(fullName, deviceWearer.get(DeviceWearer::lastName.name))
-
-    val normalizedKeyword = keyword.trim().replace(Regex("\\s+"), " ").lowercase()
-    return criteriaBuilder.like(
-      criteriaBuilder.lower(fullName),
-      wildcard(normalizedKeyword),
-    )
+  private fun isValidOrderStatus(version: Join<Order, OrderVersion>, criteriaBuilder: CriteriaBuilder): Predicate {
+    val inProgress = criteriaBuilder.equal(version.get<String>(OrderVersion::status.name), OrderStatus.IN_PROGRESS)
+    val failed = criteriaBuilder.equal(version.get<String>(OrderVersion::status.name), OrderStatus.ERROR)
+    return criteriaBuilder.or(inProgress, failed)
   }
 
   override fun toPredicate(
@@ -66,9 +33,7 @@ class OrderListSpecification(private val criteria: OrderListCriteria) : Specific
     @Nullable query: CriteriaQuery<*>?,
     criteriaBuilder: CriteriaBuilder,
   ): Predicate? {
-    val predicates = mutableListOf<Predicate>()
     val version: Join<Order, OrderVersion> = root.join("versions")
-    val deviceWearer: Join<OrderVersion, DeviceWearer> = version.join("deviceWearer")
 
     // Subquery to get the max version number
     val subquery = query?.subquery(Int::class.java)
@@ -76,23 +41,10 @@ class OrderListSpecification(private val criteria: OrderListCriteria) : Specific
     subquery?.select(criteriaBuilder.max(subqueryRoot?.get<Int>("versionId")))
     subquery?.where(criteriaBuilder.equal(subqueryRoot?.get<Order>("order"), root))
 
-    if (this.criteria.searchTerm.isNotEmpty()) {
-      predicates.add(isLikeFirstName(deviceWearer, criteriaBuilder, this.criteria.searchTerm))
-      predicates.add(isLikeLastName(deviceWearer, criteriaBuilder, this.criteria.searchTerm))
-      predicates.add(isLikeFullName(deviceWearer, criteriaBuilder, this.criteria.searchTerm))
-    }
-
-    if (predicates.isNotEmpty()) {
-      return criteriaBuilder.and(
-        criteriaBuilder.equal(version.get<Int>("versionId"), subquery),
-        isOwnedByUser(version, criteriaBuilder, this.criteria.username),
-        criteriaBuilder.or(*predicates.toTypedArray()),
-      )
-    }
-
     return criteriaBuilder.and(
       criteriaBuilder.equal(version.get<Int>("versionId"), subquery),
       isOwnedByUser(version, criteriaBuilder, this.criteria.username),
+      isValidOrderStatus(version, criteriaBuilder),
     )
   }
 }

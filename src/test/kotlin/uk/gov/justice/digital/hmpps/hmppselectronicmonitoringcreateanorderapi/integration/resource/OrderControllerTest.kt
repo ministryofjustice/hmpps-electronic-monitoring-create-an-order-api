@@ -159,7 +159,7 @@ class OrderControllerTest : IntegrationTestBase() {
         .responseBody!!
 
       assertThat(variationOrder.deviceWearer!!.id).isNotEqualTo(order.deviceWearer!!.id)
-      assertThat(variationOrder.deviceWearer.versionId).isNotEqualTo(order.deviceWearer!!.versionId)
+      assertThat(variationOrder.deviceWearer!!.versionId).isNotEqualTo(order.deviceWearer!!.versionId)
     }
 
     @Test
@@ -599,11 +599,14 @@ class OrderControllerTest : IntegrationTestBase() {
         .expectBodyList(OrderDto::class.java)
         .hasSize(0)
     }
+  }
 
+  @Nested
+  @DisplayName("GET /api/orders")
+  inner class ListOrders {
     @Test
     fun `Should only return the most recent order version`() {
       val order = TestUtilities.createReadyToSubmitOrder(
-
         startDate = mockStartDate,
         endDate = mockEndDate,
       )
@@ -613,7 +616,7 @@ class OrderControllerTest : IntegrationTestBase() {
         OrderVersion(
           id = versionId1,
           username = "AUTH_ADM",
-          status = OrderStatus.SUBMITTED,
+          status = OrderStatus.ERROR,
           type = RequestType.REQUEST,
           orderId = order.id,
           versionId = 2,
@@ -625,7 +628,7 @@ class OrderControllerTest : IntegrationTestBase() {
         OrderVersion(
           id = versionId2,
           username = "AUTH_ADM",
-          status = OrderStatus.SUBMITTED,
+          status = OrderStatus.IN_PROGRESS,
           type = RequestType.REQUEST,
           orderId = order.id,
           versionId = 3,
@@ -637,7 +640,7 @@ class OrderControllerTest : IntegrationTestBase() {
       repo.save(order)
 
       val result = webTestClient.get()
-        .uri("/api/orders?searchTerm=john smith")
+        .uri("/api/orders")
         .headers(setAuthorisation("AUTH_ADM"))
         .exchange()
         .expectStatus()
@@ -646,6 +649,20 @@ class OrderControllerTest : IntegrationTestBase() {
         .hasSize(1).returnResult().responseBody
 
       assertThat(result!!.first().deviceWearer?.versionId).isEqualTo(versionId2)
+    }
+
+    @Test
+    fun `Should not return Submitted orders`() {
+      createAndPersistPopulatedOrder(status = OrderStatus.SUBMITTED)
+
+      webTestClient.get()
+        .uri("/api/orders")
+        .headers(setAuthorisation("AUTH_ADM"))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBodyList(OrderDto::class.java)
+        .hasSize(0)
     }
   }
 

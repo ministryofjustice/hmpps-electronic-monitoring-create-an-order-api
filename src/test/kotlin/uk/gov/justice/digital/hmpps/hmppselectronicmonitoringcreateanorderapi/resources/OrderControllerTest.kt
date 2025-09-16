@@ -159,7 +159,7 @@ class OrderControllerTest {
     `when`(orderService.listOrders(OrderListCriteria(username = "mockUser"))).thenReturn(orders)
     `when`(authentication.name).thenReturn("mockUser")
 
-    val result = controller.listOrders("", authentication)
+    val result = controller.listOrders(authentication)
     Assertions.assertThat(result.body).isEqualTo(
       listOf(
         OrderDto(
