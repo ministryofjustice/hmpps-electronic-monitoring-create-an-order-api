@@ -7,6 +7,7 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import org.springframework.boot.test.autoconfigure.json.JsonTest
 import org.springframework.test.context.ActiveProfiles
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.FormValidationException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InterestedParties
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
@@ -144,5 +145,27 @@ class InterestedPartiesServiceTest {
     service.updateInterestedParties(mockOrderId, mockUsername, mockUpdateRecord)
 
     assertThat(mockOrder.probationDeliveryUnit).isNull()
+  }
+
+  @Test
+  fun `Should return error when notifying organisation is YOUTH_CUSTODY_SERVICE and no region is provided`() {
+    whenever(orderRepo.findById(mockOrderId)).thenReturn(Optional.of(mockOrder))
+    whenever(orderRepo.save(mockOrder)).thenReturn(mockOrder)
+
+    val mockUpdateRecord = UpdateInterestedPartiesDto(
+      responsibleOrganisation = ResponsibleOrganisation.YJS,
+      responsibleOrganisationRegion = YouthJusticeServiceRegions.WALES.name,
+      responsibleOrganisationEmail = "mockUpdatedRoEmail",
+      responsibleOfficerName = "mockUpdatedOfficerName",
+      responsibleOfficerPhoneNumber = "09998887777",
+      notifyingOrganisation = NotifyingOrganisationDDv5.YOUTH_CUSTODY_SERVICE,
+      notifyingOrganisationEmail = "mockUpdatedNotifyEmail",
+    )
+    try {
+      service.updateInterestedParties(mockOrderId, mockUsername, mockUpdateRecord)
+    } catch (ex: Exception) {
+      assertThat(ex is FormValidationException).isTrue()
+      assertThat(ex.message).isEqualTo("Select the name of the organisation you are part of")
+    }
   }
 }

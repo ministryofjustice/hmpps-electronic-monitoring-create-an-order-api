@@ -9,6 +9,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FamilyCourtDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisationDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ProbationServiceRegion
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YouthCustodyServiceRegionDDv5
 import java.util.*
 
 @Service
@@ -27,6 +28,8 @@ class InterestedPartiesService(private val addressService: AddressService) : Ord
             FamilyCourtDDv5.entries.none { it.name == updateRecord.notifyingOrganisationName }
           NotifyingOrganisationDDv5.PROBATION ->
             ProbationServiceRegion.entries.none { it.name == updateRecord.notifyingOrganisationName }
+          NotifyingOrganisationDDv5.YOUTH_CUSTODY_SERVICE ->
+            YouthCustodyServiceRegionDDv5.entries.none { it.name == updateRecord.notifyingOrganisationName }
           else -> false
         }
 
