@@ -381,9 +381,9 @@ data class MonitoringOrder(
           monitoringOrder.abstinence = "No"
         }
         monitoringOrder.releasedUnderPrarr = if (conditions.prarr == YesNoUnknown.YES) {
-          "Yes"
+          "true"
         } else {
-          "No"
+          "false"
         }
       }
 
