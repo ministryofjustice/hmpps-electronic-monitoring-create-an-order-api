@@ -380,11 +380,12 @@ data class MonitoringOrder(
         } else {
           monitoringOrder.abstinence = "No"
         }
-        monitoringOrder.releasedUnderPrarr = if (conditions.prarr == YesNoUnknown.YES) {
-          "true"
-        } else {
-          "false"
-        }
+      }
+
+      if (conditions.prarr == YesNoUnknown.YES) {
+        monitoringOrder.releasedUnderPrarr = "true"
+      } else {
+        monitoringOrder.releasedUnderPrarr = "false"
       }
 
       if (order.installationLocation != null) {
