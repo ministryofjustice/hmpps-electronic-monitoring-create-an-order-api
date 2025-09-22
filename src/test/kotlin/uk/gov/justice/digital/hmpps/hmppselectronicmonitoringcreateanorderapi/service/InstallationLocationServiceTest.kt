@@ -175,4 +175,30 @@ class InstallationLocationServiceTest {
     assertThat(mockOrder.installationAppointment).isNull()
     assertThat(mockOrder.addresses.any { it.addressType == AddressType.INSTALLATION }).isFalse()
   }
+
+  @Test
+  fun `Should NOT clear installation appointment and address when location is NOT changed`() {
+    whenever(repo.findById(mockOrderId)).thenReturn(Optional.of(mockOrder))
+    whenever(repo.save(mockOrder)).thenReturn(mockOrder)
+
+    mockOrder.installationLocation =
+      InstallationLocation(versionId = mockVersionId, location = InstallationLocationType.PRISON)
+    mockOrder.installationAppointment = InstallationAppointment(versionId = mockVersionId)
+    mockOrder.addresses.add(
+      Address(
+        versionId = mockVersionId,
+        addressType = AddressType.INSTALLATION,
+        addressLine1 = "Mock place",
+        addressLine2 = "",
+        addressLine3 = "Mock Town",
+        postcode = "Mock postcode",
+      ),
+    )
+
+    val updateRecord = UpdateInstallationLocationDto(location = InstallationLocationType.PRISON)
+    service.createOrUpdateInstallationLocation(mockOrderId, mockUsername, updateRecord)
+
+    assertThat(mockOrder.installationAppointment).isNotNull()
+    assertThat(mockOrder.addresses.any { it.addressType == AddressType.INSTALLATION }).isTrue()
+  }
 }
