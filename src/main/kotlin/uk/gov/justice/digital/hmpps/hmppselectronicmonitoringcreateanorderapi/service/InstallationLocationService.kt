@@ -4,7 +4,6 @@ import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationLocation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateInstallationLocationDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.InstallationLocationType
 import java.util.*
 
 @Service
@@ -17,13 +16,16 @@ class InstallationLocationService : OrderSectionServiceBase() {
   ): InstallationLocation {
     // Verify the order belongs to the user and is in draft state
     val order = this.findEditableOrder(orderId, username)
+
+    val originalLocation = order.installationLocation?.location
+
     order.installationLocation = InstallationLocation(
       versionId = order.getCurrentVersion().id,
       location = updateRecord.location,
     )
 
     if (
-      updateRecord.location != InstallationLocationType.INSTALLATION
+      updateRecord.location != originalLocation
     ) {
       order.installationAppointment = null
       order.addresses.removeAll { it.addressType == AddressType.INSTALLATION }
