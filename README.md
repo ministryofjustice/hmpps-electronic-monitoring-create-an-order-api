@@ -23,10 +23,10 @@ This service validates and persists EM order forms, and submits them to the fiel
 
 Features include:
 - API endpoints that accept EM order form data from validated clients
-- Validation and persistance of submitted EM order form data
+- Validation and persistence of submitted EM order form data
 - Submission of client-submitted documents to a document store for persistence
 - Transformation of complete EM order forms into the models expected by FMS
-- Submission of complete EM order forms to FMS API endpopints, and persistance of submission response data
+- Submission of complete EM order forms to FMS API endpoints, and persistence of submission response data
 - Endpoints for other EM order activities, eg. creating new versions of existing orders
 
 This service is hosted in [Cloud Platform](https://user-guide.cloud-platform.service.justice.gov.uk/#cloud-platform-user-guide).
@@ -85,7 +85,7 @@ Select `edit configurations...`
 
 ### 1. Start the database and HMPPS Auth in Docker
 ```bash
-docker compose pull && docker compose up --scale hmpps-electronic-monitoring-create-an-order-api=0`
+docker compose pull && docker compose up --scale hmpps-electronic-monitoring-create-an-order-api=0
 ```
 
 ### 2. Run the service
@@ -194,7 +194,7 @@ Use your HMPPS Auth credentials (dev) to sign in.
 
 2.  Run integration tests:
 ```bash
-  `./gradlew integration`
+  ./gradlew integration
 ```
 
 ---
