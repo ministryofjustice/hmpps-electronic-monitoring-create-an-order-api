@@ -223,6 +223,7 @@ abstract class OrderTestBase {
     mandatoryAttendance: Boolean = false,
     exclusionZone: Boolean = false,
     pilot: Pilot = Pilot.UNKNOWN,
+    offenceAdditionalDetails: String = "",
   ): MonitoringConditions = MonitoringConditions(
     versionId = UUID.randomUUID(),
     orderType = orderType,

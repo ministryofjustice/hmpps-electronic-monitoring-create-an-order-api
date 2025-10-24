@@ -205,10 +205,15 @@ class MonitoringOrderTest : OrderTestBase() {
       installationAndRisk = createInstallationAndRisk(
         offenceAdditionalDetails = "Mock Additional Details",
       ),
+      monitoringConditions = createMonitoringConditions(
+        offenceAdditionalDetails = "More Additional Details",
+      ),
     )
     val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
 
-    assertThat(fmsMonitoringOrder.offenceAdditionalDetails).isEqualTo("Mock Additional Details")
+    assertThat(
+      fmsMonitoringOrder.offenceAdditionalDetails,
+    ).isEqualTo("Mock Additional Details. More Additional Details")
   }
 
   @Test
@@ -244,6 +249,7 @@ class MonitoringOrderTest : OrderTestBase() {
     assertThat(fmsMonitoringOrder.conditionalReleaseEndTime).isEqualTo(mockeDayOfRelease.endTime)
     assertThat(fmsMonitoringOrder.conditionalReleaseDate).isEqualTo(getBritishDate(mockeDayOfRelease.releaseDate))
   }
+
   private val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
   private val londonTimeZone = ZoneId.of("Europe/London")
 
