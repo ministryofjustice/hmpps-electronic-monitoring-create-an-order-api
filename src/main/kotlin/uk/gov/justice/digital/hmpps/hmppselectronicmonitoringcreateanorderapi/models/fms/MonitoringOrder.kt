@@ -546,11 +546,11 @@ data class MonitoringOrder(
 
     private fun getOffenceAdditionalDetails(order: Order): String {
       val riskOffenceDetails = order.installationAndRisk?.offenceAdditionalDetails ?: ""
-      val monitoringOffenceDetails = order.monitoringConditions?.offenceAdditionalDetails ?: ""
+      val monitoringOffenceType = order.monitoringConditions?.offenceType ?: ""
 
       val parts = listOfNotNull(
         riskOffenceDetails.takeIf { it.isNotBlank() },
-        monitoringOffenceDetails.takeIf { it.isNotBlank() },
+        monitoringOffenceType.takeIf { it.isNotBlank() },
       )
 
       return parts.joinToString(". ")
