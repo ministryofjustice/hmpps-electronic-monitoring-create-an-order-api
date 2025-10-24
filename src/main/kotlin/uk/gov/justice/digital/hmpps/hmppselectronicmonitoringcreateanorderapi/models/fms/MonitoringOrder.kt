@@ -253,7 +253,7 @@ data class MonitoringOrder(
         orderId = order.id.toString(),
         orderStatus = "Not Started",
         offence = getOffence(order),
-        offenceAdditionalDetails = order.installationAndRisk?.offenceAdditionalDetails ?: "",
+        offenceAdditionalDetails = getOffenceAdditionalDetails(order),
         pilot = conditions.pilot?.value ?: "",
       )
 
@@ -542,6 +542,18 @@ data class MonitoringOrder(
         start = getBritishDate(it.startDate),
         end = getBritishDate(it.endDate),
       )
+    }
+
+    private fun getOffenceAdditionalDetails(order: Order): String {
+      val riskOffenceDetails = order.installationAndRisk?.offenceAdditionalDetails ?: ""
+      val monitoringOffenceDetails = order.monitoringConditions?.offenceAdditionalDetails ?: ""
+
+      val parts = listOfNotNull(
+        riskOffenceDetails.takeIf { it.isNotBlank() },
+        monitoringOffenceDetails.takeIf { it.isNotBlank() },
+      )
+
+      return parts.joinToString(". ")
     }
   }
 }
