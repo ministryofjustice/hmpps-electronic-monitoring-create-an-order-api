@@ -241,6 +241,7 @@ abstract class OrderTestBase {
     mandatoryAttendance = mandatoryAttendance,
     exclusionZone = exclusionZone,
     pilot = pilot,
+    offenceAdditionalDetails = offenceAdditionalDetails,
   )
 
   protected fun createMandatoryAttendanceCondition(
