@@ -66,7 +66,7 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
               "hdc": "NO",
               "prarr": "UNKNOWN",
               "sentenceType": "LIFE_SENTENCE",
-              "offenceAdditionalDetails": "some offence details"
+              "offenceType": "some offence details"
             }
           """.trimIndent(),
         ),
