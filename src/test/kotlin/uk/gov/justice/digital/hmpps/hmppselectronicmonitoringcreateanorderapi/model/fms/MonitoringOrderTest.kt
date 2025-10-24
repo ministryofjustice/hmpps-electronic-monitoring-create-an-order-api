@@ -206,7 +206,7 @@ class MonitoringOrderTest : OrderTestBase() {
         offenceAdditionalDetails = "Mock Additional Details",
       ),
       monitoringConditions = createMonitoringConditions(
-        offenceAdditionalDetails = "More Additional Details",
+        offenceType = "More Additional Details",
       ),
     )
     val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)

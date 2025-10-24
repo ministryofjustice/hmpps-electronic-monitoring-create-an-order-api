@@ -66,7 +66,7 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
               "hdc": "NO",
               "prarr": "UNKNOWN",
               "sentenceType": "LIFE_SENTENCE",
-              "offenceAdditionalDetails": "some offence details"
+              "offenceType": "some offence details"
             }
           """.trimIndent(),
         ),
@@ -97,7 +97,7 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
     Assertions.assertThat(updateMonitoringConditions.responseBody?.hdc).isEqualTo(YesNoUnknown.NO)
     Assertions.assertThat(updateMonitoringConditions.responseBody?.prarr).isEqualTo(YesNoUnknown.UNKNOWN)
     Assertions.assertThat(updateMonitoringConditions.responseBody?.sentenceType).isEqualTo(SentenceType.LIFE_SENTENCE)
-    Assertions.assertThat(updateMonitoringConditions.responseBody?.offenceAdditionalDetails)
+    Assertions.assertThat(updateMonitoringConditions.responseBody?.offenceType)
       .isEqualTo("some offence details")
   }
 
@@ -159,7 +159,7 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
               "alcohol": "true",
               "startDate": "$mockStartDate",
               "endDate": "$mockEndDate",
-              "offenceAdditionalDetails": null
+              "offenceType": null
             }
           """.trimIndent(),
         ),

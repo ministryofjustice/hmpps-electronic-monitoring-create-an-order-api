@@ -84,8 +84,8 @@ data class MonitoringConditions(
   @Column(name = "PILOT", nullable = true)
   var pilot: Pilot? = null,
 
-  @Column(name = "OFFENCE_ADDITIONAL_DETAILS", nullable = true)
-  var offenceAdditionalDetails: String? = "",
+  @Column(name = "OFFENCE_TYPE", nullable = true)
+  var offenceType: String? = "",
 
   @Schema(hidden = true)
   @OneToOne
