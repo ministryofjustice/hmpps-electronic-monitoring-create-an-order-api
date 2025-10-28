@@ -42,7 +42,7 @@ class PrisonArgumentsProvider : ArgumentsProvider {
     ),
     Arguments.of("DURHAM_PRISON", "Durham Prison"),
     Arguments.of(
-      "EAST_SUTTON_PARK_PRISON_AND_YOUNG_OFFENDERS_INSTITUTION",
+      "EAST_SUTTON_PARK_PRISON_AND_YOUNG_OFFENDER_INSTITUTION",
       "East Sutton Park Prison and Young Offender Institution",
     ),
     Arguments.of(
