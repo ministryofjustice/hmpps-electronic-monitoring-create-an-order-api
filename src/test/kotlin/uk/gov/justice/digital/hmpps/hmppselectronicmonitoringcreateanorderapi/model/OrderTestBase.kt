@@ -224,6 +224,7 @@ abstract class OrderTestBase {
     exclusionZone: Boolean = false,
     pilot: Pilot = Pilot.UNKNOWN,
     offenceType: String = "",
+    policeArea: String = "",
   ): MonitoringConditions = MonitoringConditions(
     versionId = UUID.randomUUID(),
     orderType = orderType,
@@ -242,6 +243,7 @@ abstract class OrderTestBase {
     exclusionZone = exclusionZone,
     pilot = pilot,
     offenceType = offenceType,
+    policeArea = policeArea,
   )
 
   protected fun createMandatoryAttendanceCondition(

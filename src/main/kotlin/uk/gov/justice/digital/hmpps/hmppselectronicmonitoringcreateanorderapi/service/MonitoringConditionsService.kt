@@ -43,6 +43,7 @@ class MonitoringConditionsService(@Value("\${toggle.tag-at-source.enabled}") pri
       prarr = updateRecord.prarr,
       pilot = updateRecord.pilot,
       offenceType = updateRecord.offenceType,
+      policeArea = updateRecord.policeArea,
     )
 
     clearDeselectedConditionDetails(order)

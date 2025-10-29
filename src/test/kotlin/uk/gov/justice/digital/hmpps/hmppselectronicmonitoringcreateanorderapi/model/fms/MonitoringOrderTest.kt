@@ -206,14 +206,17 @@ class MonitoringOrderTest : OrderTestBase() {
         offenceAdditionalDetails = "Mock Additional Details",
       ),
       monitoringConditions = createMonitoringConditions(
-        offenceType = "More Additional Details",
+        offenceType = "Robbery",
+        policeArea = "Essex",
       ),
     )
     val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
 
     assertThat(
       fmsMonitoringOrder.offenceAdditionalDetails,
-    ).isEqualTo("Mock Additional Details. More Additional Details")
+    ).isEqualTo(
+      "Mock Additional Details. Acquisitive crime offence is Robbery. Device wearer’s release address is in police force area: Essex",
+    )
   }
 
   @Test

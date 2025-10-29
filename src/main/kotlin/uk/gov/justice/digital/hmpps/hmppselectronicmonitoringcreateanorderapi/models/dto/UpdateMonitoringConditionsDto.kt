@@ -54,6 +54,9 @@ data class UpdateMonitoringConditionsDto(
   val pilot: Pilot? = null,
 
   val offenceType: String? = "",
+
+  val policeArea: String? = "",
+
 ) {
   @AssertTrue(message = ValidationErrors.MonitoringConditions.END_DATE_MUST_BE_AFTER_START_DATE)
   fun isEndDate(): Boolean {
