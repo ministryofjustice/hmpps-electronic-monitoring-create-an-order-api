@@ -10,4 +10,11 @@ enum class SentenceType(val value: String) {
   STANDARD_DETERMINATE_SENTENCE("Standard Determinate Sentence"),
   DTO("Detention & Training Order"),
   SECTION_91("HDC (Section 91)"),
+  COMMUNITY_YRO("Youth Rehabilitation Order (YRO)"),
+  COMMUNITY_SDO("Supervision Default Order"),
+  COMMUNITY_SUSPENDED_SENTENCE("Suspended Sentence"),
+  COMMUNITY("The sentence they have been given is not in the list"),
+  BAIL_SUPERVISION_SUPPORT("Bail Supervision & Support"),
+  BAIL_RLAA("Bail Remand to Local Authority Accomodation (RLAA)"),
+  BAIL("The type of bail they have been given is not in the list"),
 }
