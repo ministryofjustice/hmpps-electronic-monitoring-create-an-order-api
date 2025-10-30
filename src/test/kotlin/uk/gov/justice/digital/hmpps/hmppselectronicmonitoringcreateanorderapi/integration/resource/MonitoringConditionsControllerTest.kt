@@ -66,7 +66,8 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
               "hdc": "NO",
               "prarr": "UNKNOWN",
               "sentenceType": "LIFE_SENTENCE",
-              "offenceType": "some offence details"
+              "offenceType": "some offence details",
+              "policeArea": "some police area"
             }
           """.trimIndent(),
         ),
@@ -99,6 +100,8 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
     Assertions.assertThat(updateMonitoringConditions.responseBody?.sentenceType).isEqualTo(SentenceType.LIFE_SENTENCE)
     Assertions.assertThat(updateMonitoringConditions.responseBody?.offenceType)
       .isEqualTo("some offence details")
+    Assertions.assertThat(updateMonitoringConditions.responseBody?.policeArea)
+      .isEqualTo("some police area")
   }
 
   @Test

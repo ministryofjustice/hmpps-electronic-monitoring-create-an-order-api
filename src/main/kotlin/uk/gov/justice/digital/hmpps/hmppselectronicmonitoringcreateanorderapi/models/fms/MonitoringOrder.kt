@@ -547,10 +547,13 @@ data class MonitoringOrder(
     private fun getOffenceAdditionalDetails(order: Order): String {
       val riskOffenceDetails = order.installationAndRisk?.offenceAdditionalDetails ?: ""
       val monitoringOffenceType = order.monitoringConditions?.offenceType ?: ""
+      val monitoringPoliceArea = order.monitoringConditions?.policeArea ?: ""
 
       val parts = listOfNotNull(
         riskOffenceDetails.takeIf { it.isNotBlank() },
-        monitoringOffenceType.takeIf { it.isNotBlank() },
+        monitoringOffenceType.takeIf { it.isNotBlank() }?.let { "Acquisitive crime offence is $it" },
+        monitoringPoliceArea.takeIf { it.isNotBlank() }
+          ?.let { "Device wearer’s release address is in police force area: $it" },
       )
 
       return parts.joinToString(". ")
