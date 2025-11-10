@@ -105,17 +105,29 @@ class MonitoringConditionsService(@Value("\${toggle.tag-at-source.enabled}") pri
   fun removeMonitoringCondition(orderId: UUID, username: String, monitoringConditionId: UUID) {
     val order = this.findEditableOrder(orderId, username)
 
-    if (order.curfewConditions?.id == monitoringConditionId ||
-      order.curfewReleaseDateConditions?.id == monitoringConditionId ||
-      order.curfewTimeTable.any { it.id == monitoringConditionId }
-    ) {
+    if (isCurfew(order, monitoringConditionId)) {
       this.clearCurfew(order)
     }
 
-    if (order.monitoringConditionsAlcohol?.id == monitoringConditionId) {
+    if (isTrail(order, monitoringConditionId)) {
+      this.clearTrail(order)
+    }
+
+    if (isAlcohol(order, monitoringConditionId)) {
       this.clearAlcohol(order)
     }
 
     orderRepo.save(order)
   }
+
+  private fun isAlcohol(order: Order, monitoringConditionId: UUID) =
+    order.monitoringConditionsAlcohol?.id == monitoringConditionId
+
+  private fun isTrail(order: Order, monitoringConditionId: UUID) =
+    order.monitoringConditionsTrail?.id == monitoringConditionId
+
+  private fun isCurfew(order: Order, monitoringConditionId: UUID) =
+    order.curfewConditions?.id == monitoringConditionId ||
+      order.curfewReleaseDateConditions?.id == monitoringConditionId ||
+      order.curfewTimeTable.any { it.id == monitoringConditionId }
 }

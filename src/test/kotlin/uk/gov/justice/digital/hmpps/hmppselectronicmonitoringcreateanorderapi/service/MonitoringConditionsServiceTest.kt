@@ -340,6 +340,23 @@ class MonitoringConditionsServiceTest {
   }
 
   @Test
+  fun `can delete trail`() {
+    val trailID = UUID.randomUUID()
+    mockOrder.monitoringConditionsTrail = TrailMonitoringConditions(id = trailID, versionId = UUID.randomUUID())
+
+    whenever(repo.findById(mockOrderId)).thenReturn(Optional.of(mockOrder))
+    whenever(repo.save(mockOrder)).thenReturn(mockOrder)
+
+    service.removeMonitoringCondition(
+      mockOrderId,
+      mockUsername,
+      monitoringConditionId = trailID,
+    )
+
+    assertThat(mockOrder.monitoringConditionsTrail).isNull()
+  }
+
+  @Test
   fun `can delete alcohol`() {
     val alcoholId = UUID.randomUUID()
     mockOrder.monitoringConditionsAlcohol = AlcoholMonitoringConditions(id = alcoholId, versionId = UUID.randomUUID())
