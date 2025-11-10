@@ -272,4 +272,43 @@ class MonitoringConditionsServiceTest {
 
     assertThat(mockOrder.mandatoryAttendanceConditions).isEmpty()
   }
+
+  @Test
+  fun `can delete curfew`() {
+    val curfewId = UUID.randomUUID()
+    mockOrder.curfewConditions = CurfewConditions(id = curfewId, versionId = UUID.randomUUID())
+    mockOrder.curfewTimeTable =
+      mutableListOf(CurfewTimeTable(versionId = UUID.randomUUID(), dayOfWeek = DayOfWeek.MONDAY))
+    mockOrder.curfewReleaseDateConditions = CurfewReleaseDateConditions(versionId = UUID.randomUUID())
+
+    whenever(repo.findById(mockOrderId)).thenReturn(Optional.of(mockOrder))
+    whenever(repo.save(mockOrder)).thenReturn(mockOrder)
+
+    service.removeMonitoringCondition(
+      mockOrderId,
+      mockUsername,
+      monitoringConditionId = curfewId,
+    )
+
+    assertThat(mockOrder.curfewConditions).isNull()
+    assertThat(mockOrder.curfewTimeTable.isEmpty()).isEqualTo(true)
+    assertThat(mockOrder.curfewReleaseDateConditions).isNull()
+  }
+
+  @Test
+  fun `can delete alcohol`() {
+    val alcoholId = UUID.randomUUID()
+    mockOrder.monitoringConditionsAlcohol = AlcoholMonitoringConditions(id = alcoholId, versionId = UUID.randomUUID())
+
+    whenever(repo.findById(mockOrderId)).thenReturn(Optional.of(mockOrder))
+    whenever(repo.save(mockOrder)).thenReturn(mockOrder)
+
+    service.removeMonitoringCondition(
+      mockOrderId,
+      mockUsername,
+      monitoringConditionId = alcoholId,
+    )
+
+    assertThat(mockOrder.monitoringConditionsAlcohol).isNull()
+  }
 }
