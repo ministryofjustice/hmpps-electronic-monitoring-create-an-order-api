@@ -55,26 +55,50 @@ class MonitoringConditionsService(@Value("\${toggle.tag-at-source.enabled}") pri
     val conditions = order.monitoringConditions
 
     if (conditions?.curfew == false) {
-      order.curfewConditions = null
-      order.curfewReleaseDateConditions = null
-      order.curfewTimeTable.clear()
+      clearCurfew(order)
     }
     if (conditions?.exclusionZone == false) {
-      order.enforcementZoneConditions.clear()
+      clearExclusionZone(order)
     }
     if (conditions?.trail == false) {
-      order.monitoringConditionsTrail = null
+      clearTrail(order)
     }
     if (conditions?.mandatoryAttendance == false) {
-      order.mandatoryAttendanceConditions.clear()
+      clearMandatoryAttendance(order)
     }
     if (conditions?.alcohol == false) {
-      order.monitoringConditionsAlcohol = null
+      clearAlcohol(order)
     }
     if (!isTagAtSourceAvailable(conditions)) {
-      order.installationLocation = null
-      order.installationAppointment = null
-      order.addresses.removeAll { it.addressType == AddressType.INSTALLATION }
+      clearTagAtSource(order)
     }
+  }
+
+  private fun clearTagAtSource(order: Order) {
+    order.installationLocation = null
+    order.installationAppointment = null
+    order.addresses.removeAll { it.addressType == AddressType.INSTALLATION }
+  }
+
+  private fun clearAlcohol(order: Order) {
+    order.monitoringConditionsAlcohol = null
+  }
+
+  private fun clearMandatoryAttendance(order: Order) {
+    order.mandatoryAttendanceConditions.clear()
+  }
+
+  private fun clearTrail(order: Order) {
+    order.monitoringConditionsTrail = null
+  }
+
+  private fun clearExclusionZone(order: Order) {
+    order.enforcementZoneConditions.clear()
+  }
+
+  private fun clearCurfew(order: Order) {
+    order.curfewConditions = null
+    order.curfewReleaseDateConditions = null
+    order.curfewTimeTable.clear()
   }
 }

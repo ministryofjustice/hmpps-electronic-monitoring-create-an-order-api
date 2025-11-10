@@ -134,8 +134,7 @@ class MonitoringConditionsServiceTest {
     whenever(repo.findById(mockOrderId)).thenReturn(Optional.of(mockOrder))
     whenever(repo.save(mockOrder)).thenReturn(mockOrder)
 
-    val result =
-      service.updateMonitoringConditions(mockOrderId, mockUsername, UpdateMonitoringConditionsDto(alcohol = false))
+    service.updateMonitoringConditions(mockOrderId, mockUsername, UpdateMonitoringConditionsDto(alcohol = false))
 
     assertThat(mockOrder.monitoringConditions).isNotNull
     assertThat(mockOrder.installationLocation).isNull()
