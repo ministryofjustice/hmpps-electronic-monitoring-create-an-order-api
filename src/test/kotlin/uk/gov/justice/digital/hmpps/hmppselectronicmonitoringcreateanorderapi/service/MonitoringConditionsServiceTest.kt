@@ -434,4 +434,38 @@ class MonitoringConditionsServiceTest {
     assertThat(mockOrder.enforcementZoneConditions.first().zoneId).isEqualTo(0)
     assertThat(mockOrder.enforcementZoneConditions.last().zoneId).isEqualTo(1)
   }
+
+  @Test
+  fun `can remove one mandatory attendance form the list`() {
+    val mandatoryAttendanceId = UUID.randomUUID()
+    mockOrder.mandatoryAttendanceConditions.add(
+      MandatoryAttendanceConditions(
+        id = UUID.randomUUID(),
+        versionId = UUID.randomUUID(),
+      ),
+    )
+    mockOrder.mandatoryAttendanceConditions.add(
+      MandatoryAttendanceConditions(
+        id = mandatoryAttendanceId,
+        versionId = UUID.randomUUID(),
+      ),
+    )
+    mockOrder.mandatoryAttendanceConditions.add(
+      MandatoryAttendanceConditions(
+        id = UUID.randomUUID(),
+        versionId = UUID.randomUUID(),
+      ),
+    )
+
+    whenever(repo.findById(mockOrderId)).thenReturn(Optional.of(mockOrder))
+    whenever(repo.save(mockOrder)).thenReturn(mockOrder)
+
+    service.removeMonitoringCondition(
+      mockOrderId,
+      mockUsername,
+      monitoringConditionId = mandatoryAttendanceId,
+    )
+
+    assertThat(mockOrder.mandatoryAttendanceConditions.size).isEqualTo(2)
+  }
 }

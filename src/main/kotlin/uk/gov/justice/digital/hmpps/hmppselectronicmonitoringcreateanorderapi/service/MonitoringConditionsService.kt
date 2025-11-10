@@ -105,34 +105,30 @@ class MonitoringConditionsService(@Value("\${toggle.tag-at-source.enabled}") pri
   fun removeMonitoringCondition(orderId: UUID, username: String, monitoringConditionId: UUID) {
     val order = this.findEditableOrder(orderId, username)
 
-    if (isCurfew(order, monitoringConditionId)) {
-      this.clearCurfew(order)
-    }
-
-    val wasZoneRemoved = order.enforcementZoneConditions.removeIf { it.id == monitoringConditionId }
-    if (wasZoneRemoved) {
-      // re-assign the zone ids so they remain sequential
-      order.enforcementZoneConditions.forEachIndexed { index, zone -> zone.zoneId = index }
-    }
-
-    if (isTrail(order, monitoringConditionId)) {
-      this.clearTrail(order)
-    }
-
-    if (isAlcohol(order, monitoringConditionId)) {
-      this.clearAlcohol(order)
+    when {
+      idMatchesCurfew(order, monitoringConditionId) -> this.clearCurfew(order)
+      idMatchesTrail(order, monitoringConditionId) -> this.clearTrail(order)
+      idMatchesAlcohol(order, monitoringConditionId) -> this.clearAlcohol(order)
+      else -> {
+        val wasZoneRemoved = order.enforcementZoneConditions.removeIf { it.id == monitoringConditionId }
+        if (wasZoneRemoved) {
+          // re-assign the zone ids so they remain sequential
+          order.enforcementZoneConditions.forEachIndexed { index, zone -> zone.zoneId = index }
+        }
+        order.mandatoryAttendanceConditions.removeIf { it.id == monitoringConditionId }
+      }
     }
 
     orderRepo.save(order)
   }
 
-  private fun isAlcohol(order: Order, monitoringConditionId: UUID) =
+  private fun idMatchesAlcohol(order: Order, monitoringConditionId: UUID) =
     order.monitoringConditionsAlcohol?.id == monitoringConditionId
 
-  private fun isTrail(order: Order, monitoringConditionId: UUID) =
+  private fun idMatchesTrail(order: Order, monitoringConditionId: UUID) =
     order.monitoringConditionsTrail?.id == monitoringConditionId
 
-  private fun isCurfew(order: Order, monitoringConditionId: UUID) =
+  private fun idMatchesCurfew(order: Order, monitoringConditionId: UUID) =
     order.curfewConditions?.id == monitoringConditionId ||
       order.curfewReleaseDateConditions?.id == monitoringConditionId ||
       order.curfewTimeTable.any { it.id == monitoringConditionId }
