@@ -109,6 +109,12 @@ class MonitoringConditionsService(@Value("\${toggle.tag-at-source.enabled}") pri
       this.clearCurfew(order)
     }
 
+    val wasZoneRemoved = order.enforcementZoneConditions.removeIf { it.id == monitoringConditionId }
+    if (wasZoneRemoved) {
+      // re-assign the zone ids so they remain sequential
+      order.enforcementZoneConditions.forEachIndexed { index, zone -> zone.zoneId = index }
+    }
+
     if (isTrail(order, monitoringConditionId)) {
       this.clearTrail(order)
     }

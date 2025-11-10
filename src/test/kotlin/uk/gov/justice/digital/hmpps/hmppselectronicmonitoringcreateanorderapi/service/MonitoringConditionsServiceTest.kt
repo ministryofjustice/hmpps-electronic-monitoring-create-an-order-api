@@ -372,4 +372,66 @@ class MonitoringConditionsServiceTest {
 
     assertThat(mockOrder.monitoringConditionsAlcohol).isNull()
   }
+
+  @Test
+  fun `can delete only exclusion zone`() {
+    val exclusionZoneId = UUID.randomUUID()
+    mockOrder.enforcementZoneConditions.add(
+      EnforcementZoneConditions(
+        id = exclusionZoneId,
+        versionId = UUID.randomUUID(),
+        zoneId = 0,
+      ),
+    )
+
+    whenever(repo.findById(mockOrderId)).thenReturn(Optional.of(mockOrder))
+    whenever(repo.save(mockOrder)).thenReturn(mockOrder)
+
+    service.removeMonitoringCondition(
+      mockOrderId,
+      mockUsername,
+      monitoringConditionId = exclusionZoneId,
+    )
+
+    assertThat(mockOrder.enforcementZoneConditions.isEmpty()).isEqualTo(true)
+  }
+
+  @Test
+  fun `can remove one exclusion zone form the list`() {
+    val exclusionZoneId = UUID.randomUUID()
+    mockOrder.enforcementZoneConditions.add(
+      EnforcementZoneConditions(
+        id = UUID.randomUUID(),
+        versionId = UUID.randomUUID(),
+        zoneId = 0,
+      ),
+    )
+    mockOrder.enforcementZoneConditions.add(
+      EnforcementZoneConditions(
+        id = exclusionZoneId,
+        versionId = UUID.randomUUID(),
+        zoneId = 1,
+      ),
+    )
+    mockOrder.enforcementZoneConditions.add(
+      EnforcementZoneConditions(
+        id = UUID.randomUUID(),
+        versionId = UUID.randomUUID(),
+        zoneId = 2,
+      ),
+    )
+
+    whenever(repo.findById(mockOrderId)).thenReturn(Optional.of(mockOrder))
+    whenever(repo.save(mockOrder)).thenReturn(mockOrder)
+
+    service.removeMonitoringCondition(
+      mockOrderId,
+      mockUsername,
+      monitoringConditionId = exclusionZoneId,
+    )
+
+    assertThat(mockOrder.enforcementZoneConditions.size).isEqualTo(2)
+    assertThat(mockOrder.enforcementZoneConditions.first().zoneId).isEqualTo(0)
+    assertThat(mockOrder.enforcementZoneConditions.last().zoneId).isEqualTo(1)
+  }
 }
