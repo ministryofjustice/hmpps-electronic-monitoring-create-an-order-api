@@ -274,11 +274,55 @@ class MonitoringConditionsServiceTest {
   }
 
   @Test
-  fun `can delete curfew`() {
+  fun `can delete curfew by referencing curfew conditions`() {
     val curfewId = UUID.randomUUID()
     mockOrder.curfewConditions = CurfewConditions(id = curfewId, versionId = UUID.randomUUID())
     mockOrder.curfewTimeTable =
       mutableListOf(CurfewTimeTable(versionId = UUID.randomUUID(), dayOfWeek = DayOfWeek.MONDAY))
+    mockOrder.curfewReleaseDateConditions = CurfewReleaseDateConditions(versionId = UUID.randomUUID())
+
+    whenever(repo.findById(mockOrderId)).thenReturn(Optional.of(mockOrder))
+    whenever(repo.save(mockOrder)).thenReturn(mockOrder)
+
+    service.removeMonitoringCondition(
+      mockOrderId,
+      mockUsername,
+      monitoringConditionId = curfewId,
+    )
+
+    assertThat(mockOrder.curfewConditions).isNull()
+    assertThat(mockOrder.curfewTimeTable.isEmpty()).isEqualTo(true)
+    assertThat(mockOrder.curfewReleaseDateConditions).isNull()
+  }
+
+  @Test
+  fun `can delete curfew by referencing curfew release date conditions`() {
+    val curfewId = UUID.randomUUID()
+    mockOrder.curfewConditions = CurfewConditions(versionId = UUID.randomUUID())
+    mockOrder.curfewTimeTable =
+      mutableListOf(CurfewTimeTable(versionId = UUID.randomUUID(), dayOfWeek = DayOfWeek.MONDAY))
+    mockOrder.curfewReleaseDateConditions = CurfewReleaseDateConditions(id = curfewId, versionId = UUID.randomUUID())
+
+    whenever(repo.findById(mockOrderId)).thenReturn(Optional.of(mockOrder))
+    whenever(repo.save(mockOrder)).thenReturn(mockOrder)
+
+    service.removeMonitoringCondition(
+      mockOrderId,
+      mockUsername,
+      monitoringConditionId = curfewId,
+    )
+
+    assertThat(mockOrder.curfewConditions).isNull()
+    assertThat(mockOrder.curfewTimeTable.isEmpty()).isEqualTo(true)
+    assertThat(mockOrder.curfewReleaseDateConditions).isNull()
+  }
+
+  @Test
+  fun `can delete curfew by referencing curfew any curfew timetable `() {
+    val curfewId = UUID.randomUUID()
+    mockOrder.curfewConditions = CurfewConditions(versionId = UUID.randomUUID())
+    mockOrder.curfewTimeTable =
+      mutableListOf(CurfewTimeTable(id = curfewId, versionId = UUID.randomUUID(), dayOfWeek = DayOfWeek.MONDAY))
     mockOrder.curfewReleaseDateConditions = CurfewReleaseDateConditions(versionId = UUID.randomUUID())
 
     whenever(repo.findById(mockOrderId)).thenReturn(Optional.of(mockOrder))
