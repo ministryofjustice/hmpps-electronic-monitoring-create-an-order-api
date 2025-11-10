@@ -16,6 +16,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationAppointment
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationLocation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.MandatoryAttendanceConditions
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.MonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.TrailMonitoringConditions
@@ -280,6 +281,7 @@ class MonitoringConditionsServiceTest {
     mockOrder.curfewTimeTable =
       mutableListOf(CurfewTimeTable(versionId = UUID.randomUUID(), dayOfWeek = DayOfWeek.MONDAY))
     mockOrder.curfewReleaseDateConditions = CurfewReleaseDateConditions(versionId = UUID.randomUUID())
+    mockOrder.monitoringConditions = MonitoringConditions(versionId = UUID.randomUUID(), curfew = true)
 
     whenever(repo.findById(mockOrderId)).thenReturn(Optional.of(mockOrder))
     whenever(repo.save(mockOrder)).thenReturn(mockOrder)
@@ -293,6 +295,7 @@ class MonitoringConditionsServiceTest {
     assertThat(mockOrder.curfewConditions).isNull()
     assertThat(mockOrder.curfewTimeTable.isEmpty()).isEqualTo(true)
     assertThat(mockOrder.curfewReleaseDateConditions).isNull()
+    assertThat(mockOrder.monitoringConditions?.curfew).isFalse()
   }
 
   @Test
@@ -302,6 +305,7 @@ class MonitoringConditionsServiceTest {
     mockOrder.curfewTimeTable =
       mutableListOf(CurfewTimeTable(versionId = UUID.randomUUID(), dayOfWeek = DayOfWeek.MONDAY))
     mockOrder.curfewReleaseDateConditions = CurfewReleaseDateConditions(id = curfewId, versionId = UUID.randomUUID())
+    mockOrder.monitoringConditions = MonitoringConditions(versionId = UUID.randomUUID(), curfew = true)
 
     whenever(repo.findById(mockOrderId)).thenReturn(Optional.of(mockOrder))
     whenever(repo.save(mockOrder)).thenReturn(mockOrder)
@@ -315,6 +319,7 @@ class MonitoringConditionsServiceTest {
     assertThat(mockOrder.curfewConditions).isNull()
     assertThat(mockOrder.curfewTimeTable.isEmpty()).isEqualTo(true)
     assertThat(mockOrder.curfewReleaseDateConditions).isNull()
+    assertThat(mockOrder.monitoringConditions?.curfew).isFalse()
   }
 
   @Test
@@ -324,6 +329,7 @@ class MonitoringConditionsServiceTest {
     mockOrder.curfewTimeTable =
       mutableListOf(CurfewTimeTable(id = curfewId, versionId = UUID.randomUUID(), dayOfWeek = DayOfWeek.MONDAY))
     mockOrder.curfewReleaseDateConditions = CurfewReleaseDateConditions(versionId = UUID.randomUUID())
+    mockOrder.monitoringConditions = MonitoringConditions(versionId = UUID.randomUUID(), curfew = true)
 
     whenever(repo.findById(mockOrderId)).thenReturn(Optional.of(mockOrder))
     whenever(repo.save(mockOrder)).thenReturn(mockOrder)
@@ -337,12 +343,14 @@ class MonitoringConditionsServiceTest {
     assertThat(mockOrder.curfewConditions).isNull()
     assertThat(mockOrder.curfewTimeTable.isEmpty()).isEqualTo(true)
     assertThat(mockOrder.curfewReleaseDateConditions).isNull()
+    assertThat(mockOrder.monitoringConditions?.curfew).isFalse()
   }
 
   @Test
   fun `can delete trail`() {
     val trailID = UUID.randomUUID()
     mockOrder.monitoringConditionsTrail = TrailMonitoringConditions(id = trailID, versionId = UUID.randomUUID())
+    mockOrder.monitoringConditions = MonitoringConditions(versionId = UUID.randomUUID(), trail = true)
 
     whenever(repo.findById(mockOrderId)).thenReturn(Optional.of(mockOrder))
     whenever(repo.save(mockOrder)).thenReturn(mockOrder)
@@ -354,12 +362,14 @@ class MonitoringConditionsServiceTest {
     )
 
     assertThat(mockOrder.monitoringConditionsTrail).isNull()
+    assertThat(mockOrder.monitoringConditions?.trail).isFalse()
   }
 
   @Test
   fun `can delete alcohol`() {
     val alcoholId = UUID.randomUUID()
     mockOrder.monitoringConditionsAlcohol = AlcoholMonitoringConditions(id = alcoholId, versionId = UUID.randomUUID())
+    mockOrder.monitoringConditions = MonitoringConditions(versionId = UUID.randomUUID(), alcohol = true)
 
     whenever(repo.findById(mockOrderId)).thenReturn(Optional.of(mockOrder))
     whenever(repo.save(mockOrder)).thenReturn(mockOrder)
@@ -371,6 +381,7 @@ class MonitoringConditionsServiceTest {
     )
 
     assertThat(mockOrder.monitoringConditionsAlcohol).isNull()
+    assertThat(mockOrder.monitoringConditions?.alcohol).isFalse()
   }
 
   @Test
@@ -383,6 +394,7 @@ class MonitoringConditionsServiceTest {
         zoneId = 0,
       ),
     )
+    mockOrder.monitoringConditions = MonitoringConditions(versionId = UUID.randomUUID(), exclusionZone = true)
 
     whenever(repo.findById(mockOrderId)).thenReturn(Optional.of(mockOrder))
     whenever(repo.save(mockOrder)).thenReturn(mockOrder)
@@ -394,6 +406,7 @@ class MonitoringConditionsServiceTest {
     )
 
     assertThat(mockOrder.enforcementZoneConditions.isEmpty()).isEqualTo(true)
+    assertThat(mockOrder.monitoringConditions?.exclusionZone).isFalse()
   }
 
   @Test
@@ -420,6 +433,7 @@ class MonitoringConditionsServiceTest {
         zoneId = 2,
       ),
     )
+    mockOrder.monitoringConditions = MonitoringConditions(versionId = UUID.randomUUID(), exclusionZone = true)
 
     whenever(repo.findById(mockOrderId)).thenReturn(Optional.of(mockOrder))
     whenever(repo.save(mockOrder)).thenReturn(mockOrder)
@@ -433,6 +447,7 @@ class MonitoringConditionsServiceTest {
     assertThat(mockOrder.enforcementZoneConditions.size).isEqualTo(2)
     assertThat(mockOrder.enforcementZoneConditions.first().zoneId).isEqualTo(0)
     assertThat(mockOrder.enforcementZoneConditions.last().zoneId).isEqualTo(1)
+    assertThat(mockOrder.monitoringConditions?.exclusionZone).isTrue()
   }
 
   @Test
@@ -456,6 +471,7 @@ class MonitoringConditionsServiceTest {
         versionId = UUID.randomUUID(),
       ),
     )
+    mockOrder.monitoringConditions = MonitoringConditions(versionId = UUID.randomUUID(), mandatoryAttendance = true)
 
     whenever(repo.findById(mockOrderId)).thenReturn(Optional.of(mockOrder))
     whenever(repo.save(mockOrder)).thenReturn(mockOrder)
@@ -467,5 +483,6 @@ class MonitoringConditionsServiceTest {
     )
 
     assertThat(mockOrder.mandatoryAttendanceConditions.size).isEqualTo(2)
+    assertThat(mockOrder.monitoringConditions?.mandatoryAttendance).isTrue()
   }
 }

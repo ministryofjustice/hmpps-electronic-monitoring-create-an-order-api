@@ -58,16 +58,16 @@ class MonitoringConditionsService(@Value("\${toggle.tag-at-source.enabled}") pri
       clearCurfew(order)
     }
     if (conditions?.exclusionZone == false) {
-      clearExclusionZone(order)
+      clearExclusionZoneData(order)
     }
     if (conditions?.trail == false) {
-      clearTrail(order)
+      clearTrailData(order)
     }
     if (conditions?.mandatoryAttendance == false) {
-      clearMandatoryAttendance(order)
+      clearMandatoryAttendanceData(order)
     }
     if (conditions?.alcohol == false) {
-      clearAlcohol(order)
+      clearAlcoholData(order)
     }
     if (!isTagAtSourceAvailable(conditions)) {
       clearTagAtSource(order)
@@ -80,19 +80,19 @@ class MonitoringConditionsService(@Value("\${toggle.tag-at-source.enabled}") pri
     order.addresses.removeAll { it.addressType == AddressType.INSTALLATION }
   }
 
-  private fun clearAlcohol(order: Order) {
+  private fun clearAlcoholData(order: Order) {
     order.monitoringConditionsAlcohol = null
   }
 
-  private fun clearMandatoryAttendance(order: Order) {
+  private fun clearMandatoryAttendanceData(order: Order) {
     order.mandatoryAttendanceConditions.clear()
   }
 
-  private fun clearTrail(order: Order) {
+  private fun clearTrailData(order: Order) {
     order.monitoringConditionsTrail = null
   }
 
-  private fun clearExclusionZone(order: Order) {
+  private fun clearExclusionZoneData(order: Order) {
     order.enforcementZoneConditions.clear()
   }
 
@@ -106,16 +106,32 @@ class MonitoringConditionsService(@Value("\${toggle.tag-at-source.enabled}") pri
     val order = this.findEditableOrder(orderId, username)
 
     when {
-      idMatchesCurfew(order, monitoringConditionId) -> this.clearCurfew(order)
-      idMatchesTrail(order, monitoringConditionId) -> this.clearTrail(order)
-      idMatchesAlcohol(order, monitoringConditionId) -> this.clearAlcohol(order)
-      else -> {
-        val wasZoneRemoved = order.enforcementZoneConditions.removeIf { it.id == monitoringConditionId }
-        if (wasZoneRemoved) {
-          // re-assign the zone ids so they remain sequential
-          order.enforcementZoneConditions.forEachIndexed { index, zone -> zone.zoneId = index }
+      idMatchesCurfew(order, monitoringConditionId) -> {
+        order.monitoringConditions?.curfew = false
+        this.clearCurfew(order)
+      }
+
+      idMatchesTrail(order, monitoringConditionId) -> {
+        order.monitoringConditions?.trail = false
+        this.clearTrailData(order)
+      }
+
+      idMatchesAlcohol(order, monitoringConditionId) -> {
+        order.monitoringConditions?.alcohol = false
+        this.clearAlcoholData(order)
+      }
+
+      order.enforcementZoneConditions.removeIf { it.id == monitoringConditionId } -> {
+        order.enforcementZoneConditions.forEachIndexed { index, zone -> zone.zoneId = index }
+        if (order.enforcementZoneConditions.isEmpty()) {
+          order.monitoringConditions?.exclusionZone = false
         }
-        order.mandatoryAttendanceConditions.removeIf { it.id == monitoringConditionId }
+      }
+
+      order.mandatoryAttendanceConditions.removeIf { it.id == monitoringConditionId } -> {
+        if (order.mandatoryAttendanceConditions.isEmpty()) {
+          order.monitoringConditions?.mandatoryAttendance = false
+        }
       }
     }
 
