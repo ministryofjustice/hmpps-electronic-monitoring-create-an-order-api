@@ -286,10 +286,10 @@ class MonitoringConditionsServiceTest {
     whenever(repo.findById(mockOrderId)).thenReturn(Optional.of(mockOrder))
     whenever(repo.save(mockOrder)).thenReturn(mockOrder)
 
-    service.removeMonitoringCondition(
+    service.removeMonitoringType(
       mockOrderId,
       mockUsername,
-      monitoringConditionId = curfewId,
+      monitoringTypeId = curfewId,
     )
 
     assertThat(mockOrder.curfewConditions).isNull()
@@ -310,10 +310,10 @@ class MonitoringConditionsServiceTest {
     whenever(repo.findById(mockOrderId)).thenReturn(Optional.of(mockOrder))
     whenever(repo.save(mockOrder)).thenReturn(mockOrder)
 
-    service.removeMonitoringCondition(
+    service.removeMonitoringType(
       mockOrderId,
       mockUsername,
-      monitoringConditionId = curfewId,
+      monitoringTypeId = curfewId,
     )
 
     assertThat(mockOrder.curfewConditions).isNull()
@@ -334,10 +334,10 @@ class MonitoringConditionsServiceTest {
     whenever(repo.findById(mockOrderId)).thenReturn(Optional.of(mockOrder))
     whenever(repo.save(mockOrder)).thenReturn(mockOrder)
 
-    service.removeMonitoringCondition(
+    service.removeMonitoringType(
       mockOrderId,
       mockUsername,
-      monitoringConditionId = curfewId,
+      monitoringTypeId = curfewId,
     )
 
     assertThat(mockOrder.curfewConditions).isNull()
@@ -355,10 +355,10 @@ class MonitoringConditionsServiceTest {
     whenever(repo.findById(mockOrderId)).thenReturn(Optional.of(mockOrder))
     whenever(repo.save(mockOrder)).thenReturn(mockOrder)
 
-    service.removeMonitoringCondition(
+    service.removeMonitoringType(
       mockOrderId,
       mockUsername,
-      monitoringConditionId = trailID,
+      monitoringTypeId = trailID,
     )
 
     assertThat(mockOrder.monitoringConditionsTrail).isNull()
@@ -374,10 +374,10 @@ class MonitoringConditionsServiceTest {
     whenever(repo.findById(mockOrderId)).thenReturn(Optional.of(mockOrder))
     whenever(repo.save(mockOrder)).thenReturn(mockOrder)
 
-    service.removeMonitoringCondition(
+    service.removeMonitoringType(
       mockOrderId,
       mockUsername,
-      monitoringConditionId = alcoholId,
+      monitoringTypeId = alcoholId,
     )
 
     assertThat(mockOrder.monitoringConditionsAlcohol).isNull()
@@ -399,10 +399,10 @@ class MonitoringConditionsServiceTest {
     whenever(repo.findById(mockOrderId)).thenReturn(Optional.of(mockOrder))
     whenever(repo.save(mockOrder)).thenReturn(mockOrder)
 
-    service.removeMonitoringCondition(
+    service.removeMonitoringType(
       mockOrderId,
       mockUsername,
-      monitoringConditionId = exclusionZoneId,
+      monitoringTypeId = exclusionZoneId,
     )
 
     assertThat(mockOrder.enforcementZoneConditions.isEmpty()).isEqualTo(true)
@@ -438,10 +438,10 @@ class MonitoringConditionsServiceTest {
     whenever(repo.findById(mockOrderId)).thenReturn(Optional.of(mockOrder))
     whenever(repo.save(mockOrder)).thenReturn(mockOrder)
 
-    service.removeMonitoringCondition(
+    service.removeMonitoringType(
       mockOrderId,
       mockUsername,
-      monitoringConditionId = exclusionZoneId,
+      monitoringTypeId = exclusionZoneId,
     )
 
     assertThat(mockOrder.enforcementZoneConditions.size).isEqualTo(2)
@@ -476,10 +476,10 @@ class MonitoringConditionsServiceTest {
     whenever(repo.findById(mockOrderId)).thenReturn(Optional.of(mockOrder))
     whenever(repo.save(mockOrder)).thenReturn(mockOrder)
 
-    service.removeMonitoringCondition(
+    service.removeMonitoringType(
       mockOrderId,
       mockUsername,
-      monitoringConditionId = mandatoryAttendanceId,
+      monitoringTypeId = mandatoryAttendanceId,
     )
 
     assertThat(mockOrder.mandatoryAttendanceConditions.size).isEqualTo(2)

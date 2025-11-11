@@ -102,33 +102,33 @@ class MonitoringConditionsService(@Value("\${toggle.tag-at-source.enabled}") pri
     order.curfewTimeTable.clear()
   }
 
-  fun removeMonitoringCondition(orderId: UUID, username: String, monitoringConditionId: UUID) {
+  fun removeMonitoringType(orderId: UUID, username: String, monitoringTypeId: UUID) {
     val order = this.findEditableOrder(orderId, username)
 
     when {
-      idMatchesCurfew(order, monitoringConditionId) -> {
+      idMatchesCurfew(order, monitoringTypeId) -> {
         order.monitoringConditions?.curfew = false
         this.clearCurfew(order)
       }
 
-      idMatchesTrail(order, monitoringConditionId) -> {
+      idMatchesTrail(order, monitoringTypeId) -> {
         order.monitoringConditions?.trail = false
         this.clearTrailData(order)
       }
 
-      idMatchesAlcohol(order, monitoringConditionId) -> {
+      idMatchesAlcohol(order, monitoringTypeId) -> {
         order.monitoringConditions?.alcohol = false
         this.clearAlcoholData(order)
       }
 
-      order.enforcementZoneConditions.removeIf { it.id == monitoringConditionId } -> {
+      order.enforcementZoneConditions.removeIf { it.id == monitoringTypeId } -> {
         order.enforcementZoneConditions.forEachIndexed { index, zone -> zone.zoneId = index }
         if (order.enforcementZoneConditions.isEmpty()) {
           order.monitoringConditions?.exclusionZone = false
         }
       }
 
-      order.mandatoryAttendanceConditions.removeIf { it.id == monitoringConditionId } -> {
+      order.mandatoryAttendanceConditions.removeIf { it.id == monitoringTypeId } -> {
         if (order.mandatoryAttendanceConditions.isEmpty()) {
           order.monitoringConditions?.mandatoryAttendance = false
         }
