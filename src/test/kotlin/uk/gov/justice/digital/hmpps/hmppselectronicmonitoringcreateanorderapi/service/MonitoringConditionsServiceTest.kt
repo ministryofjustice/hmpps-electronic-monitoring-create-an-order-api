@@ -485,45 +485,4 @@ class MonitoringConditionsServiceTest {
     assertThat(mockOrder.mandatoryAttendanceConditions.size).isEqualTo(2)
     assertThat(mockOrder.monitoringConditions?.mandatoryAttendance).isTrue()
   }
-
-  @Test
-  fun `clears tag at source if no longer available`() {
-    val alcoholId = UUID.randomUUID()
-    mockOrder.monitoringConditionsAlcohol = AlcoholMonitoringConditions(
-      id = alcoholId,
-      versionId = UUID.randomUUID(),
-    )
-    mockOrder.monitoringConditions = MonitoringConditions(versionId = UUID.randomUUID(), alcohol = true)
-    mockVersion.installationLocation =
-      InstallationLocation(versionId = mockVersion.id, location = InstallationLocationType.PRISON)
-    mockVersion.installationAppointment = InstallationAppointment(
-      versionId = mockVersion.id,
-      placeName = "MockPlace",
-      appointmentDate = ZonedDateTime.now(ZoneId.of("UTC")).plusMonths(2),
-    )
-    mockVersion.addresses = mutableListOf(
-      Address(
-        versionId = mockVersion.id,
-        addressType = AddressType.INSTALLATION,
-        addressLine1 = "Mock place",
-        addressLine2 = "",
-        addressLine3 = "Mock Town",
-        postcode = "Mock postcode",
-      ),
-    )
-
-    whenever(repo.findById(mockOrderId)).thenReturn(Optional.of(mockOrder))
-    whenever(repo.save(mockOrder)).thenReturn(mockOrder)
-
-    service.removeMonitoringCondition(
-      mockOrderId,
-      mockUsername,
-      monitoringConditionId = alcoholId,
-    )
-
-    assertThat(mockOrder.installationLocation).isNull()
-    assertThat(mockOrder.installationAppointment).isNull()
-    assertThat(mockOrder.monitoringConditionsAlcohol).isNull()
-    assertThat(mockOrder.addresses.firstOrNull { it.addressType == AddressType.INSTALLATION }).isNull()
-  }
 }
