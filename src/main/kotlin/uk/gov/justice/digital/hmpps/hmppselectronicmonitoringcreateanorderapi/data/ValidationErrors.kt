@@ -73,6 +73,9 @@ object ValidationErrors {
     const val START_DATE_REQUIRED: String = "Exclusion zone start date is required"
     const val TYPE_REQUIRED: String = "Exclusion Zone type is required"
     const val INVALID_MAP_FILE_EXTENSION: String = "Select a PDF, PNG, JPEG or JPG"
+
+    // Will be used once ELM-4162 is live
+    const val NAME_REQUIRED = "Enter the name of the exclusion zone"
   }
 
   object IdentityNumbers {

@@ -10,6 +10,11 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import java.time.ZonedDateTime
 
 data class UpdateEnforcementZoneDto(
+//  Add when ELM-4162 is live
+//  @field:NotNull(message = ValidationErrors.EnforcementZone.NAME_REQUIRED)
+//  @field:Size(min = 1,message = ValidationErrors.EnforcementZone.NAME_REQUIRED)
+  var name: String? = null,
+
   @field:NotNull(message = "Enforcement zone description is required")
   @field:Size(min = 1, message = "Enforcement zone description is required")
   var description: String? = null,
@@ -36,5 +41,14 @@ data class UpdateEnforcementZoneDto(
       return this.endDate!! > this.startDate
     }
     return true
+  }
+
+  @AssertTrue(message = "Enforcement zone name is required")
+  fun isNameValid(): Boolean {
+    if (this.name == null) {
+      return true
+    }
+
+    return this.name!!.isNotBlank()
   }
 }

@@ -34,6 +34,9 @@ data class EnforcementZoneConditions(
   @Column(name = "END_DATE", nullable = true)
   var endDate: ZonedDateTime? = null,
 
+  @Column(name = "NAME", nullable = true)
+  var name: String? = null,
+
   @Column(name = "DESCRIPTION", nullable = true)
   var description: String? = null,
 
