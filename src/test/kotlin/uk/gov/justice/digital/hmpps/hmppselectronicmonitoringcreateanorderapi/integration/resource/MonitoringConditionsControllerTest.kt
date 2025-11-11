@@ -7,6 +7,7 @@ import org.springframework.http.MediaType
 import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.MonitoringConditions
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.TrailMonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MonitoringConditionType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderTypeDescription
@@ -545,5 +546,28 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
       .returnResult()
 
     Assertions.assertThat(updateMonitoringConditions.responseBody?.pilot).isEqualTo(Pilot.ACQUISITIVE_CRIME_PROJECT)
+  }
+
+  @Test
+  fun `can remove a monitoring type`() {
+    val trailId = UUID.randomUUID()
+    val order = createStoredOrder()
+    order.monitoringConditionsTrail = TrailMonitoringConditions(
+      versionId = order.versions.first().id,
+      id = trailId,
+    )
+    order.monitoringConditions = MonitoringConditions(versionId = order.versions.first().id, trail = true)
+    repo.save(order)
+
+    webTestClient.delete()
+      .uri("/api/orders/${order.id}/monitoring-conditions/monitoring-type/$trailId")
+      .headers(setAuthorisation("AUTH_ADM"))
+      .exchange()
+      .expectStatus()
+      .isNoContent
+
+    val updatedOrder = getOrder(order.id)
+    Assertions.assertThat(updatedOrder.monitoringConditionsTrail).isNull()
+    Assertions.assertThat(updatedOrder.monitoringConditions?.trail).isFalse()
   }
 }

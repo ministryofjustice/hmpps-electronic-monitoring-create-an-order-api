@@ -6,8 +6,8 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.Authentication
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -37,14 +37,14 @@ class MonitoringConditionsController(@Autowired val monitoringConditionsService:
     return ResponseEntity(monitoringConditions, HttpStatus.OK)
   }
 
-  @PostMapping("/order/{orderId}/monitoring-conditions/remove")
+  @DeleteMapping("/orders/{orderId}/monitoring-conditions/monitoring-type/{monitoringTypeId}")
   fun removeMonitoringType(
     @PathVariable orderId: UUID,
-    @RequestBody monitoringTypeId: UUID,
+    @PathVariable monitoringTypeId: UUID,
     authentication: Authentication,
   ): ResponseEntity<Unit> {
     val username = authentication.name
     monitoringConditionsService.removeMonitoringType(orderId, username, monitoringTypeId)
-    return ResponseEntity(HttpStatus.OK)
+    return ResponseEntity(HttpStatus.NO_CONTENT)
   }
 }
