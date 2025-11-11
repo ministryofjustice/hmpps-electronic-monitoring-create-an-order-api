@@ -135,6 +135,10 @@ class MonitoringConditionsService(@Value("\${toggle.tag-at-source.enabled}") pri
       }
     }
 
+    if (!isTagAtSourceAvailable(order.monitoringConditions)) {
+      clearTagAtSource(order)
+    }
+
     orderRepo.save(order)
   }
 
