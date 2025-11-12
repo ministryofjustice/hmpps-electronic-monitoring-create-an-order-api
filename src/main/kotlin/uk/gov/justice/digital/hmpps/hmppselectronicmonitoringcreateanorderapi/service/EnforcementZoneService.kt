@@ -33,6 +33,7 @@ class EnforcementZoneService(val webClient: DocumentApiClient) : OrderSectionSer
     order.enforcementZoneConditions.add(
       EnforcementZoneConditions(
         versionId = order.getCurrentVersion().id,
+        name = updateRecord.name,
         description = updateRecord.description,
         duration = updateRecord.duration,
         endDate = updateRecord.endDate,
