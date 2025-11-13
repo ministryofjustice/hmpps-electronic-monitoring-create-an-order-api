@@ -340,39 +340,6 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `Form cannot be submitted if no Monitoring Types are selected`() {
-    val order = createOrder()
-
-    webTestClient.put()
-      .uri("/api/orders/${order.id}/monitoring-conditions")
-      .contentType(MediaType.APPLICATION_JSON)
-      .body(
-        BodyInserters.fromValue(
-          """
-            {
-              "orderType": "$mockOrderType",
-              "orderTypeDescription": "$mockOrderTypeDescription",
-              "conditionType": "$mockConditionType",
-              "acquisitiveCrime": null,
-              "dapol": null,
-              "curfew": null,
-              "exclusionZone": null,
-              "trail": null,
-              "mandatoryAttendance": null,
-              "alcohol": null,
-              "startDate": "$mockStartDate",
-              "endDate": "$mockEndDate"
-            }
-          """.trimIndent(),
-        ),
-      )
-      .headers(setAuthorisation("AUTH_ADM"))
-      .exchange()
-      .expectStatus()
-      .isBadRequest
-  }
-
-  @Test
   fun `Form can be submitted if one Monitoring Type is selected`() {
     val order = createOrder()
     val updateMonitoringConditions = webTestClient.put()

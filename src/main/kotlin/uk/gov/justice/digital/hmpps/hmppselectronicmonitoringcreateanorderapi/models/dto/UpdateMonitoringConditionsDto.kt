@@ -10,13 +10,20 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Pilot
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.SentenceType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YesNoUnknown
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.AtLeastOneSelected
 import java.time.ZonedDateTime
 
-@AtLeastOneSelected(
-  fieldNames = ["curfew", "exclusionZone", "trail", "mandatoryAttendance", "alcohol"],
-  message = ValidationErrors.MonitoringConditions.ORDER_TYPE_REQUIRED,
+data class UpdateMonitoringConditionTypeDto(
+  var curfew: Boolean? = null,
+
+  val exclusionZone: Boolean? = null,
+
+  val trail: Boolean? = null,
+
+  val mandatoryAttendance: Boolean? = null,
+
+  val alcohol: Boolean? = null,
 )
+
 data class UpdateMonitoringConditionsDto(
   @field:NotNull(message = ValidationErrors.MonitoringConditions.ORDER_TYPE_REQUIRED)
   val orderType: OrderType? = null,
