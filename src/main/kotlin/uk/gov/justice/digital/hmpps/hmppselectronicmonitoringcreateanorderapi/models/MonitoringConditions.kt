@@ -97,13 +97,6 @@ data class MonitoringConditions(
 ) {
   val isValid: Boolean
     get() = (
-      orderType != null &&
-        (
-          curfew == true ||
-            exclusionZone == true ||
-            trail == true ||
-            mandatoryAttendance == true ||
-            alcohol == true
-          )
+      orderType != null
       )
 }
