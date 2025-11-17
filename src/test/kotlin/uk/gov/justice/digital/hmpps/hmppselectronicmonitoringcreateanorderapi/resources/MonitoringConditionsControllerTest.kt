@@ -68,4 +68,16 @@ class MonitoringConditionsControllerTest {
 
     assertThat(result.statusCode.is2xxSuccessful).isEqualTo(true)
   }
+
+  @Test
+  fun `Delete tag at source`() {
+    `when`(authentication.name).thenReturn("mockUser")
+
+    val result = controller.removeTagAtSource(
+      orderId = mockOrderId,
+      authentication = authentication,
+    )
+
+    assertThat(result.statusCode.is2xxSuccessful).isEqualTo(true)
+  }
 }

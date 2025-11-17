@@ -6,8 +6,12 @@ import org.junit.jupiter.api.Test
 import org.springframework.http.MediaType
 import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Address
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationAppointment
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationLocation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.MonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.TrailMonitoringConditions
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MonitoringConditionType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderTypeDescription
@@ -536,5 +540,45 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
     val updatedOrder = getOrder(order.id)
     Assertions.assertThat(updatedOrder.monitoringConditionsTrail).isNull()
     Assertions.assertThat(updatedOrder.monitoringConditions?.trail).isFalse()
+  }
+
+  @Test
+  fun `can remove tag at source`() {
+    val order = createStoredOrder()
+    order.installationLocation = InstallationLocation(
+      versionId = order.versions.first().id,
+    )
+    order.installationAppointment = InstallationAppointment(
+      versionId = order.versions.first().id,
+    )
+    order.addresses.add(
+      Address(
+        versionId = order.versions.first().id,
+        addressType = AddressType.INSTALLATION,
+        addressLine1 = "line1",
+        addressLine2 = "",
+        addressLine3 = "line3",
+        postcode = "postcode",
+      ),
+    )
+    repo.save(order)
+
+    webTestClient.delete()
+      .uri("/api/orders/${order.id}/monitoring-conditions/tag-at-source")
+      .headers(setAuthorisation("AUTH_ADM"))
+      .exchange()
+      .expectStatus()
+      .isNoContent
+
+    val updatedOrder = getOrder(order.id)
+    Assertions.assertThat(updatedOrder.installationLocation).isNull()
+    Assertions.assertThat(updatedOrder.installationAppointment).isNull()
+    Assertions.assertThat(
+      updatedOrder.addresses.find { address: Address ->
+        address.addressType ===
+          AddressType.INSTALLATION
+      },
+    )
+      .isNull()
   }
 }

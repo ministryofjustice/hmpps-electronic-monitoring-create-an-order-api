@@ -47,4 +47,11 @@ class MonitoringConditionsController(@Autowired val monitoringConditionsService:
     monitoringConditionsService.removeMonitoringType(orderId, username, monitoringTypeId)
     return ResponseEntity(HttpStatus.NO_CONTENT)
   }
+
+  @DeleteMapping("/orders/{orderId}/monitoring-conditions/tag-at-source")
+  fun removeTagAtSource(@PathVariable orderId: UUID, authentication: Authentication): ResponseEntity<Unit> {
+    val username = authentication.name
+    monitoringConditionsService.removeTagAtSource(orderId, username)
+    return ResponseEntity(HttpStatus.NO_CONTENT)
+  }
 }
