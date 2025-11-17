@@ -485,4 +485,25 @@ class MonitoringConditionsServiceTest {
     assertThat(mockOrder.mandatoryAttendanceConditions.size).isEqualTo(2)
     assertThat(mockOrder.monitoringConditions?.mandatoryAttendance).isTrue()
   }
+
+  @Test
+  fun `can delete tag at source data`() {
+    mockOrder.installationLocation = InstallationLocation(versionId = UUID.randomUUID())
+    mockOrder.installationAppointment = InstallationAppointment(versionId = UUID.randomUUID())
+    mockOrder.addresses.add(
+      Address(
+        versionId = UUID.randomUUID(),
+        addressType = AddressType.INSTALLATION,
+        addressLine1 = "line1",
+        addressLine2 = "",
+        addressLine3 = "line3",
+        postcode = "postcode",
+      ),
+    )
+
+    whenever(repo.findById(mockOrderId)).thenReturn(Optional.of(mockOrder))
+    whenever(repo.save(mockOrder)).thenReturn(mockOrder)
+
+    service.removeTagAtSource(mockOrderId, mockUsername)
+  }
 }

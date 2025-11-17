@@ -102,6 +102,14 @@ class MonitoringConditionsService(@Value("\${toggle.tag-at-source.enabled}") pri
     order.curfewTimeTable.clear()
   }
 
+  fun removeTagAtSource(orderId: UUID, username: String) {
+    val order = this.findEditableOrder(orderId, username)
+
+    this.clearTagAtSource(order)
+
+    orderRepo.save(order)
+  }
+
   fun removeMonitoringType(orderId: UUID, username: String, monitoringTypeId: UUID) {
     val order = this.findEditableOrder(orderId, username)
 
