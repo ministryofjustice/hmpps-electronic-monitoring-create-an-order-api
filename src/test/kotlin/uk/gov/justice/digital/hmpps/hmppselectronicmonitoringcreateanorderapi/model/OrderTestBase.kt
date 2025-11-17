@@ -85,19 +85,25 @@ abstract class OrderTestBase {
       order.monitoringConditions?.mandatoryAttendance = true
     }
 
-    order.monitoringConditionsTrail = trailMonitoringConditions
+    if (monitoringConditions.trail == true) {
+      order.monitoringConditionsTrail = trailMonitoringConditions
+    }
 
     order.installationLocation = installationLocation
 
     order.additionalDocuments.addAll(additionalDocuments)
 
-    order.monitoringConditionsAlcohol = alcoholMonitoringConditions
+    if (monitoringConditions.alcohol == true) {
+      order.monitoringConditionsAlcohol = alcoholMonitoringConditions
+    }
 
-    order.curfewConditions = curfewConditions
+    if (monitoringConditions.curfew == true) {
+      order.curfewConditions = curfewConditions
 
-    order.curfewReleaseDateConditions = curfewDayOfRelease
+      order.curfewReleaseDateConditions = curfewDayOfRelease
 
-    order.curfewTimeTable = curfewTimetable
+      order.curfewTimeTable = curfewTimetable
+    }
 
     return order
   }

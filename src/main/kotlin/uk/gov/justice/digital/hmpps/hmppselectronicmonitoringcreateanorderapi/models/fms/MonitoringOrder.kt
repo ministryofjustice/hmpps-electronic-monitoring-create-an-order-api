@@ -285,7 +285,7 @@ data class MonitoringOrder(
         monitoringOrder.noEmail = interestedParties.notifyingOrganisationEmail
       }
 
-      if (conditions.curfew != null && conditions.curfew!!) {
+      if (order.curfewConditions?.startDate != null) {
         val curfew = order.curfewConditions!!
         monitoringOrder.enforceableCondition!!.add(
           EnforceableCondition(
@@ -303,7 +303,7 @@ data class MonitoringOrder(
         monitoringOrder.curfewDuration = getCurfewSchedules(order, curfew)
       }
 
-      if (conditions.trail != null && conditions.trail!!) {
+      if (order.monitoringConditionsTrail?.startDate != null) {
         monitoringOrder.enforceableCondition!!.add(
           EnforceableCondition(
             "Location Monitoring (Fitted Device)",
@@ -315,7 +315,7 @@ data class MonitoringOrder(
         monitoringOrder.trailMonitoring = "Yes"
       }
 
-      if (conditions.exclusionZone != null && conditions.exclusionZone!!) {
+      if (order.enforcementZoneConditions.count() > 0) {
         monitoringOrder.enforceableCondition!!.add(
           EnforceableCondition(
             "EM Exclusion / Inclusion Zone",
@@ -348,7 +348,7 @@ data class MonitoringOrder(
         monitoringOrder.trailMonitoring = "No"
       }
 
-      if (conditions.mandatoryAttendance != null && conditions.mandatoryAttendance!!) {
+      if (order.mandatoryAttendanceConditions.count() > 0) {
         monitoringOrder.enforceableCondition!!.add(
           EnforceableCondition(
             "Attendance Requirement",
@@ -359,7 +359,7 @@ data class MonitoringOrder(
         monitoringOrder.inclusionZones.addAll(getInclusionZones(order))
       }
 
-      if (conditions.alcohol != null && conditions.alcohol!!) {
+      if (order.monitoringConditionsAlcohol?.startDate != null) {
         val condition = order.monitoringConditionsAlcohol!!
         var conditionType = "AAMR"
         if (monitoringOrder.notifyingOrganization == NotifyingOrganisationDDv5.PRISON.value ||
