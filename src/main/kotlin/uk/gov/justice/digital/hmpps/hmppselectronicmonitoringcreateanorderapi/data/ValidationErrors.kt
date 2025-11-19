@@ -28,11 +28,9 @@ object ValidationErrors {
     const val END_DATE_REQUIRED: String = "Enter date curfew ends"
     const val END_DATE_MUST_BE_IN_FUTURE: String = "Date curfew ends must be in the future"
     const val END_DATE_MUST_BE_AFTER_START_DATE: String = "Date curfew ends must be after the date curfew starts"
-    const val ADDRESS_REQUIRED: String = "Select where the device wearer will be during curfew hours"
   }
 
   object CurfewReleaseDateConditions {
-    const val START_DATE_REQUIRED: String = "Enter date device wearer is released from custody"
     const val START_TIME_REQUIRED: String = "Enter time curfew starts on day of release"
     const val END_TIME_REQUIRED: String = "Enter time curfew ends on day after release"
     const val ADDRESS_REQUIRED: String =

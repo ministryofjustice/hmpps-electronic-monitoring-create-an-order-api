@@ -3,7 +3,6 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.m
 import jakarta.validation.constraints.AssertTrue
 import jakarta.validation.constraints.Future
 import jakarta.validation.constraints.NotNull
-import jakarta.validation.constraints.Size
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.data.ValidationErrors
 import java.time.ZonedDateTime
 
@@ -15,8 +14,6 @@ data class UpdateCurfewConditionsDto(
   @field:Future(message = ValidationErrors.CurfewConditions.END_DATE_MUST_BE_IN_FUTURE)
   var endDate: ZonedDateTime? = null,
 
-  @field:NotNull(message = ValidationErrors.CurfewConditions.ADDRESS_REQUIRED)
-  @field:Size(min = 1, message = ValidationErrors.CurfewConditions.ADDRESS_REQUIRED)
   var curfewAddress: String? = null,
 ) {
   @AssertTrue(message = ValidationErrors.CurfewConditions.END_DATE_MUST_BE_AFTER_START_DATE)
