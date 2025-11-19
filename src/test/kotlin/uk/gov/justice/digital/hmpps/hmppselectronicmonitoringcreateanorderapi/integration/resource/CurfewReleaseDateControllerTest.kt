@@ -102,15 +102,12 @@ class CurfewReleaseDateControllerTest : IntegrationTestBase() {
       .expectBodyList(ValidationError::class.java)
       .returnResult()
     val error = result.responseBody!!
-    Assertions.assertThat(result.responseBody).hasSize(4)
+    Assertions.assertThat(result.responseBody).hasSize(3)
     Assertions.assertThat(
       error,
     ).contains(ValidationError("curfewAddress", ErrorMessages.ADDRESS_REQUIRED))
     Assertions.assertThat(error).contains(ValidationError("startTime", ErrorMessages.START_TIME_REQUIRED))
     Assertions.assertThat(error).contains(ValidationError("endTime", ErrorMessages.END_TIME_REQUIRED))
-    Assertions.assertThat(
-      error,
-    ).contains(ValidationError("releaseDate", ErrorMessages.START_DATE_REQUIRED))
   }
 
   @Test

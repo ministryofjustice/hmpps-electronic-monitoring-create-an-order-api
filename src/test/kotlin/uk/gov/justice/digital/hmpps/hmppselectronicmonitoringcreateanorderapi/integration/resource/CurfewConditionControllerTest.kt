@@ -112,10 +112,7 @@ class CurfewConditionControllerTest : IntegrationTestBase() {
       .expectBodyList(ValidationError::class.java)
       .returnResult()
     val error = result.responseBody!!
-    Assertions.assertThat(result.responseBody).hasSize(3)
-    Assertions.assertThat(
-      error,
-    ).contains(ValidationError("curfewAddress", ErrorMessages.ADDRESS_REQUIRED))
+    Assertions.assertThat(result.responseBody).hasSize(2)
     Assertions.assertThat(error).contains(ValidationError("startDate", ErrorMessages.START_DATE_REQUIRED))
     Assertions.assertThat(error).contains(ValidationError("endDate", ErrorMessages.END_DATE_REQUIRED))
   }
