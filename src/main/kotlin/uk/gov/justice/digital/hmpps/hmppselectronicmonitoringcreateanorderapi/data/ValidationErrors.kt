@@ -130,13 +130,10 @@ object ValidationErrors {
   }
 
   object MonitoringConditions {
-    const val MONITORING_TYPE_MINIMUM_ONE: String = "Select monitoring required"
     const val ORDER_TYPE_REQUIRED: String = "Select order type"
     const val START_DATE_REQUIRED: String = "Enter start date for monitoring"
-    const val END_DATE_REQUIRED: String = "Enter end date for monitoring"
     const val TYPE_REQUIRED: String = "Select order type"
     const val END_DATE_MUST_BE_AFTER_START_DATE: String = "End date must be after start date"
-    const val END_DATE_MUST_BE_IN_FUTURE: String = "End date of monitoring must be in the future"
   }
 
   object NoFixedAbode {
