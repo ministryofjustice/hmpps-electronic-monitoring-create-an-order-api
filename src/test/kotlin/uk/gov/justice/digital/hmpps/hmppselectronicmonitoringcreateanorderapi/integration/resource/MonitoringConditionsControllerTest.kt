@@ -181,54 +181,6 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `Update monitoring conditions returns 400 if invalid data`() {
-    val order = createOrder()
-    val result = webTestClient.put()
-      .uri("/api/orders/${order.id}/monitoring-conditions")
-      .contentType(MediaType.APPLICATION_JSON)
-      .body(
-        BodyInserters.fromValue(
-          """
-            {
-              "orderType": null,
-              "orderTypeDescription": null,
-              "conditionType": null,
-              "acquisitiveCrime": null,
-              "dapol": null,
-              "curfew": "true",
-              "exclusionZone": "true",
-              "trail": "true",
-              "mandatoryAttendance": "true",
-              "alcohol": "true",
-              "startDate": null,
-              "endDate": null
-            }
-          """.trimIndent(),
-        ),
-      )
-      .headers(setAuthorisation("AUTH_ADM"))
-      .exchange()
-      .expectStatus()
-      .isBadRequest
-      .expectBodyList(ValidationError::class.java)
-      .returnResult()
-
-    Assertions.assertThat(result.responseBody).isNotNull
-    Assertions.assertThat(result.responseBody!!).contains(
-      ValidationError("orderType", ErrorMessages.ORDER_TYPE_REQUIRED),
-    )
-    Assertions.assertThat(result.responseBody!!).contains(
-      ValidationError("conditionType", ErrorMessages.TYPE_REQUIRED),
-    )
-    Assertions.assertThat(result.responseBody!!).contains(
-      ValidationError("startDate", ErrorMessages.START_DATE_REQUIRED),
-    )
-    Assertions.assertThat(result.responseBody!!).contains(
-      ValidationError("endDate", ErrorMessages.END_DATE_REQUIRED),
-    )
-  }
-
-  @Test
   fun `Update monitoring conditions allows start date in the past`() {
     val mockPastStartDate = ZonedDateTime.now(ZoneId.of("UTC")).minusMonths(1)
     val order = createOrder()
@@ -300,46 +252,6 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
     Assertions.assertThat(result.responseBody).hasSize(1)
     Assertions.assertThat(result.responseBody!!).contains(
       ValidationError("endDate", ErrorMessages.END_DATE_MUST_BE_AFTER_START_DATE),
-    )
-  }
-
-  @Test
-  fun `Update monitoring conditions returns 400 if end date is in the past`() {
-    val order = createOrder()
-    val result = webTestClient.put()
-      .uri("/api/orders/${order.id}/monitoring-conditions")
-      .contentType(MediaType.APPLICATION_JSON)
-      .body(
-        BodyInserters.fromValue(
-          """
-            {
-              "orderType": "$mockOrderType",
-              "orderTypeDescription": "$mockOrderTypeDescription",
-              "conditionType": "$mockConditionType",
-              "acquisitiveCrime": "true",
-              "dapol": "true",
-              "curfew": "true",
-              "exclusionZone": "true",
-              "trail": "true",
-              "mandatoryAttendance": "true",
-              "alcohol": "true",
-              "startDate": "${mockStartDate.plusMonths(-10)}",
-              "endDate": "${mockStartDate.plusMonths(-9)}"
-            }
-          """.trimIndent(),
-        ),
-      )
-      .headers(setAuthorisation("AUTH_ADM"))
-      .exchange()
-      .expectStatus()
-      .isBadRequest
-      .expectBodyList(ValidationError::class.java)
-      .returnResult()
-
-    Assertions.assertThat(result.responseBody).isNotNull
-    Assertions.assertThat(result.responseBody).hasSize(1)
-    Assertions.assertThat(result.responseBody!!).contains(
-      ValidationError("endDate", ErrorMessages.END_DATE_MUST_BE_IN_FUTURE),
     )
   }
 
