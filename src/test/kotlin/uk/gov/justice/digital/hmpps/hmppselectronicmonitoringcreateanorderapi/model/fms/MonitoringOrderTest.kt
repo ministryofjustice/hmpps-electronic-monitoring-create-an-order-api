@@ -250,7 +250,7 @@ class MonitoringOrderTest : OrderTestBase() {
 
     assertThat(fmsMonitoringOrder.conditionalReleaseStartTime).isEqualTo(mockeDayOfRelease.startTime)
     assertThat(fmsMonitoringOrder.conditionalReleaseEndTime).isEqualTo(mockeDayOfRelease.endTime)
-    assertThat(fmsMonitoringOrder.conditionalReleaseDate).isEqualTo(getBritishDate(order.curfewConditions?.startDate))
+    assertThat(fmsMonitoringOrder.conditionalReleaseDate).isEqualTo(getBritishDate(mockeDayOfRelease.releaseDate))
   }
 
   private val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
