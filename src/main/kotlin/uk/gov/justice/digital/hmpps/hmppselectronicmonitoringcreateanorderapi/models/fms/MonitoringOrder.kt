@@ -315,7 +315,7 @@ data class MonitoringOrder(
             endDate = getBritishDateAndTime(curfew.endDate) ?: "",
           ),
         )
-        monitoringOrder.curfewDescription = curfew.curfewAdditionalDetails
+        monitoringOrder.curfewDescription = curfew.curfewAdditionalDetails ?: ""
         monitoringOrder.conditionalReleaseDate = getBritishDate(order.curfewReleaseDateConditions?.releaseDate)
         monitoringOrder.conditionalReleaseStartTime = order.curfewReleaseDateConditions?.startTime ?: ""
         monitoringOrder.conditionalReleaseEndTime = order.curfewReleaseDateConditions?.endTime ?: ""
