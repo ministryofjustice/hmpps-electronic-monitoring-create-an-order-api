@@ -9,6 +9,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import java.time.ZonedDateTime
 
 data class UpdateCurfewReleaseDateConditionsDto(
+  @field:NotNull(message = ValidationErrors.CurfewReleaseDateConditions.START_DATE_REQUIRED)
   var releaseDate: ZonedDateTime? = null,
 
   @field:NotNull(message = ValidationErrors.CurfewReleaseDateConditions.START_TIME_REQUIRED)

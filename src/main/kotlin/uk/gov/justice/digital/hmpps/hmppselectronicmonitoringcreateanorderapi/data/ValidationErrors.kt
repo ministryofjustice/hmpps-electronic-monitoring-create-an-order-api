@@ -31,6 +31,7 @@ object ValidationErrors {
   }
 
   object CurfewReleaseDateConditions {
+    const val START_DATE_REQUIRED: String = "Enter date device wearer is released from custody"
     const val START_TIME_REQUIRED: String = "Enter time curfew starts on day of release"
     const val END_TIME_REQUIRED: String = "Enter time curfew ends on day after release"
     const val ADDRESS_REQUIRED: String =
