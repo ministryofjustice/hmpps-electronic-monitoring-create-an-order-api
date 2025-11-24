@@ -229,6 +229,59 @@ class CurfewConditionControllerTest : IntegrationTestBase() {
   }
 
   @Test
+  fun `Should not overwrite curfew additional details`() {
+    val order = createOrder()
+
+    webTestClient.put()
+      .uri("/api/orders/${order.id}/monitoring-conditions-curfew-conditions")
+      .contentType(MediaType.APPLICATION_JSON)
+      .body(
+        BodyInserters.fromValue(
+          mockValidRequestBody(order.id),
+        ),
+      )
+      .headers(setAuthorisation())
+      .exchange()
+      .expectStatus()
+      .isOk
+
+    webTestClient.put()
+      .uri("/api/orders/${order.id}/monitoring-conditions-curfew-additional-details")
+      .contentType(MediaType.APPLICATION_JSON)
+      .body(
+        BodyInserters.fromValue(
+          """
+            {
+              "curfewAdditionalDetails": "some details"
+            }
+          """.trimIndent(),
+        ),
+      )
+      .headers(setAuthorisation("AUTH_ADM"))
+      .exchange()
+      .expectStatus()
+      .isOk
+
+    webTestClient.put()
+      .uri("/api/orders/${order.id}/monitoring-conditions-curfew-conditions")
+      .contentType(MediaType.APPLICATION_JSON)
+      .body(
+        BodyInserters.fromValue(
+          mockValidRequestBody(order.id),
+        ),
+      )
+      .headers(setAuthorisation())
+      .exchange()
+      .expectStatus()
+      .isOk
+
+    // Get updated order
+    val updatedOrder = getOrder(order.id)
+
+    Assertions.assertThat(updatedOrder.curfewConditions?.curfewAdditionalDetails).isEqualTo("some details")
+  }
+
+  @Test
   fun `Curfew additional details can be updated with null`() {
     val order = createOrder()
     addCurfewDataToOrder(order.id)
