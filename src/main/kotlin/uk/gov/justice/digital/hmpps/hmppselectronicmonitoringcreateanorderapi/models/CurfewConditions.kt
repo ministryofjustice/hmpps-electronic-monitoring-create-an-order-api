@@ -32,7 +32,7 @@ data class CurfewConditions(
   var curfewAddress: String? = null,
 
   @Column(name = "CURFEW_ADDITIONAL_DETAILS", nullable = true)
-  var curfewAdditionalDetails: String? = "",
+  var curfewAdditionalDetails: String? = null,
 
   @JsonIgnore
   var curfewDescription: String? = "",

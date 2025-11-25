@@ -188,6 +188,7 @@ class TestUtilities {
         startDate = startDate,
         endDate = endDate,
         curfewAddress = "PRIMARY,SECONDARY",
+        curfewAdditionalDetails = "",
       )
 
       val curfewTimeTables = DayOfWeek.entries.map {
