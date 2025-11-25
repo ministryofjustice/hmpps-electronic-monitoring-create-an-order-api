@@ -340,8 +340,8 @@ data class MonitoringOrder(
         monitoringOrder.enforceableCondition!!.add(
           EnforceableCondition(
             "EM Exclusion / Inclusion Zone",
-            startDate = getBritishDateAndTime(conditions.startDate),
-            endDate = getBritishDateAndTime(conditions.endDate) ?: "",
+            startDate = getBritishDateAndTime(monitoringStartDate),
+            endDate = getBritishDateAndTime(monitoringEndDate) ?: "",
           ),
         )
         order.enforcementZoneConditions.forEach {
