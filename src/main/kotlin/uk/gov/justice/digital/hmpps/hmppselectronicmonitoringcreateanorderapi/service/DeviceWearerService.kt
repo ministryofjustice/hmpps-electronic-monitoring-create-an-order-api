@@ -17,8 +17,8 @@ class DeviceWearerService : OrderSectionServiceBase() {
 
     order.deviceWearer = DeviceWearer(
       versionId = order.getCurrentVersion().id,
-      firstName = updateRecord.firstName,
-      lastName = updateRecord.lastName,
+      firstName = updateRecord.firstName?.trim(),
+      lastName = updateRecord.lastName?.trim(),
       alias = updateRecord.alias,
       adultAtTimeOfInstallation = updateRecord.adultAtTimeOfInstallation,
       sex = updateRecord.sex.toString(),
@@ -76,11 +76,11 @@ class DeviceWearerService : OrderSectionServiceBase() {
       throw EntityNotFoundException("An editable device wearer for $orderId could not be found")
     }
 
-    order.deviceWearer?.nomisId = updateRecord.nomisId
-    order.deviceWearer?.pncId = updateRecord.pncId
-    order.deviceWearer?.deliusId = updateRecord.deliusId
-    order.deviceWearer?.prisonNumber = updateRecord.prisonNumber
-    order.deviceWearer?.homeOfficeReferenceNumber = updateRecord.homeOfficeReferenceNumber
+    order.deviceWearer?.nomisId = updateRecord.nomisId?.trim()
+    order.deviceWearer?.pncId = updateRecord.pncId?.trim()
+    order.deviceWearer?.deliusId = updateRecord.deliusId?.trim()
+    order.deviceWearer?.prisonNumber = updateRecord.prisonNumber?.trim()
+    order.deviceWearer?.homeOfficeReferenceNumber = updateRecord.homeOfficeReferenceNumber?.trim()
 
     orderRepo.save(order)
 
