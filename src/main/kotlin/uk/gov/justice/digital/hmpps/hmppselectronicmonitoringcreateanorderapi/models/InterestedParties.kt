@@ -35,13 +35,13 @@ data class InterestedParties(
   var responsibleOrganisationEmail: String,
 
   @Column(name = "NOTIFYING_ORGANISATION", nullable = false)
-  var notifyingOrganisation: String,
+  var notifyingOrganisation: String = "",
 
   @Column(name = "NOTIFYING_ORGANISATION_NAME", nullable = false)
-  var notifyingOrganisationName: String,
+  var notifyingOrganisationName: String = "",
 
   @Column(name = "NOTIFYING_ORGANISATION_EMAIL", nullable = false)
-  var notifyingOrganisationEmail: String,
+  var notifyingOrganisationEmail: String = "",
 
   @Schema(hidden = true)
   @OneToOne
