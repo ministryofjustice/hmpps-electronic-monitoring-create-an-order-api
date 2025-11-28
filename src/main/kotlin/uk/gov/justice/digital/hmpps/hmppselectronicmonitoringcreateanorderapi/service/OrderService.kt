@@ -116,7 +116,13 @@ class OrderService(
         installationAndRisk =
           currentVersion.installationAndRisk?.copy(versionId = this.id, id = UUID.randomUUID())
         interestedParties =
-          currentVersion.interestedParties?.copy(versionId = this.id, id = UUID.randomUUID())
+          currentVersion.interestedParties?.copy(
+            versionId = this.id,
+            id = UUID.randomUUID(),
+            notifyingOrganisation = "",
+            notifyingOrganisationName = "",
+            notifyingOrganisationEmail = "",
+          )
         probationDeliveryUnit =
           currentVersion.probationDeliveryUnit?.copy(versionId = this.id, id = UUID.randomUUID())
         monitoringConditions =
