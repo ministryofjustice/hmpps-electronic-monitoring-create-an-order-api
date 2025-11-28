@@ -449,8 +449,13 @@ class OrderServiceTest {
               "id",
               "versionId",
               "version",
+              "startDate",
+              "endDate",
             )
             .isEqualTo(originalVersion?.monitoringConditions)
+
+          assertThat(firstValue.versions.last().monitoringConditions!!.startDate).isNull()
+          assertThat(firstValue.versions.last().monitoringConditions!!.endDate).isNull()
         }
       }
 
