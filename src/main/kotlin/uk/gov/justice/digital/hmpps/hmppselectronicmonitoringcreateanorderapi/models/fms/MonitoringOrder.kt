@@ -20,6 +20,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisationDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Offence
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.PoliceAreas
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Prison
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.PrisonDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ProbationDeliveryUnits
@@ -568,13 +569,17 @@ data class MonitoringOrder(
     private fun getOffenceAdditionalDetails(order: Order): String {
       val riskOffenceDetails = order.installationAndRisk?.offenceAdditionalDetails ?: ""
       val monitoringOffenceType = order.monitoringConditions?.offenceType ?: ""
-      val monitoringPoliceArea = order.monitoringConditions?.policeArea ?: ""
+      var monitoringPoliceArea = PoliceAreas.from(order.monitoringConditions?.policeArea)?.value
+
+      if (monitoringPoliceArea == null) {
+        monitoringPoliceArea = order.monitoringConditions?.policeArea ?: ""
+      }
 
       val parts = listOfNotNull(
         riskOffenceDetails.takeIf { it.isNotBlank() },
-        monitoringOffenceType.takeIf { it.isNotBlank() }?.let { "Acquisitive crime offence is $it" },
+        monitoringOffenceType.takeIf { it.isNotBlank() }?.let { "AC Offence: $it" },
         monitoringPoliceArea.takeIf { it.isNotBlank() }
-          ?.let { "Device wearer’s release address is in police force area: $it" },
+          ?.let { "PFA: $it" },
       )
 
       return parts.joinToString(". ")
