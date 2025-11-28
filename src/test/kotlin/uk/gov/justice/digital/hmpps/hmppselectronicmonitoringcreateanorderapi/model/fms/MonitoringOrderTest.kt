@@ -207,7 +207,7 @@ class MonitoringOrderTest : OrderTestBase() {
       ),
       monitoringConditions = createMonitoringConditions(
         offenceType = "Robbery",
-        policeArea = "Essex",
+        policeArea = "Avon and Somerset",
       ),
     )
     val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
@@ -215,7 +215,26 @@ class MonitoringOrderTest : OrderTestBase() {
     assertThat(
       fmsMonitoringOrder.offenceAdditionalDetails,
     ).isEqualTo(
-      "Mock Additional Details. Acquisitive crime offence is Robbery. Device wearer’s release address is in police force area: Essex",
+      "Mock Additional Details. AC Offence: Robbery. PFA: Avon and Somerset",
+    )
+  }
+
+  @Test
+  fun `It should map the police area correctly`() {
+    val order = createOrder(
+      installationAndRisk = createInstallationAndRisk(
+        offenceAdditionalDetails = "Mock Additional Details",
+      ),
+      monitoringConditions = createMonitoringConditions(
+        policeArea = "AVON_AND_SOMERSET",
+      ),
+    )
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
+
+    assertThat(
+      fmsMonitoringOrder.offenceAdditionalDetails,
+    ).isEqualTo(
+      "Mock Additional Details. PFA: Avon and Somerset",
     )
   }
 
