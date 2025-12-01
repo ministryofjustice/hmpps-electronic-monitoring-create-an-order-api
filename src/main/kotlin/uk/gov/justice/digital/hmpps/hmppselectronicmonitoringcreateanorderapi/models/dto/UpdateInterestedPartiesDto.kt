@@ -65,7 +65,7 @@ data class UpdateInterestedPartiesDto(
     }
 
     if (notifyingOrganisation === NotifyingOrganisationDDv5.MILITARY_COURT) {
-      return notifyingOrganisationName == "" || MilitaryCourtDDv5.entries.any { it.name == notifyingOrganisationName }
+      return MilitaryCourtDDv5.entries.any { it.name == notifyingOrganisationName }
     }
 
     if (notifyingOrganisation === NotifyingOrganisationDDv5.PRISON) {
@@ -78,12 +78,11 @@ data class UpdateInterestedPartiesDto(
     }
 
     if (notifyingOrganisation === NotifyingOrganisationDDv5.YOUTH_COURT) {
-      return notifyingOrganisationName == "" || YouthCourtDDv5.entries.any { it.name == notifyingOrganisationName }
+      return YouthCourtDDv5.entries.any { it.name == notifyingOrganisationName }
     }
 
     if (notifyingOrganisation === NotifyingOrganisationDDv5.YOUTH_CUSTODY_SERVICE) {
-      return notifyingOrganisationName == "" ||
-        YouthCustodyServiceRegionDDv5.entries.any { it.name == notifyingOrganisationName }
+      return YouthCustodyServiceRegionDDv5.entries.any { it.name == notifyingOrganisationName }
     }
 
     return notifyingOrganisationName == ""
