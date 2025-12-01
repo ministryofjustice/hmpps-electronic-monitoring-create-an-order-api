@@ -34,14 +34,14 @@ data class InterestedParties(
   @Column(name = "RESPONSIBLE_ORGANISATION_EMAIL", nullable = false)
   var responsibleOrganisationEmail: String,
 
-  @Column(name = "NOTIFYING_ORGANISATION", nullable = false)
-  var notifyingOrganisation: String = "",
+  @Column(name = "NOTIFYING_ORGANISATION", nullable = true)
+  var notifyingOrganisation: String? = null,
 
-  @Column(name = "NOTIFYING_ORGANISATION_NAME", nullable = false)
-  var notifyingOrganisationName: String = "",
+  @Column(name = "NOTIFYING_ORGANISATION_NAME", nullable = true)
+  var notifyingOrganisationName: String? = null,
 
-  @Column(name = "NOTIFYING_ORGANISATION_EMAIL", nullable = false)
-  var notifyingOrganisationEmail: String = "",
+  @Column(name = "NOTIFYING_ORGANISATION_EMAIL", nullable = true)
+  var notifyingOrganisationEmail: String? = null,
 
   @Schema(hidden = true)
   @OneToOne
@@ -50,7 +50,7 @@ data class InterestedParties(
 ) {
   val isValid: Boolean
     get() = (
-      notifyingOrganisation.isNotBlank() &&
+      !notifyingOrganisation.isNullOrBlank() &&
         responsibleOrganisation.isNotBlank()
       )
 }

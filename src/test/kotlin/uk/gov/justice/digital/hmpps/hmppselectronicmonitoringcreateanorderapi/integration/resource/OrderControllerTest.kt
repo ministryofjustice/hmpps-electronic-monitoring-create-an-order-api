@@ -210,9 +210,9 @@ class OrderControllerTest : IntegrationTestBase() {
         )
         .isEqualTo(order.interestedParties)
 
-      assertThat(variationOrder.interestedParties?.notifyingOrganisation).isEmpty()
-      assertThat(variationOrder.interestedParties?.notifyingOrganisationName).isEmpty()
-      assertThat(variationOrder.interestedParties?.notifyingOrganisationEmail).isEmpty()
+      assertThat(variationOrder.interestedParties?.notifyingOrganisation).isNull()
+      assertThat(variationOrder.interestedParties?.notifyingOrganisationName).isNull()
+      assertThat(variationOrder.interestedParties?.notifyingOrganisationEmail).isNull()
 
       assertThat(variationOrder.addresses)
         .usingRecursiveComparison()

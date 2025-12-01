@@ -119,9 +119,9 @@ class OrderService(
           currentVersion.interestedParties?.copy(
             versionId = this.id,
             id = UUID.randomUUID(),
-            notifyingOrganisation = "",
-            notifyingOrganisationName = "",
-            notifyingOrganisationEmail = "",
+            notifyingOrganisation = null,
+            notifyingOrganisationName = null,
+            notifyingOrganisationEmail = null,
           )
         probationDeliveryUnit =
           currentVersion.probationDeliveryUnit?.copy(versionId = this.id, id = UUID.randomUUID())
