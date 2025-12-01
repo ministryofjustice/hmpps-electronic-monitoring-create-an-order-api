@@ -148,7 +148,11 @@ data class OrderVersion(
   private val monitoringConditionsAreValid: Boolean
     get() = (
       (
-        curfewConditions?.startDate != null ||
+        (
+          curfewConditions?.startDate != null &&
+            curfewConditions?.startDate != null &&
+            curfewTimeTable.isNotEmpty()
+          ) ||
           enforcementZoneConditions.isNotEmpty() ||
           monitoringConditionsTrail?.startDate != null ||
           mandatoryAttendanceConditions.isNotEmpty() ||

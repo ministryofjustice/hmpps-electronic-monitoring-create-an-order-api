@@ -50,11 +50,58 @@ class OrderTest : OrderTestBase() {
   fun `It should return isValid false for order without any monitoring condition`() {
     val order = createValidOrder()
     order.curfewConditions = null
+    order.curfewReleaseDateConditions = null
+    order.curfewTimeTable.clear()
     order.monitoringConditionsAlcohol = null
     order.monitoringConditionsTrail = null
     order.enforcementZoneConditions.clear()
     order.mandatoryAttendanceConditions.clear()
     assertThat(order.isValid).isFalse()
+  }
+
+  @Test
+  fun `It should return isValid false for order without curfew release date`() {
+    val order = createValidOrder()
+    order.curfewConditions = createCurfewConditions(
+      startDate = ZonedDateTime.now(),
+    )
+    order.curfewReleaseDateConditions = null
+
+    order.monitoringConditionsAlcohol = null
+    order.monitoringConditionsTrail = null
+    order.enforcementZoneConditions.clear()
+    order.mandatoryAttendanceConditions.clear()
+    assertThat(order.isValid).isFalse()
+  }
+
+  @Test
+  fun `It should return isValid false for order without curfew timetable`() {
+    val order = createValidOrder()
+    order.curfewConditions = createCurfewConditions(
+      startDate = ZonedDateTime.now(),
+    )
+    order.curfewReleaseDateConditions = createCurfewDayOfReslse()
+
+    order.monitoringConditionsAlcohol = null
+    order.monitoringConditionsTrail = null
+    order.enforcementZoneConditions.clear()
+    order.mandatoryAttendanceConditions.clear()
+    assertThat(order.isValid).isFalse()
+  }
+
+  @Test
+  fun `It should return isValid true for order with curfew`() {
+    val order = createValidOrder()
+    order.curfewConditions = createCurfewConditions(
+      startDate = ZonedDateTime.now(),
+    )
+    order.curfewReleaseDateConditions = createCurfewDayOfReslse()
+    order.curfewTimeTable = createCurfewTimeTable()
+    order.monitoringConditionsAlcohol = null
+    order.monitoringConditionsTrail = null
+    order.enforcementZoneConditions.clear()
+    order.mandatoryAttendanceConditions.clear()
+    assertThat(order.isValid).isTrue()
   }
 
   private fun createValidOrder(): Order = createOrder(
