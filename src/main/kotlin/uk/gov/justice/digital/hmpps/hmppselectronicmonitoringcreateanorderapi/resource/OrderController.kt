@@ -20,6 +20,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.OrderSearchCriteria
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.CreateOrderDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderDto
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateAmendOrderDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.OrderService
 import java.util.UUID
@@ -55,6 +56,24 @@ class OrderController(@Autowired val orderService: OrderService) {
   ): ResponseEntity<OrderDto> {
     val username = authentication.name
     val newVersion = orderService.createVersion(orderId, username, RequestType.VARIATION)
+    return ResponseEntity(convertToDto(newVersion), HttpStatus.OK)
+  }
+
+  @PostMapping("/orders/{orderId}/amend-order")
+  fun amendOrder(
+    @PathVariable orderId: UUID,
+    @RequestBody @Valid updateRecord: UpdateAmendOrderDto,
+    authentication: Authentication,
+  ): ResponseEntity<OrderDto> {
+    val username = authentication.name
+    val newVersion = orderService.createVersion(
+      orderId,
+      username,
+      RequestType.entries.first {
+        it.name ==
+          updateRecord.type!!.name
+      },
+    )
     return ResponseEntity(convertToDto(newVersion), HttpStatus.OK)
   }
 

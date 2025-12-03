@@ -32,7 +32,7 @@ class FmsService(
     }
 
     if (orderSource === FmsOrderSource.CEMO && cemoFmsIntegrationEnabled) {
-      if (order.type === RequestType.VARIATION) {
+      if (RequestType.VARIATION_TYPES.contains(order.type)) {
         return FmsVariationSubmissionStrategy(this.objectMapper, this.fmsClient, this.documentApiClient)
       }
 
