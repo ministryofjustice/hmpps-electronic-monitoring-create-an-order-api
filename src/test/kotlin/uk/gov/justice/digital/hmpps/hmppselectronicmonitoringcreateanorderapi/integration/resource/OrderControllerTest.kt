@@ -353,8 +353,14 @@ class OrderControllerTest : IntegrationTestBase() {
           "id",
           "versionId",
           "version",
+          "notifyingOrganisation",
+          "notifyingOrganisationName",
+          "notifyingOrganisationEmail",
         )
         .isEqualTo(order.interestedParties)
+      assertThat(variationOrder.interestedParties?.notifyingOrganisation).isNull()
+      assertThat(variationOrder.interestedParties?.notifyingOrganisationName).isNull()
+      assertThat(variationOrder.interestedParties?.notifyingOrganisationEmail).isNull()
 
       assertThat(variationOrder.addresses)
         .usingRecursiveComparison()
