@@ -40,5 +40,8 @@ enum class VariationType(val value: String) {
       ADMIN_ERROR,
       OTHER,
     )
+    fun from(value: String?): VariationType? = VariationType.entries.firstOrNull {
+      it.name == value
+    }
   }
 }

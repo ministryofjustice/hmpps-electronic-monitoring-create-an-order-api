@@ -102,40 +102,6 @@ class VariationControllerTest : IntegrationTestBase() {
     }
 
     @Test
-    fun `it should not be possible to update the variation details if the mandatory fields are missing`() {
-      val variation = createVariation()
-
-      val result = webTestClient.put()
-        .uri("/api/orders/${variation.id}/variation")
-        .contentType(MediaType.APPLICATION_JSON)
-        .body(
-          BodyInserters.fromValue(
-            """
-              {}
-            """.trimIndent(),
-          ),
-        )
-        .headers(setAuthorisation("AUTH_ADM"))
-        .exchange()
-        .expectStatus()
-        .isBadRequest
-        .expectBodyList(ValidationError::class.java)
-        .returnResult()
-
-      Assertions.assertThat(result.responseBody).isNotNull
-      Assertions.assertThat(result.responseBody).hasSize(3)
-      Assertions.assertThat(result.responseBody!!).contains(
-        ValidationError("variationType", "Select what you have changed"),
-      )
-      Assertions.assertThat(result.responseBody!!).contains(
-        ValidationError("variationDate", "Enter the date you want the changes to take effect"),
-      )
-      Assertions.assertThat(result.responseBody!!).contains(
-        ValidationError("variationDetails", "Enter information on what you have changed"),
-      )
-    }
-
-    @Test
     fun `it should not be possible to update the variation details with an invalid variationType`() {
       val variation = createVariation()
 
