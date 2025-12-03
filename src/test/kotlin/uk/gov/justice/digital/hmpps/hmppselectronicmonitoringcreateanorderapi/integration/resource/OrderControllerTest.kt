@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.util.JsonPathExpectationsHelper
+import org.springframework.test.web.reactive.server.expectBodyList
 import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.HmppsDocumentManagementApiExtension.Companion.documentApi
@@ -24,6 +25,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderDto
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.VersionInformationDTO
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DocumentType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
@@ -1589,6 +1591,43 @@ class OrderControllerTest : IntegrationTestBase() {
       val updatedOrder = getOrder(order.id)
       assertThat(updatedOrder.fmsResultId).isEqualTo(submitResult.id)
       assertThat(updatedOrder.status).isEqualTo(OrderStatus.SUBMITTED)
+    }
+  }
+
+  @Nested
+  @DisplayName("GET /api/orders/orderId/versions")
+  inner class GetVersionInformation {
+    @Test
+    fun `Should return version history for all versions`() {
+      val order = createSubmittedOrder()
+      val versionId2 = UUID.randomUUID()
+      order.versions.add(
+        OrderVersion(
+          id = versionId2,
+          username = "AUTH_ADM",
+          status = OrderStatus.SUBMITTED,
+          type = RequestType.VARIATION,
+          orderId = order.id,
+          versionId = 2,
+          dataDictionaryVersion = DataDictionaryVersion.DDV5,
+        ),
+      )
+
+      repo.save(order)
+
+      val result = webTestClient.get()
+        .uri("/api/orders/${order.id}/versions")
+        .headers(setAuthorisation("AUTH_ADM"))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBodyList<VersionInformationDTO>()
+        .hasSize(2)
+        .returnResult().responseBody
+
+      assertThat(result!!).isNotEmpty()
+      assertThat(result[0].orderId).isEqualTo(order.versions[0].id)
+      assertThat(result[1].orderId).isEqualTo(order.versions[1].id)
     }
   }
 
