@@ -395,12 +395,15 @@ class OrderServiceTest {
       }
 
       @Test
-      fun `It should clone interestedParties referencing new version`() {
+      fun `It should clone interestedParties referencing new version and clear notifying organisation data`() {
         argumentCaptor<Order>().apply {
           verify(repo, times(1)).save(capture())
           assertThat(firstValue.versions.last().interestedParties).isNotNull()
           assertThat(firstValue.versions.last().interestedParties?.versionId).isEqualTo(firstValue.versions.last().id)
           assertThat(firstValue.versions.last().interestedParties?.versionId).isNotEqualTo(originalVersionId)
+          assertThat(firstValue.versions.last().interestedParties?.notifyingOrganisation).isNull()
+          assertThat(firstValue.versions.last().interestedParties?.notifyingOrganisationName).isNull()
+          assertThat(firstValue.versions.last().interestedParties?.notifyingOrganisationEmail).isNull()
           assertThat(firstValue.versions.last().interestedParties)
             .usingRecursiveComparison()
             .ignoringCollectionOrder()
@@ -408,6 +411,9 @@ class OrderServiceTest {
               "id",
               "versionId",
               "version",
+              "notifyingOrganisation",
+              "notifyingOrganisationName",
+              "notifyingOrganisationEmail",
             )
             .isEqualTo(originalVersion?.interestedParties)
         }
