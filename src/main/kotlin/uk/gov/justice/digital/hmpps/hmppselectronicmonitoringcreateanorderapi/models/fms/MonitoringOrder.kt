@@ -431,8 +431,12 @@ data class MonitoringOrder(
         monitoringOrder.installationAddressPostcode = it.postcode
       }
 
-      if (order.type === RequestType.VARIATION) {
-        monitoringOrder.orderVariationType = order.variationDetails!!.variationType?.value
+      if (RequestType.VARIATION_TYPES.contains(order.type)) {
+        if (order.type == RequestType.VARIATION) {
+          monitoringOrder.orderVariationType = order.variationDetails!!.variationType?.value
+        } else {
+          monitoringOrder.orderVariationType = "OTHER"
+        }
         monitoringOrder.orderVariationDate = order.variationDetails!!.variationDate.format(dateTimeFormatter)
         monitoringOrder.orderVariationDetails = order.variationDetails!!.variationDetails
       }
