@@ -228,17 +228,17 @@ class OrderService(
       EntityNotFoundException("Order with id $orderId does not exist")
     }
 
-    val versionInformation = order.versions.map {
-      VersionInformationDTO(
-        orderId = it.orderId,
-        versionId = it.id,
-        versionNumber = it.versionId,
-        fmsResultDate = it.fmsResultDate,
-        type = it.type,
-        submittedBy = it.submittedBy,
-      )
+    return order.versions.map {
+      it.toDTO()
     }
-
-    return versionInformation
   }
+
+  private fun OrderVersion.toDTO() = VersionInformationDTO(
+    orderId = this.orderId,
+    versionId = this.id,
+    versionNumber = this.versionId,
+    fmsResultDate = this.fmsResultDate,
+    type = this.type,
+    submittedBy = this.submittedBy,
+  )
 }

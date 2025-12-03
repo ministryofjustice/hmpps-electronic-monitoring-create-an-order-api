@@ -1633,8 +1633,8 @@ class OrderControllerTest : IntegrationTestBase() {
         .returnResult().responseBody
 
       assertThat(result!!).isNotEmpty()
-      assertThat(result[0].orderId).isEqualTo(order.versions[0].id)
-      assertThat(result[1].orderId).isEqualTo(order.versions[1].id)
+      assertThat(result[0].orderId).isEqualTo(order.versions[0].orderId)
+      assertThat(result[1].orderId).isEqualTo(order.versions[1].orderId)
     }
   }
 
