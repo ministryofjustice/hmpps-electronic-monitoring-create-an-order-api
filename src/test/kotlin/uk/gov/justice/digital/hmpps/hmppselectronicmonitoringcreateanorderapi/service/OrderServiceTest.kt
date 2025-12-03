@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service
 
-import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
@@ -21,9 +20,11 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationAppointment
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationLocation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.OrderListCriteria
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.OrderSearchCriteria
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.CreateOrderDto
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.VersionInformationDTO
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DocumentType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
@@ -62,11 +63,11 @@ class OrderServiceTest {
   fun `Create a new order for user and save to database`() {
     val result = service.createOrder("mockUser", CreateOrderDto())
 
-    Assertions.assertThat(result.id).isNotNull()
-    Assertions.assertThat(UUID.fromString(result.id.toString())).isEqualTo(result.id)
-    Assertions.assertThat(result.username).isEqualTo("mockUser")
-    Assertions.assertThat(result.status).isEqualTo(OrderStatus.IN_PROGRESS)
-    Assertions.assertThat(result.dataDictionaryVersion).isEqualTo(DataDictionaryVersion.DDV4)
+    assertThat(result.id).isNotNull()
+    assertThat(UUID.fromString(result.id.toString())).isEqualTo(result.id)
+    assertThat(result.username).isEqualTo("mockUser")
+    assertThat(result.status).isEqualTo(OrderStatus.IN_PROGRESS)
+    assertThat(result.dataDictionaryVersion).isEqualTo(DataDictionaryVersion.DDV4)
     argumentCaptor<Order>().apply {
       verify(repo, times(1)).save(capture())
       assertThat(firstValue).isEqualTo(result)
@@ -103,7 +104,7 @@ class OrderServiceTest {
 
     argumentCaptor<Order>().apply {
       verify(repo, times(1)).save(capture())
-      Assertions.assertThat(firstValue.getCurrentVersion().submittedBy).isEqualTo("mockName")
+      assertThat(firstValue.getCurrentVersion().submittedBy).isEqualTo("mockName")
     }
   }
 
@@ -137,7 +138,7 @@ class OrderServiceTest {
 
     argumentCaptor<Order>().apply {
       verify(repo, times(1)).save(capture())
-      Assertions.assertThat(firstValue.fmsResultId).isEqualTo(mockFmsResult.id)
+      assertThat(firstValue.fmsResultId).isEqualTo(mockFmsResult.id)
     }
   }
 
@@ -150,7 +151,7 @@ class OrderServiceTest {
 
     val result = service.listOrders(mockCriteria)
 
-    Assertions.assertThat(result).isEqualTo(listOf(mockOrder))
+    assertThat(result).isEqualTo(listOf(mockOrder))
   }
 
   @Test
@@ -162,7 +163,7 @@ class OrderServiceTest {
 
     val result = service.searchOrders(mockCriteria)
 
-    Assertions.assertThat(result).isEqualTo(listOf(mockOrder))
+    assertThat(result).isEqualTo(listOf(mockOrder))
   }
 
   @Nested
@@ -666,6 +667,56 @@ class OrderServiceTest {
           assertThat(firstValue.versions.first().type).isEqualTo(RequestType.REJECTED)
         }
       }
+    }
+  }
+
+  @Nested
+  @DisplayName("Get version information")
+  inner class GetVersionInformation {
+
+    @Test
+    fun `Should return version information`() {
+      val mockOrder = TestUtilities.createReadyToSubmitOrder(status = OrderStatus.SUBMITTED)
+      mockOrder.versions.add(
+        OrderVersion(
+          id = UUID.randomUUID(),
+          orderId = UUID.randomUUID(),
+          username = "mockUser",
+          status = OrderStatus.SUBMITTED,
+          dataDictionaryVersion = DataDictionaryVersion.DDV5,
+          type = RequestType.VARIATION,
+        ),
+      )
+
+      whenever(repo.findById(mockOrder.id)).thenReturn(Optional.of(mockOrder))
+
+      val result = service.versionInformation(mockOrder.id)
+
+      assertThat(result.size).isEqualTo(2)
+
+      val firstVersion = mockOrder.versions[0]
+      val secondVersion = mockOrder.versions[1]
+      val expectedVersion1 =
+        VersionInformationDTO(
+          orderId = firstVersion.orderId,
+          versionId = firstVersion.id,
+          versionNumber = firstVersion.versionId,
+          fmsResultDate = firstVersion.fmsResultDate,
+          type = firstVersion.type,
+          submittedBy = firstVersion.submittedBy,
+        )
+      val expectedVersion2 =
+        VersionInformationDTO(
+          orderId = secondVersion.orderId,
+          versionId = secondVersion.id,
+          versionNumber = secondVersion.versionId,
+          fmsResultDate = secondVersion.fmsResultDate,
+          type = secondVersion.type,
+          submittedBy = secondVersion.submittedBy,
+        )
+
+      assertThat(result[0]).isEqualTo(expectedVersion1)
+      assertThat(result[1]).isEqualTo(expectedVersion2)
     }
   }
 }

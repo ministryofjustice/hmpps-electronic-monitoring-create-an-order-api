@@ -12,6 +12,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.OrderListCriteria
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.OrderSearchCriteria
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.CreateOrderDto
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.VersionInformationDTO
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
@@ -215,4 +216,23 @@ class OrderService(
   fun searchOrders(searchCriteria: OrderSearchCriteria): List<Order> = repo.findAll(
     OrderSearchSpecification(searchCriteria),
   )
+
+  fun versionInformation(orderId: UUID): List<VersionInformationDTO> {
+    val order = repo.findById(orderId).orElseThrow {
+      EntityNotFoundException("Order with id $orderId does not exist")
+    }
+
+    val versionInformation = order.versions.map {
+      VersionInformationDTO(
+        orderId = it.orderId,
+        versionId = it.id,
+        versionNumber = it.versionId,
+        fmsResultDate = it.fmsResultDate,
+        type = it.type,
+        submittedBy = it.submittedBy,
+      )
+    }
+
+    return versionInformation
+  }
 }
