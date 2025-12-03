@@ -223,7 +223,7 @@ class OrderService(
     OrderSearchSpecification(searchCriteria),
   )
 
-  fun versionInformation(orderId: UUID): List<VersionInformationDTO> {
+  fun getVersionInformation(orderId: UUID): List<VersionInformationDTO> {
     val order = repo.findById(orderId).orElseThrow {
       EntityNotFoundException("Order with id $orderId does not exist")
     }

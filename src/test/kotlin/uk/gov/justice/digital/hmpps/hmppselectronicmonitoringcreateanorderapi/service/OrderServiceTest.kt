@@ -696,7 +696,7 @@ class OrderServiceTest {
 
       whenever(repo.findById(mockOrder.id)).thenReturn(Optional.of(mockOrder))
 
-      val result = service.versionInformation(mockOrder.id)
+      val result = service.getVersionInformation(mockOrder.id)
 
       assertThat(result.size).isEqualTo(2)
 

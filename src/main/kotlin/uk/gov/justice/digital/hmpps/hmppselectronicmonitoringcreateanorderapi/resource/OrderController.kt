@@ -128,7 +128,7 @@ class OrderController(@Autowired val orderService: OrderService) {
     @PathVariable orderId: UUID,
     authentication: Authentication,
   ): ResponseEntity<List<VersionInformationDTO>> {
-    val versionInformation = orderService.versionInformation(orderId)
+    val versionInformation = orderService.getVersionInformation(orderId)
     return ResponseEntity(versionInformation, HttpStatus.OK)
   }
 
