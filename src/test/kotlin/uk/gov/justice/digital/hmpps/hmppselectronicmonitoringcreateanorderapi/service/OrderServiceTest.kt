@@ -710,6 +710,7 @@ class OrderServiceTest {
           fmsResultDate = firstVersion.fmsResultDate,
           type = firstVersion.type,
           submittedBy = firstVersion.submittedBy,
+          status = firstVersion.status,
         )
       val expectedVersion2 =
         VersionInformationDTO(
@@ -719,6 +720,7 @@ class OrderServiceTest {
           fmsResultDate = secondVersion.fmsResultDate,
           type = secondVersion.type,
           submittedBy = secondVersion.submittedBy,
+          status = firstVersion.status,
         )
 
       assertThat(result[0]).isEqualTo(expectedVersion1)

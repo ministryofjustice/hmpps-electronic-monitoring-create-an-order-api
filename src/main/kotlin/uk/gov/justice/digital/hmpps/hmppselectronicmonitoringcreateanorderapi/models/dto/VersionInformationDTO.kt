@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto
 
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import java.time.OffsetDateTime
 import java.util.UUID
@@ -11,4 +12,5 @@ data class VersionInformationDTO(
   val fmsResultDate: OffsetDateTime?,
   val submittedBy: String?,
   val type: RequestType,
+  val status: OrderStatus,
 )

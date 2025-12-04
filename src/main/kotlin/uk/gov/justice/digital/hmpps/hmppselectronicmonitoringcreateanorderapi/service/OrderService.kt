@@ -240,5 +240,6 @@ class OrderService(
     fmsResultDate = this.fmsResultDate,
     type = this.type,
     submittedBy = this.submittedBy,
+    status = this.status,
   )
 }
