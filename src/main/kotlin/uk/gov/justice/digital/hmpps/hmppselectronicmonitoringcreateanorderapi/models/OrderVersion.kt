@@ -150,7 +150,8 @@ data class OrderVersion(
       (
         (
           curfewConditions?.startDate != null &&
-            curfewConditions?.startDate != null &&
+            curfewConditions?.endDate != null &&
+            curfewReleaseDateConditions?.releaseDate != null &&
             curfewTimeTable.isNotEmpty()
           ) ||
           enforcementZoneConditions.isNotEmpty() ||
