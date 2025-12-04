@@ -143,6 +143,16 @@ class DeviceWearerTest : OrderTestBase() {
     assertThat(fmsDeviceWearer.riskCategory!!.count()).isEqualTo(0)
   }
 
+  @Test
+  fun `It should not send NO_LISTED_CONDITION option to Serco`() {
+    val order = createOrder(
+      deviceWearer = createDeviceWearer(disabilities = "NO_LISTED_CONDITION"),
+    )
+    val fmsDeviceWearer = FmsDeviceWearer.fromCemoOrder(order)
+
+    assertThat(fmsDeviceWearer.disability!!.count()).isEqualTo(0)
+  }
+
   @ParameterizedTest(name = "it should map saved disability values to Serco - {0} -> {1}")
   @MethodSource("disabilityValues")
   fun `It should map correctly map saved disability values to Serco`(savedValue: String, mappedValue: String) {
