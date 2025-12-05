@@ -31,6 +31,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YouthCourtDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YouthCustodyServiceRegionDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YouthJusticeServiceRegions
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ddv6.ProbationDeliveryUnitsDDv6
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.formatters.PhoneNumberFormatter
 import java.time.DayOfWeek
 import java.time.ZoneId
@@ -536,8 +537,12 @@ data class MonitoringOrder(
         ?: order.interestedParties?.responsibleOrganisationRegion
         ?: ""
 
-    private fun getProbationDeliveryUnit(order: Order): String =
-      ProbationDeliveryUnits.from(order.probationDeliveryUnit?.unit)?.value ?: ""
+    private fun getProbationDeliveryUnit(order: Order): String {
+      if (order.dataDictionaryVersion == DataDictionaryVersion.DDV6) {
+        return ProbationDeliveryUnitsDDv6.from(order.probationDeliveryUnit?.unit)?.value ?: ""
+      }
+      return ProbationDeliveryUnits.from(order.probationDeliveryUnit?.unit)?.value ?: ""
+    }
 
     private fun getOffence(order: Order): String? = Offence.from(order.installationAndRisk?.offence)?.value
       ?: order.installationAndRisk?.offence
