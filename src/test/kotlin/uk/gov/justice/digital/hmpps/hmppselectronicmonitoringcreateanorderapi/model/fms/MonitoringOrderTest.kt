@@ -635,6 +635,7 @@ class MonitoringOrderTest : OrderTestBase() {
     val order = createOrder(
       type = savedValue,
       variationDetails = createvariationDetails(),
+      dataDictionaryVersion = DataDictionaryVersion.DDV6,
     )
     val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "")
     assertThat(fmsMonitoringOrder.subcategory).isEqualTo(mappedValue)
@@ -646,6 +647,7 @@ class MonitoringOrderTest : OrderTestBase() {
       type = RequestType.REVOCATION,
       monitoringConditions = createMonitoringConditions(orderType = OrderType.BAIL),
       variationDetails = createvariationDetails(),
+      dataDictionaryVersion = DataDictionaryVersion.DDV6,
     )
     val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "")
     assertThat(fmsMonitoringOrder.subcategory).isEqualTo("SR11 - Removal of devices (bail)")
@@ -657,6 +659,7 @@ class MonitoringOrderTest : OrderTestBase() {
       type = RequestType.REVOCATION,
       monitoringConditions = createMonitoringConditions(orderType = OrderType.IMMIGRATION),
       variationDetails = createvariationDetails(),
+      dataDictionaryVersion = DataDictionaryVersion.DDV6,
     )
     val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "")
     assertThat(fmsMonitoringOrder.subcategory).isEqualTo("SR11 - Removal of devices (bail)")

@@ -1511,6 +1511,7 @@ class OrderControllerTest : IntegrationTestBase() {
             documentId = mockDocumentId,
           ),
         ),
+        dataDictionaryVersion = DataDictionaryVersion.DDV6,
       )
       sercoAuthApi.stubGrantToken()
 
@@ -1833,6 +1834,7 @@ class OrderControllerTest : IntegrationTestBase() {
     requestType: RequestType = RequestType.REQUEST,
     status: OrderStatus = OrderStatus.IN_PROGRESS,
     documents: MutableList<AdditionalDocument> = mutableListOf(),
+    dataDictionaryVersion: DataDictionaryVersion = DataDictionaryVersion.DDV4,
   ): Order {
     val order = TestUtilities.createReadyToSubmitOrder(
       id = id,
@@ -1843,6 +1845,7 @@ class OrderControllerTest : IntegrationTestBase() {
       documents = documents,
       mockStartDate,
       mockEndDate,
+      dataDictionaryVersion = dataDictionaryVersion,
     )
     repo.save(order)
     return order

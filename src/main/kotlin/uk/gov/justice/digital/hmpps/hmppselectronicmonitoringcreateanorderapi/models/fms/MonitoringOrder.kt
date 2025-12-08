@@ -228,7 +228,7 @@ data class MonitoringOrder(
   @JsonProperty("pilot")
   var pilot: String? = "",
   @JsonProperty("subcategory")
-  val subcategory: String? = "",
+  var subcategory: String? = "",
 ) {
 
   companion object {
@@ -264,7 +264,7 @@ data class MonitoringOrder(
       if (monitoringEndDate == null) {
         monitoringEndDate = monitoringConditions.mapNotNull { it.endDate }.maxOrNull()
       }
-      val isBail = conditions.orderType === OrderType.BAIL || conditions.orderType === OrderType.IMMIGRATION
+
       val monitoringOrder = MonitoringOrder(
         deviceWearer = "${order.deviceWearer!!.firstName} ${order.deviceWearer!!.lastName}",
         orderType = conditions.orderType!!.value,
@@ -280,8 +280,11 @@ data class MonitoringOrder(
         offence = getOffence(order),
         offenceAdditionalDetails = getOffenceAdditionalDetails(order),
         pilot = conditions.pilot?.value ?: "",
-        subcategory = RequestType.getSubCategory(order.type, isBail),
       )
+      if (DataDictionaryVersion.isVersionSameOrAbove(order.dataDictionaryVersion, DataDictionaryVersion.DDV6)) {
+        val isBail = conditions.orderType === OrderType.BAIL || conditions.orderType === OrderType.IMMIGRATION
+        monitoringOrder.subcategory = RequestType.getSubCategory(order.type, isBail)
+      }
 
       monitoringOrder.sentenceType = conditions.sentenceType?.value ?: ""
       monitoringOrder.issp = if (conditions.issp == YesNoUnknown.YES) {
