@@ -2,7 +2,6 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.m
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Address
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewTimeTable
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
@@ -20,6 +19,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisationDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Offence
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.PoliceAreas
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Prison
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.PrisonDDv5
@@ -31,6 +31,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YouthCourtDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YouthCustodyServiceRegionDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YouthJusticeServiceRegions
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ddv6.ProbationDeliveryUnitsDDv6
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.formatters.PhoneNumberFormatter
 import java.time.DayOfWeek
 import java.time.ZoneId
@@ -226,6 +227,8 @@ data class MonitoringOrder(
   var orderStatus: String? = "",
   @JsonProperty("pilot")
   var pilot: String? = "",
+  @JsonProperty("subcategory")
+  var subcategory: String? = "",
 ) {
 
   companion object {
@@ -278,6 +281,10 @@ data class MonitoringOrder(
         offenceAdditionalDetails = getOffenceAdditionalDetails(order),
         pilot = conditions.pilot?.value ?: "",
       )
+      if (DataDictionaryVersion.isVersionSameOrAbove(order.dataDictionaryVersion, DataDictionaryVersion.DDV6)) {
+        val isBail = conditions.orderType === OrderType.BAIL || conditions.orderType === OrderType.IMMIGRATION
+        monitoringOrder.subcategory = RequestType.getSubCategory(order.type, isBail)
+      }
 
       monitoringOrder.sentenceType = conditions.sentenceType?.value ?: ""
       monitoringOrder.issp = if (conditions.issp == YesNoUnknown.YES) {
@@ -322,7 +329,7 @@ data class MonitoringOrder(
         monitoringOrder.conditionalReleaseEndTime = order.curfewReleaseDateConditions?.endTime ?: ""
         monitoringOrder.curfewStart = getBritishDateAndTime(curfew.startDate)
         monitoringOrder.curfewEnd = getBritishDateAndTime(curfew.endDate)
-        monitoringOrder.curfewDuration = getCurfewSchedules(order, curfew)
+        monitoringOrder.curfewDuration = getCurfewSchedules(order)
       }
 
       if (order.monitoringConditionsTrail?.startDate != null) {
@@ -451,7 +458,7 @@ data class MonitoringOrder(
       else -> order.addresses.firstOrNull { it.addressType == AddressType.INSTALLATION }
     }
 
-    private fun getCurfewSchedules(order: Order, curfew: CurfewConditions): MutableList<CurfewSchedule> {
+    private fun getCurfewSchedules(order: Order): MutableList<CurfewSchedule> {
       val schedules = mutableListOf<CurfewSchedule>()
       val primaryAddressTimeTable = order.curfewTimeTable.filter {
         it.curfewAddress!!.uppercase().contains("PRIMARY_ADDRESS")
@@ -540,8 +547,12 @@ data class MonitoringOrder(
         ?: order.interestedParties?.responsibleOrganisationRegion
         ?: ""
 
-    private fun getProbationDeliveryUnit(order: Order): String =
-      ProbationDeliveryUnits.from(order.probationDeliveryUnit?.unit)?.value ?: ""
+    private fun getProbationDeliveryUnit(order: Order): String {
+      if (order.dataDictionaryVersion == DataDictionaryVersion.DDV6) {
+        return ProbationDeliveryUnitsDDv6.from(order.probationDeliveryUnit?.unit)?.value ?: ""
+      }
+      return ProbationDeliveryUnits.from(order.probationDeliveryUnit?.unit)?.value ?: ""
+    }
 
     private fun getOffence(order: Order): String? = Offence.from(order.installationAndRisk?.offence)?.value
       ?: order.installationAndRisk?.offence

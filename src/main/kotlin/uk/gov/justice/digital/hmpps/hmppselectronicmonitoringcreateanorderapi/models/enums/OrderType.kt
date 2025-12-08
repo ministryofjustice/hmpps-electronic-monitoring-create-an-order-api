@@ -7,4 +7,5 @@ enum class OrderType(val value: String) {
   POST_RELEASE("Post Release"),
   PRE_TRIAL("Pre-Trial"),
   SPECIAL("Special"),
+  BAIL("Bail"),
 }
