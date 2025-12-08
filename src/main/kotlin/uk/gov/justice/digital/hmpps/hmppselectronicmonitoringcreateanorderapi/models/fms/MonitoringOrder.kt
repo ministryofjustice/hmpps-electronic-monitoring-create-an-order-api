@@ -2,7 +2,6 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.m
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Address
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewTimeTable
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
@@ -20,6 +19,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisationDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Offence
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.PoliceAreas
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Prison
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.PrisonDDv5
@@ -226,6 +226,8 @@ data class MonitoringOrder(
   var orderStatus: String? = "",
   @JsonProperty("pilot")
   var pilot: String? = "",
+  @JsonProperty("subcategory")
+  val subcategory: String? = "",
 ) {
 
   companion object {
@@ -261,7 +263,7 @@ data class MonitoringOrder(
       if (monitoringEndDate == null) {
         monitoringEndDate = monitoringConditions.mapNotNull { it.endDate }.maxOrNull()
       }
-
+      val isBail = conditions.orderType === OrderType.BAIL || conditions.orderType === OrderType.IMMIGRATION
       val monitoringOrder = MonitoringOrder(
         deviceWearer = "${order.deviceWearer!!.firstName} ${order.deviceWearer!!.lastName}",
         orderType = conditions.orderType!!.value,
@@ -277,6 +279,7 @@ data class MonitoringOrder(
         offence = getOffence(order),
         offenceAdditionalDetails = getOffenceAdditionalDetails(order),
         pilot = conditions.pilot?.value ?: "",
+        subcategory = RequestType.getSubCategory(order.type, isBail),
       )
 
       monitoringOrder.sentenceType = conditions.sentenceType?.value ?: ""
@@ -322,7 +325,7 @@ data class MonitoringOrder(
         monitoringOrder.conditionalReleaseEndTime = order.curfewReleaseDateConditions?.endTime ?: ""
         monitoringOrder.curfewStart = getBritishDateAndTime(curfew.startDate)
         monitoringOrder.curfewEnd = getBritishDateAndTime(curfew.endDate)
-        monitoringOrder.curfewDuration = getCurfewSchedules(order, curfew)
+        monitoringOrder.curfewDuration = getCurfewSchedules(order)
       }
 
       if (order.monitoringConditionsTrail?.startDate != null) {
@@ -451,7 +454,7 @@ data class MonitoringOrder(
       else -> order.addresses.firstOrNull { it.addressType == AddressType.INSTALLATION }
     }
 
-    private fun getCurfewSchedules(order: Order, curfew: CurfewConditions): MutableList<CurfewSchedule> {
+    private fun getCurfewSchedules(order: Order): MutableList<CurfewSchedule> {
       val schedules = mutableListOf<CurfewSchedule>()
       val primaryAddressTimeTable = order.curfewTimeTable.filter {
         it.curfewAddress!!.uppercase().contains("PRIMARY_ADDRESS")
