@@ -727,4 +727,31 @@ class OrderServiceTest {
       assertThat(result[1]).isEqualTo(expectedVersion2)
     }
   }
+
+  @Nested
+  @DisplayName("Get specific order version")
+  inner class GetSpecificVersion {
+
+    @Test
+    fun `Should return the specific version`() {
+      val mockOrder = TestUtilities.createReadyToSubmitOrder(status = OrderStatus.SUBMITTED)
+      val versionId2 = UUID.randomUUID()
+      val version2 = OrderVersion(
+        id = versionId2,
+        orderId = UUID.randomUUID(),
+        username = "mockUser",
+        status = OrderStatus.SUBMITTED,
+        dataDictionaryVersion = DataDictionaryVersion.DDV5,
+        type = RequestType.VARIATION,
+      )
+      mockOrder.versions.add(version2)
+
+      whenever(repo.findById(mockOrder.id)).thenReturn(Optional.of(mockOrder))
+
+      val result = service.getSpecificVersion(mockOrder.id, versionId2)
+
+      val expectedOrder = mockOrder.copy(versions = mutableListOf(version2))
+      assertThat(result).isEqualTo(expectedOrder)
+    }
+  }
 }

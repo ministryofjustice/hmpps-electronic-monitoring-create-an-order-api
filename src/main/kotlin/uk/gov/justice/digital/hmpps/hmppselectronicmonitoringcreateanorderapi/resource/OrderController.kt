@@ -132,6 +132,16 @@ class OrderController(@Autowired val orderService: OrderService) {
     return ResponseEntity(versionInformation, HttpStatus.OK)
   }
 
+  @GetMapping("/orders/{orderId}/{versionId}")
+  fun getSpecificVersion(
+    @PathVariable orderId: UUID,
+    @PathVariable versionId: UUID,
+    authentication: Authentication,
+  ): ResponseEntity<Order> {
+    val version = orderService.getSpecificVersion(orderId, versionId)
+    return ResponseEntity(version, HttpStatus.OK)
+  }
+
   private fun convertToDto(order: Order): OrderDto = OrderDto(
     id = order.id,
     additionalDocuments = order.additionalDocuments,
