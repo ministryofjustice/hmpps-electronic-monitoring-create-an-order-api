@@ -5,8 +5,10 @@ import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.data.ValidationErrors
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ProbationDeliveryUnit
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateProbationDeliveryUnitDto
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ProbationDeliveryUnits
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ResponsibleOrganisation
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ddv6.ProbationDeliveryUnitsDDv6
 import java.util.*
 
 @Service
@@ -25,18 +27,31 @@ class ProbationDeliveryUnitService : OrderSectionServiceBase() {
     if (responsibleOrganisation != ResponsibleOrganisation.PROBATION.name) {
       throw ValidationException(ValidationErrors.ProbationDeliveryUnit.RESPONSIBLE_ORGANISATION_NOT_PROBATION)
     }
-    // Verify delivery unit is in the probation region
-    else if (updateProbationDeliveryUnitRecord.unit != null &&
-      ProbationDeliveryUnits.PROBATION_REGION_DELIVERY_UNIT[responsibleOrganisationRegion]?.contains(
-        updateProbationDeliveryUnitRecord.unit,
-      ) != true
-    ) {
-      throw ValidationException(ValidationErrors.ProbationDeliveryUnit.DELIVERY_UNIT_NOT_IN_REGION)
+    // Verify unit based on version
+    val unitInput = updateProbationDeliveryUnitRecord.unit
+
+    if (unitInput != null) {
+      val isValid = if (order.dataDictionaryVersion == DataDictionaryVersion.DDV6) {
+        val unitEnum = ProbationDeliveryUnitsDDv6.from(unitInput)
+        unitEnum != null &&
+          ProbationDeliveryUnitsDDv6.PROBATION_REGION_DELIVERY_UNIT[responsibleOrganisationRegion]?.contains(
+            unitEnum,
+          ) == true
+      } else {
+        val unitEnum = ProbationDeliveryUnits.from(unitInput)
+        unitEnum != null &&
+          ProbationDeliveryUnits.PROBATION_REGION_DELIVERY_UNIT[responsibleOrganisationRegion]?.contains(
+            unitEnum,
+          ) == true
+      }
+      if (!isValid) {
+        throw ValidationException(ValidationErrors.ProbationDeliveryUnit.DELIVERY_UNIT_NOT_IN_REGION)
+      }
     }
 
     order.probationDeliveryUnit = ProbationDeliveryUnit(
       versionId = order.getCurrentVersion().id,
-      unit = updateProbationDeliveryUnitRecord.unit?.name,
+      unit = unitInput,
     )
     return orderRepo.save(order).probationDeliveryUnit!!
   }
