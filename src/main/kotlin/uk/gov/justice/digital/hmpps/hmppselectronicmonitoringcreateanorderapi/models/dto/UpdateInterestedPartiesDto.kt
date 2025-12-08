@@ -74,6 +74,7 @@ data class UpdateInterestedPartiesDto(
 
     if (notifyingOrganisation === NotifyingOrganisationDDv5.PROBATION) {
       return notifyingOrganisationName == "" ||
+        notifyingOrganisationName == "Probation Board" ||
         ProbationServiceRegion.entries.any { it.name == notifyingOrganisationName }
     }
 

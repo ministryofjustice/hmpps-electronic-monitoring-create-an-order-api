@@ -568,6 +568,59 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
     }
 
     @Test
+    fun `it should accept 'Probation Board' as notifying org name when notifying organisation is PROBATION`() {
+      val order = createOrder()
+      val interestedParties = webTestClient.put()
+        .uri("/api/orders/${order.id}/interested-parties")
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(
+          BodyInserters.fromValue(
+            buildMockRequest(
+              notifyingOrganisation = "PROBATION",
+              notifyingOrganisationName = "Probation Board",
+            ),
+          ),
+        )
+        .headers(setAuthorisation("AUTH_ADM"))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody(InterestedParties::class.java)
+        .returnResult()
+        .responseBody!!
+
+      Assertions.assertThat(interestedParties.notifyingOrganisation).isEqualTo("PROBATION")
+      Assertions.assertThat(interestedParties.notifyingOrganisationName).isEqualTo("Probation Board")
+    }
+
+    @Test
+    fun `it should accept empty string as name when notifying organisation is YOUTH_CUSTODY_SERVICE`() {
+      val order = createOrder()
+
+      val interestedParties = webTestClient.put()
+        .uri("/api/orders/${order.id}/interested-parties")
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(
+          BodyInserters.fromValue(
+            buildMockRequest(
+              notifyingOrganisation = "YOUTH_CUSTODY_SERVICE",
+              notifyingOrganisationName = "",
+            ),
+          ),
+        )
+        .headers(setAuthorisation("AUTH_ADM"))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody(InterestedParties::class.java)
+        .returnResult()
+        .responseBody!!
+
+      Assertions.assertThat(interestedParties.notifyingOrganisation).isEqualTo("YOUTH_CUSTODY_SERVICE")
+      Assertions.assertThat(interestedParties.notifyingOrganisationName).isEqualTo("")
+    }
+
+    @Test
     fun `it should accept a magistrate court name when notifying organisation is MAGISTRATES_COURT`() {
       val order = createOrder()
 
