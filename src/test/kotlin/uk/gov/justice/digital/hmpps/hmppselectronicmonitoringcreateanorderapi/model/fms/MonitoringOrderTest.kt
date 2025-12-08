@@ -18,6 +18,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.PilotArgumentsProvider
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.PrisonArgumentsProvider
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.ProbationDeliveryUnitArgumentsProvider
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.ProbationDeliveryUnitDDv6ArgumentsProvider
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.ProbationServiceRegionArgumentsProvider
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.SentenceArgumentsProvider
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.YouthCourtArgumentsProvider
@@ -472,6 +473,22 @@ class MonitoringOrderTest : OrderTestBase() {
       interestedParties = createInterestedParty(responsibleOrganisation = "PROBATION"),
       probationDeliveryUnits = createProbationDeliveryUnit(savedValue),
     )
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
+
+    assertThat(fmsMonitoringOrder.pduResponsible).isEqualTo(mappedValue)
+  }
+
+  @ParameterizedTest(name = "it should map DDv6 probation delivery unit to Serco - {0} -> {1}")
+  @ArgumentsSource(ProbationDeliveryUnitDDv6ArgumentsProvider::class)
+  fun `It should correctly map DDv6 saved probation delivery unit values`(savedValue: String, mappedValue: String) {
+    val order = createOrder(
+      dataDictionaryVersion = DataDictionaryVersion.DDV6,
+      deviceWearer = createDeviceWearer(),
+      installationAndRisk = createInstallationAndRisk(riskCategory = savedValue),
+      interestedParties = createInterestedParty(responsibleOrganisation = "PROBATION"),
+      probationDeliveryUnits = createProbationDeliveryUnit(savedValue),
+    )
+
     val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
 
     assertThat(fmsMonitoringOrder.pduResponsible).isEqualTo(mappedValue)
