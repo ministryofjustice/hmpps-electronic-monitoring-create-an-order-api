@@ -7,17 +7,17 @@ import java.util.stream.Stream
 
 class ProbationServiceRegionArgumentsProvider : ArgumentsProvider {
   override fun provideArguments(context: ExtensionContext?): Stream<out Arguments?>? = Stream.of(
-    Arguments.of("NORTH_EAST", "North East"),
-    Arguments.of("NORTH_WEST", "North West"),
-    Arguments.of("YORKSHIRE_AND_THE_HUMBER", "Yorkshire and the Humber"),
-    Arguments.of("GREATER_MANCHESTER", "Greater Manchester"),
-    Arguments.of("EAST_MIDLANDS", "East Midlands"),
-    Arguments.of("WALES", "Wales"),
-    Arguments.of("WEST_MIDLANDS", "West Midlands"),
-    Arguments.of("EAST_OF_ENGLAND", "East of England"),
-    Arguments.of("SOUTH_WEST", "South West"),
-    Arguments.of("SOUTH_CENTRAL", "South Central"),
-    Arguments.of("LONDON", "London"),
-    Arguments.of("KENT_SURREY_SUSSEX", "Kent, Surrey & Sussex"),
+    Arguments.of("NORTH_EAST", "Probation Board"),
+    Arguments.of("NORTH_WEST", "Probation Board"),
+    Arguments.of("YORKSHIRE_AND_THE_HUMBER", "Probation Board"),
+    Arguments.of("GREATER_MANCHESTER", "Probation Board"),
+    Arguments.of("EAST_MIDLANDS", "Probation Board"),
+    Arguments.of("WALES", "Probation Board"),
+    Arguments.of("WEST_MIDLANDS", "Probation Board"),
+    Arguments.of("EAST_OF_ENGLAND", "East Probation Board"),
+    Arguments.of("SOUTH_WEST", "Probation Board"),
+    Arguments.of("SOUTH_CENTRAL", "Probation Board"),
+    Arguments.of("LONDON", "Probation Board"),
+    Arguments.of("KENT_SURREY_SUSSEX", "Probation Board"),
   )
 }

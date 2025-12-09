@@ -665,6 +665,36 @@ class MonitoringOrderTest : OrderTestBase() {
     assertThat(fmsMonitoringOrder.subcategory).isEqualTo("SR11 - Removal of devices (bail)")
   }
 
+  @Test
+  fun `It should map empty PROBATION name to 'Probation Board' for Serco`() {
+    val order = createOrder(
+      dataDictionaryVersion = DataDictionaryVersion.DDV5,
+      interestedParties = createInterestedParty(
+        notifyingOrganisation = NotifyingOrganisationDDv5.PROBATION.name,
+        notifyingOrganisationName = "",
+      ),
+    )
+
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
+
+    assertThat(fmsMonitoringOrder.noName).isEqualTo("Probation Board")
+  }
+
+  @Test
+  fun `It should map empty YCS name to empty string for Serco`() {
+    val order = createOrder(
+      dataDictionaryVersion = DataDictionaryVersion.DDV5,
+      interestedParties = createInterestedParty(
+        notifyingOrganisation = NotifyingOrganisationDDv5.YOUTH_CUSTODY_SERVICE.name,
+        notifyingOrganisationName = "",
+      ),
+    )
+
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
+
+    assertThat(fmsMonitoringOrder.noName).isEqualTo("")
+  }
+
   private fun assertNotifyingOrgNameMapping(savedValue: String, mappedValue: String) {
     val order = createOrder(
       dataDictionaryVersion = DataDictionaryVersion.DDV5,
