@@ -27,9 +27,11 @@ class InterestedPartiesService(private val addressService: AddressService) : Ord
           NotifyingOrganisationDDv5.FAMILY_COURT ->
             FamilyCourtDDv5.entries.none { it.name == updateRecord.notifyingOrganisationName }
           NotifyingOrganisationDDv5.PROBATION ->
-            ProbationServiceRegion.entries.none { it.name == updateRecord.notifyingOrganisationName }
+            updateRecord.notifyingOrganisationName != "" &&
+              ProbationServiceRegion.entries.none { it.name == updateRecord.notifyingOrganisationName }
           NotifyingOrganisationDDv5.YOUTH_CUSTODY_SERVICE ->
-            YouthCustodyServiceRegionDDv5.entries.none { it.name == updateRecord.notifyingOrganisationName }
+            updateRecord.notifyingOrganisationName != "" &&
+              YouthCustodyServiceRegionDDv5.entries.none { it.name == updateRecord.notifyingOrganisationName }
           else -> false
         }
 
