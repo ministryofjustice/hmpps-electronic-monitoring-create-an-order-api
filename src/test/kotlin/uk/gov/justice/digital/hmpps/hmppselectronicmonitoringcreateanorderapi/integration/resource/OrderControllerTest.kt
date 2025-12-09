@@ -1828,7 +1828,7 @@ class OrderControllerTest : IntegrationTestBase() {
   }
 
   @Nested
-  @DisplayName("GET /api/orders/orderId/versionId")
+  @DisplayName("GET /api/orders/orderId/versions/versionId")
   inner class GetSpecificVersion {
     @Test
     fun `Should get the specified version`() {

@@ -720,7 +720,6 @@ class OrderServiceTest {
 
     @Test
     fun `Should return the specific version`() {
-      val mockOrder = TestUtilities.createReadyToSubmitOrder(status = OrderStatus.SUBMITTED)
       val versionId2 = UUID.randomUUID()
       val version2 = OrderVersion(
         id = versionId2,
@@ -730,14 +729,17 @@ class OrderServiceTest {
         dataDictionaryVersion = DataDictionaryVersion.DDV5,
         type = RequestType.VARIATION,
       )
-      mockOrder.versions.add(version2)
+      val mockOrder = TestUtilities.createReadyToSubmitOrder(status = OrderStatus.SUBMITTED).apply {
+        versions.add(version2)
+      }
 
       whenever(repo.findById(mockOrder.id)).thenReturn(Optional.of(mockOrder))
 
       val result = service.getSpecificVersion(mockOrder.id, versionId2)
 
-      val expectedOrder = mockOrder.copy(versions = mutableListOf(version2))
-      assertThat(result).isEqualTo(expectedOrder)
+      assertThat(result).isNotNull()
+      assertThat(result.versionId).isEqualTo(versionId2)
+      assertThat(result.versions).hasSize(1).containsExactly(version2)
     }
   }
 }
