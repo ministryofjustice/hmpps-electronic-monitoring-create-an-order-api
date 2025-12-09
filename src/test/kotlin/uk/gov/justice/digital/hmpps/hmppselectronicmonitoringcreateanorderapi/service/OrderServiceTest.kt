@@ -1,6 +1,8 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service
 
+import jakarta.persistence.EntityNotFoundException
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.assertj.core.api.Assertions.tuple
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
@@ -740,6 +742,33 @@ class OrderServiceTest {
       assertThat(result).isNotNull()
       assertThat(result.versionId).isEqualTo(versionId2)
       assertThat(result.versions).hasSize(1).containsExactly(version2)
+    }
+
+    @Test
+    fun `Should throw exception when order ID is not found`() {
+      val nonExistentOrderId = UUID.randomUUID()
+
+      whenever(repo.findById(nonExistentOrderId)).thenReturn(Optional.empty())
+
+      assertThatThrownBy {
+        service.getSpecificVersion(nonExistentOrderId, UUID.randomUUID())
+      }
+        .isInstanceOf(EntityNotFoundException::class.java)
+        .hasMessage("Order with id $nonExistentOrderId does not exist")
+    }
+
+    @Test
+    fun `Should throw exception when version ID does not exist within the order`() {
+      val mockOrder = TestUtilities.createReadyToSubmitOrder(status = OrderStatus.SUBMITTED)
+      val nonExistentVersionId = UUID.randomUUID()
+
+      whenever(repo.findById(mockOrder.id)).thenReturn(Optional.of(mockOrder))
+
+      assertThatThrownBy {
+        service.getSpecificVersion(mockOrder.id, nonExistentVersionId)
+      }
+        .isInstanceOf(EntityNotFoundException::class.java)
+        .hasMessageContaining("Version does not exist for orderId ${mockOrder.id} and versionId $nonExistentVersionId")
     }
   }
 }
