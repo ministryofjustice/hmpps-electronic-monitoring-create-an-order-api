@@ -14,7 +14,7 @@ class ProbationServiceRegionArgumentsProvider : ArgumentsProvider {
     Arguments.of("EAST_MIDLANDS", "Probation Board"),
     Arguments.of("WALES", "Probation Board"),
     Arguments.of("WEST_MIDLANDS", "Probation Board"),
-    Arguments.of("EAST_OF_ENGLAND", "East Probation Board"),
+    Arguments.of("EAST_OF_ENGLAND", "Probation Board"),
     Arguments.of("SOUTH_WEST", "Probation Board"),
     Arguments.of("SOUTH_CENTRAL", "Probation Board"),
     Arguments.of("LONDON", "Probation Board"),

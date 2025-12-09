@@ -552,7 +552,19 @@ class MonitoringOrderTest : OrderTestBase() {
     savedValue: String,
     mappedValue: String,
   ) {
-    assertNotifyingOrgNameMapping(savedValue, mappedValue)
+    val order = createOrder(
+      dataDictionaryVersion = DataDictionaryVersion.DDV5,
+      deviceWearer = createDeviceWearer(),
+      interestedParties = createInterestedParty(
+        responsibleOrganisation = "PROBATION",
+        notifyingOrganisation = NotifyingOrganisationDDv5.PROBATION.name,
+        notifyingOrganisationName = savedValue,
+      ),
+    )
+
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
+
+    assertThat(fmsMonitoringOrder.noName).isEqualTo(mappedValue)
   }
 
   @ParameterizedTest(name = "it should map youth court - {0} -> {1}")
@@ -676,7 +688,6 @@ class MonitoringOrderTest : OrderTestBase() {
     )
 
     val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
-
     assertThat(fmsMonitoringOrder.noName).isEqualTo("Probation Board")
   }
 
