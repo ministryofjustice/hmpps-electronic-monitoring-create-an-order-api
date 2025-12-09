@@ -230,7 +230,7 @@ class OrderService(
 
     return order.versions.map {
       it.toDTO()
-    }
+    }.sortedByDescending { it.fmsResultDate }
   }
 
   private fun OrderVersion.toDTO() = VersionInformationDTO(
