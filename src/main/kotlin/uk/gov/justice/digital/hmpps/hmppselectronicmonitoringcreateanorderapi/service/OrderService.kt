@@ -230,7 +230,7 @@ class OrderService(
 
     return order.versions.map {
       it.toDTO()
-    }
+    }.sortedByDescending { it.fmsResultDate }
   }
 
   private fun OrderVersion.toDTO() = VersionInformationDTO(
@@ -242,4 +242,14 @@ class OrderService(
     submittedBy = this.submittedBy,
     status = this.status,
   )
+
+  fun getSpecificVersion(orderId: UUID, versionId: UUID): Order {
+    val order = repo.findById(orderId).orElseThrow {
+      EntityNotFoundException("Order with id $orderId does not exist")
+    }
+    val specificVersion = order.getSpecificVersion(versionId)
+      ?: throw EntityNotFoundException("Version does not exist for orderId $orderId and versionId $versionId")
+
+    return order.copy(versions = mutableListOf(specificVersion))
+  }
 }

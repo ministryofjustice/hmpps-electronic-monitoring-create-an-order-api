@@ -1511,6 +1511,7 @@ class OrderControllerTest : IntegrationTestBase() {
             documentId = mockDocumentId,
           ),
         ),
+        dataDictionaryVersion = DataDictionaryVersion.DDV6,
       )
       sercoAuthApi.stubGrantToken()
 
@@ -1826,6 +1827,41 @@ class OrderControllerTest : IntegrationTestBase() {
     }
   }
 
+  @Nested
+  @DisplayName("GET /api/orders/orderId/versions/versionId")
+  inner class GetSpecificVersion {
+    @Test
+    fun `Should get the specified version`() {
+      val order = createSubmittedOrder()
+      val versionId2 = UUID.randomUUID()
+      val version2 =
+        OrderVersion(
+          id = versionId2,
+          username = "AUTH_ADM",
+          status = OrderStatus.SUBMITTED,
+          type = RequestType.VARIATION,
+          orderId = order.id,
+          versionId = 2,
+          dataDictionaryVersion = DataDictionaryVersion.DDV5,
+        )
+      order.versions.add(version2)
+
+      repo.save(order)
+
+      val result = webTestClient.get()
+        .uri("/api/orders/${order.id}/versions/$versionId2")
+        .headers(setAuthorisation("AUTH_ADM"))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody(OrderDto::class.java)
+        .returnResult().responseBody
+
+      assertThat(result).isNotNull()
+      assertThat(result?.versionId).isEqualTo(versionId2)
+    }
+  }
+
   fun createAndPersistPopulatedOrder(
     id: UUID = UUID.randomUUID(),
     versionId: UUID = UUID.randomUUID(),
@@ -1833,6 +1869,7 @@ class OrderControllerTest : IntegrationTestBase() {
     requestType: RequestType = RequestType.REQUEST,
     status: OrderStatus = OrderStatus.IN_PROGRESS,
     documents: MutableList<AdditionalDocument> = mutableListOf(),
+    dataDictionaryVersion: DataDictionaryVersion = DataDictionaryVersion.DDV4,
   ): Order {
     val order = TestUtilities.createReadyToSubmitOrder(
       id = id,
@@ -1843,6 +1880,7 @@ class OrderControllerTest : IntegrationTestBase() {
       documents = documents,
       mockStartDate,
       mockEndDate,
+      dataDictionaryVersion = dataDictionaryVersion,
     )
     repo.save(order)
     return order

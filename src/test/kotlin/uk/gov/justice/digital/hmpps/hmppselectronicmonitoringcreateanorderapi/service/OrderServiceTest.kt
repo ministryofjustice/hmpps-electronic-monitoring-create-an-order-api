@@ -1,6 +1,9 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service
 
+import jakarta.persistence.EntityNotFoundException
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
+import org.assertj.core.api.Assertions.tuple
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
@@ -24,7 +27,6 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.OrderListCriteria
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.OrderSearchCriteria
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.CreateOrderDto
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.VersionInformationDTO
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DocumentType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
@@ -40,6 +42,8 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.specification.OrderSearchSpecification
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.utilities.TestUtilities
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.util.*
 
@@ -681,50 +685,90 @@ class OrderServiceTest {
   inner class GetVersionInformation {
 
     @Test
-    fun `Should return version information`() {
-      val mockOrder = TestUtilities.createReadyToSubmitOrder(status = OrderStatus.SUBMITTED)
-      mockOrder.versions.add(
-        OrderVersion(
-          id = UUID.randomUUID(),
-          orderId = UUID.randomUUID(),
-          username = "mockUser",
-          status = OrderStatus.SUBMITTED,
-          dataDictionaryVersion = DataDictionaryVersion.DDV5,
-          type = RequestType.VARIATION,
-        ),
-      )
+    fun `Should return version information in the correct order`() {
+      val fixedDate = OffsetDateTime.of(2024, 5, 5, 0, 0, 0, 0, ZoneOffset.UTC)
+      val secondDate = OffsetDateTime.of(2025, 5, 5, 0, 0, 0, 0, ZoneOffset.UTC)
+
+      val mockOrder = TestUtilities.createReadyToSubmitOrder(status = OrderStatus.SUBMITTED).apply {
+        versions[0].fmsResultDate = fixedDate
+        versions.add(
+          OrderVersion(
+            id = UUID.randomUUID(),
+            orderId = this.id,
+            username = "mockUser",
+            status = OrderStatus.SUBMITTED,
+            dataDictionaryVersion = DataDictionaryVersion.DDV5,
+            type = RequestType.VARIATION,
+            fmsResultDate = secondDate,
+          ),
+        )
+      }
 
       whenever(repo.findById(mockOrder.id)).thenReturn(Optional.of(mockOrder))
 
       val result = service.getVersionInformation(mockOrder.id)
 
-      assertThat(result.size).isEqualTo(2)
-
-      val firstVersion = mockOrder.versions[0]
-      val secondVersion = mockOrder.versions[1]
-      val expectedVersion1 =
-        VersionInformationDTO(
-          orderId = firstVersion.orderId,
-          versionId = firstVersion.id,
-          versionNumber = firstVersion.versionId,
-          fmsResultDate = firstVersion.fmsResultDate,
-          type = firstVersion.type,
-          submittedBy = firstVersion.submittedBy,
-          status = firstVersion.status,
+      assertThat(result).hasSize(2).extracting("versionId", "fmsResultDate", "status")
+        .containsExactly(
+          tuple(mockOrder.versions[1].id, secondDate, mockOrder.versions[1].status),
+          tuple(mockOrder.versions[0].id, fixedDate, mockOrder.versions[0].status),
         )
-      val expectedVersion2 =
-        VersionInformationDTO(
-          orderId = secondVersion.orderId,
-          versionId = secondVersion.id,
-          versionNumber = secondVersion.versionId,
-          fmsResultDate = secondVersion.fmsResultDate,
-          type = secondVersion.type,
-          submittedBy = secondVersion.submittedBy,
-          status = firstVersion.status,
-        )
+    }
+  }
 
-      assertThat(result[0]).isEqualTo(expectedVersion1)
-      assertThat(result[1]).isEqualTo(expectedVersion2)
+  @Nested
+  @DisplayName("Get specific order version")
+  inner class GetSpecificVersion {
+
+    @Test
+    fun `Should return the specific version`() {
+      val versionId2 = UUID.randomUUID()
+      val version2 = OrderVersion(
+        id = versionId2,
+        orderId = UUID.randomUUID(),
+        username = "mockUser",
+        status = OrderStatus.SUBMITTED,
+        dataDictionaryVersion = DataDictionaryVersion.DDV5,
+        type = RequestType.VARIATION,
+      )
+      val mockOrder = TestUtilities.createReadyToSubmitOrder(status = OrderStatus.SUBMITTED).apply {
+        versions.add(version2)
+      }
+
+      whenever(repo.findById(mockOrder.id)).thenReturn(Optional.of(mockOrder))
+
+      val result = service.getSpecificVersion(mockOrder.id, versionId2)
+
+      assertThat(result).isNotNull()
+      assertThat(result.versionId).isEqualTo(versionId2)
+      assertThat(result.versions).hasSize(1).containsExactly(version2)
+    }
+
+    @Test
+    fun `Should throw exception when order ID is not found`() {
+      val nonExistentOrderId = UUID.randomUUID()
+
+      whenever(repo.findById(nonExistentOrderId)).thenReturn(Optional.empty())
+
+      assertThatThrownBy {
+        service.getSpecificVersion(nonExistentOrderId, UUID.randomUUID())
+      }
+        .isInstanceOf(EntityNotFoundException::class.java)
+        .hasMessage("Order with id $nonExistentOrderId does not exist")
+    }
+
+    @Test
+    fun `Should throw exception when version ID does not exist within the order`() {
+      val mockOrder = TestUtilities.createReadyToSubmitOrder(status = OrderStatus.SUBMITTED)
+      val nonExistentVersionId = UUID.randomUUID()
+
+      whenever(repo.findById(mockOrder.id)).thenReturn(Optional.of(mockOrder))
+
+      assertThatThrownBy {
+        service.getSpecificVersion(mockOrder.id, nonExistentVersionId)
+      }
+        .isInstanceOf(EntityNotFoundException::class.java)
+        .hasMessageContaining("Version does not exist for orderId ${mockOrder.id} and versionId $nonExistentVersionId")
     }
   }
 }
