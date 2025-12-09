@@ -22,16 +22,23 @@ class InterestedPartiesService(private val addressService: AddressService) : Ord
     val order = this.findEditableOrder(orderId, username)
 
     if (order.dataDictionaryVersion != DataDictionaryVersion.DDV4) {
-      val invalidNotifyingOrganisation =
-        when (updateRecord.notifyingOrganisation) {
-          NotifyingOrganisationDDv5.FAMILY_COURT ->
-            FamilyCourtDDv5.entries.none { it.name == updateRecord.notifyingOrganisationName }
-          NotifyingOrganisationDDv5.PROBATION ->
-            ProbationServiceRegion.entries.none { it.name == updateRecord.notifyingOrganisationName }
-          NotifyingOrganisationDDv5.YOUTH_CUSTODY_SERVICE ->
-            YouthCustodyServiceRegionDDv5.entries.none { it.name == updateRecord.notifyingOrganisationName }
-          else -> false
+      val invalidNotifyingOrganisation = when (updateRecord.notifyingOrganisation) {
+        NotifyingOrganisationDDv5.FAMILY_COURT -> FamilyCourtDDv5.entries.none {
+          it.name ==
+            updateRecord.notifyingOrganisationName
         }
+
+        NotifyingOrganisationDDv5.PROBATION ->
+          updateRecord.notifyingOrganisationName != "" &&
+            updateRecord.notifyingOrganisationName != "Probation Board" &&
+            ProbationServiceRegion.entries.none { it.name == updateRecord.notifyingOrganisationName }
+
+        NotifyingOrganisationDDv5.YOUTH_CUSTODY_SERVICE ->
+          updateRecord.notifyingOrganisationName != "" &&
+            YouthCustodyServiceRegionDDv5.entries.none { it.name == updateRecord.notifyingOrganisationName }
+
+        else -> false
+      }
 
       if (invalidNotifyingOrganisation) {
         throw FormValidationException(
@@ -41,10 +48,19 @@ class InterestedPartiesService(private val addressService: AddressService) : Ord
       }
     }
 
+    val mappedNotifyingName =
+      if (updateRecord.notifyingOrganisation == NotifyingOrganisationDDv5.PROBATION &&
+        updateRecord.notifyingOrganisationName.isEmpty()
+      ) {
+        "Probation Board"
+      } else {
+        updateRecord.notifyingOrganisationName
+      }
+
     val newInterestedParties = InterestedParties(
       versionId = order.getCurrentVersion().id,
       notifyingOrganisation = updateRecord.notifyingOrganisation.toString(),
-      notifyingOrganisationName = updateRecord.notifyingOrganisationName,
+      notifyingOrganisationName = mappedNotifyingName,
       notifyingOrganisationEmail = updateRecord.notifyingOrganisationEmail,
       responsibleOfficerName = updateRecord.responsibleOfficerName,
       responsibleOfficerPhoneNumber = updateRecord.responsibleOfficerPhoneNumber,

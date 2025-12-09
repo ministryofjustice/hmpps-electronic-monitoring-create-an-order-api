@@ -375,7 +375,7 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
         .responseBody!!
 
       Assertions.assertThat(interestedParties.notifyingOrganisation).isEqualTo("PROBATION")
-      Assertions.assertThat(interestedParties.notifyingOrganisationName).isEqualTo("")
+      Assertions.assertThat(interestedParties.notifyingOrganisationName).isEqualTo("Probation Board")
       Assertions.assertThat(interestedParties.notifyingOrganisationEmail).isEqualTo("test@test.com")
       Assertions.assertThat(interestedParties.responsibleOfficerName).isEqualTo("Jeff Testberg")
       Assertions.assertThat(interestedParties.responsibleOfficerPhoneNumber).isEqualTo("01234567890")
