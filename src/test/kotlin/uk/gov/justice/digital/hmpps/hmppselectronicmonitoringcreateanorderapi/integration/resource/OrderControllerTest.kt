@@ -1849,7 +1849,7 @@ class OrderControllerTest : IntegrationTestBase() {
       repo.save(order)
 
       val result = webTestClient.get()
-        .uri("/api/orders/${order.id}/$versionId2")
+        .uri("/api/orders/${order.id}/versions/$versionId2")
         .headers(setAuthorisation("AUTH_ADM"))
         .exchange()
         .expectStatus()

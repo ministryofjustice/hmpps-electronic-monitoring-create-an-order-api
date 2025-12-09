@@ -132,7 +132,7 @@ class OrderController(@Autowired val orderService: OrderService) {
     return ResponseEntity(versionInformation, HttpStatus.OK)
   }
 
-  @GetMapping("/orders/{orderId}/{versionId}")
+  @GetMapping("/orders/{orderId}/versions/{versionId}")
   fun getSpecificVersion(
     @PathVariable orderId: UUID,
     @PathVariable versionId: UUID,
