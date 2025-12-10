@@ -75,6 +75,9 @@ data class UpdateInterestedPartiesDto(
       return notifyingOrganisationName == "" || YouthCourtDDv5.entries.any { it.name == notifyingOrganisationName }
     }
 
+    if (notifyingOrganisation === NotifyingOrganisationDDv5.PROBATION) return true
+    if (notifyingOrganisation === NotifyingOrganisationDDv5.YOUTH_CUSTODY_SERVICE) return true
+
     return notifyingOrganisationName == ""
   }
 
