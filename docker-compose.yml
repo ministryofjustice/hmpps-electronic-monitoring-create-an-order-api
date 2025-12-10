@@ -53,7 +53,7 @@ services:
       - APPLICATION_AUTHENTICATION_UI_ALLOWLIST=0.0.0.0/0
 
   localstack:
-    image: localstack/localstack:3.0
+    image: localstack/localstack:4.11
     container_name: localstack
     networks:
       - hmpps
