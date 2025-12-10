@@ -261,6 +261,100 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
     }
 
     @Test
+    fun `it should return a validation error if region is sent for PROBATION`() {
+      val order = createOrder()
+
+      val result =
+        webTestClient.put().uri("/api/orders/${order.id}/interested-parties").contentType(MediaType.APPLICATION_JSON)
+          .body(
+            BodyInserters.fromValue(
+              buildMockRequest(
+                notifyingOrganisation = "PROBATION",
+                notifyingOrganisationName = "LONDON",
+              ),
+            ),
+          ).headers(setAuthorisation("AUTH_ADM")).exchange()
+          .expectStatus().isBadRequest.expectBodyList(ValidationError::class.java).returnResult().responseBody
+
+      Assertions.assertThat(result).isNotNull
+      Assertions.assertThat(result?.sortedBy { it.field }).isEqualTo(
+        listOf(
+          ValidationError(
+            "notifyingOrganisationName",
+            ValidationErrors.InterestedParties.NOTIFYING_ORGANISATION_NAME_REQUIRED,
+          ),
+        ),
+      )
+    }
+
+    @Test
+    fun `it should accept empty name when notifying organisation is PROBATION`() {
+      val order = createOrder()
+
+      val interestedParties =
+        webTestClient.put().uri("/api/orders/${order.id}/interested-parties").contentType(MediaType.APPLICATION_JSON)
+          .body(
+            BodyInserters.fromValue(
+              buildMockRequest(
+                notifyingOrganisation = "PROBATION",
+                notifyingOrganisationName = "",
+              ),
+            ),
+          ).headers(setAuthorisation("AUTH_ADM")).exchange()
+          .expectStatus().isOk.expectBody(InterestedParties::class.java).returnResult().responseBody!!
+
+      Assertions.assertThat(interestedParties.notifyingOrganisation).isEqualTo("PROBATION")
+      Assertions.assertThat(interestedParties.notifyingOrganisationName).isEqualTo("")
+    }
+
+    @Test
+    fun `it should return a validation error if region is sent for YOUTH_CUSTODY_SERVICE`() {
+      val order = createOrder()
+
+      val result =
+        webTestClient.put().uri("/api/orders/${order.id}/interested-parties").contentType(MediaType.APPLICATION_JSON)
+          .body(
+            BodyInserters.fromValue(
+              buildMockRequest(
+                notifyingOrganisation = "YOUTH_CUSTODY_SERVICE",
+                notifyingOrganisationName = "SOUTH_EAST",
+              ),
+            ),
+          ).headers(setAuthorisation("AUTH_ADM")).exchange()
+          .expectStatus().isBadRequest.expectBodyList(ValidationError::class.java).returnResult().responseBody
+
+      Assertions.assertThat(result).isNotNull
+      Assertions.assertThat(result?.sortedBy { it.field }).isEqualTo(
+        listOf(
+          ValidationError(
+            "notifyingOrganisationName",
+            ValidationErrors.InterestedParties.NOTIFYING_ORGANISATION_NAME_REQUIRED,
+          ),
+        ),
+      )
+    }
+
+    @Test
+    fun `it should accept empty name when notifying organisation is YOUTH_CUSTODY_SERVICE`() {
+      val order = createOrder()
+
+      val interestedParties =
+        webTestClient.put().uri("/api/orders/${order.id}/interested-parties").contentType(MediaType.APPLICATION_JSON)
+          .body(
+            BodyInserters.fromValue(
+              buildMockRequest(
+                notifyingOrganisation = "YOUTH_CUSTODY_SERVICE",
+                notifyingOrganisationName = "",
+              ),
+            ),
+          ).headers(setAuthorisation("AUTH_ADM")).exchange()
+          .expectStatus().isOk.expectBody(InterestedParties::class.java).returnResult().responseBody!!
+
+      Assertions.assertThat(interestedParties.notifyingOrganisation).isEqualTo("YOUTH_CUSTODY_SERVICE")
+      Assertions.assertThat(interestedParties.notifyingOrganisationName).isEqualTo("")
+    }
+
+    @Test
     fun `it should accept a probation region when responsible organisation is probation`() {
       val order = createOrder()
 
