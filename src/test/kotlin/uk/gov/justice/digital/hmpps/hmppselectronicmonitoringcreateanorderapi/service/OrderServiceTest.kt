@@ -1,7 +1,9 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service
 
-import org.assertj.core.api.Assertions
+import jakarta.persistence.EntityNotFoundException
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
+import org.assertj.core.api.Assertions.tuple
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
@@ -21,6 +23,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationAppointment
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationLocation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.OrderListCriteria
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.OrderSearchCriteria
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.CreateOrderDto
@@ -39,6 +42,8 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.specification.OrderSearchSpecification
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.utilities.TestUtilities
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.util.*
 
@@ -62,11 +67,11 @@ class OrderServiceTest {
   fun `Create a new order for user and save to database`() {
     val result = service.createOrder("mockUser", CreateOrderDto())
 
-    Assertions.assertThat(result.id).isNotNull()
-    Assertions.assertThat(UUID.fromString(result.id.toString())).isEqualTo(result.id)
-    Assertions.assertThat(result.username).isEqualTo("mockUser")
-    Assertions.assertThat(result.status).isEqualTo(OrderStatus.IN_PROGRESS)
-    Assertions.assertThat(result.dataDictionaryVersion).isEqualTo(DataDictionaryVersion.DDV4)
+    assertThat(result.id).isNotNull()
+    assertThat(UUID.fromString(result.id.toString())).isEqualTo(result.id)
+    assertThat(result.username).isEqualTo("mockUser")
+    assertThat(result.status).isEqualTo(OrderStatus.IN_PROGRESS)
+    assertThat(result.dataDictionaryVersion).isEqualTo(DataDictionaryVersion.DDV4)
     argumentCaptor<Order>().apply {
       verify(repo, times(1)).save(capture())
       assertThat(firstValue).isEqualTo(result)
@@ -103,7 +108,7 @@ class OrderServiceTest {
 
     argumentCaptor<Order>().apply {
       verify(repo, times(1)).save(capture())
-      Assertions.assertThat(firstValue.getCurrentVersion().submittedBy).isEqualTo("mockName")
+      assertThat(firstValue.getCurrentVersion().submittedBy).isEqualTo("mockName")
     }
   }
 
@@ -137,7 +142,7 @@ class OrderServiceTest {
 
     argumentCaptor<Order>().apply {
       verify(repo, times(1)).save(capture())
-      Assertions.assertThat(firstValue.fmsResultId).isEqualTo(mockFmsResult.id)
+      assertThat(firstValue.fmsResultId).isEqualTo(mockFmsResult.id)
     }
   }
 
@@ -150,7 +155,7 @@ class OrderServiceTest {
 
     val result = service.listOrders(mockCriteria)
 
-    Assertions.assertThat(result).isEqualTo(listOf(mockOrder))
+    assertThat(result).isEqualTo(listOf(mockOrder))
   }
 
   @Test
@@ -162,7 +167,7 @@ class OrderServiceTest {
 
     val result = service.searchOrders(mockCriteria)
 
-    Assertions.assertThat(result).isEqualTo(listOf(mockOrder))
+    assertThat(result).isEqualTo(listOf(mockOrder))
   }
 
   @Nested
@@ -394,12 +399,15 @@ class OrderServiceTest {
       }
 
       @Test
-      fun `It should clone interestedParties referencing new version`() {
+      fun `It should clone interestedParties referencing new version and clear notifying organisation data`() {
         argumentCaptor<Order>().apply {
           verify(repo, times(1)).save(capture())
           assertThat(firstValue.versions.last().interestedParties).isNotNull()
           assertThat(firstValue.versions.last().interestedParties?.versionId).isEqualTo(firstValue.versions.last().id)
           assertThat(firstValue.versions.last().interestedParties?.versionId).isNotEqualTo(originalVersionId)
+          assertThat(firstValue.versions.last().interestedParties?.notifyingOrganisation).isNull()
+          assertThat(firstValue.versions.last().interestedParties?.notifyingOrganisationName).isNull()
+          assertThat(firstValue.versions.last().interestedParties?.notifyingOrganisationEmail).isNull()
           assertThat(firstValue.versions.last().interestedParties)
             .usingRecursiveComparison()
             .ignoringCollectionOrder()
@@ -407,6 +415,9 @@ class OrderServiceTest {
               "id",
               "versionId",
               "version",
+              "notifyingOrganisation",
+              "notifyingOrganisationName",
+              "notifyingOrganisationEmail",
             )
             .isEqualTo(originalVersion?.interestedParties)
         }
@@ -449,8 +460,13 @@ class OrderServiceTest {
               "id",
               "versionId",
               "version",
+              "startDate",
+              "endDate",
             )
             .isEqualTo(originalVersion?.monitoringConditions)
+
+          assertThat(firstValue.versions.last().monitoringConditions!!.startDate).isNull()
+          assertThat(firstValue.versions.last().monitoringConditions!!.endDate).isNull()
         }
       }
 
@@ -661,6 +677,98 @@ class OrderServiceTest {
           assertThat(firstValue.versions.first().type).isEqualTo(RequestType.REJECTED)
         }
       }
+    }
+  }
+
+  @Nested
+  @DisplayName("Get version information")
+  inner class GetVersionInformation {
+
+    @Test
+    fun `Should return version information in the correct order`() {
+      val fixedDate = OffsetDateTime.of(2024, 5, 5, 0, 0, 0, 0, ZoneOffset.UTC)
+      val secondDate = OffsetDateTime.of(2025, 5, 5, 0, 0, 0, 0, ZoneOffset.UTC)
+
+      val mockOrder = TestUtilities.createReadyToSubmitOrder(status = OrderStatus.SUBMITTED).apply {
+        versions[0].fmsResultDate = fixedDate
+        versions.add(
+          OrderVersion(
+            id = UUID.randomUUID(),
+            orderId = this.id,
+            username = "mockUser",
+            status = OrderStatus.SUBMITTED,
+            dataDictionaryVersion = DataDictionaryVersion.DDV5,
+            type = RequestType.VARIATION,
+            fmsResultDate = secondDate,
+          ),
+        )
+      }
+
+      whenever(repo.findById(mockOrder.id)).thenReturn(Optional.of(mockOrder))
+
+      val result = service.getVersionInformation(mockOrder.id)
+
+      assertThat(result).hasSize(2).extracting("versionId", "fmsResultDate", "status")
+        .containsExactly(
+          tuple(mockOrder.versions[1].id, secondDate, mockOrder.versions[1].status),
+          tuple(mockOrder.versions[0].id, fixedDate, mockOrder.versions[0].status),
+        )
+    }
+  }
+
+  @Nested
+  @DisplayName("Get specific order version")
+  inner class GetSpecificVersion {
+
+    @Test
+    fun `Should return the specific version`() {
+      val versionId2 = UUID.randomUUID()
+      val version2 = OrderVersion(
+        id = versionId2,
+        orderId = UUID.randomUUID(),
+        username = "mockUser",
+        status = OrderStatus.SUBMITTED,
+        dataDictionaryVersion = DataDictionaryVersion.DDV5,
+        type = RequestType.VARIATION,
+      )
+      val mockOrder = TestUtilities.createReadyToSubmitOrder(status = OrderStatus.SUBMITTED).apply {
+        versions.add(version2)
+      }
+
+      whenever(repo.findById(mockOrder.id)).thenReturn(Optional.of(mockOrder))
+
+      val result = service.getSpecificVersion(mockOrder.id, versionId2)
+
+      assertThat(result).isNotNull()
+      assertThat(result.versionId).isEqualTo(versionId2)
+      assertThat(result.versions).hasSize(1).containsExactly(version2)
+    }
+
+    @Test
+    fun `Should throw exception when order ID is not found`() {
+      val nonExistentOrderId = UUID.randomUUID()
+
+      whenever(repo.findById(nonExistentOrderId)).thenReturn(Optional.empty())
+
+      assertThatThrownBy {
+        service.getSpecificVersion(nonExistentOrderId, UUID.randomUUID())
+      }
+        .isInstanceOf(EntityNotFoundException::class.java)
+        .hasMessage("Order with id $nonExistentOrderId does not exist")
+    }
+
+    @Test
+    fun `Should throw exception when version ID does not exist within the order`() {
+      val mockOrder = TestUtilities.createReadyToSubmitOrder(status = OrderStatus.SUBMITTED)
+      val nonExistentVersionId = UUID.randomUUID()
+
+      whenever(repo.findById(mockOrder.id)).thenReturn(Optional.of(mockOrder))
+
+      assertThatThrownBy {
+        service.getSpecificVersion(mockOrder.id, nonExistentVersionId)
+      }
+        .isInstanceOf(EntityNotFoundException::class.java)
+        .hasMessageContaining("Version does not exist for orderId ${mockOrder.id} and versionId $nonExistentVersionId")
     }
   }
 }
