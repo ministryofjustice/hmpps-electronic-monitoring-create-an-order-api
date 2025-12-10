@@ -19,10 +19,8 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.PrisonArgumentsProvider
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.ProbationDeliveryUnitArgumentsProvider
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.ProbationDeliveryUnitDDv6ArgumentsProvider
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.ProbationServiceRegionArgumentsProvider
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.SentenceArgumentsProvider
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.YouthCourtArgumentsProvider
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.YouthCustodyServiceRegionArgumentsProvider
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationAppointment
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationLocation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.TrailMonitoringConditions
@@ -546,39 +544,9 @@ class MonitoringOrderTest : OrderTestBase() {
     assertNotifyingOrgNameMapping(savedValue, mappedValue)
   }
 
-  @ParameterizedTest(name = "it should map probation service region - {0} -> {1}")
-  @ArgumentsSource(ProbationServiceRegionArgumentsProvider::class)
-  fun `It should correctly map saved probation service region values to Serco`(
-    savedValue: String,
-    mappedValue: String,
-  ) {
-    val order = createOrder(
-      dataDictionaryVersion = DataDictionaryVersion.DDV5,
-      deviceWearer = createDeviceWearer(),
-      interestedParties = createInterestedParty(
-        responsibleOrganisation = "PROBATION",
-        notifyingOrganisation = NotifyingOrganisationDDv5.PROBATION.name,
-        notifyingOrganisationName = savedValue,
-      ),
-    )
-
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
-
-    assertThat(fmsMonitoringOrder.noName).isEqualTo(mappedValue)
-  }
-
   @ParameterizedTest(name = "it should map youth court - {0} -> {1}")
   @ArgumentsSource(YouthCourtArgumentsProvider::class)
   fun `It should correctly map saved youth court values to Serco`(savedValue: String, mappedValue: String) {
-    assertNotifyingOrgNameMapping(savedValue, mappedValue)
-  }
-
-  @ParameterizedTest(name = "it should map youth custody service region - {0} -> {1}")
-  @ArgumentsSource(YouthCustodyServiceRegionArgumentsProvider::class)
-  fun `It should correctly map saved youth custody service region values to Serco`(
-    savedValue: String,
-    mappedValue: String,
-  ) {
     assertNotifyingOrgNameMapping(savedValue, mappedValue)
   }
 
