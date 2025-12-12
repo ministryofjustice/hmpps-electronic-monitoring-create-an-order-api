@@ -12,12 +12,14 @@ enum class Disability(val value: String) {
   STAMINA_BREATHING_FATIGUE("Stamina or breathing or fatigue"),
   SOCIAL_BEHAVIOURAL("Socially or behaviourally"),
   OTHER("Other"),
+  NO_LISTED_CONDITION(""),
   NONE("None of the above"),
   PREFER_NOT_TO_SAY("Prefer Not to Say"),
   ;
 
   companion object {
     fun getValuesFromEnumString(value: String): List<String> = value.split(",")
+      .filter { it != "NO_LISTED_CONDITION" }
       .mapNotNull { disabilityName ->
         entries.find { it.name == disabilityName }?.value
       }

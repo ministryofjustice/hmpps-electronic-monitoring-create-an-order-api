@@ -12,6 +12,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.OrderListCriteria
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.OrderSearchCriteria
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.CreateOrderDto
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.VersionInformationDTO
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
@@ -116,11 +117,22 @@ class OrderService(
         installationAndRisk =
           currentVersion.installationAndRisk?.copy(versionId = this.id, id = UUID.randomUUID())
         interestedParties =
-          currentVersion.interestedParties?.copy(versionId = this.id, id = UUID.randomUUID())
+          currentVersion.interestedParties?.copy(
+            versionId = this.id,
+            id = UUID.randomUUID(),
+            notifyingOrganisation = null,
+            notifyingOrganisationName = null,
+            notifyingOrganisationEmail = null,
+          )
         probationDeliveryUnit =
           currentVersion.probationDeliveryUnit?.copy(versionId = this.id, id = UUID.randomUUID())
         monitoringConditions =
-          currentVersion.monitoringConditions?.copy(versionId = this.id, id = UUID.randomUUID())
+          currentVersion.monitoringConditions?.copy(
+            versionId = this.id,
+            id = UUID.randomUUID(),
+            startDate = null,
+            endDate = null,
+          )
         monitoringConditionsAlcohol =
           currentVersion.monitoringConditionsAlcohol?.copy(versionId = this.id, id = UUID.randomUUID())
         monitoringConditionsTrail =
@@ -210,4 +222,34 @@ class OrderService(
   fun searchOrders(searchCriteria: OrderSearchCriteria): List<Order> = repo.findAll(
     OrderSearchSpecification(searchCriteria),
   )
+
+  fun getVersionInformation(orderId: UUID): List<VersionInformationDTO> {
+    val order = repo.findById(orderId).orElseThrow {
+      EntityNotFoundException("Order with id $orderId does not exist")
+    }
+
+    return order.versions.map {
+      it.toDTO()
+    }.sortedByDescending { it.fmsResultDate }
+  }
+
+  private fun OrderVersion.toDTO() = VersionInformationDTO(
+    orderId = this.orderId,
+    versionId = this.id,
+    versionNumber = this.versionId,
+    fmsResultDate = this.fmsResultDate,
+    type = this.type,
+    submittedBy = this.submittedBy,
+    status = this.status,
+  )
+
+  fun getSpecificVersion(orderId: UUID, versionId: UUID): Order {
+    val order = repo.findById(orderId).orElseThrow {
+      EntityNotFoundException("Order with id $orderId does not exist")
+    }
+    val specificVersion = order.getSpecificVersion(versionId)
+      ?: throw EntityNotFoundException("Version does not exist for orderId $orderId and versionId $versionId")
+
+    return order.copy(versions = mutableListOf(specificVersion))
+  }
 }

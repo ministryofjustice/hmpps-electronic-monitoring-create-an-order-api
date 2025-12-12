@@ -20,6 +20,8 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.OrderSearchCriteria
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.CreateOrderDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderDto
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateAmendOrderDto
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.VersionInformationDTO
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.OrderService
 import java.util.UUID
@@ -55,6 +57,24 @@ class OrderController(@Autowired val orderService: OrderService) {
   ): ResponseEntity<OrderDto> {
     val username = authentication.name
     val newVersion = orderService.createVersion(orderId, username, RequestType.VARIATION)
+    return ResponseEntity(convertToDto(newVersion), HttpStatus.OK)
+  }
+
+  @PostMapping("/orders/{orderId}/amend-order")
+  fun amendOrder(
+    @PathVariable orderId: UUID,
+    @RequestBody @Valid updateRecord: UpdateAmendOrderDto,
+    authentication: Authentication,
+  ): ResponseEntity<OrderDto> {
+    val username = authentication.name
+    val newVersion = orderService.createVersion(
+      orderId,
+      username,
+      RequestType.entries.first {
+        it.name ==
+          updateRecord.type!!.name
+      },
+    )
     return ResponseEntity(convertToDto(newVersion), HttpStatus.OK)
   }
 
@@ -101,6 +121,25 @@ class OrderController(@Autowired val orderService: OrderService) {
     val orders = orderService.searchOrders(OrderSearchCriteria(searchTerm))
 
     return ResponseEntity(orders.map { convertToDto(it) }, HttpStatus.OK)
+  }
+
+  @GetMapping("/orders/{orderId}/versions")
+  fun getVersionInformation(
+    @PathVariable orderId: UUID,
+    authentication: Authentication,
+  ): ResponseEntity<List<VersionInformationDTO>> {
+    val versionInformation = orderService.getVersionInformation(orderId)
+    return ResponseEntity(versionInformation, HttpStatus.OK)
+  }
+
+  @GetMapping("/orders/{orderId}/versions/{versionId}")
+  fun getSpecificVersion(
+    @PathVariable orderId: UUID,
+    @PathVariable versionId: UUID,
+    authentication: Authentication,
+  ): ResponseEntity<Order> {
+    val version = orderService.getSpecificVersion(orderId, versionId)
+    return ResponseEntity(version, HttpStatus.OK)
   }
 
   private fun convertToDto(order: Order): OrderDto = OrderDto(

@@ -22,6 +22,7 @@ class CurfewConditionService : OrderSectionServiceBase() {
       curfewAddress = updateRecord.curfewAddress,
       endDate = updateRecord.endDate,
       startDate = updateRecord.startDate,
+      curfewAdditionalDetails = order.curfewConditions?.curfewAdditionalDetails,
     )
 
     return orderRepo.save(order).curfewConditions!!
