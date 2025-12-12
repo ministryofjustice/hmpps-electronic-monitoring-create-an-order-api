@@ -55,4 +55,29 @@ class MonitoringConditionsControllerTest {
     assertThat(result.statusCode.is2xxSuccessful).isEqualTo(true)
     assertThat(result.body).isEqualTo(mockMonitoringConditions)
   }
+
+  @Test
+  fun `Delete a monitoring type`() {
+    `when`(authentication.name).thenReturn("mockUser")
+
+    val result = controller.removeMonitoringType(
+      orderId = mockOrderId,
+      monitoringTypeId = UUID.randomUUID(),
+      authentication = authentication,
+    )
+
+    assertThat(result.statusCode.is2xxSuccessful).isEqualTo(true)
+  }
+
+  @Test
+  fun `Delete tag at source`() {
+    `when`(authentication.name).thenReturn("mockUser")
+
+    val result = controller.removeTagAtSource(
+      orderId = mockOrderId,
+      authentication = authentication,
+    )
+
+    assertThat(result.statusCode.is2xxSuccessful).isEqualTo(true)
+  }
 }

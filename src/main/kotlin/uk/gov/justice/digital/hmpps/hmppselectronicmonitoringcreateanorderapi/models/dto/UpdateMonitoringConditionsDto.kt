@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto
 
 import jakarta.validation.constraints.AssertTrue
-import jakarta.validation.constraints.Future
 import jakarta.validation.constraints.NotNull
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.data.ValidationErrors
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MonitoringConditionType
@@ -10,24 +9,28 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Pilot
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.SentenceType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YesNoUnknown
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.AtLeastOneSelected
 import java.time.ZonedDateTime
 
-@AtLeastOneSelected(
-  fieldNames = ["curfew", "exclusionZone", "trail", "mandatoryAttendance", "alcohol"],
-  message = ValidationErrors.MonitoringConditions.ORDER_TYPE_REQUIRED,
+data class UpdateMonitoringConditionTypeDto(
+  var curfew: Boolean? = null,
+
+  val exclusionZone: Boolean? = null,
+
+  val trail: Boolean? = null,
+
+  val mandatoryAttendance: Boolean? = null,
+
+  val alcohol: Boolean? = null,
 )
+
 data class UpdateMonitoringConditionsDto(
   @field:NotNull(message = ValidationErrors.MonitoringConditions.ORDER_TYPE_REQUIRED)
   val orderType: OrderType? = null,
 
   var curfew: Boolean? = null,
 
-  @field:NotNull(message = ValidationErrors.MonitoringConditions.START_DATE_REQUIRED)
   val startDate: ZonedDateTime? = null,
 
-  @field:NotNull(message = ValidationErrors.MonitoringConditions.END_DATE_REQUIRED)
-  @field:Future(message = ValidationErrors.MonitoringConditions.END_DATE_MUST_BE_IN_FUTURE)
   val endDate: ZonedDateTime? = null,
 
   val exclusionZone: Boolean? = null,
@@ -52,6 +55,11 @@ data class UpdateMonitoringConditionsDto(
   val prarr: YesNoUnknown = YesNoUnknown.UNKNOWN,
 
   val pilot: Pilot? = null,
+
+  val offenceType: String? = "",
+
+  val policeArea: String? = "",
+
 ) {
   @AssertTrue(message = ValidationErrors.MonitoringConditions.END_DATE_MUST_BE_AFTER_START_DATE)
   fun isEndDate(): Boolean {

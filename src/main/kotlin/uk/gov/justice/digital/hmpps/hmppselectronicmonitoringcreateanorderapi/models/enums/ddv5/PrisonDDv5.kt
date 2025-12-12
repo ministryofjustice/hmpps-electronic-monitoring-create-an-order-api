@@ -29,7 +29,7 @@ enum class PrisonDDv5(val value: String) {
   DOWNVIEW_PRISON_AND_YOUNG_OFFENDER_INSTITUTION("Downview Prison and Young Offender Institution"),
   DRAKE_HALL_PRISON_AND_YOUNG_OFFENDER_INSTITUTION("Drake Hall Prison and Young Offender Institution"),
   DURHAM_PRISON("Durham Prison"),
-  EAST_SUTTON_PARK_PRISON_AND_YOUNG_OFFENDERS_INSTITUTION("East Sutton Park Prison and Young Offender Institution"),
+  EAST_SUTTON_PARK_PRISON_AND_YOUNG_OFFENDER_INSTITUTION("East Sutton Park Prison and Young Offender Institution"),
   EASTWOOD_PARK_PRISON_AND_YOUNG_OFFENDER_INSTITUTION("Eastwood Park Prison and Young Offender Institution"),
   ELMLEY_PRISON("Elmley Prison"),
   ERLESTOKE_PRISON("Erlestoke Prison"),

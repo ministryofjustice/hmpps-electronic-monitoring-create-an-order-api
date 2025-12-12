@@ -18,6 +18,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ProbationDeliveryUnit
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ResponsibleAdult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.TrailMonitoringConditions
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.VariationDetails
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
@@ -28,6 +29,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Pilot
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.SentenceType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.VariationType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YesNoUnknown
 import java.time.DayOfWeek
 import java.time.ZoneId
@@ -53,6 +55,8 @@ abstract class OrderTestBase {
     curfewConditions: CurfewConditions? = createCurfewConditions(),
     curfewDayOfRelease: CurfewReleaseDateConditions? = createCurfewDayOfReslse(),
     curfewTimetable: MutableList<CurfewTimeTable> = createCurfewTimeTable(),
+    type: RequestType = RequestType.REQUEST,
+    variationDetails: VariationDetails? = null,
   ): Order {
     val orderId = UUID.randomUUID()
     val versionId = UUID.randomUUID()
@@ -63,7 +67,7 @@ abstract class OrderTestBase {
           id = versionId,
           username = "",
           status = OrderStatus.IN_PROGRESS,
-          type = RequestType.REQUEST,
+          type = type,
           orderId = orderId,
           dataDictionaryVersion = dataDictionaryVersion,
         ),
@@ -85,20 +89,27 @@ abstract class OrderTestBase {
       order.monitoringConditions?.mandatoryAttendance = true
     }
 
-    order.monitoringConditionsTrail = trailMonitoringConditions
+    if (monitoringConditions.trail == true) {
+      order.monitoringConditionsTrail = trailMonitoringConditions
+    }
 
     order.installationLocation = installationLocation
 
     order.additionalDocuments.addAll(additionalDocuments)
 
-    order.monitoringConditionsAlcohol = alcoholMonitoringConditions
+    if (monitoringConditions.alcohol == true) {
+      order.monitoringConditionsAlcohol = alcoholMonitoringConditions
+    }
 
-    order.curfewConditions = curfewConditions
+    if (monitoringConditions.curfew == true) {
+      order.curfewConditions = curfewConditions
 
-    order.curfewReleaseDateConditions = curfewDayOfRelease
+      order.curfewReleaseDateConditions = curfewDayOfRelease
 
-    order.curfewTimeTable = curfewTimetable
+      order.curfewTimeTable = curfewTimetable
+    }
 
+    order.variationDetails = variationDetails
     return order
   }
 
@@ -223,6 +234,8 @@ abstract class OrderTestBase {
     mandatoryAttendance: Boolean = false,
     exclusionZone: Boolean = false,
     pilot: Pilot = Pilot.UNKNOWN,
+    offenceType: String = "",
+    policeArea: String = "",
   ): MonitoringConditions = MonitoringConditions(
     versionId = UUID.randomUUID(),
     orderType = orderType,
@@ -240,6 +253,8 @@ abstract class OrderTestBase {
     mandatoryAttendance = mandatoryAttendance,
     exclusionZone = exclusionZone,
     pilot = pilot,
+    offenceType = offenceType,
+    policeArea = policeArea,
   )
 
   protected fun createMandatoryAttendanceCondition(
@@ -326,4 +341,15 @@ abstract class OrderTestBase {
     }
     return timeTable
   }
+
+  protected fun createvariationDetails(
+    variationDate: ZonedDateTime = ZonedDateTime.of(2025, 1, 1, 1, 1, 1, 1, ZoneId.of("UTC")),
+    variationDetails: String = "",
+    variationType: VariationType? = null,
+  ): VariationDetails = VariationDetails(
+    versionId = UUID.randomUUID(),
+    variationDate = variationDate,
+    variationDetails = variationDetails,
+    variationType = variationType,
+  )
 }

@@ -42,6 +42,8 @@ class MonitoringConditionsService(@Value("\${toggle.tag-at-source.enabled}") pri
       hdc = updateRecord.hdc,
       prarr = updateRecord.prarr,
       pilot = updateRecord.pilot,
+      offenceType = updateRecord.offenceType,
+      policeArea = updateRecord.policeArea,
     )
 
     clearDeselectedConditionDetails(order)
@@ -53,26 +55,105 @@ class MonitoringConditionsService(@Value("\${toggle.tag-at-source.enabled}") pri
     val conditions = order.monitoringConditions
 
     if (conditions?.curfew == false) {
-      order.curfewConditions = null
-      order.curfewReleaseDateConditions = null
-      order.curfewTimeTable.clear()
+      clearCurfew(order)
     }
     if (conditions?.exclusionZone == false) {
-      order.enforcementZoneConditions.clear()
+      clearExclusionZoneData(order)
     }
     if (conditions?.trail == false) {
-      order.monitoringConditionsTrail = null
+      clearTrailData(order)
     }
     if (conditions?.mandatoryAttendance == false) {
-      order.mandatoryAttendanceConditions.clear()
+      clearMandatoryAttendanceData(order)
     }
     if (conditions?.alcohol == false) {
-      order.monitoringConditionsAlcohol = null
+      clearAlcoholData(order)
     }
     if (!isTagAtSourceAvailable(conditions)) {
-      order.installationLocation = null
-      order.installationAppointment = null
-      order.addresses.removeAll { it.addressType == AddressType.INSTALLATION }
+      clearTagAtSource(order)
     }
   }
+
+  private fun clearTagAtSource(order: Order) {
+    order.installationLocation = null
+    order.installationAppointment = null
+    order.addresses.removeAll { it.addressType == AddressType.INSTALLATION }
+  }
+
+  private fun clearAlcoholData(order: Order) {
+    order.monitoringConditionsAlcohol = null
+  }
+
+  private fun clearMandatoryAttendanceData(order: Order) {
+    order.mandatoryAttendanceConditions.clear()
+  }
+
+  private fun clearTrailData(order: Order) {
+    order.monitoringConditionsTrail = null
+  }
+
+  private fun clearExclusionZoneData(order: Order) {
+    order.enforcementZoneConditions.clear()
+  }
+
+  private fun clearCurfew(order: Order) {
+    order.curfewConditions = null
+    order.curfewReleaseDateConditions = null
+    order.curfewTimeTable.clear()
+  }
+
+  fun removeTagAtSource(orderId: UUID, username: String) {
+    val order = this.findEditableOrder(orderId, username)
+
+    this.clearTagAtSource(order)
+
+    orderRepo.save(order)
+  }
+
+  fun removeMonitoringType(orderId: UUID, username: String, monitoringTypeId: UUID) {
+    val order = this.findEditableOrder(orderId, username)
+
+    when {
+      idMatchesCurfew(order, monitoringTypeId) -> {
+        order.monitoringConditions?.curfew = false
+        this.clearCurfew(order)
+      }
+
+      idMatchesTrail(order, monitoringTypeId) -> {
+        order.monitoringConditions?.trail = false
+        this.clearTrailData(order)
+      }
+
+      idMatchesAlcohol(order, monitoringTypeId) -> {
+        order.monitoringConditions?.alcohol = false
+        this.clearAlcoholData(order)
+      }
+
+      order.enforcementZoneConditions.removeIf { it.id == monitoringTypeId } -> {
+        order.enforcementZoneConditions.forEachIndexed { index, zone -> zone.zoneId = index }
+        if (order.enforcementZoneConditions.isEmpty()) {
+          order.monitoringConditions?.exclusionZone = false
+        }
+      }
+
+      order.mandatoryAttendanceConditions.removeIf { it.id == monitoringTypeId } -> {
+        if (order.mandatoryAttendanceConditions.isEmpty()) {
+          order.monitoringConditions?.mandatoryAttendance = false
+        }
+      }
+    }
+
+    orderRepo.save(order)
+  }
+
+  private fun idMatchesAlcohol(order: Order, monitoringConditionId: UUID) =
+    order.monitoringConditionsAlcohol?.id == monitoringConditionId
+
+  private fun idMatchesTrail(order: Order, monitoringConditionId: UUID) =
+    order.monitoringConditionsTrail?.id == monitoringConditionId
+
+  private fun idMatchesCurfew(order: Order, monitoringConditionId: UUID) =
+    order.curfewConditions?.id == monitoringConditionId ||
+      order.curfewReleaseDateConditions?.id == monitoringConditionId ||
+      order.curfewTimeTable.any { it.id == monitoringConditionId }
 }

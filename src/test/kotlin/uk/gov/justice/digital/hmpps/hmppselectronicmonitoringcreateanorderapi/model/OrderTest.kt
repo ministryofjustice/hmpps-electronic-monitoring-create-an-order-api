@@ -13,6 +13,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.PrisonDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ProbationServiceRegion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ResponsibleOrganisation
+import java.time.ZonedDateTime
 import java.util.UUID
 
 @ActiveProfiles("test")
@@ -45,11 +46,72 @@ class OrderTest : OrderTestBase() {
     assertThat(order.isValid).isFalse()
   }
 
+  @Test
+  fun `It should return isValid false for order without any monitoring condition`() {
+    val order = createValidOrder()
+    order.curfewConditions = null
+    order.curfewReleaseDateConditions = null
+    order.curfewTimeTable.clear()
+    order.monitoringConditionsAlcohol = null
+    order.monitoringConditionsTrail = null
+    order.enforcementZoneConditions.clear()
+    order.mandatoryAttendanceConditions.clear()
+    assertThat(order.isValid).isFalse()
+  }
+
+  @Test
+  fun `It should return isValid false for order without curfew release date`() {
+    val order = createValidOrder()
+    order.curfewConditions = createCurfewConditions(
+      startDate = ZonedDateTime.now(),
+    )
+    order.curfewReleaseDateConditions = null
+
+    order.monitoringConditionsAlcohol = null
+    order.monitoringConditionsTrail = null
+    order.enforcementZoneConditions.clear()
+    order.mandatoryAttendanceConditions.clear()
+    assertThat(order.isValid).isFalse()
+  }
+
+  @Test
+  fun `It should return isValid false for order without curfew timetable`() {
+    val order = createValidOrder()
+    order.curfewConditions = createCurfewConditions(
+      startDate = ZonedDateTime.now(),
+    )
+    order.curfewReleaseDateConditions = createCurfewDayOfReslse()
+
+    order.monitoringConditionsAlcohol = null
+    order.monitoringConditionsTrail = null
+    order.enforcementZoneConditions.clear()
+    order.mandatoryAttendanceConditions.clear()
+    assertThat(order.isValid).isFalse()
+  }
+
+  @Test
+  fun `It should return isValid true for order with curfew`() {
+    val order = createValidOrder()
+    order.curfewConditions = createCurfewConditions(
+      startDate = ZonedDateTime.now(),
+    )
+    order.curfewReleaseDateConditions = createCurfewDayOfReslse()
+    order.curfewTimeTable = createCurfewTimeTable()
+    order.monitoringConditionsAlcohol = null
+    order.monitoringConditionsTrail = null
+    order.enforcementZoneConditions.clear()
+    order.mandatoryAttendanceConditions.clear()
+    assertThat(order.isValid).isTrue()
+  }
+
   private fun createValidOrder(): Order = createOrder(
     monitoringConditions = createMonitoringConditions(
       trail = true,
     ),
-    trailMonitoringConditions = TrailMonitoringConditions(versionId = UUID.randomUUID()),
+    trailMonitoringConditions = TrailMonitoringConditions(
+      versionId = UUID.randomUUID(),
+      startDate = ZonedDateTime.now(),
+    ),
     installationLocation = InstallationLocation(
       versionId = UUID.randomUUID(),
       location = InstallationLocationType.PRIMARY,

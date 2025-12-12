@@ -148,44 +148,17 @@ data class OrderVersion(
   private val monitoringConditionsAreValid: Boolean
     get() = (
       (
-        if (monitoringConditions?.curfew == true) {
-          curfewReleaseDateConditions != null &&
-            curfewConditions != null &&
+        (
+          curfewConditions?.startDate != null &&
+            curfewConditions?.endDate != null &&
+            curfewReleaseDateConditions?.releaseDate != null &&
             curfewTimeTable.isNotEmpty()
-        } else {
-          true
-        }
-        ) &&
-        (
-          if (monitoringConditions?.exclusionZone == true) {
-            enforcementZoneConditions.isNotEmpty()
-          } else {
-            true
-          }
-          ) &&
-        (
-          if (monitoringConditions?.trail == true) {
-            monitoringConditionsTrail != null
-          } else {
-            true
-          }
-          ) &&
-        (
-          if (monitoringConditions?.mandatoryAttendance == true) {
-            // Mandatory attendance conditions aren't currently persisted. When they are, validate them here. eg:
-            // mandatoryAttendanceConditions != null
-            true
-          } else {
-            true
-          }
-          ) &&
-        (
-          if (monitoringConditions?.alcohol == true) {
-            monitoringConditionsAlcohol != null
-          } else {
-            true
-          }
-          )
+          ) ||
+          enforcementZoneConditions.isNotEmpty() ||
+          monitoringConditionsTrail?.startDate != null ||
+          mandatoryAttendanceConditions.isNotEmpty() ||
+          monitoringConditionsAlcohol?.startDate != null
+        )
       )
 
   private val isOrderOrHasVariationDetails: Boolean

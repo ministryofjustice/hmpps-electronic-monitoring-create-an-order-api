@@ -28,7 +28,6 @@ object ValidationErrors {
     const val END_DATE_REQUIRED: String = "Enter date curfew ends"
     const val END_DATE_MUST_BE_IN_FUTURE: String = "Date curfew ends must be in the future"
     const val END_DATE_MUST_BE_AFTER_START_DATE: String = "Date curfew ends must be after the date curfew starts"
-    const val ADDRESS_REQUIRED: String = "Select where the device wearer will be during curfew hours"
   }
 
   object CurfewReleaseDateConditions {
@@ -73,6 +72,9 @@ object ValidationErrors {
     const val START_DATE_REQUIRED: String = "Exclusion zone start date is required"
     const val TYPE_REQUIRED: String = "Exclusion Zone type is required"
     const val INVALID_MAP_FILE_EXTENSION: String = "Select a PDF, PNG, JPEG or JPG"
+
+    // Will be used once ELM-4162 is live
+    const val NAME_REQUIRED = "Enter the name of the exclusion zone"
   }
 
   object IdentityNumbers {
@@ -127,13 +129,10 @@ object ValidationErrors {
   }
 
   object MonitoringConditions {
-    const val MONITORING_TYPE_MINIMUM_ONE: String = "Select monitoring required"
     const val ORDER_TYPE_REQUIRED: String = "Select order type"
     const val START_DATE_REQUIRED: String = "Enter start date for monitoring"
-    const val END_DATE_REQUIRED: String = "Enter end date for monitoring"
     const val TYPE_REQUIRED: String = "Select order type"
     const val END_DATE_MUST_BE_AFTER_START_DATE: String = "End date must be after start date"
-    const val END_DATE_MUST_BE_IN_FUTURE: String = "End date of monitoring must be in the future"
   }
 
   object NoFixedAbode {
@@ -186,5 +185,9 @@ object ValidationErrors {
     const val INVALID_LICENSE_FILE_EXTENSION: String = "Select a PDF or Word document"
     const val INVALID_PHOTO_ID_FILE_EXTENSION: String = "Select a PDF, PNG, JPEG or JPG"
     const val HAVE_PHOTO_REQUIRED: String = "Select if you have a photo to upload"
+  }
+
+  object AmendOrder {
+    const val TYPE_REQUIRED: String = "Select why you are making changes to the form"
   }
 }

@@ -277,11 +277,13 @@ class EnforcementZoneControllerTest : IntegrationTestBase() {
       Assertions.assertThat(updatedOrder.enforcementZoneConditions!![0].startDate).isEqualTo(mockStartDate)
       Assertions.assertThat(updatedOrder.enforcementZoneConditions!![0].startDate).isEqualTo(mockStartDate)
       Assertions.assertThat(updatedOrder.enforcementZoneConditions!![0].endDate).isEqualTo(mockEndDate)
+      Assertions.assertThat(updatedOrder.enforcementZoneConditions!![0].name).isEqualTo("MockName")
       Assertions.assertThat(updatedOrder.enforcementZoneConditions!![0].description).isEqualTo("MockDescription")
       Assertions.assertThat(updatedOrder.enforcementZoneConditions!![0].duration).isEqualTo("MockDuration")
       Assertions.assertThat(updatedOrder.enforcementZoneConditions!![0].zoneId).isEqualTo(0)
       Assertions.assertThat(updatedOrder.enforcementZoneConditions!![1].startDate).isEqualTo(mockStartDate)
       Assertions.assertThat(updatedOrder.enforcementZoneConditions!![1].endDate).isEqualTo(mockEndDate)
+      Assertions.assertThat(updatedOrder.enforcementZoneConditions!![1].name).isEqualTo("MockName")
       Assertions.assertThat(updatedOrder.enforcementZoneConditions!![1].description).isEqualTo("MockDescription")
       Assertions.assertThat(updatedOrder.enforcementZoneConditions!![1].duration).isEqualTo("MockDuration")
       Assertions.assertThat(updatedOrder.enforcementZoneConditions!![1].zoneId).isEqualTo(1)
@@ -328,6 +330,7 @@ class EnforcementZoneControllerTest : IntegrationTestBase() {
       // Verify order state matches expected state
       Assertions.assertThat(updatedOrder.enforcementZoneConditions).hasSize(1)
 
+      Assertions.assertThat(updatedOrder.enforcementZoneConditions!![0].name).isEqualTo("MockName")
       Assertions.assertThat(updatedOrder.enforcementZoneConditions!![0].description).isEqualTo("MockDescription")
       Assertions.assertThat(updatedOrder.enforcementZoneConditions!![0].duration).isEqualTo("MockDuration")
       Assertions.assertThat(updatedOrder.enforcementZoneConditions!![0].zoneId).isEqualTo(0)
@@ -507,6 +510,7 @@ class EnforcementZoneControllerTest : IntegrationTestBase() {
       Assertions.assertThat(updatedOrder.enforcementZoneConditions).hasSize(1)
       Assertions.assertThat(updatedOrder.enforcementZoneConditions!![0].startDate).isEqualTo(mockStartDate)
       Assertions.assertThat(updatedOrder.enforcementZoneConditions!![0].endDate).isEqualTo(mockEndDate)
+      Assertions.assertThat(updatedOrder.enforcementZoneConditions!![0].name).isEqualTo("MockName")
       Assertions.assertThat(updatedOrder.enforcementZoneConditions!![0].description).isEqualTo("MockDescription")
       Assertions.assertThat(updatedOrder.enforcementZoneConditions!![0].duration).isEqualTo("MockDuration")
       Assertions.assertThat(updatedOrder.enforcementZoneConditions!![0].zoneId).isEqualTo(0)
@@ -522,6 +526,7 @@ class EnforcementZoneControllerTest : IntegrationTestBase() {
   fun mockRequestBody(
     startDate: ZonedDateTime? = mockStartDate,
     endDate: ZonedDateTime? = mockEndDate,
+    name: String? = "MockName",
     description: String? = "MockDescription",
     duration: String? = "MockDuration",
     zoneId: Int? = 0,
@@ -530,6 +535,7 @@ class EnforcementZoneControllerTest : IntegrationTestBase() {
         "zoneType": "EXCLUSION",
         "startDate": "$startDate",
         "endDate": "$endDate",
+        "name": "$name",
         "description": "$description",
         "duration": "$duration",
         "zoneId": $zoneId

@@ -6,7 +6,12 @@ import org.junit.jupiter.api.Test
 import org.springframework.http.MediaType
 import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Address
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationAppointment
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationLocation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.MonitoringConditions
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.TrailMonitoringConditions
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MonitoringConditionType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderTypeDescription
@@ -65,7 +70,9 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
               "issp": "YES",
               "hdc": "NO",
               "prarr": "UNKNOWN",
-              "sentenceType": "LIFE_SENTENCE"
+              "sentenceType": "LIFE_SENTENCE",
+              "offenceType": "some offence details",
+              "policeArea": "some police area"
             }
           """.trimIndent(),
         ),
@@ -96,6 +103,10 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
     Assertions.assertThat(updateMonitoringConditions.responseBody?.hdc).isEqualTo(YesNoUnknown.NO)
     Assertions.assertThat(updateMonitoringConditions.responseBody?.prarr).isEqualTo(YesNoUnknown.UNKNOWN)
     Assertions.assertThat(updateMonitoringConditions.responseBody?.sentenceType).isEqualTo(SentenceType.LIFE_SENTENCE)
+    Assertions.assertThat(updateMonitoringConditions.responseBody?.offenceType)
+      .isEqualTo("some offence details")
+    Assertions.assertThat(updateMonitoringConditions.responseBody?.policeArea)
+      .isEqualTo("some police area")
   }
 
   @Test
@@ -155,7 +166,8 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
               "mandatoryAttendance": "true",
               "alcohol": "true",
               "startDate": "$mockStartDate",
-              "endDate": "$mockEndDate"
+              "endDate": "$mockEndDate",
+              "offenceType": null
             }
           """.trimIndent(),
         ),
@@ -166,54 +178,6 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
       .isOk
       .expectBody(MonitoringConditions::class.java)
       .returnResult()
-  }
-
-  @Test
-  fun `Update monitoring conditions returns 400 if invalid data`() {
-    val order = createOrder()
-    val result = webTestClient.put()
-      .uri("/api/orders/${order.id}/monitoring-conditions")
-      .contentType(MediaType.APPLICATION_JSON)
-      .body(
-        BodyInserters.fromValue(
-          """
-            {
-              "orderType": null,
-              "orderTypeDescription": null,
-              "conditionType": null,
-              "acquisitiveCrime": null,
-              "dapol": null,
-              "curfew": "true",
-              "exclusionZone": "true",
-              "trail": "true",
-              "mandatoryAttendance": "true",
-              "alcohol": "true",
-              "startDate": null,
-              "endDate": null
-            }
-          """.trimIndent(),
-        ),
-      )
-      .headers(setAuthorisation("AUTH_ADM"))
-      .exchange()
-      .expectStatus()
-      .isBadRequest
-      .expectBodyList(ValidationError::class.java)
-      .returnResult()
-
-    Assertions.assertThat(result.responseBody).isNotNull
-    Assertions.assertThat(result.responseBody!!).contains(
-      ValidationError("orderType", ErrorMessages.ORDER_TYPE_REQUIRED),
-    )
-    Assertions.assertThat(result.responseBody!!).contains(
-      ValidationError("conditionType", ErrorMessages.TYPE_REQUIRED),
-    )
-    Assertions.assertThat(result.responseBody!!).contains(
-      ValidationError("startDate", ErrorMessages.START_DATE_REQUIRED),
-    )
-    Assertions.assertThat(result.responseBody!!).contains(
-      ValidationError("endDate", ErrorMessages.END_DATE_REQUIRED),
-    )
   }
 
   @Test
@@ -289,79 +253,6 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
     Assertions.assertThat(result.responseBody!!).contains(
       ValidationError("endDate", ErrorMessages.END_DATE_MUST_BE_AFTER_START_DATE),
     )
-  }
-
-  @Test
-  fun `Update monitoring conditions returns 400 if end date is in the past`() {
-    val order = createOrder()
-    val result = webTestClient.put()
-      .uri("/api/orders/${order.id}/monitoring-conditions")
-      .contentType(MediaType.APPLICATION_JSON)
-      .body(
-        BodyInserters.fromValue(
-          """
-            {
-              "orderType": "$mockOrderType",
-              "orderTypeDescription": "$mockOrderTypeDescription",
-              "conditionType": "$mockConditionType",
-              "acquisitiveCrime": "true",
-              "dapol": "true",
-              "curfew": "true",
-              "exclusionZone": "true",
-              "trail": "true",
-              "mandatoryAttendance": "true",
-              "alcohol": "true",
-              "startDate": "${mockStartDate.plusMonths(-10)}",
-              "endDate": "${mockStartDate.plusMonths(-9)}"
-            }
-          """.trimIndent(),
-        ),
-      )
-      .headers(setAuthorisation("AUTH_ADM"))
-      .exchange()
-      .expectStatus()
-      .isBadRequest
-      .expectBodyList(ValidationError::class.java)
-      .returnResult()
-
-    Assertions.assertThat(result.responseBody).isNotNull
-    Assertions.assertThat(result.responseBody).hasSize(1)
-    Assertions.assertThat(result.responseBody!!).contains(
-      ValidationError("endDate", ErrorMessages.END_DATE_MUST_BE_IN_FUTURE),
-    )
-  }
-
-  @Test
-  fun `Form cannot be submitted if no Monitoring Types are selected`() {
-    val order = createOrder()
-
-    webTestClient.put()
-      .uri("/api/orders/${order.id}/monitoring-conditions")
-      .contentType(MediaType.APPLICATION_JSON)
-      .body(
-        BodyInserters.fromValue(
-          """
-            {
-              "orderType": "$mockOrderType",
-              "orderTypeDescription": "$mockOrderTypeDescription",
-              "conditionType": "$mockConditionType",
-              "acquisitiveCrime": null,
-              "dapol": null,
-              "curfew": null,
-              "exclusionZone": null,
-              "trail": null,
-              "mandatoryAttendance": null,
-              "alcohol": null,
-              "startDate": "$mockStartDate",
-              "endDate": "$mockEndDate"
-            }
-          """.trimIndent(),
-        ),
-      )
-      .headers(setAuthorisation("AUTH_ADM"))
-      .exchange()
-      .expectStatus()
-      .isBadRequest
   }
 
   @Test
@@ -538,5 +429,68 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
       .returnResult()
 
     Assertions.assertThat(updateMonitoringConditions.responseBody?.pilot).isEqualTo(Pilot.ACQUISITIVE_CRIME_PROJECT)
+  }
+
+  @Test
+  fun `can remove a monitoring type`() {
+    val trailId = UUID.randomUUID()
+    val order = createStoredOrder()
+    order.monitoringConditionsTrail = TrailMonitoringConditions(
+      versionId = order.versions.first().id,
+      id = trailId,
+    )
+    order.monitoringConditions = MonitoringConditions(versionId = order.versions.first().id, trail = true)
+    repo.save(order)
+
+    webTestClient.delete()
+      .uri("/api/orders/${order.id}/monitoring-conditions/monitoring-type/$trailId")
+      .headers(setAuthorisation("AUTH_ADM"))
+      .exchange()
+      .expectStatus()
+      .isNoContent
+
+    val updatedOrder = getOrder(order.id)
+    Assertions.assertThat(updatedOrder.monitoringConditionsTrail).isNull()
+    Assertions.assertThat(updatedOrder.monitoringConditions?.trail).isFalse()
+  }
+
+  @Test
+  fun `can remove tag at source`() {
+    val order = createStoredOrder()
+    order.installationLocation = InstallationLocation(
+      versionId = order.versions.first().id,
+    )
+    order.installationAppointment = InstallationAppointment(
+      versionId = order.versions.first().id,
+    )
+    order.addresses.add(
+      Address(
+        versionId = order.versions.first().id,
+        addressType = AddressType.INSTALLATION,
+        addressLine1 = "line1",
+        addressLine2 = "",
+        addressLine3 = "line3",
+        postcode = "postcode",
+      ),
+    )
+    repo.save(order)
+
+    webTestClient.delete()
+      .uri("/api/orders/${order.id}/monitoring-conditions/tag-at-source")
+      .headers(setAuthorisation("AUTH_ADM"))
+      .exchange()
+      .expectStatus()
+      .isNoContent
+
+    val updatedOrder = getOrder(order.id)
+    Assertions.assertThat(updatedOrder.installationLocation).isNull()
+    Assertions.assertThat(updatedOrder.installationAppointment).isNull()
+    Assertions.assertThat(
+      updatedOrder.addresses.find { address: Address ->
+        address.addressType ===
+          AddressType.INSTALLATION
+      },
+    )
+      .isNull()
   }
 }

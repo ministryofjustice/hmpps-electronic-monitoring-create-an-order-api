@@ -78,14 +78,7 @@
   },
   "monitoringConditions": {
     "versionId": "3d589ad5-c741-45c0-9f16-49a1c06913ff",
-    "startDate": "2025-08-04T10:49:00Z",
-    "endDate": "2025-09-03T10:49:00Z",
     "orderType": "POST_RELEASE",
-    "curfew": true,
-    "exclusionZone": false,
-    "trail": true,
-    "mandatoryAttendance": false,
-    "alcohol": false,
     "conditionType": "POST_SENTENCE_SUPERVISION_REQUIREMENT",
     "orderTypeDescription": null,
     "sentenceType": "STANDARD_DETERMINATE_SENTENCE",
@@ -96,7 +89,7 @@
   },
   "monitoringConditionsTrail": {
     "versionId": "3d589ad5-c741-45c0-9f16-49a1c06913ff",
-    "startDate": "2025-08-08T23:00:00Z",
+    "startDate": "2025-08-01T23:00:00Z",
     "endDate": "2025-08-29T22:59:00Z"
   },
   "mandatoryAttendanceConditions": [],
@@ -111,7 +104,7 @@
   "curfewConditions": {
     "versionId": "3d589ad5-c741-45c0-9f16-49a1c06913ff",
     "startDate": "2025-08-08T23:00:00Z",
-    "endDate": "2025-08-29T22:59:00Z",
+    "endDate": "2025-10-29T23:59:00Z",
     "curfewAddress": "PRIMARY",
     "curfewAdditionalDetails": ""
   },

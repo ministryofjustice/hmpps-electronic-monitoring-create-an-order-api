@@ -14,13 +14,13 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.MagistratesCourtArgumentsProvider
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.MilitaryCourtArgumentsProvider
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.NotifyingOrganisationArgumentsProvider
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.OrderTypeArgumentsProvider
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.PilotArgumentsProvider
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.PrisonArgumentsProvider
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.ProbationDeliveryUnitArgumentsProvider
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.ProbationServiceRegionArgumentsProvider
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.ProbationDeliveryUnitDDv6ArgumentsProvider
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.SentenceArgumentsProvider
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.YouthCourtArgumentsProvider
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.YouthCustodyServiceRegionArgumentsProvider
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationAppointment
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationLocation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.TrailMonitoringConditions
@@ -29,7 +29,9 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.InstallationLocationType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisationDDv5
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Pilot
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.SentenceType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.EnforceableCondition
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.MonitoringOrder
@@ -205,10 +207,37 @@ class MonitoringOrderTest : OrderTestBase() {
       installationAndRisk = createInstallationAndRisk(
         offenceAdditionalDetails = "Mock Additional Details",
       ),
+      monitoringConditions = createMonitoringConditions(
+        offenceType = "Robbery",
+        policeArea = "Avon and Somerset",
+      ),
     )
     val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
 
-    assertThat(fmsMonitoringOrder.offenceAdditionalDetails).isEqualTo("Mock Additional Details")
+    assertThat(
+      fmsMonitoringOrder.offenceAdditionalDetails,
+    ).isEqualTo(
+      "Mock Additional Details. AC Offence: Robbery. PFA: Avon and Somerset",
+    )
+  }
+
+  @Test
+  fun `It should map the police area correctly`() {
+    val order = createOrder(
+      installationAndRisk = createInstallationAndRisk(
+        offenceAdditionalDetails = "Mock Additional Details",
+      ),
+      monitoringConditions = createMonitoringConditions(
+        policeArea = "AVON_AND_SOMERSET",
+      ),
+    )
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
+
+    assertThat(
+      fmsMonitoringOrder.offenceAdditionalDetails,
+    ).isEqualTo(
+      "Mock Additional Details. PFA: Avon and Somerset",
+    )
   }
 
   @Test
@@ -244,6 +273,7 @@ class MonitoringOrderTest : OrderTestBase() {
     assertThat(fmsMonitoringOrder.conditionalReleaseEndTime).isEqualTo(mockeDayOfRelease.endTime)
     assertThat(fmsMonitoringOrder.conditionalReleaseDate).isEqualTo(getBritishDate(mockeDayOfRelease.releaseDate))
   }
+
   private val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
   private val londonTimeZone = ZoneId.of("Europe/London")
 
@@ -446,6 +476,22 @@ class MonitoringOrderTest : OrderTestBase() {
     assertThat(fmsMonitoringOrder.pduResponsible).isEqualTo(mappedValue)
   }
 
+  @ParameterizedTest(name = "it should map DDv6 probation delivery unit to Serco - {0} -> {1}")
+  @ArgumentsSource(ProbationDeliveryUnitDDv6ArgumentsProvider::class)
+  fun `It should correctly map DDv6 saved probation delivery unit values`(savedValue: String, mappedValue: String) {
+    val order = createOrder(
+      dataDictionaryVersion = DataDictionaryVersion.DDV6,
+      deviceWearer = createDeviceWearer(),
+      installationAndRisk = createInstallationAndRisk(riskCategory = savedValue),
+      interestedParties = createInterestedParty(responsibleOrganisation = "PROBATION"),
+      probationDeliveryUnits = createProbationDeliveryUnit(savedValue),
+    )
+
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
+
+    assertThat(fmsMonitoringOrder.pduResponsible).isEqualTo(mappedValue)
+  }
+
   @ParameterizedTest(name = "it should map notifying organisation - {0} -> {1}")
   @ArgumentsSource(NotifyingOrganisationArgumentsProvider::class)
   fun `It should correctly map notifying organisation to Serco`(savedValue: String, mappedValue: String) {
@@ -498,27 +544,9 @@ class MonitoringOrderTest : OrderTestBase() {
     assertNotifyingOrgNameMapping(savedValue, mappedValue)
   }
 
-  @ParameterizedTest(name = "it should map probation service region - {0} -> {1}")
-  @ArgumentsSource(ProbationServiceRegionArgumentsProvider::class)
-  fun `It should correctly map saved probation service region values to Serco`(
-    savedValue: String,
-    mappedValue: String,
-  ) {
-    assertNotifyingOrgNameMapping(savedValue, mappedValue)
-  }
-
   @ParameterizedTest(name = "it should map youth court - {0} -> {1}")
   @ArgumentsSource(YouthCourtArgumentsProvider::class)
   fun `It should correctly map saved youth court values to Serco`(savedValue: String, mappedValue: String) {
-    assertNotifyingOrgNameMapping(savedValue, mappedValue)
-  }
-
-  @ParameterizedTest(name = "it should map youth custody service region - {0} -> {1}")
-  @ArgumentsSource(YouthCustodyServiceRegionArgumentsProvider::class)
-  fun `It should correctly map saved youth custody service region values to Serco`(
-    savedValue: String,
-    mappedValue: String,
-  ) {
     assertNotifyingOrgNameMapping(savedValue, mappedValue)
   }
 
@@ -579,6 +607,71 @@ class MonitoringOrderTest : OrderTestBase() {
 
     val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "")
     assertThat(fmsMonitoringOrder.sentenceType).isEqualTo(mappedValue)
+  }
+
+  @ParameterizedTest(name = "it should map order type to subcategory - {0} -> {1}")
+  @ArgumentsSource(OrderTypeArgumentsProvider::class)
+  fun `It should correctly map subcategory to Serco`(savedValue: RequestType, mappedValue: String) {
+    val order = createOrder(
+      type = savedValue,
+      variationDetails = createvariationDetails(),
+      dataDictionaryVersion = DataDictionaryVersion.DDV6,
+    )
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "")
+    assertThat(fmsMonitoringOrder.subcategory).isEqualTo(mappedValue)
+  }
+
+  @Test
+  fun `It should correctly map subcategory when order type is bail`() {
+    val order = createOrder(
+      type = RequestType.REVOCATION,
+      monitoringConditions = createMonitoringConditions(orderType = OrderType.BAIL),
+      variationDetails = createvariationDetails(),
+      dataDictionaryVersion = DataDictionaryVersion.DDV6,
+    )
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "")
+    assertThat(fmsMonitoringOrder.subcategory).isEqualTo("SR11 - Removal of devices (bail)")
+  }
+
+  @Test
+  fun `It should correctly map subcategory when order type is immigration`() {
+    val order = createOrder(
+      type = RequestType.REVOCATION,
+      monitoringConditions = createMonitoringConditions(orderType = OrderType.IMMIGRATION),
+      variationDetails = createvariationDetails(),
+      dataDictionaryVersion = DataDictionaryVersion.DDV6,
+    )
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "")
+    assertThat(fmsMonitoringOrder.subcategory).isEqualTo("SR11 - Removal of devices (bail)")
+  }
+
+  @Test
+  fun `It should map empty PROBATION name to 'Probation Board' for Serco`() {
+    val order = createOrder(
+      dataDictionaryVersion = DataDictionaryVersion.DDV5,
+      interestedParties = createInterestedParty(
+        notifyingOrganisation = NotifyingOrganisationDDv5.PROBATION.name,
+        notifyingOrganisationName = "",
+      ),
+    )
+
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
+    assertThat(fmsMonitoringOrder.noName).isEqualTo("Probation Board")
+  }
+
+  @Test
+  fun `It should map empty YCS name to empty string for Serco`() {
+    val order = createOrder(
+      dataDictionaryVersion = DataDictionaryVersion.DDV5,
+      interestedParties = createInterestedParty(
+        notifyingOrganisation = NotifyingOrganisationDDv5.YOUTH_CUSTODY_SERVICE.name,
+        notifyingOrganisationName = "",
+      ),
+    )
+
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
+
+    assertThat(fmsMonitoringOrder.noName).isEqualTo("")
   }
 
   private fun assertNotifyingOrgNameMapping(savedValue: String, mappedValue: String) {

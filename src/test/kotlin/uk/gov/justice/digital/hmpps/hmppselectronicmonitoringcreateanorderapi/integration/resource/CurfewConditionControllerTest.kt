@@ -112,10 +112,7 @@ class CurfewConditionControllerTest : IntegrationTestBase() {
       .expectBodyList(ValidationError::class.java)
       .returnResult()
     val error = result.responseBody!!
-    Assertions.assertThat(result.responseBody).hasSize(3)
-    Assertions.assertThat(
-      error,
-    ).contains(ValidationError("curfewAddress", ErrorMessages.ADDRESS_REQUIRED))
+    Assertions.assertThat(result.responseBody).hasSize(2)
     Assertions.assertThat(error).contains(ValidationError("startDate", ErrorMessages.START_DATE_REQUIRED))
     Assertions.assertThat(error).contains(ValidationError("endDate", ErrorMessages.END_DATE_REQUIRED))
   }
@@ -229,6 +226,59 @@ class CurfewConditionControllerTest : IntegrationTestBase() {
     Assertions.assertThat(updatedOrder.curfewConditions?.startDate).isEqualTo(mockStartDate)
     Assertions.assertThat(updatedOrder.curfewConditions?.endDate).isEqualTo(mockEndDate)
     Assertions.assertThat(updatedOrder.curfewConditions?.curfewAddress).isEqualTo("PRIMARY,SECONDARY")
+  }
+
+  @Test
+  fun `Should not overwrite curfew additional details`() {
+    val order = createOrder()
+
+    webTestClient.put()
+      .uri("/api/orders/${order.id}/monitoring-conditions-curfew-conditions")
+      .contentType(MediaType.APPLICATION_JSON)
+      .body(
+        BodyInserters.fromValue(
+          mockValidRequestBody(order.id),
+        ),
+      )
+      .headers(setAuthorisation())
+      .exchange()
+      .expectStatus()
+      .isOk
+
+    webTestClient.put()
+      .uri("/api/orders/${order.id}/monitoring-conditions-curfew-additional-details")
+      .contentType(MediaType.APPLICATION_JSON)
+      .body(
+        BodyInserters.fromValue(
+          """
+            {
+              "curfewAdditionalDetails": "some details"
+            }
+          """.trimIndent(),
+        ),
+      )
+      .headers(setAuthorisation("AUTH_ADM"))
+      .exchange()
+      .expectStatus()
+      .isOk
+
+    webTestClient.put()
+      .uri("/api/orders/${order.id}/monitoring-conditions-curfew-conditions")
+      .contentType(MediaType.APPLICATION_JSON)
+      .body(
+        BodyInserters.fromValue(
+          mockValidRequestBody(order.id),
+        ),
+      )
+      .headers(setAuthorisation())
+      .exchange()
+      .expectStatus()
+      .isOk
+
+    // Get updated order
+    val updatedOrder = getOrder(order.id)
+
+    Assertions.assertThat(updatedOrder.curfewConditions?.curfewAdditionalDetails).isEqualTo("some details")
   }
 
   @Test

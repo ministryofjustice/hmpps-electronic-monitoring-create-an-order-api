@@ -11,6 +11,7 @@ import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
 import net.minidev.json.annotate.JsonIgnore
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.EnforcementZoneType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.interfaces.MonitoringCondition
 import java.time.ZonedDateTime
 import java.util.*
 
@@ -29,10 +30,13 @@ data class EnforcementZoneConditions(
   var zoneType: EnforcementZoneType? = null,
 
   @Column(name = "START_DATE", nullable = false)
-  var startDate: ZonedDateTime? = null,
+  override var startDate: ZonedDateTime? = null,
 
   @Column(name = "END_DATE", nullable = true)
-  var endDate: ZonedDateTime? = null,
+  override var endDate: ZonedDateTime? = null,
+
+  @Column(name = "NAME", nullable = true)
+  var name: String? = null,
 
   @Column(name = "DESCRIPTION", nullable = true)
   var description: String? = null,
@@ -56,4 +60,4 @@ data class EnforcementZoneConditions(
   @ManyToOne(optional = true)
   @JoinColumn(name = "VERSION_ID", updatable = false, insertable = false)
   private val version: OrderVersion? = null,
-)
+) : MonitoringCondition

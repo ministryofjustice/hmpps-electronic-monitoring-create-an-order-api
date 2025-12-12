@@ -84,6 +84,12 @@ data class MonitoringConditions(
   @Column(name = "PILOT", nullable = true)
   var pilot: Pilot? = null,
 
+  @Column(name = "OFFENCE_TYPE", nullable = true)
+  var offenceType: String? = "",
+
+  @Column(name = "POLICE_AREA", nullable = true)
+  var policeArea: String? = "",
+
   @Schema(hidden = true)
   @OneToOne
   @JoinColumn(name = "VERSION_ID", updatable = false, insertable = false)
@@ -91,13 +97,6 @@ data class MonitoringConditions(
 ) {
   val isValid: Boolean
     get() = (
-      orderType != null &&
-        (
-          curfew == true ||
-            exclusionZone == true ||
-            trail == true ||
-            mandatoryAttendance == true ||
-            alcohol == true
-          )
+      orderType != null
       )
 }

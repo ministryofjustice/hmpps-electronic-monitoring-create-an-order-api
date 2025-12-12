@@ -52,8 +52,8 @@ class TestUtilities {
       requestType: RequestType = RequestType.REQUEST,
       status: OrderStatus = OrderStatus.IN_PROGRESS,
       documents: MutableList<AdditionalDocument> = mutableListOf(),
-      startDate: ZonedDateTime,
-      endDate: ZonedDateTime,
+      startDate: ZonedDateTime = ZonedDateTime.now().plusMonths(1),
+      endDate: ZonedDateTime = ZonedDateTime.now().plusMonths(2),
       installationLocation: InstallationLocation? = null,
       installationAppointment: InstallationAppointment? = null,
       username: String = "AUTH_ADM",
@@ -188,6 +188,7 @@ class TestUtilities {
         startDate = startDate,
         endDate = endDate,
         curfewAddress = "PRIMARY,SECONDARY",
+        curfewAdditionalDetails = "",
       )
 
       val curfewTimeTables = DayOfWeek.entries.map {
