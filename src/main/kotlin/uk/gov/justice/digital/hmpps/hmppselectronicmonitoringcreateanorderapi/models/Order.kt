@@ -27,6 +27,8 @@ data class Order(
 ) {
   fun getCurrentVersion(): OrderVersion = versions.maxBy { it.versionId }
 
+  fun getSpecificVersion(versionId: UUID): OrderVersion? = versions.find { it.id == versionId }
+
   fun deleteCurrentVersion() {
     val version = getCurrentVersion()
 

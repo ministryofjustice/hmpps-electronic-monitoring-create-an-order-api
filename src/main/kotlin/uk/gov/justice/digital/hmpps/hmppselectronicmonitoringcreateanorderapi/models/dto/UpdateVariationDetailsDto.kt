@@ -9,7 +9,7 @@ import java.time.ZonedDateTime
 import java.time.format.DateTimeParseException
 
 data class UpdateVariationDetailsDto(
-  @field:NotEmpty(message = ValidationErrors.VariationDetails.TYPE_REQUIRED)
+
   val variationType: String = "",
 
   @field:NotEmpty(message = ValidationErrors.VariationDetails.DATE_REQUIRED)

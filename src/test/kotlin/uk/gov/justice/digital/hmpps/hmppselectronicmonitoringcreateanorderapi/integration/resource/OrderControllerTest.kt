@@ -3,19 +3,23 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.i
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.ArgumentsSource
 import org.junit.jupiter.params.provider.ValueSource
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.util.JsonPathExpectationsHelper
+import org.springframework.test.web.reactive.server.expectBodyList
 import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.argumentsProvider.AmendOrderArgumentsProvider
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.HmppsDocumentManagementApiExtension.Companion.documentApi
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.SercoAuthMockServerExtension.Companion.sercoAuthApi
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.SercoMockApiExtension.Companion.sercoApi
@@ -24,10 +28,12 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderDto
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.VersionInformationDTO
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DocumentType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ServiceRequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.SubmissionStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsAttachmentResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsAttachmentResult
@@ -37,6 +43,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.MonitoringOrder
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.FmsSubmissionResultRepository
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidationError
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.utilities.TestUtilities
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 import java.nio.file.Files
@@ -204,8 +211,15 @@ class OrderControllerTest : IntegrationTestBase() {
           "id",
           "versionId",
           "version",
+          "notifyingOrganisation",
+          "notifyingOrganisationName",
+          "notifyingOrganisationEmail",
         )
         .isEqualTo(order.interestedParties)
+
+      assertThat(variationOrder.interestedParties?.notifyingOrganisation).isNull()
+      assertThat(variationOrder.interestedParties?.notifyingOrganisationName).isNull()
+      assertThat(variationOrder.interestedParties?.notifyingOrganisationEmail).isNull()
 
       assertThat(variationOrder.addresses)
         .usingRecursiveComparison()
@@ -246,6 +260,189 @@ class OrderControllerTest : IntegrationTestBase() {
       val error = result.responseBody!!
       assertThat(error.userMessage)
         .isEqualTo("Bad Request: Order latest version not submitted")
+    }
+  }
+
+  @Nested
+  @DisplayName("POST /api/orders/amend-order")
+  inner class PostAmendOrder {
+    @ParameterizedTest(name = "It should should create an order version with type - {0} -> {1}")
+    @ArgumentsSource(AmendOrderArgumentsProvider::class)
+    fun `It should should create an order version with type VARIATION`(
+      dtoType: ServiceRequestType,
+      saveType: RequestType,
+    ) {
+      val order = createAndPersistPopulatedOrder(status = OrderStatus.SUBMITTED)
+
+      val variationOrder = webTestClient.post()
+        .uri("/api/orders/${order.id}/amend-order")
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(
+          BodyInserters.fromValue(
+            """
+            {
+            "type": "$dtoType"
+            }
+            """.trimIndent(),
+          ),
+        )
+        .headers(setAuthorisation(username = "AUTH_ADM"))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody(OrderDto::class.java)
+        .returnResult()
+        .responseBody!!
+
+      assertThat(variationOrder.id).isNotNull()
+      assertThat(variationOrder.id).isEqualTo(order.id)
+      assertThat(variationOrder.status).isEqualTo(OrderStatus.IN_PROGRESS)
+      assertThat(variationOrder.type).isEqualTo(saveType)
+      assertThat(variationOrder.deviceWearer!!.id).isNotEqualTo(order.deviceWearer!!.id)
+      assertThat(variationOrder.deviceWearer.versionId).isNotEqualTo(order.deviceWearer!!.versionId)
+      assertThat(variationOrder.username).isEqualTo(testUser)
+    }
+
+    @Test
+    fun `Details about the device wearer and order should be copied from the original order`() {
+      val order = createAndPersistPopulatedOrder(status = OrderStatus.SUBMITTED)
+
+      val variationOrder = webTestClient.post()
+        .uri("/api/orders/${order.id}/amend-order")
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(
+          BodyInserters.fromValue(
+            """
+            {
+            "type": "VARIATION"
+            }
+            """.trimIndent(),
+          ),
+        )
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody(OrderDto::class.java)
+        .returnResult()
+        .responseBody!!
+
+      assertThat(variationOrder.deviceWearer)
+        .usingRecursiveComparison()
+        .ignoringCollectionOrder()
+        .ignoringFields(
+          "id",
+          "versionId",
+          "dateOfBirth",
+          "version",
+        )
+        .isEqualTo(order.deviceWearer)
+
+      assertThat(variationOrder.contactDetails)
+        .usingRecursiveComparison()
+        .ignoringCollectionOrder()
+        .ignoringFields(
+          "id",
+          "versionId",
+          "version",
+        )
+        .isEqualTo(order.contactDetails)
+
+      assertThat(variationOrder.interestedParties)
+        .usingRecursiveComparison()
+        .ignoringCollectionOrder()
+        .ignoringFields(
+          "id",
+          "versionId",
+          "version",
+          "notifyingOrganisation",
+          "notifyingOrganisationName",
+          "notifyingOrganisationEmail",
+        )
+        .isEqualTo(order.interestedParties)
+      assertThat(variationOrder.interestedParties?.notifyingOrganisation).isNull()
+      assertThat(variationOrder.interestedParties?.notifyingOrganisationName).isNull()
+      assertThat(variationOrder.interestedParties?.notifyingOrganisationEmail).isNull()
+
+      assertThat(variationOrder.addresses)
+        .usingRecursiveComparison()
+        .ignoringCollectionOrder()
+        .ignoringFields(
+          "id",
+          "versionId",
+          "version",
+        )
+        .isEqualTo(order.addresses)
+
+      assertThat(variationOrder.monitoringConditions)
+        .usingRecursiveComparison()
+        .ignoringCollectionOrder()
+        .ignoringFields(
+          "id",
+          "versionId",
+          "startDate",
+          "endDate",
+          "version",
+        )
+        .isEqualTo(order.monitoringConditions)
+    }
+
+    @Test
+    fun `It return bad request when latest version is not in SUBMITTED state`() {
+      val order = createAndPersistPopulatedOrder(status = OrderStatus.IN_PROGRESS)
+
+      val result = webTestClient.post()
+        .uri("/api/orders/${order.id}/amend-order")
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(
+          BodyInserters.fromValue(
+            """
+            {
+            "type": "VARIATION"
+            }
+            """.trimIndent(),
+          ),
+        )
+        .headers(setAuthorisation(username = "AUTH_ADM"))
+        .exchange()
+        .expectStatus()
+        .is4xxClientError
+        .expectBody(ErrorResponse::class.java)
+        .returnResult()
+
+      val error = result.responseBody!!
+      assertThat(error.userMessage)
+        .isEqualTo("Bad Request: Order latest version not submitted")
+    }
+
+    @Test
+    fun `It return bad request when type is missing`() {
+      val order = createAndPersistPopulatedOrder(status = OrderStatus.IN_PROGRESS)
+
+      val result = webTestClient.post()
+        .uri("/api/orders/${order.id}/amend-order")
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(
+          BodyInserters.fromValue(
+            """
+            {
+              "type":null
+            }
+            """.trimIndent(),
+          ),
+        )
+        .headers(setAuthorisation(username = "AUTH_ADM"))
+        .exchange()
+        .expectStatus()
+        .isBadRequest
+        .expectBodyList(ValidationError::class.java)
+        .returnResult()
+
+      val error = result.responseBody!!
+
+      Assertions.assertThat(result.responseBody!!).contains(
+        ValidationError("type", "Select why you are making changes to the form"),
+      )
     }
   }
 
@@ -1314,6 +1511,7 @@ class OrderControllerTest : IntegrationTestBase() {
             documentId = mockDocumentId,
           ),
         ),
+        dataDictionaryVersion = DataDictionaryVersion.DDV6,
       )
       sercoAuthApi.stubGrantToken()
 
@@ -1592,6 +1790,78 @@ class OrderControllerTest : IntegrationTestBase() {
     }
   }
 
+  @Nested
+  @DisplayName("GET /api/orders/orderId/versions")
+  inner class GetVersionInformation {
+    @Test
+    fun `Should return version history for all versions`() {
+      val order = createSubmittedOrder()
+      val versionId2 = UUID.randomUUID()
+      order.versions.add(
+        OrderVersion(
+          id = versionId2,
+          username = "AUTH_ADM",
+          status = OrderStatus.SUBMITTED,
+          type = RequestType.VARIATION,
+          orderId = order.id,
+          versionId = 2,
+          dataDictionaryVersion = DataDictionaryVersion.DDV5,
+        ),
+      )
+
+      repo.save(order)
+
+      val result = webTestClient.get()
+        .uri("/api/orders/${order.id}/versions")
+        .headers(setAuthorisation("AUTH_ADM"))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBodyList<VersionInformationDTO>()
+        .hasSize(2)
+        .returnResult().responseBody
+
+      assertThat(result!!).isNotEmpty()
+      assertThat(result[0].orderId).isEqualTo(order.versions[0].orderId)
+      assertThat(result[1].orderId).isEqualTo(order.versions[1].orderId)
+    }
+  }
+
+  @Nested
+  @DisplayName("GET /api/orders/orderId/versions/versionId")
+  inner class GetSpecificVersion {
+    @Test
+    fun `Should get the specified version`() {
+      val order = createSubmittedOrder()
+      val versionId2 = UUID.randomUUID()
+      val version2 =
+        OrderVersion(
+          id = versionId2,
+          username = "AUTH_ADM",
+          status = OrderStatus.SUBMITTED,
+          type = RequestType.VARIATION,
+          orderId = order.id,
+          versionId = 2,
+          dataDictionaryVersion = DataDictionaryVersion.DDV5,
+        )
+      order.versions.add(version2)
+
+      repo.save(order)
+
+      val result = webTestClient.get()
+        .uri("/api/orders/${order.id}/versions/$versionId2")
+        .headers(setAuthorisation("AUTH_ADM"))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody(OrderDto::class.java)
+        .returnResult().responseBody
+
+      assertThat(result).isNotNull()
+      assertThat(result?.versionId).isEqualTo(versionId2)
+    }
+  }
+
   fun createAndPersistPopulatedOrder(
     id: UUID = UUID.randomUUID(),
     versionId: UUID = UUID.randomUUID(),
@@ -1599,6 +1869,7 @@ class OrderControllerTest : IntegrationTestBase() {
     requestType: RequestType = RequestType.REQUEST,
     status: OrderStatus = OrderStatus.IN_PROGRESS,
     documents: MutableList<AdditionalDocument> = mutableListOf(),
+    dataDictionaryVersion: DataDictionaryVersion = DataDictionaryVersion.DDV4,
   ): Order {
     val order = TestUtilities.createReadyToSubmitOrder(
       id = id,
@@ -1609,6 +1880,7 @@ class OrderControllerTest : IntegrationTestBase() {
       documents = documents,
       mockStartDate,
       mockEndDate,
+      dataDictionaryVersion = dataDictionaryVersion,
     )
     repo.save(order)
     return order
