@@ -2,7 +2,6 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.m
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Address
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewTimeTable
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
@@ -20,6 +19,8 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisationDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Offence
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.PoliceAreas
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Prison
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.PrisonDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ProbationDeliveryUnits
@@ -28,8 +29,8 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ResponsibleOrganisation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YesNoUnknown
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YouthCourtDDv5
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YouthCustodyServiceRegionDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YouthJusticeServiceRegions
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ddv6.ProbationDeliveryUnitsDDv6
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.formatters.PhoneNumberFormatter
 import java.time.DayOfWeek
 import java.time.ZoneId
@@ -225,6 +226,8 @@ data class MonitoringOrder(
   var orderStatus: String? = "",
   @JsonProperty("pilot")
   var pilot: String? = "",
+  @JsonProperty("subcategory")
+  var subcategory: String? = "",
 ) {
 
   companion object {
@@ -240,14 +243,35 @@ data class MonitoringOrder(
 
     fun fromOrder(order: Order, caseId: String?): MonitoringOrder {
       val conditions = order.monitoringConditions!!
+      var monitoringStartDate = order.monitoringConditions!!.startDate
+      var monitoringEndDate = order.monitoringConditions!!.endDate
+
+      val monitoringConditions = sequence {
+        yieldAll(order.enforcementZoneConditions)
+        yieldAll(order.mandatoryAttendanceConditions)
+        listOfNotNull(
+          order.curfewConditions,
+          order.monitoringConditionsTrail,
+          order.monitoringConditionsAlcohol,
+        ).forEach {
+          yield(it)
+        }
+      }
+      if (monitoringStartDate == null) {
+        monitoringStartDate = monitoringConditions.mapNotNull { it.startDate }.minOrNull()
+      }
+      if (monitoringEndDate == null) {
+        monitoringEndDate = monitoringConditions.mapNotNull { it.endDate }.maxOrNull()
+      }
+
       val monitoringOrder = MonitoringOrder(
         deviceWearer = "${order.deviceWearer!!.firstName} ${order.deviceWearer!!.lastName}",
         orderType = conditions.orderType!!.value,
         orderRequestType = order.type.value,
         orderTypeDescription = conditions.orderTypeDescription?.value,
-        orderStart = getBritishDateAndTime(conditions.startDate),
-        orderEnd = getBritishDateAndTime(conditions.endDate) ?: "",
-        serviceEndDate = getBritishDate(conditions.endDate) ?: "",
+        orderStart = getBritishDateAndTime(monitoringStartDate),
+        orderEnd = getBritishDateAndTime(monitoringEndDate) ?: "",
+        serviceEndDate = getBritishDate(monitoringEndDate) ?: "",
         caseId = caseId,
         conditionType = conditions.conditionType!!.value,
         orderId = order.id.toString(),
@@ -256,6 +280,10 @@ data class MonitoringOrder(
         offenceAdditionalDetails = getOffenceAdditionalDetails(order),
         pilot = conditions.pilot?.value ?: "",
       )
+      if (DataDictionaryVersion.isVersionSameOrAbove(order.dataDictionaryVersion, DataDictionaryVersion.DDV6)) {
+        val isBail = conditions.orderType === OrderType.BAIL || conditions.orderType === OrderType.IMMIGRATION
+        monitoringOrder.subcategory = RequestType.getSubCategory(order.type, isBail)
+      }
 
       monitoringOrder.sentenceType = conditions.sentenceType?.value ?: ""
       monitoringOrder.issp = if (conditions.issp == YesNoUnknown.YES) {
@@ -294,13 +322,13 @@ data class MonitoringOrder(
             endDate = getBritishDateAndTime(curfew.endDate) ?: "",
           ),
         )
-        monitoringOrder.curfewDescription = curfew.curfewAdditionalDetails
+        monitoringOrder.curfewDescription = curfew.curfewAdditionalDetails ?: ""
         monitoringOrder.conditionalReleaseDate = getBritishDate(order.curfewReleaseDateConditions?.releaseDate)
         monitoringOrder.conditionalReleaseStartTime = order.curfewReleaseDateConditions?.startTime ?: ""
         monitoringOrder.conditionalReleaseEndTime = order.curfewReleaseDateConditions?.endTime ?: ""
         monitoringOrder.curfewStart = getBritishDateAndTime(curfew.startDate)
         monitoringOrder.curfewEnd = getBritishDateAndTime(curfew.endDate)
-        monitoringOrder.curfewDuration = getCurfewSchedules(order, curfew)
+        monitoringOrder.curfewDuration = getCurfewSchedules(order)
       }
 
       if (order.monitoringConditionsTrail?.startDate != null) {
@@ -319,8 +347,8 @@ data class MonitoringOrder(
         monitoringOrder.enforceableCondition!!.add(
           EnforceableCondition(
             "EM Exclusion / Inclusion Zone",
-            startDate = getBritishDateAndTime(conditions.startDate),
-            endDate = getBritishDateAndTime(conditions.endDate) ?: "",
+            startDate = getBritishDateAndTime(monitoringStartDate),
+            endDate = getBritishDateAndTime(monitoringEndDate) ?: "",
           ),
         )
         order.enforcementZoneConditions.forEach {
@@ -352,8 +380,8 @@ data class MonitoringOrder(
         monitoringOrder.enforceableCondition!!.add(
           EnforceableCondition(
             "Attendance Requirement",
-            startDate = getBritishDateAndTime(conditions.startDate) ?: "",
-            endDate = getBritishDateAndTime(conditions.endDate) ?: "",
+            startDate = getBritishDateAndTime(monitoringStartDate) ?: "",
+            endDate = getBritishDateAndTime(monitoringEndDate) ?: "",
           ),
         )
         monitoringOrder.inclusionZones.addAll(getInclusionZones(order))
@@ -409,8 +437,12 @@ data class MonitoringOrder(
         monitoringOrder.installationAddressPostcode = it.postcode
       }
 
-      if (order.type === RequestType.VARIATION) {
-        monitoringOrder.orderVariationType = order.variationDetails!!.variationType.value
+      if (RequestType.VARIATION_TYPES.contains(order.type)) {
+        if (order.type === RequestType.VARIATION) {
+          monitoringOrder.orderVariationType = order.variationDetails!!.variationType?.value
+        } else {
+          monitoringOrder.orderVariationType = "OTHER"
+        }
         monitoringOrder.orderVariationDate = order.variationDetails!!.variationDate.format(dateTimeFormatter)
         monitoringOrder.orderVariationDetails = order.variationDetails!!.variationDetails
       }
@@ -425,7 +457,7 @@ data class MonitoringOrder(
       else -> order.addresses.firstOrNull { it.addressType == AddressType.INSTALLATION }
     }
 
-    private fun getCurfewSchedules(order: Order, curfew: CurfewConditions): MutableList<CurfewSchedule> {
+    private fun getCurfewSchedules(order: Order): MutableList<CurfewSchedule> {
       val schedules = mutableListOf<CurfewSchedule>()
       val primaryAddressTimeTable = order.curfewTimeTable.filter {
         it.curfewAddress!!.uppercase().contains("PRIMARY_ADDRESS")
@@ -489,16 +521,18 @@ data class MonitoringOrder(
           ?: order.interestedParties?.notifyingOrganisationName
           ?: ""
       }
+      val notifyOrg = order.interestedParties?.notifyingOrganisation
 
+      if (notifyOrg == NotifyingOrganisationDDv5.PROBATION.name) {
+        return "Probation Board"
+      }
       return CivilCountyCourtDDv5.from(order.interestedParties?.notifyingOrganisationName)?.value
         ?: CrownCourtDDv5.from(order.interestedParties?.notifyingOrganisationName)?.value
         ?: FamilyCourtDDv5.from(order.interestedParties?.notifyingOrganisationName)?.value
         ?: MagistrateCourtDDv5.from(order.interestedParties?.notifyingOrganisationName)?.value
         ?: MilitaryCourtDDv5.from(order.interestedParties?.notifyingOrganisationName)?.value
         ?: PrisonDDv5.from(order.interestedParties?.notifyingOrganisationName)?.value
-        ?: ProbationServiceRegion.from(order.interestedParties?.notifyingOrganisationName)?.value
         ?: YouthCourtDDv5.from(order.interestedParties?.notifyingOrganisationName)?.value
-        ?: YouthCustodyServiceRegionDDv5.from(order.interestedParties?.notifyingOrganisationName)?.value
         ?: order.interestedParties?.notifyingOrganisationName
         ?: ""
     }
@@ -514,8 +548,12 @@ data class MonitoringOrder(
         ?: order.interestedParties?.responsibleOrganisationRegion
         ?: ""
 
-    private fun getProbationDeliveryUnit(order: Order): String =
-      ProbationDeliveryUnits.from(order.probationDeliveryUnit?.unit)?.value ?: ""
+    private fun getProbationDeliveryUnit(order: Order): String {
+      if (order.dataDictionaryVersion == DataDictionaryVersion.DDV6) {
+        return ProbationDeliveryUnitsDDv6.from(order.probationDeliveryUnit?.unit)?.value ?: ""
+      }
+      return ProbationDeliveryUnits.from(order.probationDeliveryUnit?.unit)?.value ?: ""
+    }
 
     private fun getOffence(order: Order): String? = Offence.from(order.installationAndRisk?.offence)?.value
       ?: order.installationAndRisk?.offence
@@ -547,13 +585,17 @@ data class MonitoringOrder(
     private fun getOffenceAdditionalDetails(order: Order): String {
       val riskOffenceDetails = order.installationAndRisk?.offenceAdditionalDetails ?: ""
       val monitoringOffenceType = order.monitoringConditions?.offenceType ?: ""
-      val monitoringPoliceArea = order.monitoringConditions?.policeArea ?: ""
+      var monitoringPoliceArea = PoliceAreas.from(order.monitoringConditions?.policeArea)?.value
+
+      if (monitoringPoliceArea == null) {
+        monitoringPoliceArea = order.monitoringConditions?.policeArea ?: ""
+      }
 
       val parts = listOfNotNull(
         riskOffenceDetails.takeIf { it.isNotBlank() },
-        monitoringOffenceType.takeIf { it.isNotBlank() }?.let { "Acquisitive crime offence is $it" },
+        monitoringOffenceType.takeIf { it.isNotBlank() }?.let { "AC Offence: $it" },
         monitoringPoliceArea.takeIf { it.isNotBlank() }
-          ?.let { "Device wearer’s release address is in police force area: $it" },
+          ?.let { "PFA: $it" },
       )
 
       return parts.joinToString(". ")

@@ -7,6 +7,7 @@ import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.interfaces.MonitoringCondition
 import java.time.ZonedDateTime
 import java.util.*
 
@@ -21,10 +22,10 @@ data class MandatoryAttendanceConditions(
   val versionId: UUID,
 
   @Column(name = "START_DATE", nullable = false)
-  var startDate: ZonedDateTime? = null,
+  override var startDate: ZonedDateTime? = null,
 
   @Column(name = "END_DATE", nullable = true)
-  var endDate: ZonedDateTime? = null,
+  override var endDate: ZonedDateTime? = null,
 
   @Column(name = "PURPOSE", nullable = false)
   var purpose: String? = null,
@@ -57,4 +58,4 @@ data class MandatoryAttendanceConditions(
   @ManyToOne(optional = true)
   @JoinColumn(name = "VERSION_ID", updatable = false, insertable = false)
   private val version: OrderVersion? = null,
-)
+) : MonitoringCondition

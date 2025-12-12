@@ -28,7 +28,7 @@ class VariationService : OrderSectionServiceBase() {
     with(updateRecord) {
       order.variationDetails = VariationDetails(
         versionId = order.getCurrentVersion().id,
-        variationType = VariationType.valueOf(variationType),
+        variationType = VariationType.from(variationType),
         variationDate = ZonedDateTime.parse(variationDate),
         variationDetails = updateRecord.variationDetails,
       )

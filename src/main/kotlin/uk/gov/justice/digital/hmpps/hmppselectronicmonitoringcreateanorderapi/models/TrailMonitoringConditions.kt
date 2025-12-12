@@ -8,6 +8,7 @@ import jakarta.persistence.JoinColumn
 import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.TrailMonitoringConditions
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.interfaces.MonitoringCondition
 import java.time.ZonedDateTime
 import java.util.*
 
@@ -23,13 +24,13 @@ data class TrailMonitoringConditions(
   val versionId: UUID,
 
   @Column(name = "START_DATE", nullable = true)
-  var startDate: ZonedDateTime? = null,
+  override var startDate: ZonedDateTime? = null,
 
   @Column(name = "END_DATE", nullable = true)
-  var endDate: ZonedDateTime? = null,
+  override var endDate: ZonedDateTime? = null,
 
   @Schema(hidden = true)
   @OneToOne
   @JoinColumn(name = "VERSION_ID", updatable = false, insertable = false)
   private val version: OrderVersion? = null,
-)
+) : MonitoringCondition

@@ -24,8 +24,8 @@ data class VariationDetails(
   val versionId: UUID,
 
   @Enumerated(EnumType.STRING)
-  @Column(name = "VARIATION_TYPE", nullable = false)
-  val variationType: VariationType,
+  @Column(name = "VARIATION_TYPE", nullable = true)
+  val variationType: VariationType? = null,
 
   @Column(name = "VARIATION_DATE", nullable = false)
   var variationDate: ZonedDateTime,

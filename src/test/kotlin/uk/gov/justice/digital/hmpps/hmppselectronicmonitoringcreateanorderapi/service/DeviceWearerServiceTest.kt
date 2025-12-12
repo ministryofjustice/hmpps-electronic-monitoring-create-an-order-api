@@ -13,6 +13,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ResponsibleAdult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateDeviceWearerDto
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateIdentityNumbersDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateNoFixedAbodeDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
@@ -168,5 +169,53 @@ class DeviceWearerServiceTest {
         it.addressType == AddressType.SECONDARY ||
         it.addressType == AddressType.TERTIARY
     }
+  }
+
+  @Test
+  fun `should clear leading and trailing whitespace from firstName and lastName`() {
+    whenever(orderRepo.findById(mockOrderId)).thenReturn(Optional.of(mockOrder))
+    whenever(orderRepo.save(mockOrder)).thenReturn(mockOrder)
+
+    val mockUpdateRecord = UpdateDeviceWearerDto(
+      firstName = " firstName firstName ",
+      lastName = " lastName  ",
+      alias = "alias",
+      adultAtTimeOfInstallation = true,
+      sex = "MALE",
+      gender = "MALE",
+      dateOfBirth = ZonedDateTime.of(1980, 1, 1, 1, 1, 1, 1, ZoneId.of("UTC")),
+      disabilities = null,
+      interpreterRequired = true,
+      language = "en",
+    )
+
+    service.updateDeviceWearer(mockOrderId, mockUsername, mockUpdateRecord)
+
+    assertThat(mockOrder.deviceWearer?.firstName).isEqualTo("firstName firstName")
+    assertThat(mockOrder.deviceWearer?.lastName).isEqualTo("lastName")
+  }
+
+  @Test
+  fun `should clear leading and trailing whitespace from identityNumbers`() {
+    mockOrder.deviceWearer = DeviceWearer(versionId = mockVersionId)
+
+    whenever(orderRepo.findById(mockOrderId)).thenReturn(Optional.of(mockOrder))
+    whenever(orderRepo.save(mockOrder)).thenReturn(mockOrder)
+
+    val mockUpdateRecord = UpdateIdentityNumbersDto(
+      nomisId = "P9652LI ",
+      pncId = "OS51/987896E ",
+      deliusId = " X38282  ",
+      prisonNumber = "O61613   ",
+      homeOfficeReferenceNumber = " C3575402 ",
+    )
+
+    service.updateIdentityNumbers(mockOrderId, mockUsername, mockUpdateRecord)
+
+    assertThat(mockOrder.deviceWearer?.nomisId).isEqualTo("P9652LI")
+    assertThat(mockOrder.deviceWearer?.pncId).isEqualTo("OS51/987896E")
+    assertThat(mockOrder.deviceWearer?.deliusId).isEqualTo("X38282")
+    assertThat(mockOrder.deviceWearer?.prisonNumber).isEqualTo("O61613")
+    assertThat(mockOrder.deviceWearer?.homeOfficeReferenceNumber).isEqualTo("C3575402")
   }
 }

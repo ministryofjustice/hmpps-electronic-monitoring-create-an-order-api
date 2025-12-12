@@ -7,7 +7,6 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import org.springframework.boot.test.autoconfigure.json.JsonTest
 import org.springframework.test.context.ActiveProfiles
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.FormValidationException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InterestedParties
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
@@ -148,24 +147,44 @@ class InterestedPartiesServiceTest {
   }
 
   @Test
-  fun `Should return error when notifying organisation is YOUTH_CUSTODY_SERVICE and no region is provided`() {
+  fun `Should save empty name when notifying organisation is PROBATION without a notifying org name`() {
+    whenever(orderRepo.findById(mockOrderId)).thenReturn(Optional.of(mockOrder))
+    whenever(orderRepo.save(mockOrder)).thenReturn(mockOrder)
+
+    val mockUpdateRecord = UpdateInterestedPartiesDto(
+      responsibleOrganisation = ResponsibleOrganisation.PROBATION,
+      responsibleOrganisationRegion = ProbationServiceRegion.LONDON.name,
+      responsibleOrganisationEmail = "mockProbationEmail",
+      responsibleOfficerName = "mockProbationOfficer",
+      responsibleOfficerPhoneNumber = "09876543210",
+      notifyingOrganisation = NotifyingOrganisationDDv5.PROBATION,
+      notifyingOrganisationName = "",
+      notifyingOrganisationEmail = "mockProbationNotifyEmail",
+    )
+
+    service.updateInterestedParties(mockOrderId, mockUsername, mockUpdateRecord)
+
+    assertThat(mockOrder.interestedParties?.notifyingOrganisationName).isEqualTo("")
+  }
+
+  @Test
+  fun `Should save empty name when notifying organisation is YCS`() {
     whenever(orderRepo.findById(mockOrderId)).thenReturn(Optional.of(mockOrder))
     whenever(orderRepo.save(mockOrder)).thenReturn(mockOrder)
 
     val mockUpdateRecord = UpdateInterestedPartiesDto(
       responsibleOrganisation = ResponsibleOrganisation.YJS,
       responsibleOrganisationRegion = YouthJusticeServiceRegions.WALES.name,
-      responsibleOrganisationEmail = "mockUpdatedRoEmail",
-      responsibleOfficerName = "mockUpdatedOfficerName",
-      responsibleOfficerPhoneNumber = "09998887777",
+      responsibleOrganisationEmail = "mockEmail",
+      responsibleOfficerName = "mockOfficer",
+      responsibleOfficerPhoneNumber = "09876543210",
       notifyingOrganisation = NotifyingOrganisationDDv5.YOUTH_CUSTODY_SERVICE,
-      notifyingOrganisationEmail = "mockUpdatedNotifyEmail",
+      notifyingOrganisationName = "",
+      notifyingOrganisationEmail = "mockemail",
     )
-    try {
-      service.updateInterestedParties(mockOrderId, mockUsername, mockUpdateRecord)
-    } catch (ex: Exception) {
-      assertThat(ex is FormValidationException).isTrue()
-      assertThat(ex.message).isEqualTo("Select the name of the organisation you are part of")
-    }
+
+    service.updateInterestedParties(mockOrderId, mockUsername, mockUpdateRecord)
+
+    assertThat(mockOrder.interestedParties?.notifyingOrganisationName).isEqualTo("")
   }
 }
