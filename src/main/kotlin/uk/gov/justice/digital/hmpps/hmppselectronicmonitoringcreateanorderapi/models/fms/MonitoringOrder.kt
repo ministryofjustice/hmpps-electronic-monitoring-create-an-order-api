@@ -20,6 +20,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisationDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Offence
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Pilot
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.PoliceAreas
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Prison
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.PrisonDDv5
@@ -228,6 +229,8 @@ data class MonitoringOrder(
   var pilot: String? = "",
   @JsonProperty("subcategory")
   var subcategory: String? = "",
+  @JsonProperty("dapol_missed_in_error")
+  var dapolMissedInError: String? = "",
 ) {
 
   companion object {
@@ -283,6 +286,8 @@ data class MonitoringOrder(
       if (DataDictionaryVersion.isVersionSameOrAbove(order.dataDictionaryVersion, DataDictionaryVersion.DDV6)) {
         val isBail = conditions.orderType === OrderType.BAIL || conditions.orderType === OrderType.IMMIGRATION
         monitoringOrder.subcategory = RequestType.getSubCategory(order.type, isBail)
+
+        monitoringOrder.dapolMissedInError = getDapolMissedInError(order)
       }
 
       monitoringOrder.sentenceType = conditions.sentenceType?.value ?: ""
@@ -599,6 +604,24 @@ data class MonitoringOrder(
       )
 
       return parts.joinToString(". ")
+    }
+
+    private fun getDapolMissedInError(order: Order): String {
+      val conditions = order.monitoringConditions ?: return ""
+
+      val notifyingOrg = order.interestedParties?.notifyingOrganisation
+      if (notifyingOrg != NotifyingOrganisationDDv5.PROBATION.name) {
+        return ""
+      }
+
+      val isDapolPilot = conditions.pilot == Pilot.DOMESTIC_ABUSE_PERPETRATOR_ON_LICENCE_DAPOL ||
+        conditions.pilot == Pilot.DOMESTIC_ABUSE_PERPETRATOR_ON_LICENCE_HOME_DETENTION_CURFEW_DAPOL_HDC
+
+      if (!isDapolPilot) {
+        return ""
+      }
+
+      return if (conditions.dapolMissedInError == YesNoUnknown.YES) "true" else "false"
     }
   }
 }

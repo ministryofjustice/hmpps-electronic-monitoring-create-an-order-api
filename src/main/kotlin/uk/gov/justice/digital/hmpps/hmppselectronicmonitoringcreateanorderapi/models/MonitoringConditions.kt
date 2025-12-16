@@ -90,6 +90,10 @@ data class MonitoringConditions(
   @Column(name = "POLICE_AREA", nullable = true)
   var policeArea: String? = "",
 
+  @Enumerated(EnumType.STRING)
+  @Column(name = "DAPOL_MISSED_IN_ERROR", nullable = true)
+  var dapolMissedInError: YesNoUnknown? = null,
+
   @Schema(hidden = true)
   @OneToOne
   @JoinColumn(name = "VERSION_ID", updatable = false, insertable = false)
