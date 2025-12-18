@@ -72,7 +72,8 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
               "prarr": "UNKNOWN",
               "sentenceType": "LIFE_SENTENCE",
               "offenceType": "some offence details",
-              "policeArea": "some police area"
+              "policeArea": "some police area",
+              "dapolMissedInError": "YES"              
             }
           """.trimIndent(),
         ),
@@ -107,6 +108,7 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
       .isEqualTo("some offence details")
     Assertions.assertThat(updateMonitoringConditions.responseBody?.policeArea)
       .isEqualTo("some police area")
+    Assertions.assertThat(updateMonitoringConditions.responseBody?.dapolMissedInError).isEqualTo(YesNoUnknown.YES)
   }
 
   @Test

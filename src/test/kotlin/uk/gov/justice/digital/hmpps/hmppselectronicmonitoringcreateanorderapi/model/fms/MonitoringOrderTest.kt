@@ -33,6 +33,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Pilot
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.SentenceType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YesNoUnknown
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.EnforceableCondition
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.MonitoringOrder
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.Zone
@@ -672,6 +673,76 @@ class MonitoringOrderTest : OrderTestBase() {
     val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
 
     assertThat(fmsMonitoringOrder.noName).isEqualTo("")
+  }
+
+  @Test
+  fun `It should correctly map dapolMissedInError when notifying organsation is probation and DAPOL pilot`() {
+    val order = createOrder(
+      dataDictionaryVersion = DataDictionaryVersion.DDV6,
+      interestedParties = createInterestedParty(notifyingOrganisation = NotifyingOrganisationDDv5.PROBATION.name),
+      monitoringConditions = createMonitoringConditions(
+        pilot = Pilot.DOMESTIC_ABUSE_PERPETRATOR_ON_LICENCE_DAPOL,
+        dapolMissedInError = YesNoUnknown.YES,
+      ),
+    )
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
+    assertThat(fmsMonitoringOrder.dapolMissedInError).isEqualTo("true")
+  }
+
+  @Test
+  fun `It should map dapolMissedInError as empty string when pilot is not DAPOL`() {
+    val order = createOrder(
+      dataDictionaryVersion = DataDictionaryVersion.DDV6,
+      interestedParties = createInterestedParty(notifyingOrganisation = NotifyingOrganisationDDv5.PROBATION.name),
+      monitoringConditions = createMonitoringConditions(
+        pilot = Pilot.GPS_ACQUISITIVE_CRIME_PAROLE,
+        dapolMissedInError = YesNoUnknown.YES,
+      ),
+    )
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
+
+    assertThat(fmsMonitoringOrder.dapolMissedInError).isEqualTo("")
+  }
+
+  @Test
+  fun `It should map dapolMissedInError as empty string when notify org is not probation`() {
+    val order = createOrder(
+      dataDictionaryVersion = DataDictionaryVersion.DDV6,
+      interestedParties = createInterestedParty(notifyingOrganisation = NotifyingOrganisationDDv5.PRISON.name),
+      monitoringConditions = createMonitoringConditions(
+        pilot = Pilot.DOMESTIC_ABUSE_PERPETRATOR_ON_LICENCE_DAPOL,
+      ),
+    )
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
+    assertThat(fmsMonitoringOrder.dapolMissedInError).isEqualTo("")
+  }
+
+  @Test
+  fun `It should map dapolMissedInError as 'false' when DAPOL Pilot but value is no`() {
+    val order = createOrder(
+      dataDictionaryVersion = DataDictionaryVersion.DDV6,
+      interestedParties = createInterestedParty(notifyingOrganisation = NotifyingOrganisationDDv5.PROBATION.name),
+      monitoringConditions = createMonitoringConditions(
+        pilot = Pilot.DOMESTIC_ABUSE_PERPETRATOR_ON_LICENCE_DAPOL,
+        dapolMissedInError = YesNoUnknown.NO,
+      ),
+    )
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
+
+    assertThat(fmsMonitoringOrder.dapolMissedInError).isEqualTo("false")
+  }
+
+  @Test
+  fun `It should map dapolMissedInError as empty string when order isn't ddv6`() {
+    val order = createOrder(
+      dataDictionaryVersion = DataDictionaryVersion.DDV5,
+      interestedParties = createInterestedParty(notifyingOrganisation = NotifyingOrganisationDDv5.PROBATION.name),
+      monitoringConditions = createMonitoringConditions(
+        pilot = Pilot.DOMESTIC_ABUSE_PERPETRATOR_ON_LICENCE_DAPOL,
+      ),
+    )
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
+    assertThat(fmsMonitoringOrder.dapolMissedInError).isEqualTo("")
   }
 
   private fun assertNotifyingOrgNameMapping(savedValue: String, mappedValue: String) {

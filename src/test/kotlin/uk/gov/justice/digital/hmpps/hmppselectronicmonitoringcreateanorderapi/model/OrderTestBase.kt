@@ -236,6 +236,7 @@ abstract class OrderTestBase {
     pilot: Pilot = Pilot.UNKNOWN,
     offenceType: String = "",
     policeArea: String = "",
+    dapolMissedInError: YesNoUnknown? = null,
   ): MonitoringConditions = MonitoringConditions(
     versionId = UUID.randomUUID(),
     orderType = orderType,
@@ -255,6 +256,7 @@ abstract class OrderTestBase {
     pilot = pilot,
     offenceType = offenceType,
     policeArea = policeArea,
+    dapolMissedInError = dapolMissedInError,
   )
 
   protected fun createMandatoryAttendanceCondition(
