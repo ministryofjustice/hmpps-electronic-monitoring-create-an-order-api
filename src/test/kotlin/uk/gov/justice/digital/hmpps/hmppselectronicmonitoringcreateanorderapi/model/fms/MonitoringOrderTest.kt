@@ -631,7 +631,7 @@ class MonitoringOrderTest : OrderTestBase() {
       dataDictionaryVersion = DataDictionaryVersion.DDV6,
     )
     val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "")
-    assertThat(fmsMonitoringOrder.subcategory).isEqualTo("SR11 - Removal of devices (bail)")
+    assertThat(fmsMonitoringOrder.subcategory).isEqualTo("SR11-Removal of devices (bail)")
   }
 
   @Test
@@ -643,7 +643,7 @@ class MonitoringOrderTest : OrderTestBase() {
       dataDictionaryVersion = DataDictionaryVersion.DDV6,
     )
     val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "")
-    assertThat(fmsMonitoringOrder.subcategory).isEqualTo("SR11 - Removal of devices (bail)")
+    assertThat(fmsMonitoringOrder.subcategory).isEqualTo("SR11-Removal of devices (bail)")
   }
 
   @Test

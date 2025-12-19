@@ -20,10 +20,10 @@ enum class RequestType(val value: String) {
     )
 
     fun getSubCategory(type: RequestType, isBail: Boolean): String = when (type) {
-      VARIATION -> "SR08 - Amend monitoring requirements"
-      REVOCATION -> if (isBail)"SR11 - Removal of devices (bail)" else "SR21 - Revocation monitoring requirements"
-      REINSTALL_AT_DIFFERENT_ADDRESS -> "SR05 - Install monitoring equipment at an additional address"
-      REINSTALL_DEVICE -> "SR04 - Re-install monitoring equipment"
+      VARIATION -> "SR08-Amend monitoring requirements"
+      REVOCATION -> if (isBail) "SR11-Removal of devices (bail)" else "SR21-Revocation monitoring requirements"
+      REINSTALL_AT_DIFFERENT_ADDRESS -> "SR05-Install monitoring equipment at an additional address"
+      REINSTALL_DEVICE -> "SR04-Re-install monitoring equipment"
       else -> ""
     }
   }
