@@ -15,8 +15,20 @@ enum class NotifyingOrganisationDDv5(val value: String) {
   ;
 
   companion object {
+    val COURTS =
+      listOf(
+        CIVIL_COUNTY_COURT,
+        CROWN_COURT,
+        MAGISTRATES_COURT,
+        MILITARY_COURT,
+        SCOTTISH_COURT,
+        FAMILY_COURT,
+        YOUTH_COURT,
+      )
     fun from(value: String?): NotifyingOrganisationDDv5? = NotifyingOrganisationDDv5.entries.firstOrNull {
       it.name == value
     }
+
+    fun isCourt(value: String): Boolean = COURTS.any { it.name == value }
   }
 }

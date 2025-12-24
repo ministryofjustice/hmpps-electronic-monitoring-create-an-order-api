@@ -12,6 +12,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.cl
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AdditionalDocument
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderParameters
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.documentmanagement.DocumentMetadata
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateFileRequiredDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateHavePhotoDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DocumentType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.validators.FileUploadValidator.validateFileExtensionAndSize
@@ -83,6 +84,34 @@ class AdditionalDocumentService(val webClient: DocumentApiClient) : OrderSection
         order = findEditableOrder(orderId, username)
       }
       order.orderParameters?.havePhoto = updateRecord.havePhoto
+    }
+
+    return orderRepo.save(order).orderParameters!!
+  }
+
+  fun updateFileRequired(orderId: UUID, username: String, updateRecord: UpdateFileRequiredDto): OrderParameters {
+    val order = findEditableOrder(orderId, username)
+
+    val params = order.orderParameters ?: OrderParameters(versionId = order.getCurrentVersion().id).also {
+      order.orderParameters = it
+    }
+
+    val shouldDelete = when (updateRecord.fileType) {
+      DocumentType.COURT_ORDER -> params.haveCourtOrder == true && !updateRecord.fileRequired!!
+      DocumentType.GRANT_OF_BAIL -> params.haveGrantOfBail == true && !updateRecord.fileRequired!!
+      DocumentType.PHOTO_ID -> params.havePhoto == true && !updateRecord.fileRequired!!
+      else -> false
+    }
+
+    if (shouldDelete) {
+      deleteDocument(orderId, username, updateRecord.fileType!!)
+    }
+
+    when (updateRecord.fileType) {
+      DocumentType.COURT_ORDER -> params.haveCourtOrder = updateRecord.fileRequired
+      DocumentType.GRANT_OF_BAIL -> params.haveGrantOfBail = updateRecord.fileRequired
+      DocumentType.PHOTO_ID -> params.havePhoto = updateRecord.fileRequired!!
+      else -> throw IllegalArgumentException("Unsupported document type: ${updateRecord.fileType}")
     }
 
     return orderRepo.save(order).orderParameters!!
