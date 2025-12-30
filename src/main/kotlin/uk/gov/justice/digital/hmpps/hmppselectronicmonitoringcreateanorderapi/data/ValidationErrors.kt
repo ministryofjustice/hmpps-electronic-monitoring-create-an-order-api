@@ -185,6 +185,7 @@ object ValidationErrors {
     const val INVALID_LICENSE_FILE_EXTENSION: String = "Select a PDF or Word document"
     const val INVALID_PHOTO_ID_FILE_EXTENSION: String = "Select a PDF, PNG, JPEG or JPG"
     const val HAVE_PHOTO_REQUIRED: String = "Select if you have a photo to upload"
+    const val HAVE_FIEL_REQIORED: String = "Select Yes if you have a document to upload"
   }
 
   object AmendOrder {

@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AdditionalDocument
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderParameters
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateFileRequiredDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateHavePhotoDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DocumentType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.AdditionalDocumentService
@@ -87,6 +88,22 @@ class AdditionalDocumentsController(@Autowired val documentService: AdditionalDo
   ): ResponseEntity<OrderParameters> {
     val username = authentication.name
     val parameters = documentService.updateHavePhoto(
+      orderId,
+      username,
+      updateRecord,
+    )
+
+    return ResponseEntity(parameters, HttpStatus.OK)
+  }
+
+  @PutMapping("/orders/{orderId}/attachments/file-required")
+  fun fileRequired(
+    @PathVariable orderId: UUID,
+    @RequestBody @Valid updateRecord: UpdateFileRequiredDto,
+    authentication: Authentication,
+  ): ResponseEntity<OrderParameters> {
+    val username = authentication.name
+    val parameters = documentService.updateFileRequired(
       orderId,
       username,
       updateRecord,

@@ -17,6 +17,8 @@ import jakarta.persistence.UniqueConstraint
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DocumentType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisation
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisationDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import java.time.OffsetDateTime
@@ -172,7 +174,22 @@ data class OrderVersion(
 
   private val requiredDocuments: Boolean
     get() = (
-      additionalDocuments.any { it.fileType == DocumentType.LICENCE }
+      if (interestedParties!!.notifyingOrganisation == NotifyingOrganisation.HOME_OFFICE.name) {
+        if (orderParameters?.haveGrantOfBail == true) {
+          additionalDocuments.any { it.fileType == DocumentType.GRANT_OF_BAIL }
+        } else {
+          true
+        }
+      } else if (NotifyingOrganisationDDv5.isCourt(interestedParties!!.notifyingOrganisation!!)) {
+        if (orderParameters?.haveCourtOrder == true) {
+          additionalDocuments.any { it.fileType == DocumentType.COURT_ORDER }
+        } else {
+          true
+        }
+      } else {
+        additionalDocuments.any { it.fileType == DocumentType.LICENCE }
+      }
+
       )
 
   val isValid: Boolean

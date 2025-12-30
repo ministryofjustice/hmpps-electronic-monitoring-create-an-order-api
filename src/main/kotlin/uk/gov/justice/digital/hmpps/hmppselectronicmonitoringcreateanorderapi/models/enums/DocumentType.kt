@@ -30,4 +30,18 @@ enum class DocumentType(val config: FileUploadConfig) {
       invalidExtensionMessage = ValidationErrors.EnforcementZone.INVALID_MAP_FILE_EXTENSION,
     ),
   ),
+  COURT_ORDER(
+    FileUploadConfig(
+      maxSizeInMB = 25,
+      allowedExtensions = listOf("pdf", "doc", "docx"),
+      invalidExtensionMessage = ValidationErrors.AdditionalDocuments.INVALID_LICENSE_FILE_EXTENSION,
+    ),
+  ),
+  GRANT_OF_BAIL(
+    FileUploadConfig(
+      maxSizeInMB = 10,
+      allowedExtensions = listOf("pdf"),
+      invalidExtensionMessage = ValidationErrors.EnforcementZone.INVALID_MAP_FILE_EXTENSION,
+    ),
+  ),
 }

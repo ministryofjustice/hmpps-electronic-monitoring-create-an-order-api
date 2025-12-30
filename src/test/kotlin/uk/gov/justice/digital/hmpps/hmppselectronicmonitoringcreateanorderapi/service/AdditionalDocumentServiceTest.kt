@@ -8,6 +8,9 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.Arguments
+import org.junit.jupiter.params.provider.MethodSource
 import org.mockito.Mockito
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
@@ -28,6 +31,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderParameters
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateFileRequiredDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateHavePhotoDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DocumentType
@@ -529,5 +533,167 @@ class AdditionalDocumentServiceTest {
       Assertions.assertThat(mockOrder.additionalDocuments.filter { x -> x.fileType == DocumentType.PHOTO_ID }.size)
         .isEqualTo(0)
     }
+  }
+
+  @ParameterizedTest(name = "Type: {0}")
+  @MethodSource("expectedFileRequiredTypeParameters")
+  fun `should create a new order parameters if one does not exist`(fileType: DocumentType) {
+    val mockOrder = Order(
+      id = mockOrderId,
+      versions = mutableListOf(
+        OrderVersion(
+          id = mockVersionId,
+          status = OrderStatus.IN_PROGRESS,
+          type = RequestType.REQUEST,
+          username = username,
+          orderId = mockOrderId,
+          dataDictionaryVersion = mockDictionaryVersion,
+        ),
+      ),
+    )
+    whenever(
+      orderRepo.findById(mockOrderId),
+    ).thenReturn(
+      Optional.of(
+        mockOrder,
+      ),
+    )
+    whenever(orderRepo.save(mockOrder)).thenReturn(mockOrder)
+
+    val result = service.updateFileRequired(
+      mockOrderId,
+      username,
+      updateRecord = UpdateFileRequiredDto(fileRequired = true, fileType = fileType),
+    )
+    if (fileType == DocumentType.PHOTO_ID) {
+      Assertions.assertThat(result.havePhoto).isEqualTo(true)
+    }
+    if (fileType == DocumentType.COURT_ORDER) {
+      Assertions.assertThat(result.haveCourtOrder).isEqualTo(true)
+    }
+    if (fileType == DocumentType.GRANT_OF_BAIL) {
+      Assertions.assertThat(result.haveGrantOfBail).isEqualTo(true)
+    }
+    Assertions.assertThat(result.versionId).isEqualTo(mockVersionId)
+  }
+
+  @ParameterizedTest(name = "Type: {0}")
+  @MethodSource("expectedFileRequiredTypeParameters")
+  fun `should update order parameters if they already exist`(fileType: DocumentType) {
+    val mockOrder = Order(
+      id = mockOrderId,
+      versions = mutableListOf(
+        OrderVersion(
+          id = mockVersionId,
+          status = OrderStatus.IN_PROGRESS,
+          type = RequestType.REQUEST,
+          username = username,
+          orderId = mockOrderId,
+          dataDictionaryVersion = mockDictionaryVersion,
+          orderParameters = OrderParameters(
+            versionId = mockVersionId,
+            haveCourtOrder = if (fileType == DocumentType.COURT_ORDER) false else null,
+            haveGrantOfBail = if (fileType == DocumentType.GRANT_OF_BAIL) false else null,
+            havePhoto = if (fileType == DocumentType.PHOTO_ID) false else null,
+          ),
+        ),
+      ),
+    )
+    whenever(
+      orderRepo.findById(mockOrderId),
+    ).thenReturn(
+      Optional.of(
+        mockOrder,
+      ),
+    )
+    whenever(orderRepo.save(mockOrder)).thenReturn(mockOrder)
+
+    val result = service.updateFileRequired(
+      mockOrderId,
+      username,
+      updateRecord = UpdateFileRequiredDto(fileRequired = true, fileType = fileType),
+    )
+    if (fileType == DocumentType.PHOTO_ID) {
+      Assertions.assertThat(result.havePhoto).isEqualTo(true)
+    }
+    if (fileType == DocumentType.COURT_ORDER) {
+      Assertions.assertThat(result.haveCourtOrder).isEqualTo(true)
+    }
+    if (fileType == DocumentType.GRANT_OF_BAIL) {
+      Assertions.assertThat(result.haveGrantOfBail).isEqualTo(true)
+    }
+    Assertions.assertThat(result.versionId).isEqualTo(mockVersionId)
+  }
+
+  @ParameterizedTest(name = "Type: {0}")
+  @MethodSource("expectedFileRequiredTypeParameters")
+  fun `should delete document if file exists is set to false`(fileType: DocumentType) {
+    val mockOrder = Order(
+      id = mockOrderId,
+      versions = mutableListOf(
+        OrderVersion(
+          id = mockVersionId,
+          status = OrderStatus.IN_PROGRESS,
+          type = RequestType.REQUEST,
+          username = username,
+          orderId = mockOrderId,
+          dataDictionaryVersion = mockDictionaryVersion,
+          orderParameters = OrderParameters(
+            versionId = mockVersionId,
+            haveCourtOrder = if (fileType == DocumentType.COURT_ORDER) true else null,
+            haveGrantOfBail = if (fileType == DocumentType.GRANT_OF_BAIL) true else null,
+            havePhoto = if (fileType == DocumentType.PHOTO_ID) true else null,
+          ),
+          additionalDocuments = mutableListOf(
+            AdditionalDocument(
+              versionId = mockVersionId,
+              fileType = fileType,
+              documentId = mockDocumentId,
+            ),
+            AdditionalDocument(
+              versionId = mockVersionId,
+              fileType = DocumentType.LICENCE,
+              documentId = mockDocumentId,
+            ),
+          ),
+        ),
+      ),
+    )
+    whenever(
+      orderRepo.findById(mockOrderId),
+    ).thenReturn(
+      Optional.of(
+        mockOrder,
+      ),
+    )
+    whenever(orderRepo.save(mockOrder)).thenReturn(mockOrder)
+
+    val result = service.updateFileRequired(
+      mockOrderId,
+      username,
+      updateRecord = UpdateFileRequiredDto(fileRequired = false, fileType = fileType),
+    )
+    if (fileType == DocumentType.PHOTO_ID) {
+      Assertions.assertThat(result.havePhoto).isEqualTo(false)
+    }
+    if (fileType == DocumentType.COURT_ORDER) {
+      Assertions.assertThat(result.haveCourtOrder).isEqualTo(false)
+    }
+    if (fileType == DocumentType.GRANT_OF_BAIL) {
+      Assertions.assertThat(result.haveGrantOfBail).isEqualTo(false)
+    }
+    Assertions.assertThat(result.versionId).isEqualTo(mockVersionId)
+    Assertions.assertThat(mockOrder.additionalDocuments.size).isEqualTo(1)
+    Assertions.assertThat(mockOrder.additionalDocuments.filter { x -> x.fileType == fileType }.size)
+      .isEqualTo(0)
+  }
+
+  companion object {
+    @JvmStatic
+    fun expectedFileRequiredTypeParameters() = listOf(
+      Arguments.of(DocumentType.COURT_ORDER),
+      Arguments.of(DocumentType.GRANT_OF_BAIL),
+      Arguments.of(DocumentType.PHOTO_ID),
+    )
   }
 }

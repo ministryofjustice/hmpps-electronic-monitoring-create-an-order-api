@@ -20,7 +20,13 @@ data class OrderParameters(
   val versionId: UUID,
 
   @Column(name = "HAVE_PHOTO", nullable = true)
-  var havePhoto: Boolean?,
+  var havePhoto: Boolean? = null,
+
+  @Column(name = "HAVE_COURT_ORDER", nullable = true)
+  var haveCourtOrder: Boolean? = null,
+
+  @Column(name = "HAVE_GRANT_OF_BAIL", nullable = true)
+  var haveGrantOfBail: Boolean? = null,
 
   @Schema(hidden = true)
   @OneToOne
