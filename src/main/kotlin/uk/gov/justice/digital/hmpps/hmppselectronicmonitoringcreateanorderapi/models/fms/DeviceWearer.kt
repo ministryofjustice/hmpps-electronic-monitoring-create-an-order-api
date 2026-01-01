@@ -147,10 +147,10 @@ data class DeviceWearer(
   var homeOfficeReferenceNumber: String? = "",
 
   @JsonProperty("compliance_and_enforcement_person_reference")
-  var complianceAndEnforcementPersonReference: String? = "",
+  var complianceAndEnforcementPersonReference: String? = null,
 
   @JsonProperty("magistrate_court_case_reference_number")
-  var magistrateCourtCaseReferenceNumber: String? = "",
+  var magistrateCourtCaseReferenceNumber: String? = null,
 
   @JsonProperty("interpreter_required")
   var interpreterRequired: String? = "",

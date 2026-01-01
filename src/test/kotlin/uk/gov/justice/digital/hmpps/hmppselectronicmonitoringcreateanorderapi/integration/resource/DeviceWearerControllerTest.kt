@@ -694,7 +694,7 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
               "pncId": "$mockPncId",
               "deliusId": "$mockDeliusId",
               "prisonNumber": "$mockPrisonNumber",
-              "homeOfficeReferenceNumber": "$mockHomeOfficeReferenceNumber"
+              "homeOfficeReferenceNumber": "$mockHomeOfficeReferenceNumber",
               "complianceAndEnforcementPersonReference": "$mockComplianceAndEnforcementPersonReference",
               "courtCaseReferenceNumber": "$mockCourtCaseReferenceNumber"
             }
@@ -722,7 +722,7 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
               "pncId": "$mockPncId",
               "deliusId": "$mockDeliusId",
               "prisonNumber": "$mockPrisonNumber",
-              "homeOfficeReferenceNumber": "$mockHomeOfficeReferenceNumber"              
+              "homeOfficeReferenceNumber": "$mockHomeOfficeReferenceNumber",              
               "complianceAndEnforcementPersonReference": "$mockComplianceAndEnforcementPersonReference",
               "courtCaseReferenceNumber": "$mockCourtCaseReferenceNumber"
             }
@@ -749,7 +749,7 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
               "pncId": "$mockPncId",
               "deliusId": "$mockDeliusId",
               "prisonNumber": "$mockPrisonNumber",
-              "homeOfficeReferenceNumber": "$mockHomeOfficeReferenceNumber"              
+              "homeOfficeReferenceNumber": "$mockHomeOfficeReferenceNumber",              
               "complianceAndEnforcementPersonReference": "$mockComplianceAndEnforcementPersonReference",
               "courtCaseReferenceNumber": "$mockCourtCaseReferenceNumber"
             }
@@ -776,6 +776,7 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
               "pncId": "$mockPncId",
               "deliusId": "$mockDeliusId",
               "prisonNumber": "$mockPrisonNumber",
+              "homeOfficeReferenceNumber": "$mockHomeOfficeReferenceNumber",
               "complianceAndEnforcementPersonReference": "$mockComplianceAndEnforcementPersonReference",
               "courtCaseReferenceNumber": "$mockCourtCaseReferenceNumber"
             }
@@ -817,7 +818,7 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
               "pncId": "$mockPncId",
               "deliusId": "$mockDeliusId",
               "prisonNumber": "$mockPrisonNumber",
-              "homeOfficeReferenceNumber": "$mockHomeOfficeReferenceNumber"              
+              "homeOfficeReferenceNumber": "$mockHomeOfficeReferenceNumber",              
               "complianceAndEnforcementPersonReference": "$mockComplianceAndEnforcementPersonReference",
               "courtCaseReferenceNumber": "$mockCourtCaseReferenceNumber"
             }
