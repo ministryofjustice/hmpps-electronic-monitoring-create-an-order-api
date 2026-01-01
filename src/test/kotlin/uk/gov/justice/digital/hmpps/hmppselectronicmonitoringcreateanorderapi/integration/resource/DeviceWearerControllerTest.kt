@@ -33,6 +33,8 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
   private val mockOtherDisability: String = "mockOtherDisabilities"
   private val mockLanguage: String = "mockLanguage"
   private val mockHomeOfficeReferenceNumber: String = "mockHomeOfficeReferenceNumber"
+  private val mockComplianceAndEnforcementPersonReference: String = "mockComplianceAndEnforcementPersonReference"
+  private val mockCourtCaseReferenceNumber: String = "mockCourtCaseReferenceNumber"
   private val mockDateOfBirth: ZonedDateTime = ZonedDateTime.of(
     LocalDate.of(1970, 1, 1),
     LocalTime.NOON,
@@ -693,6 +695,8 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
               "deliusId": "$mockDeliusId",
               "prisonNumber": "$mockPrisonNumber",
               "homeOfficeReferenceNumber": "$mockHomeOfficeReferenceNumber"
+              "complianceAndEnforcementPersonReference": "$mockComplianceAndEnforcementPersonReference",
+              "courtCaseReferenceNumber": "$mockCourtCaseReferenceNumber"
             }
             """.trimIndent(),
           ),
@@ -718,7 +722,9 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
               "pncId": "$mockPncId",
               "deliusId": "$mockDeliusId",
               "prisonNumber": "$mockPrisonNumber",
-              "homeOfficeReferenceNumber": "$mockHomeOfficeReferenceNumber"
+              "homeOfficeReferenceNumber": "$mockHomeOfficeReferenceNumber"              
+              "complianceAndEnforcementPersonReference": "$mockComplianceAndEnforcementPersonReference",
+              "courtCaseReferenceNumber": "$mockCourtCaseReferenceNumber"
             }
             """.trimIndent(),
           ),
@@ -743,7 +749,9 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
               "pncId": "$mockPncId",
               "deliusId": "$mockDeliusId",
               "prisonNumber": "$mockPrisonNumber",
-              "homeOfficeReferenceNumber": "$mockHomeOfficeReferenceNumber"
+              "homeOfficeReferenceNumber": "$mockHomeOfficeReferenceNumber"              
+              "complianceAndEnforcementPersonReference": "$mockComplianceAndEnforcementPersonReference",
+              "courtCaseReferenceNumber": "$mockCourtCaseReferenceNumber"
             }
             """.trimIndent(),
           ),
@@ -768,7 +776,8 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
               "pncId": "$mockPncId",
               "deliusId": "$mockDeliusId",
               "prisonNumber": "$mockPrisonNumber",
-              "homeOfficeReferenceNumber": "$mockHomeOfficeReferenceNumber"
+              "complianceAndEnforcementPersonReference": "$mockComplianceAndEnforcementPersonReference",
+              "courtCaseReferenceNumber": "$mockCourtCaseReferenceNumber"
             }
             """.trimIndent(),
           ),
@@ -786,6 +795,9 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
       Assertions.assertThat(deviceWearer.pncId).isEqualTo(mockPncId)
       Assertions.assertThat(deviceWearer.prisonNumber).isEqualTo(mockPrisonNumber)
       Assertions.assertThat(deviceWearer.homeOfficeReferenceNumber).isEqualTo(mockHomeOfficeReferenceNumber)
+      Assertions.assertThat(deviceWearer.complianceAndEnforcementPersonReference)
+        .isEqualTo(mockComplianceAndEnforcementPersonReference)
+      Assertions.assertThat(deviceWearer.courtCaseReferenceNumber).isEqualTo(mockCourtCaseReferenceNumber)
     }
 
     @Test
@@ -805,7 +817,9 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
               "pncId": "$mockPncId",
               "deliusId": "$mockDeliusId",
               "prisonNumber": "$mockPrisonNumber",
-              "homeOfficeReferenceNumber": "$mockHomeOfficeReferenceNumber"
+              "homeOfficeReferenceNumber": "$mockHomeOfficeReferenceNumber"              
+              "complianceAndEnforcementPersonReference": "$mockComplianceAndEnforcementPersonReference",
+              "courtCaseReferenceNumber": "$mockCourtCaseReferenceNumber"
             }
             """.trimIndent(),
           ),
@@ -852,6 +866,12 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
       Assertions.assertThat(
         updatedOrder.deviceWearer!!.homeOfficeReferenceNumber,
       ).isEqualTo(mockHomeOfficeReferenceNumber)
+      Assertions.assertThat(
+        updatedOrder.deviceWearer!!.complianceAndEnforcementPersonReference,
+      ).isEqualTo(mockComplianceAndEnforcementPersonReference)
+      Assertions.assertThat(
+        updatedOrder.deviceWearer!!.courtCaseReferenceNumber,
+      ).isEqualTo(mockCourtCaseReferenceNumber)
     }
   }
 }

@@ -129,6 +129,8 @@ abstract class OrderTestBase {
     nomisId: String = "nomisId",
     prisonNumber: String = "prisonNumber",
     homeOfficeReferenceNumber: String = "homeOfficeReferenceNumber",
+    complianceAndEnforcementPersonReference: String = "complianceAndEnforcementPersonReference",
+    courtCaseReferenceNumber: String = "courtCaseReferenceNumber",
     noFixedAbode: Boolean = false,
     riskCategory: String = "",
   ): DeviceWearer = DeviceWearer(
@@ -148,6 +150,8 @@ abstract class OrderTestBase {
     nomisId = nomisId,
     prisonNumber = prisonNumber,
     homeOfficeReferenceNumber = homeOfficeReferenceNumber,
+    complianceAndEnforcementPersonReference = complianceAndEnforcementPersonReference,
+    courtCaseReferenceNumber = courtCaseReferenceNumber,
     noFixedAbode = noFixedAbode,
   )
 

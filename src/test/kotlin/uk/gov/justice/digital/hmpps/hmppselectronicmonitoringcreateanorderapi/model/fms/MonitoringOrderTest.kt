@@ -745,6 +745,22 @@ class MonitoringOrderTest : OrderTestBase() {
     assertThat(fmsMonitoringOrder.dapolMissedInError).isEqualTo("")
   }
 
+  @Test
+  fun `It should map court case reference number to magistrate court case reference number`() {
+    val order = createOrder(
+      dataDictionaryVersion = DataDictionaryVersion.DDV6,
+      deviceWearer = createDeviceWearer(
+        courtCaseReferenceNumber = "CC123",
+      ),
+      interestedParties = createInterestedParty(
+        notifyingOrganisation = NotifyingOrganisationDDv5.FAMILY_COURT.name,
+      ),
+    )
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
+
+    assertThat(fmsMonitoringOrder.magistrateCourtCaseReferenceNumber).isEqualTo("CC123")
+  }
+
   private fun assertNotifyingOrgNameMapping(savedValue: String, mappedValue: String) {
     val order = createOrder(
       dataDictionaryVersion = DataDictionaryVersion.DDV5,
