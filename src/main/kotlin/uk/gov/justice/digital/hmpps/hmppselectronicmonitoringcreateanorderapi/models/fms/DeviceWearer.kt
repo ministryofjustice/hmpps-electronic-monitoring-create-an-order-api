@@ -149,9 +149,6 @@ data class DeviceWearer(
   @JsonProperty("compliance_and_enforcement_person_reference")
   var complianceAndEnforcementPersonReference: String? = null,
 
-  @JsonProperty("magistrate_court_case_reference_number")
-  var magistrateCourtCaseReferenceNumber: String? = null,
-
   @JsonProperty("interpreter_required")
   var interpreterRequired: String? = "",
 
@@ -197,7 +194,6 @@ data class DeviceWearer(
         prisonNumber = order.deviceWearer?.prisonNumber,
         homeOfficeReferenceNumber = order.deviceWearer?.homeOfficeReferenceNumber,
         complianceAndEnforcementPersonReference = order.deviceWearer?.complianceAndEnforcementPersonReference,
-        magistrateCourtCaseReferenceNumber = order.deviceWearer?.courtCaseReferenceNumber,
       )
 
       if (order.deviceWearer?.noFixedAbode != null && !order.deviceWearer?.noFixedAbode!!) {
