@@ -22,6 +22,6 @@ data class UpdateIdentityNumbersDto(
   @field:Size(max = 200, message = ValidationErrors.IdentityNumbers.CEPR_MAX_LENGTH)
   val complianceAndEnforcementPersonReference: String? = "",
 
-  @field:Size(max = 200, message = ValidationErrors.IdentityNumbers.COURT_CASE_REFERENCE_NUMBER)
+  @field:Size(max = 200, message = ValidationErrors.IdentityNumbers.CCRN_MAX_LENGTH)
   val courtCaseReferenceNumber: String? = "",
 )
