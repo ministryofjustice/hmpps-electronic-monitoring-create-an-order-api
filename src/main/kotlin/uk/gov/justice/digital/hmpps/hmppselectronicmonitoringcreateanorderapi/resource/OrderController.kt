@@ -142,6 +142,26 @@ class OrderController(@Autowired val orderService: OrderService) {
     return ResponseEntity(version, HttpStatus.OK)
   }
 
+  @GetMapping("/orders/{orderId}/versions/{versionId}/fmsDeviceWearerRequest")
+  fun getFmsDeviceWearerRequest(
+    @PathVariable orderId: UUID,
+    @PathVariable versionId: UUID,
+    authentication: Authentication,
+  ): ResponseEntity<String> {
+    val deviceWearerRequest = orderService.getFmsDeviceWearerPayload(orderId, versionId)
+    return ResponseEntity(deviceWearerRequest, HttpStatus.OK)
+  }
+
+  @GetMapping("/orders/{orderId}/versions/{versionId}/fmsMonitoringOrderRequest")
+  fun getFmsMonitoringOrderRequest(
+    @PathVariable orderId: UUID,
+    @PathVariable versionId: UUID,
+    authentication: Authentication,
+  ): ResponseEntity<String> {
+    val monitoringOrderRequest = orderService.getFmsMonitoringOrderPayload(orderId, versionId)
+    return ResponseEntity(monitoringOrderRequest, HttpStatus.OK)
+  }
+
   private fun convertToDto(order: Order): OrderDto = OrderDto(
     id = order.id,
     additionalDocuments = order.additionalDocuments,

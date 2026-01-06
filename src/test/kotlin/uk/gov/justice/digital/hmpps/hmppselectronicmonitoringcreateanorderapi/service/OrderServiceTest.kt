@@ -19,6 +19,7 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.boot.test.autoconfigure.json.JsonTest
 import org.springframework.test.context.ActiveProfiles
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.BadRequestException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AdditionalDocument
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationAppointment
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationLocation
@@ -769,6 +770,63 @@ class OrderServiceTest {
       }
         .isInstanceOf(EntityNotFoundException::class.java)
         .hasMessageContaining("Version does not exist for orderId ${mockOrder.id} and versionId $nonExistentVersionId")
+    }
+  }
+
+  @Nested
+  @DisplayName("Get fms request payload")
+  inner class GetFmsRequest {
+
+    @Test
+    fun `Should throw exception when getting fms device wearer payload for a version is in progress`() {
+      val mockOrder = TestUtilities.createReadyToSubmitOrder(status = OrderStatus.IN_PROGRESS)
+
+      whenever(repo.findById(mockOrder.id)).thenReturn(Optional.of(mockOrder))
+      assertThatThrownBy {
+        service.getFmsDeviceWearerPayload(mockOrder.id, mockOrder.versions.first().id)
+      }
+        .isInstanceOf(BadRequestException::class.java)
+        .hasMessageContaining("This order is not submitted")
+    }
+
+    @Test
+    fun `Should return fms device wearer payload by fms service`() {
+      val mockOrder = TestUtilities.createReadyToSubmitOrder(status = OrderStatus.SUBMITTED)
+      mockOrder.fmsResultId = UUID.randomUUID()
+
+      whenever(repo.findById(mockOrder.id)).thenReturn(Optional.of(mockOrder))
+      whenever(fmsService.getFmsDeviceWearerSubmissionResultById(mockOrder.fmsResultId!!)).thenReturn("mockPayload")
+
+      val result = service.getFmsDeviceWearerPayload(mockOrder.id, mockOrder.versions.first().id)
+
+      assertThat(result).isEqualTo("mockPayload")
+    }
+
+    @Test
+    fun `Should throw exception when getting fms monitoring order payload for a version is in progress`() {
+      val mockOrder = TestUtilities.createReadyToSubmitOrder(status = OrderStatus.IN_PROGRESS)
+
+      whenever(repo.findById(mockOrder.id)).thenReturn(Optional.of(mockOrder))
+      assertThatThrownBy {
+        service.getFmsMonitoringOrderPayload(mockOrder.id, mockOrder.versions.first().id)
+      }
+        .isInstanceOf(BadRequestException::class.java)
+        .hasMessageContaining("This order is not submitted")
+    }
+
+    @Test
+    fun `Should return fms monitoring order payload by fms service`() {
+      val mockOrder = TestUtilities.createReadyToSubmitOrder(status = OrderStatus.SUBMITTED)
+      mockOrder.fmsResultId = UUID.randomUUID()
+
+      whenever(repo.findById(mockOrder.id)).thenReturn(Optional.of(mockOrder))
+      whenever(
+        fmsService.getFmsMonitoringOrderSubmissionResultByOrderId(mockOrder.fmsResultId!!),
+      ).thenReturn("mockPayload")
+
+      val result = service.getFmsMonitoringOrderPayload(mockOrder.id, mockOrder.versions.first().id)
+
+      assertThat(result).isEqualTo("mockPayload")
     }
   }
 }
