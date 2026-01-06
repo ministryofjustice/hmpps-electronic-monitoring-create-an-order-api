@@ -8,6 +8,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewReleaseDateConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewTimeTable
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.EnforcementZoneConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationAndRisk
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationLocation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InterestedParties
@@ -22,6 +23,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.EnforcementZoneType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MonitoringConditionType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderType
@@ -46,6 +48,7 @@ abstract class OrderTestBase {
     installationAndRisk: InstallationAndRisk = createInstallationAndRisk(),
     monitoringConditions: MonitoringConditions = createMonitoringConditions(),
     mandatoryAttendanceConditions: List<MandatoryAttendanceConditions> = listOf(),
+    enforcementZoneConditions: List<EnforcementZoneConditions> = listOf(),
     interestedParties: InterestedParties? = null,
     probationDeliveryUnits: ProbationDeliveryUnit? = null,
     trailMonitoringConditions: TrailMonitoringConditions? = null,
@@ -79,6 +82,7 @@ abstract class OrderTestBase {
     order.installationAndRisk = installationAndRisk
     order.monitoringConditions = monitoringConditions
     order.mandatoryAttendanceConditions.addAll(mandatoryAttendanceConditions)
+    order.enforcementZoneConditions.addAll(enforcementZoneConditions)
     order.interestedParties = interestedParties
     order.probationDeliveryUnit = probationDeliveryUnits
     if (responsibleAdult != null) {
@@ -87,6 +91,10 @@ abstract class OrderTestBase {
 
     if (mandatoryAttendanceConditions.isNotEmpty()) {
       order.monitoringConditions?.mandatoryAttendance = true
+    }
+
+    if (enforcementZoneConditions.isNotEmpty()) {
+      order.monitoringConditions?.exclusionZone = true
     }
 
     if (monitoringConditions.trail == true) {
@@ -223,8 +231,8 @@ abstract class OrderTestBase {
     issp: YesNoUnknown = YesNoUnknown.YES,
     hdc: YesNoUnknown = YesNoUnknown.YES,
     prarr: YesNoUnknown = YesNoUnknown.YES,
-    startDate: ZonedDateTime = ZonedDateTime.of(2025, 1, 1, 1, 1, 1, 1, ZoneId.of("UTC")),
-    endDate: ZonedDateTime = ZonedDateTime.of(2025, 2, 1, 1, 1, 1, 1, ZoneId.of("UTC")),
+    startDate: ZonedDateTime? = ZonedDateTime.of(2025, 1, 1, 1, 1, 1, 1, ZoneId.of("UTC")),
+    endDate: ZonedDateTime? = ZonedDateTime.of(2025, 2, 1, 1, 1, 1, 1, ZoneId.of("UTC")),
     sentenceType: SentenceType = SentenceType.LIFE_SENTENCE,
     conditionType: MonitoringConditionType = MonitoringConditionType.BAIL_ORDER,
     orderTypeDescription: OrderTypeDescription = OrderTypeDescription.DAPO,
@@ -284,6 +292,27 @@ abstract class OrderTestBase {
     purpose = purpose,
     appointmentDay = appointmentDay,
     startTime = startTime,
+  )
+
+  protected fun createEnforcementZoneCondition(
+    endDate: ZonedDateTime = ZonedDateTime.of(2025, 2, 1, 0, 0, 0, 0, ZoneId.of("UTC")),
+    startDate: ZonedDateTime = ZonedDateTime.of(2025, 1, 1, 23, 59, 0, 0, ZoneId.of("UTC")),
+    zoneType: EnforcementZoneType = EnforcementZoneType.EXCLUSION,
+    name: String = "",
+    description: String = "",
+    duration: String = "",
+    fileName: String = "",
+    fileId: UUID = UUID.randomUUID(),
+  ): EnforcementZoneConditions = EnforcementZoneConditions(
+    versionId = UUID.randomUUID(),
+    endDate = endDate,
+    startDate = startDate,
+    zoneType = zoneType,
+    name = name,
+    description = description,
+    duration = duration,
+    fileName = fileName,
+    fileId = fileId,
   )
 
   protected fun createAlcoholMonitoringConditions(

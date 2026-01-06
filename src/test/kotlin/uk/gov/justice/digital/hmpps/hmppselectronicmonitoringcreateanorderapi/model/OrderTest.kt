@@ -4,6 +4,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AdditionalDocument
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationLocation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.TrailMonitoringConditions
@@ -13,6 +14,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.PrisonDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ProbationServiceRegion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ResponsibleOrganisation
+import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.util.UUID
 
@@ -102,6 +104,178 @@ class OrderTest : OrderTestBase() {
     order.enforcementZoneConditions.clear()
     order.mandatoryAttendanceConditions.clear()
     assertThat(order.isValid).isTrue()
+  }
+
+  @Test
+  fun `getMonitoringStartDate should return monitoringConditions startDate when set`() {
+    val expectedStartDate = ZonedDateTime.of(2025, 1, 15, 10, 0, 0, 0, ZoneId.of("UTC"))
+
+    val order = createOrder(
+      monitoringConditions = createMonitoringConditions(
+        startDate = expectedStartDate,
+        trail = true,
+      ),
+      trailMonitoringConditions = TrailMonitoringConditions(
+        versionId = UUID.randomUUID(),
+        startDate = ZonedDateTime.of(2025, 1, 20, 10, 0, 0, 0, ZoneId.of("UTC")),
+      ),
+    )
+
+    val result = order.getMonitoringStartDate()
+
+    assertThat(result).isEqualTo(expectedStartDate)
+  }
+
+  @Test
+  fun `getMonitoringStartDate should return earliest date from all conditions when null`() {
+    val earliestDate = ZonedDateTime.of(2025, 1, 10, 10, 0, 0, 0, ZoneId.of("UTC"))
+
+    val order = createOrder(
+      monitoringConditions = createMonitoringConditions(
+        startDate = null,
+        trail = true,
+        curfew = true,
+      ),
+      trailMonitoringConditions = TrailMonitoringConditions(
+        versionId = UUID.randomUUID(),
+        startDate = ZonedDateTime.of(2025, 1, 20, 10, 0, 0, 0, ZoneId.of("UTC")),
+      ),
+      curfewConditions = CurfewConditions(
+        versionId = UUID.randomUUID(),
+        startDate = earliestDate,
+      ),
+    )
+
+    val result = order.getMonitoringStartDate()
+
+    assertThat(result).isEqualTo(earliestDate)
+  }
+
+  @Test
+  fun `getMonitoringStartDate should handle all conditions`() {
+    val earliestDate = ZonedDateTime.of(2025, 1, 10, 10, 0, 0, 0, ZoneId.of("UTC"))
+
+    val order = createOrder(
+      monitoringConditions = createMonitoringConditions(
+        startDate = null,
+        trail = true,
+        curfew = true,
+        alcohol = true,
+        mandatoryAttendance = true,
+        exclusionZone = true,
+      ),
+      trailMonitoringConditions = TrailMonitoringConditions(
+        versionId = UUID.randomUUID(),
+        startDate = ZonedDateTime.of(2025, 1, 20, 10, 0, 0, 0, ZoneId.of("UTC")),
+      ),
+      curfewConditions = CurfewConditions(
+        versionId = UUID.randomUUID(),
+        startDate = ZonedDateTime.of(2025, 1, 15, 10, 0, 0, 0, ZoneId.of("UTC")),
+      ),
+      alcoholMonitoringConditions = createAlcoholMonitoringConditions(
+        startDate = earliestDate,
+      ),
+      mandatoryAttendanceConditions = listOf(
+        createMandatoryAttendanceCondition(
+          startDate = ZonedDateTime.of(2025, 1, 25, 10, 0, 0, 0, ZoneId.of("UTC")),
+        ),
+      ),
+      enforcementZoneConditions = listOf(
+        createEnforcementZoneCondition(
+          startDate = ZonedDateTime.of(2025, 1, 30, 10, 0, 0, 0, ZoneId.of("UTC")),
+        ),
+      ),
+    )
+
+    val result = order.getMonitoringStartDate()
+
+    assertThat(result).isEqualTo(earliestDate)
+  }
+
+  @Test
+  fun `getMonitoringEndDate should return monitoringConditions endDate when set`() {
+    val expectedEndDate = ZonedDateTime.of(2025, 1, 15, 10, 0, 0, 0, ZoneId.of("UTC"))
+
+    val order = createOrder(
+      monitoringConditions = createMonitoringConditions(
+        endDate = expectedEndDate,
+        trail = true,
+      ),
+      trailMonitoringConditions = TrailMonitoringConditions(
+        versionId = UUID.randomUUID(),
+        endDate = ZonedDateTime.of(2025, 1, 20, 10, 0, 0, 0, ZoneId.of("UTC")),
+      ),
+    )
+
+    val result = order.getMonitoringEndDate()
+
+    assertThat(result).isEqualTo(expectedEndDate)
+  }
+
+  @Test
+  fun `getMonitoringEndDate should return latest date from all conditions when null`() {
+    val latestDate = ZonedDateTime.of(2025, 1, 30, 10, 0, 0, 0, ZoneId.of("UTC"))
+
+    val order = createOrder(
+      monitoringConditions = createMonitoringConditions(
+        endDate = null,
+        trail = true,
+        curfew = true,
+      ),
+      trailMonitoringConditions = TrailMonitoringConditions(
+        versionId = UUID.randomUUID(),
+        endDate = ZonedDateTime.of(2025, 1, 20, 10, 0, 0, 0, ZoneId.of("UTC")),
+      ),
+      curfewConditions = CurfewConditions(
+        versionId = UUID.randomUUID(),
+        endDate = latestDate,
+      ),
+    )
+
+    val result = order.getMonitoringEndDate()
+
+    assertThat(result).isEqualTo(latestDate)
+  }
+
+  @Test
+  fun `getMonitoringEndDate should handle all conditions`() {
+    val latestDate = ZonedDateTime.of(2025, 1, 30, 10, 0, 0, 0, ZoneId.of("UTC"))
+
+    val order = createOrder(
+      monitoringConditions = createMonitoringConditions(
+        endDate = null,
+        trail = true,
+        curfew = true,
+        alcohol = true,
+        mandatoryAttendance = true,
+        exclusionZone = true,
+      ),
+      trailMonitoringConditions = TrailMonitoringConditions(
+        versionId = UUID.randomUUID(),
+        endDate = ZonedDateTime.of(2025, 1, 20, 10, 0, 0, 0, ZoneId.of("UTC")),
+      ),
+      curfewConditions = CurfewConditions(
+        versionId = UUID.randomUUID(),
+        endDate = ZonedDateTime.of(2025, 1, 15, 10, 0, 0, 0, ZoneId.of("UTC")),
+      ),
+      alcoholMonitoringConditions = createAlcoholMonitoringConditions(
+        endDate = latestDate,
+      ),
+      mandatoryAttendanceConditions = listOf(
+        createMandatoryAttendanceCondition(
+          endDate = ZonedDateTime.of(2025, 1, 25, 10, 0, 0, 0, ZoneId.of("UTC")),
+        ),
+      ),
+      enforcementZoneConditions = listOf(
+        createEnforcementZoneCondition(
+          endDate = ZonedDateTime.of(2025, 1, 15, 10, 0, 0, 0, ZoneId.of("UTC")),
+        ),
+      ),
+    )
+
+    val result = order.getMonitoringEndDate()
+
+    assertThat(result).isEqualTo(latestDate)
   }
 
   private fun createValidOrder(): Order = createOrder(
