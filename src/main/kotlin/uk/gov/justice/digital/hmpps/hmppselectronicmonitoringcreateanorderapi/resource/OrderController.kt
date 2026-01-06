@@ -180,6 +180,8 @@ class OrderController(@Autowired val orderService: OrderService) {
     isValid = order.isValid,
     mandatoryAttendanceConditions = order.mandatoryAttendanceConditions,
     monitoringConditions = order.monitoringConditions,
+    monitoringStartDate = order.getMonitoringStartDate(),
+    monitoringEndDate = order.getMonitoringEndDate(),
     monitoringConditionsAlcohol = order.monitoringConditionsAlcohol,
     monitoringConditionsTrail = order.monitoringConditionsTrail,
     status = order.status,
