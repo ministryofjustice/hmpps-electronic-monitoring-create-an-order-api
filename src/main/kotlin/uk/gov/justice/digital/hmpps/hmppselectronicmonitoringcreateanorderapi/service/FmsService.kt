@@ -15,6 +15,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.se
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.strategy.FmsOrderSubmissionStrategy
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.strategy.FmsSubmissionStrategy
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.strategy.FmsVariationSubmissionStrategy
+import java.util.UUID
 
 @Service
 @Configuration
@@ -50,4 +51,10 @@ class FmsService(
 
     return submissionResult
   }
+
+  fun getFmsDeviceWearerSubmissionResultById(resultId: UUID): String =
+    repo.findById(resultId).orElseThrow().deviceWearerResult.payload
+
+  fun getFmsMonitoringOrderSubmissionResultByOrderId(resultId: UUID): String =
+    repo.findById(resultId).orElseThrow().monitoringOrderResult.payload
 }

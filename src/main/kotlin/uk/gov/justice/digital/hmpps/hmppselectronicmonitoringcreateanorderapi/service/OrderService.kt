@@ -252,4 +252,20 @@ class OrderService(
 
     return order.copy(versions = mutableListOf(specificVersion))
   }
+
+  fun getFmsDeviceWearerPayload(orderId: UUID, versionId: UUID): String {
+    val version = getSpecificVersion(orderId, versionId)
+    if (version.status === OrderStatus.IN_PROGRESS) {
+      throw BadRequestException("This order is not submitted")
+    }
+    return fmsService.getFmsDeviceWearerSubmissionResultById(version.fmsResultId!!)
+  }
+
+  fun getFmsMonitoringOrderPayload(orderId: UUID, versionId: UUID): String {
+    val version = getSpecificVersion(orderId, versionId)
+    if (version.status === OrderStatus.IN_PROGRESS) {
+      throw BadRequestException("This order is not submitted")
+    }
+    return fmsService.getFmsMonitoringOrderSubmissionResultByOrderId(version.fmsResultId!!)
+  }
 }
