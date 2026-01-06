@@ -119,6 +119,8 @@ class OrderControllerTest {
         dataDictionaryVersion = mockDictionaryVersion,
         orderParameters = null,
         versionId = version.id,
+        monitoringStartDate = null,
+        monitoringEndDate = null,
       ),
     )
   }
@@ -193,6 +195,8 @@ class OrderControllerTest {
           dataDictionaryVersion = mockDictionaryVersion,
           orderParameters = null,
           versionId = orderVersion.id,
+          monitoringStartDate = null,
+          monitoringEndDate = null,
         ),
         OrderDto(
           id = orderId2,
@@ -225,6 +229,8 @@ class OrderControllerTest {
           dataDictionaryVersion = mockDictionaryVersion,
           orderParameters = null,
           versionId = orderVersion2.id,
+          monitoringStartDate = null,
+          monitoringEndDate = null,
         ),
       ),
     )
@@ -323,6 +329,8 @@ class OrderControllerTest {
           dataDictionaryVersion = mockDictionaryVersion,
           orderParameters = null,
           versionId = orderVersion.id,
+          monitoringStartDate = null,
+          monitoringEndDate = null,
         ),
         OrderDto(
           id = orderId2,
@@ -355,6 +363,8 @@ class OrderControllerTest {
           dataDictionaryVersion = mockDictionaryVersion,
           orderParameters = null,
           versionId = orderVersion2.id,
+          monitoringStartDate = null,
+          monitoringEndDate = null,
         ),
       ),
     )
