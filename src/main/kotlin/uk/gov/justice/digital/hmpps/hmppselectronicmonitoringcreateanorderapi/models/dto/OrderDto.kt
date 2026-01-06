@@ -24,7 +24,6 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import java.time.OffsetDateTime
-import java.time.ZonedDateTime
 import java.util.*
 
 data class OrderDto(
@@ -65,10 +64,6 @@ data class OrderDto(
   val mandatoryAttendanceConditions: MutableList<MandatoryAttendanceConditions>,
 
   val monitoringConditions: MonitoringConditions?,
-
-  val monitoringStartDate: ZonedDateTime?,
-
-  val monitoringEndDate: ZonedDateTime?,
 
   val monitoringConditionsAlcohol: AlcoholMonitoringConditions?,
 
