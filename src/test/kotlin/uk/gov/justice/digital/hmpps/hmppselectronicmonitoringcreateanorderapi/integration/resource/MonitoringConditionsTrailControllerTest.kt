@@ -95,7 +95,8 @@ class MonitoringConditionsTrailControllerTest : IntegrationTestBase() {
           """
             {
               "startDate": "$mockStartDate",
-              "endDate": "$mockEndDate"
+              "endDate": "$mockEndDate",
+              "deviceType": "FITTED"
             }
           """.trimIndent(),
         ),
