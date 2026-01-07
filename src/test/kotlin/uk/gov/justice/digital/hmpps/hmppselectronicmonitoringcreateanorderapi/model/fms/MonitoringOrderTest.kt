@@ -32,6 +32,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Pilot
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ResponsibleOrganisation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.SentenceType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YesNoUnknown
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.EnforceableCondition
@@ -743,6 +744,22 @@ class MonitoringOrderTest : OrderTestBase() {
     )
     val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
     assertThat(fmsMonitoringOrder.dapolMissedInError).isEqualTo("")
+  }
+
+  @Test
+  fun `It should map ro region to UKBA when responsible organisation is home office`() {
+    val order = createOrder(
+      dataDictionaryVersion = DataDictionaryVersion.DDV5,
+      interestedParties = createInterestedParty(
+        notifyingOrganisation = NotifyingOrganisationDDv5.HOME_OFFICE.name,
+        responsibleOrganisation = ResponsibleOrganisation.HOME_OFFICE.name,
+      ),
+
+    )
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
+    assertThat(fmsMonitoringOrder.notifyingOrganization).isEqualTo("Home Office")
+    assertThat(fmsMonitoringOrder.responsibleOrganization).isEqualTo("Home Office")
+    assertThat(fmsMonitoringOrder.roRegion).isEqualTo("UKBA")
   }
 
   private fun assertNotifyingOrgNameMapping(savedValue: String, mappedValue: String) {
