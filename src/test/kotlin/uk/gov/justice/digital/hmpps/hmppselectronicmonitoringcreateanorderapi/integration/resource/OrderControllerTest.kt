@@ -60,8 +60,8 @@ class OrderControllerTest : IntegrationTestBase() {
   @Autowired
   lateinit var fmsResultRepository: FmsSubmissionResultRepository
   private val objectMapper: ObjectMapper = jacksonObjectMapper()
-  val mockStartDate: ZonedDateTime = ZonedDateTime.now().plusMonths(1)
-  val mockEndDate: ZonedDateTime = ZonedDateTime.now().plusMonths(2)
+  val mockStartDate = ZonedDateTime.parse("2040-02-07T10:00:00Z")
+  val mockEndDate = ZonedDateTime.parse("2040-03-07T11:00:00Z")
   val mockDocumentId = UUID.randomUUID()
 
   private val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
@@ -912,6 +912,32 @@ class OrderControllerTest : IntegrationTestBase() {
         .exchange()
         .expectStatus()
         .isOk
+    }
+
+    @Test
+    fun `It should populate the monitoring start and end dates correctly in the order DTO`() {
+      val order = TestUtilities.createReadyToSubmitOrder(
+        status = OrderStatus.IN_PROGRESS,
+        startDate = mockStartDate,
+        endDate = mockEndDate,
+      )
+      order.monitoringConditions?.startDate = null
+      order.monitoringConditions?.endDate = null
+      repo.save(order)
+
+      val result = webTestClient.get()
+        .uri("/api/orders/${order.id}")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody(OrderDto::class.java)
+        .returnResult()
+        .responseBody!!
+
+      assertThat(result.monitoringConditions).isNotNull()
+      assertThat(result.monitoringConditions?.startDate).isEqualTo(mockStartDate)
+      assertThat(result.monitoringConditions?.endDate).isEqualTo(mockEndDate)
     }
   }
 
