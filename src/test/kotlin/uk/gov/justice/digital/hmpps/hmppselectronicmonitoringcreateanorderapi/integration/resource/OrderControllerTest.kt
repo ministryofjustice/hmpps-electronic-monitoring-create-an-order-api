@@ -51,7 +51,6 @@ import java.nio.file.Paths
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
-import java.time.temporal.ChronoUnit
 import java.util.*
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.DeviceWearer as FmsDeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.ErrorResponse as FmsErrorResponseDetails
@@ -61,8 +60,8 @@ class OrderControllerTest : IntegrationTestBase() {
   @Autowired
   lateinit var fmsResultRepository: FmsSubmissionResultRepository
   private val objectMapper: ObjectMapper = jacksonObjectMapper()
-  val mockStartDate: ZonedDateTime = ZonedDateTime.now().plusMonths(1).truncatedTo(ChronoUnit.MICROS)
-  val mockEndDate: ZonedDateTime = ZonedDateTime.now().plusMonths(2).truncatedTo(ChronoUnit.MICROS)
+  val mockStartDate = ZonedDateTime.parse("2040-02-07T10:00:00Z")
+  val mockEndDate = ZonedDateTime.parse("2040-03-07T11:00:00Z")
   val mockDocumentId = UUID.randomUUID()
 
   private val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
