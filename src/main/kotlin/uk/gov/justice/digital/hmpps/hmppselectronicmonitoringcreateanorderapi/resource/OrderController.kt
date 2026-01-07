@@ -162,36 +162,43 @@ class OrderController(@Autowired val orderService: OrderService) {
     return ResponseEntity(monitoringOrderRequest, HttpStatus.OK)
   }
 
-  private fun convertToDto(order: Order): OrderDto = OrderDto(
-    id = order.id,
-    additionalDocuments = order.additionalDocuments,
-    addresses = order.addresses,
-    contactDetails = order.contactDetails,
-    curfewConditions = order.curfewConditions,
-    curfewReleaseDateConditions = order.curfewReleaseDateConditions,
-    curfewTimeTable = order.curfewTimeTable,
-    deviceWearer = order.deviceWearer,
-    deviceWearerResponsibleAdult = order.deviceWearerResponsibleAdult,
-    enforcementZoneConditions = order.enforcementZoneConditions,
-    fmsResultId = order.fmsResultId,
-    fmsResultDate = order.fmsResultDate,
-    installationAndRisk = order.installationAndRisk,
-    interestedParties = order.interestedParties,
-    isValid = order.isValid,
-    mandatoryAttendanceConditions = order.mandatoryAttendanceConditions,
-    monitoringConditions = order.monitoringConditions,
-    monitoringConditionsAlcohol = order.monitoringConditionsAlcohol,
-    monitoringConditionsTrail = order.monitoringConditionsTrail,
-    status = order.status,
-    type = order.type,
-    username = order.username,
-    variationDetails = order.variationDetails,
-    probationDeliveryUnit = order.probationDeliveryUnit,
-    installationLocation = order.installationLocation,
-    installationAppointment = order.installationAppointment,
-    dataDictionaryVersion = order.dataDictionaryVersion,
-    orderParameters = order.orderParameters,
-    submittedBy = order.submittedBy,
-    versionId = order.versionId,
-  )
+  private fun convertToDto(order: Order): OrderDto {
+    val dto = OrderDto(
+      id = order.id,
+      additionalDocuments = order.additionalDocuments,
+      addresses = order.addresses,
+      contactDetails = order.contactDetails,
+      curfewConditions = order.curfewConditions,
+      curfewReleaseDateConditions = order.curfewReleaseDateConditions,
+      curfewTimeTable = order.curfewTimeTable,
+      deviceWearer = order.deviceWearer,
+      deviceWearerResponsibleAdult = order.deviceWearerResponsibleAdult,
+      enforcementZoneConditions = order.enforcementZoneConditions,
+      fmsResultId = order.fmsResultId,
+      fmsResultDate = order.fmsResultDate,
+      installationAndRisk = order.installationAndRisk,
+      interestedParties = order.interestedParties,
+      isValid = order.isValid,
+      mandatoryAttendanceConditions = order.mandatoryAttendanceConditions,
+      monitoringConditions = order.monitoringConditions,
+      monitoringConditionsAlcohol = order.monitoringConditionsAlcohol,
+      monitoringConditionsTrail = order.monitoringConditionsTrail,
+      status = order.status,
+      type = order.type,
+      username = order.username,
+      variationDetails = order.variationDetails,
+      probationDeliveryUnit = order.probationDeliveryUnit,
+      installationLocation = order.installationLocation,
+      installationAppointment = order.installationAppointment,
+      dataDictionaryVersion = order.dataDictionaryVersion,
+      orderParameters = order.orderParameters,
+      submittedBy = order.submittedBy,
+      versionId = order.versionId,
+    )
+
+    dto.monitoringConditions?.startDate = order.getMonitoringStartDate()
+    dto.monitoringConditions?.endDate = order.getMonitoringEndDate()
+
+    return dto
+  }
 }

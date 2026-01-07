@@ -246,26 +246,8 @@ data class MonitoringOrder(
 
     fun fromOrder(order: Order, caseId: String?): MonitoringOrder {
       val conditions = order.monitoringConditions!!
-      var monitoringStartDate = order.monitoringConditions!!.startDate
-      var monitoringEndDate = order.monitoringConditions!!.endDate
-
-      val monitoringConditions = sequence {
-        yieldAll(order.enforcementZoneConditions)
-        yieldAll(order.mandatoryAttendanceConditions)
-        listOfNotNull(
-          order.curfewConditions,
-          order.monitoringConditionsTrail,
-          order.monitoringConditionsAlcohol,
-        ).forEach {
-          yield(it)
-        }
-      }
-      if (monitoringStartDate == null) {
-        monitoringStartDate = monitoringConditions.mapNotNull { it.startDate }.minOrNull()
-      }
-      if (monitoringEndDate == null) {
-        monitoringEndDate = monitoringConditions.mapNotNull { it.endDate }.maxOrNull()
-      }
+      val monitoringStartDate = order.getMonitoringStartDate()
+      val monitoringEndDate = order.getMonitoringEndDate()
 
       val monitoringOrder = MonitoringOrder(
         deviceWearer = "${order.deviceWearer!!.firstName} ${order.deviceWearer!!.lastName}",

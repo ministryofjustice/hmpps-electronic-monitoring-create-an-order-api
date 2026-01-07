@@ -18,6 +18,7 @@ class MonitoringConditionsTrailService : OrderSectionServiceBase() {
       versionId = order.getCurrentVersion().id,
       endDate = updateRecord.endDate,
       startDate = updateRecord.startDate,
+      deviceType = updateRecord.deviceType,
     )
 
     return orderRepo.save(order).monitoringConditionsTrail!!
