@@ -3,11 +3,13 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.m
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
+import jakarta.persistence.EnumType
+import jakarta.persistence.Enumerated
 import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.TrailMonitoringConditions
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DeviceType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.interfaces.MonitoringCondition
 import java.time.ZonedDateTime
 import java.util.*
@@ -28,6 +30,10 @@ data class TrailMonitoringConditions(
 
   @Column(name = "END_DATE", nullable = true)
   override var endDate: ZonedDateTime? = null,
+
+  @Enumerated(EnumType.STRING)
+  @Column(name = "DEVICE_TYPE", nullable = true)
+  var deviceType: DeviceType? = null,
 
   @Schema(hidden = true)
   @OneToOne
