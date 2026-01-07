@@ -913,6 +913,32 @@ class OrderControllerTest : IntegrationTestBase() {
         .expectStatus()
         .isOk
     }
+
+    @Test
+    fun `It should populate the monitoring start and end dates correctly in the order DTO`() {
+      val order = TestUtilities.createReadyToSubmitOrder(
+        status = OrderStatus.IN_PROGRESS,
+        startDate = mockStartDate,
+        endDate = mockEndDate,
+      )
+      order.monitoringConditions?.startDate = null
+      order.monitoringConditions?.endDate = null
+      repo.save(order)
+
+      val result = webTestClient.get()
+        .uri("/api/orders/${order.id}")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody(OrderDto::class.java)
+        .returnResult()
+        .responseBody!!
+
+      assertThat(result.monitoringConditions).isNotNull()
+      assertThat(result.monitoringConditions?.startDate).isEqualTo(mockStartDate)
+      assertThat(result.monitoringConditions?.endDate).isEqualTo(mockEndDate)
+    }
   }
 
   @Nested
