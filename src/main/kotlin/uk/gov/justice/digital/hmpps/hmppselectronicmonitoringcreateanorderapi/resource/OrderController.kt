@@ -197,7 +197,7 @@ class OrderController(@Autowired val orderService: OrderService) {
     )
 
     dto.monitoringConditions?.startDate = order.getMonitoringStartDate()
-    dto.monitoringConditions?.endDate = order.getMonitoringStartDate()
+    dto.monitoringConditions?.endDate = order.getMonitoringEndDate()
 
     return dto
   }
