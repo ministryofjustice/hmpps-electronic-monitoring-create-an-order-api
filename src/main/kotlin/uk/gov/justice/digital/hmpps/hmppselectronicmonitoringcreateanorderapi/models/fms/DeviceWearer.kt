@@ -146,9 +146,6 @@ data class DeviceWearer(
   @JsonProperty("home_office_case_reference_number")
   var homeOfficeReferenceNumber: String? = "",
 
-  @JsonProperty("compliance_and_enforcement_person_reference")
-  var complianceAndEnforcementPersonReference: String? = "",
-
   @JsonProperty("interpreter_required")
   var interpreterRequired: String? = "",
 
