@@ -7,4 +7,5 @@ enum class InstallationLocationType {
   INSTALLATION,
   PRISON,
   PROBATION_OFFICE,
+  IMMIGRATION_REMOVAL_CENTRE,
 }

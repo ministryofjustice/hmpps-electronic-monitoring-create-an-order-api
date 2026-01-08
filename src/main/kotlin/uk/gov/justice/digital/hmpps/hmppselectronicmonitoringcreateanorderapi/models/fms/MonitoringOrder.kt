@@ -530,11 +530,18 @@ data class MonitoringOrder(
         ?: order.interestedParties?.responsibleOrganisation
         ?: "N/A"
 
-    private fun getResponsibleOrganisationRegion(order: Order): String =
-      ProbationServiceRegion.from(order.interestedParties?.responsibleOrganisationRegion)?.value
+    private fun getResponsibleOrganisationRegion(order: Order): String {
+      if (ResponsibleOrganisation.from(order.interestedParties?.responsibleOrganisation) ==
+        ResponsibleOrganisation.HOME_OFFICE
+      ) {
+        return "UKBA"
+      }
+
+      return ProbationServiceRegion.from(order.interestedParties?.responsibleOrganisationRegion)?.value
         ?: YouthJusticeServiceRegions.from(order.interestedParties?.responsibleOrganisationRegion)?.value
         ?: order.interestedParties?.responsibleOrganisationRegion
         ?: ""
+    }
 
     private fun getProbationDeliveryUnit(order: Order): String {
       if (order.dataDictionaryVersion == DataDictionaryVersion.DDV6) {
