@@ -93,6 +93,7 @@ class InstallationLocationControllerTest : IntegrationTestBase() {
       Arguments.of("PRIMARY", InstallationLocationType.PRIMARY),
       Arguments.of("PRISON", InstallationLocationType.PRISON),
       Arguments.of("PROBATION_OFFICE", InstallationLocationType.PROBATION_OFFICE),
+      Arguments.of("IMMIGRATION_REMOVAL_CENTRE", InstallationLocationType.IMMIGRATION_REMOVAL_CENTRE),
     )
   }
 }
