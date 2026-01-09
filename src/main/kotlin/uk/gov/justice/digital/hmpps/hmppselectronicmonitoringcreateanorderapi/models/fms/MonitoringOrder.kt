@@ -30,8 +30,10 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ResponsibleOrganisation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YesNoUnknown
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YouthCourtDDv5
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YouthCustodyServiceRegionDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YouthJusticeServiceRegions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ddv6.ProbationDeliveryUnitsDDv6
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ddv6.YouthCustodyServiceRegionDDv6
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.formatters.PhoneNumberFormatter
 import java.time.DayOfWeek
 import java.time.ZoneId
@@ -513,6 +515,7 @@ data class MonitoringOrder(
       if (notifyOrg == NotifyingOrganisationDDv5.PROBATION.name) {
         return "Probation Board"
       }
+
       return CivilCountyCourtDDv5.from(order.interestedParties?.notifyingOrganisationName)?.value
         ?: CrownCourtDDv5.from(order.interestedParties?.notifyingOrganisationName)?.value
         ?: FamilyCourtDDv5.from(order.interestedParties?.notifyingOrganisationName)?.value
@@ -520,6 +523,8 @@ data class MonitoringOrder(
         ?: MilitaryCourtDDv5.from(order.interestedParties?.notifyingOrganisationName)?.value
         ?: PrisonDDv5.from(order.interestedParties?.notifyingOrganisationName)?.value
         ?: YouthCourtDDv5.from(order.interestedParties?.notifyingOrganisationName)?.value
+        ?: YouthCustodyServiceRegionDDv5.from(order.interestedParties?.notifyingOrganisationName)?.value
+        ?: YouthCustodyServiceRegionDDv6.from(order.interestedParties?.notifyingOrganisationName)?.value
         ?: order.interestedParties?.notifyingOrganisationName
         ?: ""
     }

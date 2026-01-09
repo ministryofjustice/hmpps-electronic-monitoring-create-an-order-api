@@ -280,26 +280,6 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
     }
 
     @Test
-    fun `it should accept empty name when notifying organisation is YOUTH_CUSTODY_SERVICE`() {
-      val order = createOrder()
-
-      val interestedParties =
-        webTestClient.put().uri("/api/orders/${order.id}/interested-parties").contentType(MediaType.APPLICATION_JSON)
-          .body(
-            BodyInserters.fromValue(
-              buildMockRequest(
-                notifyingOrganisation = "YOUTH_CUSTODY_SERVICE",
-                notifyingOrganisationName = "",
-              ),
-            ),
-          ).headers(setAuthorisation("AUTH_ADM")).exchange()
-          .expectStatus().isOk.expectBody(InterestedParties::class.java).returnResult().responseBody!!
-
-      Assertions.assertThat(interestedParties.notifyingOrganisation).isEqualTo("YOUTH_CUSTODY_SERVICE")
-      Assertions.assertThat(interestedParties.notifyingOrganisationName).isEqualTo("")
-    }
-
-    @Test
     fun `it should accept a probation region when responsible organisation is probation`() {
       val order = createOrder()
 
