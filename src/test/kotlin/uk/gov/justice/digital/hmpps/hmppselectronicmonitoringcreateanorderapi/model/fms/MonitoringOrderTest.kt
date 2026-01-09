@@ -21,6 +21,8 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.ProbationDeliveryUnitDDv6ArgumentsProvider
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.SentenceArgumentsProvider
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.YouthCourtArgumentsProvider
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.YouthCustodyServiceRegionArgumentsProvider
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.YouthCustodyServiceRegionArgumentsProviderDDv6
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationAppointment
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationLocation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.TrailMonitoringConditions
@@ -763,6 +765,24 @@ class MonitoringOrderTest : OrderTestBase() {
     assertThat(fmsMonitoringOrder.roRegion).isEqualTo("UKBA")
   }
 
+  @ParameterizedTest(name = "it should map youth custody service region - {0} -> {1}")
+  @ArgumentsSource(YouthCustodyServiceRegionArgumentsProvider::class)
+  fun `It should correctly map saved youth custody service region values to Serco`(
+    savedValue: String,
+    mappedValue: String,
+  ) {
+    assertNotifyingOrgNameMapping(savedValue, mappedValue)
+  }
+
+  @ParameterizedTest(name = "it should map youth custody service region - {0} -> {1}")
+  @ArgumentsSource(YouthCustodyServiceRegionArgumentsProviderDDv6::class)
+  fun `It should correctly map saved youth custody service region DDV6 values to Serco`(
+    savedValue: String,
+    mappedValue: String,
+  ) {
+    assertNotifyingOrgNameMapping(savedValue, mappedValue, DataDictionaryVersion.DDV6)
+  }
+
   @Test
   fun `It should map fitted device type correctly`() {
     val order = createOrder(
@@ -803,9 +823,13 @@ class MonitoringOrderTest : OrderTestBase() {
     assertThat(condition).isNotNull()
   }
 
-  private fun assertNotifyingOrgNameMapping(savedValue: String, mappedValue: String) {
+  private fun assertNotifyingOrgNameMapping(
+    savedValue: String,
+    mappedValue: String,
+    dataDictionaryVersion: DataDictionaryVersion = DataDictionaryVersion.DDV5,
+  ) {
     val order = createOrder(
-      dataDictionaryVersion = DataDictionaryVersion.DDV5,
+      dataDictionaryVersion = dataDictionaryVersion,
       deviceWearer = createDeviceWearer(),
       interestedParties = createInterestedParty(
         responsibleOrganisation = "PROBATION",
