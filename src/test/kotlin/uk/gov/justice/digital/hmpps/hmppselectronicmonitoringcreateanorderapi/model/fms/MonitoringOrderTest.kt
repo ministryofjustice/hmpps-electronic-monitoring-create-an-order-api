@@ -27,6 +27,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DeviceType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.InstallationLocationType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisationDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderType
@@ -760,6 +761,46 @@ class MonitoringOrderTest : OrderTestBase() {
     assertThat(fmsMonitoringOrder.notifyingOrganization).isEqualTo("Home Office")
     assertThat(fmsMonitoringOrder.responsibleOrganization).isEqualTo("Home Office")
     assertThat(fmsMonitoringOrder.roRegion).isEqualTo("UKBA")
+  }
+
+  @Test
+  fun `It should map fitted device type correctly`() {
+    val order = createOrder(
+      dataDictionaryVersion = DataDictionaryVersion.DDV5,
+      monitoringConditions = createMonitoringConditions(trail = true),
+      trailMonitoringConditions = TrailMonitoringConditions(
+        UUID.randomUUID(),
+        UUID.randomUUID(),
+        ZonedDateTime.now(),
+        null,
+        DeviceType.FITTED,
+      ),
+
+    )
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
+    val condition =
+      fmsMonitoringOrder.enforceableCondition?.find { it.condition == "Location Monitoring (Fitted Device)" }
+    assertThat(condition).isNotNull()
+  }
+
+  @Test
+  fun `It should map non fitted device type correctly`() {
+    val order = createOrder(
+      dataDictionaryVersion = DataDictionaryVersion.DDV5,
+      monitoringConditions = createMonitoringConditions(trail = true),
+      trailMonitoringConditions = TrailMonitoringConditions(
+        UUID.randomUUID(),
+        UUID.randomUUID(),
+        ZonedDateTime.now(),
+        null,
+        DeviceType.NON_FITTED,
+      ),
+
+    )
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
+    val condition =
+      fmsMonitoringOrder.enforceableCondition?.find { it.condition == "Location Monitoring (using Non-Fitted Device)" }
+    assertThat(condition).isNotNull()
   }
 
   private fun assertNotifyingOrgNameMapping(savedValue: String, mappedValue: String) {

@@ -10,6 +10,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.CrownCourt
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.CrownCourtDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DeviceType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.EnforcementZoneType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FamilyCourtDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.InstallationLocationType
@@ -319,9 +320,18 @@ data class MonitoringOrder(
       }
 
       if (order.monitoringConditionsTrail?.startDate != null) {
+        val deviceType =
+          if (order.monitoringConditionsTrail!!.deviceType ==
+            DeviceType.NON_FITTED
+          ) {
+            "Location Monitoring (using Non-Fitted Device)"
+          } else {
+            "Location Monitoring (Fitted Device)"
+          }
+
         monitoringOrder.enforceableCondition!!.add(
           EnforceableCondition(
-            "Location Monitoring (Fitted Device)",
+            deviceType,
             startDate = getBritishDateAndTime(order.monitoringConditionsTrail!!.startDate),
             endDate = getBritishDateAndTime(order.monitoringConditionsTrail!!.endDate),
           ),
