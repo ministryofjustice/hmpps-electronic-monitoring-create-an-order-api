@@ -18,4 +18,10 @@ data class UpdateIdentityNumbersDto(
 
   @field:Size(max = 200, message = ValidationErrors.IdentityNumbers.HOME_OFFICE_REFERENCE_NUMBER_MAX_LENGTH)
   var homeOfficeReferenceNumber: String? = "",
+
+  @field:Size(max = 200, message = ValidationErrors.IdentityNumbers.CEPR_MAX_LENGTH)
+  val complianceAndEnforcementPersonReference: String? = "",
+
+  @field:Size(max = 200, message = ValidationErrors.IdentityNumbers.CCRN_MAX_LENGTH)
+  val courtCaseReferenceNumber: String? = "",
 )

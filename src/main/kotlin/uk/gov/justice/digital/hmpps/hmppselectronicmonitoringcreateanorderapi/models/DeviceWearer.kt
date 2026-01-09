@@ -35,6 +35,12 @@ data class DeviceWearer(
   @Column(name = "HOME_OFFICE_REFERENCE_NUMBER", nullable = true)
   var homeOfficeReferenceNumber: String? = null,
 
+  @Column(name = "COMPLIANCE_AND_ENFORCEMENT_PERSON_REFERENCE", nullable = true)
+  var complianceAndEnforcementPersonReference: String? = null,
+
+  @Column(name = "COURT_CASE_REFERENCE_NUMBER", nullable = true)
+  var courtCaseReferenceNumber: String? = null,
+
   @Column(name = "PRISON_NUMBER", nullable = true)
   var prisonNumber: String? = null,
 

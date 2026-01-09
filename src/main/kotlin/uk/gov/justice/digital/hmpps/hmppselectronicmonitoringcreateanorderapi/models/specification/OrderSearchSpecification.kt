@@ -55,6 +55,14 @@ class OrderSearchSpecification(private val criteria: OrderSearchCriteria) : Spec
         criteriaBuilder.lower(deviceWearer.get(DeviceWearer::homeOfficeReferenceNumber.name)),
         keyword,
       )
+    val matchesComplianceAndEnforcementPersonRef = criteriaBuilder.like(
+      criteriaBuilder.lower(deviceWearer.get(DeviceWearer::complianceAndEnforcementPersonReference.name)),
+      keyword,
+    )
+    val matchesCourtCaseRefNumber = criteriaBuilder.like(
+      criteriaBuilder.lower(deviceWearer.get(DeviceWearer::courtCaseReferenceNumber.name)),
+      keyword,
+    )
 
     return criteriaBuilder.or(
       matchesNomisId,
@@ -62,6 +70,8 @@ class OrderSearchSpecification(private val criteria: OrderSearchCriteria) : Spec
       matchesDeliusId,
       matchesPrisonNumber,
       matchesHomeOfficeRefNumber,
+      matchesComplianceAndEnforcementPersonRef,
+      matchesCourtCaseRefNumber,
     )
   }
 

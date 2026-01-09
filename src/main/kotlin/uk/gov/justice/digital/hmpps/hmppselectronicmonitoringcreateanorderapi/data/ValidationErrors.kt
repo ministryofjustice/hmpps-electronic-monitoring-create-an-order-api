@@ -83,6 +83,8 @@ object ValidationErrors {
     const val DELIUS_ID_MAX_LENGTH: String = "Delius ID must be 200 characters or less"
     const val PRISON_NUMBER_MAX_LENGTH: String = "Prison number must be 200 characters or less"
     const val HOME_OFFICE_REFERENCE_NUMBER_MAX_LENGTH: String = "Nomis ID must be 200 characters or less"
+    const val CEPR_MAX_LENGTH: String = "Compliance and Enforcement Person Reference must be 200 characters or less"
+    const val CCRN_MAX_LENGTH: String = "Court Case Reference Number must be 200 characters or less"
   }
 
   object InterestedParties {

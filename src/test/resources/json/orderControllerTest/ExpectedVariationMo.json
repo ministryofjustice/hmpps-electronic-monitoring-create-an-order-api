@@ -205,7 +205,7 @@
   "installation_address_4": "United Kingdom",
   "installation_address_post_code": "SW11 1NC",
   "crown_court_case_reference_number": "",
-  "magistrate_court_case_reference_number": "",
+  "magistrate_court_case_reference_number": "courtCaseReferenceNumber",
   "issp": "Yes",
   "hdc": "No",
   "order_status": "Not Started",

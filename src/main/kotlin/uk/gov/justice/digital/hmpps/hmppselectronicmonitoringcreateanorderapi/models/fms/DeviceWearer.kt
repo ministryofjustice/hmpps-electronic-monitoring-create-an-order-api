@@ -188,9 +188,8 @@ data class DeviceWearer(
         nomisId = order.deviceWearer?.nomisId,
         pncId = order.deviceWearer?.pncId,
         deliusId = order.deviceWearer?.deliusId,
-        homeOfficeReferenceNumber = order.deviceWearer?.homeOfficeReferenceNumber,
         prisonNumber = order.deviceWearer?.prisonNumber,
-
+        homeOfficeReferenceNumber = getHomeOfficeRefNumber(order),
       )
 
       if (order.deviceWearer?.noFixedAbode != null && !order.deviceWearer?.noFixedAbode!!) {
@@ -264,6 +263,18 @@ data class DeviceWearer(
           .toList()
       }
       return emptyList()
+    }
+
+    private fun getHomeOfficeRefNumber(order: Order): String? {
+      if (order.deviceWearer?.complianceAndEnforcementPersonReference != null) {
+        return order.deviceWearer?.complianceAndEnforcementPersonReference
+      }
+
+      if (order.deviceWearer?.homeOfficeReferenceNumber != null) {
+        return order.deviceWearer?.homeOfficeReferenceNumber
+      }
+
+      return null
     }
   }
 }

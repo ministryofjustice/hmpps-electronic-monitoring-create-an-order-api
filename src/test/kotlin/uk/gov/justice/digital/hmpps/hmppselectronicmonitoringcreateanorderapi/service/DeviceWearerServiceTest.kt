@@ -207,7 +207,8 @@ class DeviceWearerServiceTest {
       pncId = "OS51/987896E ",
       deliusId = " X38282  ",
       prisonNumber = "O61613   ",
-      homeOfficeReferenceNumber = " C3575402 ",
+      complianceAndEnforcementPersonReference = " C3575402 ",
+      courtCaseReferenceNumber = " CC35762218 ",
     )
 
     service.updateIdentityNumbers(mockOrderId, mockUsername, mockUpdateRecord)
@@ -216,6 +217,7 @@ class DeviceWearerServiceTest {
     assertThat(mockOrder.deviceWearer?.pncId).isEqualTo("OS51/987896E")
     assertThat(mockOrder.deviceWearer?.deliusId).isEqualTo("X38282")
     assertThat(mockOrder.deviceWearer?.prisonNumber).isEqualTo("O61613")
-    assertThat(mockOrder.deviceWearer?.homeOfficeReferenceNumber).isEqualTo("C3575402")
+    assertThat(mockOrder.deviceWearer?.complianceAndEnforcementPersonReference).isEqualTo("C3575402")
+    assertThat(mockOrder.deviceWearer?.courtCaseReferenceNumber).isEqualTo("CC35762218")
   }
 }

@@ -8,6 +8,8 @@ import org.junit.jupiter.params.provider.MethodSource
 import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.OrderTestBase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisationDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.DeviceWearer as FmsDeviceWearer
 
 @ActiveProfiles("test")
@@ -151,6 +153,22 @@ class DeviceWearerTest : OrderTestBase() {
     val fmsDeviceWearer = FmsDeviceWearer.fromCemoOrder(order)
 
     assertThat(fmsDeviceWearer.disability!!.count()).isEqualTo(0)
+  }
+
+  @Test
+  fun `It should map compliance and enforcement person reference to home office reference number`() {
+    val order = createOrder(
+      dataDictionaryVersion = DataDictionaryVersion.DDV6,
+      deviceWearer = createDeviceWearer(
+        complianceAndEnforcementPersonReference = "CC123",
+      ),
+      interestedParties = createInterestedParty(
+        notifyingOrganisation = NotifyingOrganisationDDv5.HOME_OFFICE.name,
+      ),
+    )
+    val fmsDeviceWearer = FmsDeviceWearer.fromCemoOrder(order)
+
+    assertThat(fmsDeviceWearer.homeOfficeReferenceNumber).isEqualTo("CC123")
   }
 
   @ParameterizedTest(name = "it should map saved disability values to Serco - {0} -> {1}")

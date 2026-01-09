@@ -765,6 +765,22 @@ class MonitoringOrderTest : OrderTestBase() {
     assertThat(fmsMonitoringOrder.roRegion).isEqualTo("UKBA")
   }
 
+  @Test
+  fun `It should map court case reference number to magistrate court case reference number`() {
+    val order = createOrder(
+      dataDictionaryVersion = DataDictionaryVersion.DDV6,
+      deviceWearer = createDeviceWearer(
+        courtCaseReferenceNumber = "CC123",
+      ),
+      interestedParties = createInterestedParty(
+        notifyingOrganisation = NotifyingOrganisationDDv5.FAMILY_COURT.name,
+      ),
+    )
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
+
+    assertThat(fmsMonitoringOrder.magistrateCourtCaseReferenceNumber).isEqualTo("CC123")
+  }
+
   @ParameterizedTest(name = "it should map youth custody service region - {0} -> {1}")
   @ArgumentsSource(YouthCustodyServiceRegionArgumentsProvider::class)
   fun `It should correctly map saved youth custody service region values to Serco`(

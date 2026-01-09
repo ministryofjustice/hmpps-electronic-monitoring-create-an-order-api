@@ -91,7 +91,7 @@
   "installation_address_4": "ENGLAND",
   "installation_address_post_code": "SW1A 2AA",
   "crown_court_case_reference_number": "",
-  "magistrate_court_case_reference_number": "",
+  "magistrate_court_case_reference_number": null,
   "issp": "No",
   "hdc": "No",
   "order_status": "Not Started",
