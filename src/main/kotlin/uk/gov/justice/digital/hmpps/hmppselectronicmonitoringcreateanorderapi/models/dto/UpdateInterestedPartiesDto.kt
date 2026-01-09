@@ -14,7 +14,9 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ProbationServiceRegion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ResponsibleOrganisation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YouthCourtDDv5
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YouthCustodyServiceRegionDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YouthJusticeServiceRegions
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ddv6.YouthCustodyServiceRegionDDv6
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidPhoneNumber
 
 data class UpdateInterestedPartiesDto(
@@ -73,6 +75,12 @@ data class UpdateInterestedPartiesDto(
 
     if (notifyingOrganisation === NotifyingOrganisationDDv5.YOUTH_COURT) {
       return notifyingOrganisationName == "" || YouthCourtDDv5.entries.any { it.name == notifyingOrganisationName }
+    }
+
+    if (notifyingOrganisation === NotifyingOrganisationDDv5.YOUTH_CUSTODY_SERVICE) {
+      return notifyingOrganisationName == "" ||
+        YouthCustodyServiceRegionDDv5.entries.any { it.name == notifyingOrganisationName } ||
+        YouthCustodyServiceRegionDDv6.entries.any { it.name == notifyingOrganisationName }
     }
 
     if (notifyingOrganisation === NotifyingOrganisationDDv5.PROBATION) return true

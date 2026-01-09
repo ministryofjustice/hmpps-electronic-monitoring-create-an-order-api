@@ -21,12 +21,15 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.ProbationDeliveryUnitDDv6ArgumentsProvider
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.SentenceArgumentsProvider
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.YouthCourtArgumentsProvider
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.YouthCustodyServiceRegionArgumentsProvider
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.YouthCustodyServiceRegionArgumentsProviderDDv6
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationAppointment
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationLocation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.TrailMonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DeviceType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.InstallationLocationType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisationDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderType
@@ -762,25 +765,71 @@ class MonitoringOrderTest : OrderTestBase() {
     assertThat(fmsMonitoringOrder.roRegion).isEqualTo("UKBA")
   }
 
-  @Test
-  fun `It should map court case reference number to magistrate court case reference number`() {
-    val order = createOrder(
-      dataDictionaryVersion = DataDictionaryVersion.DDV6,
-      deviceWearer = createDeviceWearer(
-        courtCaseReferenceNumber = "CC123",
-      ),
-      interestedParties = createInterestedParty(
-        notifyingOrganisation = NotifyingOrganisationDDv5.FAMILY_COURT.name,
-      ),
-    )
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
-
-    assertThat(fmsMonitoringOrder.magistrateCourtCaseReferenceNumber).isEqualTo("CC123")
+  @ParameterizedTest(name = "it should map youth custody service region - {0} -> {1}")
+  @ArgumentsSource(YouthCustodyServiceRegionArgumentsProvider::class)
+  fun `It should correctly map saved youth custody service region values to Serco`(
+    savedValue: String,
+    mappedValue: String,
+  ) {
+    assertNotifyingOrgNameMapping(savedValue, mappedValue)
   }
 
-  private fun assertNotifyingOrgNameMapping(savedValue: String, mappedValue: String) {
+  @ParameterizedTest(name = "it should map youth custody service region - {0} -> {1}")
+  @ArgumentsSource(YouthCustodyServiceRegionArgumentsProviderDDv6::class)
+  fun `It should correctly map saved youth custody service region DDV6 values to Serco`(
+    savedValue: String,
+    mappedValue: String,
+  ) {
+    assertNotifyingOrgNameMapping(savedValue, mappedValue, DataDictionaryVersion.DDV6)
+  }
+
+  @Test
+  fun `It should map fitted device type correctly`() {
     val order = createOrder(
       dataDictionaryVersion = DataDictionaryVersion.DDV5,
+      monitoringConditions = createMonitoringConditions(trail = true),
+      trailMonitoringConditions = TrailMonitoringConditions(
+        UUID.randomUUID(),
+        UUID.randomUUID(),
+        ZonedDateTime.now(),
+        null,
+        DeviceType.FITTED,
+      ),
+
+    )
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
+    val condition =
+      fmsMonitoringOrder.enforceableCondition?.find { it.condition == "Location Monitoring (Fitted Device)" }
+    assertThat(condition).isNotNull()
+  }
+
+  @Test
+  fun `It should map non fitted device type correctly`() {
+    val order = createOrder(
+      dataDictionaryVersion = DataDictionaryVersion.DDV5,
+      monitoringConditions = createMonitoringConditions(trail = true),
+      trailMonitoringConditions = TrailMonitoringConditions(
+        UUID.randomUUID(),
+        UUID.randomUUID(),
+        ZonedDateTime.now(),
+        null,
+        DeviceType.NON_FITTED,
+      ),
+
+    )
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
+    val condition =
+      fmsMonitoringOrder.enforceableCondition?.find { it.condition == "Location Monitoring (using Non-Fitted Device)" }
+    assertThat(condition).isNotNull()
+  }
+
+  private fun assertNotifyingOrgNameMapping(
+    savedValue: String,
+    mappedValue: String,
+    dataDictionaryVersion: DataDictionaryVersion = DataDictionaryVersion.DDV5,
+  ) {
+    val order = createOrder(
+      dataDictionaryVersion = dataDictionaryVersion,
       deviceWearer = createDeviceWearer(),
       interestedParties = createInterestedParty(
         responsibleOrganisation = "PROBATION",
