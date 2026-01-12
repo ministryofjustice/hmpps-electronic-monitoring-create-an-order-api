@@ -266,12 +266,14 @@ data class DeviceWearer(
     }
 
     private fun getHomeOfficeRefNumber(order: Order): String? {
-      if (order.deviceWearer?.complianceAndEnforcementPersonReference != null) {
-        return order.deviceWearer?.complianceAndEnforcementPersonReference
+      val deviceWearer = order.deviceWearer ?: return null
+
+      if (!deviceWearer.homeOfficeReferenceNumber.isNullOrBlank()) {
+        return deviceWearer.homeOfficeReferenceNumber
       }
 
-      if (order.deviceWearer?.homeOfficeReferenceNumber != null) {
-        return order.deviceWearer?.homeOfficeReferenceNumber
+      if (!deviceWearer.complianceAndEnforcementPersonReference.isNullOrBlank()) {
+        return deviceWearer.complianceAndEnforcementPersonReference
       }
 
       return null

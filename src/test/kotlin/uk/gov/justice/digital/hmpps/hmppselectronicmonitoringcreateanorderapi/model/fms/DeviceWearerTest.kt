@@ -160,7 +160,24 @@ class DeviceWearerTest : OrderTestBase() {
     val order = createOrder(
       dataDictionaryVersion = DataDictionaryVersion.DDV6,
       deviceWearer = createDeviceWearer(
+        homeOfficeReferenceNumber = "",
         complianceAndEnforcementPersonReference = "CC123",
+      ),
+      interestedParties = createInterestedParty(
+        notifyingOrganisation = NotifyingOrganisationDDv5.HOME_OFFICE.name,
+      ),
+    )
+    val fmsDeviceWearer = FmsDeviceWearer.fromCemoOrder(order)
+
+    assertThat(fmsDeviceWearer.homeOfficeReferenceNumber).isEqualTo("CC123")
+  }
+
+  @Test
+  fun `It should map home office reference number`() {
+    val order = createOrder(
+      dataDictionaryVersion = DataDictionaryVersion.DDV6,
+      deviceWearer = createDeviceWearer(
+        homeOfficeReferenceNumber = "CC123",
       ),
       interestedParties = createInterestedParty(
         notifyingOrganisation = NotifyingOrganisationDDv5.HOME_OFFICE.name,
