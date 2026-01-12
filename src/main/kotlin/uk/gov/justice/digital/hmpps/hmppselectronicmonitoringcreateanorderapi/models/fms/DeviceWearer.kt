@@ -276,7 +276,7 @@ data class DeviceWearer(
         return deviceWearer.complianceAndEnforcementPersonReference
       }
 
-      return null
+      return ""
     }
   }
 }
