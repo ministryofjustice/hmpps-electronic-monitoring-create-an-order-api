@@ -156,7 +156,7 @@ class DeviceWearerTest : OrderTestBase() {
   }
 
   @Test
-  fun `It should map compliance and enforcement person reference to home office reference number`() {
+  fun `It should map cepr to home office reference number`() {
     val order = createOrder(
       dataDictionaryVersion = DataDictionaryVersion.DDV6,
       deviceWearer = createDeviceWearer(
@@ -173,11 +173,29 @@ class DeviceWearerTest : OrderTestBase() {
   }
 
   @Test
-  fun `It should map home office reference number`() {
+  fun `It should map home office reference number when cepr is null`() {
     val order = createOrder(
       dataDictionaryVersion = DataDictionaryVersion.DDV6,
       deviceWearer = createDeviceWearer(
         homeOfficeReferenceNumber = "CC123",
+        complianceAndEnforcementPersonReference = null,
+      ),
+      interestedParties = createInterestedParty(
+        notifyingOrganisation = NotifyingOrganisationDDv5.HOME_OFFICE.name,
+      ),
+    )
+    val fmsDeviceWearer = FmsDeviceWearer.fromCemoOrder(order)
+
+    assertThat(fmsDeviceWearer.homeOfficeReferenceNumber).isEqualTo("CC123")
+  }
+
+  @Test
+  fun `It should map home office reference number when cepr is empty string`() {
+    val order = createOrder(
+      dataDictionaryVersion = DataDictionaryVersion.DDV6,
+      deviceWearer = createDeviceWearer(
+        homeOfficeReferenceNumber = "CC123",
+        complianceAndEnforcementPersonReference = "",
       ),
       interestedParties = createInterestedParty(
         notifyingOrganisation = NotifyingOrganisationDDv5.HOME_OFFICE.name,
