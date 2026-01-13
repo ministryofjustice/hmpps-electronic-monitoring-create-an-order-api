@@ -53,7 +53,7 @@ class DapoControllerTest : IntegrationTestBase() {
       Assertions.assertThat(dapoClause.date).isEqualTo(mockDate)
     }
 
-    fun mockValidRequestBody(clause: String? = null, date: ZonedDateTime? = null): String {
+    private fun mockValidRequestBody(clause: String? = null, date: ZonedDateTime? = null): String {
       val dto = UpdateDapoDto(clause = clause, date = date)
 
       return objectMapper.writeValueAsString(dto)
