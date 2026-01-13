@@ -95,10 +95,10 @@ data class OrderVersion(
   var installationAndRisk: InstallationAndRisk? = null,
 
   @OneToMany(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "version", orphanRemoval = true)
-  var offences: MutableList<Offence>? = null,
+  var offences: MutableList<Offence> = mutableListOf(),
 
   @OneToMany(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "version", orphanRemoval = true)
-  var dapo: MutableList<Dapo>? = null,
+  var dapoClauses: MutableList<Dapo> = mutableListOf(),
 
   @OneToMany(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "version", orphanRemoval = true)
   var additionalDocuments: MutableList<AdditionalDocument> = mutableListOf(),

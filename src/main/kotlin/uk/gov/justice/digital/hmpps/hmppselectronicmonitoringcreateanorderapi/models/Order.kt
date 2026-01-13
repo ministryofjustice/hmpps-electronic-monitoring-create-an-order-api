@@ -127,6 +127,16 @@ data class Order(
       getCurrentVersion().installationAndRisk = installationAndRisk
     }
 
+  val dapoClauses: MutableList<Dapo>
+    get() {
+      return getCurrentVersion().dapoClauses
+    }
+
+  val offences: MutableList<Offence>
+    get() {
+      return getCurrentVersion().offences
+    }
+
   var interestedParties: InterestedParties?
     get() {
       return getCurrentVersion().interestedParties
