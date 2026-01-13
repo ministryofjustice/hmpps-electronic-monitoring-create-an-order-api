@@ -15,6 +15,7 @@ class WebClientConfiguration(
   @Value("\${api.health-timeout:2s}") val healthTimeout: Duration,
   @Value("\${api.timeout:1s}") val timeout: Duration,
   @Value("\${services.document.url}") val hmppsDocumentManagementApiUrl: String,
+  @Value("\${services.manage-user.url}") val manageUserApiUrl: String,
 ) {
 
   @Bean
@@ -31,4 +32,9 @@ class WebClientConfiguration(
     url = hmppsDocumentManagementApiUrl,
     timeout,
   )
+
+  @Bean
+  fun manageUserApiWebClient(builder: WebClient.Builder): WebClient = WebClient.builder().baseUrl(
+    manageUserApiUrl,
+  ).build()
 }

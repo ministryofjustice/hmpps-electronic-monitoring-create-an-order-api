@@ -1,17 +1,20 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service
 
-import org.springframework.security.core.Authentication
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.UserCohort
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Cohorts
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.ManageUserApiClient
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.Cohorts
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.UserCohort
 
-class UserCohortService {
+class UserCohortService(private val webClient: ManageUserApiClient) {
 
-  fun getUserCohort(authentication: Authentication): UserCohort {
+  fun getUserCohort(authentication: JwtAuthenticationToken): UserCohort {
     if (authentication.authorities.any { it.authority == "ROLE_PRISON" }) {
-      return UserCohort(Cohorts.PRISON)
+      val caseLoad = webClient.getUserActiveCaseload(authentication.token)
+      return UserCohort(Cohorts.PRISON, caseLoad.activeCaseload.name)
     } else if (authentication.authorities.any { it.authority == "ROLE_PROBATION" }) {
       return UserCohort(Cohorts.PROBATION)
     }
+    // TODO: set cohort for Courts and HO users
     return UserCohort(Cohorts.OTHER)
   }
 }
