@@ -34,6 +34,8 @@ class DeviceWearerService : OrderSectionServiceBase() {
       pncId = order.deviceWearer?.pncId,
       prisonNumber = order.deviceWearer?.prisonNumber,
       homeOfficeReferenceNumber = order.deviceWearer?.homeOfficeReferenceNumber,
+      complianceAndEnforcementPersonReference = order.deviceWearer?.complianceAndEnforcementPersonReference,
+      courtCaseReferenceNumber = order.deviceWearer?.courtCaseReferenceNumber,
     )
 
     // Clear responsible adult when device wearer is adult
@@ -81,6 +83,10 @@ class DeviceWearerService : OrderSectionServiceBase() {
     order.deviceWearer?.deliusId = updateRecord.deliusId?.trim()
     order.deviceWearer?.prisonNumber = updateRecord.prisonNumber?.trim()
     order.deviceWearer?.homeOfficeReferenceNumber = updateRecord.homeOfficeReferenceNumber?.trim()
+
+    order.deviceWearer?.complianceAndEnforcementPersonReference =
+      updateRecord.complianceAndEnforcementPersonReference?.trim()
+    order.deviceWearer?.courtCaseReferenceNumber = updateRecord.courtCaseReferenceNumber?.trim()
 
     orderRepo.save(order)
 

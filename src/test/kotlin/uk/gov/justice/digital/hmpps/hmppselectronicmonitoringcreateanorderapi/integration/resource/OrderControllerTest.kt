@@ -738,6 +738,8 @@ class OrderControllerTest : IntegrationTestBase() {
         "deliusId",
         "prisonNumber",
         "homeOfficeReferenceNumber",
+        "courtCaseReferenceNumber",
+        "complianceAndEnforcementPersonReference",
         "john", "nomisId",
         "john", "prisonNumber", "smith",
       ],

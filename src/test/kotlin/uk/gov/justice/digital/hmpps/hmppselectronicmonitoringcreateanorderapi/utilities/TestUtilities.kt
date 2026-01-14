@@ -91,6 +91,8 @@ class TestUtilities {
         nomisId = "nomisId",
         prisonNumber = "prisonNumber",
         homeOfficeReferenceNumber = "homeOfficeReferenceNumber",
+        complianceAndEnforcementPersonReference = "complianceAndEnforcementPersonReference",
+        courtCaseReferenceNumber = "courtCaseReferenceNumber",
         noFixedAbode = noFixedAddress,
       )
 
