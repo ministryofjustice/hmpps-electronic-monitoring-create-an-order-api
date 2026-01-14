@@ -85,6 +85,7 @@ class DapoServiceTest {
 
     assertThat(mockOrder.dapoClauses.size).isEqualTo(1)
     assertThat(updateResult).isNotNull
+    assertThat(updateResult.id).isEqualTo(updateDto.id)
     assertThat(updateResult.clause).isEqualTo(updateDto.clause)
     assertThat(updateResult.date).isEqualTo(updateDto.date)
   }

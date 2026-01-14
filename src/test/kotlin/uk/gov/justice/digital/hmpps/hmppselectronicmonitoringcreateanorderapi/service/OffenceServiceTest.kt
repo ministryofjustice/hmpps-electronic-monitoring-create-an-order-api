@@ -80,6 +80,7 @@ class OffenceServiceTest {
 
     assertThat(mockOrder.offences.size).isEqualTo(1)
     assertThat(updateResult).isNotNull
+    assertThat(updateResult.id).isEqualTo(updateDto.id)
     assertThat(updateResult.offenceType).isEqualTo(updateDto.offenceType)
     assertThat(updateResult.offenceDate).isEqualTo(updateDto.offenceDate)
   }

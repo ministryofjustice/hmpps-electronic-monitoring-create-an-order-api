@@ -13,11 +13,11 @@ class DapoService : OrderSectionServiceBase() {
     val match = order.dapoClauses.find { it.id == dto.id }
     order.dapoClauses.remove(match)
 
-    order.dapoClauses.add(Dapo(versionId = order.versionId, clause = dto.clause, date = dto.date))
+    val id = dto.id ?: UUID.randomUUID()
+    order.dapoClauses.add(Dapo(id = id, versionId = order.versionId, clause = dto.clause, date = dto.date))
 
     orderRepo.save(order)
 
-    // TODO: Not the best way to do this, maybe we don't return anything?
-    return order.dapoClauses.find { it.clause == dto.clause }!!
+    return order.dapoClauses.find { it.id == id }!!
   }
 }

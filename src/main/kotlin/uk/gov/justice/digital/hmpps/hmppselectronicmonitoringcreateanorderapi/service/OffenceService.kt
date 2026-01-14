@@ -13,8 +13,10 @@ class OffenceService : OrderSectionServiceBase() {
     val match = order.offences.find { it.id == dto.id }
     order.offences.remove(match)
 
+    val id = dto.id ?: UUID.randomUUID()
     order.offences.add(
       Offence(
+        id = id,
         versionId = order.versionId,
         offenceType = dto.offenceType,
         offenceDate = dto.offenceDate,
@@ -23,7 +25,6 @@ class OffenceService : OrderSectionServiceBase() {
 
     orderRepo.save(order)
 
-    // TODO: Not the best way to do this
-    return order.offences.find { it.offenceType == dto.offenceType }!!
+    return order.offences.find { it.id == id }!!
   }
 }
