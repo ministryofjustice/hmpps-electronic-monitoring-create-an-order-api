@@ -37,7 +37,16 @@ class UserCohortServiceTest {
   @Test
   fun `Should return cohort of prison when user has role ROLE_PRISON`() {
     `when`(authentication.authorities).thenReturn(listOf(GrantedAuthority { "ROLE_PRISON" }))
-
+    `when`(jwtToken.tokenValue).thenReturn("Mock Token")
+    `when`(client.getUserActiveCaseload(authentication.token)).thenReturn(
+      UserCaseLoad(
+        "mockUser",
+        true,
+        "mock account",
+        CaseLoad("ABC", "HMP ABC"),
+        emptyList<CaseLoad>(),
+      ),
+    )
     val reuslt = service.getUserCohort(authentication)
 
     Assertions.assertThat(reuslt.cohort).isEqualTo(Cohorts.PRISON)
