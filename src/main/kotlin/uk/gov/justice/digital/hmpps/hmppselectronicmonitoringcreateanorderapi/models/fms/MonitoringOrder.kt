@@ -267,6 +267,7 @@ data class MonitoringOrder(
         offence = getOffence(order),
         offenceAdditionalDetails = getOffenceAdditionalDetails(order),
         pilot = conditions.pilot?.value ?: "",
+        magistrateCourtCaseReferenceNumber = order.deviceWearer?.courtCaseReferenceNumber ?: "",
       )
       if (DataDictionaryVersion.isVersionSameOrAbove(order.dataDictionaryVersion, DataDictionaryVersion.DDV6)) {
         val isBail = conditions.orderType === OrderType.BAIL || conditions.orderType === OrderType.IMMIGRATION
