@@ -27,7 +27,7 @@ class DapoController(val service: DapoService) {
     authentication: Authentication,
   ): ResponseEntity<Dapo> {
     val username = authentication.name
-    val dapo = service.updateDapo(
+    val dapo = service.addDapo(
       orderId,
       username,
       dto,

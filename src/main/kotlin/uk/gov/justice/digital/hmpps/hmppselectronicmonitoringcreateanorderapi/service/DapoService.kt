@@ -7,7 +7,7 @@ import java.util.UUID
 
 @Service
 class DapoService : OrderSectionServiceBase() {
-  fun updateDapo(orderId: UUID, username: String, dto: UpdateDapoDto): Dapo {
+  fun addDapo(orderId: UUID, username: String, dto: UpdateDapoDto): Dapo {
     val order = findEditableOrder(orderId, username)
 
     order.dapoClauses.add(Dapo(versionId = order.versionId, clause = dto.clause, date = dto.date))

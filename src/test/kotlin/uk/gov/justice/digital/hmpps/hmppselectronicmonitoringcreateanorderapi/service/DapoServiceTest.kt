@@ -53,7 +53,7 @@ class DapoServiceTest {
     whenever(repo.save(mockOrder)).thenReturn(mockOrder)
 
     val dto = UpdateDapoDto(clause = "some clause", date = ZonedDateTime.now())
-    val result = service.updateDapo(
+    val result = service.addDapo(
       mockOrderId,
       mockUsername,
       dto,
