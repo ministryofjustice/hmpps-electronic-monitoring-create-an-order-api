@@ -47,7 +47,7 @@ class OffenceServiceTest {
   }
 
   @Test
-  fun `should update the order with the new dapo data`() {
+  fun `should update the order with the new offence data`() {
     whenever(repo.findById(mockOrderId)).thenReturn(Optional.of(mockOrder))
     whenever(repo.save(mockOrder)).thenReturn(mockOrder)
 
@@ -61,5 +61,26 @@ class OffenceServiceTest {
     assertThat(result).isNotNull
     assertThat(result.offenceType).isEqualTo(dto.offenceType)
     assertThat(result.offenceDate).isEqualTo(dto.offenceDate)
+  }
+
+  @Test
+  fun `should be able to update existing offence`() {
+    whenever(repo.findById(mockOrderId)).thenReturn(Optional.of(mockOrder))
+    whenever(repo.save(mockOrder)).thenReturn(mockOrder)
+
+    val addDto = UpdateOffenceDto(offenceType = "type", offenceDate = ZonedDateTime.now())
+    val addResult = service.addOffence(
+      mockOrderId,
+      mockUsername,
+      addDto,
+    )
+
+    val updateDto = UpdateOffenceDto(id = addResult.id, offenceType = "another type", offenceDate = ZonedDateTime.now())
+    val updateResult = service.addOffence(mockOrderId, mockUsername, updateDto)
+
+    assertThat(mockOrder.offences.size).isEqualTo(1)
+    assertThat(updateResult).isNotNull
+    assertThat(updateResult.offenceType).isEqualTo(updateDto.offenceType)
+    assertThat(updateResult.offenceDate).isEqualTo(updateDto.offenceDate)
   }
 }

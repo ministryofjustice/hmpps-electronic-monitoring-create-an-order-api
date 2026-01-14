@@ -63,4 +63,29 @@ class DapoServiceTest {
     assertThat(result.clause).isEqualTo(dto.clause)
     assertThat(result.date).isEqualTo(dto.date)
   }
+
+  @Test
+  fun `should be able to update existing dapo`() {
+    whenever(repo.findById(mockOrderId)).thenReturn(Optional.of(mockOrder))
+    whenever(repo.save(mockOrder)).thenReturn(mockOrder)
+
+    val addDto = UpdateDapoDto(clause = "some clause", date = ZonedDateTime.now())
+    val addResult = service.addDapo(
+      mockOrderId,
+      mockUsername,
+      addDto,
+    )
+
+    val updateDto = UpdateDapoDto(id = addResult.id, clause = "another clause", date = ZonedDateTime.now())
+    val updateResult = service.addDapo(
+      mockOrderId,
+      mockUsername,
+      updateDto,
+    )
+
+    assertThat(mockOrder.dapoClauses.size).isEqualTo(1)
+    assertThat(updateResult).isNotNull
+    assertThat(updateResult.clause).isEqualTo(updateDto.clause)
+    assertThat(updateResult.date).isEqualTo(updateDto.date)
+  }
 }

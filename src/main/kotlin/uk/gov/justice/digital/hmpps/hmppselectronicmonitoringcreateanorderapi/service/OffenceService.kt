@@ -10,6 +10,9 @@ class OffenceService : OrderSectionServiceBase() {
   fun addOffence(orderId: UUID, username: String, dto: UpdateOffenceDto): Offence {
     val order = findEditableOrder(orderId, username)
 
+    val match = order.offences.find { it.id == dto.id }
+    order.offences.remove(match)
+
     order.offences.add(
       Offence(
         versionId = order.versionId,
