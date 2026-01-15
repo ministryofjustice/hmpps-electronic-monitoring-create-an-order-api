@@ -32,6 +32,9 @@ services:
   document:
     url: http://localhost:8081/
 #    url: https://document-api-dev.hmpps.service.justice.gov.uk/
-
+  manage-user:
+    url: http://localhost:9091/manage-user/
+#    url: https://manage-users-dev.hmpps.service.justice.gov.uk/
 CLIENT_ID: hmpps-electronic-monitoring-create-an-order-api
 CLIENT_SECRET: clientsecret
+
