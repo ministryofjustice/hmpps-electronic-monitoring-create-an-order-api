@@ -8,8 +8,10 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.web.reactive.function.BodyInserters
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.data.ValidationErrors
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateDapoDto
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidationError
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 import java.time.ZoneId
 import java.time.ZonedDateTime
@@ -111,6 +113,23 @@ class DapoControllerTest : IntegrationTestBase() {
     Assertions.assertThat(
       error.developerMessage,
     ).isEqualTo("An editable order with ${order.id} does not exist")
+  }
+
+  @Test
+  fun `should return error if dapo is more than 20 chars`() {
+    val order = createOrder()
+    val result = callDapoEndpoint(
+      order.id,
+      mockValidRequestBody(clause = "some clause that is too long"),
+    )
+      .expectStatus()
+      .isBadRequest
+      .expectBodyList(ValidationError::class.java)
+      .returnResult()
+
+    Assertions.assertThat(result.responseBody!!).contains(
+      ValidationError("clause", ValidationErrors.Dapo.CAUSE_TOO_LONG),
+    )
   }
 
   private fun callDapoEndpoint(orderId: UUID, body: String, username: String? = null): WebTestClient.ResponseSpec {

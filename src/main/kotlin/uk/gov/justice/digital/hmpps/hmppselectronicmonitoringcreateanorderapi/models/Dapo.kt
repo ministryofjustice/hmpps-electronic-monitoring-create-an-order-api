@@ -20,7 +20,7 @@ data class Dapo(
   @Column(name = "VERSION_ID", nullable = false, unique = false)
   val versionId: UUID,
 
-  @Column(name = "CLAUSE", nullable = true)
+  @Column(name = "CLAUSE", nullable = true, length = 20)
   val clause: String?,
 
   @Column(name = "DATE", nullable = true)

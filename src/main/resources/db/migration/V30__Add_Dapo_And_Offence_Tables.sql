@@ -2,7 +2,7 @@ CREATE TABLE dapo
 (
     id         UUID NOT NULL,
     version_id UUID NOT NULL,
-    clause     VARCHAR(255),
+    clause     VARCHAR(20),
     date       TIMESTAMP WITHOUT TIME ZONE,
     CONSTRAINT pk_dapo PRIMARY KEY (id)
 );
