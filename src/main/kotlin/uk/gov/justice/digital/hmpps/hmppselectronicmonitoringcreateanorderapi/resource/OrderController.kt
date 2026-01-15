@@ -194,6 +194,8 @@ class OrderController(@Autowired val orderService: OrderService) {
       orderParameters = order.orderParameters,
       submittedBy = order.submittedBy,
       versionId = order.versionId,
+      dapoClauses = order.dapoClauses,
+      offences = order.offences,
     )
 
     dto.monitoringConditions?.startDate = order.getMonitoringStartDate()

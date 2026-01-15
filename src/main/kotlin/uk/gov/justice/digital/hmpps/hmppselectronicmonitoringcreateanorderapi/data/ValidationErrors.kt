@@ -193,4 +193,8 @@ object ValidationErrors {
   object AmendOrder {
     const val TYPE_REQUIRED: String = "Select why you are making changes to the form"
   }
+
+  object Dapo {
+    const val CAUSE_TOO_LONG: String = "DAPO cause is too long"
+  }
 }
