@@ -54,7 +54,7 @@
       	"nomis_id": "nomisId",
       	"delius_id": "deliusId",
       	"prison_number": "prisonNumber",
-      	"home_office_case_reference_number": "homeOfficeReferenceNumber",
+		"home_office_case_reference_number": "complianceAndEnforcementPersonReference",
       	"interpreter_required": "true",
       	"language": "British Sign"
       }
