@@ -56,7 +56,7 @@ class DapoControllerTest : IntegrationTestBase() {
     val orderWithDapo = getOrder(order.id)
     val dapoId = orderWithDapo.dapoClauses.first().id
 
-    callDapoEndpoint(order.id, mockValidRequestBody(id = dapoId, clause = "some clause", date = mockDate))
+    callDapoEndpoint(order.id, mockValidRequestBody(id = dapoId, clause = "other clause", date = mockDate))
       .expectStatus()
       .isOk
 
@@ -65,7 +65,7 @@ class DapoControllerTest : IntegrationTestBase() {
     Assertions.assertThat(orderWithUpdatedDapo.dapoClauses.size).isEqualTo(1)
     val dapoClause = orderWithUpdatedDapo.dapoClauses.first()
     Assertions.assertThat(dapoClause.id).isEqualTo(dapoId)
-    Assertions.assertThat(dapoClause.clause).isEqualTo("some clause")
+    Assertions.assertThat(dapoClause.clause).isEqualTo("other clause")
     Assertions.assertThat(dapoClause.date).isEqualTo(mockDate)
   }
 

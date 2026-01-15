@@ -56,7 +56,7 @@ class OffenceControllerTest : IntegrationTestBase() {
 
     callOffenceEndpoint(
       order.id,
-      mockValidRequestBody(id = dapoId, offenceType = "some offence", offenceDate = mockDate),
+      mockValidRequestBody(id = dapoId, offenceType = "other offence", offenceDate = mockDate),
     )
       .expectStatus()
       .isOk
@@ -66,7 +66,7 @@ class OffenceControllerTest : IntegrationTestBase() {
     Assertions.assertThat(orderWithUpdatedOffence.offences.size).isEqualTo(1)
     val offence = orderWithUpdatedOffence.offences.first()
     Assertions.assertThat(offence.id).isEqualTo(dapoId)
-    Assertions.assertThat(offence.offenceType).isEqualTo("some offence")
+    Assertions.assertThat(offence.offenceType).isEqualTo("other offence")
     Assertions.assertThat(offence.offenceDate).isEqualTo(mockDate)
   }
 
