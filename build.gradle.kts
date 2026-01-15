@@ -25,7 +25,7 @@ dependencies {
   implementation("io.awspring.cloud:spring-cloud-aws-starter-s3:3.4.2")
   implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:5.6.3")
   implementation("io.sentry:sentry-spring-boot-starter-jakarta:8.28.0")
-  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.14")
+  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.0")
   runtimeOnly("org.flywaydb:flyway-database-postgresql")
   runtimeOnly("org.postgresql:postgresql:42.7.8")
   testImplementation("com.h2database:h2:2.4.240")
