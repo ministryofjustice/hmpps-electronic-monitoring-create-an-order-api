@@ -53,6 +53,9 @@ data class DeviceWearer(
   @JsonProperty("address_post_code")
   var addressPostCode: String? = "",
 
+  @JsonProperty("no_fixed_address")
+  var noFixedAddress: String? = "false",
+
   @JsonProperty("secondary_address_1")
   var secondaryAddress1: String? = "",
 
@@ -199,6 +202,8 @@ data class DeviceWearer(
         deviceWearer.address3 = primaryAddress.addressLine3
         deviceWearer.address4 = if (primaryAddress.addressLine4 == "") "N/A" else primaryAddress.addressLine4
         deviceWearer.addressPostCode = primaryAddress.postcode
+      } else if (order.deviceWearer?.noFixedAbode == true) {
+        deviceWearer.noFixedAddress = "true"
       }
 
       order.addresses.firstOrNull { it.addressType == AddressType.SECONDARY }?.let {
