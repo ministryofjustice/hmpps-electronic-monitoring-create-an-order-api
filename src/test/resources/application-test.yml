@@ -55,6 +55,7 @@ settings:
 
 
 DOCUMENT_MANAGEMENT_URL:  http://localhost:8092/
+MANAGE_USER_URL: http://localhost:8095/
 CLIENT_ID: mockClient
 CLIENT_SECRET: clientsecret
 SERCO_AUTH_URL: http://localhost:8093/

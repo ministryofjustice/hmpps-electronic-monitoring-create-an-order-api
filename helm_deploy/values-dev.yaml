@@ -17,6 +17,7 @@ generic-service:
     DATA_DICTIONARY_V5_1_ENABLED: false
     SETTINGS_DATA_DICTIONARY_VERSION: DDV6
     TAG_AT_SOURCE_ENABLED: true
+    MANAGE_USER_URL: "https://manage-users-api-dev.hmpps.service.justice.gov.uk/"
 
 
 # CloudPlatform AlertManager receiver to route prometheus alerts to slack
