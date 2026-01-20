@@ -92,6 +92,7 @@ object ValidationErrors {
     const val NOTIFYING_ORGANISATION_NAME_REQUIRED: String = "Select the name of the organisation you are part of"
     const val RESPONSIBLE_ORGANISATION_REQUIRED: String = "Select the responsible officer's organisation"
     const val RESPONSIBLE_ORGANISATION_REGION_REQUIRED: String = "Select the probation region"
+    const val POLICE_FORCE_AREA_REQUIRED: String = "Select the police force area"
     const val TEAM_EMAIL_REQUIRED: String = "Enter your team's email address"
     const val TEAM_EMAIL_MAX_LENGTH: String = "Team email address must be 200 characters or less"
     const val RESPONSIBLE_OFFICER_FULL_NAME_REQUIRED: String = "Enter the Responsible Officer's full name"

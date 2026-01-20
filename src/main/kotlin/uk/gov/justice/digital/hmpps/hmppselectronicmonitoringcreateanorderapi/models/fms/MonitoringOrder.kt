@@ -553,6 +553,8 @@ data class MonitoringOrder(
       }
 
       return ProbationServiceRegion.from(order.interestedParties?.responsibleOrganisationRegion)?.value
+        // to-do: add value for DDv6 too
+        ?: PoliceAreas.from(order.interestedParties?.responsibleOrganisationRegion)?.value
         ?: YouthJusticeServiceRegions.from(order.interestedParties?.responsibleOrganisationRegion)?.value
         ?: order.interestedParties?.responsibleOrganisationRegion
         ?: ""

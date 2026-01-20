@@ -314,6 +314,41 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
       Assertions.assertThat(interestedParties.responsibleOrganisationEmail).isEqualTo(mockResponsibleOrganisationEmail)
     }
 
+    @Test
+    fun `it should accept a police area when responsible organisation is police`() {
+      val order = createOrder()
+
+      val interestedParties = webTestClient.put()
+        .uri("/api/orders/${order.id}/interested-parties")
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(
+          BodyInserters.fromValue(
+            buildMockRequest(
+              responsibleOrganisation = "POLICE",
+              responsibleOrganisationRegion = "CHESHIRE",
+            ),
+          ),
+        )
+        .headers(setAuthorisation("AUTH_ADM"))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody(InterestedParties::class.java)
+        .returnResult()
+        .responseBody!!
+
+      Assertions.assertThat(interestedParties.notifyingOrganisation).isEqualTo(mockNotifyingOrganisation)
+      Assertions.assertThat(interestedParties.notifyingOrganisationName).isEqualTo(mockNotifyingOrganisationName)
+      Assertions.assertThat(interestedParties.notifyingOrganisationEmail).isEqualTo(mockNotifyingOrganisationEmail)
+      Assertions.assertThat(interestedParties.responsibleOfficerName).isEqualTo(mockResponsibleOfficerName)
+      Assertions.assertThat(
+        interestedParties.responsibleOfficerPhoneNumber,
+      ).isEqualTo(mockResponsibleOfficerPhoneNumber)
+      Assertions.assertThat(interestedParties.responsibleOrganisation).isEqualTo("POLICE")
+      Assertions.assertThat(interestedParties.responsibleOrganisationRegion).isEqualTo("CHESHIRE")
+      Assertions.assertThat(interestedParties.responsibleOrganisationEmail).isEqualTo(mockResponsibleOrganisationEmail)
+    }
+
     @ParameterizedTest(name = "it should return a validation error for region={0} when responsible org is YJS")
     @ValueSource(strings = ["", "KENT_SURREY_SUSSEX"])
     fun `it should return a validation error for invalid regions when responsible organisation is YJS`(value: String) {
