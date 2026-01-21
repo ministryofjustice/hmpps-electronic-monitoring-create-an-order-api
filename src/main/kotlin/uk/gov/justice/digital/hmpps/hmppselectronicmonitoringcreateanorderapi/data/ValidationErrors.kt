@@ -195,6 +195,6 @@ object ValidationErrors {
   }
 
   object Dapo {
-    const val CAUSE_TOO_LONG: String = "DAPO cause is too long"
+    const val CAUSE_TOO_LONG: String = "DAPO clause is too long"
   }
 }

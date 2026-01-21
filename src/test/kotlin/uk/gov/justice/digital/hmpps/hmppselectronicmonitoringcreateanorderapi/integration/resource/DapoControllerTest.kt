@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.web.reactive.function.BodyInserters
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.data.ValidationErrors
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateDapoDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidationError
@@ -128,7 +127,7 @@ class DapoControllerTest : IntegrationTestBase() {
       .returnResult()
 
     Assertions.assertThat(result.responseBody!!).contains(
-      ValidationError("clause", ValidationErrors.Dapo.CAUSE_TOO_LONG),
+      ValidationError("clause", "DAPO clause is too long"),
     )
   }
 
