@@ -247,7 +247,7 @@ class HearingEventHandler(
     monitoringConditions.conditionType = getConditionType(judicialResults)
     monitoringConditions.orderType = getOrderType(judicialResults)
 
-    if (monitoringConditions.conditionType == MonitoringConditionType.REQUIREMENT_OF_A_COMMUNITY_ORDER) {
+    if (monitoringConditions.conditionType == MonitoringConditionType.REQUIREMENT_OF_COMMUNITY_ORDER) {
       loadCommunityOrderConditions(judicialResults, order, monitoringConditions, prompts, hearing)
     } else if (monitoringConditions.conditionType == MonitoringConditionType.BAIL_ORDER) {
       loadBailOrderConditions(judicialResults, order, monitoringConditions, prompts, hearing)
@@ -621,7 +621,7 @@ class HearingEventHandler(
 
   private fun getConditionType(results: List<JudicialResults>): MonitoringConditionType? {
     if (results.any { COMMUNITY_ORDER_UUIDS.contains(it.judicialResultTypeId) }) {
-      return MonitoringConditionType.REQUIREMENT_OF_A_COMMUNITY_ORDER
+      return MonitoringConditionType.REQUIREMENT_OF_COMMUNITY_ORDER
     } else if (results.any { BAIL_OR_REMAND_TO_CARE_CONDITION_UUIDs.contains(it.judicialResultTypeId) }) {
       return MonitoringConditionType.BAIL_ORDER
     }
