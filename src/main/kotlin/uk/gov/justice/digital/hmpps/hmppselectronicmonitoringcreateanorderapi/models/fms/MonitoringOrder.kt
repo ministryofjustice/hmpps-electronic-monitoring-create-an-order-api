@@ -33,6 +33,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YouthCourtDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YouthCustodyServiceRegionDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YouthJusticeServiceRegions
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ddv6.PoliceAreasDDv6
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ddv6.ProbationDeliveryUnitsDDv6
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ddv6.YouthCustodyServiceRegionDDv6
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.formatters.PhoneNumberFormatter
@@ -555,6 +556,7 @@ data class MonitoringOrder(
       return ProbationServiceRegion.from(order.interestedParties?.responsibleOrganisationRegion)?.value
         ?: YouthJusticeServiceRegions.from(order.interestedParties?.responsibleOrganisationRegion)?.value
         ?: PoliceAreas.from(order.interestedParties?.responsibleOrganisationRegion)?.value
+        ?: PoliceAreasDDv6.from(order.interestedParties?.responsibleOrganisationRegion)?.value
         ?: order.interestedParties?.responsibleOrganisationRegion
         ?: ""
     }

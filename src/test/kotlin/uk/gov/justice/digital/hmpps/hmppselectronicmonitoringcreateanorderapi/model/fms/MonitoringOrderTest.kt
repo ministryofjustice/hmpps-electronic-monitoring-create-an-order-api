@@ -500,7 +500,10 @@ class MonitoringOrderTest : OrderTestBase() {
 
   @ParameterizedTest(name = "it should map DDv6 police areas to Serco - {0} -> {1}")
   @ArgumentsSource(PoliceForceAreasDDv6ArgumentsProvider::class)
-  fun `It should correctly map DDv6 saved police force areas values`(savedValue: String, mappedValue: String) {
+  fun `It should correctly map DDv6 saved police force areas values in responsible organisation region`(
+    savedValue: String,
+    mappedValue: String,
+  ) {
     val order = createOrder(
       dataDictionaryVersion = DataDictionaryVersion.DDV6,
       deviceWearer = createDeviceWearer(),
