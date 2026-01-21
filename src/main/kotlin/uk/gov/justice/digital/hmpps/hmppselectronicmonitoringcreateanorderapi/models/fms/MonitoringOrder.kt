@@ -554,6 +554,7 @@ data class MonitoringOrder(
 
       return ProbationServiceRegion.from(order.interestedParties?.responsibleOrganisationRegion)?.value
         ?: YouthJusticeServiceRegions.from(order.interestedParties?.responsibleOrganisationRegion)?.value
+        ?: PoliceAreas.from(order.interestedParties?.responsibleOrganisationRegion)?.value
         ?: order.interestedParties?.responsibleOrganisationRegion
         ?: ""
     }
