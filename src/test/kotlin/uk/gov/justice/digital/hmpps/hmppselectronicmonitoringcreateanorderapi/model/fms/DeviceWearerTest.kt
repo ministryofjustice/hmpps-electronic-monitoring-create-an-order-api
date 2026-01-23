@@ -260,7 +260,7 @@ class DeviceWearerTest : OrderTestBase() {
       Arguments.of("HEARING", "Hearing"),
       Arguments.of("MOBILITY", "Mobility"),
       Arguments.of("DEXTERITY", "Dexterity"),
-      Arguments.of("SKIN_CONDITION", "Skin condition"),
+      Arguments.of("SKIN_CONDITION", "Skin Condition"),
       Arguments.of("LEARNING_UNDERSTANDING_CONCENTRATING", "Learning, understanding or concentrating"),
       Arguments.of("MEMORY", "Memory"),
       Arguments.of("MENTAL_HEALTH", "Mental health"),
