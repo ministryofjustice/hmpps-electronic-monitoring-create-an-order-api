@@ -166,7 +166,7 @@ class TestUtilities {
         exclusionZone = true,
         alcohol = true,
         caseId = "d8ea62e61bb8d610a10c20e0b24bcb85",
-        conditionType = MonitoringConditionType.REQUIREMENT_OF_COMMUNITY_ORDER,
+        conditionType = MonitoringConditionType.REQUIREMENT_OF_A_COMMUNITY_ORDER,
         sentenceType = SentenceType.LIFE_SENTENCE,
         issp = YesNoUnknown.YES,
       )
