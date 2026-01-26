@@ -8,4 +8,7 @@ CREATE TABLE mappa
 );
 
 ALTER TABLE mappa
+    ADD CONSTRAINT uc_mappa_version UNIQUE (version_id);
+
+ALTER TABLE mappa
     ADD CONSTRAINT FK_MAPPA_ON_VERSION FOREIGN KEY (version_id) REFERENCES order_version (id);
