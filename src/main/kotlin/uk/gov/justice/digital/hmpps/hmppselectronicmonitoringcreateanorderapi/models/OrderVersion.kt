@@ -133,6 +133,9 @@ data class OrderVersion(
   @Column(name = "SUBMITTED_BY", nullable = true)
   var submittedBy: String? = null,
 
+  @Column(name = "MAPPA", nullable = true)
+  var mappa: Mappa? = null,
+
   @Schema(hidden = true)
   @ManyToOne
   @JoinColumn(name = "ORDER_ID", updatable = false, insertable = false)
