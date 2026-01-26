@@ -11,6 +11,4 @@ import java.util.*
 interface OrderRepository :
   PagingAndSortingRepository<Order, UUID>,
   JpaSpecificationExecutor<Order>,
-  JpaRepository<Order, UUID> {
-  fun getOrderById(id: UUID): MutableList<Order>
-}
+  JpaRepository<Order, UUID>
