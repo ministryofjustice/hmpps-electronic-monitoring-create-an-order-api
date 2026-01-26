@@ -130,11 +130,11 @@ data class OrderVersion(
   @OneToOne(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "version", orphanRemoval = true)
   var orderParameters: OrderParameters? = null,
 
+  @OneToOne(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "version", orphanRemoval = true)
+  var mappa: Mappa? = null,
+
   @Column(name = "SUBMITTED_BY", nullable = true)
   var submittedBy: String? = null,
-
-  @Column(name = "MAPPA", nullable = true)
-  var mappa: Mappa? = null,
 
   @Schema(hidden = true)
   @ManyToOne
