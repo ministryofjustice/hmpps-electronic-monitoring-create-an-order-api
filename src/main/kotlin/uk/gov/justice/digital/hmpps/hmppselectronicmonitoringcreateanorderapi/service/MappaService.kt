@@ -7,10 +7,10 @@ import java.util.*
 
 @Service
 class MappaService : OrderSectionServiceBase() {
-  fun updateMappa(mockOrderId: UUID, mockUsername: String, mockUpdateDto: UpdateMappaDto): Mappa {
-    val order = this.findEditableOrder(mockOrderId, mockUsername)
+  fun updateMappa(orderId: UUID, username: String, dto: UpdateMappaDto): Mappa {
+    val order = this.findEditableOrder(orderId, username)
 
-    order.mappa = Mappa(versionId = order.versionId, level = mockUpdateDto.level, category = mockUpdateDto.category)
+    order.mappa = Mappa(versionId = order.versionId, level = dto.level, category = dto.category)
 
     return orderRepo.save(order).mappa!!
   }
