@@ -61,6 +61,8 @@ class TestUtilities {
       installationAppointment: InstallationAppointment? = null,
       username: String = "AUTH_ADM",
       dataDictionaryVersion: DataDictionaryVersion = DataDictionaryVersion.DDV4,
+      notifyingOrganisation: String = "PRISON",
+      notifyingOrganisationName: String = "WAYLAND_PRISON",
     ): Order {
       val order = Order(
         id = id,
@@ -276,8 +278,8 @@ class TestUtilities {
         responsibleOrganisation = "PROBATION",
         responsibleOrganisationRegion = "LONDON",
         responsibleOrganisationEmail = "abc@def.com",
-        notifyingOrganisation = "PRISON",
-        notifyingOrganisationName = "WAYLAND_PRISON",
+        notifyingOrganisation = notifyingOrganisation,
+        notifyingOrganisationName = notifyingOrganisationName,
         notifyingOrganisationEmail = "",
       )
       order.probationDeliveryUnit = ProbationDeliveryUnit(

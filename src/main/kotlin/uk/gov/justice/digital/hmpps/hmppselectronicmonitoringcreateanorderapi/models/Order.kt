@@ -260,6 +260,14 @@ data class Order(
       return getCurrentVersion().id
     }
 
+  var tags: String?
+    get() {
+      return getCurrentVersion().tags
+    }
+    set(tags) {
+      getCurrentVersion().tags = tags
+    }
+
   fun getMonitoringStartDate(): ZonedDateTime? {
     var startDate = monitoringConditions?.startDate
 
