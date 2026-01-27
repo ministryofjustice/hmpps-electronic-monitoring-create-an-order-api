@@ -76,7 +76,7 @@ class OffenceAdditionalDetailsControllerTest : IntegrationTestBase() {
 
     Assertions.assertThat(
       result.responseBody!!,
-    ).contains(ValidationError("additionalDetails", "Offence details is too long"))
+    ).contains(ValidationError("additionalDetails", "Offence Additional details is too long"))
   }
 
   @Test
