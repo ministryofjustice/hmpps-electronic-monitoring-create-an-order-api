@@ -231,9 +231,7 @@ class MonitoringOrderTest : OrderTestBase() {
   fun `It should map offence additional details from new entity for DDV6`() {
     val order = createOrder(
       dataDictionaryVersion = DataDictionaryVersion.DDV6,
-      installationAndRisk = createInstallationAndRisk(
-        offenceAdditionalDetails = "offence details",
-      ),
+      offenceAdditionalDetails = "offence details",
       monitoringConditions = createMonitoringConditions(
         offenceType = "Robbery",
         policeArea = "Avon and Somerset",
