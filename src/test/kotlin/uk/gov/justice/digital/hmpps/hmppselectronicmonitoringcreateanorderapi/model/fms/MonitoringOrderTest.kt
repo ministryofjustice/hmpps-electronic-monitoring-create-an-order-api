@@ -26,6 +26,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.YouthCustodyServiceRegionArgumentsProviderDDv6
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationAppointment
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationLocation
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OffenceAdditionalDetails
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.TrailMonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
@@ -224,6 +225,31 @@ class MonitoringOrderTest : OrderTestBase() {
       fmsMonitoringOrder.offenceAdditionalDetails,
     ).isEqualTo(
       "Mock Additional Details. AC Offence: Robbery. PFA: Avon and Somerset",
+    )
+  }
+
+  @Test
+  fun `It should map offence additional details from new entity for DDV6`() {
+    val order = createOrder(
+      dataDictionaryVersion = DataDictionaryVersion.DDV6,
+      installationAndRisk = createInstallationAndRisk(
+        offenceAdditionalDetails = "offence details",
+      ),
+      monitoringConditions = createMonitoringConditions(
+        offenceType = "Robbery",
+        policeArea = "Avon and Somerset",
+      ),
+    )
+
+    order.offenceAdditionalDetails =
+      OffenceAdditionalDetails(versionId = order.getCurrentVersion().id, additionalDetails = "offence details")
+
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
+
+    assertThat(
+      fmsMonitoringOrder.offenceAdditionalDetails,
+    ).isEqualTo(
+      "offence details",
     )
   }
 
