@@ -247,6 +247,14 @@ data class Order(
       getCurrentVersion().orderParameters = orderParameters
     }
 
+  var mappa: Mappa?
+    get() {
+      return getCurrentVersion().mappa
+    }
+    set(mappa) {
+      getCurrentVersion().mappa = mappa
+    }
+
   val versionId: UUID
     get() {
       return getCurrentVersion().id
