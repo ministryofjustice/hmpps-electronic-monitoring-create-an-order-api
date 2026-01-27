@@ -26,7 +26,6 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.YouthCustodyServiceRegionArgumentsProviderDDv6
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationAppointment
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationLocation
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OffenceAdditionalDetails
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.TrailMonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
@@ -241,16 +240,11 @@ class MonitoringOrderTest : OrderTestBase() {
       ),
     )
 
-    order.offenceAdditionalDetails =
-      OffenceAdditionalDetails(versionId = order.getCurrentVersion().id, additionalDetails = "offence details")
-
     val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
 
     assertThat(
       fmsMonitoringOrder.offenceAdditionalDetails,
-    ).isEqualTo(
-      "offence details",
-    )
+    ).isEqualTo("offence details. AC Offence: Robbery. PFA: Avon and Somerset")
   }
 
   @Test

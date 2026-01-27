@@ -596,11 +596,13 @@ data class MonitoringOrder(
     }
 
     private fun getOffenceAdditionalDetails(order: Order): String {
-      if (DataDictionaryVersion.isVersionSameOrAbove(order.dataDictionaryVersion, DataDictionaryVersion.DDV6)) {
-        return order.offenceAdditionalDetails?.additionalDetails ?: ""
-      }
+      val riskOffenceDetails =
+        if (DataDictionaryVersion.isVersionSameOrAbove(order.dataDictionaryVersion, DataDictionaryVersion.DDV6)) {
+          order.offenceAdditionalDetails?.additionalDetails ?: ""
+        } else {
+          order.installationAndRisk?.offenceAdditionalDetails ?: ""
+        }
 
-      val riskOffenceDetails = order.installationAndRisk?.offenceAdditionalDetails ?: ""
       val monitoringOffenceType = order.monitoringConditions?.offenceType ?: ""
       var monitoringPoliceArea = PoliceAreas.from(order.monitoringConditions?.policeArea)?.value
 

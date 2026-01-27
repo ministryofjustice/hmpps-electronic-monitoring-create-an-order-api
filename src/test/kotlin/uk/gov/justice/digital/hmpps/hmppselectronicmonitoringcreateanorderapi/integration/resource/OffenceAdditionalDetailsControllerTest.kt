@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.web.reactive.function.BodyInserters
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.data.ValidationErrors
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateOffenceAdditionalDetailsDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidationError
@@ -80,11 +81,43 @@ class OffenceAdditionalDetailsControllerTest : IntegrationTestBase() {
   }
 
   @Test
+  fun `should return error when Yes is selected without details provided`() {
+    val order = createOrder()
+
+    val result = callOffenceAdditionalDetailsEndpoint(
+      order.id,
+      mockValidRequestBody(additionalDetailsRequired = true, additionalDetails = ""),
+    ).expectStatus()
+      .isBadRequest
+      .expectBodyList(ValidationError::class.java)
+      .returnResult()
+
+    Assertions.assertThat(
+      result.responseBody!!,
+    ).contains(ValidationError("additionalDetails", ValidationErrors.OffenceAdditionalDetails.DETAILS_REQUIRED))
+  }
+
+  @Test
+  fun `should succeed when No is selected`() {
+    val order = createOrder()
+
+    val result = callOffenceAdditionalDetailsEndpoint(
+      order.id,
+      mockValidRequestBody(additionalDetailsRequired = false, additionalDetails = null),
+    ).expectStatus()
+      .isOk
+
+    val updatedOrder = getOrder(order.id)
+
+    Assertions.assertThat(updatedOrder.offenceAdditionalDetails?.additionalDetails).isNull()
+  }
+
+  @Test
   fun `it should return an error if the order is in a submitted state`() {
     val order = createSubmittedOrder()
     val result = callOffenceAdditionalDetailsEndpoint(
       order.id,
-      mockValidRequestBody(order.id, "some details about offence"),
+      mockValidRequestBody(order.id, additionalDetails = "some details about offence"),
     ).expectStatus()
       .isNotFound
       .expectBodyList(ErrorResponse::class.java)
@@ -114,8 +147,16 @@ class OffenceAdditionalDetailsControllerTest : IntegrationTestBase() {
       .exchange()
   }
 
-  private fun mockValidRequestBody(id: UUID? = null, additionalDetails: String? = "Default details text"): String {
-    val dto = UpdateOffenceAdditionalDetailsDto(id = id, additionalDetails = additionalDetails)
+  private fun mockValidRequestBody(
+    id: UUID? = null,
+    additionalDetailsRequired: Boolean? = true,
+    additionalDetails: String? = "Default details text",
+  ): String {
+    val dto = UpdateOffenceAdditionalDetailsDto(
+      id = id,
+      additionalDetailsRequired = additionalDetailsRequired,
+      additionalDetails = additionalDetails,
+    )
     return objectMapper.writeValueAsString(dto)
   }
 }

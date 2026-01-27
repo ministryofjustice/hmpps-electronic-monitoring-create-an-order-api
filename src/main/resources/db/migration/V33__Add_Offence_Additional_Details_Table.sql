@@ -2,7 +2,7 @@ CREATE TABLE offence_additional_details
 (
     id UUID NOT NULL,
     version_id UUID NOT NULL,
-    additional_details VARCHAR(255),
+    additional_details VARCHAR(200),
     CONSTRAINT pk_offence_additional_details PRIMARY KEY (id)
 );
 

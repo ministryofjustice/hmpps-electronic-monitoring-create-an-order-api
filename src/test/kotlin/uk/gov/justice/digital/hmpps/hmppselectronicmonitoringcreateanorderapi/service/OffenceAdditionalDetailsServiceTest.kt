@@ -52,7 +52,10 @@ class OffenceAdditionalDetailsServiceTest {
     whenever(repo.findById(mockOrderId)).thenReturn(Optional.of(mockOrder))
     whenever(repo.save(mockOrder)).thenReturn(mockOrder)
 
-    val dto = UpdateOffenceAdditionalDetailsDto(additionalDetails = "initial offence additional details")
+    val dto = UpdateOffenceAdditionalDetailsDto(
+      additionalDetailsRequired = true,
+      additionalDetails = "initial offence additional details",
+    )
     val result = service.updateOffenceAdditionalDetails(mockOrderId, mockUsername, dto)
 
     assertThat(result).isNotNull
@@ -64,10 +67,17 @@ class OffenceAdditionalDetailsServiceTest {
     whenever(repo.findById(mockOrderId)).thenReturn(Optional.of(mockOrder))
     whenever(repo.save(mockOrder)).thenReturn(mockOrder)
 
-    val addDto = UpdateOffenceAdditionalDetailsDto(additionalDetails = "initial offence additional details")
+    val addDto = UpdateOffenceAdditionalDetailsDto(
+      additionalDetailsRequired = true,
+      additionalDetails = "initial offence additional details",
+    )
     val addResult = service.updateOffenceAdditionalDetails(mockOrderId, mockUsername, addDto)
 
-    val updateDto = UpdateOffenceAdditionalDetailsDto(id = addResult.id, "new details")
+    val updateDto = UpdateOffenceAdditionalDetailsDto(
+      id = addResult.id,
+      additionalDetailsRequired = true,
+      "new details",
+    )
     val updateResult = service.updateOffenceAdditionalDetails(mockOrderId, mockUsername, updateDto)
 
     assertThat(updateResult).isNotNull
