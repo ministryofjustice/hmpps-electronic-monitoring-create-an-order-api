@@ -196,6 +196,7 @@ class OrderController(@Autowired val orderService: OrderService) {
       versionId = order.versionId,
       dapoClauses = order.dapoClauses,
       offences = order.offences,
+      offenceAdditionalDetails = order.offenceAdditionalDetails,
       mappa = order.mappa,
     )
 

@@ -18,6 +18,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Mappa
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.MonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Offence
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OffenceAdditionalDetails
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderParameters
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ProbationDeliveryUnit
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ResponsibleAdult
@@ -93,6 +94,8 @@ data class OrderDto(
   val dapoClauses: MutableList<Dapo>,
 
   val offences: MutableList<Offence>,
+
+  val offenceAdditionalDetails: OffenceAdditionalDetails?,
 
   val mappa: Mappa?,
 )
