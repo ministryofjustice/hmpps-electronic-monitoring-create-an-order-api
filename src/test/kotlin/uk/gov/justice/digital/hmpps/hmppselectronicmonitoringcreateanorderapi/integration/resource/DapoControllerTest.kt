@@ -8,18 +8,20 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.web.reactive.function.BodyInserters
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.UpdateOrderIntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateDapoDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidationError
-import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.util.UUID
 
-class DapoControllerTest : IntegrationTestBase() {
+class DapoControllerTest : UpdateOrderIntegrationTestBase() {
 
   @Autowired
   lateinit var objectMapper: ObjectMapper
+
+  override val uri = "/api/orders/:orderId/dapo"
+  override fun createValidBody(): String = mockValidRequestBody()
 
   @BeforeEach
   fun setup() {
@@ -66,52 +68,6 @@ class DapoControllerTest : IntegrationTestBase() {
     Assertions.assertThat(dapoClause.id).isEqualTo(dapoId)
     Assertions.assertThat(dapoClause.clause).isEqualTo("other clause")
     Assertions.assertThat(dapoClause.date).isEqualTo(mockDate)
-  }
-
-  @Test
-  fun `it should return an error if the order was not created by the user`() {
-    val order = createOrder()
-
-    val result =
-      callDapoEndpoint(
-        order.id,
-        mockValidRequestBody(clause = "some clause", date = ZonedDateTime.now()),
-        username = "AUTH_ADM_2",
-      )
-        .expectStatus()
-        .isNotFound
-        .expectBodyList(ErrorResponse::class.java)
-        .returnResult()
-
-    val error = result.responseBody!!.first()
-    Assertions.assertThat(
-      error.developerMessage,
-    ).isEqualTo("An editable order with ${order.id} does not exist")
-  }
-
-  @Test
-  fun `it should return not found if the order does not exist`() {
-    callDapoEndpoint(UUID.randomUUID(), mockValidRequestBody(clause = "some clause", date = ZonedDateTime.now()))
-      .expectStatus()
-      .isNotFound
-  }
-
-  @Test
-  fun `it should return an error if the order is in a submitted state`() {
-    val order = createSubmittedOrder()
-    val result = callDapoEndpoint(
-      order.id,
-      mockValidRequestBody(clause = "some clause", date = ZonedDateTime.now()),
-    )
-      .expectStatus()
-      .isNotFound
-      .expectBodyList(ErrorResponse::class.java)
-      .returnResult()
-
-    val error = result.responseBody!!.first()
-    Assertions.assertThat(
-      error.developerMessage,
-    ).isEqualTo("An editable order with ${order.id} does not exist")
   }
 
   @Test
