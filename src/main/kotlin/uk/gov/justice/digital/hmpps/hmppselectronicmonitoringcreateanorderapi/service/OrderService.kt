@@ -15,6 +15,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.VersionInformationDTO
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.specification.OrderListSpecification
@@ -188,7 +189,6 @@ class OrderService(
         val submitResult = fmsService.submitOrder(order, FmsOrderSource.CEMO)
         order.fmsResultId = submitResult.id
         order.fmsResultDate = submitResult.submissionDate
-
         if (!submitResult.partialSuccess) {
           order.status = OrderStatus.ERROR
           repo.save(order)
@@ -200,6 +200,7 @@ class OrderService(
         } else {
           order.status = OrderStatus.SUBMITTED
           order.getCurrentVersion().submittedBy = fullName
+          order.tags = getTags(order)
           repo.save(order)
         }
       } catch (e: Exception) {
@@ -213,6 +214,14 @@ class OrderService(
     }
 
     return order
+  }
+
+  fun getTags(order: Order): String {
+    var tags = ""
+    if (order.interestedParties?.notifyingOrganisation!! == NotifyingOrganisation.PRISON.name) {
+      tags = "PRISON,${order.interestedParties?.notifyingOrganisationName!!}"
+    }
+    return tags
   }
 
   fun listOrders(searchCriteria: OrderListCriteria): List<Order> = repo.findAll(

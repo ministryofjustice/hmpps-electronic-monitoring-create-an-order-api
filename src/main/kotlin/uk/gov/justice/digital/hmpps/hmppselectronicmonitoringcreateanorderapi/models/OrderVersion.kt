@@ -136,6 +136,9 @@ data class OrderVersion(
   @Column(name = "SUBMITTED_BY", nullable = true)
   var submittedBy: String? = null,
 
+  @Column(name = "TAGS", nullable = true)
+  var tags: String? = null,
+
   @Schema(hidden = true)
   @ManyToOne
   @JoinColumn(name = "ORDER_ID", updatable = false, insertable = false)
