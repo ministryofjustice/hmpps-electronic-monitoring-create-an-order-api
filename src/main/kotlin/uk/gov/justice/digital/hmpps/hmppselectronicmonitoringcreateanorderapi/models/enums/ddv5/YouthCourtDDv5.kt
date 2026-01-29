@@ -144,7 +144,10 @@ enum class YouthCourtDDv5(val value: String) {
   LEWES_YOUTH_COURT("Lewes Youth Court"),
   LEYLAND_YOUTH_COURT("Leyland Youth Court"),
   LINCOLN_YOUTH_COURT("Lincoln Youth Court"),
+
+  // keeping the option below for backwards compatibility, enum obsolete
   LIVERPOOL_YOUTH_CODE_HATTON_GARDEN("Liverpool Youth Code (Hatton Garden)"),
+  LIVERPOOL_YOUTH_COURT_HATTON_GARDEN("Liverpool Youth Court (Hatton Garden)"),
   LLANDRINDOD_WELLS_YOUTH_COURT("Llandrindod Wells Youth Court"),
   LLANDUDNO_YOUTH_COURT("Llandudno Youth Court"),
   LLANELLI_YOUTH_COURT("Llanelli Youth Court"),
@@ -189,7 +192,10 @@ enum class YouthCourtDDv5(val value: String) {
   ORMSKIRK_YOUTH_COURT("Ormskirk Youth Court"),
   OSWESTRY_YOUTH_COURT("Oswestry Youth Court"),
   OXFORD_YOUTH_COURT("Oxford Youth Court"),
+
+  // keeping the option below for backwards compatibility, enum obsolete
   PENRITH_YOUTH_CODE("Penrith Youth Code"),
+  PENRITH_YOUTH_COURT("Penrith Youth Court"),
   PENZANCE_YOUTH_COURT("Penzance Youth Court"),
   PETERBOROUGH_YOUTH_COURT("Peterborough Youth Court"),
   PETERLEE_YOUTH_COURT("Peterlee Youth Court"),
