@@ -5,4 +5,5 @@ enum class ServiceRequestType {
   REINSTALL_DEVICE,
   REVOCATION,
   VARIATION,
+  END_MONITORING,
 }
