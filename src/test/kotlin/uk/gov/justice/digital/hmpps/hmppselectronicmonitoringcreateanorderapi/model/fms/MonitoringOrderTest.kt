@@ -667,10 +667,22 @@ class MonitoringOrderTest : OrderTestBase() {
   }
 
   @Test
-  fun `It should correctly map subcategory when order type is bail`() {
+  fun `It should correctly map subcategory To SR11 when order type is bail`() {
     val order = createOrder(
-      type = RequestType.REVOCATION,
+      type = RequestType.END_MONITORING,
       monitoringConditions = createMonitoringConditions(orderType = OrderType.BAIL),
+      variationDetails = createvariationDetails(),
+      dataDictionaryVersion = DataDictionaryVersion.DDV6,
+    )
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "")
+    assertThat(fmsMonitoringOrder.subcategory).isEqualTo("SR11-Removal of devices (bail)")
+  }
+
+  @Test
+  fun `It should correctly map subcategory to SR11 when order type is immigration`() {
+    val order = createOrder(
+      type = RequestType.END_MONITORING,
+      monitoringConditions = createMonitoringConditions(orderType = OrderType.IMMIGRATION),
       variationDetails = createvariationDetails(),
       dataDictionaryVersion = DataDictionaryVersion.DDV6,
     )
@@ -722,18 +734,6 @@ class MonitoringOrderTest : OrderTestBase() {
     )
     val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "")
     assertThat(fmsMonitoringOrder.subcategory).isEqualTo("")
-  }
-
-  @Test
-  fun `It should correctly map subcategory when order type is immigration`() {
-    val order = createOrder(
-      type = RequestType.REVOCATION,
-      monitoringConditions = createMonitoringConditions(orderType = OrderType.IMMIGRATION),
-      variationDetails = createvariationDetails(),
-      dataDictionaryVersion = DataDictionaryVersion.DDV6,
-    )
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "")
-    assertThat(fmsMonitoringOrder.subcategory).isEqualTo("SR11-Removal of devices (bail)")
   }
 
   @Test
