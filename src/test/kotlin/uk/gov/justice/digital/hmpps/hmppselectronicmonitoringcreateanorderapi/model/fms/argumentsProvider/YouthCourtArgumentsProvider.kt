@@ -150,7 +150,9 @@ class YouthCourtArgumentsProvider : ArgumentsProvider {
     Arguments.of("LEWES_YOUTH_COURT", "Lewes Youth Court"),
     Arguments.of("LEYLAND_YOUTH_COURT", "Leyland Youth Court"),
     Arguments.of("LINCOLN_YOUTH_COURT", "Lincoln Youth Court"),
+    // keeping the option below for backwards compatibility, option obsolete
     Arguments.of("LIVERPOOL_YOUTH_CODE_HATTON_GARDEN", "Liverpool Youth Code (Hatton Garden)"),
+    Arguments.of("LIVERPOOL_YOUTH_COURT_HATTON_GARDEN", "Liverpool Youth Court (Hatton Garden)"),
     Arguments.of("LLANDRINDOD_WELLS_YOUTH_COURT", "Llandrindod Wells Youth Court"),
     Arguments.of("LLANDUDNO_YOUTH_COURT", "Llandudno Youth Court"),
     Arguments.of("LLANELLI_YOUTH_COURT", "Llanelli Youth Court"),
@@ -195,7 +197,9 @@ class YouthCourtArgumentsProvider : ArgumentsProvider {
     Arguments.of("ORMSKIRK_YOUTH_COURT", "Ormskirk Youth Court"),
     Arguments.of("OSWESTRY_YOUTH_COURT", "Oswestry Youth Court"),
     Arguments.of("OXFORD_YOUTH_COURT", "Oxford Youth Court"),
+    // keeping the option below for backwards compatibility, option obsolete
     Arguments.of("PENRITH_YOUTH_CODE", "Penrith Youth Code"),
+    Arguments.of("PENRITH_YOUTH_COURT", "Penrith Youth Court"),
     Arguments.of("PENZANCE_YOUTH_COURT", "Penzance Youth Court"),
     Arguments.of("PETERBOROUGH_YOUTH_COURT", "Peterborough Youth Court"),
     Arguments.of("PETERLEE_YOUTH_COURT", "Peterlee Youth Court"),
