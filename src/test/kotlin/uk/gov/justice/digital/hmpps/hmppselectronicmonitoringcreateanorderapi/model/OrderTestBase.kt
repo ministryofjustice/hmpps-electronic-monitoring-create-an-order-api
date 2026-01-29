@@ -14,6 +14,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InterestedParties
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.MandatoryAttendanceConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.MonitoringConditions
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OffenceAdditionalDetails
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ProbationDeliveryUnit
@@ -60,6 +61,7 @@ abstract class OrderTestBase {
     curfewTimetable: MutableList<CurfewTimeTable> = createCurfewTimeTable(),
     type: RequestType = RequestType.REQUEST,
     variationDetails: VariationDetails? = null,
+    offenceAdditionalDetails: String? = null,
   ): Order {
     val orderId = UUID.randomUUID()
     val versionId = UUID.randomUUID()
@@ -85,6 +87,12 @@ abstract class OrderTestBase {
     order.enforcementZoneConditions.addAll(enforcementZoneConditions)
     order.interestedParties = interestedParties
     order.probationDeliveryUnit = probationDeliveryUnits
+    if (offenceAdditionalDetails != null) {
+      order.offenceAdditionalDetails = OffenceAdditionalDetails(
+        versionId = versionId,
+        additionalDetails = offenceAdditionalDetails,
+      )
+    }
     if (responsibleAdult != null) {
       order.deviceWearerResponsibleAdult = responsibleAdult
     }
@@ -269,6 +277,7 @@ abstract class OrderTestBase {
     offenceType = offenceType,
     policeArea = policeArea,
     dapolMissedInError = dapolMissedInError,
+
   )
 
   protected fun createMandatoryAttendanceCondition(

@@ -137,6 +137,14 @@ data class Order(
       return getCurrentVersion().offences
     }
 
+  var offenceAdditionalDetails: OffenceAdditionalDetails?
+    get() {
+      return getCurrentVersion().offenceAdditionalDetails
+    }
+    set(offenceAdditionalDetails) {
+      getCurrentVersion().offenceAdditionalDetails = offenceAdditionalDetails
+    }
+
   var interestedParties: InterestedParties?
     get() {
       return getCurrentVersion().interestedParties
