@@ -1,3 +1,5 @@
+package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models
+
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.persistence.Column
 import jakarta.persistence.Convert
@@ -30,5 +32,5 @@ data class DetailsOfInstallation(
   @Schema(hidden = true)
   @OneToOne
   @JoinColumn(name = "VERSION_ID", updatable = false, insertable = false)
-  private val version: OrderVersion? = null
+  private val version: OrderVersion? = null,
 )
