@@ -150,7 +150,7 @@ data class OrderVersion(
   @JoinColumn(name = "ORDER_ID", updatable = false, insertable = false)
   private val order: Order? = null,
 
-  ) {
+) {
   private val adultOrHasResponsibleAdult: Boolean
     get() = (
       deviceWearer?.adultAtTimeOfInstallation == true ||
