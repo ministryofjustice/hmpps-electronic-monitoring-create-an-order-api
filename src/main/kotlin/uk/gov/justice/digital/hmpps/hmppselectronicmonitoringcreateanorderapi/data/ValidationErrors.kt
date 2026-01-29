@@ -197,4 +197,10 @@ object ValidationErrors {
   object Dapo {
     const val CAUSE_TOO_LONG: String = "DAPO clause is too long"
   }
+
+  object OffenceAdditionalDetails {
+    const val OFFENCE_DETAILS_TOO_LONG: String = "Offence Additional details is too long"
+    const val DETAILS_REQUIRED: String = "Enter additional information about the offence"
+    const val RESPONSE_REQUIRED: String = "Select Yes if there is other information to be aware of about the offence"
+  }
 }

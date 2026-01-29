@@ -100,6 +100,9 @@ data class OrderVersion(
   @OneToMany(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "version", orphanRemoval = true)
   var dapoClauses: MutableList<Dapo> = mutableListOf(),
 
+  @OneToOne(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "version", orphanRemoval = true)
+  var offenceAdditionalDetails: OffenceAdditionalDetails? = null,
+
   @OneToMany(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "version", orphanRemoval = true)
   var additionalDocuments: MutableList<AdditionalDocument> = mutableListOf(),
 
@@ -135,6 +138,9 @@ data class OrderVersion(
 
   @Column(name = "SUBMITTED_BY", nullable = true)
   var submittedBy: String? = null,
+
+  @Column(name = "TAGS", nullable = true)
+  var tags: String? = null,
 
   @Schema(hidden = true)
   @ManyToOne

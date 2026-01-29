@@ -228,6 +228,24 @@ class MonitoringOrderTest : OrderTestBase() {
   }
 
   @Test
+  fun `It should map offence additional details from new entity for DDV6`() {
+    val order = createOrder(
+      dataDictionaryVersion = DataDictionaryVersion.DDV6,
+      offenceAdditionalDetails = "offence details",
+      monitoringConditions = createMonitoringConditions(
+        offenceType = "Robbery",
+        policeArea = "Avon and Somerset",
+      ),
+    )
+
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
+
+    assertThat(
+      fmsMonitoringOrder.offenceAdditionalDetails,
+    ).isEqualTo("offence details. AC Offence: Robbery. PFA: Avon and Somerset")
+  }
+
+  @Test
   fun `It should map the police area correctly`() {
     val order = createOrder(
       installationAndRisk = createInstallationAndRisk(
