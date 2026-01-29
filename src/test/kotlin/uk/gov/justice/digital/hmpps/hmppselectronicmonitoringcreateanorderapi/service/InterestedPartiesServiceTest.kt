@@ -20,6 +20,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ResponsibleOrganisation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YouthJusticeServiceRegions
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ddv6.PoliceAreasDDv6
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 import java.util.*
 
@@ -186,5 +187,27 @@ class InterestedPartiesServiceTest {
     service.updateInterestedParties(mockOrderId, mockUsername, mockUpdateRecord)
 
     assertThat(mockOrder.interestedParties?.notifyingOrganisationName).isEqualTo("")
+  }
+
+  @Test
+  fun `Should save responsible organisation as police in ddv6`() {
+    whenever(orderRepo.findById(mockOrderId)).thenReturn(Optional.of(mockOrder))
+    whenever(orderRepo.save(mockOrder)).thenReturn(mockOrder)
+
+    val mockUpdateRecord = UpdateInterestedPartiesDto(
+      responsibleOrganisation = ResponsibleOrganisation.POLICE,
+      responsibleOrganisationRegion = PoliceAreasDDv6.METROPOLITAN_POLICE.name,
+      responsibleOrganisationEmail = "mockEmail",
+      responsibleOfficerName = "mockOfficer",
+      responsibleOfficerPhoneNumber = "09876543210",
+      notifyingOrganisation = NotifyingOrganisationDDv5.YOUTH_CUSTODY_SERVICE,
+      notifyingOrganisationName = "",
+      notifyingOrganisationEmail = "mockemail",
+    )
+
+    service.updateInterestedParties(mockOrderId, mockUsername, mockUpdateRecord)
+
+    assertThat(mockOrder.interestedParties?.responsibleOrganisation).isEqualTo("POLICE")
+    assertThat(mockOrder.interestedParties?.responsibleOrganisationRegion).isEqualTo("METROPOLITAN_POLICE")
   }
 }

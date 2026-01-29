@@ -13,6 +13,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationAppointment
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationLocation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InterestedParties
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Mappa
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.MonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderParameters
@@ -27,6 +28,8 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DocumentType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.EnforcementZoneType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.InstallationLocationType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MappaCategory
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MappaLevel
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MonitoringConditionType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderType
@@ -58,6 +61,8 @@ class TestUtilities {
       installationAppointment: InstallationAppointment? = null,
       username: String = "AUTH_ADM",
       dataDictionaryVersion: DataDictionaryVersion = DataDictionaryVersion.DDV4,
+      notifyingOrganisation: String = "PRISON",
+      notifyingOrganisationName: String = "WAYLAND_PRISON",
     ): Order {
       val order = Order(
         id = id,
@@ -148,6 +153,12 @@ class TestUtilities {
         riskCategory = arrayOf("SEXUAL_OFFENCES", "RISK_TO_GENDER"),
         mappaLevel = "MAAPA 1",
         mappaCaseType = "CPPC (Critical Public Protection Case)",
+      )
+
+      order.mappa = Mappa(
+        versionId = versionId,
+        level = MappaLevel.MAPPA_ONE,
+        category = MappaCategory.CATEGORY_ONE,
       )
 
       order.contactDetails = ContactDetails(
@@ -267,8 +278,8 @@ class TestUtilities {
         responsibleOrganisation = "PROBATION",
         responsibleOrganisationRegion = "LONDON",
         responsibleOrganisationEmail = "abc@def.com",
-        notifyingOrganisation = "PRISON",
-        notifyingOrganisationName = "WAYLAND_PRISON",
+        notifyingOrganisation = notifyingOrganisation,
+        notifyingOrganisationName = notifyingOrganisationName,
         notifyingOrganisationEmail = "",
       )
       order.probationDeliveryUnit = ProbationDeliveryUnit(

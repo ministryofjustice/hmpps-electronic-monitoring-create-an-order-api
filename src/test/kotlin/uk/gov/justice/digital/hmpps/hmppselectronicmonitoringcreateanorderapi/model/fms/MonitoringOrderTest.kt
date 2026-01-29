@@ -16,6 +16,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.NotifyingOrganisationArgumentsProvider
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.OrderTypeArgumentsProvider
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.PilotArgumentsProvider
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.PoliceForceAreasDDv6ArgumentsProvider
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.PrisonArgumentsProvider
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.ProbationDeliveryUnitArgumentsProvider
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.ProbationDeliveryUnitDDv6ArgumentsProvider
@@ -224,6 +225,24 @@ class MonitoringOrderTest : OrderTestBase() {
     ).isEqualTo(
       "Mock Additional Details. AC Offence: Robbery. PFA: Avon and Somerset",
     )
+  }
+
+  @Test
+  fun `It should map offence additional details from new entity for DDV6`() {
+    val order = createOrder(
+      dataDictionaryVersion = DataDictionaryVersion.DDV6,
+      offenceAdditionalDetails = "offence details",
+      monitoringConditions = createMonitoringConditions(
+        offenceType = "Robbery",
+        policeArea = "Avon and Somerset",
+      ),
+    )
+
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
+
+    assertThat(
+      fmsMonitoringOrder.offenceAdditionalDetails,
+    ).isEqualTo("offence details. AC Offence: Robbery. PFA: Avon and Somerset")
   }
 
   @Test
@@ -495,6 +514,27 @@ class MonitoringOrderTest : OrderTestBase() {
     val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
 
     assertThat(fmsMonitoringOrder.pduResponsible).isEqualTo(mappedValue)
+  }
+
+  @ParameterizedTest(name = "it should map DDv6 police areas to Serco - {0} -> {1}")
+  @ArgumentsSource(PoliceForceAreasDDv6ArgumentsProvider::class)
+  fun `It should correctly map DDv6 saved police force areas values in responsible organisation region`(
+    savedValue: String,
+    mappedValue: String,
+  ) {
+    val order = createOrder(
+      dataDictionaryVersion = DataDictionaryVersion.DDV6,
+      deviceWearer = createDeviceWearer(),
+      installationAndRisk = createInstallationAndRisk(riskCategory = savedValue),
+      interestedParties = createInterestedParty(
+        responsibleOrganisation = "POLICE",
+        responsibleOrganisationRegion = savedValue,
+      ),
+    )
+
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
+
+    assertThat(fmsMonitoringOrder.roRegion).isEqualTo(mappedValue)
   }
 
   @ParameterizedTest(name = "it should map notifying organisation - {0} -> {1}")

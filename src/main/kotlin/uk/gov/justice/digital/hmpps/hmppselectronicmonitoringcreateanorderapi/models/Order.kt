@@ -137,6 +137,14 @@ data class Order(
       return getCurrentVersion().offences
     }
 
+  var offenceAdditionalDetails: OffenceAdditionalDetails?
+    get() {
+      return getCurrentVersion().offenceAdditionalDetails
+    }
+    set(offenceAdditionalDetails) {
+      getCurrentVersion().offenceAdditionalDetails = offenceAdditionalDetails
+    }
+
   var interestedParties: InterestedParties?
     get() {
       return getCurrentVersion().interestedParties
@@ -247,9 +255,25 @@ data class Order(
       getCurrentVersion().orderParameters = orderParameters
     }
 
+  var mappa: Mappa?
+    get() {
+      return getCurrentVersion().mappa
+    }
+    set(mappa) {
+      getCurrentVersion().mappa = mappa
+    }
+
   val versionId: UUID
     get() {
       return getCurrentVersion().id
+    }
+
+  var tags: String?
+    get() {
+      return getCurrentVersion().tags
+    }
+    set(tags) {
+      getCurrentVersion().tags = tags
     }
 
   fun getMonitoringStartDate(): ZonedDateTime? {

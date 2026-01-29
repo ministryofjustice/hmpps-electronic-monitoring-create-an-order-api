@@ -36,8 +36,8 @@
   "risk_serious_harm": "",
   "risk_self_harm": "",
   "risk_details": "Danger",
-  "mappa": "MAAPA 1",
-  "mappa_case_type": "CPPC (Critical Public Protection Case)",
+  "mappa": "MAPPA 1",
+  "mappa_case_type": "Category 1",
   "risk_categories": [
     {
       "category": "Sexual Offences"
