@@ -263,6 +263,14 @@ data class Order(
       getCurrentVersion().mappa = mappa
     }
 
+  var detailsOfInstallation: DetailsOfInstallation?
+    get() {
+      return getCurrentVersion().detailsOfInstallation
+    }
+    set(detailsOfInstallation) {
+      getCurrentVersion().detailsOfInstallation = detailsOfInstallation
+    }
+
   val versionId: UUID
     get() {
       return getCurrentVersion().id
