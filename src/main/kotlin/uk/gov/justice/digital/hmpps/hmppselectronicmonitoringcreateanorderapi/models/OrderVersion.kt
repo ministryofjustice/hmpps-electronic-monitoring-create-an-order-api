@@ -136,6 +136,9 @@ data class OrderVersion(
   @OneToOne(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "version", orphanRemoval = true)
   var mappa: Mappa? = null,
 
+  @OneToOne(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "version", orphanRemoval = true)
+  var detailsOfInstallation: DetailsOfInstallation? = null,
+
   @Column(name = "SUBMITTED_BY", nullable = true)
   var submittedBy: String? = null,
 
@@ -147,7 +150,7 @@ data class OrderVersion(
   @JoinColumn(name = "ORDER_ID", updatable = false, insertable = false)
   private val order: Order? = null,
 
-) {
+  ) {
   private val adultOrHasResponsibleAdult: Boolean
     get() = (
       deviceWearer?.adultAtTimeOfInstallation == true ||
