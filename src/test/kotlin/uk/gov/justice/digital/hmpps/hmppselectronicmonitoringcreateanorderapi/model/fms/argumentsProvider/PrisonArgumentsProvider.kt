@@ -54,6 +54,7 @@ class PrisonArgumentsProvider : ArgumentsProvider {
     Arguments.of("EXETER_PRISON", "Exeter Prison"),
     Arguments.of("FEATHERSTONE_PRISON", "Featherstone Prison"),
     Arguments.of("FELTHAM_YOUNG_OFFENDER_INSTITUTION", "Feltham Young Offender Institution"),
+    Arguments.of("FELTHAM_PRISON", "Feltham Prison"),
     Arguments.of("FIVE_WELLS_PRISON", "Five Wells Prison"),
     Arguments.of("FORD_PRISON", "Ford Prison"),
     Arguments.of("FOSSE_WAY_PRISON", "Fosse Way Prison"),
