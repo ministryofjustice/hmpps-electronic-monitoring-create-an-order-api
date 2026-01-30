@@ -667,9 +667,9 @@ class MonitoringOrderTest : OrderTestBase() {
   }
 
   @Test
-  fun `It should correctly map subcategory when order type is bail`() {
+  fun `It should correctly map subcategory To SR11 when order type is bail`() {
     val order = createOrder(
-      type = RequestType.REVOCATION,
+      type = RequestType.END_MONITORING,
       monitoringConditions = createMonitoringConditions(orderType = OrderType.BAIL),
       variationDetails = createvariationDetails(),
       dataDictionaryVersion = DataDictionaryVersion.DDV6,
@@ -679,15 +679,61 @@ class MonitoringOrderTest : OrderTestBase() {
   }
 
   @Test
-  fun `It should correctly map subcategory when order type is immigration`() {
+  fun `It should correctly map subcategory to SR11 when order type is immigration`() {
     val order = createOrder(
-      type = RequestType.REVOCATION,
+      type = RequestType.END_MONITORING,
       monitoringConditions = createMonitoringConditions(orderType = OrderType.IMMIGRATION),
       variationDetails = createvariationDetails(),
       dataDictionaryVersion = DataDictionaryVersion.DDV6,
     )
     val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "")
     assertThat(fmsMonitoringOrder.subcategory).isEqualTo("SR11-Removal of devices (bail)")
+  }
+
+  @Test
+  fun `It should correctly map subcategory as SR08 when monitoring start date is in the future`() {
+    val order = createOrder(
+      type = RequestType.REVOCATION,
+      monitoringConditions = createMonitoringConditions(
+        orderType = OrderType.BAIL,
+        startDate = ZonedDateTime.now().plusMonths(3),
+      ),
+      variationDetails = createvariationDetails(),
+      dataDictionaryVersion = DataDictionaryVersion.DDV6,
+    )
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "")
+    assertThat(fmsMonitoringOrder.subcategory).isEqualTo("SR08-Amend monitoring requirements")
+  }
+
+  @Test
+  fun `It should correctly map subcategory as SR08 when monitoring start date is today`() {
+    val order = createOrder(
+      type = RequestType.REVOCATION,
+      monitoringConditions = createMonitoringConditions(
+        orderType = OrderType.BAIL,
+        startDate = ZonedDateTime.now(),
+      ),
+      variationDetails = createvariationDetails(),
+      dataDictionaryVersion = DataDictionaryVersion.DDV6,
+    )
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "")
+    assertThat(fmsMonitoringOrder.subcategory).isEqualTo("SR08-Amend monitoring requirements")
+  }
+
+  @Test
+  fun `It should map subcategory as empty with future start date and request type is request`() {
+    val order = createOrder(
+      type = RequestType.REQUEST,
+      monitoringConditions = createMonitoringConditions(
+        orderType = OrderType.BAIL,
+
+        startDate = ZonedDateTime.now().plusMonths(3),
+      ),
+      variationDetails = createvariationDetails(),
+      dataDictionaryVersion = DataDictionaryVersion.DDV6,
+    )
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "")
+    assertThat(fmsMonitoringOrder.subcategory).isEqualTo("")
   }
 
   @Test

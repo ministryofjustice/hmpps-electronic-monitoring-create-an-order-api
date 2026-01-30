@@ -13,5 +13,6 @@ class AmendOrderArgumentsProvider : ArgumentsProvider {
     Arguments.of(ServiceRequestType.REINSTALL_DEVICE, RequestType.REINSTALL_DEVICE),
     Arguments.of(ServiceRequestType.REVOCATION, RequestType.REVOCATION),
     Arguments.of(ServiceRequestType.VARIATION, RequestType.VARIATION),
+    Arguments.of(ServiceRequestType.END_MONITORING, RequestType.END_MONITORING),
   )
 }
