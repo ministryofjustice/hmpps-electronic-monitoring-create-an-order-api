@@ -42,6 +42,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.EnforceableCondition
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.MonitoringOrder
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.Zone
+import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
@@ -49,6 +50,16 @@ import java.util.UUID
 
 @ActiveProfiles("test")
 class MonitoringOrderTest : OrderTestBase() {
+
+  private val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+  private val dateTimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+  private val londonTimeZone = ZoneId.of("Europe/London")
+
+  private fun getBritishDateAndTime(dateTime: ZonedDateTime?): String? =
+    dateTime?.toInstant()?.atZone(londonTimeZone)?.format(dateTimeFormatter)
+
+  private fun getBritishDate(dateTime: ZonedDateTime?): String? =
+    dateTime?.toInstant()?.atZone(londonTimeZone)?.format(dateFormatter)
 
   @Test
   fun `It should map attendance monitoring to an FMS Monitoring Order`() {
@@ -297,12 +308,6 @@ class MonitoringOrderTest : OrderTestBase() {
     assertThat(fmsMonitoringOrder.conditionalReleaseEndTime).isEqualTo(mockeDayOfRelease.endTime)
     assertThat(fmsMonitoringOrder.conditionalReleaseDate).isEqualTo(getBritishDate(mockeDayOfRelease.releaseDate))
   }
-
-  private val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-  private val londonTimeZone = ZoneId.of("Europe/London")
-
-  private fun getBritishDate(dateTime: ZonedDateTime?): String? =
-    dateTime?.toInstant()?.atZone(londonTimeZone)?.format(dateFormatter)
 
   @Test
   fun `should map Tag At Source as 'false' when installation location is primary address`() {
@@ -738,7 +743,40 @@ class MonitoringOrderTest : OrderTestBase() {
 
   @Test
   fun `It should correctly map overall monitoring end date as today when SR11`() {
-    val aWeekFromNow = ZonedDateTime.now().toLocalDate().plusDays(7).toString()
+    val today = LocalDateTime.now()
+    val eodToday = ZonedDateTime.of(
+      today.year,
+      today.monthValue,
+      today.dayOfMonth,
+      23,
+      59,
+      0,
+      0,
+      ZoneId.systemDefault(),
+    )
+    val order = createOrder(
+      type = RequestType.END_MONITORING,
+      monitoringConditions = createMonitoringConditions(orderType = OrderType.IMMIGRATION),
+      variationDetails = createvariationDetails(),
+      dataDictionaryVersion = DataDictionaryVersion.DDV6,
+    )
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "")
+    assertThat(fmsMonitoringOrder.orderEnd).isEqualTo(getBritishDateAndTime(eodToday))
+  }
+
+  @Test
+  fun `It should correctly map overall monitoring end date as next week when SR21`() {
+    val aWeekInFuture = LocalDateTime.now().plusDays(7)
+    val eodNextWeek = ZonedDateTime.of(
+      aWeekInFuture.year,
+      aWeekInFuture.monthValue,
+      aWeekInFuture.dayOfMonth,
+      23,
+      59,
+      0,
+      0,
+      ZoneId.systemDefault(),
+    )
     val order = createOrder(
       type = RequestType.REVOCATION,
       monitoringConditions = createMonitoringConditions(orderType = OrderType.BAIL),
@@ -746,7 +784,7 @@ class MonitoringOrderTest : OrderTestBase() {
       dataDictionaryVersion = DataDictionaryVersion.DDV6,
     )
     val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "")
-    assertThat(fmsMonitoringOrder.serviceEndDate).isEqualTo(aWeekFromNow)
+    assertThat(fmsMonitoringOrder.orderEnd).isEqualTo(getBritishDateAndTime(eodNextWeek))
   }
 
   @Test
