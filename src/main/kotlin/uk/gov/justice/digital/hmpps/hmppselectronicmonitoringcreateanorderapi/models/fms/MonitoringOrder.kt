@@ -298,7 +298,7 @@ data class MonitoringOrder(
       )
       if (DataDictionaryVersion.isVersionSameOrAbove(order.dataDictionaryVersion, DataDictionaryVersion.DDV6)) {
         val isBail = conditions.orderType === OrderType.BAIL || conditions.orderType === OrderType.IMMIGRATION
-        monitoringOrder.subcategory = RequestType.getSubCategory(order.type, isBail, monitoringStartDate)
+monitoringOrder.subcategory = subcategory 
 
         monitoringOrder.dapolMissedInError = getDapolMissedInError(order)
       }
