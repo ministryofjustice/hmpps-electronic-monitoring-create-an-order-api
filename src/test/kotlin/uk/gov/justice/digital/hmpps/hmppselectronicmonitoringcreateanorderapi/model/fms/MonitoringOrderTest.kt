@@ -742,7 +742,30 @@ class MonitoringOrderTest : OrderTestBase() {
   }
 
   @Test
-  fun `It should correctly map overall monitoring end date as today when SR11`() {
+  fun `It should correctly map overall monitoring end date as today when SR11, order type bail`() {
+    val today = LocalDateTime.now()
+    val eodToday = ZonedDateTime.of(
+      today.year,
+      today.monthValue,
+      today.dayOfMonth,
+      23,
+      59,
+      0,
+      0,
+      ZoneId.systemDefault(),
+    )
+    val order = createOrder(
+      type = RequestType.END_MONITORING,
+      monitoringConditions = createMonitoringConditions(orderType = OrderType.BAIL),
+      variationDetails = createvariationDetails(),
+      dataDictionaryVersion = DataDictionaryVersion.DDV6,
+    )
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "")
+    assertThat(fmsMonitoringOrder.orderEnd).isEqualTo(getBritishDateAndTime(eodToday))
+  }
+
+  @Test
+  fun `It should correctly map overall monitoring end date as today when SR11, order type immigration`() {
     val today = LocalDateTime.now()
     val eodToday = ZonedDateTime.of(
       today.year,
