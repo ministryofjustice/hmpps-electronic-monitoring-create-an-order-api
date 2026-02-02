@@ -23,7 +23,7 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
   implementation("io.awspring.cloud:spring-cloud-aws-starter-s3:3.4.2")
-  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:5.6.3")
+  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:6.0.1")
   implementation("io.sentry:sentry-spring-boot-starter-jakarta:8.28.0")
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.14")
   runtimeOnly("org.flywaydb:flyway-database-postgresql")
