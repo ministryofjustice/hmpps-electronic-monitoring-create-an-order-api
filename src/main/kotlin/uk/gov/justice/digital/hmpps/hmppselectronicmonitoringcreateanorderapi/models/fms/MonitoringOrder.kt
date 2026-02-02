@@ -297,7 +297,6 @@ data class MonitoringOrder(
         magistrateCourtCaseReferenceNumber = order.deviceWearer?.courtCaseReferenceNumber ?: "",
       )
       if (DataDictionaryVersion.isVersionSameOrAbove(order.dataDictionaryVersion, DataDictionaryVersion.DDV6)) {
-        val isBail = conditions.orderType === OrderType.BAIL || conditions.orderType === OrderType.IMMIGRATION
         monitoringOrder.subcategory = subcategory
 
         monitoringOrder.dapolMissedInError = getDapolMissedInError(order)
