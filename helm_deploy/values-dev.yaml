@@ -14,7 +14,6 @@ generic-service:
     CP_PROCESSING_ENABLED: true
     CP_FMS_INTEGRATION_ENABLED: false
     CEMO_FMS_INTEGRATION_ENABLED: true
-    DATA_DICTIONARY_V5_1_ENABLED: false
     SETTINGS_DATA_DICTIONARY_VERSION: DDV6
     TAG_AT_SOURCE_ENABLED: true
     MANAGE_USER_URL: "https://manage-users-api-dev.hmpps.service.justice.gov.uk/"
