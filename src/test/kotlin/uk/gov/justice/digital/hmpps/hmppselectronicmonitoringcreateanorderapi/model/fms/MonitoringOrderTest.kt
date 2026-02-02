@@ -737,6 +737,19 @@ class MonitoringOrderTest : OrderTestBase() {
   }
 
   @Test
+  fun `It should correctly map overall monitoring end date as today when SR11`() {
+    val aWeekFromNow = ZonedDateTime.now().toLocalDate().plusDays(7).toString()
+    val order = createOrder(
+      type = RequestType.REVOCATION,
+      monitoringConditions = createMonitoringConditions(orderType = OrderType.BAIL),
+      variationDetails = createvariationDetails(),
+      dataDictionaryVersion = DataDictionaryVersion.DDV6,
+    )
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "")
+    assertThat(fmsMonitoringOrder.serviceEndDate).isEqualTo(aWeekFromNow)
+  }
+
+  @Test
   fun `It should map empty PROBATION name to 'Probation Board' for Serco`() {
     val order = createOrder(
       dataDictionaryVersion = DataDictionaryVersion.DDV5,

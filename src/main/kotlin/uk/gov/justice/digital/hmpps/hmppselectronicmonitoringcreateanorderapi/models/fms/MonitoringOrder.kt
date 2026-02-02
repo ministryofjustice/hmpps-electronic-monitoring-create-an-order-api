@@ -38,6 +38,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ddv6.YouthCustodyServiceRegionDDv6
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.formatters.PhoneNumberFormatter
 import java.time.DayOfWeek
+import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
@@ -251,7 +252,32 @@ data class MonitoringOrder(
     fun fromOrder(order: Order, caseId: String?): MonitoringOrder {
       val conditions = order.monitoringConditions!!
       val monitoringStartDate = order.getMonitoringStartDate()
-      val monitoringEndDate = order.getMonitoringEndDate()
+
+      val isBail = conditions.orderType === OrderType.BAIL || conditions.orderType === OrderType.IMMIGRATION
+      val subcategory = RequestType.getSubCategory(order.type, isBail, monitoringStartDate)
+
+      val monitoringEndDate: ZonedDateTime? = when (subcategory) {
+        "SR11-Removal of devices (bail)" -> {
+          val now = LocalDateTime.now()
+          ZonedDateTime.of(now.year, now.monthValue, now.dayOfMonth, 23, 59, 0, 0, ZoneId.systemDefault())
+        }
+        "SR21-Revocation monitoring requirements" -> {
+          val aWeekInFuture = LocalDateTime.now().plusDays(7)
+          ZonedDateTime.of(
+            aWeekInFuture.year,
+            aWeekInFuture.monthValue,
+            aWeekInFuture.dayOfMonth,
+            23,
+            59,
+            0,
+            0,
+            ZoneId.systemDefault(),
+          )
+        }
+        else -> {
+          order.getMonitoringEndDate()
+        }
+      }
 
       val monitoringOrder = MonitoringOrder(
         deviceWearer = "${order.deviceWearer!!.firstName} ${order.deviceWearer!!.lastName}",
