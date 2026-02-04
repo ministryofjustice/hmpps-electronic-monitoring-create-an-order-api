@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Mappa
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateIsMappaDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateMappaDto
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YesNoUnknown
 import java.util.*
 
 @Service
@@ -23,7 +24,7 @@ class MappaService : OrderSectionServiceBase() {
       order.mappa =
         Mappa(versionId = order.versionId, isMappa = dto.isMappa)
     } else {
-      if (dto.isMappa == false) {
+      if (dto.isMappa == YesNoUnknown.UNKNOWN || dto.isMappa == YesNoUnknown.NO) {
         order.mappa?.level = null
         order.mappa?.category = null
       }
