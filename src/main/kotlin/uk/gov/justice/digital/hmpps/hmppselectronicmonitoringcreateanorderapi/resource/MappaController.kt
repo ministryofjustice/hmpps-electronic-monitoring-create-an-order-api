@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Mappa
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderParameters
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateIsMappaDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateMappaDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.MappaService
@@ -38,7 +37,7 @@ class MappaController(val service: MappaService) {
     @PathVariable orderId: UUID,
     @RequestBody @Valid dto: UpdateIsMappaDto,
     authentication: Authentication,
-  ): ResponseEntity<OrderParameters> {
+  ): ResponseEntity<Mappa> {
     val username = authentication.name
     val parameters = service.updateIsMappa(
       orderId,

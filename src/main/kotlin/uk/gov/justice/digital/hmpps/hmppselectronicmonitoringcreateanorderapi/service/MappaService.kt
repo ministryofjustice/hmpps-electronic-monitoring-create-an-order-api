@@ -2,7 +2,6 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.s
 
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Mappa
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderParameters
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateIsMappaDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateMappaDto
 import java.util.*
@@ -17,16 +16,20 @@ class MappaService : OrderSectionServiceBase() {
     return orderRepo.save(order).mappa!!
   }
 
-  fun updateIsMappa(orderId: UUID, username: String, dto: UpdateIsMappaDto): OrderParameters {
+  fun updateIsMappa(orderId: UUID, username: String, dto: UpdateIsMappaDto): Mappa {
     val order = this.findEditableOrder(orderId, username)
 
-    if (order.orderParameters == null) {
-      order.orderParameters =
-        OrderParameters(versionId = order.getCurrentVersion().id, isMappa = dto.isMappa)
+    if (order.mappa == null) {
+      order.mappa =
+        Mappa(versionId = order.versionId, isMappa = dto.isMappa)
     } else {
-      order.orderParameters?.isMappa = dto.isMappa
+      if (dto.isMappa == false) {
+        order.mappa?.level = null
+        order.mappa?.category = null
+      }
+      order.mappa?.isMappa = dto.isMappa
     }
 
-    return orderRepo.save(order).orderParameters!!
+    return orderRepo.save(order).mappa!!
   }
 }

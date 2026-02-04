@@ -149,7 +149,7 @@ class UpdateIsMappaTest : UpdateOrderIntegrationTestBase() {
 
     val newOrder = getOrder(order.id)
 
-    assertThat(newOrder.orderParameters?.isMappa).isEqualTo(true)
+    assertThat(newOrder.mappa?.isMappa).isEqualTo(true)
   }
 
   @Test
