@@ -14,6 +14,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MappaLevel
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YesNoUnknown
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.MappaService
 import java.util.Optional
@@ -103,29 +104,29 @@ class MappaServiceTest {
     whenever(orderRepo.save(mockOrder)).thenReturn(mockOrder)
 
     val mockDto = UpdateIsMappaDto(
-      isMappa = true,
+      isMappa = YesNoUnknown.YES,
     )
 
     service.updateIsMappa(mockOrderId, mockUsername, mockDto)
 
-    assertThat(mockOrder.mappa?.isMappa).isTrue()
+    assertThat(mockOrder.mappa?.isMappa).isEqualTo(YesNoUnknown.YES)
   }
 
   @Test
   fun `can update existing mappa`() {
     val paramId = UUID.randomUUID()
-    mockOrder.mappa = Mappa(id = paramId, versionId = mockVersionId, isMappa = true)
+    mockOrder.mappa = Mappa(id = paramId, versionId = mockVersionId, isMappa = YesNoUnknown.YES)
     whenever(orderRepo.findById(mockOrderId)).thenReturn(Optional.of(mockOrder))
     whenever(orderRepo.save(mockOrder)).thenReturn(mockOrder)
 
     val mockDto = UpdateIsMappaDto(
-      isMappa = false,
+      isMappa = YesNoUnknown.NO,
     )
 
     service.updateIsMappa(mockOrderId, mockUsername, mockDto)
 
     assertThat(mockOrder.mappa?.id).isEqualTo(paramId)
-    assertThat(mockOrder.mappa?.isMappa).isFalse()
+    assertThat(mockOrder.mappa?.isMappa).isEqualTo(YesNoUnknown.NO)
   }
 
   @Test
@@ -134,7 +135,7 @@ class MappaServiceTest {
     mockOrder.mappa = Mappa(
       id = paramId,
       versionId = mockVersionId,
-      isMappa = true,
+      isMappa = YesNoUnknown.YES,
       level = MappaLevel.MAPPA_ONE,
       category = MappaCategory.CATEGORY_ONE,
     )
@@ -142,13 +143,38 @@ class MappaServiceTest {
     whenever(orderRepo.save(mockOrder)).thenReturn(mockOrder)
 
     val mockDto = UpdateIsMappaDto(
-      isMappa = false,
+      isMappa = YesNoUnknown.NO,
     )
 
     service.updateIsMappa(mockOrderId, mockUsername, mockDto)
 
     assertThat(mockOrder.mappa?.id).isEqualTo(paramId)
-    assertThat(mockOrder.mappa?.isMappa).isFalse()
+    assertThat(mockOrder.mappa?.isMappa).isEqualTo(YesNoUnknown.NO)
+    assertThat(mockOrder.mappa?.level).isNull()
+    assertThat(mockOrder.mappa?.category).isNull()
+  }
+
+  @Test
+  fun `removes existing mappa answers if unknown`() {
+    val paramId = UUID.randomUUID()
+    mockOrder.mappa = Mappa(
+      id = paramId,
+      versionId = mockVersionId,
+      isMappa = YesNoUnknown.YES,
+      level = MappaLevel.MAPPA_ONE,
+      category = MappaCategory.CATEGORY_ONE,
+    )
+    whenever(orderRepo.findById(mockOrderId)).thenReturn(Optional.of(mockOrder))
+    whenever(orderRepo.save(mockOrder)).thenReturn(mockOrder)
+
+    val mockDto = UpdateIsMappaDto(
+      isMappa = YesNoUnknown.UNKNOWN,
+    )
+
+    service.updateIsMappa(mockOrderId, mockUsername, mockDto)
+
+    assertThat(mockOrder.mappa?.id).isEqualTo(paramId)
+    assertThat(mockOrder.mappa?.isMappa).isEqualTo(YesNoUnknown.UNKNOWN)
     assertThat(mockOrder.mappa?.level).isNull()
     assertThat(mockOrder.mappa?.category).isNull()
   }

@@ -11,6 +11,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.in
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.UpdateOrderIntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderParameters
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateIsMappaDto
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YesNoUnknown
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidationError
 import java.util.*
 
@@ -126,7 +127,7 @@ class UpdateIsMappaTest : UpdateOrderIntegrationTestBase() {
 
   override val uri = "/api/orders/:orderId/mappa/is-mappa"
 
-  override fun createValidBody(): String = mockRequestBody(isMappa = true)
+  override fun createValidBody(): String = mockRequestBody(YesNoUnknown.YES)
 
   @Test
   fun `should update isMappa`() {
@@ -137,7 +138,7 @@ class UpdateIsMappaTest : UpdateOrderIntegrationTestBase() {
       .contentType(MediaType.APPLICATION_JSON)
       .body(
         BodyInserters.fromValue(
-          mockRequestBody(true),
+          mockRequestBody(YesNoUnknown.YES),
         ),
       )
       .headers(setAuthorisation())
@@ -149,7 +150,7 @@ class UpdateIsMappaTest : UpdateOrderIntegrationTestBase() {
 
     val newOrder = getOrder(order.id)
 
-    assertThat(newOrder.mappa?.isMappa).isEqualTo(true)
+    assertThat(newOrder.mappa?.isMappa).isEqualTo(YesNoUnknown.YES)
   }
 
   @Test
@@ -176,7 +177,7 @@ class UpdateIsMappaTest : UpdateOrderIntegrationTestBase() {
     )
   }
 
-  private fun mockRequestBody(isMappa: Boolean?): String {
+  private fun mockRequestBody(isMappa: YesNoUnknown?): String {
     val dto = UpdateIsMappaDto(isMappa = isMappa)
 
     return objectMapper.writeValueAsString(dto)

@@ -11,6 +11,7 @@ import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MappaCategory
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MappaLevel
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YesNoUnknown
 import java.util.*
 
 @Entity
@@ -31,8 +32,9 @@ data class Mappa(
   @Column(name = "CATEGORY", nullable = true)
   var category: MappaCategory? = null,
 
+  @Enumerated(EnumType.STRING)
   @Column(name = "IS_MAPPA", nullable = true)
-  var isMappa: Boolean? = null,
+  var isMappa: YesNoUnknown? = YesNoUnknown.UNKNOWN,
 
   @Schema(hidden = true)
   @OneToOne
