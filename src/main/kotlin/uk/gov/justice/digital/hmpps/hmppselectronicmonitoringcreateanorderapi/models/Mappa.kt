@@ -25,11 +25,14 @@ data class Mappa(
 
   @Enumerated(EnumType.STRING)
   @Column(name = "LEVEL", nullable = true)
-  val level: MappaLevel? = null,
+  var level: MappaLevel? = null,
 
   @Enumerated(EnumType.STRING)
   @Column(name = "CATEGORY", nullable = true)
-  val category: MappaCategory? = null,
+  var category: MappaCategory? = null,
+
+  @Column(name = "IS_MAPPA", nullable = true)
+  var isMappa: Boolean? = null,
 
   @Schema(hidden = true)
   @OneToOne

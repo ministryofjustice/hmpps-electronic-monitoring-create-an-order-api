@@ -117,6 +117,10 @@ object ValidationErrors {
     const val RISK_CATEGORY_VALID: String = "Risk categories must be a valid risk category"
   }
 
+  object Mappa {
+    const val IS_MAPPA_REQUIRED: String = "isMappa must not be null"
+  }
+
   object MandatoryAttendance {
     const val START_DATE_REQUIRED: String = "Enter date mandatory attendance monitoring starts"
     const val END_DATE_MUST_BE_IN_FUTURE: String = "End date must be in the future"
