@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Mappa
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateIsMappaDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateMappaDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.MappaService
 import java.util.UUID
@@ -29,5 +30,21 @@ class MappaController(val service: MappaService) {
     val mappa = service.updateMappa(orderId, username, dto)
 
     return ResponseEntity(mappa, HttpStatus.OK)
+  }
+
+  @PutMapping("/orders/{orderId}/mappa/is-mappa")
+  fun isMappa(
+    @PathVariable orderId: UUID,
+    @RequestBody @Valid dto: UpdateIsMappaDto,
+    authentication: Authentication,
+  ): ResponseEntity<Mappa> {
+    val username = authentication.name
+    val parameters = service.updateIsMappa(
+      orderId,
+      username,
+      dto,
+    )
+
+    return ResponseEntity(parameters, HttpStatus.OK)
   }
 }
