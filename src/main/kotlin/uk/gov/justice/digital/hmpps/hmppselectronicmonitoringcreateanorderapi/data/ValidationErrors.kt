@@ -118,7 +118,7 @@ object ValidationErrors {
   }
 
   object Mappa {
-    const val IS_MAPPA_REQUIRED: String = "Select if the device wearer is a MAPPA offender"
+    const val IS_MAPPA_REQUIRED: String = "isMappa must not be null"
   }
 
   object MandatoryAttendance {

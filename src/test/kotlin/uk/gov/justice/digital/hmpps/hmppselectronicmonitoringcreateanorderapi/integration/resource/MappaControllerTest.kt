@@ -172,7 +172,7 @@ class UpdateIsMappaTest : UpdateOrderIntegrationTestBase() {
       .returnResult()
 
     assertThat(result.responseBody!!).contains(
-      ValidationError("isMappa", "Select if the device wearer is a MAPPA offender"),
+      ValidationError("isMappa", "isMappa must not be null"),
     )
   }
 
