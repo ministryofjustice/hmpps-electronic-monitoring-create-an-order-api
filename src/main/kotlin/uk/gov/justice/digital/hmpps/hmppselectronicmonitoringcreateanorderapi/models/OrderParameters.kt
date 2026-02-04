@@ -28,6 +28,9 @@ data class OrderParameters(
   @Column(name = "HAVE_GRANT_OF_BAIL", nullable = true)
   var haveGrantOfBail: Boolean? = null,
 
+  @Column(name = "IS_MAPPA", nullable = true)
+  var isMappa: Boolean? = null,
+
   @Schema(hidden = true)
   @OneToOne
   @JoinColumn(name = "VERSION_ID", updatable = false, insertable = false)
