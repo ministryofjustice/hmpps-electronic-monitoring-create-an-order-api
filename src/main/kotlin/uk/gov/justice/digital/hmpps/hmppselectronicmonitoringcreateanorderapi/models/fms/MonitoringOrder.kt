@@ -35,6 +35,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YouthJusticeServiceRegions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ddv6.PoliceAreasDDv6
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ddv6.ProbationDeliveryUnitsDDv6
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ddv6.SentenceTypeDDv6
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ddv6.YouthCustodyServiceRegionDDv6
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.formatters.PhoneNumberFormatter
 import java.time.DayOfWeek
@@ -302,7 +303,7 @@ data class MonitoringOrder(
         monitoringOrder.dapolMissedInError = getDapolMissedInError(order)
       }
 
-      monitoringOrder.sentenceType = conditions.sentenceType?.value ?: ""
+      monitoringOrder.sentenceType = getSentenceType(order)
       monitoringOrder.issp = if (conditions.issp == YesNoUnknown.YES) {
         "Yes"
       } else {
@@ -481,6 +482,15 @@ data class MonitoringOrder(
       InstallationLocationType.SECONDARY -> order.addresses.firstOrNull { it.addressType == AddressType.SECONDARY }
       InstallationLocationType.TERTIARY -> order.addresses.firstOrNull { it.addressType == AddressType.TERTIARY }
       else -> order.addresses.firstOrNull { it.addressType == AddressType.INSTALLATION }
+    }
+
+    private fun getSentenceType(order: Order): String {
+      val sentenceType = order.monitoringConditions?.sentenceType
+
+      if (DataDictionaryVersion.isVersionSameOrAbove(order.dataDictionaryVersion, DataDictionaryVersion.DDV6)) {
+        return SentenceTypeDDv6.from(sentenceType?.name)?.value ?: sentenceType?.value ?: ""
+      }
+      return sentenceType?.value ?: ""
     }
 
     private fun getCurfewSchedules(order: Order): MutableList<CurfewSchedule> {
