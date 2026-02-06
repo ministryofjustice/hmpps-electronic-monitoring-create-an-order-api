@@ -12,7 +12,8 @@ class MappaService : OrderSectionServiceBase() {
   fun updateMappa(orderId: UUID, username: String, dto: UpdateMappaDto): Mappa {
     val order = this.findEditableOrder(orderId, username)
 
-    order.mappa = Mappa(versionId = order.versionId, level = dto.level, category = dto.category)
+    order.mappa =
+      Mappa(versionId = order.versionId, level = dto.level, isMappa = order.mappa?.isMappa, category = dto.category)
 
     return orderRepo.save(order).mappa!!
   }
