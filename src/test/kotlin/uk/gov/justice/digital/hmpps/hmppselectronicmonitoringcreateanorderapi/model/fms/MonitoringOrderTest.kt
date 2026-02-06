@@ -492,7 +492,7 @@ class MonitoringOrderTest : OrderTestBase() {
   }
 
   @Test
-  fun `It should correctly map Install At Source Pilot when installation location is not a prison in the pilot`() {
+  fun `It should correctly map Install At Source Pilot when installation location is a prison but not in pilot`() {
     val installationLocation = InstallationLocation(
       versionId = UUID.randomUUID(),
       location = InstallationLocationType.PRISON,
