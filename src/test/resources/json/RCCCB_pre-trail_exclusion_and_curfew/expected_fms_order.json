@@ -70,7 +70,6 @@
   "sentence_type": "",
   "tag_at_source": "",
   "tag_at_source_details": "",
-  "install_at_source_pilot": "",
   "technical_bail": "",
   "trial_date": "",
   "trial_outcome": "",
@@ -137,5 +136,6 @@
   "magistrate_court_case_reference_number": "",
   "issp": "No",
   "hdc": "No",
-  "order_status": "Not Started"
+  "order_status": "Not Started",
+  "install_at_source_pilot": ""
 }

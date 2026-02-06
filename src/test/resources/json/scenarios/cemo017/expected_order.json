@@ -65,7 +65,6 @@
   "sentence_type": "Standard Determinate Sentence",
   "tag_at_source": "",
   "tag_at_source_details": "",
-  "install_at_source_pilot": "",
   "technical_bail": "",
   "trial_date": "",
   "trial_outcome": "",
@@ -129,5 +128,6 @@
   "issp": "No",
   "hdc": "No",
   "order_status": "Not Started",
-  "pilot": "GPS Acquisitive Crime Parole"
+  "pilot": "GPS Acquisitive Crime Parole",
+  "install_at_source_pilot": ""
 }

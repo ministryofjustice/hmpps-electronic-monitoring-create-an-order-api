@@ -80,7 +80,6 @@
   "sentence_type": "Life Sentence",
   "tag_at_source": "false",
   "tag_at_source_details": "",
-  "install_at_source_pilot": "false",
   "date_and_time_installation_will_take_place": "",
   "technical_bail": "",
   "trial_date": "",
@@ -209,5 +208,6 @@
   "magistrate_court_case_reference_number": "courtCaseReferenceNumber",
   "issp": "Yes",
   "hdc": "No",
-  "order_status": "Not Started"
+  "order_status": "Not Started",
+  "install_at_source_pilot": "false"
 }
