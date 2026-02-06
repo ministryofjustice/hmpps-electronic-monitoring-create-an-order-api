@@ -16,6 +16,7 @@ generic-service:
     CP_FMS_INTEGRATION_ENABLED: false
     CEMO_FMS_INTEGRATION_ENABLED: false
     TAG_AT_SOURCE_ENABLED: false
+    INSTALL_AT_SOURCE_PILOT_ENABLED: false
     SETTINGS_DATA_DICTIONARY_VERSION: DDV5
     MANAGE_USER_URL: "https://manage-users-api-preprod.hmpps.service.justice.gov.uk/"
 

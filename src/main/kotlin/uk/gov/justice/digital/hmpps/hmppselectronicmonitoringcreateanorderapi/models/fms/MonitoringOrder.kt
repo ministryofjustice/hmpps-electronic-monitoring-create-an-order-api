@@ -33,6 +33,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YouthCourtDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YouthCustodyServiceRegionDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YouthJusticeServiceRegions
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ddv6.PilotPrisonsDDv6
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ddv6.PoliceAreasDDv6
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ddv6.ProbationDeliveryUnitsDDv6
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ddv6.YouthCustodyServiceRegionDDv6
@@ -164,6 +165,8 @@ data class MonitoringOrder(
   var tagAtSource: String? = "",
   @JsonProperty("tag_at_source_details")
   var tagAtSourceDetails: String? = "",
+  @JsonProperty("install_at_source_pilot")
+  var installAtSourcePilot: String? = "",
   @JsonProperty("date_and_time_installation_will_take_place")
   var dateAndTimeInstallationWillTakePlace: String? = "",
   @JsonProperty("released_under_prarr")
@@ -452,6 +455,16 @@ data class MonitoringOrder(
             getBritishDateAndTime(order.installationAppointment?.appointmentDate) ?: ""
         } else {
           monitoringOrder.tagAtSource = "false"
+        }
+      }
+
+      if (order.installationLocation != null) {
+        if (order.installationLocation?.location == InstallationLocationType.PRISON &&
+          PilotPrisonsDDv6.entries.any { it.name == order.interestedParties?.notifyingOrganisationName }
+        ) {
+          monitoringOrder.installAtSourcePilot = "true"
+        } else {
+          monitoringOrder.installAtSourcePilot = "false"
         }
       }
 
