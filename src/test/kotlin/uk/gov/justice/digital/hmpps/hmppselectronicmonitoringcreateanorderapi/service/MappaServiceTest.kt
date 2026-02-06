@@ -69,6 +69,22 @@ class MappaServiceTest {
   }
 
   @Test
+  fun `does not update isMappa field`() {
+    mockOrder.mappa = Mappa(versionId = mockVersionId, isMappa = YesNoUnknown.YES)
+    whenever(orderRepo.findById(mockOrderId)).thenReturn(Optional.of(mockOrder))
+    whenever(orderRepo.save(mockOrder)).thenReturn(mockOrder)
+
+    val mockUpdateDto = UpdateMappaDto(
+      level = MappaLevel.MAPPA_ONE,
+      category = MappaCategory.CATEGORY_ONE,
+    )
+
+    service.updateMappa(mockOrderId, mockUsername, mockUpdateDto)
+
+    assertThat(mockOrder.mappa?.isMappa).isEqualTo(YesNoUnknown.YES)
+  }
+
+  @Test
   fun `mappa level is optional`() {
     whenever(orderRepo.findById(mockOrderId)).thenReturn(Optional.of(mockOrder))
     whenever(orderRepo.save(mockOrder)).thenReturn(mockOrder)
@@ -99,7 +115,7 @@ class MappaServiceTest {
   }
 
   @Test
-  fun `can create new order parameters and update isMappa`() {
+  fun `can create new mappa and update isMappa`() {
     whenever(orderRepo.findById(mockOrderId)).thenReturn(Optional.of(mockOrder))
     whenever(orderRepo.save(mockOrder)).thenReturn(mockOrder)
 
