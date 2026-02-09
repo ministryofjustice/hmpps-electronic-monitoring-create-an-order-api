@@ -29,6 +29,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ProbationServiceRegion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ResponsibleOrganisation
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.SentenceType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YesNoUnknown
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YouthCourtDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YouthCustodyServiceRegionDDv5
@@ -305,7 +306,7 @@ data class MonitoringOrder(
         monitoringOrder.dapolMissedInError = getDapolMissedInError(order)
       }
 
-      monitoringOrder.sentenceType = conditions.sentenceType?.value ?: ""
+      monitoringOrder.sentenceType = getSentenceType(order)
       monitoringOrder.issp = if (conditions.issp == YesNoUnknown.YES) {
         "Yes"
       } else {
@@ -494,6 +495,19 @@ data class MonitoringOrder(
       InstallationLocationType.SECONDARY -> order.addresses.firstOrNull { it.addressType == AddressType.SECONDARY }
       InstallationLocationType.TERTIARY -> order.addresses.firstOrNull { it.addressType == AddressType.TERTIARY }
       else -> order.addresses.firstOrNull { it.addressType == AddressType.INSTALLATION }
+    }
+
+    private fun getSentenceType(order: Order): String {
+      val sentenceType = order.monitoringConditions?.sentenceType ?: return ""
+
+      if (DataDictionaryVersion.isVersionSameOrAbove(order.dataDictionaryVersion, DataDictionaryVersion.DDV6)) {
+        return when (sentenceType) {
+          // ELM-4515 update mapping for ddv6
+          SentenceType.IPP -> "IPP (Imprisonment for Public Protection)"
+          else -> sentenceType.value
+        }
+      }
+      return sentenceType.value
     }
 
     private fun getCurfewSchedules(order: Order): MutableList<CurfewSchedule> {

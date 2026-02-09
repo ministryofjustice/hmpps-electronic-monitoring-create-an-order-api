@@ -21,6 +21,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.ProbationDeliveryUnitArgumentsProvider
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.ProbationDeliveryUnitDDv6ArgumentsProvider
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.SentenceArgumentsProvider
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.SentenceDDv6ArgumentsProvider
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.VariationTypeArgumentsProvider
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.YouthCourtArgumentsProvider
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.YouthCustodyServiceRegionArgumentsProvider
@@ -734,6 +735,19 @@ class MonitoringOrderTest : OrderTestBase() {
   fun `It should correctly map sentence type to Serco`(savedValue: String, mappedValue: String) {
     val sentenceType = SentenceType.entries.first { it.name == savedValue }
     val order = createOrder(
+      monitoringConditions = createMonitoringConditions(sentenceType = sentenceType),
+    )
+
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "")
+    assertThat(fmsMonitoringOrder.sentenceType).isEqualTo(mappedValue)
+  }
+
+  @ParameterizedTest(name = "it should map ddv6 sentence type - {0} -> {1}")
+  @ArgumentsSource(SentenceDDv6ArgumentsProvider::class)
+  fun `It should correctly map ddv6 sentence type to Serco`(savedValue: String, mappedValue: String) {
+    val sentenceType = SentenceType.entries.first { it.name == savedValue }
+    val order = createOrder(
+      dataDictionaryVersion = DataDictionaryVersion.DDV6,
       monitoringConditions = createMonitoringConditions(sentenceType = sentenceType),
     )
 
