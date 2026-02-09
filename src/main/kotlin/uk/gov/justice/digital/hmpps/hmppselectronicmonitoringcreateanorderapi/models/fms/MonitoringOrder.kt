@@ -166,8 +166,6 @@ data class MonitoringOrder(
   var tagAtSource: String? = "",
   @JsonProperty("tag_at_source_details")
   var tagAtSourceDetails: String? = "",
-  @JsonProperty("install_at_source_pilot")
-  var installAtSourcePilot: String? = "",
   @JsonProperty("date_and_time_installation_will_take_place")
   var dateAndTimeInstallationWillTakePlace: String? = "",
   @JsonProperty("released_under_prarr")
@@ -240,6 +238,8 @@ data class MonitoringOrder(
   var subcategory: String? = "",
   @JsonProperty("dapol_missed_in_error")
   var dapolMissedInError: String? = "",
+  @JsonProperty("install_at_source_pilot")
+  var installAtSourcePilot: String? = "",
 ) {
 
   companion object {
