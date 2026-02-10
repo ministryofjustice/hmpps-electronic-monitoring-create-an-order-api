@@ -493,6 +493,48 @@ class MonitoringOrderTest : OrderTestBase() {
   }
 
   @Test
+  fun `It should correctly map Install At Source Pilot when installation location is probation`() {
+    val installationLocation = InstallationLocation(
+      versionId = UUID.randomUUID(),
+      location = InstallationLocationType.PROBATION_OFFICE,
+    )
+    val installationAppointment = InstallationAppointment(
+      versionId = UUID.randomUUID(),
+      placeName = "Mock Place",
+      appointmentDate = ZonedDateTime.of(2026, 10, 1, 10, 30, 0, 0, ZoneId.of("Europe/London")),
+    )
+    val trailMonitoringConditions = TrailMonitoringConditions(
+      versionId = UUID.randomUUID(),
+      startDate = ZonedDateTime.now(),
+      endDate = ZonedDateTime.now().plusMonths(1),
+    )
+
+    val installationAddress = createAddress(
+      addressType = AddressType.INSTALLATION,
+      addressLine1 = "Installation Line 1",
+      postcode = "Installation Post code",
+    )
+
+    val order = createOrder(
+      dataDictionaryVersion = DataDictionaryVersion.DDV6,
+      interestedParties = createInterestedParty(
+        NotifyingOrganisationDDv5.PRISON.name,
+        PrisonDDv5.SWANSEA_PRISON.name,
+      ),
+      addresses = mutableListOf(installationAddress),
+      monitoringConditions = createMonitoringConditions(trail = true, alcohol = false),
+      installationLocation = installationLocation,
+      trailMonitoringConditions = trailMonitoringConditions,
+    )
+
+    order.installationAppointment = installationAppointment
+
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
+
+    assertThat(fmsMonitoringOrder.installAtSourcePilot).isEqualTo("false")
+  }
+
+  @Test
   fun `It should correctly map Install At Source Pilot when installation location is a prison but not in pilot`() {
     val installationLocation = InstallationLocation(
       versionId = UUID.randomUUID(),
