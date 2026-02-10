@@ -34,7 +34,6 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YouthCourtDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YouthCustodyServiceRegionDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YouthJusticeServiceRegions
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ddv6.PilotPrisonsDDv6
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ddv6.PoliceAreasDDv6
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ddv6.ProbationDeliveryUnitsDDv6
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ddv6.YouthCustodyServiceRegionDDv6
@@ -459,14 +458,18 @@ data class MonitoringOrder(
         }
       }
 
-      if (order.installationLocation != null) {
-        if (order.installationLocation?.location == InstallationLocationType.PRISON &&
-          PilotPrisonsDDv6.entries.any { it.name == order.interestedParties?.notifyingOrganisationName }
-        ) {
-          monitoringOrder.installAtSourcePilot = "true"
-        } else {
-          monitoringOrder.installAtSourcePilot = "false"
+      if (DataDictionaryVersion.isVersionSameOrAbove(order.dataDictionaryVersion, DataDictionaryVersion.DDV6)) {
+        if (order.installationLocation != null) {
+          if (order.installationLocation?.location == InstallationLocationType.PRISON &&
+            Prison.PRISONS_IN_PILOT.any { it.name == order.interestedParties?.notifyingOrganisationName }
+          ) {
+            monitoringOrder.installAtSourcePilot = "true"
+          } else {
+            monitoringOrder.installAtSourcePilot = "false"
+          }
         }
+      } else {
+        monitoringOrder.installAtSourcePilot = ""
       }
 
       getInstallationAddress(order)?.let {

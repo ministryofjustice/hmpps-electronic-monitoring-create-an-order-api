@@ -516,6 +516,7 @@ class MonitoringOrderTest : OrderTestBase() {
     )
 
     val order = createOrder(
+      dataDictionaryVersion = DataDictionaryVersion.DDV6,
       interestedParties = createInterestedParty(
         NotifyingOrganisationDDv5.PRISON.name,
         PrisonDDv5.BRONZEFIELD_PRISON.name,
@@ -557,6 +558,7 @@ class MonitoringOrderTest : OrderTestBase() {
     )
 
     val order = createOrder(
+      dataDictionaryVersion = DataDictionaryVersion.DDV6,
       interestedParties = createInterestedParty(NotifyingOrganisationDDv5.PRISON.name, PrisonDDv5.SWANSEA_PRISON.name),
       addresses = mutableListOf(installationAddress),
       monitoringConditions = createMonitoringConditions(trail = true, alcohol = false),
