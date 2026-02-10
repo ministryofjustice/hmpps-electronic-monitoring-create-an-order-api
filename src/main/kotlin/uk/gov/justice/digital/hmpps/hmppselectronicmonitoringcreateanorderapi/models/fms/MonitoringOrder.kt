@@ -468,8 +468,6 @@ data class MonitoringOrder(
             monitoringOrder.installAtSourcePilot = "false"
           }
         }
-      } else {
-        monitoringOrder.installAtSourcePilot = ""
       }
 
       getInstallationAddress(order)?.let {
