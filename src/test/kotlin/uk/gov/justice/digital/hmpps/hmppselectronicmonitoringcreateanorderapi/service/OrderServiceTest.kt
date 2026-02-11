@@ -33,6 +33,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.InstallationLocationType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisation
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisationDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.PrisonDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
@@ -183,6 +184,41 @@ class OrderServiceTest {
       verify(repo, times(1)).save(capture())
       assertThat(firstValue.tags!!.split(',')).contains("PRISON")
       assertThat(firstValue.tags!!.split(',')).contains("BEDFORD_PRISON")
+    }
+  }
+
+  @Test
+  fun `Should add YCS Youth tag to tags`() {
+    val mockOrder = TestUtilities.createReadyToSubmitOrder(
+      startDate = mockStartDate,
+      endDate = mockEndDate,
+      username = "mockUser",
+      notifyingOrganisation = NotifyingOrganisationDDv5.YOUTH_CUSTODY_SERVICE.name,
+    )
+    reset(repo)
+
+    val mockFmsResult = FmsSubmissionResult(
+      orderId = mockOrder.getCurrentVersion().id,
+      deviceWearerResult = FmsDeviceWearerSubmissionResult(
+        status = SubmissionStatus.SUCCESS,
+        deviceWearerId = "mockDeviceWearerId",
+      ),
+      monitoringOrderResult = FmsMonitoringOrderSubmissionResult(
+        status = SubmissionStatus.SUCCESS,
+        monitoringOrderId = "mockMonitoringOrderId",
+      ),
+      orderSource = FmsOrderSource.CEMO,
+      strategy = FmsSubmissionStrategyKind.ORDER,
+    )
+    whenever(repo.findById(mockOrder.id)).thenReturn(Optional.of(mockOrder))
+    whenever(fmsService.submitOrder(any<Order>(), eq(FmsOrderSource.CEMO))).thenReturn(
+      mockFmsResult,
+    )
+    service.submitOrder(mockOrder.id, "mockUser", "mockName")
+
+    argumentCaptor<Order>().apply {
+      verify(repo, times(1)).save(capture())
+      assertThat(firstValue.tags!!.split(',')).contains("YOUTH_YCS")
     }
   }
 
