@@ -20,4 +20,12 @@ class DapoService : OrderSectionServiceBase() {
 
     return order.dapoClauses.find { it.id == id }!!
   }
+
+  fun deleteDapo(orderId: UUID, username: String, dapoId: UUID) {
+    val order = this.findEditableOrder(orderId, username)
+
+    order.dapoClauses.removeIf { it.id == dapoId }
+
+    orderRepo.save(order)
+  }
 }
