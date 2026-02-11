@@ -222,7 +222,9 @@ class OrderService(
     if (order.interestedParties?.notifyingOrganisation!! == NotifyingOrganisation.PRISON.name) {
       tags = "PRISON,${order.interestedParties?.notifyingOrganisationName!!}"
     }
-    if (order.interestedParties?.notifyingOrganisation!! == NotifyingOrganisationDDv5.YOUTH_CUSTODY_SERVICE.name) {
+    if (order.interestedParties?.notifyingOrganisation!! == NotifyingOrganisationDDv5.YOUTH_CUSTODY_SERVICE.name &&
+      order.deviceWearerResponsibleAdult != null
+    ) {
       tags = "YOUTH_YCS"
     }
     return tags
