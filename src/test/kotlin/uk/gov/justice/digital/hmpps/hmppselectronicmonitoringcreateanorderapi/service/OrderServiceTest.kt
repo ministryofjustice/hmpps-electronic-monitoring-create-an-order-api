@@ -25,7 +25,6 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationLocation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ResponsibleAdult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.OrderListCriteria
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.OrderSearchCriteria
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.CreateOrderDto
@@ -197,12 +196,8 @@ class OrderServiceTest {
       notifyingOrganisationName = PrisonDDv5.BEDFORD_PRISON.name,
     )
 
-    mockOrder.deviceWearerResponsibleAdult = ResponsibleAdult(
-      versionId = mockOrder.getCurrentVersion().id,
-      fullName = "mockResponsible Adult",
-      contactNumber = "mockContactNumber",
+    mockOrder.deviceWearer!!.adultAtTimeOfInstallation = false
 
-    )
     reset(repo)
 
     val mockFmsResult = FmsSubmissionResult(

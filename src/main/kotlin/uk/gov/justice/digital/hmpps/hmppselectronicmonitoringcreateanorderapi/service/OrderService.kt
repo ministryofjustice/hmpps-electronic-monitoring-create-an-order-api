@@ -221,7 +221,7 @@ class OrderService(
     if (order.interestedParties?.notifyingOrganisation!! == NotifyingOrganisation.PRISON.name) {
       tags = "PRISON,${order.interestedParties?.notifyingOrganisationName!!}"
 
-      if (order.deviceWearerResponsibleAdult != null) {
+      if (order.deviceWearer?.adultAtTimeOfInstallation == false) {
         tags += ",Youth YOI"
       }
     }
