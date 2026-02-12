@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.Authentication
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -34,5 +35,16 @@ class OffenceController(val service: OffenceService) {
     )
 
     return ResponseEntity(offence, HttpStatus.OK)
+  }
+
+  @DeleteMapping("/orders/{orderId}/offence/delete/{offenceId}")
+  fun deleteOffence(
+    @PathVariable orderId: UUID,
+    @PathVariable offenceId: UUID,
+    authentication: Authentication,
+  ): ResponseEntity<Unit> {
+    val username = authentication.name
+    service.deleteOffence(orderId, username, offenceId)
+    return ResponseEntity(HttpStatus.NO_CONTENT)
   }
 }
