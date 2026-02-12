@@ -188,13 +188,16 @@ class OrderServiceTest {
   }
 
   @Test
-  fun `Should add YCS Youth tag to tags`() {
+  fun `Should add Youth YCS to tags when notifying org is YCS and responsible adult required`() {
     val mockOrder = TestUtilities.createReadyToSubmitOrder(
       startDate = mockStartDate,
       endDate = mockEndDate,
       username = "mockUser",
       notifyingOrganisation = NotifyingOrganisationDDv5.YOUTH_CUSTODY_SERVICE.name,
     )
+
+    mockOrder.deviceWearer!!.adultAtTimeOfInstallation = false
+
     reset(repo)
 
     val mockFmsResult = FmsSubmissionResult(

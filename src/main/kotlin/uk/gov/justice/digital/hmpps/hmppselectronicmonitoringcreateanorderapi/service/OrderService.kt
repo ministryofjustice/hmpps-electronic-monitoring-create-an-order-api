@@ -223,7 +223,7 @@ class OrderService(
       tags = "PRISON,${order.interestedParties?.notifyingOrganisationName!!}"
     }
     if (order.interestedParties?.notifyingOrganisation!! == NotifyingOrganisationDDv5.YOUTH_CUSTODY_SERVICE.name &&
-      order.deviceWearerResponsibleAdult != null
+      order.deviceWearer?.adultAtTimeOfInstallation == false
     ) {
       tags = "Youth YCS"
     }
