@@ -188,6 +188,47 @@ class OrderServiceTest {
   }
 
   @Test
+  fun `Should add Youth YOI to tags when notifying org is Prison and responsible adult required`() {
+    val mockOrder = TestUtilities.createReadyToSubmitOrder(
+      startDate = mockStartDate,
+      endDate = mockEndDate,
+      username = "mockUser",
+      notifyingOrganisation = NotifyingOrganisation.PRISON.name,
+      notifyingOrganisationName = PrisonDDv5.BEDFORD_PRISON.name,
+    )
+
+    mockOrder.deviceWearer!!.adultAtTimeOfInstallation = false
+
+    reset(repo)
+
+    val mockFmsResult = FmsSubmissionResult(
+      orderId = mockOrder.getCurrentVersion().id,
+      deviceWearerResult = FmsDeviceWearerSubmissionResult(
+        status = SubmissionStatus.SUCCESS,
+        deviceWearerId = "mockDeviceWearerId",
+      ),
+      monitoringOrderResult = FmsMonitoringOrderSubmissionResult(
+        status = SubmissionStatus.SUCCESS,
+        monitoringOrderId = "mockMonitoringOrderId",
+      ),
+      orderSource = FmsOrderSource.CEMO,
+      strategy = FmsSubmissionStrategyKind.ORDER,
+    )
+    whenever(repo.findById(mockOrder.id)).thenReturn(Optional.of(mockOrder))
+    whenever(fmsService.submitOrder(any<Order>(), eq(FmsOrderSource.CEMO))).thenReturn(
+      mockFmsResult,
+    )
+    service.submitOrder(mockOrder.id, "mockUser", "mockName")
+
+    argumentCaptor<Order>().apply {
+      verify(repo, times(1)).save(capture())
+      assertThat(firstValue.tags!!.split(',')).contains("PRISON")
+      assertThat(firstValue.tags!!.split(',')).contains("BEDFORD_PRISON")
+      assertThat(firstValue.tags!!.split(',')).contains("Youth YOI")
+    }
+  }
+
+  @Test
   fun `Should add Youth YCS to tags when notifying org is YCS and responsible adult required`() {
     val mockOrder = TestUtilities.createReadyToSubmitOrder(
       startDate = mockStartDate,
