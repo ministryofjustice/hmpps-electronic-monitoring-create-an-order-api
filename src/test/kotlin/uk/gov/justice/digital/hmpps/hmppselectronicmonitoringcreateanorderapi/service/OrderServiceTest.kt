@@ -218,7 +218,7 @@ class OrderServiceTest {
 
     argumentCaptor<Order>().apply {
       verify(repo, times(1)).save(capture())
-      assertThat(firstValue.tags!!.split(',')).contains("YOUTH_YCS")
+      assertThat(firstValue.tags!!.split(',')).contains("Youth YCS")
     }
   }
 

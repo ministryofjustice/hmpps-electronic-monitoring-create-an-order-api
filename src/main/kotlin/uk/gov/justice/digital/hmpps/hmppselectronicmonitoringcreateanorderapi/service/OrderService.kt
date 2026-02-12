@@ -225,7 +225,7 @@ class OrderService(
     if (order.interestedParties?.notifyingOrganisation!! == NotifyingOrganisationDDv5.YOUTH_CUSTODY_SERVICE.name &&
       order.deviceWearerResponsibleAdult != null
     ) {
-      tags = "YOUTH_YCS"
+      tags = "Youth YCS"
     }
     return tags
   }
