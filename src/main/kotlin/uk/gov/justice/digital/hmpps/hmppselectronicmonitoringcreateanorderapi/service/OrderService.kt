@@ -225,6 +225,8 @@ class OrderService(
       if (order.deviceWearer?.adultAtTimeOfInstallation == false) {
         tags += ",Youth YOI"
       }
+    } else if (order.interestedParties?.notifyingOrganisation!! == NotifyingOrganisation.PROBATION.name) {
+      tags = "PROBATION"
     }
     if (order.interestedParties?.notifyingOrganisation!! == NotifyingOrganisationDDv5.YOUTH_CUSTODY_SERVICE.name &&
       order.deviceWearer?.adultAtTimeOfInstallation == false
