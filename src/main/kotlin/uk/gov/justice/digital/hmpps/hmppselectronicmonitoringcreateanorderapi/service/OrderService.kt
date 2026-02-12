@@ -220,6 +220,10 @@ class OrderService(
     var tags = ""
     if (order.interestedParties?.notifyingOrganisation!! == NotifyingOrganisation.PRISON.name) {
       tags = "PRISON,${order.interestedParties?.notifyingOrganisationName!!}"
+
+      if (order.deviceWearer?.adultAtTimeOfInstallation == false) {
+        tags += ",Youth YOI"
+      }
     }
     return tags
   }
