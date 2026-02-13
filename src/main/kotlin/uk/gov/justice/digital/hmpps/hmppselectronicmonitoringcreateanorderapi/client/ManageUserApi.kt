@@ -2,7 +2,7 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.c
 
 import org.springframework.security.oauth2.jwt.Jwt
 
-interface ManagerUserApi {
+interface ManageUserApi {
   fun getUserGroups(token: Jwt): List<String>
   fun getUserActiveCaseload(token: Jwt): String?
 }

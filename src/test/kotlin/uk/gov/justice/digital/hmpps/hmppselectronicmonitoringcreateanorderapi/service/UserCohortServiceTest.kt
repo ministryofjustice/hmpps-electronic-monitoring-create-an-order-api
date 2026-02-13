@@ -10,10 +10,8 @@ import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken
 import org.springframework.test.context.ActiveProfiles
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.ManageUserApiClient
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.ManageUserApi
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.Cohorts
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.hmpps.HmppsCaseload
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.hmpps.HmppsUserCaseloadResponse
 
 @ActiveProfiles("test")
 @JsonTest
@@ -21,7 +19,7 @@ class UserCohortServiceTest {
 
   private lateinit var authentication: JwtAuthenticationToken
   private lateinit var jwtToken: Jwt
-  private lateinit var client: ManageUserApiClient
+  private lateinit var mockApi: ManageUserApi
   private lateinit var service: UserCohortService
 
   @BeforeEach
@@ -30,40 +28,16 @@ class UserCohortServiceTest {
     jwtToken = mock(Jwt::class.java)
     `when`(authentication.token).thenReturn(jwtToken)
 
-    client = mock(ManageUserApiClient::class.java)
-    service = UserCohortService(client)
+    mockApi = mock()
+    service = UserCohortService(mockApi)
   }
 
   @Test
-  fun `Should return cohort of prison when user has role ROLE_PRISON`() {
+  fun `Should return user cohort of prison when user has role ROLE_PRISON`() {
     `when`(authentication.authorities).thenReturn(listOf(GrantedAuthority { "ROLE_PRISON" }))
     `when`(jwtToken.tokenValue).thenReturn("Mock Token")
-    `when`(client.getUserActiveCaseload(authentication.token)).thenReturn(
-      HmppsUserCaseloadResponse(
-        "mockUser",
-        true,
-        "mock account",
-        HmppsCaseload("ABC", "HMP ABC"),
-        emptyList<HmppsCaseload>(),
-      ),
-    )
-    val reuslt = service.getUserCohort(authentication)
-
-    Assertions.assertThat(reuslt.cohort).isEqualTo(Cohorts.PRISON)
-  }
-
-  @Test
-  fun `Should return active caseload for prison users`() {
-    `when`(authentication.authorities).thenReturn(listOf(GrantedAuthority { "ROLE_PRISON" }))
-    `when`(jwtToken.tokenValue).thenReturn("Mock Token")
-    `when`(client.getUserActiveCaseload(authentication.token)).thenReturn(
-      HmppsUserCaseloadResponse(
-        "mockUser",
-        true,
-        "mock account",
-        HmppsCaseload("ABC", "HMP ABC"),
-        emptyList<HmppsCaseload>(),
-      ),
+    `when`(mockApi.getUserActiveCaseload(authentication.token)).thenReturn(
+      "HMP ABC",
     )
     val result = service.getUserCohort(authentication)
 
@@ -75,17 +49,8 @@ class UserCohortServiceTest {
   fun `Should return cohort of probation when user has role ROLE_PROBATION`() {
     `when`(authentication.authorities).thenReturn(listOf(GrantedAuthority { "ROLE_PROBATION" }))
 
-    val reuslt = service.getUserCohort(authentication)
+    val result = service.getUserCohort(authentication)
 
-    Assertions.assertThat(reuslt.cohort).isEqualTo(Cohorts.PROBATION)
-  }
-
-  @Test
-  fun `Should return cohort of courts when user has group ROLE_PROBATION`() {
-    `when`(authentication.authorities).thenReturn(listOf(GrantedAuthority { "ROLE_PROBATION" }))
-
-    val reuslt = service.getUserCohort(authentication)
-
-    Assertions.assertThat(reuslt.cohort).isEqualTo(Cohorts.PROBATION)
+    Assertions.assertThat(result.cohort).isEqualTo(Cohorts.PROBATION)
   }
 }

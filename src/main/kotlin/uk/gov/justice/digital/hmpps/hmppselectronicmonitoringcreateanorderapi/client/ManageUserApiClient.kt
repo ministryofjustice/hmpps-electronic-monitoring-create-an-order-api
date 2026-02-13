@@ -9,7 +9,7 @@ import reactor.core.publisher.Mono
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.hmpps.HmppsUserCaseloadResponse
 
 @Component
-class ManageUserApiClient(private val manageUserApiWebClient: WebClient) : ManagerUserApi {
+class ManageUserApiClient(private val manageUserApiWebClient: WebClient) : ManageUserApi {
 
   override fun getUserGroups(token: Jwt): List<String> = emptyList()
 

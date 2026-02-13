@@ -2,12 +2,12 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.s
 
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken
 import org.springframework.stereotype.Service
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.ManageUserApiClient
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.ManageUserApi
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.Cohorts
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.UserCohort
 
 @Service
-class UserCohortService(private val webClient: ManageUserApiClient) {
+class UserCohortService(private val webClient: ManageUserApi) {
 
   fun getUserCohort(authentication: JwtAuthenticationToken): UserCohort {
     if (authentication.authorities.any { it.authority == "ROLE_PRISON" }) {
