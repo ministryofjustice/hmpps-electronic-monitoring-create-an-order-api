@@ -12,7 +12,7 @@ data class UpdateOffenceAdditionalDetailsDto(
   @field:NotNull(message = ValidationErrors.OffenceAdditionalDetails.RESPONSE_REQUIRED)
   val additionalDetailsRequired: Boolean? = null,
 
-  @field:Size(max = 200, message = ValidationErrors.OffenceAdditionalDetails.OFFENCE_DETAILS_TOO_LONG)
+  @field:Size(max = 500, message = ValidationErrors.OffenceAdditionalDetails.OFFENCE_DETAILS_TOO_LONG)
   val additionalDetails: String? = null,
 ) {
 
