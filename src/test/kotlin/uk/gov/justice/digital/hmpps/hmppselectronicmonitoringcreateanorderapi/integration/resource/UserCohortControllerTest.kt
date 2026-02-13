@@ -7,7 +7,7 @@ import org.junit.jupiter.api.extension.ExtendWith
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.ManageUserApiExtension
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.ManageUserApiExtension.Companion.manageUserApi
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.Cohorts
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.Cohort
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.UserCohort
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.hmpps.HmppsCaseload
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.hmpps.HmppsUserCaseloadResponse
@@ -39,7 +39,7 @@ class UserCohortControllerTest : IntegrationTestBase() {
       .expectBody(UserCohort::class.java)
       .returnResult()
 
-    Assertions.assertThat(result.responseBody?.cohort).isEqualTo(Cohorts.PRISON)
+    Assertions.assertThat(result.responseBody?.cohort).isEqualTo(Cohort.PRISON)
     Assertions.assertThat(result.responseBody?.activeCaseLoad).isEqualTo("HMP ABC")
   }
 }
