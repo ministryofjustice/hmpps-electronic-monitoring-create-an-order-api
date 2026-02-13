@@ -830,7 +830,30 @@ class MonitoringOrderTest : OrderTestBase() {
   }
 
   @Test
-  fun `It should correctly map overall monitoring end date as next week when SR21`() {
+  fun `It should correctly map overall monitoring end date for SR21 as today when end monitoring`() {
+    val today = LocalDateTime.now()
+    val eodToday = ZonedDateTime.of(
+      today.year,
+      today.monthValue,
+      today.dayOfMonth,
+      23,
+      59,
+      0,
+      0,
+      ZoneId.systemDefault(),
+    )
+    val order = createOrder(
+      type = RequestType.END_MONITORING,
+      monitoringConditions = createMonitoringConditions(orderType = OrderType.COMMUNITY),
+      variationDetails = createvariationDetails(),
+      dataDictionaryVersion = DataDictionaryVersion.DDV6,
+    )
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "")
+    assertThat(fmsMonitoringOrder.orderEnd).isEqualTo(getBritishDateAndTime(eodToday))
+  }
+
+  @Test
+  fun `It should correctly map overall monitoring end date for SR21 as next week when revocation`() {
     val aWeekInFuture = LocalDateTime.now().plusDays(7)
     val eodNextWeek = ZonedDateTime.of(
       aWeekInFuture.year,
