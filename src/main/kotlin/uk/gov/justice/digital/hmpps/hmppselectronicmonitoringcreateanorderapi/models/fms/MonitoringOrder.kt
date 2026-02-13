@@ -263,17 +263,25 @@ data class MonitoringOrder(
           ZonedDateTime.of(now.year, now.monthValue, now.dayOfMonth, 23, 59, 0, 0, ZoneId.systemDefault())
         }
         "SR21-Revocation monitoring requirements" -> {
-          val aWeekInFuture = LocalDateTime.now().plusDays(7)
-          ZonedDateTime.of(
-            aWeekInFuture.year,
-            aWeekInFuture.monthValue,
-            aWeekInFuture.dayOfMonth,
-            23,
-            59,
-            0,
-            0,
-            ZoneId.systemDefault(),
-          )
+          if (monitoringStartDate != null &&
+            monitoringStartDate.toLocalDate() < ZonedDateTime.now().toLocalDate() &&
+            order.type == RequestType.END_MONITORING
+          ) {
+            val now = LocalDateTime.now()
+            ZonedDateTime.of(now.year, now.monthValue, now.dayOfMonth, 23, 59, 0, 0, ZoneId.systemDefault())
+          } else {
+            val aWeekInFuture = LocalDateTime.now().plusDays(7)
+            ZonedDateTime.of(
+              aWeekInFuture.year,
+              aWeekInFuture.monthValue,
+              aWeekInFuture.dayOfMonth,
+              23,
+              59,
+              0,
+              0,
+              ZoneId.systemDefault(),
+            )
+          }
         }
         else -> {
           order.getMonitoringEndDate()
