@@ -34,7 +34,7 @@ enum class RequestType(val value: String) {
       return when (type) {
         VARIATION -> "SR08-Amend monitoring requirements"
         REVOCATION -> "SR21-Revocation monitoring requirements"
-        END_MONITORING -> if (isBail) "SR11-Removal of devices (bail)" else "SR08-Amend monitoring requirements"
+        END_MONITORING -> if (isBail) "SR11-Removal of devices (bail)" else "SR21-Revocation monitoring requirements"
         REINSTALL_AT_DIFFERENT_ADDRESS -> "SR05-Install monitoring equipment at an additional address"
         REINSTALL_DEVICE -> "SR04-Re-install monitoring equipment"
         else -> ""
