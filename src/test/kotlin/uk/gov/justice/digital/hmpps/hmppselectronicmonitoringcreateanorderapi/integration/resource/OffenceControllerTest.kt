@@ -9,6 +9,7 @@ import org.springframework.http.MediaType
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Offence
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateOffenceDto
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 import java.time.ZoneId
@@ -115,6 +116,31 @@ class OffenceControllerTest : IntegrationTestBase() {
     Assertions.assertThat(
       error.developerMessage,
     ).isEqualTo("An editable order with ${order.id} does not exist")
+  }
+
+  @Test
+  fun `can remove an offence`() {
+    val offenceId = UUID.randomUUID()
+    val order = createStoredOrder()
+    order.offences.add(
+      Offence(
+        versionId = order.versions.first().id,
+        id = offenceId,
+        offenceType = "THEFT_OFFENCES",
+        offenceDate = ZonedDateTime.now(),
+      ),
+    )
+    repo.save(order)
+
+    webTestClient.delete()
+      .uri("/api/orders/${order.id}/offence/delete/$offenceId")
+      .headers(setAuthorisation("AUTH_ADM"))
+      .exchange()
+      .expectStatus()
+      .isNoContent
+
+    val updatedOrder = getOrder(order.id)
+    Assertions.assertThat(updatedOrder.offences).isEmpty()
   }
 
   private fun callOffenceEndpoint(orderId: UUID, body: String, username: String? = null): WebTestClient.ResponseSpec {
