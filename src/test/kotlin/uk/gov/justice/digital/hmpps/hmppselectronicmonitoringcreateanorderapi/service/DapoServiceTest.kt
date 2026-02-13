@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.mockito.kotlin.whenever
 import org.springframework.test.context.ActiveProfiles
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Dapo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateDapoDto
@@ -25,23 +26,24 @@ class DapoServiceTest {
   private val mockOrderId: UUID = UUID.randomUUID()
   private val mockVersionId: UUID = UUID.randomUUID()
   private val mockUsername: String = "username"
-  private val mockOrder = Order(
-    id = mockOrderId,
-    versions = mutableListOf(
-      OrderVersion(
-        id = mockVersionId,
-        versionId = 0,
-        status = OrderStatus.IN_PROGRESS,
-        orderId = mockOrderId,
-        type = RequestType.REQUEST,
-        username = mockUsername,
-        dataDictionaryVersion = DataDictionaryVersion.DDV4,
-      ),
-    ),
-  )
+  lateinit var mockOrder: Order
 
   @BeforeEach
   fun setup() {
+    mockOrder = Order(
+      id = mockOrderId,
+      versions = mutableListOf(
+        OrderVersion(
+          id = mockVersionId,
+          versionId = 0,
+          status = OrderStatus.IN_PROGRESS,
+          orderId = mockOrderId,
+          type = RequestType.REQUEST,
+          username = mockUsername,
+          dataDictionaryVersion = DataDictionaryVersion.DDV4,
+        ),
+      ),
+    )
     repo = Mockito.mock(OrderRepository::class.java)
     service = DapoService()
     service.orderRepo = repo
@@ -88,5 +90,20 @@ class DapoServiceTest {
     assertThat(updateResult.id).isEqualTo(updateDto.id)
     assertThat(updateResult.clause).isEqualTo(updateDto.clause)
     assertThat(updateResult.date).isEqualTo(updateDto.date)
+  }
+
+  @Test
+  fun `can delete dapo`() {
+    mockOrder.dapoClauses.add(Dapo(versionId = mockOrder.versionId, clause = "some clause", date = ZonedDateTime.now()))
+    whenever(repo.findById(mockOrderId)).thenReturn(Optional.of(mockOrder))
+    whenever(repo.save(mockOrder)).thenReturn(mockOrder)
+
+    service.deleteDapo(
+      mockOrderId,
+      mockUsername,
+      mockOrder.dapoClauses[0].id,
+    )
+
+    assertThat(mockOrder.dapoClauses).isEmpty()
   }
 }

@@ -9,6 +9,7 @@ import org.springframework.http.MediaType
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.UpdateOrderIntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Dapo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateDapoDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidationError
 import java.time.ZoneId
@@ -85,6 +86,31 @@ class DapoControllerTest : UpdateOrderIntegrationTestBase() {
     Assertions.assertThat(result.responseBody!!).contains(
       ValidationError("clause", "DAPO clause is too long"),
     )
+  }
+
+  @Test
+  fun `can remove a dapo`() {
+    val dapoId = UUID.randomUUID()
+    val order = createStoredOrder()
+    order.dapoClauses.add(
+      Dapo(
+        versionId = order.versions.first().id,
+        id = dapoId,
+        clause = "12345",
+        date = ZonedDateTime.now(),
+      ),
+    )
+    repo.save(order)
+
+    webTestClient.delete()
+      .uri("/api/orders/${order.id}/dapo/delete/$dapoId")
+      .headers(setAuthorisation("AUTH_ADM"))
+      .exchange()
+      .expectStatus()
+      .isNoContent
+
+    val updatedOrder = getOrder(order.id)
+    Assertions.assertThat(updatedOrder.dapoClauses).isEmpty()
   }
 
   private fun callDapoEndpoint(orderId: UUID, body: String, username: String? = null): WebTestClient.ResponseSpec {
