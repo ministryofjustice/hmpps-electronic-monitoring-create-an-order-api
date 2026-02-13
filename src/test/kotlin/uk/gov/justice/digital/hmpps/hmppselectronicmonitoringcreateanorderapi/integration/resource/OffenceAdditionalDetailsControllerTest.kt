@@ -65,7 +65,7 @@ class OffenceAdditionalDetailsControllerTest : IntegrationTestBase() {
   @Test
   fun `should return error when offence additional details are too long`() {
     val order = createOrder()
-    val longDetails = "a".repeat(201)
+    val longDetails = "a".repeat(501)
 
     val result = callOffenceAdditionalDetailsEndpoint(
       order.id,
