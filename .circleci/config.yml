@@ -46,6 +46,12 @@ workflows:
           filters:
             tags:
               ignore: /.*/
+      - hmpps/gradle_owasp_dependency_check:
+          cache_key: "v2_0"
+          jdk_tag: "21.0"
+          slack_channel: << pipeline.parameters.alerts-slack-channel >>
+          context:
+            - hmpps-common-vars
       - hmpps/build_multiplatform_docker:
           name: build_docker
           filters:
