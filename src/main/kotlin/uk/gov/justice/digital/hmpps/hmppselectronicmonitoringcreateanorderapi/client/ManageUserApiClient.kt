@@ -9,19 +9,17 @@ import reactor.core.publisher.Mono
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.UserCaseLoad
 
 @Component
-class ManageUserApiClient(private val manageUserApiWebClient: WebClient) {
+class ManageUserApiClient(private val manageUserApiWebClient: WebClient) : ManagerUserApi {
 
-  fun getUserGroups(): List<String> = emptyList()
+  override fun getUserGroups(token: Jwt): List<String> = emptyList()
 
-  fun getUserActiveCaseload(token: Jwt): UserCaseLoad {
-    val result = manageUserApiWebClient
-      .get()
-      .uri("/users/me/caseloads")
-      .header(HttpHeaders.AUTHORIZATION, "Bearer ${token.tokenValue}")
-      .retrieve()
-      .bodyToMono(UserCaseLoad::class.java)
-      .onErrorResume(WebClientResponseException::class.java) { Mono.empty() }
-      .block()!!
-    return result
-  }
+  override fun getUserActiveCaseload(token: Jwt): String? = manageUserApiWebClient
+    .get()
+    .uri("/users/me/caseloads")
+    .header(HttpHeaders.AUTHORIZATION, "Bearer ${token.tokenValue}")
+    .retrieve()
+    .bodyToMono(UserCaseLoad::class.java)
+    .onErrorResume(WebClientResponseException::class.java) { Mono.empty() }
+    .block()!!
+    .activeCaseload?.name
 }
