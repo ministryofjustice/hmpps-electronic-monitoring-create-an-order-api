@@ -128,6 +128,15 @@ enum class Prison(val value: String) {
   ;
 
   companion object {
+    val PRISONS_IN_PILOT = listOf(
+      CARDIFF_PRISON,
+      FOSSE_WAY_PRISON,
+      PETERBOROUGH_PRISON,
+      RANBY_PRISON,
+      SUDBURY_PRISON,
+      SWANSEA_PRISON,
+    )
+
     fun from(value: String?): Prison? = Prison.entries.firstOrNull {
       it.name == value
     }

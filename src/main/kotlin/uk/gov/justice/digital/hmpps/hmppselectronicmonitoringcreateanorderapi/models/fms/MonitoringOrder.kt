@@ -237,6 +237,8 @@ data class MonitoringOrder(
   var subcategory: String? = "",
   @JsonProperty("dapol_missed_in_error")
   var dapolMissedInError: String? = "",
+  @JsonProperty("install_at_source_pilot")
+  var installAtSourcePilot: String? = "",
 ) {
 
   companion object {
@@ -461,6 +463,18 @@ data class MonitoringOrder(
             getBritishDateAndTime(order.installationAppointment?.appointmentDate) ?: ""
         } else {
           monitoringOrder.tagAtSource = "false"
+        }
+      }
+
+      if (DataDictionaryVersion.isVersionSameOrAbove(order.dataDictionaryVersion, DataDictionaryVersion.DDV6)) {
+        if (order.installationLocation != null) {
+          if (order.installationLocation?.location == InstallationLocationType.PRISON &&
+            Prison.PRISONS_IN_PILOT.any { it.name == order.interestedParties?.notifyingOrganisationName }
+          ) {
+            monitoringOrder.installAtSourcePilot = "true"
+          } else {
+            monitoringOrder.installAtSourcePilot = "false"
+          }
         }
       }
 
