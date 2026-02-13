@@ -8,6 +8,9 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.Arguments
+import org.junit.jupiter.params.provider.MethodSource
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.reset
@@ -187,6 +190,42 @@ class OrderServiceTest {
     }
   }
 
+  @ParameterizedTest
+  @MethodSource("tagScenarios")
+  fun `Should add correct tag for notifying organisation`(notifyOrgName: String, expectedTag: String) {
+    val mockOrder = TestUtilities.createReadyToSubmitOrder(
+      startDate = mockStartDate,
+      endDate = mockEndDate,
+      username = "mockUser",
+      notifyingOrganisation = notifyOrgName,
+    )
+    reset(repo)
+
+    val mockFmsResult = FmsSubmissionResult(
+      orderId = mockOrder.getCurrentVersion().id,
+      deviceWearerResult = FmsDeviceWearerSubmissionResult(
+        status = SubmissionStatus.SUCCESS,
+        deviceWearerId = "mockDeviceWearerId",
+      ),
+      monitoringOrderResult = FmsMonitoringOrderSubmissionResult(
+        status = SubmissionStatus.SUCCESS,
+        monitoringOrderId = "mockMonitoringOrderId",
+      ),
+      orderSource = FmsOrderSource.CEMO,
+      strategy = FmsSubmissionStrategyKind.ORDER,
+    )
+
+    whenever(repo.findById(mockOrder.id)).thenReturn(Optional.of(mockOrder))
+    whenever(fmsService.submitOrder(any<Order>(), eq(FmsOrderSource.CEMO))).thenReturn(mockFmsResult)
+
+    service.submitOrder(mockOrder.id, "mockUser", "mockName")
+
+    argumentCaptor<Order>().apply {
+      verify(repo, times(1)).save(capture())
+      assertThat(firstValue.tags).isEqualTo(expectedTag)
+    }
+  }
+
   @Test
   fun `Should add Youth YOI to tags when notifying org is Prison and responsible adult required`() {
     val mockOrder = TestUtilities.createReadyToSubmitOrder(
@@ -261,6 +300,114 @@ class OrderServiceTest {
     argumentCaptor<Order>().apply {
       verify(repo, times(1)).save(capture())
       assertThat(firstValue.tags).isEqualTo("PROBATION")
+    }
+  }
+
+  @Test
+  fun `Should add Civil Court tag when notifying org is Civil Court`() {
+    val mockOrder = TestUtilities.createReadyToSubmitOrder(
+      startDate = mockStartDate,
+      endDate = mockEndDate,
+      username = "mockUser",
+      notifyingOrganisation = NotifyingOrganisationDDv5.CIVIL_COUNTY_COURT.name,
+    )
+
+    reset(repo)
+
+    val mockFmsResult = FmsSubmissionResult(
+      orderId = mockOrder.getCurrentVersion().id,
+      deviceWearerResult = FmsDeviceWearerSubmissionResult(
+        status = SubmissionStatus.SUCCESS,
+        deviceWearerId = "mockDeviceWearerId",
+      ),
+      monitoringOrderResult = FmsMonitoringOrderSubmissionResult(
+        status = SubmissionStatus.SUCCESS,
+        monitoringOrderId = "mockMonitoringOrderId",
+      ),
+      orderSource = FmsOrderSource.CEMO,
+      strategy = FmsSubmissionStrategyKind.ORDER,
+    )
+
+    whenever(repo.findById(mockOrder.id)).thenReturn(Optional.of(mockOrder))
+    whenever(fmsService.submitOrder(any<Order>(), eq(FmsOrderSource.CEMO))).thenReturn(mockFmsResult)
+
+    service.submitOrder(mockOrder.id, "mockUser", "mockName")
+
+    argumentCaptor<Order>().apply {
+      verify(repo, times(1)).save(capture())
+      assertThat(firstValue.tags).isEqualTo("Civil Court")
+    }
+  }
+
+  @Test
+  fun `Should add Family Court tag when notifying org is Family Court`() {
+    val mockOrder = TestUtilities.createReadyToSubmitOrder(
+      startDate = mockStartDate,
+      endDate = mockEndDate,
+      username = "mockUser",
+      notifyingOrganisation = NotifyingOrganisationDDv5.FAMILY_COURT.name,
+    )
+
+    reset(repo)
+
+    val mockFmsResult = FmsSubmissionResult(
+      orderId = mockOrder.getCurrentVersion().id,
+      deviceWearerResult = FmsDeviceWearerSubmissionResult(
+        status = SubmissionStatus.SUCCESS,
+        deviceWearerId = "mockDeviceWearerId",
+      ),
+      monitoringOrderResult = FmsMonitoringOrderSubmissionResult(
+        status = SubmissionStatus.SUCCESS,
+        monitoringOrderId = "mockMonitoringOrderId",
+      ),
+      orderSource = FmsOrderSource.CEMO,
+      strategy = FmsSubmissionStrategyKind.ORDER,
+    )
+
+    whenever(repo.findById(mockOrder.id)).thenReturn(Optional.of(mockOrder))
+    whenever(fmsService.submitOrder(any<Order>(), eq(FmsOrderSource.CEMO))).thenReturn(mockFmsResult)
+
+    service.submitOrder(mockOrder.id, "mockUser", "mockName")
+
+    argumentCaptor<Order>().apply {
+      verify(repo, times(1)).save(capture())
+      assertThat(firstValue.tags).isEqualTo("Family Court")
+    }
+  }
+
+  @Test
+  fun `Should add Home Office tag when notifying org is Home Office`() {
+    val mockOrder = TestUtilities.createReadyToSubmitOrder(
+      startDate = mockStartDate,
+      endDate = mockEndDate,
+      username = "mockUser",
+      notifyingOrganisation = NotifyingOrganisationDDv5.HOME_OFFICE.name,
+    )
+
+    reset(repo)
+
+    val mockFmsResult = FmsSubmissionResult(
+      orderId = mockOrder.getCurrentVersion().id,
+      deviceWearerResult = FmsDeviceWearerSubmissionResult(
+        status = SubmissionStatus.SUCCESS,
+        deviceWearerId = "mockDeviceWearerId",
+      ),
+      monitoringOrderResult = FmsMonitoringOrderSubmissionResult(
+        status = SubmissionStatus.SUCCESS,
+        monitoringOrderId = "mockMonitoringOrderId",
+      ),
+      orderSource = FmsOrderSource.CEMO,
+      strategy = FmsSubmissionStrategyKind.ORDER,
+    )
+
+    whenever(repo.findById(mockOrder.id)).thenReturn(Optional.of(mockOrder))
+    whenever(fmsService.submitOrder(any<Order>(), eq(FmsOrderSource.CEMO))).thenReturn(mockFmsResult)
+
+    service.submitOrder(mockOrder.id, "mockUser", "mockName")
+
+    argumentCaptor<Order>().apply {
+      verify(repo, times(1)).save(capture())
+      assertThat(firstValue.tags).isEqualTo("Home Office")
     }
   }
 
@@ -983,5 +1130,15 @@ class OrderServiceTest {
 
       assertThat(result).isEqualTo("mockPayload")
     }
+  }
+
+  companion object {
+    @JvmStatic
+    fun tagScenarios() = listOf(
+      Arguments.of(NotifyingOrganisationDDv5.PROBATION, "Probation"),
+      Arguments.of(NotifyingOrganisationDDv5.CIVIL_COUNTY_COURT, "Civil Court"),
+      Arguments.of(NotifyingOrganisationDDv5.FAMILY_COURT, "Family Court"),
+      Arguments.of(NotifyingOrganisationDDv5.HOME_OFFICE, "Home Office"),
+    )
   }
 }
