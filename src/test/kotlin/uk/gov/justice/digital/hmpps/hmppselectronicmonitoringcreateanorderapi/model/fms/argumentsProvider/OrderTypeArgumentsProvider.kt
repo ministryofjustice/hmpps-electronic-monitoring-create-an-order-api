@@ -19,6 +19,6 @@ class OrderTypeArgumentsProvider : ArgumentsProvider {
     ),
     Arguments.of(RequestType.REINSTALL_DEVICE, "SR04-Re-install monitoring equipment"),
     Arguments.of(RequestType.REVOCATION, "SR21-Revocation monitoring requirements"),
-    Arguments.of(RequestType.END_MONITORING, "SR08-Amend monitoring requirements"),
+    Arguments.of(RequestType.END_MONITORING, "SR21-Revocation monitoring requirements"),
   )
 }
