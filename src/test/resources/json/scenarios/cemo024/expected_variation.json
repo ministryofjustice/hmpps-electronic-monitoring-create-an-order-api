@@ -112,6 +112,5 @@
   "magistrate_court_case_reference_number": "",
   "issp": "No",
   "hdc": "Yes",
-  "order_status": "Not Started",
-  "install_at_source_pilot": ""
+  "order_status": "Not Started"
 }
