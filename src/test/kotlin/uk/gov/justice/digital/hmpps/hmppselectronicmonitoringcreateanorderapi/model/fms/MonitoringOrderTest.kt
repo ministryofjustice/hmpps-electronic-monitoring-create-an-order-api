@@ -726,6 +726,18 @@ class MonitoringOrderTest : OrderTestBase() {
   }
 
   @Test
+  fun `It should correctly map subcategory to SR21 when order type is not bail or immigration`() {
+    val order = createOrder(
+      type = RequestType.END_MONITORING,
+      monitoringConditions = createMonitoringConditions(orderType = OrderType.COMMUNITY),
+      variationDetails = createvariationDetails(),
+      dataDictionaryVersion = DataDictionaryVersion.DDV6,
+    )
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "")
+    assertThat(fmsMonitoringOrder.subcategory).isEqualTo("SR21-Revocation monitoring requirements")
+  }
+
+  @Test
   fun `It should correctly map subcategory as SR08 when monitoring start date is in the future`() {
     val order = createOrder(
       type = RequestType.REVOCATION,
