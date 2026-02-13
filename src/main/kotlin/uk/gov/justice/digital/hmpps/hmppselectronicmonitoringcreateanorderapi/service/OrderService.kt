@@ -15,7 +15,6 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.VersionInformationDTO
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisationDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
@@ -218,20 +217,26 @@ class OrderService(
   }
 
   fun getTags(order: Order): String {
-    var tags = ""
-    if (order.interestedParties?.notifyingOrganisation!! == NotifyingOrganisation.PRISON.name) {
-      tags = "PRISON,${order.interestedParties?.notifyingOrganisationName!!}"
+    val notifyingOrganisation = order.interestedParties?.notifyingOrganisation!!
 
-      if (order.deviceWearer?.adultAtTimeOfInstallation == false) {
-        tags += ",Youth YOI"
+    return when (notifyingOrganisation) {
+      NotifyingOrganisationDDv5.PRISON.name -> {
+        var tags = "PRISON," + order.interestedParties?.notifyingOrganisationName!!
+
+        if (order.deviceWearer?.adultAtTimeOfInstallation == false) {
+          tags += ",Youth YOI"
+        }
+        tags
       }
+      NotifyingOrganisationDDv5.YOUTH_CUSTODY_SERVICE.name -> {
+        if (order.deviceWearer?.adultAtTimeOfInstallation == false) "Youth YCS" else ""
+      }
+      NotifyingOrganisationDDv5.PROBATION.name -> "Probation"
+      NotifyingOrganisationDDv5.CIVIL_COUNTY_COURT.name -> "Civil Court"
+      NotifyingOrganisationDDv5.FAMILY_COURT.name -> "Family Court"
+      NotifyingOrganisationDDv5.HOME_OFFICE.name -> "Home Office"
+      else -> ""
     }
-    if (order.interestedParties?.notifyingOrganisation!! == NotifyingOrganisationDDv5.YOUTH_CUSTODY_SERVICE.name &&
-      order.deviceWearer?.adultAtTimeOfInstallation == false
-    ) {
-      tags = "Youth YCS"
-    }
-    return tags
   }
 
   fun listOrders(searchCriteria: OrderListCriteria): List<Order> = repo.findAll(

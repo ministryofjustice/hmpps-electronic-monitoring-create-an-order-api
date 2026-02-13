@@ -8,6 +8,9 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.Arguments
+import org.junit.jupiter.params.provider.MethodSource
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.reset
@@ -263,6 +266,42 @@ class OrderServiceTest {
     argumentCaptor<Order>().apply {
       verify(repo, times(1)).save(capture())
       assertThat(firstValue.tags!!.split(',')).contains("Youth YCS")
+    }
+  }
+
+  @ParameterizedTest
+  @MethodSource("tagScenarios")
+  fun `Should add correct tag for notifying organisation`(notifyOrgName: String, expectedTag: String) {
+    val mockOrder = TestUtilities.createReadyToSubmitOrder(
+      startDate = mockStartDate,
+      endDate = mockEndDate,
+      username = "mockUser",
+      notifyingOrganisation = notifyOrgName,
+    )
+    reset(repo)
+
+    val mockFmsResult = FmsSubmissionResult(
+      orderId = mockOrder.getCurrentVersion().id,
+      deviceWearerResult = FmsDeviceWearerSubmissionResult(
+        status = SubmissionStatus.SUCCESS,
+        deviceWearerId = "mockDeviceWearerId",
+      ),
+      monitoringOrderResult = FmsMonitoringOrderSubmissionResult(
+        status = SubmissionStatus.SUCCESS,
+        monitoringOrderId = "mockMonitoringOrderId",
+      ),
+      orderSource = FmsOrderSource.CEMO,
+      strategy = FmsSubmissionStrategyKind.ORDER,
+    )
+
+    whenever(repo.findById(mockOrder.id)).thenReturn(Optional.of(mockOrder))
+    whenever(fmsService.submitOrder(any<Order>(), eq(FmsOrderSource.CEMO))).thenReturn(mockFmsResult)
+
+    service.submitOrder(mockOrder.id, "mockUser", "mockName")
+
+    argumentCaptor<Order>().apply {
+      verify(repo, times(1)).save(capture())
+      assertThat(firstValue.tags).isEqualTo(expectedTag)
     }
   }
 
@@ -947,5 +986,16 @@ class OrderServiceTest {
 
       assertThat(result).isEqualTo("mockPayload")
     }
+  }
+
+  companion object {
+    @JvmStatic
+    fun tagScenarios() = listOf(
+      Arguments.of(NotifyingOrganisationDDv5.PROBATION.name, "Probation"),
+      Arguments.of(NotifyingOrganisationDDv5.CIVIL_COUNTY_COURT.name, "Civil Court"),
+      Arguments.of(NotifyingOrganisationDDv5.FAMILY_COURT.name, "Family Court"),
+      Arguments.of(NotifyingOrganisationDDv5.HOME_OFFICE.name, "Home Office"),
+      Arguments.of(NotifyingOrganisationDDv5.YOUTH_CUSTODY_SERVICE.name, ""),
+    )
   }
 }
