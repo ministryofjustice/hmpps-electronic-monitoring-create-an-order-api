@@ -11,7 +11,7 @@ import org.junit.jupiter.api.extension.AfterAllCallback
 import org.junit.jupiter.api.extension.BeforeAllCallback
 import org.junit.jupiter.api.extension.BeforeEachCallback
 import org.junit.jupiter.api.extension.ExtensionContext
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.UserCaseLoad
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.hmpps.HmppsUserCaseloadResponse
 
 class ManageUserApiExtension :
   BeforeAllCallback,
@@ -42,7 +42,7 @@ class ManageUserMockServer : WireMockServer(WIREMOCK_PORT) {
 
   private val mapper: ObjectMapper = jacksonObjectMapper().registerModule(JavaTimeModule())
 
-  fun stubUserActiveCaseLoad(caseLoad: UserCaseLoad) {
+  fun stubUserActiveCaseLoad(caseLoad: HmppsUserCaseloadResponse) {
     stubFor(
       get(urlPathTemplate("/users/me/caseloads"))
         .willReturn(

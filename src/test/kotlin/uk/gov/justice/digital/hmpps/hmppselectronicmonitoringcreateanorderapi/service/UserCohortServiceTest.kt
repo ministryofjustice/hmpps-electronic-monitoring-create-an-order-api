@@ -11,9 +11,9 @@ import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken
 import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.ManageUserApiClient
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.CaseLoad
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.Cohorts
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.UserCaseLoad
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.hmpps.HmppsCaseload
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.hmpps.HmppsUserCaseloadResponse
 
 @ActiveProfiles("test")
 @JsonTest
@@ -39,12 +39,12 @@ class UserCohortServiceTest {
     `when`(authentication.authorities).thenReturn(listOf(GrantedAuthority { "ROLE_PRISON" }))
     `when`(jwtToken.tokenValue).thenReturn("Mock Token")
     `when`(client.getUserActiveCaseload(authentication.token)).thenReturn(
-      UserCaseLoad(
+      HmppsUserCaseloadResponse(
         "mockUser",
         true,
         "mock account",
-        CaseLoad("ABC", "HMP ABC"),
-        emptyList<CaseLoad>(),
+        HmppsCaseload("ABC", "HMP ABC"),
+        emptyList<HmppsCaseload>(),
       ),
     )
     val reuslt = service.getUserCohort(authentication)
@@ -57,12 +57,12 @@ class UserCohortServiceTest {
     `when`(authentication.authorities).thenReturn(listOf(GrantedAuthority { "ROLE_PRISON" }))
     `when`(jwtToken.tokenValue).thenReturn("Mock Token")
     `when`(client.getUserActiveCaseload(authentication.token)).thenReturn(
-      UserCaseLoad(
+      HmppsUserCaseloadResponse(
         "mockUser",
         true,
         "mock account",
-        CaseLoad("ABC", "HMP ABC"),
-        emptyList<CaseLoad>(),
+        HmppsCaseload("ABC", "HMP ABC"),
+        emptyList<HmppsCaseload>(),
       ),
     )
     val result = service.getUserCohort(authentication)

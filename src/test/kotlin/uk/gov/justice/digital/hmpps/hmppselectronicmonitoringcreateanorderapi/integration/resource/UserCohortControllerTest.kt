@@ -7,10 +7,10 @@ import org.junit.jupiter.api.extension.ExtendWith
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.ManageUserApiExtension
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.ManageUserApiExtension.Companion.manageUserApi
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.CaseLoad
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.Cohorts
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.UserCaseLoad
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.UserCohort
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.hmpps.HmppsCaseload
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.hmpps.HmppsUserCaseloadResponse
 
 @ExtendWith(
 
@@ -19,12 +19,12 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 class UserCohortControllerTest : IntegrationTestBase() {
   @BeforeEach
   fun setup() {
-    val mockUserCohort = UserCaseLoad(
+    val mockUserCohort = HmppsUserCaseloadResponse(
       "mockUser",
       true,
       "mock account",
-      CaseLoad("ABC", "HMP ABC"),
-      emptyList<CaseLoad>(),
+      HmppsCaseload("ABC", "HMP ABC"),
+      emptyList<HmppsCaseload>(),
     )
     manageUserApi.stubUserActiveCaseLoad(mockUserCohort)
   }

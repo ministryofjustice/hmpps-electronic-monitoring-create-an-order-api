@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import reactor.core.publisher.Mono
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.UserCaseLoad
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.hmpps.HmppsUserCaseloadResponse
 
 @Component
 class ManageUserApiClient(private val manageUserApiWebClient: WebClient) : ManagerUserApi {
@@ -18,7 +18,7 @@ class ManageUserApiClient(private val manageUserApiWebClient: WebClient) : Manag
     .uri("/users/me/caseloads")
     .header(HttpHeaders.AUTHORIZATION, "Bearer ${token.tokenValue}")
     .retrieve()
-    .bodyToMono(UserCaseLoad::class.java)
+    .bodyToMono(HmppsUserCaseloadResponse::class.java)
     .onErrorResume(WebClientResponseException::class.java) { Mono.empty() }
     .block()!!
     .activeCaseload?.name
