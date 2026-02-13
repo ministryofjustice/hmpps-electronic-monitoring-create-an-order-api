@@ -1135,10 +1135,10 @@ class OrderServiceTest {
   companion object {
     @JvmStatic
     fun tagScenarios() = listOf(
-      Arguments.of(NotifyingOrganisationDDv5.PROBATION, "Probation"),
-      Arguments.of(NotifyingOrganisationDDv5.CIVIL_COUNTY_COURT, "Civil Court"),
-      Arguments.of(NotifyingOrganisationDDv5.FAMILY_COURT, "Family Court"),
-      Arguments.of(NotifyingOrganisationDDv5.HOME_OFFICE, "Home Office"),
+      Arguments.of(NotifyingOrganisationDDv5.PROBATION.name, "Probation"),
+      Arguments.of(NotifyingOrganisationDDv5.CIVIL_COUNTY_COURT.name, "Civil Court"),
+      Arguments.of(NotifyingOrganisationDDv5.FAMILY_COURT.name, "Family Court"),
+      Arguments.of(NotifyingOrganisationDDv5.HOME_OFFICE.name, "Home Office"),
     )
   }
 }

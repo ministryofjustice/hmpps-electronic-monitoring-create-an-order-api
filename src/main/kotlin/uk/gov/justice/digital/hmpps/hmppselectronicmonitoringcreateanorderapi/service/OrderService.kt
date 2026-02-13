@@ -222,6 +222,7 @@ class OrderService(
     return when (notifyingOrganisation) {
       NotifyingOrganisationDDv5.PRISON.name -> {
         var tags = "PRISON," + order.interestedParties?.notifyingOrganisationName!!
+
         if (order.deviceWearer?.adultAtTimeOfInstallation == false) {
           tags += ",Youth YOI"
         }
