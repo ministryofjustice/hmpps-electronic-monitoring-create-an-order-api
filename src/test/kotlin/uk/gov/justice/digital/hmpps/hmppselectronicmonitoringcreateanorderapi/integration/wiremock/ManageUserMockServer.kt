@@ -11,6 +11,7 @@ import org.junit.jupiter.api.extension.AfterAllCallback
 import org.junit.jupiter.api.extension.BeforeAllCallback
 import org.junit.jupiter.api.extension.BeforeEachCallback
 import org.junit.jupiter.api.extension.ExtensionContext
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.UserGroup
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.hmpps.HmppsUserCaseloadResponse
 
 class ManageUserApiExtension :
@@ -50,6 +51,20 @@ class ManageUserMockServer : WireMockServer(WIREMOCK_PORT) {
             .withHeader("Content-Type", "application/json")
             .withBody(
               mapper.writeValueAsString(caseLoad),
+            )
+            .withStatus(200),
+        ),
+    )
+  }
+
+  fun stubGetUserGroups(groups: List<UserGroup>) {
+    stubFor(
+      get(urlPathTemplate("/users/me/groups"))
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withBody(
+              mapper.writeValueAsString(groups),
             )
             .withStatus(200),
         ),
