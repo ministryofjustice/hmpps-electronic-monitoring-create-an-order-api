@@ -149,6 +149,9 @@ data class DeviceWearer(
   @JsonProperty("home_office_case_reference_number")
   var homeOfficeReferenceNumber: String? = "",
 
+  @JsonProperty("cepr")
+  var complianceAndEnforcementPersonReference: String? = "",
+
   @JsonProperty("interpreter_required")
   var interpreterRequired: String? = "",
 
@@ -192,7 +195,8 @@ data class DeviceWearer(
         pncId = order.deviceWearer?.pncId,
         deliusId = order.deviceWearer?.deliusId,
         prisonNumber = order.deviceWearer?.prisonNumber,
-        homeOfficeReferenceNumber = getHomeOfficeRefNumber(order),
+        homeOfficeReferenceNumber = order.deviceWearer?.homeOfficeReferenceNumber,
+        complianceAndEnforcementPersonReference = order.deviceWearer?.complianceAndEnforcementPersonReference ?: "",
       )
 
       if (order.deviceWearer?.noFixedAbode != null && !order.deviceWearer?.noFixedAbode!!) {
@@ -268,14 +272,6 @@ data class DeviceWearer(
           .toList()
       }
       return emptyList()
-    }
-
-    private fun getHomeOfficeRefNumber(order: Order): String? {
-      if (!order.deviceWearer?.complianceAndEnforcementPersonReference.isNullOrBlank()) {
-        return order.deviceWearer?.complianceAndEnforcementPersonReference
-      }
-
-      return order.deviceWearer?.homeOfficeReferenceNumber
     }
   }
 }
