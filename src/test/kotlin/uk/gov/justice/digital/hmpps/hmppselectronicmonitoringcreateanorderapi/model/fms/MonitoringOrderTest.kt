@@ -257,25 +257,25 @@ class MonitoringOrderTest : OrderTestBase() {
 
     assertThat(
       fmsMonitoringOrder.offenceAdditionalDetails,
-    ).isEqualTo("offence details. PFA: Avon and Somerset")
+    ).isEqualTo("offence details. AC Offence: Robbery. PFA: Avon and Somerset")
   }
-
-  @Test
-  fun `It should map monitoring conditions offence type to ac eligible offences for DDV6`() {
-    val order = createOrder(
-      dataDictionaryVersion = DataDictionaryVersion.DDV6,
-      monitoringConditions = createMonitoringConditions(
-        offenceType = "Burglary in a Dwelling - Indictable only",
-        policeArea = "Avon and Somerset",
-      ),
-    )
-
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
-
-    assertThat(fmsMonitoringOrder.acEligibleOffences).hasSize(1)
-    assertThat(fmsMonitoringOrder.acEligibleOffences!![0].offence).isEqualTo("Burglary in a Dwelling - Indictable only")
-    assertThat(fmsMonitoringOrder.acEligibleOffences!![0].offenceDate).isEqualTo("")
-  }
+// Pull mapping due to Serco not ready, ticket : https://dsdmoj.atlassian.net/browse/ELM-4582
+//  @Test
+//  fun `It should map monitoring conditions offence type to ac eligible offences for DDV6`() {
+//    val order = createOrder(
+//      dataDictionaryVersion = DataDictionaryVersion.DDV6,
+//      monitoringConditions = createMonitoringConditions(
+//        offenceType = "Burglary in a Dwelling - Indictable only",
+//        policeArea = "Avon and Somerset",
+//      ),
+//    )
+//
+//    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
+//
+//    assertThat(fmsMonitoringOrder.acEligibleOffences).hasSize(1)
+//    assertThat(fmsMonitoringOrder.acEligibleOffences!![0].offence).isEqualTo("Burglary in a Dwelling - Indictable only")
+//    assertThat(fmsMonitoringOrder.acEligibleOffences!![0].offenceDate).isEqualTo("")
+//  }
 
   @Test
   fun `It should map the police area correctly`() {
