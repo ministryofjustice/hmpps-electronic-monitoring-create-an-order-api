@@ -7,10 +7,11 @@ import org.junit.jupiter.api.extension.ExtendWith
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.ManageUserApiExtension
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.ManageUserApiExtension.Companion.manageUserApi
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.CaseLoad
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.Cohorts
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.UserCaseLoad
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.Cohort
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.UserCohort
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.UserGroup
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.hmpps.HmppsCaseload
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.hmpps.HmppsUserCaseloadResponse
 
 @ExtendWith(
 
@@ -19,12 +20,12 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 class UserCohortControllerTest : IntegrationTestBase() {
   @BeforeEach
   fun setup() {
-    val mockUserCohort = UserCaseLoad(
+    val mockUserCohort = HmppsUserCaseloadResponse(
       "mockUser",
       true,
       "mock account",
-      CaseLoad("ABC", "HMP ABC"),
-      emptyList<CaseLoad>(),
+      HmppsCaseload("ABC", "HMP ABC"),
+      emptyList<HmppsCaseload>(),
     )
     manageUserApi.stubUserActiveCaseLoad(mockUserCohort)
   }
@@ -39,7 +40,25 @@ class UserCohortControllerTest : IntegrationTestBase() {
       .expectBody(UserCohort::class.java)
       .returnResult()
 
-    Assertions.assertThat(result.responseBody?.cohort).isEqualTo(Cohorts.PRISON)
+    Assertions.assertThat(result.responseBody?.cohort).isEqualTo(Cohort.PRISON)
     Assertions.assertThat(result.responseBody?.activeCaseLoad).isEqualTo("HMP ABC")
+  }
+
+  @Test
+  fun `Should return user cohort via groups`() {
+    val mockUserGroups =
+      listOf(UserGroup(groupName = "Create an Electronic Monitoring Order Court Users", groupCode = "CEMO_CRT_USERS"))
+
+    manageUserApi.stubGetUserGroups(mockUserGroups)
+
+    val result = webTestClient.get().uri("/api/user-cohort")
+      .headers(setAuthorisation("AUTH_ADM", roles = listOf("ROLE_EM_CEMO__CREATE_ORDER", "ROLE_OTHER")))
+      .exchange()
+      .expectStatus()
+      .isOk
+      .expectBody(UserCohort::class.java)
+      .returnResult()
+
+    Assertions.assertThat(result.responseBody?.cohort).isEqualTo(Cohort.COURT)
   }
 }

@@ -19,7 +19,6 @@ import java.util.*
 class UserCohortController(@Autowired val userCohortService: UserCohortService) {
   @GetMapping("/user-cohort")
   fun getUserCohort(authentication: Authentication): ResponseEntity<UserCohort> {
-    val username = authentication.name
     val userCohort = userCohortService.getUserCohort(
       authentication as JwtAuthenticationToken,
     )
