@@ -142,6 +142,12 @@ class OrderService(
           currentVersion.installationLocation?.copy(versionId = this.id, id = UUID.randomUUID())
         installationAppointment =
           currentVersion.installationAppointment?.copy(versionId = this.id, id = UUID.randomUUID())
+        offenceAdditionalDetails =
+          currentVersion.offenceAdditionalDetails?.copy(versionId = this.id, id = UUID.randomUUID())
+        detailsOfInstallation =
+          currentVersion.detailsOfInstallation?.copy(versionId = this.id, id = UUID.randomUUID())
+        mappa =
+          currentVersion.mappa?.copy(versionId = this.id, id = UUID.randomUUID())
 
         additionalDocuments =
           currentVersion.additionalDocuments.map {
@@ -163,6 +169,12 @@ class OrderService(
           currentVersion.mandatoryAttendanceConditions.map {
             it.copy(versionId = this.id, id = UUID.randomUUID())
           }.toMutableList()
+        offences = currentVersion.offences.map {
+          it.copy(versionId = this.id, id = UUID.randomUUID())
+        }.toMutableList()
+        dapoClauses = currentVersion.dapoClauses.map {
+          it.copy(versionId = this.id, id = UUID.randomUUID())
+        }.toMutableList()
       }
 
     order.versions.add(newOrderVersion)
@@ -228,9 +240,11 @@ class OrderService(
         }
         tags
       }
+
       NotifyingOrganisationDDv5.YOUTH_CUSTODY_SERVICE.name -> {
         if (order.deviceWearer?.adultAtTimeOfInstallation == false) "Youth YCS" else ""
       }
+
       NotifyingOrganisationDDv5.PROBATION.name -> "Probation"
       NotifyingOrganisationDDv5.CIVIL_COUNTY_COURT.name -> "Civil Court"
       NotifyingOrganisationDDv5.FAMILY_COURT.name -> "Family Court"
