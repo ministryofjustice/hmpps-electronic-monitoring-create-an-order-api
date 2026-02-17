@@ -1280,6 +1280,7 @@ class OrderControllerTest : IntegrationTestBase() {
             documentId = mockDocumentId,
           ),
         ),
+        dataDictionaryVersion = DataDictionaryVersion.DDV6,
       )
 
       sercoAuthApi.stubGrantToken()
@@ -1390,6 +1391,7 @@ class OrderControllerTest : IntegrationTestBase() {
             documentId = mockDocumentId,
           ),
         ),
+        dataDictionaryVersion = DataDictionaryVersion.DDV6,
       )
 
       sercoAuthApi.stubGrantToken()
@@ -1732,6 +1734,7 @@ class OrderControllerTest : IntegrationTestBase() {
             documentId = mockDocumentId,
           ),
         ),
+        dataDictionaryVersion = DataDictionaryVersion.DDV6,
       )
 
       sercoAuthApi.stubGrantToken()
