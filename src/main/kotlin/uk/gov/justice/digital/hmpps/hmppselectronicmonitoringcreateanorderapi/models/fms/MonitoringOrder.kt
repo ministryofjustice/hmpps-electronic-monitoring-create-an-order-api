@@ -312,14 +312,15 @@ data class MonitoringOrder(
       if (DataDictionaryVersion.isVersionSameOrAbove(order.dataDictionaryVersion, DataDictionaryVersion.DDV6)) {
         monitoringOrder.subcategory = subcategory
         monitoringOrder.dapolMissedInError = getDapolMissedInError(order)
-        conditions.offenceType?.takeIf { it.isNotBlank() }?.let {
-          monitoringOrder.acEligibleOffences = mutableListOf(
-            AcEligibleOffence(
-              offence = it,
-              offenceDate = "",
-            ),
-          )
-        }
+// Pull mapping due to Serco not ready, ticket: https://dsdmoj.atlassian.net/browse/ELM-4582
+//        conditions.offenceType?.takeIf { it.isNotBlank() }?.let {
+//          monitoringOrder.acEligibleOffences = mutableListOf(
+//            AcEligibleOffence(
+//              offence = it,
+//              offenceDate = "",
+//            ),
+//          )
+//        }
       }
 
       monitoringOrder.sentenceType = getSentenceType(order)
@@ -682,11 +683,13 @@ data class MonitoringOrder(
 
       val parts = listOfNotNull(
         riskOffenceDetails.takeIf { it.isNotBlank() },
-        if (DataDictionaryVersion.isVersionSameOrAbove(order.dataDictionaryVersion, DataDictionaryVersion.DDV6)) {
-          null
-        } else {
-          monitoringOffenceType.takeIf { it.isNotBlank() }?.let { "AC Offence: $it" }
-        },
+// Pull mapping due to Serco not ready, ticket: https://dsdmoj.atlassian.net/browse/ELM-4582
+//        if (DataDictionaryVersion.isVersionSameOrAbove(order.dataDictionaryVersion, DataDictionaryVersion.DDV6)) {
+//          null
+//        } else {
+//          monitoringOffenceType.takeIf { it.isNotBlank() }?.let { "AC Offence: $it" }
+//        },
+        monitoringOffenceType.takeIf { it.isNotBlank() }?.let { "AC Offence: $it" },
         monitoringPoliceArea.takeIf { it.isNotBlank() }
           ?.let { "PFA: $it" },
       )
