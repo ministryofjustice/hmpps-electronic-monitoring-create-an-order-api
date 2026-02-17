@@ -208,5 +208,6 @@
   "magistrate_court_case_reference_number": "courtCaseReferenceNumber",
   "issp": "Yes",
   "hdc": "No",
-  "order_status": "Not Started"
+  "order_status": "Not Started",
+  "install_at_source_pilot": "false"
 }

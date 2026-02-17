@@ -237,6 +237,10 @@ data class MonitoringOrder(
   var subcategory: String? = "",
   @JsonProperty("dapol_missed_in_error")
   var dapolMissedInError: String? = "",
+  @JsonProperty("ac_eligible_offences")
+  var acEligibleOffences: MutableList<AcEligibleOffence>? = mutableListOf(),
+  @JsonProperty("install_at_source_pilot")
+  var installAtSourcePilot: String? = "",
 ) {
 
   companion object {
@@ -307,8 +311,15 @@ data class MonitoringOrder(
       )
       if (DataDictionaryVersion.isVersionSameOrAbove(order.dataDictionaryVersion, DataDictionaryVersion.DDV6)) {
         monitoringOrder.subcategory = subcategory
-
         monitoringOrder.dapolMissedInError = getDapolMissedInError(order)
+        conditions.offenceType?.takeIf { it.isNotBlank() }?.let {
+          monitoringOrder.acEligibleOffences = mutableListOf(
+            AcEligibleOffence(
+              offence = it,
+              offenceDate = "",
+            ),
+          )
+        }
       }
 
       monitoringOrder.sentenceType = getSentenceType(order)
@@ -461,6 +472,18 @@ data class MonitoringOrder(
             getBritishDateAndTime(order.installationAppointment?.appointmentDate) ?: ""
         } else {
           monitoringOrder.tagAtSource = "false"
+        }
+      }
+
+      if (DataDictionaryVersion.isVersionSameOrAbove(order.dataDictionaryVersion, DataDictionaryVersion.DDV6)) {
+        if (order.installationLocation != null) {
+          if (order.installationLocation?.location == InstallationLocationType.PRISON &&
+            Prison.PRISONS_IN_PILOT.any { it.name == order.interestedParties?.notifyingOrganisationName }
+          ) {
+            monitoringOrder.installAtSourcePilot = "true"
+          } else {
+            monitoringOrder.installAtSourcePilot = "false"
+          }
         }
       }
 
@@ -659,7 +682,11 @@ data class MonitoringOrder(
 
       val parts = listOfNotNull(
         riskOffenceDetails.takeIf { it.isNotBlank() },
-        monitoringOffenceType.takeIf { it.isNotBlank() }?.let { "AC Offence: $it" },
+        if (DataDictionaryVersion.isVersionSameOrAbove(order.dataDictionaryVersion, DataDictionaryVersion.DDV6)) {
+          null
+        } else {
+          monitoringOffenceType.takeIf { it.isNotBlank() }?.let { "AC Offence: $it" }
+        },
         monitoringPoliceArea.takeIf { it.isNotBlank() }
           ?.let { "PFA: $it" },
       )
@@ -724,3 +751,9 @@ data class Schedule(val day: String? = "", val start: String? = "", val end: Str
       Schedule(getShortDayString(curfewTimeTable.dayOfWeek), curfewTimeTable.startTime, curfewTimeTable.endTime)
   }
 }
+
+data class AcEligibleOffence(
+  val offence: String? = "",
+  @JsonProperty("offence_date")
+  val offenceDate: String? = "",
+)
