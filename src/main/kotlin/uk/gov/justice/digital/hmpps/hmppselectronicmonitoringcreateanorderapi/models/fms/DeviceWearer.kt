@@ -195,7 +195,7 @@ data class DeviceWearer(
         pncId = order.deviceWearer?.pncId,
         deliusId = order.deviceWearer?.deliusId,
         prisonNumber = order.deviceWearer?.prisonNumber,
-        homeOfficeReferenceNumber = order.deviceWearer?.homeOfficeReferenceNumber,
+        homeOfficeReferenceNumber = "",
         complianceAndEnforcementPersonReference = order.deviceWearer?.complianceAndEnforcementPersonReference ?: "",
       )
 

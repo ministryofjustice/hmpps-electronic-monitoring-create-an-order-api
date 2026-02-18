@@ -174,7 +174,7 @@ class DeviceWearerTest : OrderTestBase() {
   }
 
   @Test
-  fun `It should map home office reference number correctly and not map from cepr`() {
+  fun `It should map home office reference number as blank string and not map from cepr`() {
     val order = createOrder(
       dataDictionaryVersion = DataDictionaryVersion.DDV6,
       deviceWearer = createDeviceWearer(
@@ -187,7 +187,7 @@ class DeviceWearerTest : OrderTestBase() {
     )
     val fmsDeviceWearer = FmsDeviceWearer.fromCemoOrder(order)
 
-    assertThat(fmsDeviceWearer.homeOfficeReferenceNumber).isEqualTo("CC123")
+    assertThat(fmsDeviceWearer.homeOfficeReferenceNumber).isEqualTo("")
   }
 
   @ParameterizedTest(name = "it should map saved disability values to Serco - {0} -> {1}")
