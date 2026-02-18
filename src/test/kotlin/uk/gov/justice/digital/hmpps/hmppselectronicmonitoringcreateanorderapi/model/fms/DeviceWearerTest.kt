@@ -156,7 +156,7 @@ class DeviceWearerTest : OrderTestBase() {
   }
 
   @Test
-  fun `It should map cepr to home office reference number`() {
+  fun `It should map cepr correctly and not map it to home office reference number`() {
     val order = createOrder(
       dataDictionaryVersion = DataDictionaryVersion.DDV6,
       deviceWearer = createDeviceWearer(
@@ -169,16 +169,17 @@ class DeviceWearerTest : OrderTestBase() {
     )
     val fmsDeviceWearer = FmsDeviceWearer.fromCemoOrder(order)
 
-    assertThat(fmsDeviceWearer.homeOfficeReferenceNumber).isEqualTo("CC123")
+    assertThat(fmsDeviceWearer.homeOfficeReferenceNumber).isEqualTo("")
+    assertThat(fmsDeviceWearer.complianceAndEnforcementPersonReference).isEqualTo("CC123")
   }
 
   @Test
-  fun `It should map home office reference number when cepr is null`() {
+  fun `It should map home office reference number as blank string and not map from cepr`() {
     val order = createOrder(
       dataDictionaryVersion = DataDictionaryVersion.DDV6,
       deviceWearer = createDeviceWearer(
         homeOfficeReferenceNumber = "CC123",
-        complianceAndEnforcementPersonReference = null,
+        complianceAndEnforcementPersonReference = "DD123",
       ),
       interestedParties = createInterestedParty(
         notifyingOrganisation = NotifyingOrganisationDDv5.HOME_OFFICE.name,
@@ -186,24 +187,7 @@ class DeviceWearerTest : OrderTestBase() {
     )
     val fmsDeviceWearer = FmsDeviceWearer.fromCemoOrder(order)
 
-    assertThat(fmsDeviceWearer.homeOfficeReferenceNumber).isEqualTo("CC123")
-  }
-
-  @Test
-  fun `It should map home office reference number when cepr is empty string`() {
-    val order = createOrder(
-      dataDictionaryVersion = DataDictionaryVersion.DDV6,
-      deviceWearer = createDeviceWearer(
-        homeOfficeReferenceNumber = "CC123",
-        complianceAndEnforcementPersonReference = "",
-      ),
-      interestedParties = createInterestedParty(
-        notifyingOrganisation = NotifyingOrganisationDDv5.HOME_OFFICE.name,
-      ),
-    )
-    val fmsDeviceWearer = FmsDeviceWearer.fromCemoOrder(order)
-
-    assertThat(fmsDeviceWearer.homeOfficeReferenceNumber).isEqualTo("CC123")
+    assertThat(fmsDeviceWearer.homeOfficeReferenceNumber).isEqualTo("")
   }
 
   @ParameterizedTest(name = "it should map saved disability values to Serco - {0} -> {1}")

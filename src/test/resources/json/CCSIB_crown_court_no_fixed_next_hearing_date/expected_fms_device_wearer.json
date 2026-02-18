@@ -40,7 +40,7 @@
   "nomis_id": null,
   "delius_id": null,
   "prison_number": null,
-  "home_office_case_reference_number": null,
+  "home_office_case_reference_number": "",
   "interpreter_required": null,
   "language": null
 }
