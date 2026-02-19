@@ -22,6 +22,7 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.boot.test.autoconfigure.json.JsonTest
 import org.springframework.test.context.ActiveProfiles
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.config.FeatureFlags
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.BadRequestException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AdditionalDocument
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationAppointment
@@ -67,7 +68,9 @@ class OrderServiceTest {
   fun setup() {
     repo = mock(OrderRepository::class.java)
     fmsService = mock(FmsService::class.java)
-    service = OrderService(repo, fmsService, "DDV4")
+    val featureFlags = FeatureFlags(ddV6CourtMappings = true, dataDictionaryVersion = DataDictionaryVersion.DDV4)
+
+    service = OrderService(repo, fmsService, featureFlags)
   }
 
   @Test
@@ -368,7 +371,8 @@ class OrderServiceTest {
 
     @BeforeEach
     fun setup() {
-      service = OrderService(repo, fmsService, "DDV5")
+      val featureFlags = FeatureFlags(ddV6CourtMappings = true, dataDictionaryVersion = DataDictionaryVersion.DDV5)
+      service = OrderService(repo, fmsService, featureFlags)
       whenever(repo.findById(order.id)).thenReturn(Optional.of(order))
       whenever(repo.save(order)).thenReturn(order)
     }

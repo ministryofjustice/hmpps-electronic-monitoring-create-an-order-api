@@ -1,8 +1,9 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service
 
 import jakarta.persistence.EntityNotFoundException
-import org.springframework.beans.factory.annotation.Value
+import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.config.FeatureFlags
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.BadRequestException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.SubmitOrderException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
@@ -13,7 +14,6 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.OrderSearchCriteria
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.CreateOrderDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.VersionInformationDTO
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisationDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
@@ -24,15 +24,14 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.re
 import java.util.*
 
 @Service
-class OrderService(
-  val repo: OrderRepository,
-  val fmsService: FmsService,
-  @Value("\${settings.data-dictionary-version}") val defaultDataDictionaryVersion: String,
-) {
+@EnableConfigurationProperties(
+  FeatureFlags::class,
+)
+class OrderService(val repo: OrderRepository, val fmsService: FmsService, private val featureFlags: FeatureFlags) {
 
   fun createOrder(username: String, createRecord: CreateOrderDto): Order {
     val order = Order()
-    val dataDictionaryVersion = DataDictionaryVersion.entries.first { it.name == defaultDataDictionaryVersion }
+    val dataDictionaryVersion = featureFlags.dataDictionaryVersion
     order.versions.add(
       OrderVersion(
         username = username,
@@ -89,7 +88,7 @@ class OrderService(
       currentVersion.type = RequestType.REJECTED
     }
     val newVersionNumber = currentVersion.versionId + 1
-    val dataDictionaryVersion = DataDictionaryVersion.entries.first { it.name == defaultDataDictionaryVersion }
+    val dataDictionaryVersion = featureFlags.dataDictionaryVersion
     val newOrderVersion = OrderVersion(
       orderId = orderId,
       versionId = newVersionNumber,
