@@ -568,7 +568,8 @@ class MonitoringOrderTest : OrderTestBase() {
 
     order.installationAppointment = installationAppointment
 
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags)
+    val featureFlags = FeatureFlags(ddV6CourtMappings = true, dataDictionaryVersion = "DDV6")
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, featureFlags)
 
     assertThat(fmsMonitoringOrder.installAtSourcePilot).isEqualTo("false")
   }
@@ -610,7 +611,8 @@ class MonitoringOrderTest : OrderTestBase() {
 
     order.installationAppointment = installationAppointment
 
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags)
+    val featureFlags = FeatureFlags(ddV6CourtMappings = true, dataDictionaryVersion = "DDV6")
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, featureFlags)
 
     assertThat(fmsMonitoringOrder.installAtSourcePilot).isEqualTo("false")
   }
@@ -649,7 +651,8 @@ class MonitoringOrderTest : OrderTestBase() {
 
     order.installationAppointment = installationAppointment
 
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags)
+    val featureFlags = FeatureFlags(ddV6CourtMappings = true, dataDictionaryVersion = "DDV6")
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, featureFlags)
 
     assertThat(fmsMonitoringOrder.installAtSourcePilot).isEqualTo("true")
   }
@@ -833,8 +836,8 @@ class MonitoringOrderTest : OrderTestBase() {
       dataDictionaryVersion = DataDictionaryVersion.DDV6,
       monitoringConditions = createMonitoringConditions(sentenceType = sentenceType),
     )
-
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "", mockFeatureFlags)
+    val featureFlags = FeatureFlags(ddV6CourtMappings = true, dataDictionaryVersion = "DDV6")
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "", featureFlags)
     assertThat(fmsMonitoringOrder.sentenceType).isEqualTo(mappedValue)
   }
 

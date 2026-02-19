@@ -325,7 +325,7 @@ data class MonitoringOrder(
         }
       }
 
-      monitoringOrder.sentenceType = getSentenceType(order)
+      monitoringOrder.sentenceType = getSentenceType(order, featureFlags)
       monitoringOrder.issp = if (conditions.issp == YesNoUnknown.YES) {
         "Yes"
       } else {
@@ -478,7 +478,9 @@ data class MonitoringOrder(
         }
       }
 
-      if (DataDictionaryVersion.isVersionSameOrAbove(order.dataDictionaryVersion, DataDictionaryVersion.DDV6)) {
+      if (DataDictionaryVersion.isVersionSameOrAbove(order.dataDictionaryVersion, DataDictionaryVersion.DDV6) &&
+        featureFlags.ddV6CourtMappings
+      ) {
         if (order.installationLocation != null) {
           if (order.installationLocation?.location == InstallationLocationType.PRISON &&
             Prison.PRISONS_IN_PILOT.any { it.name == order.interestedParties?.notifyingOrganisationName }
@@ -518,10 +520,12 @@ data class MonitoringOrder(
       else -> order.addresses.firstOrNull { it.addressType == AddressType.INSTALLATION }
     }
 
-    private fun getSentenceType(order: Order): String {
+    private fun getSentenceType(order: Order, featureFlags: FeatureFlags): String {
       val sentenceType = order.monitoringConditions?.sentenceType ?: return ""
 
-      if (DataDictionaryVersion.isVersionSameOrAbove(order.dataDictionaryVersion, DataDictionaryVersion.DDV6)) {
+      if (DataDictionaryVersion.isVersionSameOrAbove(order.dataDictionaryVersion, DataDictionaryVersion.DDV6) &&
+        featureFlags.ddV6CourtMappings
+      ) {
         return when (sentenceType) {
           // ELM-4515 update mapping for ddv6
           SentenceType.IPP -> "IPP (Imprisonment for Public Protection)"
