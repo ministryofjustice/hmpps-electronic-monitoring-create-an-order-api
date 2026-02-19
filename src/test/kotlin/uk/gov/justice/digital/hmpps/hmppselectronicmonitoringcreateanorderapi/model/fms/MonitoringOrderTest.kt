@@ -264,6 +264,25 @@ class MonitoringOrderTest : OrderTestBase() {
   }
 
   @Test
+  fun `It should not map offence additional details from new entity for DDV6 and feature is true`() {
+    val order = createOrder(
+      dataDictionaryVersion = DataDictionaryVersion.DDV6,
+      offenceAdditionalDetails = "offence details",
+      monitoringConditions = createMonitoringConditions(
+        offenceType = "Robbery",
+        policeArea = "Avon and Somerset",
+      ),
+    )
+
+    val featureFlags = FeatureFlags(ddV6CourtMappings = true, dataDictionaryVersion = "DDV6")
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, featureFlags)
+
+    assertThat(
+      fmsMonitoringOrder.offenceAdditionalDetails,
+    ).isEqualTo("offence details. PFA: Avon and Somerset")
+  }
+
+  @Test
   fun `It should map monitoring conditions offence type to ac eligible offences for DDV6 and feature flag enabled`() {
     val order = createOrder(
       dataDictionaryVersion = DataDictionaryVersion.DDV6,
