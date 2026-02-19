@@ -13,7 +13,7 @@ abstract class FmsSubmissionStrategyBase(val objectMapper: ObjectMapper, private
   protected fun getDeviceWearer(order: Order): Result<DeviceWearer> = try {
     Result(
       success = true,
-      data = DeviceWearer.fromCemoOrder(order),
+      data = DeviceWearer.fromCemoOrder(order, featureFlags),
     )
   } catch (e: Exception) {
     Result(

@@ -6,6 +6,7 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 import org.springframework.test.context.ActiveProfiles
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.config.FeatureFlags
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.OrderTestBase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
@@ -14,6 +15,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 
 @ActiveProfiles("test")
 class DeviceWearerTest : OrderTestBase() {
+  private val featureFlags = FeatureFlags(ddV6CourtMappings = false, dataDictionaryVersion = DataDictionaryVersion.DDV6)
 
   @Test
   fun `It should map primary address to Serco`() {
@@ -29,7 +31,7 @@ class DeviceWearerTest : OrderTestBase() {
       addresses = mutableListOf(mockAddress),
     )
 
-    val fmsDeviceWearer = FmsDeviceWearer.fromCemoOrder(order)
+    val fmsDeviceWearer = FmsDeviceWearer.fromCemoOrder(order, featureFlags)
 
     assertThat(fmsDeviceWearer.address1).isEqualTo(mockAddress.addressLine1)
     assertThat(fmsDeviceWearer.address2).isEqualTo(mockAddress.addressLine2)
@@ -60,7 +62,7 @@ class DeviceWearerTest : OrderTestBase() {
       addresses = mutableListOf(primaryAddress, mockAddress),
     )
 
-    val fmsDeviceWearer = FmsDeviceWearer.fromCemoOrder(order)
+    val fmsDeviceWearer = FmsDeviceWearer.fromCemoOrder(order, featureFlags)
 
     assertThat(fmsDeviceWearer.secondaryAddress1).isEqualTo(mockAddress.addressLine1)
     assertThat(fmsDeviceWearer.secondaryAddress2).isEqualTo(mockAddress.addressLine2)
@@ -91,7 +93,7 @@ class DeviceWearerTest : OrderTestBase() {
       addresses = mutableListOf(primaryAddress, mockAddress),
     )
 
-    val fmsDeviceWearer = FmsDeviceWearer.fromCemoOrder(order)
+    val fmsDeviceWearer = FmsDeviceWearer.fromCemoOrder(order, featureFlags)
 
     assertThat(fmsDeviceWearer.tertiaryAddress1).isEqualTo(mockAddress.addressLine1)
     assertThat(fmsDeviceWearer.tertiaryAddress2).isEqualTo(mockAddress.addressLine2)
@@ -106,7 +108,7 @@ class DeviceWearerTest : OrderTestBase() {
     val order = createOrder(
       deviceWearer = createDeviceWearer(sex = savedValue),
     )
-    val fmsDeviceWearer = FmsDeviceWearer.fromCemoOrder(order)
+    val fmsDeviceWearer = FmsDeviceWearer.fromCemoOrder(order, featureFlags)
 
     assertThat(fmsDeviceWearer.sex).isEqualTo(mappedValue)
   }
@@ -117,7 +119,7 @@ class DeviceWearerTest : OrderTestBase() {
     val order = createOrder(
       deviceWearer = createDeviceWearer(gender = savedValue),
     )
-    val fmsDeviceWearer = FmsDeviceWearer.fromCemoOrder(order)
+    val fmsDeviceWearer = FmsDeviceWearer.fromCemoOrder(order, featureFlags)
 
     assertThat(fmsDeviceWearer.genderIdentity).isEqualTo(mappedValue)
   }
@@ -129,7 +131,7 @@ class DeviceWearerTest : OrderTestBase() {
       deviceWearer = createDeviceWearer(),
       installationAndRisk = createInstallationAndRisk(riskCategory = savedValue),
     )
-    val fmsDeviceWearer = FmsDeviceWearer.fromCemoOrder(order)
+    val fmsDeviceWearer = FmsDeviceWearer.fromCemoOrder(order, featureFlags)
 
     assertThat(fmsDeviceWearer.riskCategory!!.first().category).isEqualTo(mappedValue)
   }
@@ -140,7 +142,7 @@ class DeviceWearerTest : OrderTestBase() {
       deviceWearer = createDeviceWearer(),
       installationAndRisk = createInstallationAndRisk(riskCategory = "NO_RISK"),
     )
-    val fmsDeviceWearer = FmsDeviceWearer.fromCemoOrder(order)
+    val fmsDeviceWearer = FmsDeviceWearer.fromCemoOrder(order, featureFlags)
 
     assertThat(fmsDeviceWearer.riskCategory!!.count()).isEqualTo(0)
   }
@@ -150,7 +152,7 @@ class DeviceWearerTest : OrderTestBase() {
     val order = createOrder(
       deviceWearer = createDeviceWearer(disabilities = "NO_LISTED_CONDITION"),
     )
-    val fmsDeviceWearer = FmsDeviceWearer.fromCemoOrder(order)
+    val fmsDeviceWearer = FmsDeviceWearer.fromCemoOrder(order, featureFlags)
 
     assertThat(fmsDeviceWearer.disability!!.count()).isEqualTo(0)
   }
@@ -167,7 +169,8 @@ class DeviceWearerTest : OrderTestBase() {
         notifyingOrganisation = NotifyingOrganisationDDv5.HOME_OFFICE.name,
       ),
     )
-    val fmsDeviceWearer = FmsDeviceWearer.fromCemoOrder(order)
+    val ddv6EnabledFlags = FeatureFlags(dataDictionaryVersion = DataDictionaryVersion.DDV6, ddV6CourtMappings = true)
+    val fmsDeviceWearer = FmsDeviceWearer.fromCemoOrder(order, ddv6EnabledFlags)
 
     assertThat(fmsDeviceWearer.homeOfficeReferenceNumber).isEqualTo("")
     assertThat(fmsDeviceWearer.complianceAndEnforcementPersonReference).isEqualTo("CC123")
@@ -185,7 +188,8 @@ class DeviceWearerTest : OrderTestBase() {
         notifyingOrganisation = NotifyingOrganisationDDv5.HOME_OFFICE.name,
       ),
     )
-    val fmsDeviceWearer = FmsDeviceWearer.fromCemoOrder(order)
+    val ddv6EnabledFlags = FeatureFlags(dataDictionaryVersion = DataDictionaryVersion.DDV6, ddV6CourtMappings = true)
+    val fmsDeviceWearer = FmsDeviceWearer.fromCemoOrder(order, ddv6EnabledFlags)
 
     assertThat(fmsDeviceWearer.homeOfficeReferenceNumber).isEqualTo("")
   }
@@ -196,7 +200,7 @@ class DeviceWearerTest : OrderTestBase() {
     val order = createOrder(
       deviceWearer = createDeviceWearer(disabilities = savedValue),
     )
-    val fmsDeviceWearer = FmsDeviceWearer.fromCemoOrder(order)
+    val fmsDeviceWearer = FmsDeviceWearer.fromCemoOrder(order, featureFlags)
 
     assertThat(fmsDeviceWearer.disability!!.first().disability).isEqualTo(mappedValue)
   }
