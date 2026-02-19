@@ -31,7 +31,8 @@ class FmsServiceTest {
   private lateinit var mockDocumentApiClient: DocumentApiClient
   private lateinit var objectMapper: ObjectMapper
   private lateinit var repo: FmsSubmissionResultRepository
-  private val mockFeatureFlags = FeatureFlags(dataDictionaryVersion = DataDictionaryVersion.DDV6, ddV6CourtMappings = false)
+  private val mockFeatureFlags =
+    FeatureFlags(dataDictionaryVersion = DataDictionaryVersion.DDV6, ddV6CourtMappings = false)
 
   @BeforeEach
   fun setUp() {
