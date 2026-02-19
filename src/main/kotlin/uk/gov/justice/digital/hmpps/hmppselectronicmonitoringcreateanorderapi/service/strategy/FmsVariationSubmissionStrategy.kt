@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.s
 import com.fasterxml.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.DocumentApiClient
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.FmsClient
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.config.FeatureFlags
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AdditionalDocument
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Result
@@ -23,7 +24,8 @@ class FmsVariationSubmissionStrategy(
   objectMapper: ObjectMapper,
   val fmsClient: FmsClient,
   val documentApiClient: DocumentApiClient,
-) : FmsSubmissionStrategyBase(objectMapper) {
+  private val featureFlags: FeatureFlags,
+) : FmsSubmissionStrategyBase(objectMapper, featureFlags) {
 
   private fun submitUpdateDeviceWearerRequest(deviceWearer: DeviceWearer, orderId: UUID): Result<String> = try {
     Result(

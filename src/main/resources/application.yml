@@ -73,6 +73,8 @@ toggle:
 
 settings:
   data-dictionary-version: DDV4
+  ddv6-court-mappings: false
+
 management:
   endpoints:
     web:

@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.config.FeatureFlags
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Address
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewTimeTable
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
@@ -254,7 +255,7 @@ data class MonitoringOrder(
     private fun getBritishDate(dateTime: ZonedDateTime?): String? =
       dateTime?.toInstant()?.atZone(londonTimeZone)?.format(dateFormatter)
 
-    fun fromOrder(order: Order, caseId: String?): MonitoringOrder {
+    fun fromOrder(order: Order, caseId: String?, featureFlags: FeatureFlags): MonitoringOrder {
       val conditions = order.monitoringConditions!!
       val monitoringStartDate = order.getMonitoringStartDate()
 
@@ -305,22 +306,23 @@ data class MonitoringOrder(
         orderId = order.id.toString(),
         orderStatus = "Not Started",
         offence = getOffence(order),
-        offenceAdditionalDetails = getOffenceAdditionalDetails(order),
+        offenceAdditionalDetails = getOffenceAdditionalDetails(order, featureFlags),
         pilot = conditions.pilot?.value ?: "",
         magistrateCourtCaseReferenceNumber = order.deviceWearer?.courtCaseReferenceNumber ?: "",
       )
       if (DataDictionaryVersion.isVersionSameOrAbove(order.dataDictionaryVersion, DataDictionaryVersion.DDV6)) {
         monitoringOrder.subcategory = subcategory
         monitoringOrder.dapolMissedInError = getDapolMissedInError(order)
-// Pull mapping due to Serco not ready, ticket: https://dsdmoj.atlassian.net/browse/ELM-4582
-//        conditions.offenceType?.takeIf { it.isNotBlank() }?.let {
-//          monitoringOrder.acEligibleOffences = mutableListOf(
-//            AcEligibleOffence(
-//              offence = it,
-//              offenceDate = "",
-//            ),
-//          )
-//        }
+        if (featureFlags.ddV6CourtMappings) {
+          conditions.offenceType?.takeIf { it.isNotBlank() }?.let {
+            monitoringOrder.acEligibleOffences = mutableListOf(
+              AcEligibleOffence(
+                offence = it,
+                offenceDate = "",
+              ),
+            )
+          }
+        }
       }
 
       monitoringOrder.sentenceType = getSentenceType(order)
@@ -666,7 +668,7 @@ data class MonitoringOrder(
       )
     }
 
-    private fun getOffenceAdditionalDetails(order: Order): String {
+    private fun getOffenceAdditionalDetails(order: Order, featureFlags: FeatureFlags): String {
       val riskOffenceDetails =
         if (DataDictionaryVersion.isVersionSameOrAbove(order.dataDictionaryVersion, DataDictionaryVersion.DDV6)) {
           order.offenceAdditionalDetails?.additionalDetails ?: ""
@@ -683,13 +685,13 @@ data class MonitoringOrder(
 
       val parts = listOfNotNull(
         riskOffenceDetails.takeIf { it.isNotBlank() },
-// Pull mapping due to Serco not ready, ticket: https://dsdmoj.atlassian.net/browse/ELM-4582
-//        if (DataDictionaryVersion.isVersionSameOrAbove(order.dataDictionaryVersion, DataDictionaryVersion.DDV6)) {
-//          null
-//        } else {
-//          monitoringOffenceType.takeIf { it.isNotBlank() }?.let { "AC Offence: $it" }
-//        },
-        monitoringOffenceType.takeIf { it.isNotBlank() }?.let { "AC Offence: $it" },
+        if (DataDictionaryVersion.isVersionSameOrAbove(order.dataDictionaryVersion, DataDictionaryVersion.DDV6) &&
+          featureFlags.ddV6CourtMappings
+        ) {
+          null
+        } else {
+          monitoringOffenceType.takeIf { it.isNotBlank() }?.let { "AC Offence: $it" }
+        },
         monitoringPoliceArea.takeIf { it.isNotBlank() }
           ?.let { "PFA: $it" },
       )

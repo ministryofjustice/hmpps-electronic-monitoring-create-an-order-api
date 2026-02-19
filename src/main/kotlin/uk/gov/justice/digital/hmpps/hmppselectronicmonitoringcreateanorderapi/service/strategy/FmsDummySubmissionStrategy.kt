@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.strategy
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.config.FeatureFlags
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.SubmissionStatus
@@ -9,7 +10,8 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsSubmissionResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsSubmissionStrategyKind
 
-class FmsDummySubmissionStrategy(objectMapper: ObjectMapper) : FmsSubmissionStrategyBase(objectMapper) {
+class FmsDummySubmissionStrategy(objectMapper: ObjectMapper, private val featureFlags: FeatureFlags) :
+  FmsSubmissionStrategyBase(objectMapper, featureFlags) {
 
   private fun createDeviceWearer(order: Order): FmsDeviceWearerSubmissionResult {
     val deviceWearerResult = this.getDeviceWearer(order)
