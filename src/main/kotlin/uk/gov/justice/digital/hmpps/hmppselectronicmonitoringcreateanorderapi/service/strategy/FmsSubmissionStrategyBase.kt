@@ -1,17 +1,19 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.strategy
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.config.FeatureFlags
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Result
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.DeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.MonitoringOrder
 
-abstract class FmsSubmissionStrategyBase(val objectMapper: ObjectMapper) : FmsSubmissionStrategy {
+abstract class FmsSubmissionStrategyBase(val objectMapper: ObjectMapper, private val featureFlags: FeatureFlags) :
+  FmsSubmissionStrategy {
 
   protected fun getDeviceWearer(order: Order): Result<DeviceWearer> = try {
     Result(
       success = true,
-      data = DeviceWearer.fromCemoOrder(order),
+      data = DeviceWearer.fromCemoOrder(order, featureFlags),
     )
   } catch (e: Exception) {
     Result(
@@ -36,7 +38,7 @@ abstract class FmsSubmissionStrategyBase(val objectMapper: ObjectMapper) : FmsSu
     return try {
       return Result(
         success = true,
-        data = MonitoringOrder.fromOrder(order, deviceWearerId),
+        data = MonitoringOrder.fromOrder(order, deviceWearerId, featureFlags),
       )
     } catch (e: Exception) {
       Result(

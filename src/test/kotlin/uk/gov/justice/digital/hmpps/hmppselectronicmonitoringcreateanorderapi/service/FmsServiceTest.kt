@@ -10,6 +10,8 @@ import org.springframework.boot.test.autoconfigure.json.JsonTest
 import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.DocumentApiClient
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.FmsClient
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.config.FeatureFlags
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsDeviceWearerSubmissionResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsMonitoringOrderSubmissionResult
@@ -29,6 +31,8 @@ class FmsServiceTest {
   private lateinit var mockDocumentApiClient: DocumentApiClient
   private lateinit var objectMapper: ObjectMapper
   private lateinit var repo: FmsSubmissionResultRepository
+  private val mockFeatureFlags =
+    FeatureFlags(dataDictionaryVersion = DataDictionaryVersion.DDV6, ddV6CourtMappings = false)
 
   @BeforeEach
   fun setUp() {
@@ -36,7 +40,7 @@ class FmsServiceTest {
     mockDocumentApiClient = mock(DocumentApiClient::class.java)
     objectMapper = ObjectMapper()
     repo = mock(FmsSubmissionResultRepository::class.java)
-    service = FmsService(mockClient, mockDocumentApiClient, objectMapper, repo, true, true)
+    service = FmsService(mockClient, mockDocumentApiClient, objectMapper, repo, true, true, mockFeatureFlags)
   }
 
   @Test

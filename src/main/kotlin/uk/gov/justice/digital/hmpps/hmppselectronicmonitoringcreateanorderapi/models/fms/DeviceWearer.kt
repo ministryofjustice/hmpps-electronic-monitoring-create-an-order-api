@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.config.FeatureFlags
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Gender
@@ -160,7 +161,7 @@ data class DeviceWearer(
 
   companion object {
     private val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-    fun fromCemoOrder(order: Order): DeviceWearer {
+    fun fromCemoOrder(order: Order, featureFlags: FeatureFlags): DeviceWearer {
       var adultChild = "adult"
       if (!order.deviceWearer?.adultAtTimeOfInstallation!!) {
         adultChild = "child"
@@ -196,8 +197,19 @@ data class DeviceWearer(
         deliusId = order.deviceWearer?.deliusId,
         prisonNumber = order.deviceWearer?.prisonNumber,
         homeOfficeReferenceNumber = "",
-        complianceAndEnforcementPersonReference = order.deviceWearer?.complianceAndEnforcementPersonReference ?: "",
       )
+
+      if (featureFlags.ddV6CourtMappings) {
+        deviceWearer.complianceAndEnforcementPersonReference =
+          order.deviceWearer?.complianceAndEnforcementPersonReference ?: ""
+      } else {
+        deviceWearer.homeOfficeReferenceNumber =
+          if (!order.deviceWearer?.complianceAndEnforcementPersonReference.isNullOrBlank()) {
+            order.deviceWearer?.complianceAndEnforcementPersonReference
+          } else {
+            order.deviceWearer?.homeOfficeReferenceNumber
+          }
+      }
 
       if (order.deviceWearer?.noFixedAbode != null && !order.deviceWearer?.noFixedAbode!!) {
         val primaryAddress = order.addresses.find { address -> address.addressType == AddressType.PRIMARY }!!
