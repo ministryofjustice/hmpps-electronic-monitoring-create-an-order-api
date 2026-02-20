@@ -1,6 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.courthearing
 
-import org.springframework.beans.factory.annotation.Value
+import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.courthearingeventreceiver.model.Defendant
 import uk.gov.justice.digital.hmpps.courthearingeventreceiver.model.Gender
@@ -8,6 +8,7 @@ import uk.gov.justice.digital.hmpps.courthearingeventreceiver.model.Hearing
 import uk.gov.justice.digital.hmpps.courthearingeventreceiver.model.HearingEvent
 import uk.gov.justice.digital.hmpps.courthearingeventreceiver.model.JudicialResults
 import uk.gov.justice.digital.hmpps.courthearingeventreceiver.model.Offence
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.config.FeatureFlags
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Address
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AlcoholMonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ContactDetails
@@ -24,7 +25,6 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.courthearing.enums.CommunityOrderType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.EnforcementZoneType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MonitoringConditionType
@@ -41,10 +41,13 @@ import java.time.format.DateTimeFormatter
 import java.util.*
 
 @Service
+@EnableConfigurationProperties(
+  FeatureFlags::class,
+)
 class HearingEventHandler(
   private val fmsService: FmsService,
   private val eventService: EventService,
-  @Value("\${settings.data-dictionary-version}") val defaultDataDictionaryVersion: String,
+  private val featureFlags: FeatureFlags,
 ) {
   private val commentPlatformUsername = "COMMENT_PLATFORM"
   private val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
@@ -227,7 +230,7 @@ class HearingEventHandler(
     val judicialResults = offences.flatMap { it.judicialResults }.toList()
 
     val prompts = judicialResults.flatMap { it.judicialResultPrompts }.toList()
-    val dataDictionaryVersion = DataDictionaryVersion.entries.first { it.name == defaultDataDictionaryVersion }
+    val dataDictionaryVersion = featureFlags.dataDictionaryVersion
     val order = Order(
       versions = mutableListOf(
         OrderVersion(

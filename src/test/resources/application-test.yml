@@ -51,6 +51,7 @@ hmpps.s3:
 
 settings:
   data-dictionary-version: DDV4
+  ddv6-court-mappings: true
 
 
 DOCUMENT_MANAGEMENT_URL:  http://localhost:8092/

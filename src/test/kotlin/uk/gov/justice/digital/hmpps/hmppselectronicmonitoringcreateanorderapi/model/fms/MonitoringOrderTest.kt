@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ArgumentsSource
 import org.springframework.test.context.ActiveProfiles
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.config.FeatureFlags
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.OrderTestBase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.AlcoholAbstinenceArgumentsProvider
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.AlcoholNotifyingOrganisationArgumentsProvider
@@ -59,6 +60,9 @@ class MonitoringOrderTest : OrderTestBase() {
   private val dateTimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
   private val londonTimeZone = ZoneId.of("Europe/London")
 
+  private val mockFeatureFlags =
+    FeatureFlags(dataDictionaryVersion = DataDictionaryVersion.DDV6, ddV6CourtMappings = false)
+
   private fun getBritishDateAndTime(dateTime: ZonedDateTime?): String? =
     dateTime?.toInstant()?.atZone(londonTimeZone)?.format(dateTimeFormatter)
 
@@ -72,7 +76,7 @@ class MonitoringOrderTest : OrderTestBase() {
         createMandatoryAttendanceCondition(),
       ),
     )
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order = order, caseId = "")
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order = order, caseId = "", featureFlags = mockFeatureFlags)
 
     assertThat(fmsMonitoringOrder.inclusionZones).isEqualTo(
       listOf(
@@ -124,7 +128,7 @@ class MonitoringOrderTest : OrderTestBase() {
       ),
 
     )
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags)
     val days = listOf("Mo", "Tu", "Wed", "Th", "Fr", "Sa", "Su")
 
     val primaryAddressCurfew = fmsMonitoringOrder.curfewDuration!!.firstOrNull { it.location == "primary" }
@@ -167,7 +171,7 @@ class MonitoringOrderTest : OrderTestBase() {
         curfewAddress = "SECONDARY_ADDRESS",
       ),
     )
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags)
     val days = listOf("Mo", "Tu", "Wed", "Th", "Fr", "Sa", "Su")
 
     val primaryAddressCurfew = fmsMonitoringOrder.curfewDuration!!.firstOrNull { it.location == "secondary" }
@@ -209,7 +213,7 @@ class MonitoringOrderTest : OrderTestBase() {
         curfewAddress = "TERTIARY_ADDRESS",
       ),
     )
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags)
     val days = listOf("Mo", "Tu", "Wed", "Th", "Fr", "Sa", "Su")
 
     val primaryAddressCurfew = fmsMonitoringOrder.curfewDuration!!.firstOrNull { it.location == "tertiary" }
@@ -233,7 +237,7 @@ class MonitoringOrderTest : OrderTestBase() {
         policeArea = "Avon and Somerset",
       ),
     )
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags)
 
     assertThat(
       fmsMonitoringOrder.offenceAdditionalDetails,
@@ -253,29 +257,48 @@ class MonitoringOrderTest : OrderTestBase() {
       ),
     )
 
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags)
 
     assertThat(
       fmsMonitoringOrder.offenceAdditionalDetails,
     ).isEqualTo("offence details. AC Offence: Robbery. PFA: Avon and Somerset")
   }
-// Pull mapping due to Serco not ready, ticket : https://dsdmoj.atlassian.net/browse/ELM-4582
-//  @Test
-//  fun `It should map monitoring conditions offence type to ac eligible offences for DDV6`() {
-//    val order = createOrder(
-//      dataDictionaryVersion = DataDictionaryVersion.DDV6,
-//      monitoringConditions = createMonitoringConditions(
-//        offenceType = "Burglary in a Dwelling - Indictable only",
-//        policeArea = "Avon and Somerset",
-//      ),
-//    )
-//
-//    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
-//
-//    assertThat(fmsMonitoringOrder.acEligibleOffences).hasSize(1)
-//    assertThat(fmsMonitoringOrder.acEligibleOffences!![0].offence).isEqualTo("Burglary in a Dwelling - Indictable only")
-//    assertThat(fmsMonitoringOrder.acEligibleOffences!![0].offenceDate).isEqualTo("")
-//  }
+
+  @Test
+  fun `It should not map offence additional details from new entity for DDV6 and feature is true`() {
+    val order = createOrder(
+      dataDictionaryVersion = DataDictionaryVersion.DDV6,
+      offenceAdditionalDetails = "offence details",
+      monitoringConditions = createMonitoringConditions(
+        offenceType = "Robbery",
+        policeArea = "Avon and Somerset",
+      ),
+    )
+
+    val featureFlags = FeatureFlags(ddV6CourtMappings = true, dataDictionaryVersion = DataDictionaryVersion.DDV6)
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, featureFlags)
+
+    assertThat(
+      fmsMonitoringOrder.offenceAdditionalDetails,
+    ).isEqualTo("offence details. PFA: Avon and Somerset")
+  }
+
+  @Test
+  fun `It should map monitoring conditions offence type to ac eligible offences for DDV6 and feature flag enabled`() {
+    val order = createOrder(
+      dataDictionaryVersion = DataDictionaryVersion.DDV6,
+      monitoringConditions = createMonitoringConditions(
+        offenceType = "Burglary in a Dwelling - Indictable only",
+        policeArea = "Avon and Somerset",
+      ),
+    )
+    val featureFlags = FeatureFlags(ddV6CourtMappings = true, dataDictionaryVersion = DataDictionaryVersion.DDV6)
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, featureFlags)
+
+    assertThat(fmsMonitoringOrder.acEligibleOffences).hasSize(1)
+    assertThat(fmsMonitoringOrder.acEligibleOffences!![0].offence).isEqualTo("Burglary in a Dwelling - Indictable only")
+    assertThat(fmsMonitoringOrder.acEligibleOffences!![0].offenceDate).isEqualTo("")
+  }
 
   @Test
   fun `It should map the police area correctly`() {
@@ -287,7 +310,7 @@ class MonitoringOrderTest : OrderTestBase() {
         policeArea = "AVON_AND_SOMERSET",
       ),
     )
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags)
 
     assertThat(
       fmsMonitoringOrder.offenceAdditionalDetails,
@@ -323,7 +346,7 @@ class MonitoringOrderTest : OrderTestBase() {
       ),
       curfewDayOfRelease = mockeDayOfRelease,
     )
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags)
 
     assertThat(fmsMonitoringOrder.conditionalReleaseStartTime).isEqualTo(mockeDayOfRelease.startTime)
     assertThat(fmsMonitoringOrder.conditionalReleaseEndTime).isEqualTo(mockeDayOfRelease.endTime)
@@ -351,7 +374,7 @@ class MonitoringOrderTest : OrderTestBase() {
       installationLocation = installationLocation,
     )
 
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "")
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "", mockFeatureFlags)
 
     assertThat(fmsMonitoringOrder.tagAtSource).isEqualTo("false")
 
@@ -394,7 +417,7 @@ class MonitoringOrderTest : OrderTestBase() {
 
     order.installationAppointment = installationAppointment
 
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags)
 
     assertThat(fmsMonitoringOrder.tagAtSource).isEqualTo("true")
     assertThat(fmsMonitoringOrder.tagAtSourceDetails).isEqualTo("HMP Wandsworth")
@@ -436,7 +459,7 @@ class MonitoringOrderTest : OrderTestBase() {
 
     order.installationAppointment = installationAppointment
 
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags)
 
     assertThat(fmsMonitoringOrder.tagAtSource).isEqualTo("true")
     assertThat(fmsMonitoringOrder.tagAtSourceDetails).isEqualTo("HMP Wandsworth")
@@ -499,7 +522,7 @@ class MonitoringOrderTest : OrderTestBase() {
       appointmentDate = ZonedDateTime.of(2026, 11, 15, 14, 30, 0, 0, ZoneId.of("Europe/London")),
     )
 
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags)
 
     assertThat(fmsMonitoringOrder.tagAtSource).isEqualTo("true")
     assertThat(fmsMonitoringOrder.tagAtSourceDetails).isEqualTo("London")
@@ -546,7 +569,8 @@ class MonitoringOrderTest : OrderTestBase() {
 
     order.installationAppointment = installationAppointment
 
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
+    val featureFlags = FeatureFlags(ddV6CourtMappings = true, dataDictionaryVersion = DataDictionaryVersion.DDV6)
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, featureFlags)
 
     assertThat(fmsMonitoringOrder.installAtSourcePilot).isEqualTo("false")
   }
@@ -588,7 +612,8 @@ class MonitoringOrderTest : OrderTestBase() {
 
     order.installationAppointment = installationAppointment
 
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
+    val featureFlags = FeatureFlags(ddV6CourtMappings = true, dataDictionaryVersion = DataDictionaryVersion.DDV6)
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, featureFlags)
 
     assertThat(fmsMonitoringOrder.installAtSourcePilot).isEqualTo("false")
   }
@@ -627,7 +652,8 @@ class MonitoringOrderTest : OrderTestBase() {
 
     order.installationAppointment = installationAppointment
 
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
+    val featureFlags = FeatureFlags(ddV6CourtMappings = true, dataDictionaryVersion = DataDictionaryVersion.DDV6)
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, featureFlags)
 
     assertThat(fmsMonitoringOrder.installAtSourcePilot).isEqualTo("true")
   }
@@ -644,7 +670,7 @@ class MonitoringOrderTest : OrderTestBase() {
       interestedParties = createInterestedParty(responsibleOrganisation = "PROBATION"),
       probationDeliveryUnits = createProbationDeliveryUnit(savedValue),
     )
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags)
 
     assertThat(fmsMonitoringOrder.pduResponsible).isEqualTo(mappedValue)
   }
@@ -660,7 +686,7 @@ class MonitoringOrderTest : OrderTestBase() {
       probationDeliveryUnits = createProbationDeliveryUnit(savedValue),
     )
 
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags)
 
     assertThat(fmsMonitoringOrder.pduResponsible).isEqualTo(mappedValue)
   }
@@ -681,7 +707,7 @@ class MonitoringOrderTest : OrderTestBase() {
       ),
     )
 
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags)
 
     assertThat(fmsMonitoringOrder.roRegion).isEqualTo(mappedValue)
   }
@@ -697,7 +723,7 @@ class MonitoringOrderTest : OrderTestBase() {
         notifyingOrganisation = savedValue,
       ),
     )
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags)
 
     assertThat(fmsMonitoringOrder.notifyingOrganization).isEqualTo(mappedValue)
   }
@@ -750,7 +776,7 @@ class MonitoringOrderTest : OrderTestBase() {
     val order = createOrder(
       monitoringConditions = createMonitoringConditions(pilot = Pilot.entries.first { it.name == savedValue }),
     )
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags)
 
     assertThat(fmsMonitoringOrder.pilot).isEqualTo(mappedValue)
   }
@@ -769,7 +795,7 @@ class MonitoringOrderTest : OrderTestBase() {
       ),
     )
 
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "")
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "", mockFeatureFlags)
 
     assertThat(fmsMonitoringOrder.enforceableCondition!!.first().condition).isEqualTo(mappedValue)
   }
@@ -786,7 +812,7 @@ class MonitoringOrderTest : OrderTestBase() {
         ),
       )
 
-      val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "")
+      val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "", mockFeatureFlags)
       assertThat(fmsMonitoringOrder.abstinence).isEqualTo(mappedValue)
     }
   }
@@ -799,7 +825,7 @@ class MonitoringOrderTest : OrderTestBase() {
       monitoringConditions = createMonitoringConditions(sentenceType = sentenceType),
     )
 
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "")
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "", mockFeatureFlags)
     assertThat(fmsMonitoringOrder.sentenceType).isEqualTo(mappedValue)
   }
 
@@ -811,8 +837,8 @@ class MonitoringOrderTest : OrderTestBase() {
       dataDictionaryVersion = DataDictionaryVersion.DDV6,
       monitoringConditions = createMonitoringConditions(sentenceType = sentenceType),
     )
-
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "")
+    val featureFlags = FeatureFlags(ddV6CourtMappings = true, dataDictionaryVersion = DataDictionaryVersion.DDV6)
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "", featureFlags)
     assertThat(fmsMonitoringOrder.sentenceType).isEqualTo(mappedValue)
   }
 
@@ -824,7 +850,7 @@ class MonitoringOrderTest : OrderTestBase() {
       variationDetails = createvariationDetails(),
       dataDictionaryVersion = DataDictionaryVersion.DDV6,
     )
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "")
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "", mockFeatureFlags)
     assertThat(fmsMonitoringOrder.subcategory).isEqualTo(mappedValue)
   }
 
@@ -838,7 +864,7 @@ class MonitoringOrderTest : OrderTestBase() {
       ),
       dataDictionaryVersion = DataDictionaryVersion.DDV6,
     )
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "")
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "", mockFeatureFlags)
     assertThat(fmsMonitoringOrder.orderVariationType).isEqualTo(mappedValue)
   }
 
@@ -850,7 +876,7 @@ class MonitoringOrderTest : OrderTestBase() {
       variationDetails = createvariationDetails(),
       dataDictionaryVersion = DataDictionaryVersion.DDV6,
     )
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "")
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "", mockFeatureFlags)
     assertThat(fmsMonitoringOrder.subcategory).isEqualTo("SR11-Removal of devices (bail)")
   }
 
@@ -862,7 +888,7 @@ class MonitoringOrderTest : OrderTestBase() {
       variationDetails = createvariationDetails(),
       dataDictionaryVersion = DataDictionaryVersion.DDV6,
     )
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "")
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "", mockFeatureFlags)
     assertThat(fmsMonitoringOrder.subcategory).isEqualTo("SR11-Removal of devices (bail)")
   }
 
@@ -874,7 +900,7 @@ class MonitoringOrderTest : OrderTestBase() {
       variationDetails = createvariationDetails(),
       dataDictionaryVersion = DataDictionaryVersion.DDV6,
     )
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "")
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "", mockFeatureFlags)
     assertThat(fmsMonitoringOrder.subcategory).isEqualTo("SR21-Revocation monitoring requirements")
   }
 
@@ -889,7 +915,7 @@ class MonitoringOrderTest : OrderTestBase() {
       variationDetails = createvariationDetails(),
       dataDictionaryVersion = DataDictionaryVersion.DDV6,
     )
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "")
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "", mockFeatureFlags)
     assertThat(fmsMonitoringOrder.subcategory).isEqualTo("SR08-Amend monitoring requirements")
   }
 
@@ -904,7 +930,7 @@ class MonitoringOrderTest : OrderTestBase() {
       variationDetails = createvariationDetails(),
       dataDictionaryVersion = DataDictionaryVersion.DDV6,
     )
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "")
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "", mockFeatureFlags)
     assertThat(fmsMonitoringOrder.subcategory).isEqualTo("SR08-Amend monitoring requirements")
   }
 
@@ -920,7 +946,7 @@ class MonitoringOrderTest : OrderTestBase() {
       variationDetails = createvariationDetails(),
       dataDictionaryVersion = DataDictionaryVersion.DDV6,
     )
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "")
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "", mockFeatureFlags)
     assertThat(fmsMonitoringOrder.subcategory).isEqualTo("")
   }
 
@@ -943,7 +969,7 @@ class MonitoringOrderTest : OrderTestBase() {
       variationDetails = createvariationDetails(),
       dataDictionaryVersion = DataDictionaryVersion.DDV6,
     )
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "")
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "", mockFeatureFlags)
     assertThat(fmsMonitoringOrder.orderEnd).isEqualTo(getBritishDateAndTime(eodToday))
   }
 
@@ -966,7 +992,7 @@ class MonitoringOrderTest : OrderTestBase() {
       variationDetails = createvariationDetails(),
       dataDictionaryVersion = DataDictionaryVersion.DDV6,
     )
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "")
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "", mockFeatureFlags)
     assertThat(fmsMonitoringOrder.orderEnd).isEqualTo(getBritishDateAndTime(eodToday))
   }
 
@@ -989,7 +1015,7 @@ class MonitoringOrderTest : OrderTestBase() {
       variationDetails = createvariationDetails(),
       dataDictionaryVersion = DataDictionaryVersion.DDV6,
     )
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "")
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "", mockFeatureFlags)
     assertThat(fmsMonitoringOrder.orderEnd).isEqualTo(getBritishDateAndTime(eodToday))
   }
 
@@ -1012,7 +1038,7 @@ class MonitoringOrderTest : OrderTestBase() {
       variationDetails = createvariationDetails(),
       dataDictionaryVersion = DataDictionaryVersion.DDV6,
     )
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "")
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "", mockFeatureFlags)
     assertThat(fmsMonitoringOrder.orderEnd).isEqualTo(getBritishDateAndTime(eodNextWeek))
   }
 
@@ -1026,7 +1052,7 @@ class MonitoringOrderTest : OrderTestBase() {
       ),
     )
 
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags)
     assertThat(fmsMonitoringOrder.noName).isEqualTo("Probation Board")
   }
 
@@ -1040,7 +1066,7 @@ class MonitoringOrderTest : OrderTestBase() {
       ),
     )
 
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags)
 
     assertThat(fmsMonitoringOrder.noName).isEqualTo("")
   }
@@ -1055,7 +1081,7 @@ class MonitoringOrderTest : OrderTestBase() {
         dapolMissedInError = YesNoUnknown.YES,
       ),
     )
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags)
     assertThat(fmsMonitoringOrder.dapolMissedInError).isEqualTo("true")
   }
 
@@ -1069,7 +1095,7 @@ class MonitoringOrderTest : OrderTestBase() {
         dapolMissedInError = YesNoUnknown.YES,
       ),
     )
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags)
 
     assertThat(fmsMonitoringOrder.dapolMissedInError).isEqualTo("")
   }
@@ -1083,7 +1109,7 @@ class MonitoringOrderTest : OrderTestBase() {
         pilot = Pilot.DOMESTIC_ABUSE_PERPETRATOR_ON_LICENCE_DAPOL,
       ),
     )
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags)
     assertThat(fmsMonitoringOrder.dapolMissedInError).isEqualTo("")
   }
 
@@ -1097,7 +1123,7 @@ class MonitoringOrderTest : OrderTestBase() {
         dapolMissedInError = YesNoUnknown.NO,
       ),
     )
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags)
 
     assertThat(fmsMonitoringOrder.dapolMissedInError).isEqualTo("false")
   }
@@ -1111,7 +1137,7 @@ class MonitoringOrderTest : OrderTestBase() {
         pilot = Pilot.DOMESTIC_ABUSE_PERPETRATOR_ON_LICENCE_DAPOL,
       ),
     )
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags)
     assertThat(fmsMonitoringOrder.dapolMissedInError).isEqualTo("")
   }
 
@@ -1125,7 +1151,7 @@ class MonitoringOrderTest : OrderTestBase() {
       ),
 
     )
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags)
     assertThat(fmsMonitoringOrder.notifyingOrganization).isEqualTo("Home Office")
     assertThat(fmsMonitoringOrder.responsibleOrganization).isEqualTo("Home Office")
     assertThat(fmsMonitoringOrder.roRegion).isEqualTo("UKBA")
@@ -1142,7 +1168,7 @@ class MonitoringOrderTest : OrderTestBase() {
         notifyingOrganisation = NotifyingOrganisationDDv5.FAMILY_COURT.name,
       ),
     )
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags)
 
     assertThat(fmsMonitoringOrder.magistrateCourtCaseReferenceNumber).isEqualTo("CC123")
   }
@@ -1179,7 +1205,7 @@ class MonitoringOrderTest : OrderTestBase() {
       ),
 
     )
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags)
     val condition =
       fmsMonitoringOrder.enforceableCondition?.find { it.condition == "Location Monitoring (Fitted Device)" }
     assertThat(condition).isNotNull()
@@ -1199,7 +1225,7 @@ class MonitoringOrderTest : OrderTestBase() {
       ),
 
     )
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags)
     val condition =
       fmsMonitoringOrder.enforceableCondition?.find { it.condition == "Location Monitoring (using Non-Fitted Device)" }
     assertThat(condition).isNotNull()
@@ -1218,7 +1244,7 @@ class MonitoringOrderTest : OrderTestBase() {
         notifyingOrganisationName = savedValue,
       ),
     )
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags)
 
     assertThat(fmsMonitoringOrder.noName).isEqualTo(mappedValue)
   }
