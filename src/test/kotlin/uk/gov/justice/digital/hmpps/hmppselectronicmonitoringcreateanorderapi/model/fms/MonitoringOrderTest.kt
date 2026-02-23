@@ -234,7 +234,7 @@ class MonitoringOrderTest : OrderTestBase() {
       ),
     )
 
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null)
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags)
 
     assertThat(fmsMonitoringOrder.offence).isEqualTo("")
   }
