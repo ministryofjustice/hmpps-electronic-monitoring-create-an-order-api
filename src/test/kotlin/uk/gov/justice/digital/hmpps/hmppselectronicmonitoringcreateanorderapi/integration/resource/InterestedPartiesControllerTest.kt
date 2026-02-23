@@ -206,18 +206,7 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
             "notifyingOrganisationEmail",
             ValidationErrors.InterestedParties.TEAM_EMAIL_REQUIRED,
           ),
-          ValidationError(
-            "responsibleOfficerName",
-            ValidationErrors.InterestedParties.RESPONSIBLE_OFFICER_FULL_NAME_REQUIRED,
-          ),
-          ValidationError(
-            "responsibleOfficerPhoneNumber",
-            ValidationErrors.InterestedParties.RESPONSIBLE_OFFICER_TELEPHONE_NUMBER_REQUIRED,
-          ),
-          ValidationError(
-            "responsibleOrganisation",
-            ValidationErrors.InterestedParties.RESPONSIBLE_ORGANISATION_REQUIRED,
-          ),
+
         ),
       )
     }
@@ -347,14 +336,6 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
           ValidationError(
             "notifyingOrganisationEmail",
             ValidationErrors.InterestedParties.TEAM_EMAIL_REQUIRED,
-          ),
-          ValidationError(
-            "responsibleOfficerName",
-            ValidationErrors.InterestedParties.RESPONSIBLE_OFFICER_FULL_NAME_REQUIRED,
-          ),
-          ValidationError(
-            "responsibleOfficerPhoneNumber",
-            ValidationErrors.InterestedParties.RESPONSIBLE_OFFICER_TELEPHONE_NUMBER_REQUIRED,
           ),
           ValidationError(
             "responsibleOrganisationRegion",

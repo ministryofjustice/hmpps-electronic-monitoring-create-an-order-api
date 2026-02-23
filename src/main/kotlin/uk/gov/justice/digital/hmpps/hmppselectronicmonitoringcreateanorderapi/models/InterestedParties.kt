@@ -19,20 +19,20 @@ data class InterestedParties(
   @Column(name = "VERSION_ID", nullable = false, unique = true)
   val versionId: UUID,
 
-  @Column(name = "RESPONSIBLE_OFFICER_NAME", nullable = false)
-  var responsibleOfficerName: String,
+  @Column(name = "RESPONSIBLE_OFFICER_NAME", nullable = true)
+  var responsibleOfficerName: String?,
 
   @Column(name = "RESPONSIBLE_OFFICER_PHONE_NUMBER", nullable = true)
   var responsibleOfficerPhoneNumber: String?,
 
   @Column(name = "RESPONSIBLE_ORGANISATION", nullable = true)
-  var responsibleOrganisation: String,
+  var responsibleOrganisation: String?,
 
-  @Column(name = "RESPONSIBLE_ORGANISATION_REGION", nullable = false)
-  var responsibleOrganisationRegion: String,
+  @Column(name = "RESPONSIBLE_ORGANISATION_REGION", nullable = true)
+  var responsibleOrganisationRegion: String?,
 
-  @Column(name = "RESPONSIBLE_ORGANISATION_EMAIL", nullable = false)
-  var responsibleOrganisationEmail: String,
+  @Column(name = "RESPONSIBLE_ORGANISATION_EMAIL", nullable = true)
+  var responsibleOrganisationEmail: String?,
 
   @Column(name = "NOTIFYING_ORGANISATION", nullable = true)
   var notifyingOrganisation: String? = null,
@@ -50,7 +50,6 @@ data class InterestedParties(
 ) {
   val isValid: Boolean
     get() = (
-      !notifyingOrganisation.isNullOrBlank() &&
-        responsibleOrganisation.isNotBlank()
+      !notifyingOrganisation.isNullOrBlank()
       )
 }
