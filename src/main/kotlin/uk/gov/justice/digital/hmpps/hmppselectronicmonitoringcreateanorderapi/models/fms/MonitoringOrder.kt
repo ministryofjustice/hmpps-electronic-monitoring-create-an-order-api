@@ -267,6 +267,7 @@ data class MonitoringOrder(
           val now = LocalDateTime.now()
           ZonedDateTime.of(now.year, now.monthValue, now.dayOfMonth, 23, 59, 0, 0, ZoneId.systemDefault())
         }
+
         "SR21-Revocation monitoring requirements" -> {
           if (monitoringStartDate != null &&
             monitoringStartDate.toLocalDate() < ZonedDateTime.now().toLocalDate() &&
@@ -288,6 +289,7 @@ data class MonitoringOrder(
             )
           }
         }
+
         else -> {
           order.getMonitoringEndDate()
         }
@@ -351,6 +353,14 @@ data class MonitoringOrder(
         monitoringOrder.notifyingOrganization = getNotifyingOrganisation(order)
         monitoringOrder.noName = getNotifyingOrganisationName(order)
         monitoringOrder.noEmail = interestedParties.notifyingOrganisationEmail
+
+        if (featureFlags.ddV6CourtMappings) {
+          val parties = order.interestedParties
+          val hasDetails = !parties?.responsibleOfficerName.isNullOrBlank() &&
+            parties.responsibleOrganisationEmail.isNotBlank()
+
+          monitoringOrder.responsibleOfficerDetailsReceived = if (hasDetails) "Yes" else "No"
+        }
       }
 
       if (order.curfewConditions?.startDate != null) {
