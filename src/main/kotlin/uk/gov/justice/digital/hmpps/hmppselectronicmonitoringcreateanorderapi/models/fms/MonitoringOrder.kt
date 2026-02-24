@@ -357,7 +357,7 @@ data class MonitoringOrder(
         if (featureFlags.ddV6CourtMappings) {
           val parties = order.interestedParties
           val hasDetails = !parties?.responsibleOfficerName.isNullOrBlank() &&
-            parties.responsibleOrganisationEmail.isNotBlank()
+            !parties.responsibleOrganisationEmail.isNullOrBlank()
 
           monitoringOrder.responsibleOfficerDetailsReceived = if (hasDetails) "Yes" else "No"
         }
