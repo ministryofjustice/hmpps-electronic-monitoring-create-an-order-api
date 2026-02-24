@@ -46,7 +46,7 @@ data class InterestedParties(
   @Column(name = "RESPONSIBLE_OFFICER_FIRST_NAME", nullable = true)
   var responsibleOfficerFirstName: String? = null,
 
-  @Column(name = "RESPONSIBLE_OFFICER_Last_NAME", nullable = true)
+  @Column(name = "RESPONSIBLE_OFFICER_LAST_NAME", nullable = true)
   var responsibleOfficerLastName: String? = null,
 
   @Column(name = "RESPONSIBLE_OFFICER_EMAIL", nullable = true)
