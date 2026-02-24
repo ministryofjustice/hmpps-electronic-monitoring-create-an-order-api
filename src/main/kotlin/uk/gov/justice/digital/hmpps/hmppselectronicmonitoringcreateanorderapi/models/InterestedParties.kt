@@ -43,6 +43,15 @@ data class InterestedParties(
   @Column(name = "NOTIFYING_ORGANISATION_EMAIL", nullable = true)
   var notifyingOrganisationEmail: String? = null,
 
+  @Column(name = "RESPONSIBLE_OFFICER_FIRST_NAME", nullable = true)
+  var responsibleOfficerFirstName: String? = null,
+
+  @Column(name = "RESPONSIBLE_OFFICER_Last_NAME", nullable = true)
+  var responsibleOfficerLastName: String? = null,
+
+  @Column(name = "RESPONSIBLE_OFFICER_EMAIL", nullable = true)
+  var responsibleOfficerEmail: String? = null,
+
   @Schema(hidden = true)
   @OneToOne
   @JoinColumn(name = "VERSION_ID", updatable = false, insertable = false)
@@ -52,4 +61,11 @@ data class InterestedParties(
     get() = (
       !notifyingOrganisation.isNullOrBlank()
       )
+
+  fun getResponsibleOfficerFullName(): String? {
+    if (!responsibleOfficerFirstName.isNullOrBlank() && !responsibleOfficerLastName.isNullOrBlank()) {
+      return "$responsibleOfficerFirstName $responsibleOfficerLastName"
+    }
+    return responsibleOfficerName
+  }
 }
