@@ -1231,6 +1231,46 @@ class MonitoringOrderTest : OrderTestBase() {
     assertThat(condition).isNotNull()
   }
 
+  @Test
+  fun `responsible_officer_details_received is yes if responsible officers details are filled`() {
+    val order = createOrder(
+      dataDictionaryVersion = DataDictionaryVersion.DDV6,
+      interestedParties = createInterestedParty(
+        responsibleOfficerName = "officer name",
+        responsibleOfficerPhoneNumber = "01234567890",
+        responsibleOrganisationEmail = "a@b.com",
+      ),
+    )
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(
+      order,
+      null,
+      FeatureFlags(dataDictionaryVersion = DataDictionaryVersion.DDV6, ddV6CourtMappings = true),
+    )
+    val condition =
+      fmsMonitoringOrder.responsibleOfficerDetailsReceived
+    assertThat(condition).isEqualTo("Yes")
+  }
+
+  @Test
+  fun `responsible_officer_details_received is no if responsible officers details are not filled`() {
+    val order = createOrder(
+      dataDictionaryVersion = DataDictionaryVersion.DDV6,
+      interestedParties = createInterestedParty(
+        responsibleOfficerName = "",
+        responsibleOfficerPhoneNumber = "",
+        responsibleOrganisationEmail = "",
+      ),
+    )
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(
+      order,
+      null,
+      FeatureFlags(dataDictionaryVersion = DataDictionaryVersion.DDV6, ddV6CourtMappings = true),
+    )
+    val condition =
+      fmsMonitoringOrder.responsibleOfficerDetailsReceived
+    assertThat(condition).isEqualTo("No")
+  }
+
   private fun assertNotifyingOrgNameMapping(
     savedValue: String,
     mappedValue: String,
