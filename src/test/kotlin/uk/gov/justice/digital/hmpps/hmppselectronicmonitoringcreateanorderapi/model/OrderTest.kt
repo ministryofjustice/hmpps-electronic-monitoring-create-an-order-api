@@ -42,10 +42,10 @@ class OrderTest : OrderTestBase() {
   }
 
   @Test
-  fun `It should return isValid false for order without responsible organisation`() {
+  fun `It should return isValid true for order without responsible organisation`() {
     val order = createValidOrder()
     order.interestedParties!!.responsibleOrganisation = ""
-    assertThat(order.isValid).isFalse()
+    assertThat(order.isValid).isTrue()
   }
 
   @Test

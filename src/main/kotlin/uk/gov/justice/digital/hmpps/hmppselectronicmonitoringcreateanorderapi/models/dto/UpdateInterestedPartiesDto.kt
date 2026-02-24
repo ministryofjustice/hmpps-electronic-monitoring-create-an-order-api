@@ -31,21 +31,17 @@ data class UpdateInterestedPartiesDto(
 
   val notifyingOrganisationName: String = "",
 
-  @field:NotEmpty(message = ValidationErrors.InterestedParties.RESPONSIBLE_OFFICER_FULL_NAME_REQUIRED)
   @field:Size(max = 200, message = ValidationErrors.InterestedParties.RESPONSIBLE_OFFICER_NAME_MAX_LENGTH)
   val responsibleOfficerName: String = "",
 
-  @field:NotEmpty(message = ValidationErrors.InterestedParties.RESPONSIBLE_OFFICER_TELEPHONE_NUMBER_REQUIRED)
   @field:Size(max = 200, message = ValidationErrors.InterestedParties.RESPONSIBLE_OFFICER_TELEPHONE_NUMBER_MAX_LENGTH)
   @field:ValidPhoneNumber
   val responsibleOfficerPhoneNumber: String? = null,
 
-  @field:NotNull(message = ValidationErrors.InterestedParties.RESPONSIBLE_ORGANISATION_REQUIRED)
   val responsibleOrganisation: ResponsibleOrganisation? = null,
 
   val responsibleOrganisationRegion: String = "",
 
-  @field:NotNull(message = ValidationErrors.InterestedParties.RESPONSIBLE_ORGANISATION_EMAIL_REQUIRED)
   @field:Size(max = 200, message = ValidationErrors.InterestedParties.RESPONSIBLE_ORGANISATION_EMAIL_MAX_LENGTH)
   val responsibleOrganisationEmail: String = "",
 ) {
