@@ -655,16 +655,8 @@ data class MonitoringOrder(
       return ProbationDeliveryUnits.from(order.probationDeliveryUnit?.unit)?.value ?: ""
     }
 
-    private fun getOffence(order: Order): String? {
-      val storedOffence = order.installationAndRisk?.offence
-      val offenceEnum = Offence.from(storedOffence)
-
-      return when (offenceEnum) {
-        Offence.NO_OFFENCE_COMMITTED -> ""
-        null -> storedOffence
-        else -> offenceEnum.value
-      }
-    }
+    private fun getOffence(order: Order): String? =
+      Offence.from(order.installationAndRisk?.offence)?.value ?: order.installationAndRisk?.offence
 
     private fun getResponsibleOfficerPhoneNumber(order: Order): String? {
       if (order.interestedParties?.responsibleOfficerPhoneNumber == null) {
