@@ -42,6 +42,12 @@ data class UpdateInterestedPartiesDto(
 
   val responsibleOrganisationRegion: String = "",
 
+  val responsibleOfficerFirstName: String = "",
+
+  val responsibleOfficerLastName: String = "",
+
+  val responsibleOfficerEmail: String = "",
+
   @field:Size(max = 200, message = ValidationErrors.InterestedParties.RESPONSIBLE_ORGANISATION_EMAIL_MAX_LENGTH)
   val responsibleOrganisationEmail: String = "",
 ) {

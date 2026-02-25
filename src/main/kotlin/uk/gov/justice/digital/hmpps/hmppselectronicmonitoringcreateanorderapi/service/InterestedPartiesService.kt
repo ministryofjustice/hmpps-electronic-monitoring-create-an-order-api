@@ -24,6 +24,9 @@ class InterestedPartiesService(private val addressService: AddressService) : Ord
       responsibleOrganisation = updateRecord.responsibleOrganisation.toString(),
       responsibleOrganisationRegion = updateRecord.responsibleOrganisationRegion,
       responsibleOrganisationEmail = updateRecord.responsibleOrganisationEmail,
+      responsibleOfficerFirstName = updateRecord.responsibleOfficerFirstName,
+      responsibleOfficerLastName = updateRecord.responsibleOfficerLastName,
+      responsibleOfficerEmail = updateRecord.responsibleOfficerEmail,
     )
 
     if (newInterestedParties.responsibleOrganisation != order.interestedParties?.responsibleOrganisation ||

@@ -341,8 +341,9 @@ data class MonitoringOrder(
 
       if (order.interestedParties != null) {
         val interestedParties = order.interestedParties!!
-        monitoringOrder.responsibleOfficerName = interestedParties.responsibleOfficerName
+        monitoringOrder.responsibleOfficerName = interestedParties.getResponsibleOfficerFullName()
         monitoringOrder.responsibleOfficerPhone = getResponsibleOfficerPhoneNumber(order)
+        monitoringOrder.responsibleOfficerEmail = interestedParties.responsibleOfficerEmail ?: ""
         monitoringOrder.responsibleOrganization = getResponsibleOrganisation(order)
         monitoringOrder.roRegion = getResponsibleOrganisationRegion(order)
         if (monitoringOrder.responsibleOrganization == ResponsibleOrganisation.PROBATION.value
@@ -356,7 +357,7 @@ data class MonitoringOrder(
 
         if (featureFlags.ddV6CourtMappings) {
           val parties = order.interestedParties
-          val hasDetails = !parties?.responsibleOfficerName.isNullOrBlank() &&
+          val hasDetails = !parties?.getResponsibleOfficerFullName().isNullOrBlank() &&
             !parties.responsibleOrganisationEmail.isNullOrBlank()
 
           monitoringOrder.responsibleOfficerDetailsReceived = if (hasDetails) "Yes" else "No"

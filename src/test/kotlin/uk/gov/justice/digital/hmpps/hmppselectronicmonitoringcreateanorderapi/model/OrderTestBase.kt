@@ -197,6 +197,9 @@ abstract class OrderTestBase {
     responsibleOrganisationRegion: String = "",
     responsibleOfficerName: String = "",
     responsibleOrganisationEmail: String = "",
+    responsibleOfficerFirstName: String? = null,
+    responsibleOfficerLastName: String? = null,
+    responsibleOfficerEmail: String? = null,
   ) = InterestedParties(
     versionId = UUID.randomUUID(),
     notifyingOrganisation = notifyingOrganisation,
@@ -207,6 +210,9 @@ abstract class OrderTestBase {
     responsibleOrganisation = responsibleOrganisation,
     responsibleOfficerName = responsibleOfficerName,
     responsibleOrganisationEmail = responsibleOrganisationEmail,
+    responsibleOfficerFirstName = responsibleOfficerFirstName,
+    responsibleOfficerLastName = responsibleOfficerLastName,
+    responsibleOfficerEmail = responsibleOfficerEmail,
   )
 
   protected fun createProbationDeliveryUnit(unit: String = "") = ProbationDeliveryUnit(

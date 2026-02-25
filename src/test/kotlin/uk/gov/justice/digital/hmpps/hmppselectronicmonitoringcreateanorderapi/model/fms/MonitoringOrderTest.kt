@@ -1284,6 +1284,50 @@ class MonitoringOrderTest : OrderTestBase() {
     assertThat(condition).isEqualTo("No")
   }
 
+  @Test
+  fun `It should map responsible officer name from responsibleOfficerName if full name is populated`() {
+    val order = createOrder(
+      interestedParties = createInterestedParty(
+        responsibleOfficerName = "Mock Name",
+      ),
+    )
+
+    val featureFlags = FeatureFlags(ddV6CourtMappings = true, dataDictionaryVersion = DataDictionaryVersion.DDV6)
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, featureFlags)
+
+    assertThat(fmsMonitoringOrder.responsibleOfficerName).isEqualTo("Mock Name")
+  }
+
+  @Test
+  fun `It should map responsible officer name from first and last name if full is not populated`() {
+    val order = createOrder(
+      interestedParties = createInterestedParty(
+        responsibleOfficerName = "",
+        responsibleOfficerFirstName = "First",
+        responsibleOfficerLastName = "Last",
+      ),
+    )
+
+    val featureFlags = FeatureFlags(ddV6CourtMappings = true, dataDictionaryVersion = DataDictionaryVersion.DDV6)
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, featureFlags)
+
+    assertThat(fmsMonitoringOrder.responsibleOfficerName).isEqualTo("First Last")
+  }
+
+  @Test
+  fun `It should map responsible officer email`() {
+    val order = createOrder(
+      interestedParties = createInterestedParty(
+        responsibleOfficerEmail = "a@b.com",
+      ),
+    )
+
+    val featureFlags = FeatureFlags(ddV6CourtMappings = true, dataDictionaryVersion = DataDictionaryVersion.DDV6)
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, featureFlags)
+
+    assertThat(fmsMonitoringOrder.responsibleOfficerEmail).isEqualTo("a@b.com")
+  }
+
   private fun assertNotifyingOrgNameMapping(
     savedValue: String,
     mappedValue: String,
