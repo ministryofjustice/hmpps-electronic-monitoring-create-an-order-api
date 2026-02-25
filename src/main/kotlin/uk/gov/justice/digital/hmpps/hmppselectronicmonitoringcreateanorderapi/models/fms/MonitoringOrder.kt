@@ -656,8 +656,8 @@ data class MonitoringOrder(
       return ProbationDeliveryUnits.from(order.probationDeliveryUnit?.unit)?.value ?: ""
     }
 
-    private fun getOffence(order: Order): String? = Offence.from(order.installationAndRisk?.offence)?.value
-      ?: order.installationAndRisk?.offence
+    private fun getOffence(order: Order): String? =
+      Offence.from(order.installationAndRisk?.offence)?.value ?: order.installationAndRisk?.offence
 
     private fun getResponsibleOfficerPhoneNumber(order: Order): String? {
       if (order.interestedParties?.responsibleOfficerPhoneNumber == null) {

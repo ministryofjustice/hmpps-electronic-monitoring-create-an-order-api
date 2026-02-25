@@ -227,6 +227,19 @@ class MonitoringOrderTest : OrderTestBase() {
   }
 
   @Test
+  fun `It should map offence as empty string when NO_OFFENCE_COMMITED is selected`() {
+    val order = createOrder(
+      installationAndRisk = createInstallationAndRisk(
+        offence = "NO_OFFENCE_COMMITTED",
+      ),
+    )
+
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags)
+
+    assertThat(fmsMonitoringOrder.offence).isEqualTo("")
+  }
+
+  @Test
   fun `It should map offence additional details to an FMS Monitoring Order`() {
     val order = createOrder(
       installationAndRisk = createInstallationAndRisk(
