@@ -16,6 +16,35 @@ class ContactDetailsControllerTest : IntegrationTestBase() {
   }
 
   @Test
+  fun `Contact details cannot be updated without phone number available flag been set`() {
+    val order = createOrder()
+    val result = webTestClient.put()
+      .uri("/api/orders/${order.id}/contact-details")
+      .contentType(MediaType.APPLICATION_JSON)
+      .body(
+        BodyInserters.fromValue(
+          """
+            {           
+              "contactNumber": "01234567890"
+            }
+          """.trimIndent(),
+        ),
+      )
+      .headers(setAuthorisation("AUTH_ADM"))
+      .exchange()
+      .expectStatus()
+      .isBadRequest
+      .expectBodyList(ValidationError::class.java)
+      .returnResult()
+
+    Assertions.assertThat(result.responseBody).isNotNull
+    Assertions.assertThat(result.responseBody).hasSize(1)
+    Assertions.assertThat(result.responseBody!!).contains(
+      ValidationError("phoneNumberAvailable", "Select Yes if the device wearer has a contact telephone number"),
+    )
+  }
+
+  @Test
   fun `Contact details can be updated with a null contact number`() {
     val order = createOrder()
 
@@ -26,6 +55,7 @@ class ContactDetailsControllerTest : IntegrationTestBase() {
         BodyInserters.fromValue(
           """
             {
+            "phoneNumberAvailable": false,
               "contactNumber": null
             }
           """.trimIndent(),
@@ -48,6 +78,7 @@ class ContactDetailsControllerTest : IntegrationTestBase() {
         BodyInserters.fromValue(
           """
             {
+              "phoneNumberAvailable": true,
               "contactNumber": "01234567890"
             }
           """.trimIndent(),
@@ -69,6 +100,7 @@ class ContactDetailsControllerTest : IntegrationTestBase() {
         BodyInserters.fromValue(
           """
             {
+            "phoneNumberAvailable": true,
               "contactNumber": "abc"
             }
           """.trimIndent(),
@@ -99,6 +131,7 @@ class ContactDetailsControllerTest : IntegrationTestBase() {
         BodyInserters.fromValue(
           """
             {
+            "phoneNumberAvailable": true,
               "contactNumber": "01234567890"
             }
           """.trimIndent(),
@@ -121,6 +154,7 @@ class ContactDetailsControllerTest : IntegrationTestBase() {
         BodyInserters.fromValue(
           """
             {
+            "phoneNumberAvailable": true,
               "contactNumber": "01234567890"
             }
           """.trimIndent(),
