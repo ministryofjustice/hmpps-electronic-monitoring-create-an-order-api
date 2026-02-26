@@ -20,19 +20,19 @@ data class InterestedParties(
   val versionId: UUID,
 
   @Column(name = "RESPONSIBLE_OFFICER_NAME", nullable = true)
-  var responsibleOfficerName: String?,
+  var responsibleOfficerName: String? = null,
 
   @Column(name = "RESPONSIBLE_OFFICER_PHONE_NUMBER", nullable = true)
-  var responsibleOfficerPhoneNumber: String?,
+  var responsibleOfficerPhoneNumber: String? = null,
 
   @Column(name = "RESPONSIBLE_ORGANISATION", nullable = true)
-  var responsibleOrganisation: String?,
+  var responsibleOrganisation: String? = null,
 
   @Column(name = "RESPONSIBLE_ORGANISATION_REGION", nullable = true)
-  var responsibleOrganisationRegion: String?,
+  var responsibleOrganisationRegion: String? = null,
 
   @Column(name = "RESPONSIBLE_ORGANISATION_EMAIL", nullable = true)
-  var responsibleOrganisationEmail: String?,
+  var responsibleOrganisationEmail: String? = null,
 
   @Column(name = "NOTIFYING_ORGANISATION", nullable = true)
   var notifyingOrganisation: String? = null,
