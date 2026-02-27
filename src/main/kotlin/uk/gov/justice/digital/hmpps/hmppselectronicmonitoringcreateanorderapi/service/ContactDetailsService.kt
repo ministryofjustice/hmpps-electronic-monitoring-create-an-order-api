@@ -18,6 +18,7 @@ class ContactDetailsService : OrderSectionServiceBase() {
     order.contactDetails = ContactDetails(
       versionId = order.getCurrentVersion().id,
       contactNumber = updateContactDetailsRecord.contactNumber,
+      phoneNumberAvailable = updateContactDetailsRecord.phoneNumberAvailable,
     )
 
     return orderRepo.save(order).contactDetails!!

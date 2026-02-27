@@ -207,4 +207,8 @@ object ValidationErrors {
     const val DETAILS_REQUIRED: String = "Enter additional information about the offence"
     const val RESPONSE_REQUIRED: String = "Select Yes if there is other information to be aware of about the offence"
   }
+
+  object ContactDetails {
+    const val PHONE_NUMBER_REQUIRED: String = "Select Yes if the device wearer has a contact telephone number"
+  }
 }

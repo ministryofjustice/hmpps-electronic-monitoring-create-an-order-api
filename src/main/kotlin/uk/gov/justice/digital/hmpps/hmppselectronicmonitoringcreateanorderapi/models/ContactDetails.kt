@@ -24,6 +24,9 @@ data class ContactDetails(
   @field:ValidPhoneNumber
   var contactNumber: String? = null,
 
+  @Column(name = "PHONE_NUMBER_AVAILABLE", nullable = true)
+  var phoneNumberAvailable: Boolean? = null,
+
   @Schema(hidden = true)
   @OneToOne
   @JoinColumn(name = "VERSION_ID", updatable = false, insertable = false)
