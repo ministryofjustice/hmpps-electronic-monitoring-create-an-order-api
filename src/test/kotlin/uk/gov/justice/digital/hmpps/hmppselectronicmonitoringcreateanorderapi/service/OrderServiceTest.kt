@@ -810,6 +810,17 @@ class OrderServiceTest {
       }
     }
 
+    @Test
+    fun `It should not clone interested Parties and pdu if current version start date is in the past`() {
+      order.monitoringConditions!!.startDate = ZonedDateTime.now().plusDays(-10)
+      service.createVersion(order.id, order.username, RequestType.VARIATION)
+      argumentCaptor<Order>().apply {
+        verify(repo, times(1)).save(capture())
+        assertThat(firstValue.versions.last().interestedParties).isNull()
+        assertThat(firstValue.versions.last().probationDeliveryUnit).isNull()
+      }
+    }
+
     @Nested
     @DisplayName("Create Version as amend original request")
     inner class CreateVersionAsRequest {
