@@ -21,6 +21,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.specification.OrderListSpecification
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.specification.OrderSearchSpecification
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
+import java.time.ZonedDateTime
 import java.util.*
 
 @Service
@@ -116,16 +117,21 @@ class OrderService(val repo: OrderRepository, val fmsService: FmsService, privat
           currentVersion.curfewReleaseDateConditions?.copy(versionId = this.id, id = UUID.randomUUID())
         installationAndRisk =
           currentVersion.installationAndRisk?.copy(versionId = this.id, id = UUID.randomUUID())
-        interestedParties =
-          currentVersion.interestedParties?.copy(
-            versionId = this.id,
-            id = UUID.randomUUID(),
-            notifyingOrganisation = null,
-            notifyingOrganisationName = null,
-            notifyingOrganisationEmail = null,
-          )
-        probationDeliveryUnit =
-          currentVersion.probationDeliveryUnit?.copy(versionId = this.id, id = UUID.randomUUID())
+
+        // only copy interested parties and PDU if order start date in the future
+        if (order.getMonitoringStartDate() != null && order.getMonitoringStartDate()!! > ZonedDateTime.now()) {
+          interestedParties =
+            currentVersion.interestedParties?.copy(
+              versionId = this.id,
+              id = UUID.randomUUID(),
+              notifyingOrganisation = null,
+              notifyingOrganisationName = null,
+              notifyingOrganisationEmail = null,
+            )
+
+          probationDeliveryUnit =
+            currentVersion.probationDeliveryUnit?.copy(versionId = this.id, id = UUID.randomUUID())
+        }
         monitoringConditions =
           currentVersion.monitoringConditions?.copy(
             versionId = this.id,
