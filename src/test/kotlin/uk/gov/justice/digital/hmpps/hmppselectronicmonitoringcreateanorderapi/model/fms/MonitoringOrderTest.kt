@@ -1328,6 +1328,32 @@ class MonitoringOrderTest : OrderTestBase() {
     assertThat(fmsMonitoringOrder.responsibleOfficerEmail).isEqualTo("a@b.com")
   }
 
+  @Test
+  fun `should block sending responsible org and officer when SR20`() {
+    val order = createOrder(
+      interestedParties = createInterestedParty(
+        responsibleOfficerName = "ro name",
+        responsibleOfficerPhoneNumber = "01234",
+        responsibleOfficerEmail = "a@b.com",
+        responsibleOrganisation = "ro",
+        responsibleOrganisationRegion = "ro region",
+        responsibleOrganisationEmail = "b@a.com",
+      ),
+      monitoringConditions = createMonitoringConditions(startDate = ZonedDateTime.now().minusDays(1)),
+    )
+
+    val featureFlags = FeatureFlags(ddV6CourtMappings = true, dataDictionaryVersion = DataDictionaryVersion.DDV6)
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, featureFlags)
+
+    assertThat(fmsMonitoringOrder.responsibleOfficerName).isEqualTo("")
+    assertThat(fmsMonitoringOrder.responsibleOfficerPhone).isEqualTo("")
+    assertThat(fmsMonitoringOrder.responsibleOfficerEmail).isEqualTo("")
+    assertThat(fmsMonitoringOrder.responsibleOrganization).isEqualTo("")
+    assertThat(fmsMonitoringOrder.roRegion).isEqualTo("")
+    assertThat(fmsMonitoringOrder.roEmail).isEqualTo("")
+    assertThat(fmsMonitoringOrder.responsibleOfficerDetailsReceived).isEqualTo("No")
+  }
+
   private fun assertNotifyingOrgNameMapping(
     savedValue: String,
     mappedValue: String,

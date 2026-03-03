@@ -355,12 +355,24 @@ data class MonitoringOrder(
         monitoringOrder.noName = getNotifyingOrganisationName(order)
         monitoringOrder.noEmail = interestedParties.notifyingOrganisationEmail
 
+        val startDateIsInPast =
+          monitoringStartDate != null && monitoringStartDate.toLocalDate() < ZonedDateTime.now().toLocalDate()
+
         if (featureFlags.ddV6CourtMappings) {
           val parties = order.interestedParties
           val hasDetails = !parties?.getResponsibleOfficerFullName().isNullOrBlank() &&
             !parties.responsibleOrganisationEmail.isNullOrBlank()
 
-          monitoringOrder.responsibleOfficerDetailsReceived = if (hasDetails) "Yes" else "No"
+          monitoringOrder.responsibleOfficerDetailsReceived = if (hasDetails && !startDateIsInPast) "Yes" else "No"
+        }
+
+        if (startDateIsInPast) {
+          monitoringOrder.responsibleOfficerName = ""
+          monitoringOrder.responsibleOfficerPhone = ""
+          monitoringOrder.responsibleOfficerEmail = ""
+          monitoringOrder.responsibleOrganization = ""
+          monitoringOrder.roRegion = ""
+          monitoringOrder.roEmail = ""
         }
       }
 
