@@ -1331,7 +1331,8 @@ class MonitoringOrderTest : OrderTestBase() {
   @Test
   fun `should block sending responsible org and officer when SR20`() {
     val order = createOrder(
-      type = RequestType.REJECTED,
+      type = RequestType.VARIATION,
+      variationDetails = createvariationDetails(),
       interestedParties = createInterestedParty(
         responsibleOfficerName = "ro name",
         responsibleOfficerPhoneNumber = "01234",

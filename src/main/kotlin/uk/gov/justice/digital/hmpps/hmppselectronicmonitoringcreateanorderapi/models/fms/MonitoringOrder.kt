@@ -343,7 +343,7 @@ data class MonitoringOrder(
       order.interestedParties?.let { parties ->
         val startDateIsInPast =
           monitoringStartDate != null && (monitoringStartDate.toLocalDate() < ZonedDateTime.now().toLocalDate())
-        val orderIsVariation = order.type != RequestType.REQUEST
+        val orderIsVariation = RequestType.VARIATION_TYPES.contains(order.type)
         val variationInPast = startDateIsInPast && orderIsVariation
 
         monitoringOrder.apply {
