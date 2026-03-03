@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.config.FeatureFlags
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Address
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewTimeTable
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InterestedParties
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
@@ -339,40 +340,45 @@ data class MonitoringOrder(
         "No"
       }
 
-      if (order.interestedParties != null) {
-        val interestedParties = order.interestedParties!!
-        monitoringOrder.responsibleOfficerName = interestedParties.getResponsibleOfficerFullName()
-        monitoringOrder.responsibleOfficerPhone = getResponsibleOfficerPhoneNumber(order)
-        monitoringOrder.responsibleOfficerEmail = interestedParties.responsibleOfficerEmail ?: ""
-        monitoringOrder.responsibleOrganization = getResponsibleOrganisation(order)
-        monitoringOrder.roRegion = getResponsibleOrganisationRegion(order)
-        if (monitoringOrder.responsibleOrganization == ResponsibleOrganisation.PROBATION.value
-        ) {
-          monitoringOrder.pduResponsible = getProbationDeliveryUnit(order)
-        }
-        monitoringOrder.roEmail = interestedParties.responsibleOrganisationEmail
-        monitoringOrder.notifyingOrganization = getNotifyingOrganisation(order)
-        monitoringOrder.noName = getNotifyingOrganisationName(order)
-        monitoringOrder.noEmail = interestedParties.notifyingOrganisationEmail
-
+      order.interestedParties?.let { parties ->
         val startDateIsInPast =
-          monitoringStartDate != null && monitoringStartDate.toLocalDate() < ZonedDateTime.now().toLocalDate()
+          monitoringStartDate != null && (monitoringStartDate.toLocalDate() < ZonedDateTime.now().toLocalDate())
+        val orderIsVariation = order.type != RequestType.REQUEST
+        val variationInPast = startDateIsInPast && orderIsVariation
 
-        if (featureFlags.ddV6CourtMappings) {
-          val parties = order.interestedParties
-          val hasDetails = !parties?.getResponsibleOfficerFullName().isNullOrBlank() &&
-            !parties.responsibleOrganisationEmail.isNullOrBlank()
+        monitoringOrder.apply {
+          responsibleOfficerName = if (variationInPast) "" else parties.getResponsibleOfficerFullName()
+          responsibleOfficerPhone = if (variationInPast) "" else getResponsibleOfficerPhoneNumber(parties)
+          responsibleOfficerEmail = if (variationInPast) "" else parties.responsibleOfficerEmail ?: ""
+          responsibleOrganization = if (variationInPast) "" else getResponsibleOrganisation(parties)
+          roRegion = if (variationInPast) "" else getResponsibleOrganisationRegion(parties)
+          if (responsibleOrganization == ResponsibleOrganisation.PROBATION.value
+          ) {
+            pduResponsible = if (variationInPast) "" else getProbationDeliveryUnit(order)
+          }
+          roEmail = if (variationInPast) "" else parties.responsibleOrganisationEmail
 
-          monitoringOrder.responsibleOfficerDetailsReceived = if (hasDetails && !startDateIsInPast) "Yes" else "No"
-        }
+          notifyingOrganization = getNotifyingOrganisation(parties, order.dataDictionaryVersion)
+          noName = getNotifyingOrganisationName(parties, order.dataDictionaryVersion)
+          noEmail = parties.notifyingOrganisationEmail
 
-        if (startDateIsInPast) {
-          monitoringOrder.responsibleOfficerName = ""
-          monitoringOrder.responsibleOfficerPhone = ""
-          monitoringOrder.responsibleOfficerEmail = ""
-          monitoringOrder.responsibleOrganization = ""
-          monitoringOrder.roRegion = ""
-          monitoringOrder.roEmail = ""
+          if (featureFlags.ddV6CourtMappings) {
+            val parties = order.interestedParties
+            val hasDetails = !parties?.getResponsibleOfficerFullName().isNullOrBlank() &&
+              !parties.responsibleOrganisationEmail.isNullOrBlank()
+
+            responsibleOfficerDetailsReceived =
+              if (hasDetails && (!variationInPast)) "Yes" else "No"
+          }
+
+          if (startDateIsInPast && orderIsVariation) {
+            responsibleOfficerName = ""
+            responsibleOfficerPhone = ""
+            responsibleOfficerEmail = ""
+            responsibleOrganization = ""
+            roRegion = ""
+            roEmail = ""
+          }
         }
       }
 
@@ -603,10 +609,13 @@ data class MonitoringOrder(
       return schedules
     }
 
-    private fun getNotifyingOrganisation(order: Order): String {
-      val notifyingOrganisation = order.interestedParties?.notifyingOrganisation
+    private fun getNotifyingOrganisation(
+      interestedParties: InterestedParties,
+      dataDictionaryVersion: DataDictionaryVersion,
+    ): String {
+      val notifyingOrganisation = interestedParties.notifyingOrganisation
       val resolvedNotifyingOrganisation =
-        when (order.dataDictionaryVersion) {
+        when (dataDictionaryVersion) {
           DataDictionaryVersion.DDV4 -> NotifyingOrganisation.from(notifyingOrganisation)?.value
           else -> NotifyingOrganisationDDv5.from(notifyingOrganisation)?.value
         }
@@ -614,50 +623,53 @@ data class MonitoringOrder(
       return resolvedNotifyingOrganisation ?: notifyingOrganisation ?: "N/A"
     }
 
-    private fun getNotifyingOrganisationName(order: Order): String {
-      if (order.dataDictionaryVersion === DataDictionaryVersion.DDV4) {
-        return Prison.from(order.interestedParties?.notifyingOrganisationName)?.value
-          ?: CrownCourt.from(order.interestedParties?.notifyingOrganisationName)?.value
-          ?: MagistrateCourt.from(order.interestedParties?.notifyingOrganisationName)?.value
-          ?: order.interestedParties?.notifyingOrganisationName
+    private fun getNotifyingOrganisationName(
+      interestedParties: InterestedParties,
+      dataDictionaryVersion: DataDictionaryVersion,
+    ): String {
+      if (dataDictionaryVersion === DataDictionaryVersion.DDV4) {
+        return Prison.from(interestedParties.notifyingOrganisationName)?.value
+          ?: CrownCourt.from(interestedParties.notifyingOrganisationName)?.value
+          ?: MagistrateCourt.from(interestedParties.notifyingOrganisationName)?.value
+          ?: interestedParties.notifyingOrganisationName
           ?: ""
       }
-      val notifyOrg = order.interestedParties?.notifyingOrganisation
+      val notifyOrg = interestedParties.notifyingOrganisation
 
       if (notifyOrg == NotifyingOrganisationDDv5.PROBATION.name) {
         return "Probation Board"
       }
 
-      return CivilCountyCourtDDv5.from(order.interestedParties?.notifyingOrganisationName)?.value
-        ?: CrownCourtDDv5.from(order.interestedParties?.notifyingOrganisationName)?.value
-        ?: FamilyCourtDDv5.from(order.interestedParties?.notifyingOrganisationName)?.value
-        ?: MagistrateCourtDDv5.from(order.interestedParties?.notifyingOrganisationName)?.value
-        ?: MilitaryCourtDDv5.from(order.interestedParties?.notifyingOrganisationName)?.value
-        ?: PrisonDDv5.from(order.interestedParties?.notifyingOrganisationName)?.value
-        ?: YouthCourtDDv5.from(order.interestedParties?.notifyingOrganisationName)?.value
-        ?: YouthCustodyServiceRegionDDv5.from(order.interestedParties?.notifyingOrganisationName)?.value
-        ?: YouthCustodyServiceRegionDDv6.from(order.interestedParties?.notifyingOrganisationName)?.value
-        ?: order.interestedParties?.notifyingOrganisationName
+      return CivilCountyCourtDDv5.from(interestedParties.notifyingOrganisationName)?.value
+        ?: CrownCourtDDv5.from(interestedParties.notifyingOrganisationName)?.value
+        ?: FamilyCourtDDv5.from(interestedParties.notifyingOrganisationName)?.value
+        ?: MagistrateCourtDDv5.from(interestedParties.notifyingOrganisationName)?.value
+        ?: MilitaryCourtDDv5.from(interestedParties.notifyingOrganisationName)?.value
+        ?: PrisonDDv5.from(interestedParties.notifyingOrganisationName)?.value
+        ?: YouthCourtDDv5.from(interestedParties.notifyingOrganisationName)?.value
+        ?: YouthCustodyServiceRegionDDv5.from(interestedParties.notifyingOrganisationName)?.value
+        ?: YouthCustodyServiceRegionDDv6.from(interestedParties.notifyingOrganisationName)?.value
+        ?: interestedParties.notifyingOrganisationName
         ?: ""
     }
 
-    private fun getResponsibleOrganisation(order: Order): String =
-      ResponsibleOrganisation.from(order.interestedParties?.responsibleOrganisation)?.value
-        ?: order.interestedParties?.responsibleOrganisation
+    private fun getResponsibleOrganisation(interestedParties: InterestedParties): String =
+      ResponsibleOrganisation.from(interestedParties.responsibleOrganisation)?.value
+        ?: interestedParties.responsibleOrganisation
         ?: "N/A"
 
-    private fun getResponsibleOrganisationRegion(order: Order): String {
-      if (ResponsibleOrganisation.from(order.interestedParties?.responsibleOrganisation) ==
+    private fun getResponsibleOrganisationRegion(interestedParties: InterestedParties): String {
+      if (ResponsibleOrganisation.from(interestedParties.responsibleOrganisation) ==
         ResponsibleOrganisation.HOME_OFFICE
       ) {
         return "UKBA"
       }
 
-      return ProbationServiceRegion.from(order.interestedParties?.responsibleOrganisationRegion)?.value
-        ?: YouthJusticeServiceRegions.from(order.interestedParties?.responsibleOrganisationRegion)?.value
-        ?: PoliceAreas.from(order.interestedParties?.responsibleOrganisationRegion)?.value
-        ?: PoliceAreasDDv6.from(order.interestedParties?.responsibleOrganisationRegion)?.value
-        ?: order.interestedParties?.responsibleOrganisationRegion
+      return ProbationServiceRegion.from(interestedParties.responsibleOrganisationRegion)?.value
+        ?: YouthJusticeServiceRegions.from(interestedParties.responsibleOrganisationRegion)?.value
+        ?: PoliceAreas.from(interestedParties.responsibleOrganisationRegion)?.value
+        ?: PoliceAreasDDv6.from(interestedParties.responsibleOrganisationRegion)?.value
+        ?: interestedParties.responsibleOrganisationRegion
         ?: ""
     }
 
@@ -671,12 +683,12 @@ data class MonitoringOrder(
     private fun getOffence(order: Order): String? =
       Offence.from(order.installationAndRisk?.offence)?.value ?: order.installationAndRisk?.offence
 
-    private fun getResponsibleOfficerPhoneNumber(order: Order): String? {
-      if (order.interestedParties?.responsibleOfficerPhoneNumber == null) {
+    private fun getResponsibleOfficerPhoneNumber(interestedParties: InterestedParties): String? {
+      if (interestedParties.responsibleOfficerPhoneNumber == null) {
         return null
       }
       return PhoneNumberFormatter.formatAsInternationalDirectDialingNumber(
-        order.interestedParties!!.responsibleOfficerPhoneNumber!!,
+        interestedParties.responsibleOfficerPhoneNumber.toString(),
       )
     }
 
