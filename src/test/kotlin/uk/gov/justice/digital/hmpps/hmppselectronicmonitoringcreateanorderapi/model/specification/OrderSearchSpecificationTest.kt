@@ -52,6 +52,38 @@ class OrderSearchSpecificationTest {
     assertThat(results[0].id).isEqualTo(orderWithTag.id)
   }
 
+  @Test
+  fun `only filter by tags when given`() {
+    val orderWithTag = createOrder(tags = "PRISON,YOUTH")
+    val orderWithoutTag = createOrder(tags = "PROBATION")
+    val orderWithNoTag = createOrder(tags = "")
+
+    orderRepository.saveAll(listOf(orderWithTag, orderWithoutTag, orderWithNoTag))
+
+    val criteria = OrderSearchCriteria(searchTerm = "Joe")
+    val spec = OrderSearchSpecification(criteria)
+
+    val results = orderRepository.findAll(spec)
+
+    assertThat(results).hasSize(3)
+  }
+
+  @Test
+  fun `should filter orders by multiple tags`() {
+    val orderWithTag = createOrder(tags = "PRISON,YOUTH")
+    val orderWithoutTag = createOrder(tags = "PROBATION")
+    val orderWithNoTag = createOrder(tags = "")
+
+    orderRepository.saveAll(listOf(orderWithTag, orderWithoutTag, orderWithNoTag))
+
+    val criteria = OrderSearchCriteria(searchTerm = "Joe", tags = listOf("PRISON", "YOUTH"))
+    val spec = OrderSearchSpecification(criteria)
+
+    val results = orderRepository.findAll(spec)
+
+    assertThat(results).hasSize(1)
+  }
+
   private fun createOrder(tags: String?): Order {
     val orderId = UUID.randomUUID()
     val versionId = UUID.randomUUID()
