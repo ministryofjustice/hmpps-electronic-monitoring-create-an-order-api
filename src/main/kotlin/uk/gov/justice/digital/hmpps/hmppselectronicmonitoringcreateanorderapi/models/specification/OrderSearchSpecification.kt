@@ -85,6 +85,9 @@ class OrderSearchSpecification(private val criteria: OrderSearchCriteria) : Spec
     isLikePIN(deviceWearer, criteriaBuilder, keyword),
   )
 
+  private fun isTagMatch(criteriaBuilder: CriteriaBuilder, version: Join<Order, OrderVersion>, tag: String): Predicate =
+    criteriaBuilder.like(version.get(OrderVersion::tags.name), "%$tag%")
+
   override fun toPredicate(
     root: Root<Order>,
     @Nullable query: CriteriaQuery<*>?,
@@ -101,13 +104,14 @@ class OrderSearchSpecification(private val criteria: OrderSearchCriteria) : Spec
 
     val normalizedKeyword = this.criteria.searchTerm.trim().replace(Regex("\\s+"), " ").lowercase()
 
-    val predicates =
+    val searchTermPredicates =
       normalizedKeyword.split(" ").map { keywordPart -> isMatch(deviceWearer, criteriaBuilder, keywordPart) }
+    val tagPredicates = this.criteria.tags.map { tag -> isTagMatch(criteriaBuilder, version, tag) }
 
     return criteriaBuilder.and(
       criteriaBuilder.equal(version.get<Int>("versionId"), subquery),
       criteriaBuilder.equal(version.get<String>("status"), OrderStatus.SUBMITTED),
-      criteriaBuilder.and(*predicates.toTypedArray()),
+      criteriaBuilder.and(*searchTermPredicates.toTypedArray(), *tagPredicates.toTypedArray()),
     )
   }
 }
