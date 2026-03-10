@@ -61,7 +61,7 @@ class OrderSearchSpecificationTest {
 
     orderRepository.saveAll(listOf(orderWithTag, orderWithoutTag, orderWithNoTag))
 
-    val filter = TagFilter(anyOf = listOf("PRISON"))
+    val filter = TagFilter(tagGroups = listOf(listOf("PRISON")))
     val criteria = OrderSearchCriteria(searchTerm = "Joe", tagFilter = filter)
     val spec = OrderSearchSpecification(criteria)
 
@@ -79,7 +79,7 @@ class OrderSearchSpecificationTest {
 
     orderRepository.saveAll(listOf(orderWithTag, orderWithoutTag, orderWithNoTag))
 
-    val filter = TagFilter(anyOf = listOf("PRISON", "Probation"))
+    val filter = TagFilter(tagGroups = listOf(listOf("PRISON"), listOf("Probation")))
     val criteria = OrderSearchCriteria(searchTerm = "Joe", tagFilter = filter)
     val spec = OrderSearchSpecification(criteria)
 
@@ -96,7 +96,7 @@ class OrderSearchSpecificationTest {
 
     orderRepository.saveAll(listOf(orderWithPrisonA, orderWithPrisonB, orderWithProbation))
 
-    val filter = TagFilter(allOf = listOf("PRISON", "PRISON A"))
+    val filter = TagFilter(tagGroups = listOf(listOf("PRISON", "PRISON A")))
     val criteria = OrderSearchCriteria(searchTerm = "Joe", tagFilter = filter)
     val spec = OrderSearchSpecification(criteria)
 
@@ -131,13 +131,41 @@ class OrderSearchSpecificationTest {
 
     orderRepository.saveAll(listOf(orderWithPrison, orderWithExtraPrison, orderWithProbation))
 
-    val filter = TagFilter(anyOf = listOf("PRISON"))
+    val filter = TagFilter(tagGroups = listOf(listOf("PRISON")))
     val criteria = OrderSearchCriteria(searchTerm = "Joe", tagFilter = filter)
     val spec = OrderSearchSpecification(criteria)
 
     val results = orderRepository.findAll(spec)
 
     assertThat(results).hasSize(1)
+  }
+
+  @Test
+  fun `can get all of one tag and filter based on others`() {
+    val orderWithYCSA = createOrder(tags = "PRISON,NAME A,YOUTH YCS")
+    val orderWithYCSB = createOrder(tags = "PRISON,NAME B,YOUTH YCS")
+    val orderWithPrisonC = createOrder(tags = "PRISON,NAME C")
+    val orderWithPrisonD = createOrder(tags = "PRISON,NAME D")
+    val orderWithProbationC = createOrder(tags = "Probation,NAME D")
+
+    orderRepository.saveAll(
+      listOf(
+        orderWithYCSA,
+        orderWithYCSB,
+        orderWithPrisonC,
+        orderWithPrisonD,
+        orderWithProbationC,
+      ),
+    )
+
+    // Should get only prison C, but all of the YOUTH YCS orders
+    val filter = TagFilter(tagGroups = listOf(listOf("PRISON", "NAME C"), listOf("YOUTH YCS")))
+    val criteria = OrderSearchCriteria(searchTerm = "Joe", tagFilter = filter)
+    val spec = OrderSearchSpecification(criteria)
+
+    val results = orderRepository.findAll(spec)
+
+    assertThat(results).hasSize(3)
   }
 
   private fun createOrder(tags: String?): Order {

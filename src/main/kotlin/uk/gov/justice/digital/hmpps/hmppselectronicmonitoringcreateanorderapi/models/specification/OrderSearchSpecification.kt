@@ -120,20 +120,20 @@ class OrderSearchSpecification(private val criteria: OrderSearchCriteria) : Spec
       predicates.add(criteriaBuilder.and(*searchTermPredicates.toTypedArray()))
     }
 
-    // Filter orders based on tags
     val filter = this.criteria.tagFilter
-    if (filter.anyOf.isNotEmpty()) {
-      val tagPredicates = filter.anyOf.map { tag -> hasTag(criteriaBuilder, version, tag) }
-      predicates.add(criteriaBuilder.or(*tagPredicates.toTypedArray()))
+    // OR logic between groups of ANDs
+    if (filter.tagGroups.isNotEmpty()) {
+      val groupPredicates =
+        filter.tagGroups.map { group ->
+          val groupRequirement = group.map { tag -> hasTag(criteriaBuilder, version, tag) }
+          criteriaBuilder.and(*groupRequirement.toTypedArray())
+        }
+      predicates.add(criteriaBuilder.or(*groupPredicates.toTypedArray()))
     }
-    if (filter.allOf.isNotEmpty()) {
-      val tagPredicates = filter.allOf.map { tag -> hasTag(criteriaBuilder, version, tag) }
-      predicates.add(criteriaBuilder.and(*tagPredicates.toTypedArray()))
-    }
-    if (filter.noneOf.isNotEmpty()) {
-      val notTagPredicates = filter.noneOf.map { tag -> criteriaBuilder.not(hasTag(criteriaBuilder, version, tag)) }
 
-      val notMatches = criteriaBuilder.and(*notTagPredicates.toTypedArray())
+    if (filter.noneOf.isNotEmpty()) {
+      val excludeTagPredicates = filter.noneOf.map { tag -> criteriaBuilder.not(hasTag(criteriaBuilder, version, tag)) }
+      val notMatches = criteriaBuilder.and(*excludeTagPredicates.toTypedArray())
       predicates.add(criteriaBuilder.or(notMatches, criteriaBuilder.isNull(version.get<String>("tags"))))
     }
 
