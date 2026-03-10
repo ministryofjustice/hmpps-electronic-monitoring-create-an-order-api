@@ -628,7 +628,7 @@ data class MonitoringOrder(
       dataDictionaryVersion: DataDictionaryVersion,
     ): String {
       if (dataDictionaryVersion === DataDictionaryVersion.DDV4) {
-        return Prison.from(interestedParties.notifyingOrganisationName)?.value
+        return Prison.from(interestedParties.notifyingOrganisationName)?.prisonName
           ?: CrownCourt.from(interestedParties.notifyingOrganisationName)?.value
           ?: MagistrateCourt.from(interestedParties.notifyingOrganisationName)?.value
           ?: interestedParties.notifyingOrganisationName
