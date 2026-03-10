@@ -9,6 +9,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ArgumentsSource
 import org.junit.jupiter.params.provider.ValueSource
@@ -21,6 +22,8 @@ import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.argumentsProvider.AmendOrderArgumentsProvider
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.HmppsDocumentManagementApiExtension.Companion.documentApi
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.ManageUserApiExtension
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.ManageUserApiExtension.Companion.manageUserApi
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.SercoAuthMockServerExtension.Companion.sercoAuthApi
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.SercoMockApiExtension.Companion.sercoApi
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AdditionalDocument
@@ -35,6 +38,8 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ServiceRequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.SubmissionStatus
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.hmpps.HmppsCaseload
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.hmpps.HmppsUserCaseloadResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsAttachmentResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsAttachmentResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsAttachmentSubmissionResult
@@ -55,6 +60,10 @@ import java.util.*
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.DeviceWearer as FmsDeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.ErrorResponse as FmsErrorResponseDetails
 
+@ExtendWith(
+
+  ManageUserApiExtension::class,
+)
 class OrderControllerTest : IntegrationTestBase() {
 
   @Autowired
@@ -75,6 +84,15 @@ class OrderControllerTest : IntegrationTestBase() {
   fun setup() {
     repo.deleteAll()
     fmsResultRepository.deleteAll()
+
+    val mockUserCohort = HmppsUserCaseloadResponse(
+      "mockUser",
+      true,
+      "mock account",
+      HmppsCaseload("ABC", "HMP ABC"),
+      emptyList<HmppsCaseload>(),
+    )
+    manageUserApi.stubUserActiveCaseLoad(mockUserCohort)
   }
 
   @Nested
@@ -705,6 +723,62 @@ class OrderControllerTest : IntegrationTestBase() {
         .isOk
         .expectBodyList(OrderDto::class.java)
         .hasSize(1)
+    }
+
+    @Test
+    fun `should return orders in cohort`() {
+      val order = createStoredOrder()
+
+      order.deviceWearer = DeviceWearer(
+        versionId = order.versionId,
+        firstName = "John",
+        lastName = "Smith",
+        adultAtTimeOfInstallation = false,
+        sex = "MALE",
+        gender = "MALE",
+        dateOfBirth = ZonedDateTime.now(),
+        interpreterRequired = true,
+      )
+      order.tags = "PRISON"
+      order.status = OrderStatus.SUBMITTED
+      repo.save(order)
+
+      webTestClient.get()
+        .uri("/api/orders/search?searchTerm=john")
+        .headers(setAuthorisation("AUTH_ADM", roles = listOf("ROLE_EM_CEMO__CREATE_ORDER", "ROLE_PRISON")))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBodyList<OrderDto>()
+        .hasSize(1)
+    }
+
+    @Test
+    fun `should not return orders not in cohort`() {
+      val order = createStoredOrder()
+
+      order.deviceWearer = DeviceWearer(
+        versionId = order.versionId,
+        firstName = "John",
+        lastName = "Smith",
+        adultAtTimeOfInstallation = false,
+        sex = "MALE",
+        gender = "MALE",
+        dateOfBirth = ZonedDateTime.now(),
+        interpreterRequired = true,
+      )
+      order.tags = "PROBATION"
+      order.status = OrderStatus.SUBMITTED
+      repo.save(order)
+
+      webTestClient.get()
+        .uri("/api/orders/search?searchTerm=john")
+        .headers(setAuthorisation("AUTH_ADM", roles = listOf("ROLE_EM_CEMO__CREATE_ORDER", "ROLE_PRISON")))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBodyList<OrderDto>()
+        .hasSize(0)
     }
 
     @Test

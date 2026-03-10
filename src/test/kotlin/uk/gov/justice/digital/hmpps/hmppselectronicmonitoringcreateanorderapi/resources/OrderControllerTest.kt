@@ -8,13 +8,14 @@ import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.springframework.boot.test.autoconfigure.json.JsonTest
-import org.springframework.security.core.Authentication
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken
 import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.config.AuthAwareAuthenticationToken
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.Cohort
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.UserCohort
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.OrderListCriteria
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.OrderSearchCriteria
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.CreateOrderDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
@@ -22,21 +23,23 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.OrderController
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.OrderService
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.UserCohortService
 import java.util.*
 
 @ActiveProfiles("test")
 @JsonTest
 class OrderControllerTest {
   private val orderService: OrderService = mock()
-  private val controller = OrderController(orderService)
-  private lateinit var authentication: Authentication
+  private val userCohortService: UserCohortService = mock()
+  private val controller = OrderController(orderService, userCohortService)
+  private lateinit var authentication: JwtAuthenticationToken
   private lateinit var submitAuthentication: AuthAwareAuthenticationToken
 
   private val mockDictionaryVersion = DataDictionaryVersion.DDV4
 
   @BeforeEach
   fun setup() {
-    authentication = mock(Authentication::class.java)
+    authentication = mock(JwtAuthenticationToken::class.java)
     submitAuthentication = mock(AuthAwareAuthenticationToken::class.java)
   }
 
@@ -301,7 +304,9 @@ class OrderControllerTest {
       ),
     )
 
-    `when`(orderService.searchOrders(OrderSearchCriteria(searchTerm = "Bob Smith"))).thenReturn(orders)
+    val mockUserCohort = UserCohort(Cohort.PRISON)
+    `when`(userCohortService.getUserCohort(authentication)).thenReturn(mockUserCohort)
+    `when`(orderService.searchOrders("Bob Smith", mockUserCohort)).thenReturn(orders)
     `when`(authentication.name).thenReturn("mockUser")
 
     val result = controller.searchOrders("Bob Smith", authentication)

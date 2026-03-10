@@ -10,6 +10,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.MonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.UserCohort
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.OrderListCriteria
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.OrderSearchCriteria
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.CreateOrderDto
@@ -262,9 +263,15 @@ class OrderService(val repo: OrderRepository, val fmsService: FmsService, privat
     OrderListSpecification(searchCriteria),
   )
 
-  fun searchOrders(searchCriteria: OrderSearchCriteria): List<Order> = repo.findAll(
-    OrderSearchSpecification(searchCriteria),
-  )
+  fun searchOrders(searchTerm: String, userCohort: UserCohort): List<Order> {
+    val searchTags = userCohort.accessibleTags()
+
+    val searchCriteria = OrderSearchCriteria(searchTerm, searchTags)
+
+    return repo.findAll(
+      OrderSearchSpecification(searchCriteria),
+    )
+  }
 
   fun getVersionInformation(orderId: UUID): List<VersionInformationDTO> {
     val order = repo.findById(orderId).orElseThrow {
