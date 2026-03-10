@@ -41,7 +41,7 @@ class UserCohortControllerTest : IntegrationTestBase() {
       .returnResult()
 
     Assertions.assertThat(result.responseBody?.cohort).isEqualTo(Cohort.PRISON)
-    Assertions.assertThat(result.responseBody?.activeCaseLoad).isEqualTo("HMP ABC")
+    Assertions.assertThat(result.responseBody?.activeCaseLoadName).isEqualTo("HMP ABC")
   }
 
   @Test

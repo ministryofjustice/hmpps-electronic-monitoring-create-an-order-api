@@ -44,7 +44,7 @@ class UserCohortServiceTest {
     val result = service.getUserCohort(authentication)
 
     Assertions.assertThat(result.cohort).isEqualTo(Cohort.PRISON)
-    Assertions.assertThat(result.activeCaseLoad).isEqualTo("HMP ABC")
+    Assertions.assertThat(result.activeCaseLoadName).isEqualTo("HMP ABC")
   }
 
   @Test

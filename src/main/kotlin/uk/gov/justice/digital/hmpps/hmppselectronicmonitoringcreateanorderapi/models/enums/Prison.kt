@@ -143,5 +143,7 @@ enum class Prison(val id: String, val prisonName: String) {
     fun from(value: String?): Prison? = Prison.entries.firstOrNull {
       it.name == value
     }
+
+    fun fromId(id: String): Prison? = entries.find { it.id.equals(id, ignoreCase = true) }
   }
 }

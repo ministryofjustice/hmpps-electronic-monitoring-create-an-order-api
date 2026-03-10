@@ -13,7 +13,7 @@ class UserCohortService(private val webClient: ManageUserApi) {
   fun getUserCohort(authentication: JwtAuthenticationToken): UserCohort {
     if (authentication.authorities.any { it.authority == "ROLE_PRISON" }) {
       val activeCaseLoad = webClient.getUserActiveCaseload(authentication.token)
-      return UserCohort(Cohort.PRISON, activeCaseLoad?.name)
+      return UserCohort(Cohort.PRISON, activeCaseLoad?.name, activeCaseLoad?.id)
     } else if (authentication.authorities.any { it.authority == "ROLE_PROBATION" }) {
       return UserCohort(Cohort.PROBATION)
     }
