@@ -264,7 +264,7 @@ class OrderService(val repo: OrderRepository, val fmsService: FmsService, privat
   )
 
   fun searchOrders(searchTerm: String, userCohort: UserCohort): List<Order> {
-    val searchTags = userCohort.accessibleTags()
+    val searchTags = userCohort.cohortTags()
 
     val searchCriteria = OrderSearchCriteria(searchTerm, searchTags)
 
