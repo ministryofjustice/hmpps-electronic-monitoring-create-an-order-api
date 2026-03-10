@@ -10,6 +10,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.OrderSearchCriteria
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.TagFilter
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
@@ -36,14 +37,32 @@ class OrderSearchSpecificationTest {
   }
 
   @Test
-  fun `should filter orders by tags`() {
+  fun `do not filter when no filter is empty`() {
     val orderWithTag = createOrder(tags = "PRISON,YOUTH")
     val orderWithoutTag = createOrder(tags = "PROBATION")
     val orderWithNoTag = createOrder(tags = "")
 
     orderRepository.saveAll(listOf(orderWithTag, orderWithoutTag, orderWithNoTag))
 
-    val criteria = OrderSearchCriteria(searchTerm = "Joe", tags = listOf("PRISON"))
+    val filter = TagFilter()
+    val criteria = OrderSearchCriteria(searchTerm = "Joe", filter)
+    val spec = OrderSearchSpecification(criteria)
+
+    val results = orderRepository.findAll(spec)
+
+    assertThat(results).hasSize(3)
+  }
+
+  @Test
+  fun `can filter by any tag`() {
+    val orderWithTag = createOrder(tags = "PRISON,YOUTH")
+    val orderWithoutTag = createOrder(tags = "PROBATION")
+    val orderWithNoTag = createOrder(tags = "")
+
+    orderRepository.saveAll(listOf(orderWithTag, orderWithoutTag, orderWithNoTag))
+
+    val filter = TagFilter(anyOf = listOf("PRISON"))
+    val criteria = OrderSearchCriteria(searchTerm = "Joe", tagFilter = filter)
     val spec = OrderSearchSpecification(criteria)
 
     val results = orderRepository.findAll(spec)
@@ -53,14 +72,50 @@ class OrderSearchSpecificationTest {
   }
 
   @Test
-  fun `only filter by tags when given`() {
-    val orderWithTag = createOrder(tags = "PRISON,YOUTH")
-    val orderWithoutTag = createOrder(tags = "PROBATION")
+  fun `match any of the tags in a set`() {
+    val orderWithTag = createOrder(tags = "PRISON,YOUTH YCS")
+    val orderWithoutTag = createOrder(tags = "Probation")
     val orderWithNoTag = createOrder(tags = "")
 
     orderRepository.saveAll(listOf(orderWithTag, orderWithoutTag, orderWithNoTag))
 
-    val criteria = OrderSearchCriteria(searchTerm = "Joe")
+    val filter = TagFilter(anyOf = listOf("PRISON", "Probation"))
+    val criteria = OrderSearchCriteria(searchTerm = "Joe", tagFilter = filter)
+    val spec = OrderSearchSpecification(criteria)
+
+    val results = orderRepository.findAll(spec)
+
+    assertThat(results).hasSize(2)
+  }
+
+  @Test
+  fun `match all of the tags in a set`() {
+    val orderWithPrisonA = createOrder(tags = "PRISON,PRISON A")
+    val orderWithPrisonB = createOrder(tags = "PRISON,PRISON B")
+    val orderWithProbation = createOrder(tags = "Probation")
+
+    orderRepository.saveAll(listOf(orderWithPrisonA, orderWithPrisonB, orderWithProbation))
+
+    val filter = TagFilter(allOf = listOf("PRISON", "PRISON A"))
+    val criteria = OrderSearchCriteria(searchTerm = "Joe", tagFilter = filter)
+    val spec = OrderSearchSpecification(criteria)
+
+    val results = orderRepository.findAll(spec)
+
+    assertThat(results).hasSize(1)
+  }
+
+  @Test
+  fun `doesnt match exluded tags`() {
+    val orderWithPrison = createOrder(tags = "PRISON")
+    val orderWithYouthPrison = createOrder(tags = "PRISON,YOUTH YCS")
+    val orderWithProbation = createOrder(tags = "Probation")
+    val orderWithNoTags = createOrder(tags = null)
+
+    orderRepository.saveAll(listOf(orderWithPrison, orderWithYouthPrison, orderWithProbation, orderWithNoTags))
+
+    val filter = TagFilter(noneOf = listOf("YOUTH YCS"))
+    val criteria = OrderSearchCriteria(searchTerm = "Joe", tagFilter = filter)
     val spec = OrderSearchSpecification(criteria)
 
     val results = orderRepository.findAll(spec)
@@ -69,19 +124,20 @@ class OrderSearchSpecificationTest {
   }
 
   @Test
-  fun `should return multiple if multiple tags`() {
-    val orderWithTag = createOrder(tags = "PRISON,YOUTH")
-    val orderWithoutTag = createOrder(tags = "PROBATION")
-    val orderWithNoTag = createOrder(tags = "")
+  fun `does not match substring`() {
+    val orderWithPrison = createOrder(tags = "PRISON")
+    val orderWithExtraPrison = createOrder(tags = "BLAH PRISON BLAH")
+    val orderWithProbation = createOrder(tags = "Probation")
 
-    orderRepository.saveAll(listOf(orderWithTag, orderWithoutTag, orderWithNoTag))
+    orderRepository.saveAll(listOf(orderWithPrison, orderWithExtraPrison, orderWithProbation))
 
-    val criteria = OrderSearchCriteria(searchTerm = "Joe", tags = listOf("PRISON", "PROBATION"))
+    val filter = TagFilter(anyOf = listOf("PRISON"))
+    val criteria = OrderSearchCriteria(searchTerm = "Joe", tagFilter = filter)
     val spec = OrderSearchSpecification(criteria)
 
     val results = orderRepository.findAll(spec)
 
-    assertThat(results).hasSize(2)
+    assertThat(results).hasSize(1)
   }
 
   private fun createOrder(tags: String?): Order {

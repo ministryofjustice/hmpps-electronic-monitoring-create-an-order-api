@@ -85,8 +85,13 @@ class OrderSearchSpecification(private val criteria: OrderSearchCriteria) : Spec
     isLikePIN(deviceWearer, criteriaBuilder, keyword),
   )
 
-  private fun isTagMatch(criteriaBuilder: CriteriaBuilder, version: Join<Order, OrderVersion>, tag: String): Predicate =
-    criteriaBuilder.like(version.get(OrderVersion::tags.name), "%$tag%")
+  private fun hasTag(criteriaBuilder: CriteriaBuilder, version: Join<Order, OrderVersion>, tag: String): Predicate {
+    val paddedTags = criteriaBuilder.concat(
+      criteriaBuilder.concat(",", version.get("tags")),
+      ",",
+    )
+    return criteriaBuilder.like(criteriaBuilder.lower(paddedTags), "%,${tag.lowercase()},%")
+  }
 
   override fun toPredicate(
     root: Root<Order>,
@@ -115,9 +120,21 @@ class OrderSearchSpecification(private val criteria: OrderSearchCriteria) : Spec
       predicates.add(criteriaBuilder.and(*searchTermPredicates.toTypedArray()))
     }
 
-    if (this.criteria.tags.isNotEmpty()) {
-      val tagPredicates = this.criteria.tags.map { tag -> isTagMatch(criteriaBuilder, version, tag) }
+    // Filter orders based on tags
+    val filter = this.criteria.tagFilter
+    if (filter.anyOf.isNotEmpty()) {
+      val tagPredicates = filter.anyOf.map { tag -> hasTag(criteriaBuilder, version, tag) }
       predicates.add(criteriaBuilder.or(*tagPredicates.toTypedArray()))
+    }
+    if (filter.allOf.isNotEmpty()) {
+      val tagPredicates = filter.allOf.map { tag -> hasTag(criteriaBuilder, version, tag) }
+      predicates.add(criteriaBuilder.and(*tagPredicates.toTypedArray()))
+    }
+    if (filter.noneOf.isNotEmpty()) {
+      val notTagPredicates = filter.noneOf.map { tag -> criteriaBuilder.not(hasTag(criteriaBuilder, version, tag)) }
+
+      val notMatches = criteriaBuilder.and(*notTagPredicates.toTypedArray())
+      predicates.add(criteriaBuilder.or(notMatches, criteriaBuilder.isNull(version.get<String>("tags"))))
     }
 
     return criteriaBuilder.and(
