@@ -131,8 +131,9 @@ class OrderSearchSpecification(private val criteria: OrderSearchCriteria) : Spec
       predicates.add(criteriaBuilder.or(*groupPredicates.toTypedArray()))
     }
 
-    if (filter.noneOf.isNotEmpty()) {
-      val excludeTagPredicates = filter.noneOf.map { tag -> criteriaBuilder.not(hasTag(criteriaBuilder, version, tag)) }
+    if (filter.exclude.isNotEmpty()) {
+      val excludeTagPredicates =
+        filter.exclude.map { tag -> criteriaBuilder.not(hasTag(criteriaBuilder, version, tag)) }
       val notMatches = criteriaBuilder.and(*excludeTagPredicates.toTypedArray())
       predicates.add(criteriaBuilder.or(notMatches, criteriaBuilder.isNull(version.get<String>("tags"))))
     }

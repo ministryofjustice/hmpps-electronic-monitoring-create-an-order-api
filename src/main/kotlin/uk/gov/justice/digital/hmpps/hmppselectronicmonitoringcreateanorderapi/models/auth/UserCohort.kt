@@ -23,7 +23,7 @@ data class UserCohort(val cohort: Cohort, val activeCaseLoadName: String? = "", 
       }
 
       // Prison is adult, return matching prison, exclude Youth YOI and Youth YCS
-      return TagFilter(tagGroups = listOf(allOfTags), noneOf = listOf("Youth YOI", "Youth YCS"))
+      return TagFilter(tagGroups = listOf(allOfTags), exclude = listOf("Youth YOI", "Youth YCS"))
     }
 
     Cohort.PROBATION -> TagFilter(tagGroups = listOf(listOf("PRISON"), listOf("Probation")))

@@ -2,4 +2,4 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.m
 
 data class OrderSearchCriteria(val searchTerm: String = "", val tagFilter: TagFilter = TagFilter())
 
-data class TagFilter(val tagGroups: List<List<String>> = emptyList(), val noneOf: List<String> = emptyList())
+data class TagFilter(val tagGroups: List<List<String>> = emptyList(), val exclude: List<String> = emptyList())

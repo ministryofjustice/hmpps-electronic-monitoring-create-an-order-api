@@ -114,7 +114,7 @@ class OrderSearchSpecificationTest {
 
     orderRepository.saveAll(listOf(orderWithPrison, orderWithYouthPrison, orderWithProbation, orderWithNoTags))
 
-    val filter = TagFilter(noneOf = listOf("YOUTH YCS"))
+    val filter = TagFilter(exclude = listOf("YOUTH YCS"))
     val criteria = OrderSearchCriteria(searchTerm = "Joe", tagFilter = filter)
     val spec = OrderSearchSpecification(criteria)
 

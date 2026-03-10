@@ -43,9 +43,9 @@ class UserCohortTest {
     assertThat(filter.tagGroups[0].size).isEqualTo(2)
     assertThat(filter.tagGroups[0][0]).isEqualTo("PRISON")
     assertThat(filter.tagGroups[0][1]).isEqualTo("ALTCOURSE_PRISON")
-    assertThat(filter.noneOf.size).isEqualTo(2)
-    assertThat(filter.noneOf[0]).isEqualTo("Youth YOI")
-    assertThat(filter.noneOf[1]).isEqualTo("Youth YCS")
+    assertThat(filter.exclude.size).isEqualTo(2)
+    assertThat(filter.exclude[0]).isEqualTo("Youth YOI")
+    assertThat(filter.exclude[1]).isEqualTo("Youth YCS")
   }
 
   @Test
