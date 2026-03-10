@@ -6,12 +6,23 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 data class UserCohort(val cohort: Cohort, val activeCaseLoadName: String? = "", val activeCaseLoadId: String? = "") {
   fun getTagFilter(): TagFilter = when (this.cohort) {
     Cohort.PRISON -> {
-      val prisonName = Prison.fromId(activeCaseLoadId)?.name
+      val prison = Prison.fromId(activeCaseLoadId)
+      val prisonName = prison?.name
       val allOfTags = mutableListOf("PRISON")
       if (!prisonName.isNullOrEmpty()) {
         allOfTags.add(prisonName)
       }
 
+      if (activeCaseLoadId.isNullOrEmpty()) {
+        // Prison but not id, only return YOUTH YCS
+        return TagFilter(tagGroups = listOf(listOf("Youth YCS")))
+      }
+      if (Prison.isPrisonYOI(prison)) {
+        // Prison is YOI, return matching prison and Youth YCS
+        return TagFilter(tagGroups = listOf(allOfTags, listOf("Youth YCS")))
+      }
+
+      // Prison is adult, return matching prison, exclude Youth YOI and Youth YCS
       return TagFilter(tagGroups = listOf(allOfTags), noneOf = listOf("Youth YOI", "Youth YCS"))
     }
 
