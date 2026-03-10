@@ -13,6 +13,7 @@ import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.ManageUserApi
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.Cohort
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.UserGroup
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.hmpps.HmppsCaseload
 
 @ActiveProfiles("test")
 @JsonTest
@@ -37,8 +38,8 @@ class UserCohortServiceTest {
   fun `Should return user cohort of prison when user has role ROLE_PRISON`() {
     `when`(authentication.authorities).thenReturn(listOf(GrantedAuthority { "ROLE_PRISON" }))
     `when`(mockJwtToken.tokenValue).thenReturn("Mock Token")
-    `when`(mockApi.getUserActiveCaseloadName(authentication.token)).thenReturn(
-      "HMP ABC",
+    `when`(mockApi.getUserActiveCaseload(authentication.token)).thenReturn(
+      HmppsCaseload(name = "HMP ABC", id = "ABC"),
     )
     val result = service.getUserCohort(authentication)
 
