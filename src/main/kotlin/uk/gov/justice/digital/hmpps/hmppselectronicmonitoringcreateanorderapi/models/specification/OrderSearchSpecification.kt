@@ -99,19 +99,29 @@ class OrderSearchSpecification(private val criteria: OrderSearchCriteria) : Spec
     // Subquery to get the max version number
     val subquery = query?.subquery(Int::class.java)
     val subqueryRoot = subquery?.from(OrderVersion::class.java)
-    subquery?.select(criteriaBuilder.max(subqueryRoot?.get<Int>("versionId")))
+    subquery?.select(criteriaBuilder.max(subqueryRoot?.get("versionId")))
     subquery?.where(criteriaBuilder.equal(subqueryRoot?.get<Order>("order"), root))
 
-    val normalizedKeyword = this.criteria.searchTerm.trim().replace(Regex("\\s+"), " ").lowercase()
-
-    val searchTermPredicates =
-      normalizedKeyword.split(" ").map { keywordPart -> isMatch(deviceWearer, criteriaBuilder, keywordPart) }
-    val tagPredicates = this.criteria.tags.map { tag -> isTagMatch(criteriaBuilder, version, tag) }
-
-    return criteriaBuilder.and(
+    val predicates = mutableListOf(
       criteriaBuilder.equal(version.get<Int>("versionId"), subquery),
       criteriaBuilder.equal(version.get<String>("status"), OrderStatus.SUBMITTED),
-      criteriaBuilder.and(*searchTermPredicates.toTypedArray(), *tagPredicates.toTypedArray()),
+    )
+
+    val normalizedKeyword = this.criteria.searchTerm.trim().replace(Regex("\\s+"), " ").lowercase()
+    if (normalizedKeyword.isNotEmpty()) {
+      val searchTermPredicates =
+        normalizedKeyword.split(" ")
+          .map { keywordPart -> isMatch(deviceWearer, criteriaBuilder, keywordPart) }
+      predicates.add(criteriaBuilder.and(*searchTermPredicates.toTypedArray()))
+    }
+
+    if (this.criteria.tags.isNotEmpty()) {
+      val tagPredicates = this.criteria.tags.map { tag -> isTagMatch(criteriaBuilder, version, tag) }
+      predicates.add(criteriaBuilder.or(*tagPredicates.toTypedArray()))
+    }
+
+    return criteriaBuilder.and(
+      *predicates.toTypedArray(),
     )
   }
 }

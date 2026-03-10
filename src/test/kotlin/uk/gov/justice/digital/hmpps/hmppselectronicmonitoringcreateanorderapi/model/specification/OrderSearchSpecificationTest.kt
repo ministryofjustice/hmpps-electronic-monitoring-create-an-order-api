@@ -69,19 +69,19 @@ class OrderSearchSpecificationTest {
   }
 
   @Test
-  fun `should filter orders by multiple tags`() {
+  fun `should return multiple if multiple tags`() {
     val orderWithTag = createOrder(tags = "PRISON,YOUTH")
     val orderWithoutTag = createOrder(tags = "PROBATION")
     val orderWithNoTag = createOrder(tags = "")
 
     orderRepository.saveAll(listOf(orderWithTag, orderWithoutTag, orderWithNoTag))
 
-    val criteria = OrderSearchCriteria(searchTerm = "Joe", tags = listOf("PRISON", "YOUTH"))
+    val criteria = OrderSearchCriteria(searchTerm = "Joe", tags = listOf("PRISON", "PROBATION"))
     val spec = OrderSearchSpecification(criteria)
 
     val results = orderRepository.findAll(spec)
 
-    assertThat(results).hasSize(1)
+    assertThat(results).hasSize(2)
   }
 
   private fun createOrder(tags: String?): Order {
