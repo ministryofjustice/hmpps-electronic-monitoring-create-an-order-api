@@ -6,6 +6,11 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 data class UserCohort(val cohort: Cohort, val activeCaseLoadName: String? = "", val activeCaseLoadId: String? = "") {
   fun getTagFilter(): TagFilter = when (this.cohort) {
     Cohort.PRISON -> {
+      // admin ID used in dev, do not filter orders
+      if (activeCaseLoadId == "CADM_I") {
+        return TagFilter()
+      }
+
       val prison = Prison.fromId(activeCaseLoadId) ?: return TagFilter().allOf("Youth YCS")
 
       val filter = TagFilter().allOf("PRISON", prison.name)
