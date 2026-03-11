@@ -54,14 +54,14 @@ class OrderSearchSpecificationTest {
   }
 
   @Test
-  fun `can filter by any tag`() {
+  fun `can filter by a tag`() {
     val orderWithTag = createOrder(tags = "PRISON,YOUTH")
     val orderWithoutTag = createOrder(tags = "PROBATION")
     val orderWithNoTag = createOrder(tags = "")
 
     orderRepository.saveAll(listOf(orderWithTag, orderWithoutTag, orderWithNoTag))
 
-    val filter = TagFilter(tagGroups = listOf(listOf("PRISON")))
+    val filter = TagFilter().allOf("PRISON")
     val criteria = OrderSearchCriteria(searchTerm = "Joe", tagFilter = filter)
     val spec = OrderSearchSpecification(criteria)
 
@@ -79,7 +79,7 @@ class OrderSearchSpecificationTest {
 
     orderRepository.saveAll(listOf(orderWithTag, orderWithoutTag, orderWithNoTag))
 
-    val filter = TagFilter(tagGroups = listOf(listOf("PRISON"), listOf("Probation")))
+    val filter = TagFilter().anyOf("PRISON", "Probation")
     val criteria = OrderSearchCriteria(searchTerm = "Joe", tagFilter = filter)
     val spec = OrderSearchSpecification(criteria)
 
@@ -96,7 +96,7 @@ class OrderSearchSpecificationTest {
 
     orderRepository.saveAll(listOf(orderWithPrisonA, orderWithPrisonB, orderWithProbation))
 
-    val filter = TagFilter(tagGroups = listOf(listOf("PRISON", "PRISON A")))
+    val filter = TagFilter().allOf("PRISON", "PRISON A")
     val criteria = OrderSearchCriteria(searchTerm = "Joe", tagFilter = filter)
     val spec = OrderSearchSpecification(criteria)
 
@@ -114,7 +114,7 @@ class OrderSearchSpecificationTest {
 
     orderRepository.saveAll(listOf(orderWithPrison, orderWithYouthPrison, orderWithProbation, orderWithNoTags))
 
-    val filter = TagFilter(exclude = listOf("YOUTH YCS"))
+    val filter = TagFilter().exclude("YOUTH YCS")
     val criteria = OrderSearchCriteria(searchTerm = "Joe", tagFilter = filter)
     val spec = OrderSearchSpecification(criteria)
 
@@ -131,7 +131,7 @@ class OrderSearchSpecificationTest {
 
     orderRepository.saveAll(listOf(orderWithPrison, orderWithExtraPrison, orderWithProbation))
 
-    val filter = TagFilter(tagGroups = listOf(listOf("PRISON")))
+    val filter = TagFilter().allOf("PRISON")
     val criteria = OrderSearchCriteria(searchTerm = "Joe", tagFilter = filter)
     val spec = OrderSearchSpecification(criteria)
 
@@ -159,7 +159,7 @@ class OrderSearchSpecificationTest {
     )
 
     // Should get only prison C, but all of the YOUTH YCS orders
-    val filter = TagFilter(tagGroups = listOf(listOf("PRISON", "NAME C"), listOf("YOUTH YCS")))
+    val filter = TagFilter().allOf("PRISON", "NAME C").allOf("YOUTH YCS")
     val criteria = OrderSearchCriteria(searchTerm = "Joe", tagFilter = filter)
     val spec = OrderSearchSpecification(criteria)
 
