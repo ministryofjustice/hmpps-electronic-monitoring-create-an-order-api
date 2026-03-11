@@ -6,29 +6,21 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 data class UserCohort(val cohort: Cohort, val activeCaseLoadName: String? = "", val activeCaseLoadId: String? = "") {
   fun getTagFilter(): TagFilter = when (this.cohort) {
     Cohort.PRISON -> {
-      val prison = Prison.fromId(activeCaseLoadId)
-      val prisonName = prison?.name
-      val allOfTags = mutableListOf("PRISON")
-      if (!prisonName.isNullOrEmpty()) {
-        allOfTags.add(prisonName)
-      }
+      val prison = Prison.fromId(activeCaseLoadId) ?: return TagFilter().allOf("Youth YCS")
 
-      if (activeCaseLoadId.isNullOrEmpty()) {
-        // Prison but not id, only return YOUTH YCS
-        return TagFilter(tagGroups = listOf(listOf("Youth YCS")))
-      }
+      val filter = TagFilter().allOf("PRISON", prison.name)
       if (Prison.isPrisonYOI(prison)) {
         // Prison is YOI, return matching prison and Youth YCS
-        return TagFilter(tagGroups = listOf(allOfTags, listOf("Youth YCS")))
+        return filter.allOf("Youth YCS")
       }
 
       // Prison is adult, return matching prison, exclude Youth YOI and Youth YCS
-      return TagFilter(tagGroups = listOf(allOfTags), exclude = listOf("Youth YOI", "Youth YCS"))
+      return filter.exclude("Youth YOI", "Youth YCS")
     }
 
-    Cohort.PROBATION -> TagFilter(tagGroups = listOf(listOf("PRISON"), listOf("Probation")))
-    Cohort.COURT -> TagFilter(tagGroups = listOf(listOf("Civil Court"), listOf("Family Court")))
-    Cohort.HOME_OFFICE -> TagFilter(tagGroups = listOf(listOf("Home office")))
+    Cohort.PROBATION -> TagFilter().anyOf("PRISON", "Probation")
+    Cohort.COURT -> TagFilter().anyOf("Civil Court", "Family Court")
+    Cohort.HOME_OFFICE -> TagFilter().anyOf("Home office")
     Cohort.OTHER -> TagFilter()
   }
 }
