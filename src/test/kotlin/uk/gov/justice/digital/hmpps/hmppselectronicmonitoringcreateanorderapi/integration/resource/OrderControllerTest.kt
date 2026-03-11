@@ -89,8 +89,8 @@ class OrderControllerTest : IntegrationTestBase() {
       "mockUser",
       true,
       "mock account",
-      HmppsCaseload("ABC", "HMP ABC"),
-      emptyList<HmppsCaseload>(),
+      HmppsCaseload("ACI", "HMP ABC"),
+      emptyList(),
     )
     manageUserApi.stubUserActiveCaseLoad(mockUserCohort)
   }
@@ -739,7 +739,7 @@ class OrderControllerTest : IntegrationTestBase() {
         dateOfBirth = ZonedDateTime.now(),
         interpreterRequired = true,
       )
-      order.tags = "PRISON"
+      order.tags = "PRISON,ALTCOURSE_PRISON"
       order.status = OrderStatus.SUBMITTED
       repo.save(order)
 
@@ -767,7 +767,7 @@ class OrderControllerTest : IntegrationTestBase() {
         dateOfBirth = ZonedDateTime.now(),
         interpreterRequired = true,
       )
-      order.tags = "PROBATION"
+      order.tags = "Probation"
       order.status = OrderStatus.SUBMITTED
       repo.save(order)
 
