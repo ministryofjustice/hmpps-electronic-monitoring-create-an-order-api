@@ -13,6 +13,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.UserCohort
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.OrderListCriteria
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.OrderSearchCriteria
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.TagFilter
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.CreateOrderDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.VersionInformationDTO
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
@@ -264,7 +265,7 @@ class OrderService(val repo: OrderRepository, val fmsService: FmsService, privat
   )
 
   fun searchOrders(searchTerm: String, userCohort: UserCohort): List<Order> {
-    val filter = userCohort.getTagFilter()
+    val filter = TagFilter.getTagFilterByUserCohort(userCohort)
 
     val searchCriteria = OrderSearchCriteria(searchTerm, filter)
 

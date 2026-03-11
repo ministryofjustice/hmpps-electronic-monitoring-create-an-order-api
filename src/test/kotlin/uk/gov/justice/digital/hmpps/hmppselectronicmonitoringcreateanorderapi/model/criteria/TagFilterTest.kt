@@ -1,14 +1,16 @@
-package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth
+package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.criteria
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.Cohort
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.UserCohort
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.TagFilter
 
-class UserCohortTest {
+class TagFilterTest {
   @Test
   fun `should return cohort tags for probation`() {
     val userCohort = UserCohort(Cohort.PROBATION)
-    val filter = userCohort.getTagFilter()
+    val filter = TagFilter.getTagFilterByUserCohort(userCohort)
 
     val expected = TagFilter().anyOf("PRISON", "Probation")
 
@@ -18,7 +20,7 @@ class UserCohortTest {
   @Test
   fun `should return cohort tags for court`() {
     val userCohort = UserCohort(Cohort.COURT)
-    val filter = userCohort.getTagFilter()
+    val filter = TagFilter.getTagFilterByUserCohort(userCohort)
 
     val expected = TagFilter().anyOf("Civil Court", "Family Court")
 
@@ -28,7 +30,7 @@ class UserCohortTest {
   @Test
   fun `should return cohort tags for home office`() {
     val userCohort = UserCohort(Cohort.HOME_OFFICE)
-    val filter = userCohort.getTagFilter()
+    val filter = TagFilter.getTagFilterByUserCohort(userCohort)
 
     val expected = TagFilter().anyOf("Home office")
 
@@ -38,7 +40,7 @@ class UserCohortTest {
   @Test
   fun `should filter for only prison when caseLoadId matches standard prison`() {
     val userCohort = UserCohort(Cohort.PRISON, "Some AC name", "ACI")
-    val filter = userCohort.getTagFilter()
+    val filter = TagFilter.getTagFilterByUserCohort(userCohort)
 
     val expected = TagFilter().allOf("PRISON", "ALTCOURSE_PRISON").exclude("Youth YOI", "Youth YCS")
 
@@ -48,7 +50,7 @@ class UserCohortTest {
   @Test
   fun `should filter for prison, YOI and YCS when caseLoadId matches YOI prison`() {
     val userCohort = UserCohort(Cohort.PRISON, "Some AC name", "AGI")
-    val filter = userCohort.getTagFilter()
+    val filter = TagFilter.getTagFilterByUserCohort(userCohort)
 
     val expected = TagFilter().allOf("PRISON", "ASKHAM_GRANGE_PRISON_AND_YOUNG_OFFENDER_INSTITUTION")
       .anyOf("Youth YCS")
@@ -59,7 +61,7 @@ class UserCohortTest {
   @Test
   fun `should filter for prison, YOI, and YCS when no prison matches`() {
     val userCohort = UserCohort(Cohort.PRISON)
-    val filter = userCohort.getTagFilter()
+    val filter = TagFilter.getTagFilterByUserCohort(userCohort)
 
     val expected = TagFilter().anyOf("Youth YCS")
 
