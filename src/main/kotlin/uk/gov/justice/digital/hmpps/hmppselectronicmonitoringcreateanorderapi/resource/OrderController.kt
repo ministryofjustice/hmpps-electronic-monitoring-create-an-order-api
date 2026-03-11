@@ -24,13 +24,12 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.VersionInformationDTO
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.OrderService
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.UserCohortService
 import java.util.UUID
 
 @RestController
 @PreAuthorize("hasRole('ROLE_EM_CEMO__CREATE_ORDER')")
 @RequestMapping("/api/")
-class OrderController(@Autowired val orderService: OrderService, @Autowired val userCohortService: UserCohortService) {
+class OrderController(@Autowired val orderService: OrderService) {
 
   @PostMapping("/orders")
   fun createOrder(
@@ -119,8 +118,7 @@ class OrderController(@Autowired val orderService: OrderService, @Autowired val 
     @RequestParam searchTerm: String = "",
     authentication: Authentication,
   ): ResponseEntity<List<OrderDto>> {
-    val userCohort = userCohortService.getUserCohort(authentication as JwtAuthenticationToken)
-    val orders = orderService.searchOrders(searchTerm, userCohort)
+    val orders = orderService.searchOrders(searchTerm, authentication as JwtAuthenticationToken)
 
     return ResponseEntity(orders.map { convertToDto(it) }, HttpStatus.OK)
   }

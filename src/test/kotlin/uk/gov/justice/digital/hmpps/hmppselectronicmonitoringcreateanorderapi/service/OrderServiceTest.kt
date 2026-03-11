@@ -21,6 +21,7 @@ import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.boot.test.autoconfigure.json.JsonTest
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken
 import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.config.FeatureFlags
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.BadRequestException
@@ -62,6 +63,7 @@ class OrderServiceTest {
   private lateinit var repo: OrderRepository
   private lateinit var fmsService: FmsService
   private lateinit var service: OrderService
+  private lateinit var userCohortService: UserCohortService
   val mockStartDate: ZonedDateTime = ZonedDateTime.now().plusMonths(1)
   val mockEndDate: ZonedDateTime = ZonedDateTime.now().plusMonths(2)
 
@@ -69,9 +71,10 @@ class OrderServiceTest {
   fun setup() {
     repo = mock(OrderRepository::class.java)
     fmsService = mock(FmsService::class.java)
+    userCohortService = mock()
     val featureFlags = FeatureFlags(ddV6CourtMappings = true, dataDictionaryVersion = DataDictionaryVersion.DDV4)
 
-    service = OrderService(repo, fmsService, featureFlags)
+    service = OrderService(repo, fmsService, featureFlags, userCohortService)
   }
 
   @Test
@@ -325,9 +328,13 @@ class OrderServiceTest {
   fun `Should be able to search for orders`() {
     val mockOrder = TestUtilities.createReadyToSubmitOrder(startDate = mockStartDate, endDate = mockEndDate)
 
+    val authentication = mock(JwtAuthenticationToken::class.java)
+    whenever(userCohortService.getUserCohort(authentication)).thenReturn(
+      UserCohort(Cohort.PRISON),
+    )
     whenever(repo.findAll(ArgumentMatchers.any(OrderSearchSpecification::class.java))).thenReturn(listOf(mockOrder))
 
-    val result = service.searchOrders("Bob Smith", UserCohort(Cohort.PRISON))
+    val result = service.searchOrders("Bob Smith", authentication)
 
     assertThat(result).isEqualTo(listOf(mockOrder))
   }
@@ -372,7 +379,7 @@ class OrderServiceTest {
     @BeforeEach
     fun setup() {
       val featureFlags = FeatureFlags(ddV6CourtMappings = true, dataDictionaryVersion = DataDictionaryVersion.DDV5)
-      service = OrderService(repo, fmsService, featureFlags)
+      service = OrderService(repo, fmsService, featureFlags, userCohortService)
       whenever(repo.findById(order.id)).thenReturn(Optional.of(order))
       whenever(repo.save(order)).thenReturn(order)
     }
