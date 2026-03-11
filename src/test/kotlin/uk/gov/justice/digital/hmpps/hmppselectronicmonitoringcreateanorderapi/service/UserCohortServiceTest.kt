@@ -45,6 +45,7 @@ class UserCohortServiceTest {
 
     Assertions.assertThat(result.cohort).isEqualTo(Cohort.PRISON)
     Assertions.assertThat(result.activeCaseLoadName).isEqualTo("HMP ABC")
+    Assertions.assertThat(result.activeCaseLoadId).isEqualTo("ABC")
   }
 
   @Test
@@ -58,11 +59,7 @@ class UserCohortServiceTest {
 
   @Test
   fun `returns court when user has court groups`() {
-    `when`(authentication.authorities).thenReturn(listOf(GrantedAuthority { "ROLE_OTHER" }))
-    `when`(mockApi.getUserGroups(mockJwtToken)).thenReturn(
-      listOf(UserGroup(groupName = "Create an Electronic Monitoring Order Court Users", groupCode = "CEMO_CRT_USERS")),
-    )
-
+    `when`(authentication.authorities).thenReturn(listOf(GrantedAuthority { "ROLE_EM_CEMO_COURT" }))
     val result = service.getUserCohort(authentication)
 
     Assertions.assertThat(result.cohort).isEqualTo(Cohort.COURT)
@@ -70,10 +67,7 @@ class UserCohortServiceTest {
 
   @Test
   fun `returns home office when user has HO groups`() {
-    `when`(authentication.authorities).thenReturn(listOf(GrantedAuthority { "ROLE_OTHER" }))
-    `when`(mockApi.getUserGroups(mockJwtToken)).thenReturn(
-      listOf(UserGroup(groupName = "Create an Electronic Monitoring Order HO Users", groupCode = "CEMO_HO_USERS")),
-    )
+    `when`(authentication.authorities).thenReturn(listOf(GrantedAuthority { "ROLE_EM_CEMO_HOME_OFFICE" }))
 
     val result = service.getUserCohort(authentication)
 

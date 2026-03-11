@@ -5,21 +5,23 @@ import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.ManageUserApi
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.Cohort
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.UserCohort
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.toCohort
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.UserRole
 
 @Service
 class UserCohortService(private val webClient: ManageUserApi) {
 
   fun getUserCohort(authentication: JwtAuthenticationToken): UserCohort {
-    if (authentication.authorities.any { it.authority == "ROLE_PRISON" }) {
-      val activeCaseLoad = webClient.getUserActiveCaseload(authentication.token)
-      return UserCohort(Cohort.PRISON, activeCaseLoad?.name, activeCaseLoad?.id)
-    } else if (authentication.authorities.any { it.authority == "ROLE_PROBATION" }) {
-      return UserCohort(Cohort.PROBATION)
-    }
+    val roles = authentication.authorities.map { it.authority }.toSet()
 
-    val userGroups = webClient.getUserGroups(authentication.token)
-    val cohort = userGroups.toCohort()
-    return UserCohort(cohort)
+    return when {
+      UserRole.HOME_OFFICE.code in roles -> UserCohort(Cohort.HOME_OFFICE)
+      UserRole.COURT.code in roles -> UserCohort(Cohort.COURT)
+      UserRole.PRISON.code in roles -> {
+        val caseload = webClient.getUserActiveCaseload(authentication.token)
+        UserCohort(Cohort.PRISON, caseload?.name, caseload?.id)
+      }
+      UserRole.PROBATION.code in roles -> UserCohort(Cohort.PROBATION)
+      else -> UserCohort(Cohort.OTHER)
+    }
   }
 }
