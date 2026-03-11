@@ -2,8 +2,9 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.c
 
 import org.springframework.security.oauth2.jwt.Jwt
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.UserGroup
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.hmpps.HmppsCaseload
 
 interface ManageUserApi {
   fun getUserGroups(token: Jwt): List<UserGroup>
-  fun getUserActiveCaseloadName(token: Jwt): String?
+  fun getUserActiveCaseload(token: Jwt): HmppsCaseload?
 }

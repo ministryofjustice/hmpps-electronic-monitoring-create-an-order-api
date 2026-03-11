@@ -17,8 +17,8 @@ class UserCohortService(private val webClient: ManageUserApi) {
       UserRole.HOME_OFFICE.code in roles -> UserCohort(Cohort.HOME_OFFICE)
       UserRole.COURT.code in roles -> UserCohort(Cohort.COURT)
       UserRole.PRISON.code in roles -> {
-        val caseload = webClient.getUserActiveCaseloadName(authentication.token)
-        UserCohort(Cohort.PRISON, caseload)
+        val caseload = webClient.getUserActiveCaseload(authentication.token)
+        UserCohort(Cohort.PRISON, caseload?.name, caseload?.id)
       }
       UserRole.PROBATION.code in roles -> UserCohort(Cohort.PROBATION)
       else -> UserCohort(Cohort.OTHER)

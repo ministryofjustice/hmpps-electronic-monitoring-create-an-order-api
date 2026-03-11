@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.s
 
 import jakarta.persistence.EntityNotFoundException
 import org.springframework.boot.context.properties.EnableConfigurationProperties
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.config.FeatureFlags
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.BadRequestException
@@ -12,6 +13,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.OrderListCriteria
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.OrderSearchCriteria
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.TagFilter
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.CreateOrderDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.VersionInformationDTO
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
@@ -28,7 +30,12 @@ import java.util.*
 @EnableConfigurationProperties(
   FeatureFlags::class,
 )
-class OrderService(val repo: OrderRepository, val fmsService: FmsService, private val featureFlags: FeatureFlags) {
+class OrderService(
+  val repo: OrderRepository,
+  val fmsService: FmsService,
+  private val featureFlags: FeatureFlags,
+  private val userCohortService: UserCohortService,
+) {
 
   fun createOrder(username: String, createRecord: CreateOrderDto): Order {
     val order = Order()
@@ -262,9 +269,17 @@ class OrderService(val repo: OrderRepository, val fmsService: FmsService, privat
     OrderListSpecification(searchCriteria),
   )
 
-  fun searchOrders(searchCriteria: OrderSearchCriteria): List<Order> = repo.findAll(
-    OrderSearchSpecification(searchCriteria),
-  )
+  fun searchOrders(searchTerm: String, authentication: JwtAuthenticationToken): List<Order> {
+    val userCohort = userCohortService.getUserCohort(authentication)
+
+    val filter = TagFilter.getTagFilterByUserCohort(userCohort)
+
+    val searchCriteria = OrderSearchCriteria(searchTerm, filter)
+
+    return repo.findAll(
+      OrderSearchSpecification(searchCriteria),
+    )
+  }
 
   fun getVersionInformation(orderId: UUID): List<VersionInformationDTO> {
     val order = repo.findById(orderId).orElseThrow {
