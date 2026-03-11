@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.m
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.TagFilter
 
 class UserCohortTest {
   @Test
@@ -9,9 +10,9 @@ class UserCohortTest {
     val userCohort = UserCohort(Cohort.PROBATION)
     val filter = userCohort.getTagFilter()
 
-    assertThat(filter.tagGroups.size).isEqualTo(2)
-    assertThat(filter.tagGroups[0][0]).isEqualTo("PRISON")
-    assertThat(filter.tagGroups[1][0]).isEqualTo("Probation")
+    val expected = TagFilter().anyOf("PRISON", "Probation")
+
+    assertThat(filter).isEqualTo(expected)
   }
 
   @Test
@@ -19,9 +20,9 @@ class UserCohortTest {
     val userCohort = UserCohort(Cohort.COURT)
     val filter = userCohort.getTagFilter()
 
-    assertThat(filter.tagGroups.size).isEqualTo(2)
-    assertThat(filter.tagGroups[0][0]).isEqualTo("Civil Court")
-    assertThat(filter.tagGroups[1][0]).isEqualTo("Family Court")
+    val expected = TagFilter().anyOf("Civil Court", "Family Court")
+
+    assertThat(filter).isEqualTo(expected)
   }
 
   @Test
@@ -29,9 +30,9 @@ class UserCohortTest {
     val userCohort = UserCohort(Cohort.HOME_OFFICE)
     val filter = userCohort.getTagFilter()
 
-    assertThat(filter.tagGroups.size).isEqualTo(1)
-    assertThat(filter.tagGroups[0].size).isEqualTo(1)
-    assertThat(filter.tagGroups[0][0]).isEqualTo("Home office")
+    val expected = TagFilter().anyOf("Home office")
+
+    assertThat(filter).isEqualTo(expected)
   }
 
   @Test
@@ -39,13 +40,9 @@ class UserCohortTest {
     val userCohort = UserCohort(Cohort.PRISON, "Some AC name", "ACI")
     val filter = userCohort.getTagFilter()
 
-    assertThat(filter.tagGroups.size).isEqualTo(1)
-    assertThat(filter.tagGroups[0].size).isEqualTo(2)
-    assertThat(filter.tagGroups[0][0]).isEqualTo("PRISON")
-    assertThat(filter.tagGroups[0][1]).isEqualTo("ALTCOURSE_PRISON")
-    assertThat(filter.exclude.size).isEqualTo(2)
-    assertThat(filter.exclude[0]).isEqualTo("Youth YOI")
-    assertThat(filter.exclude[1]).isEqualTo("Youth YCS")
+    val expected = TagFilter().allOf("PRISON", "ALTCOURSE_PRISON").exclude("Youth YOI", "Youth YCS")
+
+    assertThat(filter).isEqualTo(expected)
   }
 
   @Test
@@ -53,12 +50,10 @@ class UserCohortTest {
     val userCohort = UserCohort(Cohort.PRISON, "Some AC name", "AGI")
     val filter = userCohort.getTagFilter()
 
-    assertThat(filter.tagGroups.size).isEqualTo(2)
-    assertThat(filter.tagGroups[0].size).isEqualTo(2)
-    assertThat(filter.tagGroups[0][0]).isEqualTo("PRISON")
-    assertThat(filter.tagGroups[0][1]).isEqualTo("ASKHAM_GRANGE_PRISON_AND_YOUNG_OFFENDER_INSTITUTION")
-    assertThat(filter.tagGroups[1].size).isEqualTo(1)
-    assertThat(filter.tagGroups[1][0]).isEqualTo("Youth YCS")
+    val expected = TagFilter().allOf("PRISON", "ASKHAM_GRANGE_PRISON_AND_YOUNG_OFFENDER_INSTITUTION")
+      .anyOf("Youth YCS")
+
+    assertThat(filter).isEqualTo(expected)
   }
 
   @Test
@@ -66,8 +61,8 @@ class UserCohortTest {
     val userCohort = UserCohort(Cohort.PRISON)
     val filter = userCohort.getTagFilter()
 
-    assertThat(filter.tagGroups.size).isEqualTo(1)
-    assertThat(filter.tagGroups[0].size).isEqualTo(1)
-    assertThat(filter.tagGroups[0][0]).isEqualTo("Youth YCS")
+    val expected = TagFilter().anyOf("Youth YCS")
+
+    assertThat(filter).isEqualTo(expected)
   }
 }
