@@ -991,6 +991,20 @@ class OrderControllerTest : IntegrationTestBase() {
     }
 
     @Test
+    fun `It should not return if order is submitted but is not in cohort`() {
+      val order = createSubmittedOrder()
+      order.tags = "PRISON,PRISON A"
+      repo.save(order)
+
+      webTestClient.get()
+        .uri("/api/orders/${order.id}")
+        .headers(setAuthorisation("AUTH_ADM", roles = listOf("ROLE_EM_CEMO__CREATE_ORDER", "ROLE_PRISON")))
+        .exchange()
+        .expectStatus()
+        .isForbidden
+    }
+
+    @Test
     fun `It should populate the monitoring start and end dates correctly in the order DTO`() {
       val order = TestUtilities.createReadyToSubmitOrder(
         status = OrderStatus.IN_PROGRESS,
