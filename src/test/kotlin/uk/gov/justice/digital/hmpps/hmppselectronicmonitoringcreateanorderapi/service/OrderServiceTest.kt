@@ -66,6 +66,7 @@ class OrderServiceTest {
   private lateinit var userCohortService: UserCohortService
   val mockStartDate: ZonedDateTime = ZonedDateTime.now().plusMonths(1)
   val mockEndDate: ZonedDateTime = ZonedDateTime.now().plusMonths(2)
+  private lateinit var authentication: JwtAuthenticationToken
 
   @BeforeEach
   fun setup() {
@@ -75,6 +76,11 @@ class OrderServiceTest {
     val featureFlags = FeatureFlags(ddV6CourtMappings = true, dataDictionaryVersion = DataDictionaryVersion.DDV4)
 
     service = OrderService(repo, fmsService, featureFlags, userCohortService)
+
+    authentication = mock(JwtAuthenticationToken::class.java)
+
+    whenever(authentication.name).thenReturn("mockUser")
+    whenever(userCohortService.getUserCohort(authentication)).thenReturn(UserCohort(Cohort.OTHER))
   }
 
   @Test
@@ -118,7 +124,7 @@ class OrderServiceTest {
     whenever(fmsService.submitOrder(any<Order>(), eq(FmsOrderSource.CEMO))).thenReturn(
       mockFmsResult,
     )
-    service.submitOrder(mockOrder.id, "mockUser", "mockName")
+    service.submitOrder(mockOrder.id, authentication, "mockName")
 
     argumentCaptor<Order>().apply {
       verify(repo, times(1)).save(capture())
@@ -152,7 +158,7 @@ class OrderServiceTest {
     whenever(fmsService.submitOrder(any<Order>(), eq(FmsOrderSource.CEMO))).thenReturn(
       mockFmsResult,
     )
-    service.submitOrder(mockOrder.id, "mockUser", "mockName")
+    service.submitOrder(mockOrder.id, authentication, "mockName")
 
     argumentCaptor<Order>().apply {
       verify(repo, times(1)).save(capture())
@@ -188,7 +194,7 @@ class OrderServiceTest {
     whenever(fmsService.submitOrder(any<Order>(), eq(FmsOrderSource.CEMO))).thenReturn(
       mockFmsResult,
     )
-    service.submitOrder(mockOrder.id, "mockUser", "mockName")
+    service.submitOrder(mockOrder.id, authentication, "mockName")
 
     argumentCaptor<Order>().apply {
       verify(repo, times(1)).save(capture())
@@ -228,7 +234,7 @@ class OrderServiceTest {
     whenever(fmsService.submitOrder(any<Order>(), eq(FmsOrderSource.CEMO))).thenReturn(
       mockFmsResult,
     )
-    service.submitOrder(mockOrder.id, "mockUser", "mockName")
+    service.submitOrder(mockOrder.id, authentication, "mockName")
 
     argumentCaptor<Order>().apply {
       verify(repo, times(1)).save(capture())
@@ -268,7 +274,7 @@ class OrderServiceTest {
     whenever(fmsService.submitOrder(any<Order>(), eq(FmsOrderSource.CEMO))).thenReturn(
       mockFmsResult,
     )
-    service.submitOrder(mockOrder.id, "mockUser", "mockName")
+    service.submitOrder(mockOrder.id, authentication, "mockName")
 
     argumentCaptor<Order>().apply {
       verify(repo, times(1)).save(capture())
@@ -304,7 +310,7 @@ class OrderServiceTest {
     whenever(repo.findById(mockOrder.id)).thenReturn(Optional.of(mockOrder))
     whenever(fmsService.submitOrder(any<Order>(), eq(FmsOrderSource.CEMO))).thenReturn(mockFmsResult)
 
-    service.submitOrder(mockOrder.id, "mockUser", "mockName")
+    service.submitOrder(mockOrder.id, authentication, "mockName")
 
     argumentCaptor<Order>().apply {
       verify(repo, times(1)).save(capture())
@@ -389,7 +395,8 @@ class OrderServiceTest {
     inner class CreateVersionAsVariation {
       @BeforeEach
       fun setup() {
-        service.createVersion(order.id, order.username, RequestType.VARIATION)
+        whenever(authentication.name).thenReturn(order.username)
+        service.createVersion(order.id, authentication, RequestType.VARIATION)
       }
 
       @Test
@@ -820,7 +827,7 @@ class OrderServiceTest {
     @Test
     fun `It should not clone interested Parties and pdu if current version start date is in the past`() {
       order.monitoringConditions!!.startDate = ZonedDateTime.now().plusDays(-10)
-      service.createVersion(order.id, order.username, RequestType.VARIATION)
+      service.createVersion(order.id, authentication, RequestType.VARIATION)
       argumentCaptor<Order>().apply {
         verify(repo, times(1)).save(capture())
         assertThat(firstValue.versions.last().interestedParties).isNull()
@@ -833,7 +840,8 @@ class OrderServiceTest {
     inner class CreateVersionAsRequest {
       @BeforeEach
       fun setup() {
-        service.createVersion(order.id, order.username, RequestType.AMEND_ORIGINAL_REQUEST)
+        whenever(authentication.name).thenReturn(order.username)
+        service.createVersion(order.id, authentication, RequestType.AMEND_ORIGINAL_REQUEST)
       }
 
       @Test

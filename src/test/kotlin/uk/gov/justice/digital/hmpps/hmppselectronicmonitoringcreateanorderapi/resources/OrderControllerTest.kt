@@ -82,7 +82,7 @@ class OrderControllerTest {
       ),
     )
 
-    `when`(orderService.getOrder(order.id, "mockUser")).thenReturn(order)
+    `when`(orderService.getOrder(order.id, authentication)).thenReturn(order)
     `when`(authentication.name).thenReturn("mockUser")
 
     val result = controller.getOrder(order.id, authentication)
@@ -259,12 +259,12 @@ class OrderControllerTest {
         ),
       ),
     )
-    `when`(orderService.submitOrder(mockOrderId, "mockUser", "mockName")).thenReturn(order)
+    `when`(orderService.submitOrder(mockOrderId, submitAuthentication, "mockName")).thenReturn(order)
     `when`(submitAuthentication.name).thenReturn("mockUser")
     `when`(submitAuthentication.getUserFullName()).thenReturn("mockName")
 
     controller.submitOrder(mockOrderId, submitAuthentication)
-    verify(orderService, times(1)).submitOrder(mockOrderId, "mockUser", "mockName")
+    verify(orderService, times(1)).submitOrder(mockOrderId, submitAuthentication, "mockName")
   }
 
   @Test
