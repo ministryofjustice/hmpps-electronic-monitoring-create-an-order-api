@@ -13,6 +13,19 @@ data class TagFilter(val tagGroups: List<List<String>> = emptyList(), val exclud
 
   fun exclude(vararg tags: String): TagFilter = copy(exclude = exclude + tags.toList())
 
+  fun matchesTags(tags: String?): Boolean {
+    if (tags.isNullOrEmpty() || (tagGroups.isEmpty() && exclude.isEmpty())) {
+      return true
+    }
+
+    val tagList = tags.split(",").map { it.lowercase() }
+
+    if (exclude.any { tagList.contains(it.lowercase()) }) {
+      return false
+    }
+    return tagGroups.any { group -> group.all { tagList.contains(it.lowercase()) } }
+  }
+
   companion object {
     fun getTagFilterByUserCohort(userCohort: UserCohort): TagFilter = when (userCohort.cohort) {
       Cohort.PRISON -> {

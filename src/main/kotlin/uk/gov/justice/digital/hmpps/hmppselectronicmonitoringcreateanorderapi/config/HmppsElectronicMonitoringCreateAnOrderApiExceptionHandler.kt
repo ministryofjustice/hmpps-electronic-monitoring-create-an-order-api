@@ -20,6 +20,7 @@ import org.springframework.web.multipart.MaxUploadSizeExceededException
 import org.springframework.web.servlet.resource.NoResourceFoundException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.BadRequestException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.DocumentApiBadRequestException
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.ForbiddenException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.FormValidationException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.SercoConnectionException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.SubmitOrderException
@@ -194,6 +195,18 @@ class HmppsElectronicMonitoringCreateAnOrderApiExceptionHandler {
           developerMessage = "Maximum upload size of ${e.maxUploadSize}MB exceeded",
         ),
       ).also { log.error("Unexpected exception", e) }
+
+  @ExceptionHandler(ForbiddenException::class)
+  fun handleForbiddenException(e: ForbiddenException): ResponseEntity<ErrorResponse> = ResponseEntity
+    .status(FORBIDDEN)
+    .body(
+      ErrorResponse(
+        status = FORBIDDEN,
+        userMessage = "Forbidden: ${e.message}",
+        developerMessage = e.message,
+        errorCode = e.errorCode.toString(),
+      ),
+    ).also { log.debug("Forbidden (403) returned: {}", e.message) }
 
   // The default exception handler returns a fixed text response to avoid leaking internal implementation
   // details. If you want to return a more sensible error,
