@@ -38,7 +38,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisationDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Pilot
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.PrisonDDv5
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Prison
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ResponsibleOrganisation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.SentenceType
@@ -572,7 +572,7 @@ class MonitoringOrderTest : OrderTestBase() {
       dataDictionaryVersion = DataDictionaryVersion.DDV6,
       interestedParties = createInterestedParty(
         NotifyingOrganisationDDv5.PRISON.name,
-        PrisonDDv5.SWANSEA_PRISON.name,
+        Prison.SWANSEA_PRISON.name,
       ),
       addresses = mutableListOf(installationAddress),
       monitoringConditions = createMonitoringConditions(trail = true, alcohol = false),
@@ -615,7 +615,7 @@ class MonitoringOrderTest : OrderTestBase() {
       dataDictionaryVersion = DataDictionaryVersion.DDV6,
       interestedParties = createInterestedParty(
         NotifyingOrganisationDDv5.PRISON.name,
-        PrisonDDv5.BRONZEFIELD_PRISON.name,
+        Prison.BRONZEFIELD_PRISON.name,
       ),
       addresses = mutableListOf(installationAddress),
       monitoringConditions = createMonitoringConditions(trail = true, alcohol = false),
@@ -656,7 +656,7 @@ class MonitoringOrderTest : OrderTestBase() {
 
     val order = createOrder(
       dataDictionaryVersion = DataDictionaryVersion.DDV6,
-      interestedParties = createInterestedParty(NotifyingOrganisationDDv5.PRISON.name, PrisonDDv5.SWANSEA_PRISON.name),
+      interestedParties = createInterestedParty(NotifyingOrganisationDDv5.PRISON.name, Prison.SWANSEA_PRISON.name),
       addresses = mutableListOf(installationAddress),
       monitoringConditions = createMonitoringConditions(trail = true, alcohol = false),
       installationLocation = installationLocation,

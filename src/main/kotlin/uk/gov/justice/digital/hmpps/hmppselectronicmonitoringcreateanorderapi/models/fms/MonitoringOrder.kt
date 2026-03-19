@@ -26,7 +26,6 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Pilot
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.PoliceAreas
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Prison
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.PrisonDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ProbationDeliveryUnits
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ProbationServiceRegion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
@@ -628,7 +627,7 @@ data class MonitoringOrder(
       dataDictionaryVersion: DataDictionaryVersion,
     ): String {
       if (dataDictionaryVersion === DataDictionaryVersion.DDV4) {
-        return Prison.from(interestedParties.notifyingOrganisationName)?.prisonName
+        return Prison.from(interestedParties.notifyingOrganisationName)?.name
           ?: CrownCourt.from(interestedParties.notifyingOrganisationName)?.value
           ?: MagistrateCourt.from(interestedParties.notifyingOrganisationName)?.value
           ?: interestedParties.notifyingOrganisationName
@@ -645,7 +644,7 @@ data class MonitoringOrder(
         ?: FamilyCourtDDv5.from(interestedParties.notifyingOrganisationName)?.value
         ?: MagistrateCourtDDv5.from(interestedParties.notifyingOrganisationName)?.value
         ?: MilitaryCourtDDv5.from(interestedParties.notifyingOrganisationName)?.value
-        ?: PrisonDDv5.from(interestedParties.notifyingOrganisationName)?.value
+        ?: Prison.from(interestedParties.notifyingOrganisationName)?.value
         ?: YouthCourtDDv5.from(interestedParties.notifyingOrganisationName)?.value
         ?: YouthCustodyServiceRegionDDv5.from(interestedParties.notifyingOrganisationName)?.value
         ?: YouthCustodyServiceRegionDDv6.from(interestedParties.notifyingOrganisationName)?.value

@@ -2,7 +2,7 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.m
 
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.Cohort
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.UserCohort
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.PrisonDDv5
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Prison
 
 data class OrderSearchCriteria(val searchTerm: String = "", val tagFilter: TagFilter = TagFilter())
 
@@ -34,7 +34,7 @@ data class TagFilter(val tagGroups: List<List<String>> = emptyList(), val exclud
           return TagFilter()
         }
 
-        val prisons = PrisonDDv5.fromId(userCohort.activeCaseLoadId)
+        val prisons = Prison.fromId(userCohort.activeCaseLoadId)
 
         if (prisons.count() == 0) {
           return TagFilter().allOf("Youth YCS")
@@ -46,7 +46,7 @@ data class TagFilter(val tagGroups: List<List<String>> = emptyList(), val exclud
           filter = filter.allOf("PRISON", prison.name)
         }
 
-        if (prisons.any { prison -> PrisonDDv5.isPrisonYOI(prison) }) {
+        if (prisons.any { prison -> Prison.isPrisonYOI(prison) }) {
           // Prison is YOI, return matching prison and Youth YCS
           filter = filter.allOf("Youth YCS")
         } else {

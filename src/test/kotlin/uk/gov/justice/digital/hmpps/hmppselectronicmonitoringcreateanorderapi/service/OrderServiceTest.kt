@@ -41,7 +41,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisationDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.PrisonDDv5
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Prison
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.SubmissionStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsDeviceWearerSubmissionResult
@@ -173,7 +173,7 @@ class OrderServiceTest {
       endDate = mockEndDate,
       username = "mockUser",
       notifyingOrganisation = NotifyingOrganisation.PRISON.name,
-      notifyingOrganisationName = PrisonDDv5.BEDFORD_PRISON.name,
+      notifyingOrganisationName = Prison.BEDFORD_PRISON.name,
     )
     reset(repo)
 
@@ -210,7 +210,7 @@ class OrderServiceTest {
       endDate = mockEndDate,
       username = "mockUser",
       notifyingOrganisation = NotifyingOrganisation.PRISON.name,
-      notifyingOrganisationName = PrisonDDv5.BEDFORD_PRISON.name,
+      notifyingOrganisationName = Prison.BEDFORD_PRISON.name,
     )
 
     mockOrder.deviceWearer!!.adultAtTimeOfInstallation = false
