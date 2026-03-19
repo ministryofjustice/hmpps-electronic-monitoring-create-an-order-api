@@ -68,11 +68,14 @@ class TagFilterTest {
   }
 
   @Test
-  fun `should filter for both COOKHAM_WOOD_YOUNG_OFFENDER_INSTITUTION and COOKHAM_WOOD_PRISON when caseLoadId is CKI`() {
+  fun `should filter for both COOKHAM_WOOD entries when caseLoadId is CKI`() {
     val userCohort = UserCohort(Cohort.PRISON, "Some AC name", "CKI")
     val filter = TagFilter.getTagFilterByUserCohort(userCohort)
 
-    val expected = TagFilter().allOf("PRISON", "COOKHAM_WOOD_YOUNG_OFFENDER_INSTITUTION").allOf("PRISON", "COOKHAM_WOOD_PRISON").anyOf("Youth YCS")
+    val expected = TagFilter().allOf(
+      "PRISON",
+      "COOKHAM_WOOD_YOUNG_OFFENDER_INSTITUTION",
+    ).allOf("PRISON", "COOKHAM_WOOD_PRISON").anyOf("Youth YCS")
 
     assertThat(filter).isEqualTo(expected)
   }

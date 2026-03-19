@@ -5,7 +5,6 @@ import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.PrisonDDv5
 
-
 class PrisonDDv5Test {
 
   companion object {
@@ -137,7 +136,7 @@ class PrisonDDv5Test {
       Arguments.of("WCI", PrisonDDv5.WINCHESTER_PRISON),
       Arguments.of("WHI", PrisonDDv5.WOODHILL_PRISON),
       Arguments.of("WSI", PrisonDDv5.WORMWOOD_SCRUBS_PRISON),
-      Arguments.of("WMI", PrisonDDv5.WYMOTT_PRISON)
+      Arguments.of("WMI", PrisonDDv5.WYMOTT_PRISON),
     )
   }
 

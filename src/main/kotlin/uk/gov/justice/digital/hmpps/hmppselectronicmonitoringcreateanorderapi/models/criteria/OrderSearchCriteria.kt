@@ -36,23 +36,22 @@ data class TagFilter(val tagGroups: List<List<String>> = emptyList(), val exclud
 
         val prisons = PrisonDDv5.fromId(userCohort.activeCaseLoadId)
 
-        if(prisons.count()==0)
+        if (prisons.count() == 0) {
           return TagFilter().allOf("Youth YCS")
-
+        }
 
         var filter = TagFilter()
 
         prisons.forEach { prison ->
-          filter= filter.allOf("PRISON", prison.name)
+          filter = filter.allOf("PRISON", prison.name)
         }
 
-        if (prisons.any{prison  -> PrisonDDv5.isPrisonYOI(prison)}) {
+        if (prisons.any { prison -> PrisonDDv5.isPrisonYOI(prison) }) {
           // Prison is YOI, return matching prison and Youth YCS
-          filter= filter.allOf("Youth YCS")
-        }
-        else{
+          filter = filter.allOf("Youth YCS")
+        } else {
           // Prison is adult, return matching prison, exclude Youth YOI and Youth YCS
-          filter= filter.exclude("Youth YOI", "Youth YCS")
+          filter = filter.exclude("Youth YOI", "Youth YCS")
         }
 
         return filter
