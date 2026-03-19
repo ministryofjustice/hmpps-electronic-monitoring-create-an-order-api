@@ -48,6 +48,36 @@ class TagFilterTest {
   }
 
   @Test
+  fun `should filter for Peterborough prison when caseLoadId is PBI`() {
+    val userCohort = UserCohort(Cohort.PRISON, "Some AC name", "PBI")
+    val filter = TagFilter.getTagFilterByUserCohort(userCohort)
+
+    val expected = TagFilter().allOf("PRISON", "PETERBOROUGH_PRISON").exclude("Youth YOI", "Youth YCS")
+
+    assertThat(filter).isEqualTo(expected)
+  }
+
+  @Test
+  fun `should filter for Peterborough prison when caseLoadId is PFI`() {
+    val userCohort = UserCohort(Cohort.PRISON, "Some AC name", "PFI")
+    val filter = TagFilter.getTagFilterByUserCohort(userCohort)
+
+    val expected = TagFilter().allOf("PRISON", "PETERBOROUGH_PRISON").exclude("Youth YOI", "Youth YCS")
+
+    assertThat(filter).isEqualTo(expected)
+  }
+
+  @Test
+  fun `should filter for both COOKHAM_WOOD_YOUNG_OFFENDER_INSTITUTION and COOKHAM_WOOD_PRISON when caseLoadId is CKI`() {
+    val userCohort = UserCohort(Cohort.PRISON, "Some AC name", "CKI")
+    val filter = TagFilter.getTagFilterByUserCohort(userCohort)
+
+    val expected = TagFilter().allOf("PRISON", "COOKHAM_WOOD_YOUNG_OFFENDER_INSTITUTION").allOf("PRISON", "COOKHAM_WOOD_PRISON").anyOf("Youth YCS")
+
+    assertThat(filter).isEqualTo(expected)
+  }
+
+  @Test
   fun `should filter for prison, YOI and YCS when caseLoadId matches YOI prison`() {
     val userCohort = UserCohort(Cohort.PRISON, "Some AC name", "AGI")
     val filter = TagFilter.getTagFilterByUserCohort(userCohort)

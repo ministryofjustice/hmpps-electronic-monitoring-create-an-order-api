@@ -2,7 +2,7 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.m
 
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.Cohort
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.UserCohort
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Prison
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.PrisonDDv5
 
 data class OrderSearchCriteria(val searchTerm: String = "", val tagFilter: TagFilter = TagFilter())
 
@@ -34,16 +34,28 @@ data class TagFilter(val tagGroups: List<List<String>> = emptyList(), val exclud
           return TagFilter()
         }
 
-        val prison = Prison.fromId(userCohort.activeCaseLoadId) ?: return TagFilter().allOf("Youth YCS")
+        val prisons = PrisonDDv5.fromId(userCohort.activeCaseLoadId)
 
-        val filter = TagFilter().allOf("PRISON", prison.name)
-        if (Prison.isPrisonYOI(prison)) {
-          // Prison is YOI, return matching prison and Youth YCS
-          return filter.allOf("Youth YCS")
+        if(prisons.count()==0)
+          return TagFilter().allOf("Youth YCS")
+
+
+        var filter = TagFilter()
+
+        prisons.forEach { prison ->
+          filter= filter.allOf("PRISON", prison.name)
         }
 
-        // Prison is adult, return matching prison, exclude Youth YOI and Youth YCS
-        return filter.exclude("Youth YOI", "Youth YCS")
+        if (prisons.any{prison  -> PrisonDDv5.isPrisonYOI(prison)}) {
+          // Prison is YOI, return matching prison and Youth YCS
+          filter= filter.allOf("Youth YCS")
+        }
+        else{
+          // Prison is adult, return matching prison, exclude Youth YOI and Youth YCS
+          filter= filter.exclude("Youth YOI", "Youth YCS")
+        }
+
+        return filter
       }
 
       Cohort.PROBATION -> TagFilter().anyOf("PRISON", "Probation")
