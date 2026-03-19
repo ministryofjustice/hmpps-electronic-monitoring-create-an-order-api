@@ -36,7 +36,7 @@ data class TagFilter(val tagGroups: List<List<String>> = emptyList(), val exclud
 
         val prisons = Prison.fromId(userCohort.activeCaseLoadId)
 
-        if (prisons.count() == 0) {
+        if (prisons.isEmpty()) {
           return TagFilter().allOf("Youth YCS")
         }
 
