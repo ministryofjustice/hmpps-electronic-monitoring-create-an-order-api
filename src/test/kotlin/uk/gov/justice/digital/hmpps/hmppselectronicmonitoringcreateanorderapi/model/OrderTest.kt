@@ -11,7 +11,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DocumentType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.InstallationLocationType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisationDDv5
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.PrisonDDv5
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Prison
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ProbationServiceRegion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ResponsibleOrganisation
 import java.time.ZoneId
@@ -297,7 +297,7 @@ class OrderTest : OrderTestBase() {
       responsibleOrganisationRegion = ProbationServiceRegion.EAST_MIDLANDS.name,
       responsibleOrganisationEmail = "",
       notifyingOrganisation = NotifyingOrganisationDDv5.PRISON.name,
-      notifyingOrganisationName = PrisonDDv5.GARTH_PRISON.name,
+      notifyingOrganisationName = Prison.GARTH_PRISON.name,
       notifyingOrganisationEmail = "",
     ),
     additionalDocuments = mutableListOf(

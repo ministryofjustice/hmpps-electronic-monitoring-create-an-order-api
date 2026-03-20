@@ -11,7 +11,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MilitaryCourtDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisationDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.PoliceAreas
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.PrisonDDv5
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Prison
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ProbationServiceRegion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ResponsibleOrganisation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YouthCourtDDv5
@@ -74,7 +74,7 @@ data class UpdateInterestedPartiesDto(
     }
 
     if (notifyingOrganisation === NotifyingOrganisationDDv5.PRISON) {
-      return PrisonDDv5.entries.any { it.name == notifyingOrganisationName }
+      return Prison.entries.any { it.name == notifyingOrganisationName }
     }
 
     if (notifyingOrganisation === NotifyingOrganisationDDv5.YOUTH_COURT) {
@@ -88,7 +88,6 @@ data class UpdateInterestedPartiesDto(
     }
 
     if (notifyingOrganisation === NotifyingOrganisationDDv5.PROBATION) return true
-    if (notifyingOrganisation === NotifyingOrganisationDDv5.YOUTH_CUSTODY_SERVICE) return true
 
     return notifyingOrganisationName == ""
   }
