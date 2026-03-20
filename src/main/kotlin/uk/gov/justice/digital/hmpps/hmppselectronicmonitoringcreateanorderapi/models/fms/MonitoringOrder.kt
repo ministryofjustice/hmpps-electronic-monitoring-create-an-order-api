@@ -299,7 +299,7 @@ data class MonitoringOrder(
         deviceWearer = "${order.deviceWearer!!.firstName} ${order.deviceWearer!!.lastName}",
         orderType = conditions.orderType!!.value,
         orderRequestType = order.type.value,
-        orderTypeDescription = conditions.orderTypeDescription?.value,
+        orderTypeDescription = conditions.orderTypeDescription?.value ?: "",
         orderStart = getBritishDateAndTime(monitoringStartDate),
         orderEnd = getBritishDateAndTime(monitoringEndDate) ?: "",
         serviceEndDate = getBritishDate(monitoringEndDate) ?: "",
@@ -680,7 +680,7 @@ data class MonitoringOrder(
     }
 
     private fun getOffence(order: Order): String? =
-      Offence.from(order.installationAndRisk?.offence)?.value ?: order.installationAndRisk?.offence
+      Offence.from(order.installationAndRisk?.offence)?.value ?: order.installationAndRisk?.offence ?: ""
 
     private fun getResponsibleOfficerPhoneNumber(interestedParties: InterestedParties): String? {
       if (interestedParties.responsibleOfficerPhoneNumber == null) {
