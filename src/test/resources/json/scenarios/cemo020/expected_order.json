@@ -37,7 +37,7 @@
   "order_request_type": "New Order",
   "order_start": "2025-08-04 09:16:00",
   "order_type": "Pre-Trial",
-  "order_type_description": null,
+  "order_type_description": "",
   "order_type_detail": "",
   "order_variation_date": "",
   "order_variation_details": "",

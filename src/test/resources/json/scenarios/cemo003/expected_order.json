@@ -37,7 +37,7 @@
   "order_request_type": "New Order",
   "order_start": "2025-09-06 12:11:00",
   "order_type": "Community",
-  "order_type_description": null,
+  "order_type_description": "",
   "order_type_detail": "",
   "order_variation_date": "",
   "order_variation_details": "",
