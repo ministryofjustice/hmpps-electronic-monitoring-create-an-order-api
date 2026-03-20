@@ -183,8 +183,8 @@ data class OrderVersion(
 
   private val isOrderOrHasVariationDetails: Boolean
     get() = (
-      if (type === RequestType.VARIATION) {
-        variationDetails != null
+      if (RequestType.VARIATION_TYPES.contains(type)) {
+        variationDetails?.variationDate != null
       } else {
         true
       }
