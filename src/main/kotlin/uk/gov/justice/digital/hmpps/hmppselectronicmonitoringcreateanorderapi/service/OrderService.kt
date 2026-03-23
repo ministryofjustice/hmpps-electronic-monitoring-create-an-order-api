@@ -12,6 +12,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.MonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.Cohort
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.OrderListCriteria
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.OrderSearchCriteria
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.TagFilter
@@ -97,6 +98,23 @@ class OrderService(
     return order
   }
 
+  private fun isUserFromOriginalNotifyingOrganistion(
+    token: JwtAuthenticationToken,
+    notifyingOrganisation: String?,
+  ): Boolean {
+    val userCohort = userCohortService.getUserCohort(token)
+    val notifyingOrganisation = NotifyingOrganisationDDv5.from(notifyingOrganisation)
+    return when (userCohort.cohort) {
+      Cohort.PRISON ->
+        notifyingOrganisation in
+          listOf(NotifyingOrganisationDDv5.PRISON, NotifyingOrganisationDDv5.YOUTH_CUSTODY_SERVICE)
+      Cohort.PROBATION -> notifyingOrganisation == NotifyingOrganisationDDv5.PROBATION
+      Cohort.COURT -> NotifyingOrganisationDDv5.COURTS.contains(notifyingOrganisation)
+      Cohort.HOME_OFFICE -> notifyingOrganisation == NotifyingOrganisationDDv5.HOME_OFFICE
+      else -> false
+    }
+  }
+
   fun createVersion(orderId: UUID, token: JwtAuthenticationToken, versionType: RequestType): Order {
     val order = getOrder(orderId, token)
     val currentVersion = order.getCurrentVersion()
@@ -138,13 +156,19 @@ class OrderService(
 
         // only copy interested parties and PDU if order start date in the future
         if (order.getMonitoringStartDate() != null && order.getMonitoringStartDate()!! > ZonedDateTime.now()) {
+          val currentIPs = currentVersion.interestedParties
+          val isUserFromOriginalNotifyingOrganistion =
+            isUserFromOriginalNotifyingOrganistion(token, currentVersion.interestedParties?.notifyingOrganisation)
           interestedParties =
             currentVersion.interestedParties?.copy(
               versionId = this.id,
               id = UUID.randomUUID(),
-              notifyingOrganisation = null,
-              notifyingOrganisationName = null,
-              notifyingOrganisationEmail = null,
+              notifyingOrganisation = currentIPs?.notifyingOrganisation
+                ?.takeIf { isUserFromOriginalNotifyingOrganistion },
+              notifyingOrganisationName = currentIPs?.notifyingOrganisationName
+                ?.takeIf { isUserFromOriginalNotifyingOrganistion },
+              notifyingOrganisationEmail = currentIPs?.notifyingOrganisationEmail
+                ?.takeIf { isUserFromOriginalNotifyingOrganistion },
             )
 
           probationDeliveryUnit =
