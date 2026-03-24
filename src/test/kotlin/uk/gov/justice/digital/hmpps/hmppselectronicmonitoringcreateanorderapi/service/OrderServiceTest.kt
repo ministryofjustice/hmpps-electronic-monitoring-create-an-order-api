@@ -869,6 +869,64 @@ class OrderServiceTest {
     }
   }
 
+  @ParameterizedTest(
+    name = "It should clone NO if user cohort is same as original notifying org - {0} -> {1}",
+  )
+  @MethodSource("userCohortSameAsNotifyingOrgArguments")
+  fun `It should clone NO if user cohort is same as original notifying org`(
+    cohort: Cohort,
+    notifyingOrganisation: String,
+  ) {
+    val originalVersionId: UUID = UUID.randomUUID()
+    val order = TestUtilities.createReadyToSubmitOrder(
+      versionId = originalVersionId,
+      status = OrderStatus.SUBMITTED,
+      notifyingOrganisation = notifyingOrganisation,
+      notifyingOrganisationName = "Mock org",
+
+    )
+    whenever(userCohortService.getUserCohort(authentication)).thenReturn(UserCohort(cohort))
+    whenever(repo.findById(order.id)).thenReturn(Optional.of(order))
+    whenever(repo.save(order)).thenReturn(order)
+
+    service.createVersion(order.id, authentication, RequestType.VARIATION)
+
+    argumentCaptor<Order>().apply {
+      verify(repo, times(1)).save(capture())
+      assertThat(firstValue.versions.last().interestedParties?.notifyingOrganisation).isNotNull()
+      assertThat(firstValue.versions.last().interestedParties?.notifyingOrganisationName).isNotNull()
+    }
+  }
+
+  @ParameterizedTest(
+    name = "It should  not clone NO if user cohort is not same as original notifying org - {0} -> {1}",
+  )
+  @MethodSource("userCohortNotSameAsNotifyingOrgArguments")
+  fun `It should not clone NO if user cohort is not same as original notifying org`(
+    cohort: Cohort,
+    notifyingOrganisation: String,
+  ) {
+    val originalVersionId: UUID = UUID.randomUUID()
+    val order = TestUtilities.createReadyToSubmitOrder(
+      versionId = originalVersionId,
+      status = OrderStatus.SUBMITTED,
+      notifyingOrganisation = notifyingOrganisation,
+      notifyingOrganisationName = "Mock org",
+
+    )
+    whenever(userCohortService.getUserCohort(authentication)).thenReturn(UserCohort(cohort))
+    whenever(repo.findById(order.id)).thenReturn(Optional.of(order))
+    whenever(repo.save(order)).thenReturn(order)
+
+    service.createVersion(order.id, authentication, RequestType.VARIATION)
+
+    argumentCaptor<Order>().apply {
+      verify(repo, times(1)).save(capture())
+      assertThat(firstValue.versions.last().interestedParties?.notifyingOrganisation).isNull()
+      assertThat(firstValue.versions.last().interestedParties?.notifyingOrganisationName).isNull()
+    }
+  }
+
   @Nested
   @DisplayName("Get version information")
   inner class GetVersionInformation {
@@ -1026,6 +1084,28 @@ class OrderServiceTest {
       Arguments.of(NotifyingOrganisationDDv5.FAMILY_COURT.name, "Family Court"),
       Arguments.of(NotifyingOrganisationDDv5.HOME_OFFICE.name, "Home Office"),
       Arguments.of(NotifyingOrganisationDDv5.YOUTH_CUSTODY_SERVICE.name, ""),
+    )
+
+    @JvmStatic
+    fun userCohortSameAsNotifyingOrgArguments() = listOf(
+      Arguments.of(Cohort.PRISON, "PRISON"),
+      Arguments.of(Cohort.PRISON, "YOUTH_CUSTODY_SERVICE"),
+      Arguments.of(Cohort.PROBATION, "PROBATION"),
+      Arguments.of(Cohort.COURT, "CIVIL_COUNTY_COURT"),
+      Arguments.of(Cohort.COURT, "CROWN_COURT"),
+      Arguments.of(Cohort.COURT, "MAGISTRATES_COURT"),
+      Arguments.of(Cohort.COURT, "MILITARY_COURT"),
+      Arguments.of(Cohort.COURT, "SCOTTISH_COURT"),
+      Arguments.of(Cohort.COURT, "FAMILY_COURT"),
+      Arguments.of(Cohort.COURT, "YOUTH_COURT"),
+      Arguments.of(Cohort.HOME_OFFICE, "HOME_OFFICE"),
+    )
+
+    @JvmStatic
+    fun userCohortNotSameAsNotifyingOrgArguments() = listOf(
+      Arguments.of(Cohort.PRISON, "PROBATION"),
+      Arguments.of(Cohort.PROBATION, "PRISON"),
+      Arguments.of(Cohort.PROBATION, "YOUTH_CUSTODY_SERVICE"),
     )
   }
 }
