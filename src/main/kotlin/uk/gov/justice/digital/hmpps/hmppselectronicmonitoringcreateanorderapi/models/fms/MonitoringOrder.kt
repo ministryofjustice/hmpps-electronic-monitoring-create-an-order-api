@@ -244,6 +244,8 @@ data class MonitoringOrder(
   var installAtSourcePilot: String? = "",
   @JsonProperty("dapo_order_clause_number")
   var dapoOrderClauseNumbers: MutableList<DapoClause>? = mutableListOf(),
+  @JsonProperty("offences")
+  var offences: MutableList<OffenceData>? = mutableListOf(),
 ) {
 
   companion object {
@@ -352,6 +354,15 @@ data class MonitoringOrder(
             DapoClause(
               dapoOrderClauseNumber = it.clause,
               date = getBritishDate(it.date),
+            )
+          },
+        )
+
+        monitoringOrder.offences?.addAll(
+          order.offences.map {
+            OffenceData(
+              offence = it.offenceType,
+              offenceDate = getBritishDate(it.offenceDate),
             )
           },
         )
@@ -823,4 +834,10 @@ data class DapoClause(
   @JsonProperty("dapo_order_clause_number")
   val dapoOrderClauseNumber: String? = "",
   val date: String? = "",
+)
+
+data class OffenceData(
+  val offence: String? = "",
+  @JsonProperty("offence_date")
+  val offenceDate: String? = "",
 )
