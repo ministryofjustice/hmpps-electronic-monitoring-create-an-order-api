@@ -242,6 +242,10 @@ data class MonitoringOrder(
   var acEligibleOffences: MutableList<AcEligibleOffence>? = mutableListOf(),
   @JsonProperty("install_at_source_pilot")
   var installAtSourcePilot: String? = "",
+  @JsonProperty("dapo_order_clause_number")
+  var dapoOrderClauseNumbers: MutableList<DapoClause>? = mutableListOf(),
+  @JsonProperty("offences")
+  var offences: MutableList<OffenceData>? = mutableListOf(),
 ) {
 
   companion object {
@@ -337,6 +341,31 @@ data class MonitoringOrder(
         "Yes"
       } else {
         "No"
+      }
+
+      if (DataDictionaryVersion.isVersionSameOrAbove(
+          order.dataDictionaryVersion,
+          DataDictionaryVersion.DDV6,
+        ) &&
+        featureFlags.ddV6CourtMappings
+      ) {
+        monitoringOrder.dapoOrderClauseNumbers?.addAll(
+          order.dapoClauses.map {
+            DapoClause(
+              dapoOrderClauseNumber = it.clause,
+              date = getBritishDate(it.date),
+            )
+          },
+        )
+
+        monitoringOrder.offences?.addAll(
+          order.offences.map {
+            OffenceData(
+              offence = it.offenceType,
+              offenceDate = getBritishDate(it.offenceDate),
+            )
+          },
+        )
       }
 
       order.interestedParties?.let { parties ->
@@ -796,6 +825,18 @@ data class Schedule(val day: String? = "", val start: String? = "", val end: Str
 }
 
 data class AcEligibleOffence(
+  val offence: String? = "",
+  @JsonProperty("offence_date")
+  val offenceDate: String? = "",
+)
+
+data class DapoClause(
+  @JsonProperty("dapo_order_clause_number")
+  val dapoOrderClauseNumber: String? = "",
+  val date: String? = "",
+)
+
+data class OffenceData(
   val offence: String? = "",
   @JsonProperty("offence_date")
   val offenceDate: String? = "",
