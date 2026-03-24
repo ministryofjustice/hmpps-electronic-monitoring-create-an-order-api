@@ -7,6 +7,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewReleaseDateConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewTimeTable
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Dapo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.EnforcementZoneConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationAndRisk
@@ -62,6 +63,7 @@ abstract class OrderTestBase {
     type: RequestType = RequestType.REQUEST,
     variationDetails: VariationDetails? = null,
     offenceAdditionalDetails: String? = null,
+    dapoClauses: MutableList<Dapo>? = null,
   ): Order {
     val orderId = UUID.randomUUID()
     val versionId = UUID.randomUUID()
@@ -123,6 +125,10 @@ abstract class OrderTestBase {
       order.curfewReleaseDateConditions = curfewDayOfRelease
 
       order.curfewTimeTable = curfewTimetable
+    }
+
+    if (!dapoClauses.isNullOrEmpty()) {
+      order.dapoClauses.addAll(dapoClauses)
     }
 
     order.variationDetails = variationDetails

@@ -27,6 +27,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.YouthCourtArgumentsProvider
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.YouthCustodyServiceRegionArgumentsProvider
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.YouthCustodyServiceRegionArgumentsProviderDDv6
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Dapo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationAppointment
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationLocation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.TrailMonitoringConditions
@@ -44,6 +45,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.SentenceType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.VariationType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YesNoUnknown
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.DapoClause
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.EnforceableCondition
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.MonitoringOrder
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.Zone
@@ -1354,6 +1356,33 @@ class MonitoringOrderTest : OrderTestBase() {
     assertThat(fmsMonitoringOrder.roRegion).isEqualTo("")
     assertThat(fmsMonitoringOrder.roEmail).isEqualTo("")
     assertThat(fmsMonitoringOrder.responsibleOfficerDetailsReceived).isEqualTo("No")
+  }
+
+  @Test
+  fun `should map dapo offences`() {
+    val mockDate = ZonedDateTime.now()
+    val order = createOrder(
+      type = RequestType.REQUEST,
+      dataDictionaryVersion = DataDictionaryVersion.DDV6,
+      dapoClauses = mutableListOf(
+        Dapo(versionId = UUID.randomUUID(), clause = "1234", date = mockDate),
+        Dapo(versionId = UUID.randomUUID(), clause = "5678", date = mockDate.plusMonths(1)),
+      ),
+    )
+
+    val featureFlags = FeatureFlags(ddV6CourtMappings = true, dataDictionaryVersion = DataDictionaryVersion.DDV6)
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, featureFlags)
+
+    assertThat(fmsMonitoringOrder.dapoOrderClauseNumbers).contains(
+      DapoClause(
+        dapoOrderClauseNumber = "1234",
+        date = getBritishDate(mockDate),
+      ),
+      DapoClause(
+        dapoOrderClauseNumber = "5678",
+        date = getBritishDate(mockDate.plusMonths(1)),
+      ),
+    )
   }
 
   private fun assertNotifyingOrgNameMapping(
