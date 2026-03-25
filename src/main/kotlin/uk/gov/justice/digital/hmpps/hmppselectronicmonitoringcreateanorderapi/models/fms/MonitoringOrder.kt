@@ -242,7 +242,7 @@ data class MonitoringOrder(
   var acEligibleOffences: MutableList<AcEligibleOffence>? = mutableListOf(),
   @JsonProperty("install_at_source_pilot")
   var installAtSourcePilot: String? = "",
-  @JsonProperty("dapo_order_clause_number")
+  @JsonProperty("dapo_order_clause_numbers")
   var dapoOrderClauseNumbers: MutableList<DapoClause>? = mutableListOf(),
   @JsonProperty("offences")
   var offences: MutableList<OffenceData>? = mutableListOf(),
