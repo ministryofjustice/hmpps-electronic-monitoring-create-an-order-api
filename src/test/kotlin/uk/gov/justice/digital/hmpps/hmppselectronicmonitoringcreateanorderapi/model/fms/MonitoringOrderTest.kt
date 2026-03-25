@@ -1396,12 +1396,12 @@ class MonitoringOrderTest : OrderTestBase() {
       offences = mutableListOf(
         Offence(
           versionId = UUID.randomUUID(),
-          offenceType = "offence type",
+          offenceType = "VIOLENCE_AGAINST_THE_PERSON",
           offenceDate = mockDate,
         ),
         Offence(
           versionId = UUID.randomUUID(),
-          offenceType = "offence type 2",
+          offenceType = "SEXUAL_OFFENCES",
           offenceDate = mockDate.plusMonths(1),
         ),
       ),
@@ -1412,11 +1412,11 @@ class MonitoringOrderTest : OrderTestBase() {
 
     assertThat(fmsMonitoringOrder.offences).contains(
       OffenceData(
-        offence = "offence type",
+        offence = "Violence against the person",
         offenceDate = getBritishDate(mockDate),
       ),
       OffenceData(
-        offence = "offence type 2",
+        offence = "Sexual offences",
         offenceDate = getBritishDate(mockDate.plusMonths(1)),
       ),
     )

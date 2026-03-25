@@ -361,7 +361,7 @@ data class MonitoringOrder(
         monitoringOrder.offences?.addAll(
           order.offences.map {
             OffenceData(
-              offence = it.offenceType,
+              offence = Offence.from(it.offenceType)?.value ?: it.offenceType,
               offenceDate = getBritishDate(it.offenceDate),
             )
           },
