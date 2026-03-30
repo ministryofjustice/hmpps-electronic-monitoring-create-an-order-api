@@ -8,6 +8,7 @@ import org.junit.jupiter.params.provider.MethodSource
 import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.config.FeatureFlags
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.OrderTestBase
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DetailsOfInstallation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisationDDv5
@@ -203,6 +204,31 @@ class DeviceWearerTest : OrderTestBase() {
     val fmsDeviceWearer = FmsDeviceWearer.fromCemoOrder(order, featureFlags)
 
     assertThat(fmsDeviceWearer.disability!!.first().disability).isEqualTo(mappedValue)
+  }
+
+  @Test
+  fun `It should map risk data from detailsOfInstallation`() {
+    val order = createOrder(
+      dataDictionaryVersion = DataDictionaryVersion.DDV6,
+      deviceWearer = createDeviceWearer(),
+    )
+
+    order.installationAndRisk = null
+
+    order.detailsOfInstallation =
+      DetailsOfInstallation(
+        versionId = order.getCurrentVersion().id,
+        riskDetails = "History of violence",
+        riskCategory = arrayOf("THREATS_OF_VIOLENCE"),
+      )
+
+    val featureFlags = FeatureFlags(dataDictionaryVersion = DataDictionaryVersion.DDV6, ddV6CourtMappings = true)
+    val fmsDeviceWearer = FmsDeviceWearer.fromCemoOrder(order, featureFlags)
+
+    assertThat(fmsDeviceWearer.riskDetails).isEqualTo("History of violence")
+    assertThat(fmsDeviceWearer.riskCategory).isNotNull
+    assertThat(fmsDeviceWearer.riskCategory).hasSize(1)
+    assertThat(fmsDeviceWearer.riskCategory!!.first().category).isEqualTo("Threats of Violence")
   }
 
   companion object {
