@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.config.FeatureFlags
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Gender
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RiskCategory
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Sex
@@ -272,18 +273,23 @@ data class DeviceWearer(
       Gender.from(order.deviceWearer?.gender)?.value ?: order.deviceWearer?.gender ?: ""
 
     private fun getRiskDetails(order: Order, featureFlags: FeatureFlags): String? =
-      if (featureFlags.ddV6CourtMappings) {
+      if (DataDictionaryVersion.isVersionSameOrAbove(order.dataDictionaryVersion, DataDictionaryVersion.DDV6) &&
+        featureFlags.ddV6CourtMappings
+      ) {
         order.detailsOfInstallation?.riskDetails ?: order.installationAndRisk?.riskDetails
       } else {
         order.installationAndRisk?.riskDetails
       }
 
     private fun getRiskCategories(order: Order, featureFlags: FeatureFlags): List<FmsRiskCategory> {
-      val riskCategories = if (featureFlags.ddV6CourtMappings) {
-        order.detailsOfInstallation?.riskCategory ?: order.installationAndRisk?.riskCategory
-      } else {
-        order.installationAndRisk?.riskCategory
-      }
+      val riskCategories =
+        if (DataDictionaryVersion.isVersionSameOrAbove(order.dataDictionaryVersion, DataDictionaryVersion.DDV6) &&
+          featureFlags.ddV6CourtMappings
+        ) {
+          order.detailsOfInstallation?.riskCategory ?: order.installationAndRisk?.riskCategory
+        } else {
+          order.installationAndRisk?.riskCategory
+        }
 
       if (riskCategories?.any() == true) {
         return riskCategories

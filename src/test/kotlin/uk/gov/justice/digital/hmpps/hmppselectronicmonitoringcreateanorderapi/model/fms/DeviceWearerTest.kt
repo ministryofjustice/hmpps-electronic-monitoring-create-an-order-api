@@ -209,6 +209,7 @@ class DeviceWearerTest : OrderTestBase() {
   @Test
   fun `It should map risk data from detailsOfInstallation`() {
     val order = createOrder(
+      dataDictionaryVersion = DataDictionaryVersion.DDV6,
       deviceWearer = createDeviceWearer(),
     )
 
@@ -221,6 +222,7 @@ class DeviceWearerTest : OrderTestBase() {
         riskCategory = arrayOf("THREATS_OF_VIOLENCE"),
       )
 
+    val featureFlags = FeatureFlags(dataDictionaryVersion = DataDictionaryVersion.DDV6, ddV6CourtMappings = true)
     val fmsDeviceWearer = FmsDeviceWearer.fromCemoOrder(order, featureFlags)
 
     assertThat(fmsDeviceWearer.riskDetails).isEqualTo("History of violence")
