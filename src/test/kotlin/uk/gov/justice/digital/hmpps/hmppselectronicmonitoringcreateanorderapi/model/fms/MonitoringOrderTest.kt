@@ -36,6 +36,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DeviceType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FamilyCourtDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.InstallationLocationType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisationDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderType
@@ -1254,6 +1255,7 @@ class MonitoringOrderTest : OrderTestBase() {
       dataDictionaryVersion = DataDictionaryVersion.DDV6,
       interestedParties = createInterestedParty(
         notifyingOrganisation = NotifyingOrganisationDDv5.FAMILY_COURT.name,
+        notifyingOrganisationName = FamilyCourtDDv5.DONCASTER_FAMILY_COURT.name,
         responsibleOfficerName = "officer name",
         responsibleOfficerPhoneNumber = "01234567890",
         responsibleOrganisationEmail = "a@b.com",
@@ -1275,6 +1277,7 @@ class MonitoringOrderTest : OrderTestBase() {
       dataDictionaryVersion = DataDictionaryVersion.DDV6,
       interestedParties = createInterestedParty(
         notifyingOrganisation = NotifyingOrganisationDDv5.FAMILY_COURT.name,
+        notifyingOrganisationName = FamilyCourtDDv5.DONCASTER_FAMILY_COURT.name,
         responsibleOfficerName = "",
         responsibleOfficerPhoneNumber = "",
         responsibleOrganisationEmail = "",
