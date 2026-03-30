@@ -183,7 +183,7 @@ data class DeviceWearer(
         genderIdentity = getGender(order),
         disability = disabilities,
         phoneNumber = getPhoneNumber(order),
-        riskDetails = order.installationAndRisk?.riskDetails,
+        riskDetails = order.detailsOfInstallation?.riskDetails ?: order.installationAndRisk?.riskDetails,
         riskCategory = getRiskCategories(order),
         mappa = order.mappa?.level?.value,
         mappaCaseType = order.mappa?.category?.value,
@@ -272,8 +272,9 @@ data class DeviceWearer(
       Gender.from(order.deviceWearer?.gender)?.value ?: order.deviceWearer?.gender ?: ""
 
     private fun getRiskCategories(order: Order): List<FmsRiskCategory> {
-      if (order.installationAndRisk?.riskCategory?.any() == true) {
-        return order.installationAndRisk!!.riskCategory!!
+      val riskCategories = order.detailsOfInstallation?.riskCategory ?: order.installationAndRisk?.riskCategory
+      if (riskCategories?.any() == true) {
+        return riskCategories
           .filter {
             RiskCategory.entries.any { riskCategory ->
               riskCategory != RiskCategory.NO_RISK &&
