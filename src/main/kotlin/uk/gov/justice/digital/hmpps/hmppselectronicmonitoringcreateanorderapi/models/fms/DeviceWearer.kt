@@ -183,8 +183,8 @@ data class DeviceWearer(
         genderIdentity = getGender(order),
         disability = disabilities,
         phoneNumber = getPhoneNumber(order),
-        riskDetails = order.detailsOfInstallation?.riskDetails ?: order.installationAndRisk?.riskDetails,
-        riskCategory = getRiskCategories(order),
+        riskDetails = getRiskDetails(order, featureFlags),
+        riskCategory = getRiskCategories(order, featureFlags),
         mappa = order.mappa?.level?.value,
         mappaCaseType = order.mappa?.category?.value,
         responsibleAdultRequired = (order.deviceWearerResponsibleAdult != null).toString(),
@@ -271,8 +271,20 @@ data class DeviceWearer(
     private fun getGender(order: Order): String =
       Gender.from(order.deviceWearer?.gender)?.value ?: order.deviceWearer?.gender ?: ""
 
-    private fun getRiskCategories(order: Order): List<FmsRiskCategory> {
-      val riskCategories = order.detailsOfInstallation?.riskCategory ?: order.installationAndRisk?.riskCategory
+    private fun getRiskDetails(order: Order, featureFlags: FeatureFlags): String? =
+      if (featureFlags.ddV6CourtMappings) {
+        order.detailsOfInstallation?.riskDetails ?: order.installationAndRisk?.riskDetails
+      } else {
+        order.installationAndRisk?.riskDetails
+      }
+
+    private fun getRiskCategories(order: Order, featureFlags: FeatureFlags): List<FmsRiskCategory> {
+      val riskCategories = if (featureFlags.ddV6CourtMappings) {
+        order.detailsOfInstallation?.riskCategory ?: order.installationAndRisk?.riskCategory
+      } else {
+        order.installationAndRisk?.riskCategory
+      }
+
       if (riskCategories?.any() == true) {
         return riskCategories
           .filter {
