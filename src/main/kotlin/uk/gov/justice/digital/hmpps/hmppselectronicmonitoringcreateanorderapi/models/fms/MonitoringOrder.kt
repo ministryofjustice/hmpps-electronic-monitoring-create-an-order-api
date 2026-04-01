@@ -399,9 +399,9 @@ data class MonitoringOrder(
                 parties?.notifyingOrganisation === NotifyingOrganisationDDv5.CIVIL_COUNTY_COURT.name
 
             responsibleOfficerDetailsReceived = if (isCourt) {
-              if (hasDetails && !variationInPast) "Yes" else "No"
+              "No"
             } else {
-              "Yes"
+              if (hasDetails && !variationInPast) "Yes" else "No"
             }
           }
 
