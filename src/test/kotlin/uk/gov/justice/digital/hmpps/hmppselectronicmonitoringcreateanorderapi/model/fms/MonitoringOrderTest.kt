@@ -36,6 +36,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DeviceType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FamilyCourtDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.InstallationLocationType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisationDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderType
@@ -1089,7 +1090,7 @@ class MonitoringOrderTest : OrderTestBase() {
   }
 
   @Test
-  fun `It should correctly map dapolMissedInError when notifying organsation is probation and DAPOL pilot`() {
+  fun `It should correctly map dapolMissedInError when notifying organisation is probation and DAPOL pilot`() {
     val order = createOrder(
       dataDictionaryVersion = DataDictionaryVersion.DDV6,
       interestedParties = createInterestedParty(notifyingOrganisation = NotifyingOrganisationDDv5.PROBATION.name),
@@ -1273,6 +1274,28 @@ class MonitoringOrderTest : OrderTestBase() {
     val order = createOrder(
       dataDictionaryVersion = DataDictionaryVersion.DDV6,
       interestedParties = createInterestedParty(
+        responsibleOfficerName = "",
+        responsibleOfficerPhoneNumber = "",
+        responsibleOrganisationEmail = "",
+      ),
+    )
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(
+      order,
+      null,
+      FeatureFlags(dataDictionaryVersion = DataDictionaryVersion.DDV6, ddV6CourtMappings = true),
+    )
+    val condition =
+      fmsMonitoringOrder.responsibleOfficerDetailsReceived
+    assertThat(condition).isEqualTo("No")
+  }
+
+  @Test
+  fun `for court order, responsible_officer_details_received is always no`() {
+    val order = createOrder(
+      dataDictionaryVersion = DataDictionaryVersion.DDV6,
+      interestedParties = createInterestedParty(
+        notifyingOrganisation = NotifyingOrganisationDDv5.FAMILY_COURT.name,
+        notifyingOrganisationName = FamilyCourtDDv5.DONCASTER_FAMILY_COURT.name,
         responsibleOfficerName = "",
         responsibleOfficerPhoneNumber = "",
         responsibleOrganisationEmail = "",
