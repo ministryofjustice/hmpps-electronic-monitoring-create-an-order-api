@@ -394,15 +394,9 @@ data class MonitoringOrder(
             val parties = order.interestedParties
             val hasDetails = !parties?.getResponsibleOfficerFullName().isNullOrBlank() &&
               !parties.responsibleOrganisationEmail.isNullOrBlank()
-            val isCourt =
-              parties?.notifyingOrganisation === NotifyingOrganisationDDv5.FAMILY_COURT.name ||
-                parties?.notifyingOrganisation === NotifyingOrganisationDDv5.CIVIL_COUNTY_COURT.name
 
-            responsibleOfficerDetailsReceived = if (isCourt) {
-              if (hasDetails && !variationInPast) "Yes" else "No"
-            } else {
-              "Yes"
-            }
+            responsibleOfficerDetailsReceived =
+              if (hasDetails && (!variationInPast)) "Yes" else "No"
           }
 
           if (startDateIsInPast && orderIsVariation) {
