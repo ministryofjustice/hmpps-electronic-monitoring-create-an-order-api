@@ -530,7 +530,8 @@ data class MonitoringOrder(
 
       if (order.installationLocation != null) {
         if (order.installationLocation?.location == InstallationLocationType.PROBATION_OFFICE ||
-          order.installationLocation?.location == InstallationLocationType.PRISON
+          order.installationLocation?.location == InstallationLocationType.PRISON ||
+          order.installationLocation?.location == InstallationLocationType.IMMIGRATION_REMOVAL_CENTRE
         ) {
           monitoringOrder.tagAtSource = "true"
           monitoringOrder.tagAtSourceDetails = order.installationAppointment?.placeName ?: ""
@@ -549,6 +550,7 @@ data class MonitoringOrder(
             Prison.PRISONS_IN_PILOT.any { it.name == order.interestedParties?.notifyingOrganisationName }
           ) {
             monitoringOrder.installAtSourcePilot = "true"
+            monitoringOrder.tagAtSource = "false"
           } else {
             monitoringOrder.installAtSourcePilot = "false"
           }
