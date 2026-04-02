@@ -1287,7 +1287,7 @@ class MonitoringOrderTest : OrderTestBase() {
   }
 
   @Test
-  fun `responsible_officer_details_received is yes if responsible officers details are filled`() {
+  fun `responsible_officer_details_received is yes if non-court, and not variation in past`() {
     val order = createOrder(
       dataDictionaryVersion = DataDictionaryVersion.DDV6,
       interestedParties = createInterestedParty(
@@ -1304,26 +1304,6 @@ class MonitoringOrderTest : OrderTestBase() {
     val condition =
       fmsMonitoringOrder.responsibleOfficerDetailsReceived
     assertThat(condition).isEqualTo("Yes")
-  }
-
-  @Test
-  fun `responsible_officer_details_received is no if responsible officers details are not filled`() {
-    val order = createOrder(
-      dataDictionaryVersion = DataDictionaryVersion.DDV6,
-      interestedParties = createInterestedParty(
-        responsibleOfficerName = "",
-        responsibleOfficerPhoneNumber = "",
-        responsibleOrganisationEmail = "",
-      ),
-    )
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(
-      order,
-      null,
-      FeatureFlags(dataDictionaryVersion = DataDictionaryVersion.DDV6, ddV6CourtMappings = true),
-    )
-    val condition =
-      fmsMonitoringOrder.responsibleOfficerDetailsReceived
-    assertThat(condition).isEqualTo("No")
   }
 
   @Test
@@ -1346,6 +1326,29 @@ class MonitoringOrderTest : OrderTestBase() {
     val condition =
       fmsMonitoringOrder.responsibleOfficerDetailsReceived
     assertThat(condition).isEqualTo("No")
+  }
+
+  @Test
+  fun `if variation and start date in future responsible_officer_details_received is yes`() {
+    val order = createOrder(
+      dataDictionaryVersion = DataDictionaryVersion.DDV6,
+      type = RequestType.VARIATION,
+      variationDetails = createvariationDetails(),
+      interestedParties = createInterestedParty(
+        notifyingOrganisation = "PROBATION",
+      ),
+      monitoringConditions = createMonitoringConditions(startDate = ZonedDateTime.now().plusDays(1)),
+    )
+
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(
+      order,
+      null,
+      FeatureFlags(dataDictionaryVersion = DataDictionaryVersion.DDV6, ddV6CourtMappings = true),
+    )
+
+    val condition =
+      fmsMonitoringOrder.responsibleOfficerDetailsReceived
+    assertThat(condition).isEqualTo("Yes")
   }
 
   @Test

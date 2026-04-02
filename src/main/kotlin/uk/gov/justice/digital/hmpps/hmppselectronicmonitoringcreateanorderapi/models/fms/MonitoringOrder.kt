@@ -392,16 +392,17 @@ data class MonitoringOrder(
 
           if (featureFlags.ddV6CourtMappings) {
             val parties = order.interestedParties
-            val hasDetails = !parties?.getResponsibleOfficerFullName().isNullOrBlank() &&
-              !parties.responsibleOrganisationEmail.isNullOrBlank()
-            val isCourt =
-              parties?.notifyingOrganisation === NotifyingOrganisationDDv5.FAMILY_COURT.name ||
-                parties?.notifyingOrganisation === NotifyingOrganisationDDv5.CIVIL_COUNTY_COURT.name
+            val orgValue = parties?.notifyingOrganisation
 
-            responsibleOfficerDetailsReceived = if (isCourt) {
+            val matchingEnum = NotifyingOrganisationDDv5.from(orgValue)
+              ?: NotifyingOrganisationDDv5.entries.find { it.value == orgValue }
+
+            val isCourt = matchingEnum != null && NotifyingOrganisationDDv5.COURTS.contains(matchingEnum)
+
+            responsibleOfficerDetailsReceived = if (isCourt || variationInPast) {
               "No"
             } else {
-              if (hasDetails && !variationInPast) "Yes" else "No"
+              "Yes"
             }
           }
 
