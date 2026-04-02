@@ -1485,6 +1485,24 @@ class MonitoringOrderTest : OrderTestBase() {
     )
   }
 
+  @Test
+  fun `should map orderType as pre trial when it is civil`() {
+    val order = createOrder(monitoringConditions = createMonitoringConditions(orderType = OrderType.CIVIL))
+
+    val result = MonitoringOrder.fromOrder(order, null, mockFeatureFlags)
+
+    assertThat(result.orderType).isEqualTo("Pre-Trial")
+  }
+
+  @Test
+  fun `should map orderType as pre trial when it is bail`() {
+    val order = createOrder(monitoringConditions = createMonitoringConditions(orderType = OrderType.BAIL))
+
+    val result = MonitoringOrder.fromOrder(order, null, mockFeatureFlags)
+
+    assertThat(result.orderType).isEqualTo("Pre-Trial")
+  }
+
   private fun assertNotifyingOrgNameMapping(
     savedValue: String,
     mappedValue: String,
