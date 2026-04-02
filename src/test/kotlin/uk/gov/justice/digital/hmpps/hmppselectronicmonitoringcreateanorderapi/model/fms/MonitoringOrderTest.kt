@@ -1112,6 +1112,23 @@ class MonitoringOrderTest : OrderTestBase() {
   }
 
   @Test
+  fun `It should map empty HOME OFFICE name to 'Home Office' for Serco`() {
+    val order = createOrder(
+      dataDictionaryVersion = DataDictionaryVersion.DDV5,
+
+      interestedParties = createInterestedParty(
+        notifyingOrganisation = NotifyingOrganisationDDv5.HOME_OFFICE.name,
+        notifyingOrganisationName = "",
+      ),
+    )
+
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags)
+
+    assertThat(fmsMonitoringOrder.notifyingOrganization).isEqualTo("Home Office")
+    assertThat(fmsMonitoringOrder.noName).isEqualTo("Home Office")
+  }
+
+  @Test
   fun `It should map empty YCS name to empty string for Serco`() {
     val order = createOrder(
       dataDictionaryVersion = DataDictionaryVersion.DDV5,

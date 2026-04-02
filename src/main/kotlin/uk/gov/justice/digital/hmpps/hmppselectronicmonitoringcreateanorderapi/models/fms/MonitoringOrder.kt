@@ -671,10 +671,14 @@ data class MonitoringOrder(
           ?: interestedParties.notifyingOrganisationName
           ?: ""
       }
-      val notifyOrg = interestedParties.notifyingOrganisation
+      val notifyOrg = NotifyingOrganisationDDv5.from(interestedParties.notifyingOrganisation)
 
-      if (notifyOrg == NotifyingOrganisationDDv5.PROBATION.name) {
+      if (notifyOrg == NotifyingOrganisationDDv5.PROBATION) {
         return "Probation Board"
+      }
+
+      if (notifyOrg == NotifyingOrganisationDDv5.HOME_OFFICE) {
+        return NotifyingOrganisationDDv5.HOME_OFFICE.value
       }
 
       return CivilCountyCourtDDv5.from(interestedParties.notifyingOrganisationName)?.value
