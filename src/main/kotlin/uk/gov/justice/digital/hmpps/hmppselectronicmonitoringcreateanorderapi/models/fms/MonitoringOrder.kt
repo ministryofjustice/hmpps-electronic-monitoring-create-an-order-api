@@ -677,6 +677,10 @@ data class MonitoringOrder(
         return "Probation Board"
       }
 
+      if (notifyOrg == NotifyingOrganisationDDv5.HOME_OFFICE.name) {
+        return NotifyingOrganisationDDv5.HOME_OFFICE.value
+      }
+
       return CivilCountyCourtDDv5.from(interestedParties.notifyingOrganisationName)?.value
         ?: CrownCourtDDv5.from(interestedParties.notifyingOrganisationName)?.value
         ?: FamilyCourtDDv5.from(interestedParties.notifyingOrganisationName)?.value
