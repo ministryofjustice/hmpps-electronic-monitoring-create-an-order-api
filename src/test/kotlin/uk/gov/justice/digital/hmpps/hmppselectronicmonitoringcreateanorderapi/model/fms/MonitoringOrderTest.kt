@@ -591,6 +591,7 @@ class MonitoringOrderTest : OrderTestBase() {
     val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, featureFlags)
 
     assertThat(fmsMonitoringOrder.installAtSourcePilot).isEqualTo("false")
+    assertThat(fmsMonitoringOrder.tagAtSource).isEqualTo("true")
   }
 
   @Test
@@ -634,6 +635,7 @@ class MonitoringOrderTest : OrderTestBase() {
     val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, featureFlags)
 
     assertThat(fmsMonitoringOrder.installAtSourcePilot).isEqualTo("false")
+    assertThat(fmsMonitoringOrder.tagAtSource).isEqualTo("true")
   }
 
   @Test
@@ -674,6 +676,41 @@ class MonitoringOrderTest : OrderTestBase() {
     val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, featureFlags)
 
     assertThat(fmsMonitoringOrder.installAtSourcePilot).isEqualTo("true")
+    assertThat(fmsMonitoringOrder.tagAtSource).isEqualTo("false")
+  }
+
+  @Test
+  fun `It should correctly map Tag At Source and details when installation location is IRC`() {
+    val installationLocation = InstallationLocation(
+      versionId = UUID.randomUUID(),
+      location = InstallationLocationType.IMMIGRATION_REMOVAL_CENTRE,
+    )
+    val installationAppointment = InstallationAppointment(
+      versionId = UUID.randomUUID(),
+      placeName = "Mock Place",
+      appointmentDate = ZonedDateTime.of(2026, 10, 1, 10, 30, 0, 0, ZoneId.of("Europe/London")),
+    )
+    val installationAddress = createAddress(
+      addressType = AddressType.INSTALLATION,
+      addressLine1 = "Install Line 1",
+      postcode = "Install Postcode",
+    )
+
+    val order = createOrder(
+      interestedParties = createInterestedParty(
+        notifyingOrganisation = NotifyingOrganisationDDv5.HOME_OFFICE.name,
+      ),
+      addresses = mutableListOf(installationAddress),
+      monitoringConditions = createMonitoringConditions(trail = true, alcohol = false),
+      installationLocation = installationLocation,
+    )
+    order.installationAppointment = installationAppointment
+
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags)
+
+    assertThat(fmsMonitoringOrder.tagAtSource).isEqualTo("true")
+    assertThat(fmsMonitoringOrder.tagAtSourceDetails).isEqualTo("Mock Place")
+    assertThat(fmsMonitoringOrder.dateAndTimeInstallationWillTakePlace).isEqualTo("2026-10-01 10:30:00")
   }
 
   @ParameterizedTest(name = "it should map probation delivery unit to Serco - {0} -> {1}")
