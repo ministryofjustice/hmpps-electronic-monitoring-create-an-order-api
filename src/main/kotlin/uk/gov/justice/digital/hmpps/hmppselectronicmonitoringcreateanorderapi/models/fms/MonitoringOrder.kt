@@ -374,11 +374,12 @@ data class MonitoringOrder(
         val orderIsVariation = RequestType.VARIATION_TYPES.contains(order.type)
         val variationInPast = startDateIsInPast && orderIsVariation
 
+        val notifyingOrg = NotifyingOrganisationDDv5.from(parties.notifyingOrganisation)
+
         monitoringOrder.apply {
           responsibleOfficerName = if (variationInPast) {
             ""
           } else {
-            val notifyingOrg = NotifyingOrganisationDDv5.from(parties.notifyingOrganisation)
             if (notifyingOrg == NotifyingOrganisationDDv5.HOME_OFFICE) {
               "Home Office"
             } else {
@@ -394,6 +395,12 @@ data class MonitoringOrder(
             pduResponsible = if (variationInPast) "" else getProbationDeliveryUnit(order)
           }
           roEmail = if (variationInPast) "" else parties.responsibleOrganisationEmail
+
+          notifyingOfficerName = if (notifyingOrg == NotifyingOrganisationDDv5.HOME_OFFICE) {
+            "Home Office"
+          } else {
+            ""
+          }
 
           notifyingOrganization = getNotifyingOrganisation(parties, order.dataDictionaryVersion)
           noName = getNotifyingOrganisationName(parties, order.dataDictionaryVersion)
