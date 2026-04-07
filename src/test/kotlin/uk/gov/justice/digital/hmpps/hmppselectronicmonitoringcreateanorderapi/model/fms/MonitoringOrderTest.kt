@@ -1112,6 +1112,23 @@ class MonitoringOrderTest : OrderTestBase() {
   }
 
   @Test
+  fun `It should map empty HOME OFFICE name to 'Home Office' for Serco`() {
+    val order = createOrder(
+      dataDictionaryVersion = DataDictionaryVersion.DDV5,
+
+      interestedParties = createInterestedParty(
+        notifyingOrganisation = NotifyingOrganisationDDv5.HOME_OFFICE.name,
+        notifyingOrganisationName = "",
+      ),
+    )
+
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags)
+
+    assertThat(fmsMonitoringOrder.notifyingOrganization).isEqualTo("Home Office")
+    assertThat(fmsMonitoringOrder.noName).isEqualTo("Home Office")
+  }
+
+  @Test
   fun `It should map empty YCS name to empty string for Serco`() {
     val order = createOrder(
       dataDictionaryVersion = DataDictionaryVersion.DDV5,
@@ -1483,6 +1500,24 @@ class MonitoringOrderTest : OrderTestBase() {
         offenceDate = getBritishDate(mockDate.plusMonths(1)),
       ),
     )
+  }
+
+  @Test
+  fun `should map orderType as pre trial when it is civil`() {
+    val order = createOrder(monitoringConditions = createMonitoringConditions(orderType = OrderType.CIVIL))
+
+    val result = MonitoringOrder.fromOrder(order, null, mockFeatureFlags)
+
+    assertThat(result.orderType).isEqualTo("Pre-Trial")
+  }
+
+  @Test
+  fun `should map orderType as pre trial when it is bail`() {
+    val order = createOrder(monitoringConditions = createMonitoringConditions(orderType = OrderType.BAIL))
+
+    val result = MonitoringOrder.fromOrder(order, null, mockFeatureFlags)
+
+    assertThat(result.orderType).isEqualTo("Pre-Trial")
   }
 
   private fun assertNotifyingOrgNameMapping(

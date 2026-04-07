@@ -301,7 +301,7 @@ data class MonitoringOrder(
 
       val monitoringOrder = MonitoringOrder(
         deviceWearer = "${order.deviceWearer!!.firstName} ${order.deviceWearer!!.lastName}",
-        orderType = conditions.orderType!!.value,
+        orderType = getOrderType(conditions.orderType!!),
         orderRequestType = order.type.value,
         orderTypeDescription = conditions.orderTypeDescription?.value ?: "",
         orderStart = getBritishDateAndTime(monitoringStartDate),
@@ -671,10 +671,14 @@ data class MonitoringOrder(
           ?: interestedParties.notifyingOrganisationName
           ?: ""
       }
-      val notifyOrg = interestedParties.notifyingOrganisation
+      val notifyOrg = NotifyingOrganisationDDv5.from(interestedParties.notifyingOrganisation)
 
-      if (notifyOrg == NotifyingOrganisationDDv5.PROBATION.name) {
+      if (notifyOrg == NotifyingOrganisationDDv5.PROBATION) {
         return "Probation Board"
+      }
+
+      if (notifyOrg == NotifyingOrganisationDDv5.HOME_OFFICE) {
+        return NotifyingOrganisationDDv5.HOME_OFFICE.value
       }
 
       return CivilCountyCourtDDv5.from(interestedParties.notifyingOrganisationName)?.value
@@ -791,6 +795,11 @@ data class MonitoringOrder(
       }
 
       return if (conditions.dapolMissedInError == YesNoUnknown.YES) "true" else "false"
+    }
+
+    private fun getOrderType(orderType: OrderType): String = when (orderType) {
+      OrderType.CIVIL, OrderType.BAIL -> OrderType.PRE_TRIAL.value
+      else -> orderType.value
     }
   }
 }
