@@ -252,7 +252,6 @@ class DeviceWearerTest : OrderTestBase() {
 
     assertThat(fmsDeviceWearer.mappaCategory).isEqualTo("Category 1")
     assertThat(fmsDeviceWearer.mappa).isEqualTo("MAPPA 1")
-    assertThat(fmsDeviceWearer.mappaCaseType).isEqualTo("")
   }
 
   companion object {

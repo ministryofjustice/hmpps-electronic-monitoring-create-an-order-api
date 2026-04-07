@@ -103,7 +103,7 @@ data class DeviceWearer(
   var mappa: String? = "",
 
   @JsonProperty("mappa_case_type")
-  var mappaCaseType: String? = "",
+  var mappaCaseType: String? = null,
 
   @JsonProperty("mappa_category")
   var mappaCategory: String? = "",
