@@ -1399,6 +1399,20 @@ class MonitoringOrderTest : OrderTestBase() {
   }
 
   @Test
+  fun `It should infer responsible officer name if notifying org home office`() {
+    val order = createOrder(
+      interestedParties = createInterestedParty(
+        notifyingOrganisation = NotifyingOrganisationDDv5.HOME_OFFICE.name,
+      ),
+    )
+
+    val featureFlags = FeatureFlags(ddV6CourtMappings = true, dataDictionaryVersion = DataDictionaryVersion.DDV6)
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, featureFlags)
+
+    assertThat(fmsMonitoringOrder.responsibleOfficerName).isEqualTo("Home Office")
+  }
+
+  @Test
   fun `It should map responsible officer email`() {
     val order = createOrder(
       interestedParties = createInterestedParty(
