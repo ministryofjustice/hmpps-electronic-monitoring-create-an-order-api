@@ -1411,6 +1411,7 @@ class MonitoringOrderTest : OrderTestBase() {
 
     assertThat(fmsMonitoringOrder.responsibleOfficerName).isEqualTo("Home Office")
     assertThat(fmsMonitoringOrder.notifyingOfficerName).isEqualTo("Home Office")
+    assertThat(fmsMonitoringOrder.responsibleOfficerDetailsReceived).isEqualTo("Yes")
   }
 
   @Test
