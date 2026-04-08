@@ -103,7 +103,10 @@ data class DeviceWearer(
   var mappa: String? = "",
 
   @JsonProperty("mappa_case_type")
-  var mappaCaseType: String? = "",
+  var mappaCaseType: String? = null,
+
+  @JsonProperty("mappa_category")
+  var mappaCategory: String? = "",
 
   @JsonProperty("risk_categories")
   var riskCategory: List<FmsRiskCategory>? = emptyList(),
@@ -199,6 +202,11 @@ data class DeviceWearer(
         prisonNumber = order.deviceWearer?.prisonNumber,
         homeOfficeReferenceNumber = "",
       )
+
+      if (featureFlags.ddV6CourtMappings) {
+        deviceWearer.mappaCaseType = null
+        deviceWearer.mappaCategory = order.mappa?.category?.value
+      }
 
       if (featureFlags.ddV6CourtMappings) {
         deviceWearer.complianceAndEnforcementPersonReference =
