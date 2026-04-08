@@ -105,8 +105,8 @@ data class DeviceWearer(
   @JsonProperty("mappa_case_type")
   var mappaCaseType: String? = "",
 
-  @JsonProperty("mappa_category")
-  var mappaCategory: String? = null,
+//  @JsonProperty("mappa_category")
+//  var mappaCategory: String? = "",
 
   @JsonProperty("risk_categories")
   var riskCategory: List<FmsRiskCategory>? = emptyList(),
@@ -203,10 +203,10 @@ data class DeviceWearer(
         homeOfficeReferenceNumber = "",
       )
 
-      if (featureFlags.ddV6CourtMappings) {
-        deviceWearer.mappaCaseType = null
-        deviceWearer.mappaCategory = order.mappa?.category?.value
-      }
+//      if (featureFlags.ddV6CourtMappings) {
+//        deviceWearer.mappaCaseType = null
+//        deviceWearer.mappaCategory = order.mappa?.category?.value
+//      }
 
       if (featureFlags.ddV6CourtMappings) {
         deviceWearer.complianceAndEnforcementPersonReference =
