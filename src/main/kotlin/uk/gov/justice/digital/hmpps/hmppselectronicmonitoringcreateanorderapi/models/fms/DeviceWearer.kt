@@ -103,7 +103,10 @@ data class DeviceWearer(
   var mappa: String? = "",
 
   @JsonProperty("mappa_case_type")
-  var mappaCaseType: String? = "",
+  var mappaCaseType: String? = null,
+
+  @JsonProperty("mappa_category")
+  var mappaCategory: String? = "",
 
   @JsonProperty("risk_categories")
   var riskCategory: List<FmsRiskCategory>? = emptyList(),
@@ -187,7 +190,7 @@ data class DeviceWearer(
         riskDetails = getRiskDetails(order, featureFlags),
         riskCategory = getRiskCategories(order, featureFlags),
         mappa = order.mappa?.level?.value,
-        mappaCaseType = order.mappa?.category?.value,
+        mappaCategory = order.mappa?.category?.value,
         responsibleAdultRequired = (order.deviceWearerResponsibleAdult != null).toString(),
         parent = order.deviceWearerResponsibleAdult?.fullName ?: "",
         parentPhoneNumber = getParentPhoneNumber(order),
