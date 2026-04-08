@@ -106,7 +106,7 @@ data class DeviceWearer(
   var mappaCaseType: String? = null,
 
   @JsonProperty("mappa_category")
-  var mappaCategory: String? = "",
+  var mappaCategory: String? = null,
 
   @JsonProperty("risk_categories")
   var riskCategory: List<FmsRiskCategory>? = emptyList(),
