@@ -190,7 +190,7 @@ data class DeviceWearer(
         riskDetails = getRiskDetails(order, featureFlags),
         riskCategory = getRiskCategories(order, featureFlags),
         mappa = order.mappa?.level?.value,
-        mappaCaseType = order.mappa?.category?.value,
+        mappaCategory = order.mappa?.category?.value,
         responsibleAdultRequired = (order.deviceWearerResponsibleAdult != null).toString(),
         parent = order.deviceWearerResponsibleAdult?.fullName ?: "",
         parentPhoneNumber = getParentPhoneNumber(order),
