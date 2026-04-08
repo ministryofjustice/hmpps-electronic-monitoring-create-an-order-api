@@ -250,7 +250,7 @@ class DeviceWearerTest : OrderTestBase() {
 
     val fmsDeviceWearer = FmsDeviceWearer.fromCemoOrder(order, featureFlags)
 
-    assertThat(fmsDeviceWearer.mappaCategory).isEqualTo("Category 1")
+    assertThat(fmsDeviceWearer.mappaCaseType).isEqualTo("Category 1")
     assertThat(fmsDeviceWearer.mappa).isEqualTo("MAPPA 1")
   }
 

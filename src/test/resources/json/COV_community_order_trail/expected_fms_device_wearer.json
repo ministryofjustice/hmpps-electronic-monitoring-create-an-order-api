@@ -24,7 +24,7 @@
   "risk_self_harm": "",
   "risk_details": null,
   "mappa": null,
-    "mappa_category": null,
+  "mappa_case_type": null,
   "risk_categories": [],
   "responsible_adult_required": "false",
   "parent": "",
