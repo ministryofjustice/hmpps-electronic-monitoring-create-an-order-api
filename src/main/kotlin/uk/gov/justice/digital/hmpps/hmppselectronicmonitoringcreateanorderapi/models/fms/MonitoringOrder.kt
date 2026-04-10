@@ -377,15 +377,7 @@ data class MonitoringOrder(
         val notifyingOrg = NotifyingOrganisationDDv5.from(parties.notifyingOrganisation)
 
         monitoringOrder.apply {
-          responsibleOfficerName = if (variationInPast) {
-            ""
-          } else {
-            if (notifyingOrg == NotifyingOrganisationDDv5.HOME_OFFICE) {
-              "Home Office"
-            } else {
-              parties.getResponsibleOfficerFullName()
-            }
-          }
+          responsibleOfficerName = if (variationInPast) "" else parties.getResponsibleOfficerFullName()
           responsibleOfficerPhone = if (variationInPast) "" else getResponsibleOfficerPhoneNumber(parties)
           responsibleOfficerEmail = if (variationInPast) "" else parties.responsibleOfficerEmail ?: ""
           responsibleOrganization = if (variationInPast) "" else getResponsibleOrganisation(parties)
