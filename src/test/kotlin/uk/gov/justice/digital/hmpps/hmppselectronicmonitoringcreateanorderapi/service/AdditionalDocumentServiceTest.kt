@@ -571,9 +571,6 @@ class AdditionalDocumentServiceTest {
     if (fileType == DocumentType.COURT_ORDER) {
       Assertions.assertThat(result.haveCourtOrder).isEqualTo(true)
     }
-    if (fileType == DocumentType.GRANT_OF_BAIL) {
-      Assertions.assertThat(result.haveGrantOfBail).isEqualTo(true)
-    }
     Assertions.assertThat(result.versionId).isEqualTo(mockVersionId)
   }
 
@@ -593,7 +590,6 @@ class AdditionalDocumentServiceTest {
           orderParameters = OrderParameters(
             versionId = mockVersionId,
             haveCourtOrder = if (fileType == DocumentType.COURT_ORDER) false else null,
-            haveGrantOfBail = if (fileType == DocumentType.GRANT_OF_BAIL) false else null,
             havePhoto = if (fileType == DocumentType.PHOTO_ID) false else null,
           ),
         ),
@@ -619,9 +615,6 @@ class AdditionalDocumentServiceTest {
     if (fileType == DocumentType.COURT_ORDER) {
       Assertions.assertThat(result.haveCourtOrder).isEqualTo(true)
     }
-    if (fileType == DocumentType.GRANT_OF_BAIL) {
-      Assertions.assertThat(result.haveGrantOfBail).isEqualTo(true)
-    }
     Assertions.assertThat(result.versionId).isEqualTo(mockVersionId)
   }
 
@@ -641,7 +634,6 @@ class AdditionalDocumentServiceTest {
           orderParameters = OrderParameters(
             versionId = mockVersionId,
             haveCourtOrder = if (fileType == DocumentType.COURT_ORDER) true else null,
-            haveGrantOfBail = if (fileType == DocumentType.GRANT_OF_BAIL) true else null,
             havePhoto = if (fileType == DocumentType.PHOTO_ID) true else null,
           ),
           additionalDocuments = mutableListOf(
@@ -679,9 +671,6 @@ class AdditionalDocumentServiceTest {
     if (fileType == DocumentType.COURT_ORDER) {
       Assertions.assertThat(result.haveCourtOrder).isEqualTo(false)
     }
-    if (fileType == DocumentType.GRANT_OF_BAIL) {
-      Assertions.assertThat(result.haveGrantOfBail).isEqualTo(false)
-    }
     Assertions.assertThat(result.versionId).isEqualTo(mockVersionId)
     Assertions.assertThat(mockOrder.additionalDocuments.size).isEqualTo(1)
     Assertions.assertThat(mockOrder.additionalDocuments.filter { x -> x.fileType == fileType }.size)
@@ -692,7 +681,6 @@ class AdditionalDocumentServiceTest {
     @JvmStatic
     fun expectedFileRequiredTypeParameters() = listOf(
       Arguments.of(DocumentType.COURT_ORDER),
-      Arguments.of(DocumentType.GRANT_OF_BAIL),
       Arguments.of(DocumentType.PHOTO_ID),
     )
   }
