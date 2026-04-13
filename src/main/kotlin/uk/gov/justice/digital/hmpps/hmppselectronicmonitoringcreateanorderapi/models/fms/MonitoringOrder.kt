@@ -706,12 +706,19 @@ data class MonitoringOrder(
         return "UKBA"
       }
 
-      return ProbationServiceRegion.from(interestedParties.responsibleOrganisationRegion)?.value
-        ?: YouthJusticeServiceRegions.from(interestedParties.responsibleOrganisationRegion)?.value
-        ?: PoliceAreas.from(interestedParties.responsibleOrganisationRegion)?.value
-        ?: PoliceAreasDDv6.from(interestedParties.responsibleOrganisationRegion)?.value
-        ?: interestedParties.responsibleOrganisationRegion
-        ?: ""
+      val responsibleOrg = ResponsibleOrganisation.from(interestedParties.responsibleOrganisation)
+
+      return when (responsibleOrg) {
+        ResponsibleOrganisation.PROBATION -> ProbationServiceRegion.from(
+          interestedParties.responsibleOrganisationRegion,
+        )?.value
+        ResponsibleOrganisation.YJS -> YouthJusticeServiceRegions.from(
+          interestedParties.responsibleOrganisationRegion,
+        )?.value
+        ResponsibleOrganisation.POLICE -> PoliceAreasDDv6.from(interestedParties.responsibleOrganisationRegion)?.value
+          ?: PoliceAreas.from(interestedParties.responsibleOrganisationRegion)?.value
+        else -> null
+      } ?: interestedParties.responsibleOrganisationRegion ?: ""
     }
 
     private fun getProbationDeliveryUnit(order: Order): String {
