@@ -16,7 +16,7 @@ enum class PoliceAreasDDv6(val value: String) {
   COUNTER_TERRORISM_POLICE_WALES("Counter Terrorism Police - Wales"),
   CUMBRIA("Cumbria Constabulary"),
   DERBYSHIRE("Derbyshire Constabulary"),
-  DEVON_AND_CORNWALL("Devon and Cornwall Police"),
+  DEVON_AND_CORNWALL("Devon & Cornwall Police"),
   DORSET("Dorset Police"),
   DURHAM("Durham Constabulary"),
   DYFED_POWYS("Dyfed-Powys Police"),

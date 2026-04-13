@@ -22,7 +22,7 @@ class PoliceForceAreasDDv6ArgumentsProvider : ArgumentsProvider {
     Arguments.of("COUNTER_TERRORISM_POLICE_WALES", "Counter Terrorism Police - Wales"),
     Arguments.of("CUMBRIA", "Cumbria Constabulary"),
     Arguments.of("DERBYSHIRE", "Derbyshire Constabulary"),
-    Arguments.of("DEVON_AND_CORNWALL", "Devon and Cornwall Police"),
+    Arguments.of("DEVON_AND_CORNWALL", "Devon & Cornwall Police"),
     Arguments.of("DORSET", "Dorset Police"),
     Arguments.of("DURHAM", "Durham Constabulary"),
     Arguments.of("DYFED_POWYS", "Dyfed-Powys Police"),
