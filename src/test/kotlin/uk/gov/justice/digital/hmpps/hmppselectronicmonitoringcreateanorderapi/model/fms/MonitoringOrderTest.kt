@@ -252,7 +252,7 @@ class MonitoringOrderTest : OrderTestBase() {
       ),
       monitoringConditions = createMonitoringConditions(
         offenceType = "Robbery",
-        policeArea = "Avon and Somerset",
+        policeArea = "Avon and Somerset Constabulary",
       ),
     )
     val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags)
@@ -260,7 +260,7 @@ class MonitoringOrderTest : OrderTestBase() {
     assertThat(
       fmsMonitoringOrder.offenceAdditionalDetails,
     ).isEqualTo(
-      "Mock Additional Details. AC Offence: Robbery. PFA: Avon and Somerset",
+      "Mock Additional Details. AC Offence: Robbery. PFA: Avon and Somerset Constabulary",
     )
   }
 
@@ -271,7 +271,7 @@ class MonitoringOrderTest : OrderTestBase() {
       offenceAdditionalDetails = "offence details",
       monitoringConditions = createMonitoringConditions(
         offenceType = "Robbery",
-        policeArea = "Avon and Somerset",
+        policeArea = "Avon and Somerset Constabulary",
       ),
     )
 
@@ -279,7 +279,7 @@ class MonitoringOrderTest : OrderTestBase() {
 
     assertThat(
       fmsMonitoringOrder.offenceAdditionalDetails,
-    ).isEqualTo("offence details. AC Offence: Robbery. PFA: Avon and Somerset")
+    ).isEqualTo("offence details. AC Offence: Robbery. PFA: Avon and Somerset Constabulary")
   }
 
   @Test
@@ -289,7 +289,7 @@ class MonitoringOrderTest : OrderTestBase() {
       offenceAdditionalDetails = "offence details",
       monitoringConditions = createMonitoringConditions(
         offenceType = "Robbery",
-        policeArea = "Avon and Somerset",
+        policeArea = "Avon and Somerset Constabulary",
       ),
     )
 
@@ -298,7 +298,7 @@ class MonitoringOrderTest : OrderTestBase() {
 
     assertThat(
       fmsMonitoringOrder.offenceAdditionalDetails,
-    ).isEqualTo("offence details. PFA: Avon and Somerset")
+    ).isEqualTo("offence details. PFA: Avon and Somerset Constabulary")
   }
 
   @Test
@@ -333,7 +333,7 @@ class MonitoringOrderTest : OrderTestBase() {
     assertThat(
       fmsMonitoringOrder.offenceAdditionalDetails,
     ).isEqualTo(
-      "Mock Additional Details. PFA: Avon and Somerset",
+      "Mock Additional Details. PFA: Avon and Somerset Constabulary",
     )
   }
 
