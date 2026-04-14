@@ -713,6 +713,70 @@ class MonitoringOrderTest : OrderTestBase() {
     assertThat(fmsMonitoringOrder.dateAndTimeInstallationWillTakePlace).isEqualTo("2026-10-01 10:30:00")
   }
 
+  @Test
+  fun `It should map home office fixed address installation details`() {
+    val installationLocation = InstallationLocation(
+      versionId = UUID.randomUUID(),
+      location = InstallationLocationType.PRIMARY,
+    )
+    val installationAppointment = InstallationAppointment(
+      versionId = UUID.randomUUID(),
+      placeName = "Mock Place",
+      appointmentDate = ZonedDateTime.of(2026, 10, 1, 10, 30, 0, 0, ZoneId.of("Europe/London")),
+    )
+
+    val order = createOrder(
+      interestedParties = createInterestedParty(
+        notifyingOrganisation = NotifyingOrganisationDDv5.HOME_OFFICE.name,
+      ),
+      monitoringConditions = createMonitoringConditions(trail = true, alcohol = false),
+      installationLocation = installationLocation,
+    )
+    order.installationAppointment = installationAppointment
+
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags)
+
+    assertThat(fmsMonitoringOrder.installAtSourcePilot).isEqualTo("")
+    assertThat(fmsMonitoringOrder.tagAtSource).isEqualTo("false")
+    assertThat(fmsMonitoringOrder.tagAtSourceDetails).isEqualTo("Mock Place")
+    assertThat(fmsMonitoringOrder.dateAndTimeInstallationWillTakePlace).isEqualTo("2026-10-01 10:30:00")
+  }
+
+  @Test
+  fun `It should map another address installation details`() {
+    val installationLocation = InstallationLocation(
+      versionId = UUID.randomUUID(),
+      location = InstallationLocationType.INSTALLATION,
+    )
+    val installationAppointment = InstallationAppointment(
+      versionId = UUID.randomUUID(),
+      placeName = "Mock Place",
+      appointmentDate = ZonedDateTime.of(2026, 10, 1, 10, 30, 0, 0, ZoneId.of("Europe/London")),
+    )
+    val installationAddress = createAddress(
+      addressType = AddressType.INSTALLATION,
+      addressLine1 = "Install Line 1",
+      postcode = "Install Postcode",
+    )
+
+    val order = createOrder(
+      interestedParties = createInterestedParty(
+        notifyingOrganisation = NotifyingOrganisationDDv5.PRISON.name,
+      ),
+      monitoringConditions = createMonitoringConditions(trail = true, alcohol = false),
+      addresses = mutableListOf(installationAddress),
+      installationLocation = installationLocation,
+    )
+    order.installationAppointment = installationAppointment
+
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags)
+
+    assertThat(fmsMonitoringOrder.installAtSourcePilot).isEqualTo("")
+    assertThat(fmsMonitoringOrder.tagAtSource).isEqualTo("false")
+    assertThat(fmsMonitoringOrder.tagAtSourceDetails).isEqualTo("Mock Place")
+    assertThat(fmsMonitoringOrder.dateAndTimeInstallationWillTakePlace).isEqualTo("2026-10-01 10:30:00")
+  }
+
   @ParameterizedTest(name = "it should map probation delivery unit to Serco - {0} -> {1}")
   @ArgumentsSource(ProbationDeliveryUnitArgumentsProvider::class)
   fun `It should correctly map saved probation delivery unit values to Serco`(
