@@ -388,13 +388,9 @@ data class MonitoringOrder(
           }
           roEmail = if (variationInPast) "" else parties.responsibleOrganisationEmail
 
-          notifyingOfficerName = if (notifyingOrg == NotifyingOrganisationDDv5.HOME_OFFICE) {
-            "Home Office"
-          } else {
-            ""
-          }
-
           notifyingOrganization = getNotifyingOrganisation(parties, order.dataDictionaryVersion)
+          notifyingOfficerName =
+            if (notifyingOrganization == NotifyingOrganisationDDv5.HOME_OFFICE.value) "Home Office" else ""
           noName = getNotifyingOrganisationName(parties, order.dataDictionaryVersion)
           noEmail = parties.notifyingOrganisationEmail
 
