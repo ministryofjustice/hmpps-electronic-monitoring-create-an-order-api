@@ -198,7 +198,7 @@ data class OrderVersion(
         orderParameters?.havePhoto != true || additionalDocuments.any { it.fileType == DocumentType.PHOTO_ID }
 
       return if (NotifyingOrganisationDDv5.isCourt(interestedParties!!.notifyingOrganisation!!)) {
-        satisfiesPhotoIDRequirement && satisfiesCourtOrderRequirement && hasLicence
+        satisfiesPhotoIDRequirement && satisfiesCourtOrderRequirement
       } else if (interestedParties?.notifyingOrganisation == NotifyingOrganisationDDv5.HOME_OFFICE.name) {
         satisfiesPhotoIDRequirement
       } else {
