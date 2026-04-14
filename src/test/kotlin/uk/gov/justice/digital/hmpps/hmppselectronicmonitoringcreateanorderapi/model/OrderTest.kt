@@ -10,6 +10,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationLocation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderParameters
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.TrailMonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.VariationDetails
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DocumentType
@@ -18,7 +19,6 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Prison
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ProbationServiceRegion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType.END_MONITORING
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ResponsibleOrganisation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.VariationType
 import java.time.ZoneId
@@ -45,6 +45,40 @@ class OrderTest : OrderTestBase() {
   fun `It should return isValid false for order without licence`() {
     val order = createValidOrder()
     order.additionalDocuments.clear()
+    assertThat(order.isValid).isFalse()
+  }
+
+  @Test
+  fun `It should return isValid true for home office order without licence`() {
+    val order = createValidOrder()
+    order.additionalDocuments.clear()
+    order.interestedParties = createInterestedParty(notifyingOrganisation = NotifyingOrganisationDDv5.HOME_OFFICE.name)
+    assertThat(order.isValid).isTrue()
+  }
+
+  @Test
+  fun `It should return isValid true court order without licence`() {
+    val order = createValidOrder()
+    order.additionalDocuments.clear()
+    order.orderParameters = OrderParameters(versionId = order.versionId, haveCourtOrder = true)
+    order.additionalDocuments.add(
+      AdditionalDocument(
+        versionId = UUID.randomUUID(),
+        fileType = DocumentType.COURT_ORDER,
+        fileName = "test file",
+        documentId = UUID.randomUUID(),
+      ),
+    )
+    order.interestedParties = createInterestedParty(notifyingOrganisation = NotifyingOrganisationDDv5.CROWN_COURT.name)
+    assertThat(order.isValid).isTrue()
+  }
+
+  @Test
+  fun `It should return isValid false court order yes to court doc but missing`() {
+    val order = createValidOrder()
+    order.additionalDocuments.clear()
+    order.orderParameters = OrderParameters(versionId = order.versionId, haveCourtOrder = true)
+    order.interestedParties = createInterestedParty(notifyingOrganisation = NotifyingOrganisationDDv5.CROWN_COURT.name)
     assertThat(order.isValid).isFalse()
   }
 
