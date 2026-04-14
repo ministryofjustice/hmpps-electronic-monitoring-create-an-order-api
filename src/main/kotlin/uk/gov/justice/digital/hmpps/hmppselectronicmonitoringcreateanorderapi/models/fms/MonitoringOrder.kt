@@ -538,6 +538,17 @@ data class MonitoringOrder(
           monitoringOrder.tagAtSourceDetails = order.installationAppointment?.placeName ?: ""
           monitoringOrder.dateAndTimeInstallationWillTakePlace =
             getBritishDateAndTime(order.installationAppointment?.appointmentDate) ?: ""
+        } else if (
+          (
+            order.interestedParties?.notifyingOrganisation == NotifyingOrganisation.HOME_OFFICE.name &&
+              order.installationLocation?.location == InstallationLocationType.PRIMARY
+            ) ||
+          order.installationLocation?.location == InstallationLocationType.INSTALLATION
+        ) {
+          monitoringOrder.tagAtSource = "false"
+          monitoringOrder.tagAtSourceDetails = order.installationAppointment?.placeName ?: ""
+          monitoringOrder.dateAndTimeInstallationWillTakePlace =
+            getBritishDateAndTime(order.installationAppointment?.appointmentDate) ?: ""
         } else {
           monitoringOrder.tagAtSource = "false"
         }
