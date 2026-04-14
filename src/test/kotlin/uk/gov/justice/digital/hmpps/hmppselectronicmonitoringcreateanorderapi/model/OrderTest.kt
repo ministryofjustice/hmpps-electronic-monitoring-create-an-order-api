@@ -18,7 +18,6 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Prison
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ProbationServiceRegion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType.END_MONITORING
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ResponsibleOrganisation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.VariationType
 import java.time.ZoneId
@@ -46,6 +45,14 @@ class OrderTest : OrderTestBase() {
     val order = createValidOrder()
     order.additionalDocuments.clear()
     assertThat(order.isValid).isFalse()
+  }
+
+  @Test
+  fun `It should return isValid for home office order without licence`() {
+    val order = createValidOrder()
+    order.additionalDocuments.clear()
+    order.interestedParties = createInterestedParty(notifyingOrganisation = NotifyingOrganisationDDv5.HOME_OFFICE.name)
+    assertThat(order.isValid).isTrue()
   }
 
   @Test
