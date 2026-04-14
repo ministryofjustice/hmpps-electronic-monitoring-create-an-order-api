@@ -190,18 +190,21 @@ data class OrderVersion(
       )
 
   private val requiredDocuments: Boolean
-    get() = (
-      if (NotifyingOrganisationDDv5.isCourt(interestedParties!!.notifyingOrganisation!!)) {
-        if (orderParameters?.haveCourtOrder == true) {
-          additionalDocuments.any { it.fileType == DocumentType.COURT_ORDER }
-        } else {
-          true
-        }
-      } else {
-        additionalDocuments.any { it.fileType == DocumentType.LICENCE }
-      }
+    get() {
+      val hasLicence = additionalDocuments.any { it.fileType == DocumentType.LICENCE }
+      val satisfiesCourtOrderRequirement =
+        orderParameters?.haveCourtOrder != true || additionalDocuments.any { it.fileType == DocumentType.COURT_ORDER }
+      val satisfiesPhotoIDRequirement =
+        orderParameters?.havePhoto != true || additionalDocuments.any { it.fileType == DocumentType.PHOTO_ID }
 
-      )
+      return if (NotifyingOrganisationDDv5.isCourt(interestedParties!!.notifyingOrganisation!!)) {
+        satisfiesPhotoIDRequirement && satisfiesCourtOrderRequirement
+      } else if (interestedParties?.notifyingOrganisation == NotifyingOrganisationDDv5.HOME_OFFICE.name) {
+        satisfiesPhotoIDRequirement
+      } else {
+        satisfiesPhotoIDRequirement && hasLicence
+      }
+    }
 
   val isValid: Boolean
     get() = (
