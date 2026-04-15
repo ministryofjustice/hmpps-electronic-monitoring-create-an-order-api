@@ -12,7 +12,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 
 class FmsDummySubmissionStrategy(
   objectMapper: ObjectMapper,
-  activeProfile: String,
+  activeProfile: Array<String>,
   private val featureFlags: FeatureFlags,
 ) : FmsSubmissionStrategyBase(objectMapper, activeProfile, featureFlags) {
 

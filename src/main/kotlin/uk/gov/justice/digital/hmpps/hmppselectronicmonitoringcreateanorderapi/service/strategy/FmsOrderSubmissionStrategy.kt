@@ -24,7 +24,7 @@ class FmsOrderSubmissionStrategy(
   objectMapper: ObjectMapper,
   val fmsClient: FmsClient,
   val documentApiClient: DocumentApiClient,
-  activeProfile: String,
+  activeProfile: Array<String>,
   private val featureFlags: FeatureFlags,
 ) : FmsSubmissionStrategyBase(objectMapper, activeProfile, featureFlags) {
 

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Configuration
+import org.springframework.core.env.Environment
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.DocumentApiClient
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.FmsClient
@@ -31,7 +32,7 @@ class FmsService(
   val repo: FmsSubmissionResultRepository,
   @Value("\${toggle.cemo.fms-integration.enabled:false}") val cemoFmsIntegrationEnabled: Boolean,
   @Value("\${toggle.common-platform.fms-integration.enabled:false}") val cpFmsIntegrationEnabled: Boolean,
-  @Value("\${spring.profiles.active:prod}") private val activeProfile: String,
+  private val env: Environment,
   private val featureFlags: FeatureFlags,
 ) {
   private fun getSubmissionStrategy(order: Order, orderSource: FmsOrderSource): FmsSubmissionStrategy {
@@ -40,7 +41,7 @@ class FmsService(
         this.objectMapper,
         this.fmsClient,
         this.documentApiClient,
-        activeProfile,
+        env.activeProfiles,
         featureFlags,
       )
     }
@@ -51,7 +52,7 @@ class FmsService(
           this.objectMapper,
           this.fmsClient,
           this.documentApiClient,
-          activeProfile,
+          env.activeProfiles,
           featureFlags,
         )
       }
@@ -60,12 +61,12 @@ class FmsService(
         this.objectMapper,
         this.fmsClient,
         this.documentApiClient,
-        activeProfile,
+        env.activeProfiles,
         featureFlags,
       )
     }
 
-    return FmsDummySubmissionStrategy(this.objectMapper, activeProfile, featureFlags)
+    return FmsDummySubmissionStrategy(this.objectMapper, env.activeProfiles, featureFlags)
   }
 
   fun submitOrder(order: Order, orderSource: FmsOrderSource): FmsSubmissionResult {

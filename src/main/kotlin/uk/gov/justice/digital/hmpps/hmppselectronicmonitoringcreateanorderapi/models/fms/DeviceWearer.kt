@@ -205,10 +205,10 @@ data class DeviceWearer(
         homeOfficeReferenceNumber = "",
       )
 
-//      if (featureFlags.ddV6CourtMappings) {
-//        deviceWearer.mappaCaseType = null
-//        deviceWearer.mappaCategory = order.mappa?.category?.value
-//      }
+      if (featureFlags.ddV6CourtMappings) {
+        deviceWearer.mappaCaseType = null
+        deviceWearer.mappaCategory = order.mappa?.category?.value
+      }
 
       if (featureFlags.ddV6CourtMappings) {
         deviceWearer.complianceAndEnforcementPersonReference =

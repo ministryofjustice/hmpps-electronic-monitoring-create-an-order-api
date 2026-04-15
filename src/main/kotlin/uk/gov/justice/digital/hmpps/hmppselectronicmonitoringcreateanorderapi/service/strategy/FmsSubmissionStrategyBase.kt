@@ -10,7 +10,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 
 abstract class FmsSubmissionStrategyBase(
   val objectMapper: ObjectMapper,
-  val activeProfile: String,
+  val activeProfiles: Array<String>,
   private val featureFlags: FeatureFlags,
 ) : FmsSubmissionStrategy {
 
@@ -27,7 +27,7 @@ abstract class FmsSubmissionStrategyBase(
   }
 
   protected fun serialiseDeviceWearer(deviceWearer: DeviceWearer): Result<String> = try {
-    val viewClass = if (activeProfile.contains("prod")) {
+    val viewClass = if (activeProfiles.contains("prod")) {
       DeviceWearerViews.Prod::class.java
     } else {
       DeviceWearerViews.Dev::class.java
