@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service
 
-import com.fasterxml.jackson.databind.MapperFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.context.properties.EnableConfigurationProperties
@@ -70,7 +69,6 @@ class FmsService(
   }
 
   fun submitOrder(order: Order, orderSource: FmsOrderSource): FmsSubmissionResult {
-    objectMapper.configure(MapperFeature.DEFAULT_VIEW_INCLUSION, true)
     val strategy = this.getSubmissionStrategy(order, orderSource)
     val submissionResult = strategy.submitOrder(order, orderSource)
 
