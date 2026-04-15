@@ -108,7 +108,7 @@ data class DeviceWearer(
 
   @JsonProperty("mappa_category")
   @field:JsonView(DeviceWearerViews.Dev::class)
-  var mappaCategory: String? = "",
+  var mappaCategory: String? = null,
 
   @JsonProperty("risk_categories")
   var riskCategory: List<FmsRiskCategory>? = emptyList(),

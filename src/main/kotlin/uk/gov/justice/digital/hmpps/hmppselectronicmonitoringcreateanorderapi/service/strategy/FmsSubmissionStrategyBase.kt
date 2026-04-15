@@ -27,10 +27,10 @@ abstract class FmsSubmissionStrategyBase(
   }
 
   protected fun serialiseDeviceWearer(deviceWearer: DeviceWearer): Result<String> = try {
-    val viewClass = if (activeProfiles.contains("prod")) {
-      DeviceWearerViews.Prod::class.java
-    } else {
+    val viewClass = if (activeProfiles.contains("dev") || activeProfiles.contains("test")) {
       DeviceWearerViews.Dev::class.java
+    } else {
+      DeviceWearerViews.Prod::class.java
     }
     Result(
       success = true,
