@@ -40,7 +40,7 @@ class FmsServiceTest {
     mockDocumentApiClient = mock(DocumentApiClient::class.java)
     objectMapper = ObjectMapper()
     repo = mock(FmsSubmissionResultRepository::class.java)
-    service = FmsService(mockClient, mockDocumentApiClient, objectMapper, repo, true, true, mockFeatureFlags)
+    service = FmsService(mockClient, mockDocumentApiClient, objectMapper, repo, true, true, "test", mockFeatureFlags)
   }
 
   @Test

@@ -5,10 +5,14 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.co
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Result
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.DeviceWearer
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.DeviceWearerViews
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.MonitoringOrder
 
-abstract class FmsSubmissionStrategyBase(val objectMapper: ObjectMapper, private val featureFlags: FeatureFlags) :
-  FmsSubmissionStrategy {
+abstract class FmsSubmissionStrategyBase(
+  val objectMapper: ObjectMapper,
+  val activeProfile: String,
+  private val featureFlags: FeatureFlags,
+) : FmsSubmissionStrategy {
 
   protected fun getDeviceWearer(order: Order): Result<DeviceWearer> = try {
     Result(
@@ -23,9 +27,14 @@ abstract class FmsSubmissionStrategyBase(val objectMapper: ObjectMapper, private
   }
 
   protected fun serialiseDeviceWearer(deviceWearer: DeviceWearer): Result<String> = try {
+    val viewClass = if (activeProfile.contains("prod")) {
+      DeviceWearerViews.Prod::class.java
+    } else {
+      DeviceWearerViews.Dev::class.java
+    }
     Result(
       success = true,
-      data = objectMapper.writeValueAsString(deviceWearer),
+      data = objectMapper.writerWithView(viewClass).writeValueAsString(deviceWearer),
     )
   } catch (e: Exception) {
     Result(

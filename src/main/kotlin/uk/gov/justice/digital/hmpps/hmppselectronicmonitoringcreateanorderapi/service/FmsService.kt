@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service
 
+import com.fasterxml.jackson.databind.MapperFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.context.properties.EnableConfigurationProperties
@@ -31,25 +32,45 @@ class FmsService(
   val repo: FmsSubmissionResultRepository,
   @Value("\${toggle.cemo.fms-integration.enabled:false}") val cemoFmsIntegrationEnabled: Boolean,
   @Value("\${toggle.common-platform.fms-integration.enabled:false}") val cpFmsIntegrationEnabled: Boolean,
+  @Value("\${spring.profiles.active:prod}") private val activeProfile: String,
   private val featureFlags: FeatureFlags,
 ) {
   private fun getSubmissionStrategy(order: Order, orderSource: FmsOrderSource): FmsSubmissionStrategy {
     if (orderSource === FmsOrderSource.COMMON_PLATFORM && cpFmsIntegrationEnabled) {
-      return FmsOrderSubmissionStrategy(this.objectMapper, this.fmsClient, this.documentApiClient, featureFlags)
+      return FmsOrderSubmissionStrategy(
+        this.objectMapper,
+        this.fmsClient,
+        this.documentApiClient,
+        activeProfile,
+        featureFlags,
+      )
     }
 
     if (orderSource === FmsOrderSource.CEMO && cemoFmsIntegrationEnabled) {
       if (RequestType.VARIATION_TYPES.contains(order.type)) {
-        return FmsVariationSubmissionStrategy(this.objectMapper, this.fmsClient, this.documentApiClient, featureFlags)
+        return FmsVariationSubmissionStrategy(
+          this.objectMapper,
+          this.fmsClient,
+          this.documentApiClient,
+          activeProfile,
+          featureFlags,
+        )
       }
 
-      return FmsOrderSubmissionStrategy(this.objectMapper, this.fmsClient, this.documentApiClient, featureFlags)
+      return FmsOrderSubmissionStrategy(
+        this.objectMapper,
+        this.fmsClient,
+        this.documentApiClient,
+        activeProfile,
+        featureFlags,
+      )
     }
 
-    return FmsDummySubmissionStrategy(this.objectMapper, featureFlags)
+    return FmsDummySubmissionStrategy(this.objectMapper, activeProfile, featureFlags)
   }
 
   fun submitOrder(order: Order, orderSource: FmsOrderSource): FmsSubmissionResult {
+    objectMapper.configure(MapperFeature.DEFAULT_VIEW_INCLUSION, true)
     val strategy = this.getSubmissionStrategy(order, orderSource)
     val submissionResult = strategy.submitOrder(order, orderSource)
 

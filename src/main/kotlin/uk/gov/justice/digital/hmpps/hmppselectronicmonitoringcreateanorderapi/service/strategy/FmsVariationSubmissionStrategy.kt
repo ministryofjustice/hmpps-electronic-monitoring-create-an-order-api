@@ -24,8 +24,9 @@ class FmsVariationSubmissionStrategy(
   objectMapper: ObjectMapper,
   val fmsClient: FmsClient,
   val documentApiClient: DocumentApiClient,
+  activeProfile: String,
   private val featureFlags: FeatureFlags,
-) : FmsSubmissionStrategyBase(objectMapper, featureFlags) {
+) : FmsSubmissionStrategyBase(objectMapper, activeProfile, featureFlags) {
 
   private fun submitUpdateDeviceWearerRequest(deviceWearer: DeviceWearer, orderId: UUID): Result<String> = try {
     Result(
@@ -51,6 +52,7 @@ class FmsVariationSubmissionStrategy(
         error = Exception("Failed to submit FMS Monitoring Order", e),
       )
     }
+
   private fun createAttachment(document: AdditionalDocument, deviceWearerId: String): FmsAttachmentSubmissionResult {
     try {
       val fileId = document.documentId.toString()
