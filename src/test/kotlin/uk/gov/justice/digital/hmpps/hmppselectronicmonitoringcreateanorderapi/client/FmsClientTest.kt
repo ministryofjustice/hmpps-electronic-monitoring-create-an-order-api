@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
@@ -30,6 +31,9 @@ class FmsClientTest : IntegrationTestBase() {
   @Autowired
   lateinit var fmsClient: FmsClient
 
+  @Autowired
+  lateinit var objectMapper: ObjectMapper
+
   @Nested
   @DisplayName("POST /api/x_seem_cemo/device_wearer/createDW")
   inner class CreateDeviceWearer {
@@ -48,7 +52,7 @@ class FmsClientTest : IntegrationTestBase() {
 
       // When
       val exception = assertThrows<CreateSercoEntityException> {
-        fmsClient.createDeviceWearer(DeviceWearer(), orderId)
+        fmsClient.createDeviceWearer(mockDeviceWearerPayload(), orderId)
       }
 
       // Then
@@ -72,7 +76,7 @@ class FmsClientTest : IntegrationTestBase() {
 
       // When
       val exception = assertThrows<CreateSercoEntityException> {
-        fmsClient.createDeviceWearer(DeviceWearer(), orderId)
+        fmsClient.createDeviceWearer(mockDeviceWearerPayload(), orderId)
       }
 
       // Then
@@ -100,7 +104,7 @@ class FmsClientTest : IntegrationTestBase() {
 
       // When
       val exception = assertThrows<CreateSercoEntityException> {
-        fmsClient.createMonitoringOrder(MonitoringOrder(), orderId)
+        fmsClient.createMonitoringOrder(mockMonitoringOrderPayload(), orderId)
       }
 
       // Then
@@ -124,7 +128,7 @@ class FmsClientTest : IntegrationTestBase() {
 
       // When
       val exception = assertThrows<CreateSercoEntityException> {
-        fmsClient.createMonitoringOrder(MonitoringOrder(), orderId)
+        fmsClient.createMonitoringOrder(mockMonitoringOrderPayload(), orderId)
       }
 
       // Then
@@ -152,7 +156,7 @@ class FmsClientTest : IntegrationTestBase() {
 
       // When
       val exception = assertThrows<CreateSercoEntityException> {
-        fmsClient.updateDeviceWearer(DeviceWearer(), orderId)
+        fmsClient.updateDeviceWearer(mockDeviceWearerPayload(), orderId)
       }
 
       // Then
@@ -176,7 +180,7 @@ class FmsClientTest : IntegrationTestBase() {
 
       // When
       val exception = assertThrows<CreateSercoEntityException> {
-        fmsClient.updateDeviceWearer(DeviceWearer(), orderId)
+        fmsClient.updateDeviceWearer(mockDeviceWearerPayload(), orderId)
       }
 
       // Then
@@ -204,7 +208,7 @@ class FmsClientTest : IntegrationTestBase() {
 
       // When
       val exception = assertThrows<CreateSercoEntityException> {
-        fmsClient.updateMonitoringOrder(MonitoringOrder(), orderId)
+        fmsClient.updateMonitoringOrder(mockMonitoringOrderPayload(), orderId)
       }
 
       // Then
@@ -228,7 +232,7 @@ class FmsClientTest : IntegrationTestBase() {
 
       // When
       val exception = assertThrows<CreateSercoEntityException> {
-        fmsClient.updateMonitoringOrder(MonitoringOrder(), orderId)
+        fmsClient.updateMonitoringOrder(mockMonitoringOrderPayload(), orderId)
       }
 
       // Then
@@ -321,4 +325,8 @@ class FmsClientTest : IntegrationTestBase() {
       ).isEqualTo("Error creating $documentType attachment for order: $caseId with error: Error detail")
     }
   }
+
+  fun mockDeviceWearerPayload(): String = objectMapper.writeValueAsString(DeviceWearer())
+
+  fun mockMonitoringOrderPayload(): String = objectMapper.writeValueAsString(MonitoringOrder())
 }
