@@ -25,6 +25,7 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
   private val mockDeliusId: String = "mockDeliusId"
   private val mockPrisonNumber: String = "mockPrisonerNumber"
   private val mockFirstName: String = "mockFirstName"
+  private val mockMiddleName: String = "mockMiddleName"
   private val mockLastName: String = "mockLastName"
   private val mockAlias: String = "mockAlias"
   private val mockSex: String = "MALE"
@@ -75,6 +76,7 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
             """
             {
               "firstName": "$mockFirstName",
+              "middleName": "$mockMiddleName",
               "lastName": "$mockLastName",
               "alias": "$mockAlias",
               "adultAtTimeOfInstallation": "false",
@@ -97,6 +99,7 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
         .returnResult()
 
       Assertions.assertThat(updateDeviceWearer.responseBody?.firstName).isEqualTo(mockFirstName)
+      Assertions.assertThat(updateDeviceWearer.responseBody?.middleName).isEqualTo(mockMiddleName)
       Assertions.assertThat(updateDeviceWearer.responseBody?.lastName).isEqualTo(mockLastName)
       Assertions.assertThat(updateDeviceWearer.responseBody?.alias).isEqualTo(mockAlias)
       Assertions.assertThat(
