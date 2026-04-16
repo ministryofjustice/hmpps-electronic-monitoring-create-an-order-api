@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.annotation.JsonView
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.config.FeatureFlags
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
@@ -105,8 +106,9 @@ data class DeviceWearer(
   @JsonProperty("mappa_case_type")
   var mappaCaseType: String? = "",
 
-//  @JsonProperty("mappa_category")
-//  var mappaCategory: String? = "",
+  @JsonProperty("mappa_category")
+  @field:JsonView(DeviceWearerViews.Dev::class)
+  var mappaCategory: String? = null,
 
   @JsonProperty("risk_categories")
   var riskCategory: List<FmsRiskCategory>? = emptyList(),
@@ -203,10 +205,10 @@ data class DeviceWearer(
         homeOfficeReferenceNumber = "",
       )
 
-//      if (featureFlags.ddV6CourtMappings) {
-//        deviceWearer.mappaCaseType = null
-//        deviceWearer.mappaCategory = order.mappa?.category?.value
-//      }
+      if (featureFlags.ddV6CourtMappings) {
+        deviceWearer.mappaCaseType = null
+        deviceWearer.mappaCategory = order.mappa?.category?.value
+      }
 
       if (featureFlags.ddV6CourtMappings) {
         deviceWearer.complianceAndEnforcementPersonReference =
@@ -318,3 +320,8 @@ data class DeviceWearer(
 data class Disability(var disability: String? = "")
 
 data class FmsRiskCategory(var category: String? = "")
+
+class DeviceWearerViews {
+  interface Prod
+  interface Dev : Prod
+}
