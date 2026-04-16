@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.resource
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
@@ -7,10 +8,14 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.UpdateOrderIntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateDapoDto
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateDeviceWearerDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidationError
 import java.time.LocalDate
 import java.time.LocalTime
@@ -18,7 +23,12 @@ import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.util.*
 
-class DeviceWearerControllerTest : IntegrationTestBase() {
+class DeviceWearerControllerTest : UpdateOrderIntegrationTestBase() {
+  @Autowired
+  lateinit var objectMapper: ObjectMapper
+
+  override val uri = "/api/orders/:orderId/device-wearer"
+  override fun createValidBody(): String = mockValidRequestBody()
 
   private val mockNomisId: String = "mockNomisId"
   private val mockPncId: String = "mockPncId"
@@ -877,5 +887,22 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
         updatedOrder.deviceWearer!!.courtCaseReferenceNumber,
       ).isEqualTo(mockCourtCaseReferenceNumber)
     }
+  }
+
+  private fun mockValidRequestBody(
+  ): String {
+    val dto = UpdateDeviceWearerDto(
+      alias = mockAlias,
+      firstName = mockFirstName,
+      middleName = mockMiddleName,
+      lastName = mockLastName,
+      gender = mockGender,
+      dateOfBirth = mockDateOfBirth,
+      interpreterRequired = false,
+    )
+
+    val test = objectMapper.writeValueAsString(dto)
+
+    return objectMapper.writeValueAsString(dto)
   }
 }
