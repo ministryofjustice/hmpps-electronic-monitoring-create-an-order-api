@@ -66,6 +66,7 @@ class DeviceWearerServiceTest {
     whenever(orderRepo.save(mockOrder)).thenReturn(mockOrder)
     val mockUpdateRecord = UpdateDeviceWearerDto(
       firstName = "firstName",
+      middleName = "middleName",
       lastName = "lastName",
       alias = "alias",
       adultAtTimeOfInstallation = true,
@@ -79,6 +80,7 @@ class DeviceWearerServiceTest {
     service.updateDeviceWearer(mockOrderId, mockUsername, mockUpdateRecord)
 
     assertThat(mockOrder.deviceWearer?.firstName).isEqualTo(mockUpdateRecord.firstName)
+    assertThat(mockOrder.deviceWearer?.middleName).isEqualTo(mockUpdateRecord.middleName)
     assertThat(mockOrder.deviceWearer?.lastName).isEqualTo(mockUpdateRecord.lastName)
     assertThat(mockOrder.deviceWearer?.alias).isEqualTo(mockUpdateRecord.alias)
     assertThat(mockOrder.deviceWearer?.gender).isEqualTo(mockUpdateRecord.gender)
