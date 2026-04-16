@@ -10,11 +10,8 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsSubmissionResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsSubmissionStrategyKind
 
-class FmsDummySubmissionStrategy(
-  objectMapper: ObjectMapper,
-  activeProfile: Array<String>,
-  private val featureFlags: FeatureFlags,
-) : FmsSubmissionStrategyBase(objectMapper, activeProfile, featureFlags) {
+class FmsDummySubmissionStrategy(objectMapper: ObjectMapper, private val featureFlags: FeatureFlags) :
+  FmsSubmissionStrategyBase(objectMapper, featureFlags) {
 
   private fun createDeviceWearer(order: Order): FmsDeviceWearerSubmissionResult {
     val deviceWearerResult = this.getDeviceWearer(order)

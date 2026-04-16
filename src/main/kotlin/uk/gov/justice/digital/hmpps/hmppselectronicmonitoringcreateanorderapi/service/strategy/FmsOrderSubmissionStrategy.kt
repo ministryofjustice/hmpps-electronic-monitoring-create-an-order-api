@@ -24,9 +24,8 @@ class FmsOrderSubmissionStrategy(
   objectMapper: ObjectMapper,
   val fmsClient: FmsClient,
   val documentApiClient: DocumentApiClient,
-  activeProfile: Array<String>,
   private val featureFlags: FeatureFlags,
-) : FmsSubmissionStrategyBase(objectMapper, activeProfile, featureFlags) {
+) : FmsSubmissionStrategyBase(objectMapper, featureFlags) {
 
   private fun submitCreateDeviceWearerRequest(deviceWearer: DeviceWearer, orderId: UUID): Result<String> = try {
     Result(

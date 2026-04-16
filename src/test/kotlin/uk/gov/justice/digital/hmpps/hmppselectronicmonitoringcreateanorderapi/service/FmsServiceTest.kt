@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
 import org.mockito.kotlin.whenever
 import org.springframework.boot.test.autoconfigure.json.JsonTest
-import org.springframework.core.env.Environment
 import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.DocumentApiClient
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.FmsClient
@@ -34,7 +33,6 @@ class FmsServiceTest {
   private lateinit var repo: FmsSubmissionResultRepository
   private val mockFeatureFlags =
     FeatureFlags(dataDictionaryVersion = DataDictionaryVersion.DDV6, ddV6CourtMappings = false)
-  private lateinit var env: Environment
 
   @BeforeEach
   fun setUp() {
@@ -42,9 +40,7 @@ class FmsServiceTest {
     mockDocumentApiClient = mock(DocumentApiClient::class.java)
     objectMapper = ObjectMapper()
     repo = mock(FmsSubmissionResultRepository::class.java)
-    env = mock(Environment::class.java)
-    service =
-      FmsService(mockClient, mockDocumentApiClient, objectMapper, repo, true, true, env, mockFeatureFlags)
+    service = FmsService(mockClient, mockDocumentApiClient, objectMapper, repo, true, true, mockFeatureFlags)
   }
 
   @Test
