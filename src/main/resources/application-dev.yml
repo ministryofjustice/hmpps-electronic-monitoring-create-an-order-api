@@ -8,3 +8,5 @@ example-api:
   client:
     id: "example-api-client"
     secret: "example-api-client-secret"
+settings:
+  device-wearer-payload-version: Dev

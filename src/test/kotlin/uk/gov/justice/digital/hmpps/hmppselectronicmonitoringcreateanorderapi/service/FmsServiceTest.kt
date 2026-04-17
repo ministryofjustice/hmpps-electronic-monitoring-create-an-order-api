@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service
 
+import DeviceWearerPayloadVersion
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -33,7 +34,11 @@ class FmsServiceTest {
   private lateinit var objectMapper: ObjectMapper
   private lateinit var repo: FmsSubmissionResultRepository
   private val mockFeatureFlags =
-    FeatureFlags(dataDictionaryVersion = DataDictionaryVersion.DDV6, ddV6CourtMappings = false)
+    FeatureFlags(
+      dataDictionaryVersion = DataDictionaryVersion.DDV6,
+      ddV6CourtMappings = false,
+      deviceWearerPayloadVersion = DeviceWearerPayloadVersion.Prod,
+    )
   private lateinit var env: Environment
 
   @BeforeEach
@@ -44,7 +49,7 @@ class FmsServiceTest {
     repo = mock(FmsSubmissionResultRepository::class.java)
     env = mock(Environment::class.java)
     service =
-      FmsService(mockClient, mockDocumentApiClient, objectMapper, repo, true, true, env, mockFeatureFlags)
+      FmsService(mockClient, mockDocumentApiClient, objectMapper, repo, true, true, mockFeatureFlags)
   }
 
   @Test

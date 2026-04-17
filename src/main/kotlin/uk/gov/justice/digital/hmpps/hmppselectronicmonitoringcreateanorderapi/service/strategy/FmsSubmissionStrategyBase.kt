@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.strategy
 
+import DeviceWearerPayloadVersion
 import com.fasterxml.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.config.FeatureFlags
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
@@ -8,11 +9,8 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.DeviceWearerViews
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.MonitoringOrder
 
-abstract class FmsSubmissionStrategyBase(
-  val objectMapper: ObjectMapper,
-  val activeProfiles: Array<String>,
-  private val featureFlags: FeatureFlags,
-) : FmsSubmissionStrategy {
+abstract class FmsSubmissionStrategyBase(val objectMapper: ObjectMapper, private val featureFlags: FeatureFlags) :
+  FmsSubmissionStrategy {
 
   protected fun getDeviceWearer(order: Order): Result<DeviceWearer> = try {
     Result(
@@ -27,7 +25,7 @@ abstract class FmsSubmissionStrategyBase(
   }
 
   protected fun serialiseDeviceWearer(deviceWearer: DeviceWearer): Result<String> = try {
-    val viewClass = if (activeProfiles.contains("dev") || activeProfiles.contains("test")) {
+    val viewClass = if (featureFlags.deviceWearerPayloadVersion == DeviceWearerPayloadVersion.Dev) {
       DeviceWearerViews.Dev::class.java
     } else {
       DeviceWearerViews.Prod::class.java

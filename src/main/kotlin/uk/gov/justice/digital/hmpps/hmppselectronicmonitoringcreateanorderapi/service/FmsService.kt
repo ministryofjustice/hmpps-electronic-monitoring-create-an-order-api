@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Configuration
-import org.springframework.core.env.Environment
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.DocumentApiClient
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.FmsClient
@@ -30,9 +29,8 @@ class FmsService(
   val documentApiClient: DocumentApiClient,
   val objectMapper: ObjectMapper,
   val repo: FmsSubmissionResultRepository,
-  @Value("\${toggle.cemo.fms-integration.enabled:false}") val cemoFmsIntegrationEnabled: Boolean,
-  @Value("\${toggle.common-platform.fms-integration.enabled:false}") val cpFmsIntegrationEnabled: Boolean,
-  private val env: Environment,
+  @param:Value("\${toggle.cemo.fms-integration.enabled:false}") val cemoFmsIntegrationEnabled: Boolean,
+  @param:Value("\${toggle.common-platform.fms-integration.enabled:false}") val cpFmsIntegrationEnabled: Boolean,
   private val featureFlags: FeatureFlags,
 ) {
   private fun getSubmissionStrategy(order: Order, orderSource: FmsOrderSource): FmsSubmissionStrategy {
@@ -41,7 +39,6 @@ class FmsService(
         this.objectMapper,
         this.fmsClient,
         this.documentApiClient,
-        env.activeProfiles,
         featureFlags,
       )
     }
@@ -52,7 +49,6 @@ class FmsService(
           this.objectMapper,
           this.fmsClient,
           this.documentApiClient,
-          env.activeProfiles,
           featureFlags,
         )
       }
@@ -61,12 +57,11 @@ class FmsService(
         this.objectMapper,
         this.fmsClient,
         this.documentApiClient,
-        env.activeProfiles,
         featureFlags,
       )
     }
 
-    return FmsDummySubmissionStrategy(this.objectMapper, env.activeProfiles, featureFlags)
+    return FmsDummySubmissionStrategy(this.objectMapper, featureFlags)
   }
 
   fun submitOrder(order: Order, orderSource: FmsOrderSource): FmsSubmissionResult {

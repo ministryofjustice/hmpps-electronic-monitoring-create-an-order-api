@@ -8,6 +8,7 @@ generic-service:
     host: hmpps-electronic-monitoring-create-an-order-api-dev.hmpps.service.justice.gov.uk
 
   env:
+    SPRING_PROFILES_ACTIVE: dev
     APPLICATIONINSIGHTS_CONFIGURATION_FILE: "applicationinsights.dev.json"
     HMPPS_AUTH_URL: "https://sign-in-dev.hmpps.service.justice.gov.uk/auth"
     DOCUMENT_MANAGEMENT_URL: "https://document-api-dev.hmpps.service.justice.gov.uk/"

@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.strategy
 
+import DeviceWearerPayloadVersion
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -10,10 +11,9 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.DeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsSubmissionResult
 
-class TestFmsStrategy(objectMapper: ObjectMapper, activeProfiles: Array<String>, featureFlags: FeatureFlags) :
-  FmsSubmissionStrategyBase(objectMapper, activeProfiles, featureFlags) {
+class TestFmsStrategy(objectMapper: ObjectMapper, featureFlags: FeatureFlags) :
+  FmsSubmissionStrategyBase(objectMapper, featureFlags) {
 
-  // Expose protected methods as public
   fun executeSerialiseDeviceWearer(deviceWearer: DeviceWearer) = serialiseDeviceWearer(deviceWearer)
 
   override fun submitOrder(order: Order, orderSource: FmsOrderSource): FmsSubmissionResult {
@@ -23,11 +23,14 @@ class TestFmsStrategy(objectMapper: ObjectMapper, activeProfiles: Array<String>,
 
 class FmsSubmissionStrategyBaseTest {
   @Test
-  fun `uses Dev view when active profiles contain 'dev'`() {
+  fun `uses Dev view when deviceWearerPayloadVersion is Dev`() {
     val strategy = TestFmsStrategy(
       ObjectMapper(),
-      arrayOf("dev"),
-      FeatureFlags(dataDictionaryVersion = DataDictionaryVersion.DDV6, ddV6CourtMappings = true),
+      FeatureFlags(
+        dataDictionaryVersion = DataDictionaryVersion.DDV6,
+        ddV6CourtMappings = true,
+        deviceWearerPayloadVersion = DeviceWearerPayloadVersion.Dev,
+      ),
     )
 
     val deviceWearer = DeviceWearer(mappaCaseType = "case type", mappaCategory = "category")
@@ -39,11 +42,14 @@ class FmsSubmissionStrategyBaseTest {
   }
 
   @Test
-  fun `uses prod view when active profiles contain 'prod'`() {
+  fun `uses Dev view when deviceWearerPayloadVersion is Prod`() {
     val strategy = TestFmsStrategy(
       ObjectMapper(),
-      arrayOf("prod"),
-      FeatureFlags(dataDictionaryVersion = DataDictionaryVersion.DDV6, ddV6CourtMappings = true),
+      FeatureFlags(
+        dataDictionaryVersion = DataDictionaryVersion.DDV6,
+        ddV6CourtMappings = true,
+        deviceWearerPayloadVersion = DeviceWearerPayloadVersion.Prod,
+      ),
     )
 
     val deviceWearer = DeviceWearer(mappaCaseType = "case type", mappaCategory = "category")

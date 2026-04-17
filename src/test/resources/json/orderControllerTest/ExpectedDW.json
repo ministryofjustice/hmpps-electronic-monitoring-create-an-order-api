@@ -32,7 +32,7 @@
   "risk_details": "Danger",
   "mappa": "MAPPA 1",
   "mappa_case_type": null,
-  "mappa_category": "Category 1",
+  "mappa_category": null,
   "risk_categories": [
     {
       "category": "Sexual Offences"

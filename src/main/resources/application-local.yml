@@ -38,3 +38,5 @@ services:
 CLIENT_ID: hmpps-electronic-monitoring-create-an-order-api
 CLIENT_SECRET: clientsecret
 
+settings:
+  device-wearer-payload-version: Dev
