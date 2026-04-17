@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.UpdateOrderIntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.UriTestCase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidationError
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.UpdateDetailsOfInstallationDto
 
@@ -16,8 +17,10 @@ class DetailsOfInstallationControllerTest : UpdateOrderIntegrationTestBase() {
   @Autowired
   lateinit var objectMapper: ObjectMapper
 
-  override val uri = "/api/orders/:orderId/details-of-installation"
-  override fun createValidBody(): String = mockValidRequestBody()
+  fun createValidBody(): String = mockValidRequestBody()
+  override val testUris: List<UriTestCase> = listOf(
+    UriTestCase(uri = "/api/orders/:orderId/details-of-installation", createValidBody = { createValidBody() }),
+  )
 
   @BeforeEach
   fun setup() {

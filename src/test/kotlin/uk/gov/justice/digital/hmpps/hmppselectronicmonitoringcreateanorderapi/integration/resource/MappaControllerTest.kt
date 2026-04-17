@@ -9,6 +9,7 @@ import org.springframework.http.MediaType
 import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.UpdateOrderIntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.UriTestCase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderParameters
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateIsMappaDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YesNoUnknown
@@ -125,9 +126,10 @@ class UpdateIsMappaTest : UpdateOrderIntegrationTestBase() {
   @Autowired
   lateinit var objectMapper: ObjectMapper
 
-  override val uri = "/api/orders/:orderId/mappa/is-mappa"
-
-  override fun createValidBody(): String = mockRequestBody(YesNoUnknown.YES)
+  fun createValidBody(): String = mockRequestBody(YesNoUnknown.YES)
+  override val testUris: List<UriTestCase> = listOf(
+    UriTestCase(uri = "/api/orders/:orderId/mappa/is-mappa", createValidBody = { createValidBody() }),
+  )
 
   @Test
   fun `should update isMappa`() {
