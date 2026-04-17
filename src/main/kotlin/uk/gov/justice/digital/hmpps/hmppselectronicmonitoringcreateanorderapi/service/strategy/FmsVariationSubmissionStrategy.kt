@@ -11,13 +11,11 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.SubmissionStatus
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.DeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsAttachmentSubmissionResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsDeviceWearerSubmissionResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsMonitoringOrderSubmissionResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsSubmissionResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsSubmissionStrategyKind
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.MonitoringOrder
 import java.util.*
 
 class FmsVariationSubmissionStrategy(
@@ -27,10 +25,10 @@ class FmsVariationSubmissionStrategy(
   private val featureFlags: FeatureFlags,
 ) : FmsSubmissionStrategyBase(objectMapper, featureFlags) {
 
-  private fun submitUpdateDeviceWearerRequest(deviceWearer: DeviceWearer, orderId: UUID): Result<String> = try {
+  private fun submitUpdateDeviceWearerRequest(deviceWearerPayload: String, orderId: UUID): Result<String> = try {
     Result(
       success = true,
-      data = fmsClient.updateDeviceWearer(deviceWearer, orderId).result.first().id,
+      data = fmsClient.updateDeviceWearer(deviceWearerPayload, orderId).result.first().id,
     )
   } catch (e: Exception) {
     Result(
@@ -39,18 +37,18 @@ class FmsVariationSubmissionStrategy(
     )
   }
 
-  private fun submitUpdateMonitoringOrderRequest(monitoringOrder: MonitoringOrder, orderId: UUID): Result<String> =
-    try {
-      Result(
-        success = true,
-        data = fmsClient.updateMonitoringOrder(monitoringOrder, orderId).result.first().id,
-      )
-    } catch (e: Exception) {
-      Result(
-        success = false,
-        error = Exception("Failed to submit FMS Monitoring Order", e),
-      )
-    }
+  private fun submitUpdateMonitoringOrderRequest(monitoringOrderPayload: String, orderId: UUID): Result<String> = try {
+    Result(
+      success = true,
+      data = fmsClient.updateMonitoringOrder(monitoringOrderPayload, orderId).result.first().id,
+    )
+  } catch (e: Exception) {
+    Result(
+      success = false,
+      error = Exception("Failed to submit FMS Monitoring Order", e),
+    )
+  }
+
   private fun createAttachment(document: AdditionalDocument, deviceWearerId: String): FmsAttachmentSubmissionResult {
     try {
       val fileId = document.documentId.toString()
@@ -121,20 +119,20 @@ class FmsVariationSubmissionStrategy(
       )
     }
 
-    val submissionResult = this.submitUpdateDeviceWearerRequest(deviceWearer, order.id)
+    val submissionResult = this.submitUpdateDeviceWearerRequest(serialiseResult.data!!, order.id)
 
     if (!submissionResult.success) {
       return FmsDeviceWearerSubmissionResult(
         status = SubmissionStatus.FAILURE,
         error = submissionResult.error.toString(),
-        payload = serialiseResult.data!!,
+        payload = serialiseResult.data,
       )
     }
 
     return FmsDeviceWearerSubmissionResult(
       status = SubmissionStatus.SUCCESS,
       deviceWearerId = submissionResult.data!!,
-      payload = serialiseResult.data!!,
+      payload = serialiseResult.data,
     )
   }
 
@@ -158,20 +156,20 @@ class FmsVariationSubmissionStrategy(
       )
     }
 
-    val submissionResult = this.submitUpdateMonitoringOrderRequest(monitoringOrder, order.id)
+    val submissionResult = this.submitUpdateMonitoringOrderRequest(serialiseResult.data!!, order.id)
 
     if (!submissionResult.success) {
       return FmsMonitoringOrderSubmissionResult(
         status = SubmissionStatus.FAILURE,
         error = submissionResult.error.toString(),
-        payload = serialiseResult.data!!,
+        payload = serialiseResult.data,
       )
     }
 
     return FmsMonitoringOrderSubmissionResult(
       status = SubmissionStatus.SUCCESS,
       monitoringOrderId = submissionResult.data!!,
-      payload = serialiseResult.data!!,
+      payload = serialiseResult.data,
     )
   }
 

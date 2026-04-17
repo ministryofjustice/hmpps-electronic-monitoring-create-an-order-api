@@ -15,6 +15,8 @@ spring:
     date-format: "yyyy-MM-dd HH:mm:ss"
     serialization:
       WRITE_DATES_AS_TIMESTAMPS: false
+    mapper:
+      default-view-inclusion: true
   datasource:
     url: 'jdbc:postgresql://${DB_SERVER}/${DB_NAME}?sslmode=prefer'
     username: ${DB_USER}
@@ -74,6 +76,7 @@ toggle:
 settings:
   data-dictionary-version: DDV4
   ddv6-court-mappings: ${DDV6_COURT_MAPPINGS:false}
+  device-wearer-payload-version: Prod
 
 management:
   endpoints:

@@ -11,11 +11,9 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import reactor.core.publisher.Mono
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.CreateSercoEntityException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.DeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsAttachmentResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsErrorResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsResponse
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.MonitoringOrder
 import java.util.*
 
 @Service
@@ -26,12 +24,12 @@ class FmsClient(
 ) {
   private val webClient: WebClient = WebClient.builder().baseUrl(url).build()
 
-  fun createDeviceWearer(deviceWearer: DeviceWearer, orderId: UUID): FmsResponse {
+  fun createDeviceWearer(deviceWearerPayload: String, orderId: UUID): FmsResponse {
     val token = fmsAuthClient.getClientToken()
     val result = webClient.post().uri("/x_seem_cemo/device_wearer/createDW")
       .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
       .contentType(MediaType.APPLICATION_JSON)
-      .bodyValue(deviceWearer)
+      .bodyValue(deviceWearerPayload)
       .retrieve()
       .onStatus(
         { t -> t.isError },
@@ -51,12 +49,12 @@ class FmsClient(
     return result
   }
 
-  fun createMonitoringOrder(order: MonitoringOrder, orderId: UUID): FmsResponse {
+  fun createMonitoringOrder(orderPayload: String, orderId: UUID): FmsResponse {
     val token = fmsAuthClient.getClientToken()
     val result = webClient.post().uri("/x_seem_cemo/monitoring_order/createMO")
       .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
       .contentType(MediaType.APPLICATION_JSON)
-      .bodyValue(order)
+      .bodyValue(orderPayload)
       .retrieve()
       .onStatus(
         { t -> t.isError },
@@ -76,12 +74,12 @@ class FmsClient(
     return result
   }
 
-  fun updateDeviceWearer(deviceWearer: DeviceWearer, orderId: UUID): FmsResponse {
+  fun updateDeviceWearer(deviceWearerPayload: String, orderId: UUID): FmsResponse {
     val token = fmsAuthClient.getClientToken()
     val result = webClient.post().uri("/x_seem_cemo/device_wearer/updateDW")
       .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
       .contentType(MediaType.APPLICATION_JSON)
-      .bodyValue(deviceWearer)
+      .bodyValue(deviceWearerPayload)
       .retrieve()
       .onStatus(
         { t -> t.isError },
@@ -101,12 +99,12 @@ class FmsClient(
     return result
   }
 
-  fun updateMonitoringOrder(order: MonitoringOrder, orderId: UUID): FmsResponse {
+  fun updateMonitoringOrder(orderPayload: String, orderId: UUID): FmsResponse {
     val token = fmsAuthClient.getClientToken()
     val result = webClient.post().uri("/x_seem_cemo/monitoring_order/updateMO")
       .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
       .contentType(MediaType.APPLICATION_JSON)
-      .bodyValue(order)
+      .bodyValue(orderPayload)
       .retrieve()
       .onStatus(
         { t -> t.isError },

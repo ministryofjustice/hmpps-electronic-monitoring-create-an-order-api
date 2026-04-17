@@ -29,21 +29,36 @@ class FmsService(
   val documentApiClient: DocumentApiClient,
   val objectMapper: ObjectMapper,
   val repo: FmsSubmissionResultRepository,
-  @Value("\${toggle.cemo.fms-integration.enabled:false}") val cemoFmsIntegrationEnabled: Boolean,
-  @Value("\${toggle.common-platform.fms-integration.enabled:false}") val cpFmsIntegrationEnabled: Boolean,
+  @param:Value("\${toggle.cemo.fms-integration.enabled:false}") val cemoFmsIntegrationEnabled: Boolean,
+  @param:Value("\${toggle.common-platform.fms-integration.enabled:false}") val cpFmsIntegrationEnabled: Boolean,
   private val featureFlags: FeatureFlags,
 ) {
   private fun getSubmissionStrategy(order: Order, orderSource: FmsOrderSource): FmsSubmissionStrategy {
     if (orderSource === FmsOrderSource.COMMON_PLATFORM && cpFmsIntegrationEnabled) {
-      return FmsOrderSubmissionStrategy(this.objectMapper, this.fmsClient, this.documentApiClient, featureFlags)
+      return FmsOrderSubmissionStrategy(
+        this.objectMapper,
+        this.fmsClient,
+        this.documentApiClient,
+        featureFlags,
+      )
     }
 
     if (orderSource === FmsOrderSource.CEMO && cemoFmsIntegrationEnabled) {
       if (RequestType.VARIATION_TYPES.contains(order.type)) {
-        return FmsVariationSubmissionStrategy(this.objectMapper, this.fmsClient, this.documentApiClient, featureFlags)
+        return FmsVariationSubmissionStrategy(
+          this.objectMapper,
+          this.fmsClient,
+          this.documentApiClient,
+          featureFlags,
+        )
       }
 
-      return FmsOrderSubmissionStrategy(this.objectMapper, this.fmsClient, this.documentApiClient, featureFlags)
+      return FmsOrderSubmissionStrategy(
+        this.objectMapper,
+        this.fmsClient,
+        this.documentApiClient,
+        featureFlags,
+      )
     }
 
     return FmsDummySubmissionStrategy(this.objectMapper, featureFlags)
