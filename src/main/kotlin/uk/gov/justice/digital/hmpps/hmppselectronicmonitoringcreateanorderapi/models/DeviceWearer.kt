@@ -47,6 +47,9 @@ data class DeviceWearer(
   @Column(name = "FIRST_NAME", nullable = true)
   var firstName: String? = null,
 
+  @Column(name = "MIDDLE_NAME", nullable = true)
+  var middleName: String? = null,
+
   @Column(name = "LAST_NAME", nullable = true)
   var lastName: String? = null,
 

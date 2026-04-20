@@ -49,6 +49,7 @@ object ValidationErrors {
   object DeviceWearer {
     const val FIRST_NAME_REQUIRED: String = "Enter device wearer's first name"
     const val FIRST_NAME_MAX_LENGTH: String = "First name must be 200 characters or less"
+    const val MIDDLE_NAME_MAX_LENGTH: String = "Middle name must be 200 characters or less"
     const val LAST_NAME_REQUIRED: String = "Enter device wearer's last name"
     const val LAST_NAME_MAX_LENGTH: String = "Last name must be 200 characters or less"
     const val ALIAS_MAX_LENGTH: String = "Preferred name must be 200 characters or less"

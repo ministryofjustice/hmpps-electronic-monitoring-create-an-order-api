@@ -18,6 +18,7 @@ class DeviceWearerService : OrderSectionServiceBase() {
     order.deviceWearer = DeviceWearer(
       versionId = order.getCurrentVersion().id,
       firstName = updateRecord.firstName?.trim(),
+      middleName = updateRecord.middleName?.trim(),
       lastName = updateRecord.lastName?.trim(),
       alias = updateRecord.alias,
       adultAtTimeOfInstallation = updateRecord.adultAtTimeOfInstallation,

@@ -25,6 +25,7 @@ class DeviceWearerControllerTest {
   private val controller = DeviceWearerController(deviceWearerService)
   private val mockUser: String = "mockUser"
   private val mockFirstName: String = "mockFirstName"
+  private val mockMiddleName: String = "mockMiddleName"
   private val mockLastName: String = "mockLastName"
   private val mockAlias: String = "mockAlias"
   private val mockGender: String = "mockGender"
@@ -53,9 +54,10 @@ class DeviceWearerControllerTest {
       dateOfBirth = mockDateOfBirth,
       interpreterRequired = false,
     )
-    UpdateDeviceWearerDto(
+    val dto = UpdateDeviceWearerDto(
       alias = mockAlias,
       firstName = mockFirstName,
+      middleName = mockMiddleName,
       lastName = mockLastName,
       gender = mockGender,
       dateOfBirth = mockDateOfBirth,
@@ -65,28 +67,14 @@ class DeviceWearerControllerTest {
       deviceWearerService.updateDeviceWearer(
         username = mockUser,
         orderId = mockOrderId,
-        updateRecord = UpdateDeviceWearerDto(
-          alias = mockAlias,
-          firstName = mockFirstName,
-          lastName = mockLastName,
-          gender = mockGender,
-          dateOfBirth = mockDateOfBirth,
-          interpreterRequired = false,
-        ),
+        updateRecord = dto,
       ),
     ).thenReturn(mockDeviceWearer)
     `when`(authentication.name).thenReturn("mockUser")
 
     val result = controller.updateDeviceWearer(
       orderId = mockOrderId,
-      deviceWearerUpdateRecord = UpdateDeviceWearerDto(
-        alias = mockAlias,
-        firstName = mockFirstName,
-        lastName = mockLastName,
-        gender = mockGender,
-        dateOfBirth = mockDateOfBirth,
-        interpreterRequired = false,
-      ),
+      deviceWearerUpdateRecord = dto,
       authentication,
     )
 
