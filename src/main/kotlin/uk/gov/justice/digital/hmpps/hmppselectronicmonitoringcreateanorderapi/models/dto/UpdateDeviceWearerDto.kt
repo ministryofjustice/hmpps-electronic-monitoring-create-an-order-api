@@ -15,7 +15,7 @@ data class UpdateDeviceWearerDto(
   @field:Size(max = 200, message = ValidationErrors.DeviceWearer.FIRST_NAME_MAX_LENGTH)
   val firstName: String? = null,
 
-  @field:Size(max = 200, message = ValidationErrors.DeviceWearer.FIRST_NAME_MAX_LENGTH)
+  @field:Size(max = 200, message = ValidationErrors.DeviceWearer.MIDDLE_NAME_MAX_LENGTH)
   val middleName: String? = null,
 
   @field:Size(min = 1, message = ValidationErrors.DeviceWearer.LAST_NAME_REQUIRED)
