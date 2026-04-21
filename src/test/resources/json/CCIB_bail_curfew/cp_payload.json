@@ -494,6 +494,7 @@
                                 "firstName": "Person",
                                 "gender": "NOT_SPECIFIED",
                                 "hearingLanguageNeeds": "ENGLISH",
+				"middleName": "Middle",
                                 "lastName": "Mock",
                                 "title": "Mr"
                             }

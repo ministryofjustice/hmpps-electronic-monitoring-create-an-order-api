@@ -52,6 +52,7 @@ class HearingEventHandler(
   private val commentPlatformUsername = "COMMENT_PLATFORM"
   private val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
   private val dateTimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+
   companion object {
 
     //region Comment Platform UUIDs
@@ -265,6 +266,7 @@ class HearingEventHandler(
       deviceWearer.dateOfBirth = ZonedDateTime.of(person.dateOfBirth, LocalTime.MIDNIGHT, ZoneId.of("Europe/London"))
     }
     deviceWearer.firstName = person?.firstName
+    deviceWearer.middleName = person?.middleName
     deviceWearer.lastName = person?.lastName
     deviceWearer.sex = getSex(person?.gender)
     deviceWearer.adultAtTimeOfInstallation = !defendant.isYouth

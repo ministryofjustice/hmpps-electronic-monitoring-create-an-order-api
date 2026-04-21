@@ -1599,6 +1599,26 @@ class MonitoringOrderTest : OrderTestBase() {
     assertThat(result.orderType).isEqualTo("Pre-Trial")
   }
 
+  @Test
+  fun `should map device wearer names`() {
+    val order =
+      createOrder(deviceWearer = createDeviceWearer(firstName = "First", middleName = "Middle", lastName = "Last"))
+
+    val result = MonitoringOrder.fromOrder(order, null, mockFeatureFlags)
+
+    assertThat(result.deviceWearer).isEqualTo("First Middle Last")
+  }
+
+  @Test
+  fun `should map device wearer names without middle name`() {
+    val order =
+      createOrder(deviceWearer = createDeviceWearer(firstName = "First", middleName = null, lastName = "Last"))
+
+    val result = MonitoringOrder.fromOrder(order, null, mockFeatureFlags)
+
+    assertThat(result.deviceWearer).isEqualTo("First Last")
+  }
+
   private fun assertNotifyingOrgNameMapping(
     savedValue: String,
     mappedValue: String,

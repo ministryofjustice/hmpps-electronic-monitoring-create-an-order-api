@@ -254,6 +254,18 @@ class DeviceWearerTest : OrderTestBase() {
     assertThat(fmsDeviceWearer.mappa).isEqualTo("MAPPA 1")
   }
 
+  @Test
+  fun `It should map all names`() {
+    val order =
+      createOrder(deviceWearer = createDeviceWearer(firstName = "First", middleName = "Middle", lastName = "Last"))
+
+    val result = FmsDeviceWearer.fromCemoOrder(order, featureFlags)
+
+    assertThat(result.firstName).isEqualTo("First")
+    assertThat(result.middleName).isEqualTo("Middle")
+    assertThat(result.lastName).isEqualTo("Last")
+  }
+
   companion object {
     @JvmStatic
     fun sexValues() = listOf(
