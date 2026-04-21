@@ -181,6 +181,7 @@ data class DeviceWearer(
 
       val deviceWearer = DeviceWearer(
         firstName = order.deviceWearer?.firstName,
+        middleName = order.deviceWearer?.middleName,
         lastName = order.deviceWearer?.lastName,
         alias = order.deviceWearer?.alias,
         dateOfBirth = order.deviceWearer?.dateOfBirth?.format(formatter) ?: "",
