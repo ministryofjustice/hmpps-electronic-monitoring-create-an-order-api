@@ -138,6 +138,7 @@ abstract class OrderTestBase {
 
   protected fun createDeviceWearer(
     firstName: String = "John",
+    middleName: String? = "",
     lastName: String = "Smith",
     alias: String = "Johnny",
     dateOfBirth: ZonedDateTime = ZonedDateTime.of(1990, 1, 1, 1, 1, 1, 1, ZoneId.systemDefault()),
@@ -159,6 +160,7 @@ abstract class OrderTestBase {
   ): DeviceWearer = DeviceWearer(
     versionId = UUID.randomUUID(),
     firstName = firstName,
+    middleName = middleName,
     lastName = lastName,
     alias = alias,
     dateOfBirth = dateOfBirth,

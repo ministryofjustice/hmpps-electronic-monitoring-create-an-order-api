@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.config.FeatureFlags
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Address
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewTimeTable
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InterestedParties
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
@@ -300,7 +301,7 @@ data class MonitoringOrder(
       }
 
       val monitoringOrder = MonitoringOrder(
-        deviceWearer = "${order.deviceWearer!!.firstName} ${order.deviceWearer!!.lastName}",
+        deviceWearer = getDeviceWearerName(order.deviceWearer!!),
         orderType = getOrderType(conditions.orderType!!),
         orderRequestType = order.type.value,
         orderTypeDescription = conditions.orderTypeDescription?.value ?: "",
@@ -825,6 +826,12 @@ data class MonitoringOrder(
     private fun getOrderType(orderType: OrderType): String = when (orderType) {
       OrderType.CIVIL, OrderType.BAIL -> OrderType.PRE_TRIAL.value
       else -> orderType.value
+    }
+
+    private fun getDeviceWearerName(deviceWearer: DeviceWearer): String = with(deviceWearer) {
+      listOfNotNull(firstName, middleName, lastName)
+        .filterNot { it.isBlank() }
+        .joinToString(" ")
     }
   }
 }
