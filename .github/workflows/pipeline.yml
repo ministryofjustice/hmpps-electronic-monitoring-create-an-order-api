@@ -45,11 +45,10 @@ jobs:
     secrets: inherit
     with:
       gradle-command: 'BUILD_NUMBER=${{ needs.app_version.outputs.version}} ./gradlew assemble check'
-      upload-build-artifacts: ${{ github.ref == 'refs/heads/main' }}
+      upload-build-artifacts: true
       localstack-tag: 'community-archive'
       localstack-services: 'sqs,sns,s3'
       java-version: "25"
-      artifact-name: "gradle_verify"
     needs:
       - app_version
   build:
