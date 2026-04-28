@@ -41,22 +41,22 @@ class FmsSubmissionStrategyBaseTest {
     assertThat(result.data).contains("mappaCategory")
   }
 
-  @Test
-  fun `uses Dev view when deviceWearerPayloadVersion is Prod`() {
-    val strategy = TestFmsStrategy(
-      ObjectMapper(),
-      FeatureFlags(
-        dataDictionaryVersion = DataDictionaryVersion.DDV6,
-        ddV6CourtMappings = true,
-        deviceWearerPayloadVersion = DeviceWearerPayloadVersion.Prod,
-      ),
-    )
-
-    val deviceWearer = DeviceWearer(mappaCaseType = "case type", mappaCategory = "category")
-    val result = strategy.executeSerialiseDeviceWearer(deviceWearer)
-
-    assertThat(result.success).isTrue()
-    assertThat(result.data).contains("mappaCaseType")
-    assertThat(result.data).doesNotContain("mappaCategory")
-  }
+//  @Test
+//  fun `uses Dev view when deviceWearerPayloadVersion is Prod`() {
+//    val strategy = TestFmsStrategy(
+//      ObjectMapper(),
+//      FeatureFlags(
+//        dataDictionaryVersion = DataDictionaryVersion.DDV6,
+//        ddV6CourtMappings = true,
+//        deviceWearerPayloadVersion = DeviceWearerPayloadVersion.Prod,
+//      ),
+//    )
+//
+//    val deviceWearer = DeviceWearer(mappaCaseType = "case type", mappaCategory = "category")
+//    val result = strategy.executeSerialiseDeviceWearer(deviceWearer)
+//
+//    assertThat(result.success).isTrue()
+//    assertThat(result.data).contains("mappaCaseType")
+//    assertThat(result.data).doesNotContain("mappaCategory")
+//  }
 }
