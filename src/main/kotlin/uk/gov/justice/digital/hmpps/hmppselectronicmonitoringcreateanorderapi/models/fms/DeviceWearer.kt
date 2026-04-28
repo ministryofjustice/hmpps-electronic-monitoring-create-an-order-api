@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import com.fasterxml.jackson.annotation.JsonView
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.config.FeatureFlags
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
@@ -107,7 +106,6 @@ data class DeviceWearer(
   var mappaCaseType: String? = "",
 
   @JsonProperty("mappa_category")
-  @field:JsonView(DeviceWearerViews.Dev::class)
   var mappaCategory: String? = null,
 
   @JsonProperty("risk_categories")

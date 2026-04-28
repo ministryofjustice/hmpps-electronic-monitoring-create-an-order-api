@@ -94,41 +94,41 @@ class FmsServiceTest {
     assertThat(result).isEqualTo("mockPayload")
   }
 
-  @Test
-  fun `should not map dev devicer wearer fields in prod`() {
-    val mockOrder = TestUtilities.createReadyToSubmitOrder()
-
-    val mockFmsResponse = FmsResponse(result = listOf(FmsResult(id = mockOrder.id.toString())))
-    whenever(mockClient.createDeviceWearer(any(), eq(mockOrder.id))).thenReturn(mockFmsResponse)
-    whenever(mockClient.createMonitoringOrder(any(), eq(mockOrder.id))).thenReturn(mockFmsResponse)
-
-    service = FmsService(
-      mockClient,
-      mockDocumentApiClient,
-      objectMapper,
-      repo,
-      true,
-      true,
-      mockFeatureFlags,
-    )
-
-    service.submitOrder(mockOrder, FmsOrderSource.CEMO)
-
-    val payloadCaptor = argumentCaptor<String>()
-    val orderIdCaptor = argumentCaptor<UUID>()
-
-    verify(mockClient).createDeviceWearer(payloadCaptor.capture(), orderIdCaptor.capture())
-
-    assertThat(orderIdCaptor.firstValue).isEqualTo(mockOrder.id)
-
-    val capturedJsonString = payloadCaptor.firstValue
-    val jsonNode = objectMapper.readTree(capturedJsonString)
-
-    print(jsonNode.toString())
-    assertThat(jsonNode.has("mappaCaseType")).isTrue
-
-    assertThat(jsonNode.has("mappaCategory")).isFalse
-  }
+//  @Test
+//  fun `should not map dev devicer wearer fields in prod`() {
+//    val mockOrder = TestUtilities.createReadyToSubmitOrder()
+//
+//    val mockFmsResponse = FmsResponse(result = listOf(FmsResult(id = mockOrder.id.toString())))
+//    whenever(mockClient.createDeviceWearer(any(), eq(mockOrder.id))).thenReturn(mockFmsResponse)
+//    whenever(mockClient.createMonitoringOrder(any(), eq(mockOrder.id))).thenReturn(mockFmsResponse)
+//
+//    service = FmsService(
+//      mockClient,
+//      mockDocumentApiClient,
+//      objectMapper,
+//      repo,
+//      true,
+//      true,
+//      mockFeatureFlags,
+//    )
+//
+//    service.submitOrder(mockOrder, FmsOrderSource.CEMO)
+//
+//    val payloadCaptor = argumentCaptor<String>()
+//    val orderIdCaptor = argumentCaptor<UUID>()
+//
+//    verify(mockClient).createDeviceWearer(payloadCaptor.capture(), orderIdCaptor.capture())
+//
+//    assertThat(orderIdCaptor.firstValue).isEqualTo(mockOrder.id)
+//
+//    val capturedJsonString = payloadCaptor.firstValue
+//    val jsonNode = objectMapper.readTree(capturedJsonString)
+//
+//    print(jsonNode.toString())
+//    assertThat(jsonNode.has("mappaCaseType")).isTrue
+//
+//    assertThat(jsonNode.has("mappaCategory")).isFalse
+//  }
 
   @Test
   fun `should map dev devicer wearer fields in dev`() {
