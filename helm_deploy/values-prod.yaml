@@ -14,7 +14,6 @@ generic-service:
     CEMO_FMS_INTEGRATION_ENABLED: true
     TAG_AT_SOURCE_ENABLED: false
     DDV6_COURT_MAPPINGS: true
-    SETTINGS_DEVICE_WEARER_PAYLOAD_VERSION: Dev
     SETTINGS_DATA_DICTIONARY_VERSION: DDV6
     MANAGE_USER_URL: "https://manage-users-api.hmpps.service.justice.gov.uk/"
 
