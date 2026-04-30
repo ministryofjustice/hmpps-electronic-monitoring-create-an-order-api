@@ -11,6 +11,7 @@ import org.springframework.core.io.InputStreamResource
 import org.springframework.http.HttpStatus
 import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.CreateSercoEntityException
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.SercoConnectionException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.SercoAuthMockServerExtension.Companion.sercoAuthApi
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.SercoMockApiExtension.Companion.sercoApi
@@ -323,6 +324,49 @@ class FmsClientTest : IntegrationTestBase() {
       assertThat(
         exception.message,
       ).isEqualTo("Error creating $documentType attachment for order: $caseId with error: Error detail")
+    }
+  }
+
+  @Nested
+  @DisplayName("Get api/now/table/x_serg2_ems_csm_case/{case_id}")
+  inner class GetState {
+    @Test
+    fun `it should handle 403 responses`() {
+      val caseId = "mockCaseId"
+      sercoAuthApi.stubGrantToken()
+      sercoApi.stubGetState(
+        caseId,
+        status = HttpStatus.UNAUTHORIZED,
+        result = FmsResponse(),
+        errorResponse = FmsErrorResponse(
+          error = ErrorResponse(message = "User not authorised", detail = "User is unauthorised"),
+        ),
+      )
+
+      val exception = assertThrows<SercoConnectionException> {
+        fmsClient.getState(caseId)
+      }
+
+      assertThat(
+        exception.message,
+      ).isEqualTo("Error fetching state for case $caseId: User is unauthorised")
+    }
+
+    @Test
+    fun `should return successful result`() {
+      val caseId = "mockCaseId"
+      sercoAuthApi.stubGrantToken()
+      sercoApi.stubGetState(
+        caseId,
+        status = HttpStatus.OK,
+        result = FmsResponse(),
+      )
+
+      val result = fmsClient.getState(caseId)
+
+      assertThat(
+        result,
+      ).isNotNull
     }
   }
 
