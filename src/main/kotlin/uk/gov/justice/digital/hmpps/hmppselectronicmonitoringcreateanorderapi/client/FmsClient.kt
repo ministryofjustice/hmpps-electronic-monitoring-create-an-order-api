@@ -12,6 +12,7 @@ import org.springframework.web.reactive.function.client.bodyToMono
 import reactor.core.publisher.Mono
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.CreateSercoEntityException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.SercoConnectionException
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.CaseState
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsAttachmentResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsErrorResponse
@@ -166,7 +167,7 @@ class FmsClient(@Value("\${services.serco.url}") url: String, private val fmsAut
     return result
   }
 
-  fun getState(caseId: String): FmsStateResponse {
+  fun getState(caseId: String): CaseState {
     val token = fmsAuthClient.getClientToken()
 
     val result = webClient.get().uri("/now/table/x_serg2_ems_csm_case/$caseId?sysparm_fields=state")
@@ -188,6 +189,6 @@ class FmsClient(@Value("\${services.serco.url}") url: String, private val fmsAut
       .onErrorResume(WebClientResponseException::class.java) { Mono.empty() }
       .block()!!
 
-    return result
+    return CaseState.fromStateString(result.result?.state)
   }
 }
