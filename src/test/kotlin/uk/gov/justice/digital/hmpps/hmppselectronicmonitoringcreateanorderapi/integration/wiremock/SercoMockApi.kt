@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock
 
+import FmsStateResponse
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
@@ -150,14 +151,19 @@ class SercoMockApiServer : WireMockServer(WIREMOCK_PORT) {
     )
   }
 
-  fun stubGetState(caseId: String, status: HttpStatus, result: FmsResponse, errorResponse: FmsErrorResponse? = null) {
+  fun stubGetState(
+    caseId: String,
+    status: HttpStatus,
+    result: FmsStateResponse,
+    errorResponse: FmsErrorResponse? = null,
+  ) {
     val body = if (errorResponse != null) {
       objectMapper.writeValueAsString(errorResponse)
     } else {
       objectMapper.writeValueAsString(result)
     }
     stubFor(
-      get(urlEqualTo("/now/table/x_serg2_ems_csm_case/$caseId"))
+      get(urlEqualTo("/now/table/x_serg2_ems_csm_case/$caseId?sysparm_fields=state"))
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")

@@ -1,5 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client
 
+import FmsState
+import FmsStateResponse
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
@@ -337,7 +339,7 @@ class FmsClientTest : IntegrationTestBase() {
       sercoApi.stubGetState(
         caseId,
         status = HttpStatus.UNAUTHORIZED,
-        result = FmsResponse(),
+        result = FmsStateResponse(result = null),
         errorResponse = FmsErrorResponse(
           error = ErrorResponse(message = "User not authorised", detail = "User is unauthorised"),
         ),
@@ -359,14 +361,14 @@ class FmsClientTest : IntegrationTestBase() {
       sercoApi.stubGetState(
         caseId,
         status = HttpStatus.OK,
-        result = FmsResponse(),
+        result = FmsStateResponse(FmsState("1")),
       )
 
       val result = fmsClient.getState(caseId)
 
       assertThat(
-        result,
-      ).isNotNull
+        result.result?.state,
+      ).isEqualTo("1")
     }
   }
 

@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client
 
+import FmsStateResponse
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.core.io.InputStreamResource
 import org.springframework.http.HttpHeaders
@@ -7,6 +8,7 @@ import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.WebClientResponseException
+import org.springframework.web.reactive.function.client.bodyToMono
 import reactor.core.publisher.Mono
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.CreateSercoEntityException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.SercoConnectionException
@@ -164,16 +166,16 @@ class FmsClient(@Value("\${services.serco.url}") url: String, private val fmsAut
     return result
   }
 
-  fun getState(caseId: String): FmsResponse {
+  fun getState(caseId: String): FmsStateResponse {
     val token = fmsAuthClient.getClientToken()
 
-    val result = webClient.get().uri("/now/table/x_serg2_ems_csm_case/$caseId")
+    val result = webClient.get().uri("/now/table/x_serg2_ems_csm_case/$caseId?sysparm_fields=state")
       .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
       .retrieve()
       .onStatus(
         { t -> t.isError },
         {
-          it.bodyToMono(FmsErrorResponse::class.java).flatMap { error ->
+          it.bodyToMono<FmsErrorResponse>().flatMap { error ->
             Mono.error(
               SercoConnectionException(
                 "Error fetching state for case $caseId: ${error?.error?.detail}",
@@ -182,7 +184,7 @@ class FmsClient(@Value("\${services.serco.url}") url: String, private val fmsAut
           }
         },
       )
-      .bodyToMono(FmsResponse::class.java)
+      .bodyToMono<FmsStateResponse>()
       .onErrorResume(WebClientResponseException::class.java) { Mono.empty() }
       .block()!!
 
