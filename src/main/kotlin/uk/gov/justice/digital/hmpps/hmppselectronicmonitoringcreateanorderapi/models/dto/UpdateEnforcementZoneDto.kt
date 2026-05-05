@@ -6,13 +6,14 @@ import jakarta.validation.constraints.AssertTrue
 import jakarta.validation.constraints.Future
 import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Size
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.data.ValidationErrors
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.EnforcementZoneType
 import java.time.ZonedDateTime
 
 data class UpdateEnforcementZoneDto(
-//  Add when ELM-4162 is live
-//  @field:NotNull(message = ValidationErrors.EnforcementZone.NAME_REQUIRED)
-//  @field:Size(min = 1,message = ValidationErrors.EnforcementZone.NAME_REQUIRED)
+  @field:NotNull(message = ValidationErrors.EnforcementZone.NAME_REQUIRED)
+  @field:Size(min = 1, message = ValidationErrors.EnforcementZone.NAME_REQUIRED)
+  @field:Size(max = 200, message = ValidationErrors.EnforcementZone.NAME_MAX_LENGTH)
   var name: String? = null,
 
   @field:NotNull(message = "Enforcement zone description is required")
