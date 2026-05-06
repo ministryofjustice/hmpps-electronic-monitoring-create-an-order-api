@@ -7,6 +7,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.co
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AdditionalDocument
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Result
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.CaseState
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DocumentType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
@@ -222,12 +223,11 @@ class FmsVariationSubmissionStrategy(
 
   private fun getLastSuccessfulSubmissionResult(order: Order): FmsSubmissionResult? {
     order.versions
-      .filter { it.fmsResultId != null }
+      .filter { it.fmsResultId != null && it.status == OrderStatus.SUBMITTED }
       .sortedByDescending { it.versionId }
       .forEach { version ->
         val submissionResult = repo.getReferenceById(version.fmsResultId!!)
-        // TODO check if it's not rejected
-        if (version.status === OrderStatus.SUBMITTED) {
+        if (fmsClient.getState(submissionResult.deviceWearerResult.deviceWearerId) != CaseState.CANCELLED) {
           return submissionResult
         }
       }

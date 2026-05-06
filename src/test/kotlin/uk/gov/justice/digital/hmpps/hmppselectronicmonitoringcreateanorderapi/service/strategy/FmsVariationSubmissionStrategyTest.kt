@@ -12,6 +12,7 @@ import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.DocumentApiClient
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.FmsClient
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.config.FeatureFlags
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.CaseState
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
@@ -56,7 +57,7 @@ class FmsVariationSubmissionStrategyTest {
     whenever(mockClient.updateDeviceWearer(any(), any())).thenReturn(
       FmsResponse(
         result = listOf(
-          FmsResult(message = "mock response", id = "1"),
+          FmsResult(message = "mock response", id = "3"),
         ),
         status = "200",
       ),
@@ -112,6 +113,7 @@ class FmsVariationSubmissionStrategyTest {
         orderSource = FmsOrderSource.CEMO,
         deviceWearerResult = FmsDeviceWearerSubmissionResult(
           payload = objectMapper.writeValueAsString(DeviceWearer.fromCemoOrder(order, mockFeatureFlags)),
+          deviceWearerId = "1",
         ),
         monitoringOrderResult = FmsMonitoringOrderSubmissionResult(
           payload = objectMapper.writeValueAsString(MonitoringOrder.fromOrder(order, "1", mockFeatureFlags)),
@@ -128,7 +130,84 @@ class FmsVariationSubmissionStrategyTest {
     newOrder.enforcementZoneConditions.clear()
     order.versions.add(newOrder.getCurrentVersion())
     newOrder.deviceWearer!!.firstName = order.deviceWearer!!.firstName + "Not"
+
+    whenever(mockClient.getState("1")).thenReturn(CaseState.OPEN)
+
     val result = strategy.submitOrder(order, FmsOrderSource.CEMO)
+
+    assertThat(result.success).isTrue
+    assertThat(result.monitoringOrderResult.payload).contains("User entered:")
+    assertThat(result.monitoringOrderResult.payload).contains("Change to address")
+    assertThat(result.monitoringOrderResult.payload).contains("CEMO determined changes:")
+    assertThat(result.monitoringOrderResult.payload).contains("Device wearer's name has changed")
+  }
+
+  @Test
+  fun `Should find last successful submitted version and generate CEMO determined changes`() {
+    val mockSubmissionResultId = UUID.randomUUID()
+    val order = TestUtilities.createReadyToSubmitOrder(
+      mockOrderId,
+      mockOrderVersionId,
+      requestType = RequestType.REQUEST,
+      status = OrderStatus.SUBMITTED,
+      fmsResultId = mockSubmissionResultId,
+    )
+    whenever(repo.getReferenceById(mockSubmissionResultId)).thenReturn(
+      FmsSubmissionResult(
+        id = mockSubmissionResultId,
+        orderId = mockOrderId,
+        strategy = FmsSubmissionStrategyKind.ORDER,
+        orderSource = FmsOrderSource.CEMO,
+        deviceWearerResult = FmsDeviceWearerSubmissionResult(
+          payload = objectMapper.writeValueAsString(DeviceWearer.fromCemoOrder(order, mockFeatureFlags)),
+          deviceWearerId = "1",
+        ),
+        monitoringOrderResult = FmsMonitoringOrderSubmissionResult(
+          payload = objectMapper.writeValueAsString(MonitoringOrder.fromOrder(order, "1", mockFeatureFlags)),
+        ),
+      ),
+    )
+
+    val mockCancelledSubmissionResultId = UUID.randomUUID()
+    val cancelledVariation = TestUtilities.createReadyToSubmitOrder(
+      mockOrderId,
+      mockOrderVersionId,
+      requestType = RequestType.VARIATION,
+      status = OrderStatus.SUBMITTED,
+      fmsResultId = mockCancelledSubmissionResultId,
+      versionNumber = 1,
+    )
+    cancelledVariation.deviceWearer!!.firstName = order.deviceWearer!!.firstName + "Not"
+    order.versions.add(cancelledVariation.getCurrentVersion())
+
+    whenever(repo.getReferenceById(mockCancelledSubmissionResultId)).thenReturn(
+      FmsSubmissionResult(
+        id = mockCancelledSubmissionResultId,
+        orderId = mockOrderId,
+        strategy = FmsSubmissionStrategyKind.VARIATION,
+        orderSource = FmsOrderSource.CEMO,
+        deviceWearerResult = FmsDeviceWearerSubmissionResult(
+          deviceWearerId = "2",
+        ),
+      ),
+    )
+
+    val newOrder = TestUtilities.createReadyToSubmitOrder(
+      mockOrderId,
+      mockOrderVersionId,
+      requestType = RequestType.VARIATION,
+      versionNumber = 2,
+    )
+    newOrder.additionalDocuments.clear()
+    newOrder.enforcementZoneConditions.clear()
+    order.versions.add(newOrder.getCurrentVersion())
+    newOrder.deviceWearer!!.firstName = order.deviceWearer!!.firstName + "Not" // should still identify as change
+
+    whenever(mockClient.getState("1")).thenReturn(CaseState.OPEN)
+    whenever(mockClient.getState("2")).thenReturn(CaseState.CANCELLED)
+
+    val result = strategy.submitOrder(order, FmsOrderSource.CEMO)
+
     assertThat(result.success).isTrue
     assertThat(result.monitoringOrderResult.payload).contains("User entered:")
     assertThat(result.monitoringOrderResult.payload).contains("Change to address")
