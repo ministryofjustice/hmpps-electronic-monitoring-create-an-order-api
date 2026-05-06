@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.http.HttpStatus.BAD_REQUEST
 import org.springframework.http.HttpStatus.NOT_FOUND
 import org.springframework.http.MediaType
+import org.springframework.test.web.reactive.server.expectBodyList
 import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.HmppsDocumentManagementApiExtension.Companion.documentApi
@@ -137,7 +138,7 @@ class EnforcementZoneControllerTest : IntegrationTestBase() {
         .returnResult()
 
       Assertions.assertThat(result.responseBody).isNotNull
-      Assertions.assertThat(result.responseBody).hasSize(4)
+      Assertions.assertThat(result.responseBody).hasSize(5)
 
       Assertions.assertThat(result.responseBody!!).contains(
         ValidationError("zoneType", "Enforcement zone type is required"),
@@ -150,6 +151,9 @@ class EnforcementZoneControllerTest : IntegrationTestBase() {
       )
       Assertions.assertThat(result.responseBody!!).contains(
         ValidationError("duration", "Enforcement zone duration is required"),
+      )
+      Assertions.assertThat(result.responseBody!!).contains(
+        ValidationError("name", "Enter the name of the exclusion zone"),
       )
     }
 
@@ -230,6 +234,35 @@ class EnforcementZoneControllerTest : IntegrationTestBase() {
 
       Assertions.assertThat(result.responseBody!!).contains(
         ValidationError("endDate", "End date must be after start date"),
+      )
+    }
+
+    @Test
+    fun `it should return a validation error when name is too long`() {
+      val order = createOrder()
+
+      val result = webTestClient.put()
+        .uri("/api/orders/${order.id}/enforcementZone")
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(
+          BodyInserters.fromValue(
+            mockRequestBody(
+              name = "n".repeat(201),
+            ),
+          ),
+        )
+        .headers(setAuthorisation(mockUser))
+        .exchange()
+        .expectStatus()
+        .isBadRequest
+        .expectBodyList<ValidationError>()
+        .returnResult()
+
+      Assertions.assertThat(result.responseBody).isNotNull
+      Assertions.assertThat(result.responseBody).hasSize(1)
+
+      Assertions.assertThat(result.responseBody!!).contains(
+        ValidationError("name", "Name must be 200 characters or less"),
       )
     }
 
