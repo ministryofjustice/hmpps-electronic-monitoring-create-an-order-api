@@ -557,21 +557,10 @@ class OrderServiceTest {
       }
 
       @Test
-      fun `It should clone installationAndRisk referencing new version`() {
+      fun `It should not clone installationAndRisk`() {
         argumentCaptor<Order>().apply {
           verify(repo, times(1)).save(capture())
-          assertThat(firstValue.versions.last().installationAndRisk).isNotNull()
-          assertThat(firstValue.versions.last().installationAndRisk?.versionId).isEqualTo(firstValue.versions.last().id)
-          assertThat(firstValue.versions.last().installationAndRisk?.versionId).isNotEqualTo(originalVersionId)
-          assertThat(firstValue.versions.last().installationAndRisk)
-            .usingRecursiveComparison()
-            .ignoringCollectionOrder()
-            .ignoringFields(
-              "id",
-              "versionId",
-              "version",
-            )
-            .isEqualTo(originalVersion?.installationAndRisk)
+          assertThat(firstValue.versions.last().installationAndRisk).isNull()
         }
       }
 
