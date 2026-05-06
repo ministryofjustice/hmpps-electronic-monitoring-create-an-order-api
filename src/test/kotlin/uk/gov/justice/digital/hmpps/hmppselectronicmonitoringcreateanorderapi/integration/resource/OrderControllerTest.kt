@@ -188,7 +188,7 @@ class OrderControllerTest : IntegrationTestBase() {
     }
 
     @Test
-    fun `Details about the device wearer and order should be copied from the original order`() {
+    fun `Only relevant details are copied`() {
       val order = createAndPersistPopulatedOrder(status = OrderStatus.SUBMITTED)
 
       val variationOrder = webTestClient.post()
@@ -260,6 +260,8 @@ class OrderControllerTest : IntegrationTestBase() {
           "version",
         )
         .isEqualTo(order.monitoringConditions)
+
+      assertThat(variationOrder.installationAndRisk).isNull()
     }
 
     @Test
