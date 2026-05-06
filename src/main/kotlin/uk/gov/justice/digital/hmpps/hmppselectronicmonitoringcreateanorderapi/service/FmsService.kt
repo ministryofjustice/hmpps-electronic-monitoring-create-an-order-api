@@ -50,6 +50,7 @@ class FmsService(
           this.fmsClient,
           this.documentApiClient,
           featureFlags,
+          repo,
         )
       }
 
