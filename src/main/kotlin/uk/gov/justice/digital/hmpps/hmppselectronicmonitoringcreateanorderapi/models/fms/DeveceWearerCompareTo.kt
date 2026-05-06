@@ -22,8 +22,6 @@ fun DeviceWearer.compareTo(updated: DeviceWearer): List<String> {
     }
   }
 
-
-
   compareField("nameChange", this.firstName, updated.firstName)
   compareField("nameChange", this.middleName, updated.middleName)
   compareField("nameChange", this.lastName, updated.lastName)
@@ -39,32 +37,32 @@ fun DeviceWearer.compareTo(updated: DeviceWearer): List<String> {
       address2,
       address3,
       address4,
-      addressPostCode
+      addressPostCode,
     ) != listOf(
       updated.address1,
       updated.address2,
       updated.address3,
       updated.address4,
-      updated.addressPostCode
+      updated.addressPostCode,
     )
   ) {
     DeviceWearerChangedMessages.messages["primaryAddressChange"]?.let { messages += it }
   }
-
 
   if (listOf(
       secondaryAddress1,
       secondaryAddress2,
       secondaryAddress3,
       secondaryAddress4,
-      secondaryAddressPostCode
+      secondaryAddressPostCode,
     ) != listOf(
       updated.secondaryAddress1,
       updated.secondaryAddress2,
       updated.secondaryAddress3,
       updated.secondaryAddress4,
-      updated.secondaryAddressPostCode
-    )) {
+      updated.secondaryAddressPostCode,
+    )
+  ) {
     DeviceWearerChangedMessages.messages["secondaryAddressChange"]?.let { messages += it }
   }
 
@@ -73,14 +71,15 @@ fun DeviceWearer.compareTo(updated: DeviceWearer): List<String> {
       tertiaryAddress2,
       tertiaryAddress3,
       tertiaryAddress4,
-      tertiaryAddressPostCode
+      tertiaryAddressPostCode,
     ) != listOf(
       updated.tertiaryAddress1,
       updated.tertiaryAddress2,
       updated.tertiaryAddress3,
       updated.tertiaryAddress4,
-      updated.tertiaryAddressPostCode
-    )) {
+      updated.tertiaryAddressPostCode,
+    )
+  ) {
     DeviceWearerChangedMessages.messages["tertiaryAddressChange"]?.let { messages += it }
   }
 
@@ -105,7 +104,8 @@ fun DeviceWearer.compareTo(updated: DeviceWearer): List<String> {
       updated.deliusId,
       updated.prisonNumber,
       updated.complianceAndEnforcementPersonReference,
-    )) {
+    )
+  ) {
     DeviceWearerChangedMessages.messages["personalIdChanged"]?.let { messages += it }
   }
 
@@ -115,7 +115,8 @@ fun DeviceWearer.compareTo(updated: DeviceWearer): List<String> {
     ) != listOf(
       updated.interpreterRequired,
       updated.language,
-    )) {
+    )
+  ) {
     DeviceWearerChangedMessages.messages["interpreterRequired"]?.let { messages += it }
   }
 
@@ -127,7 +128,8 @@ fun DeviceWearer.compareTo(updated: DeviceWearer): List<String> {
       updated.responsibleAdultRequired,
       updated.parent,
       updated.guardian,
-    )) {
+    )
+  ) {
     DeviceWearerChangedMessages.messages["responsibleAdultChanged"]?.let { messages += it }
   }
   compareField("parentPhoneNumber", this.parentPhoneNumber, updated.parentPhoneNumber)
