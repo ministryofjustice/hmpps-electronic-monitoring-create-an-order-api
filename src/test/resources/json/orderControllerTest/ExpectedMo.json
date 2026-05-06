@@ -45,8 +45,14 @@
   "no_email": "",
   "no_name": "Wayland Prison",
   "no_phone_number": "",
-  "offence": "Fraud Offences",
+  "offence": "",
   "offence_date": "",
+  "offences": [
+    {
+      "offence": "offence 1",
+      "offence_date": "2026-01-01"
+    }
+  ],
   "order_end": "{mockEndDateInBritishTime}",
   "order_id": "{orderId}",
   "order_request_type": "New Order",

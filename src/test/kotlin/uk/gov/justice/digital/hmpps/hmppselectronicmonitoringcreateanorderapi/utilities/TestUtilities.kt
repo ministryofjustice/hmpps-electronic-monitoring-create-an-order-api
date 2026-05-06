@@ -15,6 +15,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InterestedParties
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Mappa
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.MonitoringConditions
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Offence
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderParameters
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
@@ -63,6 +64,7 @@ class TestUtilities {
       dataDictionaryVersion: DataDictionaryVersion = DataDictionaryVersion.DDV4,
       notifyingOrganisation: String = "PRISON",
       notifyingOrganisationName: String = "WAYLAND_PRISON",
+      offences: MutableList<Offence> = mutableListOf(),
     ): Order {
       val order = Order(
         id = id,
@@ -145,6 +147,17 @@ class TestUtilities {
       order.addresses.add(
         installationAddress,
       )
+
+      order.offences.addAll(offences)
+      if (offences.isEmpty()) {
+        order.offences.add(
+          Offence(
+            versionId = versionId,
+            offenceType = "offence 1",
+            offenceDate = ZonedDateTime.of(2026, 1, 1, 1, 1, 1, 1, ZoneId.of("UTC")),
+          ),
+        )
+      }
 
       order.installationAndRisk = InstallationAndRisk(
         versionId = versionId,
