@@ -11,6 +11,6 @@ enum class CaseState(val value: String) {
   ;
 
   companion object {
-    fun fromStateString(value: String?): CaseState = CaseState.entries.firstOrNull { it.name == value } ?: UNKNOWN
+    fun fromStateString(value: String?): CaseState = CaseState.entries.firstOrNull { it.value == value } ?: UNKNOWN
   }
 }
