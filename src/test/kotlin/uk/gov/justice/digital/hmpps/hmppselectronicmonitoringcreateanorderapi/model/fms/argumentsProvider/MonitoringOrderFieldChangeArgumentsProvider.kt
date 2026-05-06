@@ -21,8 +21,6 @@ data class MonitoringOrderFieldCase(
 class MonitoringOrderFieldChangeArgumentsProvider : ArgumentsProvider {
 
   override fun provideArguments(context: ExtensionContext) = listOf(
-
-    // ✅ Core order fields
     MonitoringOrderFieldCase(
       "conditionType",
       { it.conditionType = "Changed" },
@@ -53,7 +51,6 @@ class MonitoringOrderFieldChangeArgumentsProvider : ArgumentsProvider {
       "Order type has changed",
     ),
 
-    // ✅ Organisation / notifying
     MonitoringOrderFieldCase(
       "notifyingOrganization",
       { it.notifyingOrganization = "New Org" },
@@ -78,7 +75,6 @@ class MonitoringOrderFieldChangeArgumentsProvider : ArgumentsProvider {
       "PDU has changed",
     ),
 
-    // ✅ Responsible officer
     MonitoringOrderFieldCase(
       "responsibleOfficerEmail",
       { it.responsibleOfficerEmail = "new@officer.com" },
@@ -109,7 +105,6 @@ class MonitoringOrderFieldChangeArgumentsProvider : ArgumentsProvider {
       "Responsible organisation region has changed",
     ),
 
-    // ✅ Sentence / tagging
     MonitoringOrderFieldCase(
       "sentenceType",
       { it.sentenceType = "New Sentence" },
@@ -134,7 +129,6 @@ class MonitoringOrderFieldChangeArgumentsProvider : ArgumentsProvider {
       "Installation date and time have changed",
     ),
 
-    // ✅ Curfew
     MonitoringOrderFieldCase(
       "curfewDescription",
       { it.curfewDescription = "Updated boundary" },
@@ -153,7 +147,6 @@ class MonitoringOrderFieldChangeArgumentsProvider : ArgumentsProvider {
       "Curfew end date has changed",
     ),
 
-    // ✅ Flags / pilot
     MonitoringOrderFieldCase(
       "trailMonitoring",
       { it.trailMonitoring = "Yes" },
@@ -202,7 +195,6 @@ class MonitoringOrderFieldChangeArgumentsProvider : ArgumentsProvider {
       "Install at source pilot has changed",
     ),
 
-    // ✅ Installation address (grouped)
     MonitoringOrderFieldCase(
       "installationAddress",
       { it.installationAddress1 = "New Address Line 1" },
@@ -233,14 +225,11 @@ class MonitoringOrderFieldChangeArgumentsProvider : ArgumentsProvider {
       "Installation address has changed",
     ),
 
-    // ✅ IDs
     MonitoringOrderFieldCase(
       "crownCourtCaseReferenceNumber",
       { it.crownCourtCaseReferenceNumber = "NEW123" },
       "Device wearer's personal ID number(s) have changed",
     ),
-
-    // ✅ LIST FIELDS
 
     MonitoringOrderFieldCase(
       "exclusionZones",

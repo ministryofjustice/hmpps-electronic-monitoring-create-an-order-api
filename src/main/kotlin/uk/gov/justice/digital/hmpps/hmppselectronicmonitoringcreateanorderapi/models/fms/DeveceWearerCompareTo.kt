@@ -4,7 +4,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import kotlin.collections.plusAssign
 
 fun DeviceWearer.compareTo(updated: DeviceWearer): List<String> {
-  val messages = mutableSetOf<String>() // Avoid duplicates
+  val messages = mutableSetOf<String>()
 
   fun compareField(fieldName: String, oldValue: Any?, newValue: Any?) {
     if (oldValue != newValue) {
