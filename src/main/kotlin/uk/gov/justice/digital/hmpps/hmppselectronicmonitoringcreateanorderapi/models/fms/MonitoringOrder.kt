@@ -312,7 +312,6 @@ data class MonitoringOrder(
         conditionType = conditions.conditionType!!.value,
         orderId = order.id.toString(),
         orderStatus = "Not Started",
-        offence = getOffence(order),
         offenceAdditionalDetails = getOffenceAdditionalDetails(order, featureFlags),
         pilot = conditions.pilot?.value ?: "",
         magistrateCourtCaseReferenceNumber = order.deviceWearer?.courtCaseReferenceNumber ?: "",
@@ -367,6 +366,8 @@ data class MonitoringOrder(
             )
           },
         )
+      } else {
+        monitoringOrder.offence = getOffence(order)
       }
 
       order.interestedParties?.let { parties ->
