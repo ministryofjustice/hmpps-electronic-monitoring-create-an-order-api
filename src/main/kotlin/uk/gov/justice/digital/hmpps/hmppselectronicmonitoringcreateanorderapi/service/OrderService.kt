@@ -108,6 +108,7 @@ class OrderService(
       Cohort.PRISON ->
         notifyingOrganisation in
           listOf(NotifyingOrganisationDDv5.PRISON, NotifyingOrganisationDDv5.YOUTH_CUSTODY_SERVICE)
+
       Cohort.PROBATION -> notifyingOrganisation == NotifyingOrganisationDDv5.PROBATION
       Cohort.COURT -> NotifyingOrganisationDDv5.COURTS.contains(notifyingOrganisation)
       Cohort.HOME_OFFICE -> notifyingOrganisation == NotifyingOrganisationDDv5.HOME_OFFICE
@@ -151,8 +152,6 @@ class OrderService(
           currentVersion.curfewConditions?.copy(versionId = this.id, id = UUID.randomUUID())
         curfewReleaseDateConditions =
           currentVersion.curfewReleaseDateConditions?.copy(versionId = this.id, id = UUID.randomUUID())
-        installationAndRisk =
-          currentVersion.installationAndRisk?.copy(versionId = this.id, id = UUID.randomUUID())
 
         // only copy interested parties and PDU if order start date in the future
         if (order.getMonitoringStartDate() != null && order.getMonitoringStartDate()!! > ZonedDateTime.now()) {
