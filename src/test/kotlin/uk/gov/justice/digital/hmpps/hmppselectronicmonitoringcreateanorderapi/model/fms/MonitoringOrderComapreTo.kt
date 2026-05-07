@@ -39,7 +39,7 @@ class MonitoringOrderComapreTo {
 
     case.mutate(updated)
 
-    val result = old.compareTo(updated)
+    val result = updated.compareTo(old)
 
     assertThat(result).contains(case.expectedMessage)
   }
@@ -52,7 +52,7 @@ class MonitoringOrderComapreTo {
 
     case.mutate(updated)
 
-    val result = old.compareTo(updated)
+    val result = updated.compareTo(old)
 
     assertThat(result).isEmpty()
   }
@@ -77,7 +77,7 @@ class MonitoringOrderComapreTo {
         )
     }
 
-    val result = old.compareTo(updated)
+    val result = updated.compareTo(old)
 
     assertThat(result).containsAll(
       listOf(
@@ -161,7 +161,7 @@ class MonitoringOrderComapreTo {
       )
     }
 
-    val result = old.compareTo(updated)
+    val result = updated.compareTo(old)
 
     assertThat(result).containsAll(
       listOf(

@@ -3,10 +3,10 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.m
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.config.DeviceWearerChangedMessages
 import kotlin.collections.plusAssign
 
-fun DeviceWearer.compareTo(updated: DeviceWearer): List<String> {
+fun DeviceWearer.compareTo(previous: DeviceWearer): List<String> {
   val messages = mutableSetOf<String>()
 
-  fun compareField(fieldName: String, oldValue: Any?, newValue: Any?) {
+  fun compareField(fieldName: String, newValue: Any?, oldValue: Any?) {
     if (oldValue != newValue) {
       DeviceWearerChangedMessages.messages[fieldName]?.let {
         messages += it
@@ -14,7 +14,7 @@ fun DeviceWearer.compareTo(updated: DeviceWearer): List<String> {
     }
   }
 
-  fun <T> compareList(fieldName: String, old: List<T>?, new: List<T>?) {
+  fun <T> compareList(fieldName: String, new: List<T>?, old: List<T>?) {
     if ((old ?: emptyList()) != (new ?: emptyList<T>())) {
       DeviceWearerChangedMessages.messages[fieldName]?.let {
         messages += it
@@ -22,15 +22,15 @@ fun DeviceWearer.compareTo(updated: DeviceWearer): List<String> {
     }
   }
 
-  compareField("nameChange", this.firstName, updated.firstName)
-  compareField("nameChange", this.middleName, updated.middleName)
-  compareField("nameChange", this.lastName, updated.lastName)
-  compareField("alias", this.alias, updated.alias)
+  compareField("nameChange", this.firstName, previous.firstName)
+  compareField("nameChange", this.middleName, previous.middleName)
+  compareField("nameChange", this.lastName, previous.lastName)
+  compareField("alias", this.alias, previous.alias)
 
-  compareField("dateOfBirth", this.dateOfBirth, updated.dateOfBirth)
-  compareField("adultChild", this.adultChild, updated.adultChild)
-  compareField("sex", this.sex, updated.sex)
-  compareField("genderIdentity", this.genderIdentity, updated.genderIdentity)
+  compareField("dateOfBirth", this.dateOfBirth, previous.dateOfBirth)
+  compareField("adultChild", this.adultChild, previous.adultChild)
+  compareField("sex", this.sex, previous.sex)
+  compareField("genderIdentity", this.genderIdentity, previous.genderIdentity)
 
   if (listOf(
       address1,
@@ -39,11 +39,11 @@ fun DeviceWearer.compareTo(updated: DeviceWearer): List<String> {
       address4,
       addressPostCode,
     ) != listOf(
-      updated.address1,
-      updated.address2,
-      updated.address3,
-      updated.address4,
-      updated.addressPostCode,
+      previous.address1,
+      previous.address2,
+      previous.address3,
+      previous.address4,
+      previous.addressPostCode,
     )
   ) {
     DeviceWearerChangedMessages.messages["primaryAddressChange"]?.let { messages += it }
@@ -56,11 +56,11 @@ fun DeviceWearer.compareTo(updated: DeviceWearer): List<String> {
       secondaryAddress4,
       secondaryAddressPostCode,
     ) != listOf(
-      updated.secondaryAddress1,
-      updated.secondaryAddress2,
-      updated.secondaryAddress3,
-      updated.secondaryAddress4,
-      updated.secondaryAddressPostCode,
+      previous.secondaryAddress1,
+      previous.secondaryAddress2,
+      previous.secondaryAddress3,
+      previous.secondaryAddress4,
+      previous.secondaryAddressPostCode,
     )
   ) {
     DeviceWearerChangedMessages.messages["secondaryAddressChange"]?.let { messages += it }
@@ -73,24 +73,24 @@ fun DeviceWearer.compareTo(updated: DeviceWearer): List<String> {
       tertiaryAddress4,
       tertiaryAddressPostCode,
     ) != listOf(
-      updated.tertiaryAddress1,
-      updated.tertiaryAddress2,
-      updated.tertiaryAddress3,
-      updated.tertiaryAddress4,
-      updated.tertiaryAddressPostCode,
+      previous.tertiaryAddress1,
+      previous.tertiaryAddress2,
+      previous.tertiaryAddress3,
+      previous.tertiaryAddress4,
+      previous.tertiaryAddressPostCode,
     )
   ) {
     DeviceWearerChangedMessages.messages["tertiaryAddressChange"]?.let { messages += it }
   }
 
-  compareField("addressPostCode", this.addressPostCode, updated.addressPostCode)
-  compareField("noFixedAddress", this.noFixedAddress, updated.noFixedAddress)
+  compareField("addressPostCode", this.addressPostCode, previous.addressPostCode)
+  compareField("noFixedAddress", this.noFixedAddress, previous.noFixedAddress)
 
-  compareField("phoneNumber", this.phoneNumber, updated.phoneNumber)
+  compareField("phoneNumber", this.phoneNumber, previous.phoneNumber)
 
-  compareField("mappa", this.mappa, updated.mappa)
-  compareField("mappa", this.mappaCategory, updated.mappaCategory)
-  compareField("mappa", this.mappaCaseType, updated.mappaCaseType)
+  compareField("mappa", this.mappa, previous.mappa)
+  compareField("mappa", this.mappaCategory, previous.mappaCategory)
+  compareField("mappa", this.mappaCaseType, previous.mappaCaseType)
 
   if (listOf(
       pncId,
@@ -99,11 +99,11 @@ fun DeviceWearer.compareTo(updated: DeviceWearer): List<String> {
       prisonNumber,
       complianceAndEnforcementPersonReference,
     ) != listOf(
-      updated.pncId,
-      updated.nomisId,
-      updated.deliusId,
-      updated.prisonNumber,
-      updated.complianceAndEnforcementPersonReference,
+      previous.pncId,
+      previous.nomisId,
+      previous.deliusId,
+      previous.prisonNumber,
+      previous.complianceAndEnforcementPersonReference,
     )
   ) {
     DeviceWearerChangedMessages.messages["personalIdChanged"]?.let { messages += it }
@@ -113,8 +113,8 @@ fun DeviceWearer.compareTo(updated: DeviceWearer): List<String> {
       interpreterRequired,
       language,
     ) != listOf(
-      updated.interpreterRequired,
-      updated.language,
+      previous.interpreterRequired,
+      previous.language,
     )
   ) {
     DeviceWearerChangedMessages.messages["interpreterRequired"]?.let { messages += it }
@@ -125,17 +125,17 @@ fun DeviceWearer.compareTo(updated: DeviceWearer): List<String> {
       parent,
       guardian,
     ) != listOf(
-      updated.responsibleAdultRequired,
-      updated.parent,
-      updated.guardian,
+      previous.responsibleAdultRequired,
+      previous.parent,
+      previous.guardian,
     )
   ) {
     DeviceWearerChangedMessages.messages["responsibleAdultChanged"]?.let { messages += it }
   }
-  compareField("parentPhoneNumber", this.parentPhoneNumber, updated.parentPhoneNumber)
+  compareField("parentPhoneNumber", this.parentPhoneNumber, previous.parentPhoneNumber)
 
-  compareList("disability", this.disability, updated.disability)
-  compareList("riskCategory", this.riskCategory, updated.riskCategory)
+  compareList("disability", this.disability, previous.disability)
+  compareList("riskCategory", this.riskCategory, previous.riskCategory)
 
   return messages.toList()
 }

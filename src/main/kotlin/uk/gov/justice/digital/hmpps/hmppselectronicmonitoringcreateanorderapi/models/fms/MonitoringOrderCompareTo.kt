@@ -1,23 +1,24 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.config.MonitoringOrderChangedMessages
-fun MonitoringOrder.compareTo(updated: MonitoringOrder): List<String> {
+
+fun MonitoringOrder.compareTo(previous: MonitoringOrder): List<String> {
   val messages = mutableSetOf<String>()
 
-  fun compareField(key: String, old: Any?, new: Any?) {
+  fun compareField(key: String, new: Any?, old: Any?) {
     if (old != new) {
       MonitoringOrderChangedMessages.messages[key]?.let { messages += it }
     }
   }
 
-  fun <T> compareList(key: String, old: List<T>?, new: List<T>?) {
+  fun <T> compareList(key: String, new: List<T>?, old: List<T>?) {
     if ((old ?: emptyList()) != (new ?: emptyList<T>())) {
       MonitoringOrderChangedMessages.messages[key]?.let { messages += it }
     }
   }
 
   fun compareEnforceableConditions(
-    oldList: List<EnforceableCondition>?,
     newList: List<EnforceableCondition>?,
+    oldList: List<EnforceableCondition>?,
   ): List<String> {
     val messages = mutableListOf<String>()
 
@@ -62,7 +63,7 @@ fun MonitoringOrder.compareTo(updated: MonitoringOrder): List<String> {
     }
     .sortedWith(compareBy({ it.first }, { it.second }, { it.third }))
 
-  fun compareCurfewDuration(oldList: List<CurfewSchedule>?, newList: List<CurfewSchedule>?): List<String> {
+  fun compareCurfewDuration(newList: List<CurfewSchedule>?, oldList: List<CurfewSchedule>?): List<String> {
     val messages = mutableListOf<String>()
 
     val oldByLocation = oldList.orEmpty()
@@ -96,47 +97,47 @@ fun MonitoringOrder.compareTo(updated: MonitoringOrder): List<String> {
 
   messages += compareEnforceableConditions(
     this.enforceableCondition,
-    updated.enforceableCondition,
+    previous.enforceableCondition,
   )
 
   messages += compareCurfewDuration(
     this.curfewDuration,
-    updated.curfewDuration,
+    previous.curfewDuration,
   )
 
-  compareField("conditionType", conditionType, updated.conditionType)
-  compareField("offenceAdditionalDetails", offenceAdditionalDetails, updated.offenceAdditionalDetails)
-  compareField("orderStart", orderStart, updated.orderStart)
-  compareField("orderEnd", orderEnd, updated.orderEnd)
-  compareField("orderType", orderType, updated.orderType)
-  compareField("notifyingOrganization", notifyingOrganization, updated.notifyingOrganization)
-  compareField("noEmail", noEmail, updated.noEmail)
-  compareField("noName", noName, updated.noName)
-  compareField("pduResponsible", pduResponsible, updated.pduResponsible)
-  compareField("responsibleOfficerEmail", responsibleOfficerEmail, updated.responsibleOfficerEmail)
-  compareField("responsibleOfficerName", responsibleOfficerName, updated.responsibleOfficerName)
-  compareField("responsibleOrganization", responsibleOrganization, updated.responsibleOrganization)
-  compareField("roEmail", roEmail, updated.roEmail)
-  compareField("roRegion", roRegion, updated.roRegion)
-  compareField("sentenceType", sentenceType, updated.sentenceType)
-  compareField("tagAtSource", tagAtSource, updated.tagAtSource)
-  compareField("tagAtSourceDetails", tagAtSourceDetails, updated.tagAtSourceDetails)
+  compareField("conditionType", conditionType, previous.conditionType)
+  compareField("offenceAdditionalDetails", offenceAdditionalDetails, previous.offenceAdditionalDetails)
+  compareField("orderStart", orderStart, previous.orderStart)
+  compareField("orderEnd", orderEnd, previous.orderEnd)
+  compareField("orderType", orderType, previous.orderType)
+  compareField("notifyingOrganization", notifyingOrganization, previous.notifyingOrganization)
+  compareField("noEmail", noEmail, previous.noEmail)
+  compareField("noName", noName, previous.noName)
+  compareField("pduResponsible", pduResponsible, previous.pduResponsible)
+  compareField("responsibleOfficerEmail", responsibleOfficerEmail, previous.responsibleOfficerEmail)
+  compareField("responsibleOfficerName", responsibleOfficerName, previous.responsibleOfficerName)
+  compareField("responsibleOrganization", responsibleOrganization, previous.responsibleOrganization)
+  compareField("roEmail", roEmail, previous.roEmail)
+  compareField("roRegion", roRegion, previous.roRegion)
+  compareField("sentenceType", sentenceType, previous.sentenceType)
+  compareField("tagAtSource", tagAtSource, previous.tagAtSource)
+  compareField("tagAtSourceDetails", tagAtSourceDetails, previous.tagAtSourceDetails)
   compareField(
     "dateAndTimeInstallationWillTakePlace",
     dateAndTimeInstallationWillTakePlace,
-    updated.dateAndTimeInstallationWillTakePlace,
+    previous.dateAndTimeInstallationWillTakePlace,
   )
-  compareField("curfewDescription", curfewDescription, updated.curfewDescription)
-  compareField("curfewStart", curfewStart, updated.curfewStart)
-  compareField("curfewEnd", curfewEnd, updated.curfewEnd)
-  compareField("trailMonitoring", trailMonitoring, updated.trailMonitoring)
-  compareField("abstinence", abstinence, updated.abstinence)
-  compareField("issp", issp, updated.issp)
-  compareField("hdc", hdc, updated.hdc)
-  compareField("pilot", pilot, updated.pilot)
-  compareField("releasedUnderPrarr", releasedUnderPrarr, updated.releasedUnderPrarr)
-  compareField("dapolMissedInError", dapolMissedInError, updated.dapolMissedInError)
-  compareField("installAtSourcePilot", installAtSourcePilot, updated.installAtSourcePilot)
+  compareField("curfewDescription", curfewDescription, previous.curfewDescription)
+  compareField("curfewStart", curfewStart, previous.curfewStart)
+  compareField("curfewEnd", curfewEnd, previous.curfewEnd)
+  compareField("trailMonitoring", trailMonitoring, previous.trailMonitoring)
+  compareField("abstinence", abstinence, previous.abstinence)
+  compareField("issp", issp, previous.issp)
+  compareField("hdc", hdc, previous.hdc)
+  compareField("pilot", pilot, previous.pilot)
+  compareField("releasedUnderPrarr", releasedUnderPrarr, previous.releasedUnderPrarr)
+  compareField("dapolMissedInError", dapolMissedInError, previous.dapolMissedInError)
+  compareField("installAtSourcePilot", installAtSourcePilot, previous.installAtSourcePilot)
 
   if (listOf(
       installationAddress1,
@@ -145,11 +146,11 @@ fun MonitoringOrder.compareTo(updated: MonitoringOrder): List<String> {
       installationAddress4,
       installationAddressPostcode,
     ) != listOf(
-      updated.installationAddress1,
-      updated.installationAddress2,
-      updated.installationAddress3,
-      updated.installationAddress4,
-      updated.installationAddressPostcode,
+      previous.installationAddress1,
+      previous.installationAddress2,
+      previous.installationAddress3,
+      previous.installationAddress4,
+      previous.installationAddressPostcode,
     )
   ) {
     MonitoringOrderChangedMessages.messages["installationAddress"]?.let { messages += it }
@@ -157,12 +158,12 @@ fun MonitoringOrder.compareTo(updated: MonitoringOrder): List<String> {
   compareField(
     "crownCourtCaseReferenceNumber",
     crownCourtCaseReferenceNumber,
-    updated.crownCourtCaseReferenceNumber,
+    previous.crownCourtCaseReferenceNumber,
   )
 
-  compareList("exclusionZones", exclusionZones, updated.exclusionZones)
-  compareList("acEligibleOffences", acEligibleOffences, updated.acEligibleOffences)
-  compareList("dapoOrderClauseNumbers", dapoOrderClauseNumbers, updated.dapoOrderClauseNumbers)
-  compareList("offences", offences, updated.offences)
+  compareList("exclusionZones", exclusionZones, previous.exclusionZones)
+  compareList("acEligibleOffences", acEligibleOffences, previous.acEligibleOffences)
+  compareList("dapoOrderClauseNumbers", dapoOrderClauseNumbers, previous.dapoOrderClauseNumbers)
+  compareList("offences", offences, previous.offences)
   return messages.toList()
 }

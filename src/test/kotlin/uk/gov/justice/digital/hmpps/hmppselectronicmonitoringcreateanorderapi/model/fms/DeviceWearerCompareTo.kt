@@ -38,7 +38,7 @@ class DeviceWearerCompareTo {
     val old = baselineWearer()
     val updated = baselineWearer()
 
-    val result = old.compareTo(updated)
+    val result = updated.compareTo(old)
 
     Assertions.assertThat(result).isEmpty()
   }
@@ -52,7 +52,7 @@ class DeviceWearerCompareTo {
       phoneNumber = "07999999999"
     }
 
-    val result = old.compareTo(updated)
+    val result = updated.compareTo(old)
 
     Assertions.assertThat(result)
       .containsExactly("Device wearer's phone number has changed")
@@ -65,7 +65,7 @@ class DeviceWearerCompareTo {
       phoneNumber = ""
     }
 
-    val result = old.compareTo(updated)
+    val result = updated.compareTo(old)
 
     Assertions.assertThat(result)
       .containsExactly("Device wearer's phone number has changed")
@@ -78,7 +78,7 @@ class DeviceWearerCompareTo {
       disability = listOf(Disability("Hearing"))
     }
 
-    val result = old.compareTo(updated)
+    val result = updated.compareTo(old)
 
     Assertions.assertThat(result)
       .containsExactly(
@@ -93,7 +93,7 @@ class DeviceWearerCompareTo {
     }
     val updated = baselineWearer()
 
-    val result = old.compareTo(updated)
+    val result = updated.compareTo(old)
 
     Assertions.assertThat(result)
       .contains("Device wearer's disability or health conditions have changed")
@@ -106,7 +106,7 @@ class DeviceWearerCompareTo {
       riskCategory = emptyList()
     }
 
-    val result = old.compareTo(updated)
+    val result = updated.compareTo(old)
 
     Assertions.assertThat(result)
       .contains("Device wearer's risk categories have changed")
@@ -121,7 +121,7 @@ class DeviceWearerCompareTo {
       mappa = "No"
     }
 
-    val result = old.compareTo(updated)
+    val result = updated.compareTo(old)
 
     Assertions.assertThat(result).containsExactlyInAnyOrder(
       "Device wearer's name has changed",
@@ -138,7 +138,7 @@ class DeviceWearerCompareTo {
       complianceAndEnforcementPersonReference = "CEPR456"
     }
 
-    val result = old.compareTo(updated)
+    val result = updated.compareTo(old)
 
     Assertions.assertThat(result).containsExactly(
       "Device wearer's personal ID number(s) have changed",
@@ -152,7 +152,7 @@ class DeviceWearerCompareTo {
       title = "ChangedButUnmapped"
     }
 
-    val result = old.compareTo(updated)
+    val result = updated.compareTo(old)
 
     Assertions.assertThat(result).isEmpty()
   }
@@ -163,7 +163,7 @@ class DeviceWearerCompareTo {
     val old = baselineWearer()
     val updated = baselineWearer()
     case.mutate(updated)
-    val result = old.compareTo(updated)
+    val result = updated.compareTo(old)
     Assertions.assertThat(result)
       .withFailMessage("Field ${case.name} did not emit expected message")
       .contains(case.expectedMessage)
@@ -177,7 +177,7 @@ class DeviceWearerCompareTo {
 
     case.mutate(updated)
 
-    val result = old.compareTo(updated)
+    val result = updated.compareTo(old)
 
     Assertions.assertThat(result)
       .withFailMessage(
