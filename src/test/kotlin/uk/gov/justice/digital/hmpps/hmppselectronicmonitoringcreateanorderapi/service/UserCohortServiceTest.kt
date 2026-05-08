@@ -3,8 +3,12 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.s
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.Arguments
+import org.junit.jupiter.params.provider.MethodSource
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
+import org.mockito.kotlin.times
 import org.springframework.boot.test.autoconfigure.json.JsonTest
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.oauth2.jwt.Jwt
@@ -12,8 +16,6 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.ManageUserApi
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.Cohort
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.UserCohort
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisationDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.hmpps.HmppsCaseload
 
 @ActiveProfiles("test")
@@ -75,63 +77,53 @@ class UserCohortServiceTest {
     Assertions.assertThat(result.cohort).isEqualTo(Cohort.HOME_OFFICE)
   }
 
-  @Test
-  fun `matchesNotifyingOrg returns true both prison`() {
-    val testNotifyingOrganisation = NotifyingOrganisationDDv5.PRISON.name
-    val testCohort = UserCohort(cohort = Cohort.PRISON)
-
-    val result = service.matchesNofifyingOrg(testCohort, testNotifyingOrganisation)
-
-    Assertions.assertThat(result).isEqualTo(true)
-  }
-
-  @Test
-  fun `matchesNotifyingOrg returns true both probation`() {
-    val testNotifyingOrganisation = NotifyingOrganisationDDv5.PROBATION.name
-    val testCohort = UserCohort(cohort = Cohort.PROBATION)
-
-    val result = service.matchesNofifyingOrg(testCohort, testNotifyingOrganisation)
+  @ParameterizedTest(
+    name = "It should return true if user cohort is same as original notifying org - {0} -> {1}",
+  )
+  @MethodSource("userCohortSameAsNotifyingOrgArguments")
+  fun `It should return true if user cohort is same as original notifying org`(
+    cohort: Cohort,
+    notifyingOrganisation: String,
+  ) {
+    val result = service.matchesNofifyingOrg(cohort, notifyingOrganisation)
 
     Assertions.assertThat(result).isEqualTo(true)
   }
 
-  @Test
-  fun `matchesNotifyingOrg returns false prison probation`() {
-    val testNotifyingOrganisation = NotifyingOrganisationDDv5.PRISON.name
-    val testCohort = UserCohort(cohort = Cohort.PROBATION)
-
-    val result = service.matchesNofifyingOrg(testCohort, testNotifyingOrganisation)
+  @ParameterizedTest(
+    name = "It should return false if user cohort is not same as original notifying org - {0} -> {1}",
+  )
+  @MethodSource("userCohortNotSameAsNotifyingOrgArguments")
+  fun `It should not clone NO if user cohort is not same as original notifying org`(
+    cohort: Cohort,
+    notifyingOrganisation: String,
+  ) {
+    val result = service.matchesNofifyingOrg(cohort, notifyingOrganisation)
 
     Assertions.assertThat(result).isEqualTo(false)
   }
 
-  @Test
-  fun `matchesNotifyingOrg returns true court court`() {
-    val testNotifyingOrganisation = NotifyingOrganisationDDv5.CIVIL_COUNTY_COURT.name
-    val testCohort = UserCohort(cohort = Cohort.COURT)
+  companion object {
+    @JvmStatic
+    fun userCohortSameAsNotifyingOrgArguments() = listOf(
+      Arguments.of(Cohort.PRISON, "PRISON"),
+      Arguments.of(Cohort.PRISON, "YOUTH_CUSTODY_SERVICE"),
+      Arguments.of(Cohort.PROBATION, "PROBATION"),
+      Arguments.of(Cohort.COURT, "CIVIL_COUNTY_COURT"),
+      Arguments.of(Cohort.COURT, "CROWN_COURT"),
+      Arguments.of(Cohort.COURT, "MAGISTRATES_COURT"),
+      Arguments.of(Cohort.COURT, "MILITARY_COURT"),
+      Arguments.of(Cohort.COURT, "SCOTTISH_COURT"),
+      Arguments.of(Cohort.COURT, "FAMILY_COURT"),
+      Arguments.of(Cohort.COURT, "YOUTH_COURT"),
+      Arguments.of(Cohort.HOME_OFFICE, "HOME_OFFICE"),
+    )
 
-    val result = service.matchesNofifyingOrg(testCohort, testNotifyingOrganisation)
-
-    Assertions.assertThat(result).isEqualTo(true)
-  }
-
-  @Test
-  fun `matchesNotifyingOrg returns true home office home office`() {
-    val testNotifyingOrganisation = NotifyingOrganisationDDv5.HOME_OFFICE.name
-    val testCohort = UserCohort(cohort = Cohort.HOME_OFFICE)
-
-    val result = service.matchesNofifyingOrg(testCohort, testNotifyingOrganisation)
-
-    Assertions.assertThat(result).isEqualTo(true)
-  }
-
-  @Test
-  fun `matchesNotifyingOrg returns false when cohort is other`() {
-    val testNotifyingOrganisation = NotifyingOrganisationDDv5.HOME_OFFICE.name
-    val testCohort = UserCohort(cohort = Cohort.OTHER)
-
-    val result = service.matchesNofifyingOrg(testCohort, testNotifyingOrganisation)
-
-    Assertions.assertThat(result).isEqualTo(false)
+    @JvmStatic
+    fun userCohortNotSameAsNotifyingOrgArguments() = listOf(
+      Arguments.of(Cohort.PRISON, "PROBATION"),
+      Arguments.of(Cohort.PROBATION, "PRISON"),
+      Arguments.of(Cohort.PROBATION, "YOUTH_CUSTODY_SERVICE"),
+    )
   }
 }

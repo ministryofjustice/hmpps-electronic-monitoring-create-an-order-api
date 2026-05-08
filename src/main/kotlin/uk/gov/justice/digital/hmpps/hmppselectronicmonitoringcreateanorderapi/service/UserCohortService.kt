@@ -27,12 +27,14 @@ class UserCohortService(private val webClient: ManageUserApi) {
     }
   }
 
-  fun matchesNofifyingOrg(userCohort: UserCohort, notifyingOrganisation: String?): Boolean {
+  fun matchesNofifyingOrg(cohort: Cohort, notifyingOrganisation: String?): Boolean {
     if (notifyingOrganisation.isNullOrEmpty()) return false
 
     val parsedNotifyingOrganisation = NotifyingOrganisationDDv5.from(notifyingOrganisation)
-    return when (userCohort.cohort) {
-      Cohort.PRISON -> parsedNotifyingOrganisation == NotifyingOrganisationDDv5.PRISON
+    return when (cohort) {
+      Cohort.PRISON ->
+        parsedNotifyingOrganisation == NotifyingOrganisationDDv5.PRISON ||
+          parsedNotifyingOrganisation == NotifyingOrganisationDDv5.YOUTH_CUSTODY_SERVICE
       Cohort.PROBATION -> parsedNotifyingOrganisation == NotifyingOrganisationDDv5.PROBATION
       Cohort.COURT -> NotifyingOrganisationDDv5.isCourt(notifyingOrganisation)
       Cohort.HOME_OFFICE -> parsedNotifyingOrganisation == NotifyingOrganisationDDv5.HOME_OFFICE
