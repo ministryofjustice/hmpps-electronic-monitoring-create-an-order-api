@@ -4,7 +4,6 @@ import FmsStateResponse
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.core.io.InputStreamResource
 import org.springframework.http.HttpHeaders
-import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
@@ -174,10 +173,9 @@ class FmsClient(@Value("\${services.serco.url}") url: String, private val fmsAut
       .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
       .exchangeToMono { response ->
         when {
-          response.statusCode() .isError-> {
+          response.statusCode().isError -> {
             Mono.just(CaseState.UNKNOWN)
           }
-
           else -> {
             response.bodyToMono<FmsStateResponse>()
               .map { res ->

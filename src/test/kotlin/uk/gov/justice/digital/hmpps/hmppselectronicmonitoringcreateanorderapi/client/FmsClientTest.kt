@@ -13,7 +13,6 @@ import org.springframework.core.io.InputStreamResource
 import org.springframework.http.HttpStatus
 import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.CreateSercoEntityException
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.SercoConnectionException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.SercoAuthMockServerExtension.Companion.sercoAuthApi
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.SercoMockApiExtension.Companion.sercoApi
@@ -343,10 +342,10 @@ class FmsClientTest : IntegrationTestBase() {
         result = FmsStateResponse(result = null),
       )
 
-      val result =  fmsClient.getState(caseId)
+      val result = fmsClient.getState(caseId)
 
       assertThat(
-        result
+        result,
       ).isEqualTo(CaseState.UNKNOWN)
     }
 
