@@ -4,7 +4,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import kotlin.collections.plusAssign
 
 fun DeviceWearer.compareTo(previous: DeviceWearer): List<String> {
-  val messages = mutableSetOf<String>()
+  val messages = mutableListOf<String>()
 
   fun compareField(fieldName: String, newValue: Any?, oldValue: Any?) {
     if (oldValue != newValue) {
@@ -22,13 +22,27 @@ fun DeviceWearer.compareTo(previous: DeviceWearer): List<String> {
     }
   }
 
+  fun compareAdultChile(new: String?, old: String?) {
+    if (new != old) {
+      if (new === "adult" && old === "child") {
+        DeviceWearerChangedMessages.messages["childToAdult"]?.let {
+          messages += it
+        }
+      } else if (new === "child" && old === "adult") {
+        DeviceWearerChangedMessages.messages["adultToChild"]?.let {
+          messages += it
+        }
+      }
+    }
+  }
+
   compareField("nameChange", this.firstName, previous.firstName)
   compareField("nameChange", this.middleName, previous.middleName)
   compareField("nameChange", this.lastName, previous.lastName)
   compareField("alias", this.alias, previous.alias)
 
   compareField("dateOfBirth", this.dateOfBirth, previous.dateOfBirth)
-  compareField("adultChild", this.adultChild, previous.adultChild)
+  compareAdultChile(this.adultChild, previous.adultChild)
   compareField("sex", this.sex, previous.sex)
   compareField("genderIdentity", this.genderIdentity, previous.genderIdentity)
 
@@ -137,5 +151,5 @@ fun DeviceWearer.compareTo(previous: DeviceWearer): List<String> {
   compareList("disability", this.disability, previous.disability)
   compareList("riskCategory", this.riskCategory, previous.riskCategory)
 
-  return messages.toList()
+  return messages
 }
