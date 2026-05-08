@@ -590,6 +590,16 @@ class OrderServiceTest {
       }
 
       @Test
+      fun `Should only clear notifying org is user type does not match`() {
+        argumentCaptor<Order>().apply {
+          verify(repo, times(1)).save(capture())
+          assertThat(firstValue.versions.last().interestedParties?.notifyingOrganisation).isNull()
+          assertThat(firstValue.versions.last().interestedParties?.notifyingOrganisationName).isNull()
+          assertThat(firstValue.versions.last().interestedParties?.notifyingOrganisationEmail).isNull()
+        }
+      }
+
+      @Test
       fun `It should clone probationDeliveryUnit referencing new version`() {
         argumentCaptor<Order>().apply {
           verify(repo, times(1)).save(capture())
@@ -821,6 +831,28 @@ class OrderServiceTest {
         verify(repo, times(1)).save(capture())
         assertThat(firstValue.versions.last().interestedParties).isNull()
         assertThat(firstValue.versions.last().probationDeliveryUnit).isNull()
+      }
+    }
+
+    @Nested
+    @DisplayName("Create Version as Variation")
+    inner class CreateVersionAsVariationSameCohort {
+      @BeforeEach
+      fun setup() {
+        val mockUserCohort = UserCohort(Cohort.PRISON)
+        whenever(userCohortService.getUserCohort(authentication)).thenReturn(mockUserCohort)
+        whenever(userCohortService.matchesNofifyingOrg(mockUserCohort, "PRISON")).thenReturn(true)
+        service.createVersion(order.id, authentication, RequestType.VARIATION)
+      }
+
+      @Test
+      fun `Should not clear notifying org when user type matches`() {
+        argumentCaptor<Order>().apply {
+          verify(repo, times(1)).save(capture())
+          assertThat(firstValue.versions.last().interestedParties?.notifyingOrganisation).isNotNull()
+          assertThat(firstValue.versions.last().interestedParties?.notifyingOrganisationName).isNotNull()
+          assertThat(firstValue.versions.last().interestedParties?.notifyingOrganisationEmail).isNotNull()
+        }
       }
     }
 
