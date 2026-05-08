@@ -846,6 +846,28 @@ class OrderServiceTest {
     }
 
     @Nested
+    @DisplayName("Create Version as Variation")
+    inner class CreateVersionAsVariationSameCohort {
+      @BeforeEach
+      fun setup() {
+        val mockUserCohort = UserCohort(Cohort.PRISON)
+        whenever(userCohortService.getUserCohort(authentication)).thenReturn(mockUserCohort)
+        whenever(userCohortService.matchesNofifyingOrg(mockUserCohort, "PRISON")).thenReturn(true)
+        service.createVersion(order.id, authentication, RequestType.VARIATION)
+      }
+
+      @Test
+      fun `Should not clear notifying org when user type matches`() {
+        argumentCaptor<Order>().apply {
+          verify(repo, times(1)).save(capture())
+          assertThat(firstValue.versions.last().interestedParties?.notifyingOrganisation).isNotNull()
+          assertThat(firstValue.versions.last().interestedParties?.notifyingOrganisationName).isNotNull()
+          assertThat(firstValue.versions.last().interestedParties?.notifyingOrganisationEmail).isNotNull()
+        }
+      }
+    }
+
+    @Nested
     @DisplayName("Create Version as amend original request")
     inner class CreateVersionAsRequest {
       @BeforeEach
