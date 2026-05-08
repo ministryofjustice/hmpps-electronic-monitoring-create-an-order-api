@@ -23,7 +23,7 @@ fun DeviceWearer.compareTo(previous: DeviceWearer): List<String> {
   }
 
   fun compareAdultChild(new: String?, old: String?) {
-    if (new != old) {
+    if (new !== old) {
       if (new === "adult") {
         DeviceWearerChangedMessages.messages["childToAdult"]?.let {
           messages += it
@@ -37,7 +37,7 @@ fun DeviceWearer.compareTo(previous: DeviceWearer): List<String> {
   }
 
   fun compareNoFixedAddress(new: String?, old: String?) {
-    if (new != old) {
+    if (new !== old) {
       if (new === "true") {
         DeviceWearerChangedMessages.messages["hasFixedAddress"]?.let {
           messages += it
