@@ -12,6 +12,8 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.ManageUserApi
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.Cohort
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.UserCohort
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisationDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.hmpps.HmppsCaseload
 
 @ActiveProfiles("test")
@@ -71,5 +73,65 @@ class UserCohortServiceTest {
     val result = service.getUserCohort(authentication)
 
     Assertions.assertThat(result.cohort).isEqualTo(Cohort.HOME_OFFICE)
+  }
+
+  @Test
+  fun `matchesNotifyingOrg returns true both prison`() {
+    val testNotifyingOrganisation = NotifyingOrganisationDDv5.PRISON.name
+    val testCohort = UserCohort(cohort = Cohort.PRISON)
+
+    val result = service.matchesNofifyingOrg(testCohort, testNotifyingOrganisation)
+
+    Assertions.assertThat(result).isEqualTo(true)
+  }
+
+  @Test
+  fun `matchesNotifyingOrg returns true both probation`() {
+    val testNotifyingOrganisation = NotifyingOrganisationDDv5.PROBATION.name
+    val testCohort = UserCohort(cohort = Cohort.PROBATION)
+
+    val result = service.matchesNofifyingOrg(testCohort, testNotifyingOrganisation)
+
+    Assertions.assertThat(result).isEqualTo(true)
+  }
+
+  @Test
+  fun `matchesNotifyingOrg returns false prison probation`() {
+    val testNotifyingOrganisation = NotifyingOrganisationDDv5.PRISON.name
+    val testCohort = UserCohort(cohort = Cohort.PROBATION)
+
+    val result = service.matchesNofifyingOrg(testCohort, testNotifyingOrganisation)
+
+    Assertions.assertThat(result).isEqualTo(false)
+  }
+
+  @Test
+  fun `matchesNotifyingOrg returns true court court`() {
+    val testNotifyingOrganisation = NotifyingOrganisationDDv5.CIVIL_COUNTY_COURT.name
+    val testCohort = UserCohort(cohort = Cohort.COURT)
+
+    val result = service.matchesNofifyingOrg(testCohort, testNotifyingOrganisation)
+
+    Assertions.assertThat(result).isEqualTo(true)
+  }
+
+  @Test
+  fun `matchesNotifyingOrg returns true home office home office`() {
+    val testNotifyingOrganisation = NotifyingOrganisationDDv5.HOME_OFFICE.name
+    val testCohort = UserCohort(cohort = Cohort.HOME_OFFICE)
+
+    val result = service.matchesNofifyingOrg(testCohort, testNotifyingOrganisation)
+
+    Assertions.assertThat(result).isEqualTo(true)
+  }
+
+  @Test
+  fun `matchesNotifyingOrg returns false when cohort is other`() {
+    val testNotifyingOrganisation = NotifyingOrganisationDDv5.HOME_OFFICE.name
+    val testCohort = UserCohort(cohort = Cohort.OTHER)
+
+    val result = service.matchesNofifyingOrg(testCohort, testNotifyingOrganisation)
+
+    Assertions.assertThat(result).isEqualTo(false)
   }
 }
