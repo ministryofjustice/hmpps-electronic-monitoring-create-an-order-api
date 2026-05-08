@@ -22,7 +22,7 @@ fun DeviceWearer.compareTo(previous: DeviceWearer): List<String> {
     }
   }
 
-  fun compareAdultChile(new: String?, old: String?) {
+  fun compareAdultChild(new: String?, old: String?) {
     if (new != old) {
       if (new === "adult") {
         DeviceWearerChangedMessages.messages["childToAdult"]?.let {
@@ -56,7 +56,7 @@ fun DeviceWearer.compareTo(previous: DeviceWearer): List<String> {
   compareField("alias", this.alias, previous.alias)
 
   compareField("dateOfBirth", this.dateOfBirth, previous.dateOfBirth)
-  compareAdultChile(this.adultChild, previous.adultChild)
+  compareAdultChild(this.adultChild, previous.adultChild)
   compareField("sex", this.sex, previous.sex)
   compareField("genderIdentity", this.genderIdentity, previous.genderIdentity)
 
