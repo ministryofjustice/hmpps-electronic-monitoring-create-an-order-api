@@ -36,6 +36,20 @@ fun DeviceWearer.compareTo(previous: DeviceWearer): List<String> {
     }
   }
 
+  fun compareNoFixedAddress(new: String?, old: String?) {
+    if (new != old) {
+      if (new === "true") {
+        DeviceWearerChangedMessages.messages["hasFixedAddress"]?.let {
+          messages += it
+        }
+      } else if (new === "false") {
+        DeviceWearerChangedMessages.messages["noFixedAddress"]?.let {
+          messages += it
+        }
+      }
+    }
+  }
+
   compareField("nameChange", this.firstName, previous.firstName)
   compareField("nameChange", this.middleName, previous.middleName)
   compareField("nameChange", this.lastName, previous.lastName)
@@ -98,7 +112,7 @@ fun DeviceWearer.compareTo(previous: DeviceWearer): List<String> {
   }
 
   compareField("addressPostCode", this.addressPostCode, previous.addressPostCode)
-  compareField("noFixedAddress", this.noFixedAddress, previous.noFixedAddress)
+  compareNoFixedAddress(this.noFixedAddress, previous.noFixedAddress)
 
   compareField("phoneNumber", this.phoneNumber, previous.phoneNumber)
 

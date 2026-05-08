@@ -149,12 +149,6 @@ class DeviceWearerFieldChangeArgumentsProvider : ArgumentsProvider {
       ),
 
       FieldChangeCase(
-        name = "noFixedAddress",
-        mutate = { it.noFixedAddress = "true" },
-        expectedMessage = "Device wearer now has / doesn't have a fixed address",
-      ),
-
-      FieldChangeCase(
         name = "phoneNumber",
         mutate = { it.phoneNumber = "07999999999" },
         expectedMessage = "Device wearer's phone number has changed",

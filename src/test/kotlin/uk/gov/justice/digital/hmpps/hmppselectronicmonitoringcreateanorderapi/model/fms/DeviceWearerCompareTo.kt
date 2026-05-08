@@ -191,6 +191,28 @@ class DeviceWearerCompareTo {
       .contains("Order has changed from a youth to adult")
   }
 
+  @Test
+  fun `should return message when order changed from no fixed address to has fixed address`() {
+    val old = baselineWearer()
+    old.noFixedAddress = "false"
+    val updated = baselineWearer()
+    updated.noFixedAddress = "true"
+    val result = updated.compareTo(old)
+    Assertions.assertThat(result)
+      .contains("Device wearer now has a fixed address")
+  }
+
+  @Test
+  fun `should return message when order changed from has fixed address to no fixed address`() {
+    val old = baselineWearer()
+    old.noFixedAddress = "true"
+    val updated = baselineWearer()
+    updated.noFixedAddress = "false"
+    val result = updated.compareTo(old)
+    Assertions.assertThat(result)
+      .contains("Device wearer now doesn't have a fixed address")
+  }
+
   @ParameterizedTest(name = "changing {0} does NOT emit any message")
   @ArgumentsSource(DeviceWearerNegativeFieldArgumentsProvider::class)
   fun `changing non mapped field emits no message`(case: FieldChangeCase) {
