@@ -227,7 +227,8 @@ class FmsVariationSubmissionStrategy(
       .sortedByDescending { it.versionId }
       .forEach { version ->
         val submissionResult = repo.getReferenceById(version.fmsResultId!!)
-        if (fmsClient.getState(submissionResult.deviceWearerResult.deviceWearerId) != CaseState.CANCELLED) {
+        val state = fmsClient.getState(submissionResult.deviceWearerResult.deviceWearerId)
+        if (state != CaseState.CANCELLED && state != CaseState.UNKNOWN) {
           return submissionResult
         }
       }

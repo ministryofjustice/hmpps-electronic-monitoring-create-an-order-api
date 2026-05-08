@@ -334,25 +334,20 @@ class FmsClientTest : IntegrationTestBase() {
   @DisplayName("Get api/now/table/x_serg2_ems_csm_case/{case_id}")
   inner class GetState {
     @Test
-    fun `it should handle 403 responses`() {
+    fun `it should return state of Unknown for 404 status`() {
       val caseId = "mockCaseId"
       sercoAuthApi.stubGrantToken()
       sercoApi.stubGetState(
         caseId,
-        status = HttpStatus.UNAUTHORIZED,
+        status = HttpStatus.NOT_FOUND,
         result = FmsStateResponse(result = null),
-        errorResponse = FmsErrorResponse(
-          error = ErrorResponse(message = "User not authorised", detail = "User is unauthorised"),
-        ),
       )
 
-      val exception = assertThrows<SercoConnectionException> {
-        fmsClient.getState(caseId)
-      }
+      val result =  fmsClient.getState(caseId)
 
       assertThat(
-        exception.message,
-      ).isEqualTo("Error fetching state for case $caseId: User is unauthorised")
+        result
+      ).isEqualTo(CaseState.UNKNOWN)
     }
 
     @Test
