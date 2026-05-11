@@ -34,7 +34,6 @@ object MonitoringOrderChangedMessages {
     "curfewEnd" to "Curfew end date has changed",
 
     // Flags / pilots
-    "trailMonitoring" to "Trail monitoring has been added or removed",
     "abstinence" to "Alcohol abstinence has been changed",
     "issp" to "ISSP has changed",
     "hdc" to "HDC has changed",

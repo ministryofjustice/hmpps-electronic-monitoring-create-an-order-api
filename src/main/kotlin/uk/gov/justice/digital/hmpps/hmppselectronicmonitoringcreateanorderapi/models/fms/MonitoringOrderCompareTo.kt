@@ -130,7 +130,6 @@ fun MonitoringOrder.compareTo(previous: MonitoringOrder): List<String> {
   compareField("curfewDescription", curfewDescription, previous.curfewDescription)
   compareField("curfewStart", curfewStart, previous.curfewStart)
   compareField("curfewEnd", curfewEnd, previous.curfewEnd)
-  compareField("trailMonitoring", trailMonitoring, previous.trailMonitoring)
   compareField("abstinence", abstinence, previous.abstinence)
   compareField("issp", issp, previous.issp)
   compareField("hdc", hdc, previous.hdc)

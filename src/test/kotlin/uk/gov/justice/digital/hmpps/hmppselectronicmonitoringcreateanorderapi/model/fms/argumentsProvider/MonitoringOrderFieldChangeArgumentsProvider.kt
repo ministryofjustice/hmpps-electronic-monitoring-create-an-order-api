@@ -148,12 +148,6 @@ class MonitoringOrderFieldChangeArgumentsProvider : ArgumentsProvider {
     ),
 
     MonitoringOrderFieldCase(
-      "trailMonitoring",
-      { it.trailMonitoring = "Yes" },
-      "Trail monitoring has been added or removed",
-    ),
-
-    MonitoringOrderFieldCase(
       "abstinence",
       { it.abstinence = "Yes" },
       "Alcohol abstinence has been changed",
