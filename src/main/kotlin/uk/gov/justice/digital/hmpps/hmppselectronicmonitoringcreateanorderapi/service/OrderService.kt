@@ -24,6 +24,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.specification.OrderListSpecification
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.specification.OrderSearchSpecification
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
+import java.time.ZonedDateTime
 import java.util.*
 
 @Service
@@ -142,6 +143,8 @@ class OrderService(
           currentVersion.curfewReleaseDateConditions?.copy(versionId = this.id, id = UUID.randomUUID())
 
         val currentIPs = currentVersion.interestedParties
+        val isFutureOrder =
+          order.getMonitoringStartDate() != null && order.getMonitoringStartDate()!! > ZonedDateTime.now()
         val isUserFromOriginalNotifyingOrganistion =
           isUserFromOriginalNotifyingOrganistion(token, currentIPs?.notifyingOrganisation)
         interestedParties =
@@ -154,17 +157,26 @@ class OrderService(
               ?.takeIf { isUserFromOriginalNotifyingOrganistion },
             notifyingOrganisationEmail = currentIPs?.notifyingOrganisationEmail
               ?.takeIf { isUserFromOriginalNotifyingOrganistion },
+            responsibleOrganisation = currentIPs?.responsibleOrganisation?.takeIf { isFutureOrder },
+            responsibleOfficerFirstName = currentIPs?.responsibleOfficerFirstName?.takeIf { isFutureOrder },
+            responsibleOfficerLastName = currentIPs?.responsibleOfficerLastName?.takeIf { isFutureOrder },
+            responsibleOfficerEmail = currentIPs?.responsibleOfficerEmail?.takeIf { isFutureOrder },
+            responsibleOrganisationRegion = currentIPs?.responsibleOrganisationRegion?.takeIf { isFutureOrder },
+            responsibleOrganisationEmail = currentIPs?.responsibleOrganisationEmail?.takeIf { isFutureOrder },
           )
 
-        probationDeliveryUnit =
-          currentVersion.probationDeliveryUnit?.copy(versionId = this.id, id = UUID.randomUUID())
-        monitoringConditions =
-          currentVersion.monitoringConditions?.copy(
-            versionId = this.id,
-            id = UUID.randomUUID(),
-            startDate = null,
-            endDate = null,
-          )
+        if (isFutureOrder) {
+          probationDeliveryUnit =
+            currentVersion.probationDeliveryUnit?.copy(versionId = this.id, id = UUID.randomUUID())
+          monitoringConditions =
+            currentVersion.monitoringConditions?.copy(
+              versionId = this.id,
+              id = UUID.randomUUID(),
+              startDate = null,
+              endDate = null,
+            )
+        }
+
         monitoringConditionsAlcohol =
           currentVersion.monitoringConditionsAlcohol?.copy(versionId = this.id, id = UUID.randomUUID())
         monitoringConditionsTrail =
