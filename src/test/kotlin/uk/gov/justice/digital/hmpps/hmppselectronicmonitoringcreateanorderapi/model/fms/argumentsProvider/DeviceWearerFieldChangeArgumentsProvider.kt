@@ -157,19 +157,19 @@ class DeviceWearerFieldChangeArgumentsProvider : ArgumentsProvider {
       FieldChangeCase(
         name = "mappa",
         mutate = { it.mappa = "No" },
-        expectedMessage = "Device wearer's MAPPA has changed",
+        expectedMessage = "Device wearer's MAPPA level has changed",
       ),
 
       FieldChangeCase(
-        name = "mappa",
+        name = "mappaCaseType",
         mutate = { it.mappaCaseType = "No" },
-        expectedMessage = "Device wearer's MAPPA has changed",
+        expectedMessage = "Device wearer's MAPPA case type has changed",
       ),
 
       FieldChangeCase(
-        name = "mappa",
+        name = "mappaCategory",
         mutate = { it.mappaCategory = "No" },
-        expectedMessage = "Device wearer's MAPPA has changed",
+        expectedMessage = "Device wearer's MAPPA category has changed",
       ),
 
       FieldChangeCase(

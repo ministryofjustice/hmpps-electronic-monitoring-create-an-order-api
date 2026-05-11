@@ -117,8 +117,8 @@ fun DeviceWearer.compareTo(previous: DeviceWearer): List<String> {
   compareField("phoneNumber", this.phoneNumber, previous.phoneNumber)
 
   compareField("mappa", this.mappa, previous.mappa)
-  compareField("mappa", this.mappaCategory, previous.mappaCategory)
-  compareField("mappa", this.mappaCaseType, previous.mappaCaseType)
+  compareField("mappaCategory", this.mappaCategory, previous.mappaCategory)
+  compareField("mappaCaseType", this.mappaCaseType, previous.mappaCaseType)
 
   if (listOf(
       pncId,
