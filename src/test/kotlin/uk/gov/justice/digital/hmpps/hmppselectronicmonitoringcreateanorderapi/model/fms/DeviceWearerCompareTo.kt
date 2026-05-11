@@ -126,7 +126,7 @@ class DeviceWearerCompareTo {
     Assertions.assertThat(result).containsExactlyInAnyOrder(
       "Device wearer's name has changed",
       "Device wearer's main address has changed",
-      "Device wearer's MAPPA has changed",
+      "Device wearer's MAPPA level has changed",
     )
   }
 
