@@ -165,9 +165,9 @@ class MonitoringOrderComapreTo {
 
     assertThat(result).containsAll(
       listOf(
-        "Curfew timetable location primary has been changed",
-        "Curfew timetable location secondary has been deleted",
-        "Curfew timetable location tertiary has been added",
+        "Curfew timetable for primary address has been changed",
+        "Curfew timetable for secondary address has been deleted",
+        "Curfew timetable for tertiary address has been added",
       ),
     )
   }

@@ -73,12 +73,12 @@ fun MonitoringOrder.compareTo(previous: MonitoringOrder): List<String> {
 
     val added = newByLocation.keys - oldByLocation.keys
     added.filterNotNull().forEach { location ->
-      messages += "Curfew timetable location $location has been added"
+      messages += "Curfew timetable for $location address has been added"
     }
 
     val deleted = oldByLocation.keys - newByLocation.keys
     deleted.filterNotNull().forEach { location ->
-      messages += "Curfew timetable location $location has been deleted"
+      messages += "Curfew timetable for $location address has been deleted"
     }
 
     oldByLocation.keys
@@ -88,7 +88,7 @@ fun MonitoringOrder.compareTo(previous: MonitoringOrder): List<String> {
         val oldSchedule = normalizeSchedule(oldByLocation[location]?.schedule)
         val newSchedule = normalizeSchedule(newByLocation[location]?.schedule)
         if (oldSchedule != newSchedule) {
-          messages += "Curfew timetable location $location has been changed"
+          messages += "Curfew timetable for $location address has been changed"
         }
       }
 
