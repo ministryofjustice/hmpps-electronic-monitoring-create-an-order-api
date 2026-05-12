@@ -168,14 +168,15 @@ class OrderService(
         if (isFutureOrder) {
           probationDeliveryUnit =
             currentVersion.probationDeliveryUnit?.copy(versionId = this.id, id = UUID.randomUUID())
-          monitoringConditions =
-            currentVersion.monitoringConditions?.copy(
-              versionId = this.id,
-              id = UUID.randomUUID(),
-              startDate = null,
-              endDate = null,
-            )
         }
+
+        monitoringConditions =
+          currentVersion.monitoringConditions?.copy(
+            versionId = this.id,
+            id = UUID.randomUUID(),
+            startDate = null,
+            endDate = null,
+          )
 
         monitoringConditionsAlcohol =
           currentVersion.monitoringConditionsAlcohol?.copy(versionId = this.id, id = UUID.randomUUID())
