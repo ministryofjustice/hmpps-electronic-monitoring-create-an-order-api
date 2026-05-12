@@ -36,6 +36,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DeviceType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.EnforcementZoneType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FamilyCourtDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.InstallationLocationType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisationDDv5
@@ -104,8 +105,85 @@ class MonitoringOrderTest : OrderTestBase() {
     assertThat(fmsMonitoringOrder.enforceableCondition).contains(
       EnforceableCondition(
         condition = "Attendance Requirement",
-        startDate = "2025-01-01 01:01:01",
-        endDate = "2025-02-01 01:01:01",
+        startDate = "2025-01-01 23:59:00",
+        endDate = "2025-02-01 00:00:00",
+      ),
+    )
+  }
+
+  @Test
+  fun `It should map exclusion inclusion enforceable condition dates from enforcement zones`() {
+    val overallStartDate = ZonedDateTime.of(2026, 1, 1, 12, 0, 0, 0, ZoneId.of("UTC"))
+    val overallEndDate = ZonedDateTime.of(2026, 4, 1, 12, 0, 0, 0, ZoneId.of("UTC"))
+    val firstZoneStartDate = ZonedDateTime.of(2026, 1, 23, 12, 0, 0, 0, ZoneId.of("UTC"))
+    val firstZoneEndDate = ZonedDateTime.of(2026, 2, 23, 12, 0, 0, 0, ZoneId.of("UTC"))
+    val earliestZoneStartDate = ZonedDateTime.of(2026, 1, 20, 12, 0, 0, 0, ZoneId.of("UTC"))
+    val latestZoneEndDate = ZonedDateTime.of(2026, 3, 23, 12, 0, 0, 0, ZoneId.of("UTC"))
+
+    val order = createOrder(
+      monitoringConditions = createMonitoringConditions(
+        startDate = overallStartDate,
+        endDate = overallEndDate,
+        exclusionZone = true,
+      ),
+      enforcementZoneConditions = listOf(
+        createEnforcementZoneCondition(
+          startDate = firstZoneStartDate,
+          endDate = firstZoneEndDate,
+        ),
+        createEnforcementZoneCondition(
+          startDate = earliestZoneStartDate,
+          endDate = latestZoneEndDate,
+          zoneType = EnforcementZoneType.INCLUSION,
+        ),
+      ),
+    )
+
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, caseId = "", featureFlags = mockFeatureFlags)
+
+    assertThat(fmsMonitoringOrder.enforceableCondition).contains(
+      EnforceableCondition(
+        condition = "EM Exclusion / Inclusion Zone",
+        startDate = "2026-01-20 12:00:00",
+        endDate = "2026-03-23 12:00:00",
+      ),
+    )
+  }
+
+  @Test
+  fun `It should map attendance enforceable condition dates from mandatory attendance conditions`() {
+    val overallStartDate = ZonedDateTime.of(2026, 1, 1, 12, 0, 0, 0, ZoneId.of("UTC"))
+    val overallEndDate = ZonedDateTime.of(2026, 4, 1, 12, 0, 0, 0, ZoneId.of("UTC"))
+    val firstAttendanceStartDate = ZonedDateTime.of(2026, 1, 23, 12, 0, 0, 0, ZoneId.of("UTC"))
+    val firstAttendanceEndDate = ZonedDateTime.of(2026, 2, 23, 12, 0, 0, 0, ZoneId.of("UTC"))
+    val earliestAttendanceStartDate = ZonedDateTime.of(2026, 1, 20, 12, 0, 0, 0, ZoneId.of("UTC"))
+    val latestAttendanceEndDate = ZonedDateTime.of(2026, 3, 23, 12, 0, 0, 0, ZoneId.of("UTC"))
+
+    val order = createOrder(
+      monitoringConditions = createMonitoringConditions(
+        startDate = overallStartDate,
+        endDate = overallEndDate,
+        exclusionZone = true,
+      ),
+      mandatoryAttendanceConditions = listOf(
+        createMandatoryAttendanceCondition(
+          startDate = firstAttendanceStartDate,
+          endDate = firstAttendanceStartDate,
+        ),
+        createMandatoryAttendanceCondition(
+          startDate = earliestAttendanceStartDate,
+          endDate = latestAttendanceEndDate,
+        ),
+      ),
+    )
+
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, caseId = "", featureFlags = mockFeatureFlags)
+
+    assertThat(fmsMonitoringOrder.enforceableCondition).contains(
+      EnforceableCondition(
+        condition = "Attendance Requirement",
+        startDate = "2026-01-20 12:00:00",
+        endDate = "2026-03-23 12:00:00",
       ),
     )
   }
