@@ -163,12 +163,12 @@ class MonitoringOrderTest : OrderTestBase() {
       monitoringConditions = createMonitoringConditions(
         startDate = overallStartDate,
         endDate = overallEndDate,
-        exclusionZone = true,
+        mandatoryAttendance = true,
       ),
       mandatoryAttendanceConditions = listOf(
         createMandatoryAttendanceCondition(
           startDate = firstAttendanceStartDate,
-          endDate = firstAttendanceStartDate,
+          endDate = firstAttendanceEndDate,
         ),
         createMandatoryAttendanceCondition(
           startDate = earliestAttendanceStartDate,
