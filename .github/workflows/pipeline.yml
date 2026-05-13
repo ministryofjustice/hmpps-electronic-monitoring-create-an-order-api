@@ -73,7 +73,7 @@ jobs:
     with:
       docker_registry: 'ghcr.io'
       registry_org: 'ministryofjustice'
-      additional_docker_tag: ${{ inputs.additional_docker_tag }}
+      additional_docker_tag: 'dev'
       push: ${{ inputs.push || inputs.push == null }}
       docker_multiplatform: false
       download_build_artifacts: true
@@ -88,7 +88,7 @@ jobs:
     secrets: inherit
     with:
       environment: 'dev'
-      app_version: '${{ needs.build.outputs.app_version }}'
+      app_version: '${{ needs.build_dev.outputs.app_version }}'
       helm_timeout: '5m'
   deploy_preprod:
     name: Deploy to the preprod environment
