@@ -30,6 +30,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationLocation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ProbationDeliveryUnit
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.Cohort
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.UserCohort
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.OrderListCriteria
@@ -43,6 +44,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Prison
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ResponsibleOrganisation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.SubmissionStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsDeviceWearerSubmissionResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsMonitoringOrderSubmissionResult
@@ -590,6 +592,16 @@ class OrderServiceTest {
       }
 
       @Test
+      fun `Should only clear notifying org is user type does not match`() {
+        argumentCaptor<Order>().apply {
+          verify(repo, times(1)).save(capture())
+          assertThat(firstValue.versions.last().interestedParties?.notifyingOrganisation).isNull()
+          assertThat(firstValue.versions.last().interestedParties?.notifyingOrganisationName).isNull()
+          assertThat(firstValue.versions.last().interestedParties?.notifyingOrganisationEmail).isNull()
+        }
+      }
+
+      @Test
       fun `It should clone probationDeliveryUnit referencing new version`() {
         argumentCaptor<Order>().apply {
           verify(repo, times(1)).save(capture())
@@ -813,14 +825,77 @@ class OrderServiceTest {
       }
     }
 
-    @Test
-    fun `It should not clone interested Parties and pdu if current version start date is in the past`() {
-      order.monitoringConditions!!.startDate = ZonedDateTime.now().plusDays(-10)
-      service.createVersion(order.id, authentication, RequestType.VARIATION)
-      argumentCaptor<Order>().apply {
-        verify(repo, times(1)).save(capture())
-        assertThat(firstValue.versions.last().interestedParties).isNull()
-        assertThat(firstValue.versions.last().probationDeliveryUnit).isNull()
+    @Nested
+    @DisplayName("Create Version as Variation")
+    inner class CreateVersionAsVariationSameCohort {
+      @BeforeEach
+      fun setup() {
+        val mockUserCohort = UserCohort(Cohort.PRISON)
+        whenever(userCohortService.getUserCohort(authentication)).thenReturn(mockUserCohort)
+        whenever(userCohortService.matchesNofifyingOrg(mockUserCohort.cohort, "PRISON")).thenReturn(true)
+      }
+
+      @Test
+      fun `Should not clear notifying org when user type matches`() {
+        service.createVersion(order.id, authentication, RequestType.VARIATION)
+        argumentCaptor<Order>().apply {
+          verify(repo, times(1)).save(capture())
+          assertThat(firstValue.versions.last().interestedParties?.notifyingOrganisation).isNotNull()
+          assertThat(firstValue.versions.last().interestedParties?.notifyingOrganisationName).isNotNull()
+          assertThat(firstValue.versions.last().interestedParties?.notifyingOrganisationEmail).isNotNull()
+        }
+      }
+
+      @Test
+      fun `Should copy responsible organisation and officer and PDU if start Date is in the future`() {
+        order.monitoringConditions!!.startDate = ZonedDateTime.now().plusMonths(1)
+        order.interestedParties!!.responsibleOrganisation = ResponsibleOrganisation.PROBATION.name
+        order.interestedParties!!.responsibleOfficerFirstName = "John"
+        order.interestedParties!!.responsibleOfficerLastName = "Smith"
+        order.interestedParties!!.responsibleOfficerEmail = "a@b.com"
+        order.interestedParties!!.responsibleOrganisationRegion = "NORTH EAST"
+        order.interestedParties!!.responsibleOrganisationEmail = "a@b.com"
+        order.probationDeliveryUnit = ProbationDeliveryUnit(versionId = UUID.randomUUID(), unit = "Mock")
+        whenever(repo.findById(order.id)).thenReturn(Optional.of(order))
+        service.createVersion(order.id, authentication, RequestType.VARIATION)
+        argumentCaptor<Order>().apply {
+          verify(repo, times(1)).save(capture())
+          assertThat(firstValue.versions.last().interestedParties?.responsibleOrganisation).isEqualTo(
+            ResponsibleOrganisation.PROBATION.name,
+          )
+          assertThat(firstValue.versions.last().interestedParties?.responsibleOfficerFirstName).isEqualTo("John")
+          assertThat(firstValue.versions.last().interestedParties?.responsibleOfficerLastName).isEqualTo("Smith")
+          assertThat(firstValue.versions.last().interestedParties?.responsibleOfficerEmail).isEqualTo("a@b.com")
+          assertThat(
+            firstValue.versions.last().interestedParties?.responsibleOrganisationRegion,
+          ).isEqualTo("NORTH EAST")
+          assertThat(firstValue.versions.last().interestedParties?.responsibleOrganisationEmail).isEqualTo("a@b.com")
+          assertThat(firstValue.versions.last().probationDeliveryUnit?.unit).isEqualTo("Mock")
+        }
+      }
+
+      @Test
+      fun `Should not copy responsible organisation and officer and PDU if start Date is in the future`() {
+        order.monitoringConditions!!.startDate = ZonedDateTime.now().plusMonths(-1)
+        order.interestedParties!!.responsibleOrganisation = ResponsibleOrganisation.PROBATION.name
+        order.interestedParties!!.responsibleOfficerFirstName = "John"
+        order.interestedParties!!.responsibleOfficerLastName = "Smith"
+        order.interestedParties!!.responsibleOfficerEmail = "a@b.com"
+        order.interestedParties!!.responsibleOrganisationRegion = "NORTH EAST"
+        order.interestedParties!!.responsibleOrganisationEmail = "a@b.com"
+        order.probationDeliveryUnit = ProbationDeliveryUnit(versionId = UUID.randomUUID(), unit = "Mock")
+        whenever(repo.findById(order.id)).thenReturn(Optional.of(order))
+        service.createVersion(order.id, authentication, RequestType.VARIATION)
+        argumentCaptor<Order>().apply {
+          verify(repo, times(1)).save(capture())
+          assertThat(firstValue.versions.last().interestedParties?.responsibleOrganisation).isNull()
+          assertThat(firstValue.versions.last().interestedParties?.responsibleOfficerFirstName).isNull()
+          assertThat(firstValue.versions.last().interestedParties?.responsibleOfficerLastName).isNull()
+          assertThat(firstValue.versions.last().interestedParties?.responsibleOfficerEmail).isNull()
+          assertThat(firstValue.versions.last().interestedParties?.responsibleOrganisationRegion).isNull()
+          assertThat(firstValue.versions.last().interestedParties?.responsibleOrganisationEmail).isNull()
+          assertThat(firstValue.versions.last().probationDeliveryUnit).isNull()
+        }
       }
     }
 
@@ -855,64 +930,6 @@ class OrderServiceTest {
           assertThat(firstValue.versions.first().type).isEqualTo(RequestType.REJECTED)
         }
       }
-    }
-  }
-
-  @ParameterizedTest(
-    name = "It should clone NO if user cohort is same as original notifying org - {0} -> {1}",
-  )
-  @MethodSource("userCohortSameAsNotifyingOrgArguments")
-  fun `It should clone NO if user cohort is same as original notifying org`(
-    cohort: Cohort,
-    notifyingOrganisation: String,
-  ) {
-    val originalVersionId: UUID = UUID.randomUUID()
-    val order = TestUtilities.createReadyToSubmitOrder(
-      versionId = originalVersionId,
-      status = OrderStatus.SUBMITTED,
-      notifyingOrganisation = notifyingOrganisation,
-      notifyingOrganisationName = "Mock org",
-
-    )
-    whenever(userCohortService.getUserCohort(authentication)).thenReturn(UserCohort(cohort))
-    whenever(repo.findById(order.id)).thenReturn(Optional.of(order))
-    whenever(repo.save(order)).thenReturn(order)
-
-    service.createVersion(order.id, authentication, RequestType.VARIATION)
-
-    argumentCaptor<Order>().apply {
-      verify(repo, times(1)).save(capture())
-      assertThat(firstValue.versions.last().interestedParties?.notifyingOrganisation).isNotNull()
-      assertThat(firstValue.versions.last().interestedParties?.notifyingOrganisationName).isNotNull()
-    }
-  }
-
-  @ParameterizedTest(
-    name = "It should  not clone NO if user cohort is not same as original notifying org - {0} -> {1}",
-  )
-  @MethodSource("userCohortNotSameAsNotifyingOrgArguments")
-  fun `It should not clone NO if user cohort is not same as original notifying org`(
-    cohort: Cohort,
-    notifyingOrganisation: String,
-  ) {
-    val originalVersionId: UUID = UUID.randomUUID()
-    val order = TestUtilities.createReadyToSubmitOrder(
-      versionId = originalVersionId,
-      status = OrderStatus.SUBMITTED,
-      notifyingOrganisation = notifyingOrganisation,
-      notifyingOrganisationName = "Mock org",
-
-    )
-    whenever(userCohortService.getUserCohort(authentication)).thenReturn(UserCohort(cohort))
-    whenever(repo.findById(order.id)).thenReturn(Optional.of(order))
-    whenever(repo.save(order)).thenReturn(order)
-
-    service.createVersion(order.id, authentication, RequestType.VARIATION)
-
-    argumentCaptor<Order>().apply {
-      verify(repo, times(1)).save(capture())
-      assertThat(firstValue.versions.last().interestedParties?.notifyingOrganisation).isNull()
-      assertThat(firstValue.versions.last().interestedParties?.notifyingOrganisationName).isNull()
     }
   }
 
@@ -1073,28 +1090,6 @@ class OrderServiceTest {
       Arguments.of(NotifyingOrganisationDDv5.FAMILY_COURT.name, "Family Court"),
       Arguments.of(NotifyingOrganisationDDv5.HOME_OFFICE.name, "Home Office"),
       Arguments.of(NotifyingOrganisationDDv5.YOUTH_CUSTODY_SERVICE.name, ""),
-    )
-
-    @JvmStatic
-    fun userCohortSameAsNotifyingOrgArguments() = listOf(
-      Arguments.of(Cohort.PRISON, "PRISON"),
-      Arguments.of(Cohort.PRISON, "YOUTH_CUSTODY_SERVICE"),
-      Arguments.of(Cohort.PROBATION, "PROBATION"),
-      Arguments.of(Cohort.COURT, "CIVIL_COUNTY_COURT"),
-      Arguments.of(Cohort.COURT, "CROWN_COURT"),
-      Arguments.of(Cohort.COURT, "MAGISTRATES_COURT"),
-      Arguments.of(Cohort.COURT, "MILITARY_COURT"),
-      Arguments.of(Cohort.COURT, "SCOTTISH_COURT"),
-      Arguments.of(Cohort.COURT, "FAMILY_COURT"),
-      Arguments.of(Cohort.COURT, "YOUTH_COURT"),
-      Arguments.of(Cohort.HOME_OFFICE, "HOME_OFFICE"),
-    )
-
-    @JvmStatic
-    fun userCohortNotSameAsNotifyingOrgArguments() = listOf(
-      Arguments.of(Cohort.PRISON, "PROBATION"),
-      Arguments.of(Cohort.PROBATION, "PRISON"),
-      Arguments.of(Cohort.PROBATION, "YOUTH_CUSTODY_SERVICE"),
     )
   }
 }
