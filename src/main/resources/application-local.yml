@@ -2,49 +2,32 @@ spring:
   jpa:
     show-sql: true
     hibernate:
-      ddl-auto: validate
-  datasource:
-    url: jdbc:postgresql://localhost:5432/postgres?sslmode:prefer
-    username: postgres
-    password: postgres
-  cloud:
-    aws:
-      region:
-        static: eu-west-2
-      endpoint: http://127.0.0.1:4566
+      ddl-auto: create
+    datasource:
+      url: jdbc:postgresql://localhost:5432/postgres?sslmode=prefer
+      username: postgres
+      password: postgres
+    cloud:
+  #      queueName: court_case_events_queue
+  #      queueArn: arn:aws:sns:eu-west-2:000000000000:court_case_events_queue
+  #      dlqName: court_case_events_dead_letter_queue
+  hmpps.s3:
+    bucketName: testbucket
+  services:
+    hmppsauth:
+      url: http://localhost:9090/auth
+    #    url: https://sign-in-dev.hmpps.service.justice.gov.uk/auth
+    document:
+      url: http://localhost:8081/
+    #    url: https://document-api-dev.hmpps.service.justice.gov.uk/
+    manage-user:
+      url: http://localhost:9091/manage-user/
+  #    url: https://manage-users-dev.hmpps.service.justice.gov.uk/
+  CLIENT_ID: hmpps-electronic-monitoring-create-an-order-api
+  CLIENT_SECRET: clientsecret
 
-#Uncomment the below to setup localstack for sqs listener, require localstack running in docker compose
-#hmpps.sqs:
-#  provider: localstack
-#  localstackUrl: http://localhost:4566
-#  useWebToken: false
-#  queues:
-#    courthearingeventqueue:
-#      queueName: court_case_events_queue
-#      queueArn: arn:aws:sns:eu-west-2:000000000000:court_case_events_queue
-#      dlqName: court_case_events_dead_letter_queue
-settings:
-  data-dictionary-version: DDV6
-  device-wearer-payload-version: Dev
-hmpps.s3:
-  bucketName: testbucket
-services:
-  hmppsauth:
-    url: http://localhost:9091/auth
-  #    url: https://sign-in-dev.hmpps.service.justice.gov.uk/auth
-  document:
-    url: http://localhost:9091/hmpps
-#    url: https://document-api-dev.hmpps.service.justice.gov.uk/
-
-CLIENT_ID: clientid
-CLIENT_SECRET: clientsecret
-SERCO_AUTH_URL: http://localhost:9091/auth/oauth/token
-SERCO_CLIENT_ID: clientid
-SERCO_CLIENT_SECRET: clientsecret
-SERCO_USERNAME: serco
-SERCO_PASSWORD: serco
-SERCO_URL: http://localhost:9091/fms
-CEMO_FMS_INTEGRATION_ENABLED: true
+  settings:
+    device-wearer-payload-version: Dev
 MANAGE_USER_URL: http://localhost:9091/manage-user
 DDV6_COURT_MAPPINGS: true
 
