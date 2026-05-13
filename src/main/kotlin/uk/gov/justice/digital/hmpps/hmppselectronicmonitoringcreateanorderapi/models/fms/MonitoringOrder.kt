@@ -463,11 +463,14 @@ data class MonitoringOrder(
       }
 
       if (order.enforcementZoneConditions.count() > 0) {
+        val enforcementZoneStartDate = order.enforcementZoneConditions.mapNotNull { it.startDate }.minOrNull()
+        val enforcementZoneEndDate = order.enforcementZoneConditions.mapNotNull { it.endDate }.maxOrNull()
+
         monitoringOrder.enforceableCondition!!.add(
           EnforceableCondition(
             "EM Exclusion / Inclusion Zone",
-            startDate = getBritishDateAndTime(monitoringStartDate),
-            endDate = getBritishDateAndTime(monitoringEndDate) ?: "",
+            startDate = getBritishDateAndTime(enforcementZoneStartDate),
+            endDate = getBritishDateAndTime(enforcementZoneEndDate) ?: "",
           ),
         )
         order.enforcementZoneConditions.forEach {
@@ -496,11 +499,14 @@ data class MonitoringOrder(
       }
 
       if (order.mandatoryAttendanceConditions.count() > 0) {
+        val mandatoryAttendanceStartDate = order.mandatoryAttendanceConditions.mapNotNull { it.startDate }.minOrNull()
+        val mandatoryAttendanceEndDate = order.mandatoryAttendanceConditions.mapNotNull { it.endDate }.maxOrNull()
+
         monitoringOrder.enforceableCondition!!.add(
           EnforceableCondition(
             "Attendance Requirement",
-            startDate = getBritishDateAndTime(monitoringStartDate) ?: "",
-            endDate = getBritishDateAndTime(monitoringEndDate) ?: "",
+            startDate = getBritishDateAndTime(mandatoryAttendanceStartDate) ?: "",
+            endDate = getBritishDateAndTime(mandatoryAttendanceEndDate) ?: "",
           ),
         )
         monitoringOrder.inclusionZones.addAll(getInclusionZones(order))
