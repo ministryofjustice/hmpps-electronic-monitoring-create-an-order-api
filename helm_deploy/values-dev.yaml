@@ -4,6 +4,11 @@
 generic-service:
   replicaCount: 2
 
+  image:
+    repository: quay.io/hmpps/hmpps-electronic-monitoring-create-an-order-api
+    tag: app_version # override at deployment time
+    port: 8080
+
   ingress:
     host: hmpps-electronic-monitoring-create-an-order-api-dev.hmpps.service.justice.gov.uk
 
