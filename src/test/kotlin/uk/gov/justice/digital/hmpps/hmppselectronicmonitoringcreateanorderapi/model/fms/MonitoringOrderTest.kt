@@ -192,6 +192,12 @@ class MonitoringOrderTest : OrderTestBase() {
           endDate = "2040-01-01 00:00:00",
         ),
       )
+      assertThat(fmsMonitoringOrder.exclusionZones).contains(
+        Zone(
+          start = "2026-01-23",
+          end = "2040-01-01",
+        ),
+      )
     }
 
     @Test
@@ -214,12 +220,18 @@ class MonitoringOrderTest : OrderTestBase() {
         featureFlags = mockFeatureFlags,
         FmsOrderSource.COMMON_PLATFORM,
       )
-
       assertThat(fmsMonitoringOrder.enforceableCondition).contains(
         EnforceableCondition(
           condition = "EM Exclusion / Inclusion Zone",
           startDate = "2026-01-23 12:00:00",
           endDate = "",
+        ),
+      )
+
+      assertThat(fmsMonitoringOrder.exclusionZones).contains(
+        Zone(
+          start = "2026-01-23",
+          end = "",
         ),
       )
     }
@@ -423,6 +435,48 @@ class MonitoringOrderTest : OrderTestBase() {
       assertThat(fmsMonitoringOrder.conditionalReleaseStartTime).isEqualTo(mockeDayOfRelease.startTime)
       assertThat(fmsMonitoringOrder.conditionalReleaseEndTime).isEqualTo(mockeDayOfRelease.endTime)
       assertThat(fmsMonitoringOrder.conditionalReleaseDate).isEqualTo(getBritishDate(mockeDayOfRelease.releaseDate))
+    }
+
+    @Test
+    fun `It should have end date of 2040 when curfew end date is null and data source is CEMO`() {
+      val order = createOrder(
+        monitoringConditions = createMonitoringConditions(curfew = true),
+        curfewConditions = createCurfewConditions(
+          startDate = ZonedDateTime.of(2026, 1, 23, 12, 0, 0, 0, ZoneId.of("UTC")),
+          endDate = null,
+        ),
+      )
+      val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags, FmsOrderSource.CEMO)
+
+      assertThat(fmsMonitoringOrder.enforceableCondition).contains(
+        EnforceableCondition(
+          condition = "Curfew with EM",
+          startDate = "2026-01-23 12:00:00",
+          endDate = "2040-01-01 00:00:00",
+        ),
+      )
+      assertThat(fmsMonitoringOrder.curfewEnd).isEqualTo("2040-01-01 00:00:00")
+    }
+
+    @Test
+    fun `It should have value forend date when curfew end date is null and data source is COMMON_PLATFORM`() {
+      val order = createOrder(
+        monitoringConditions = createMonitoringConditions(curfew = true),
+        curfewConditions = createCurfewConditions(
+          startDate = ZonedDateTime.of(2026, 1, 23, 12, 0, 0, 0, ZoneId.of("UTC")),
+          endDate = null,
+        ),
+      )
+      val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags, FmsOrderSource.COMMON_PLATFORM)
+
+      assertThat(fmsMonitoringOrder.enforceableCondition).contains(
+        EnforceableCondition(
+          condition = "Curfew with EM",
+          startDate = "2026-01-23 12:00:00",
+          endDate = "",
+        ),
+      )
+      assertThat(fmsMonitoringOrder.curfewEnd).isEqualTo("")
     }
   }
 
