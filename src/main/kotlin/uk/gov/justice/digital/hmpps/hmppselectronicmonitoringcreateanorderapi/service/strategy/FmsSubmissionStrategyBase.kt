@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.config.FeatureFlags
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Result
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.DeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.DeviceWearerViews
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.MonitoringOrder
@@ -41,11 +42,15 @@ abstract class FmsSubmissionStrategyBase(val objectMapper: ObjectMapper, private
     )
   }
 
-  protected fun getMonitoringOrder(order: Order, deviceWearerId: String): Result<MonitoringOrder> {
+  protected fun getMonitoringOrder(
+    order: Order,
+    deviceWearerId: String,
+    orderSource: FmsOrderSource,
+  ): Result<MonitoringOrder> {
     return try {
       return Result(
         success = true,
-        data = MonitoringOrder.fromOrder(order, deviceWearerId, featureFlags),
+        data = MonitoringOrder.fromOrder(order, deviceWearerId, featureFlags, orderSource),
       )
     } catch (e: Exception) {
       Result(
