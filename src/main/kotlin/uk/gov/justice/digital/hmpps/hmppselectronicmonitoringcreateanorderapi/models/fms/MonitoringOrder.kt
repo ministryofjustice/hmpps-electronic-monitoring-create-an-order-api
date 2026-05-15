@@ -267,7 +267,7 @@ data class MonitoringOrder(
       orderSource: FmsOrderSource,
     ): MonitoringOrder {
       val defaultEndDate =
-        ZonedDateTime.of(2040, 1, 1, 0, 0, 0, 0, ZoneId.of("Europe/London"))
+        ZonedDateTime.of(2040, 1, 1, 23, 59, 0, 0, ZoneId.of("Europe/London"))
           .takeIf { orderSource == FmsOrderSource.CEMO }
 
       val conditions = order.monitoringConditions!!

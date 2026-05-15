@@ -190,7 +190,7 @@ class MonitoringOrderTest : OrderTestBase() {
         EnforceableCondition(
           condition = "EM Exclusion / Inclusion Zone",
           startDate = "2026-01-23 12:00:00",
-          endDate = "2040-01-01 00:00:00",
+          endDate = "2040-01-01 23:59:00",
         ),
       )
       assertThat(fmsMonitoringOrder.exclusionZones).contains(
@@ -199,7 +199,7 @@ class MonitoringOrderTest : OrderTestBase() {
           end = "2040-01-01",
         ),
       )
-      assertThat(fmsMonitoringOrder.orderEnd).isEqualTo("2040-01-01 00:00:00")
+      assertThat(fmsMonitoringOrder.orderEnd).isEqualTo("2040-01-01 23:59:00")
     }
 
     @Test
@@ -456,11 +456,11 @@ class MonitoringOrderTest : OrderTestBase() {
         EnforceableCondition(
           condition = "Curfew with EM",
           startDate = "2026-01-23 12:00:00",
-          endDate = "2040-01-01 00:00:00",
+          endDate = "2040-01-01 23:59:00",
         ),
       )
-      assertThat(fmsMonitoringOrder.curfewEnd).isEqualTo("2040-01-01 00:00:00")
-      assertThat(fmsMonitoringOrder.orderEnd).isEqualTo("2040-01-01 00:00:00")
+      assertThat(fmsMonitoringOrder.curfewEnd).isEqualTo("2040-01-01 23:59:00")
+      assertThat(fmsMonitoringOrder.orderEnd).isEqualTo("2040-01-01 23:59:00")
     }
 
     @Test
