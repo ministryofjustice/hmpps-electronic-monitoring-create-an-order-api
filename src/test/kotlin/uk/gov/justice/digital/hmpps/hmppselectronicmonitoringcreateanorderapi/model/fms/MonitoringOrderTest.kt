@@ -170,6 +170,7 @@ class MonitoringOrderTest : OrderTestBase() {
       val order = createOrder(
         monitoringConditions = createMonitoringConditions(
           exclusionZone = true,
+          endDate = null,
         ),
         enforcementZoneConditions = listOf(
           createEnforcementZoneCondition(
@@ -198,6 +199,7 @@ class MonitoringOrderTest : OrderTestBase() {
           end = "2040-01-01",
         ),
       )
+      assertThat(fmsMonitoringOrder.orderEnd).isEqualTo("2040-01-01 00:00:00")
     }
 
     @Test
@@ -206,6 +208,7 @@ class MonitoringOrderTest : OrderTestBase() {
       val order = createOrder(
         monitoringConditions = createMonitoringConditions(
           exclusionZone = true,
+          endDate = null,
         ),
         enforcementZoneConditions = listOf(
           createEnforcementZoneCondition(
@@ -234,6 +237,7 @@ class MonitoringOrderTest : OrderTestBase() {
           end = "",
         ),
       )
+      assertThat(fmsMonitoringOrder.orderEnd).isEqualTo("")
     }
   }
 
@@ -440,7 +444,7 @@ class MonitoringOrderTest : OrderTestBase() {
     @Test
     fun `It should have end date of 2040 when curfew end date is null and data source is CEMO`() {
       val order = createOrder(
-        monitoringConditions = createMonitoringConditions(curfew = true),
+        monitoringConditions = createMonitoringConditions(curfew = true, endDate = null),
         curfewConditions = createCurfewConditions(
           startDate = ZonedDateTime.of(2026, 1, 23, 12, 0, 0, 0, ZoneId.of("UTC")),
           endDate = null,
@@ -456,12 +460,13 @@ class MonitoringOrderTest : OrderTestBase() {
         ),
       )
       assertThat(fmsMonitoringOrder.curfewEnd).isEqualTo("2040-01-01 00:00:00")
+      assertThat(fmsMonitoringOrder.orderEnd).isEqualTo("2040-01-01 00:00:00")
     }
 
     @Test
     fun `It should have value forend date when curfew end date is null and data source is COMMON_PLATFORM`() {
       val order = createOrder(
-        monitoringConditions = createMonitoringConditions(curfew = true),
+        monitoringConditions = createMonitoringConditions(curfew = true, endDate = null),
         curfewConditions = createCurfewConditions(
           startDate = ZonedDateTime.of(2026, 1, 23, 12, 0, 0, 0, ZoneId.of("UTC")),
           endDate = null,
@@ -477,6 +482,7 @@ class MonitoringOrderTest : OrderTestBase() {
         ),
       )
       assertThat(fmsMonitoringOrder.curfewEnd).isEqualTo("")
+      assertThat(fmsMonitoringOrder.orderEnd).isEqualTo("")
     }
   }
 

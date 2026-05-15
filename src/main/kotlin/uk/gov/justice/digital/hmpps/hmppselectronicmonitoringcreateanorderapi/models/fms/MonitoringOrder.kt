@@ -305,7 +305,7 @@ data class MonitoringOrder(
         }
 
         else -> {
-          order.getMonitoringEndDate()
+          order.getMonitoringEndDate() ?: defaultEndDate
         }
       }
 
@@ -384,8 +384,6 @@ data class MonitoringOrder(
           monitoringStartDate != null && (monitoringStartDate.toLocalDate() < ZonedDateTime.now().toLocalDate())
         val orderIsVariation = RequestType.VARIATION_TYPES.contains(order.type)
         val variationInPast = startDateIsInPast && orderIsVariation
-
-        val notifyingOrg = NotifyingOrganisationDDv5.from(parties.notifyingOrganisation)
 
         monitoringOrder.apply {
           responsibleOfficerName = if (variationInPast) "" else parties.getResponsibleOfficerFullName()
