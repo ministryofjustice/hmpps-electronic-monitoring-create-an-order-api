@@ -16,6 +16,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DeviceType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.EnforcementZoneType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FamilyCourtDDv5
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.InstallationLocationType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MagistrateCourt
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MagistrateCourtDDv5
@@ -253,14 +254,22 @@ data class MonitoringOrder(
     private val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
     private val dateTimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
     private val londonTimeZone = ZoneId.of("Europe/London")
-
     private fun getBritishDateAndTime(dateTime: ZonedDateTime?): String? =
       dateTime?.toInstant()?.atZone(londonTimeZone)?.format(dateTimeFormatter)
 
     private fun getBritishDate(dateTime: ZonedDateTime?): String? =
       dateTime?.toInstant()?.atZone(londonTimeZone)?.format(dateFormatter)
 
-    fun fromOrder(order: Order, caseId: String?, featureFlags: FeatureFlags): MonitoringOrder {
+    fun fromOrder(
+      order: Order,
+      caseId: String?,
+      featureFlags: FeatureFlags,
+      orderSource: FmsOrderSource,
+    ): MonitoringOrder {
+      val defaultEndDate =
+        ZonedDateTime.of(2040, 1, 1, 23, 59, 0, 0, ZoneId.of("Europe/London"))
+          .takeIf { orderSource == FmsOrderSource.CEMO }
+
       val conditions = order.monitoringConditions!!
       val monitoringStartDate = order.getMonitoringStartDate()
 
@@ -296,7 +305,7 @@ data class MonitoringOrder(
         }
 
         else -> {
-          order.getMonitoringEndDate()
+          order.getMonitoringEndDate() ?: defaultEndDate
         }
       }
 
@@ -376,8 +385,6 @@ data class MonitoringOrder(
         val orderIsVariation = RequestType.VARIATION_TYPES.contains(order.type)
         val variationInPast = startDateIsInPast && orderIsVariation
 
-        val notifyingOrg = NotifyingOrganisationDDv5.from(parties.notifyingOrganisation)
-
         monitoringOrder.apply {
           responsibleOfficerName = if (variationInPast) "" else parties.getResponsibleOfficerFullName()
           responsibleOfficerPhone = if (variationInPast) "" else getResponsibleOfficerPhoneNumber(parties)
@@ -429,7 +436,7 @@ data class MonitoringOrder(
           EnforceableCondition(
             "Curfew with EM",
             startDate = getBritishDateAndTime(curfew.startDate),
-            endDate = getBritishDateAndTime(curfew.endDate) ?: "",
+            endDate = getBritishDateAndTime(curfew.endDate ?: defaultEndDate) ?: "",
           ),
         )
         monitoringOrder.curfewDescription = curfew.curfewAdditionalDetails ?: ""
@@ -437,7 +444,7 @@ data class MonitoringOrder(
         monitoringOrder.conditionalReleaseStartTime = order.curfewReleaseDateConditions?.startTime ?: ""
         monitoringOrder.conditionalReleaseEndTime = order.curfewReleaseDateConditions?.endTime ?: ""
         monitoringOrder.curfewStart = getBritishDateAndTime(curfew.startDate)
-        monitoringOrder.curfewEnd = getBritishDateAndTime(curfew.endDate)
+        monitoringOrder.curfewEnd = getBritishDateAndTime(curfew.endDate ?: defaultEndDate) ?: ""
         monitoringOrder.curfewDuration = getCurfewSchedules(order)
       }
 
@@ -464,7 +471,8 @@ data class MonitoringOrder(
 
       if (order.enforcementZoneConditions.count() > 0) {
         val enforcementZoneStartDate = order.enforcementZoneConditions.mapNotNull { it.startDate }.minOrNull()
-        val enforcementZoneEndDate = order.enforcementZoneConditions.mapNotNull { it.endDate }.maxOrNull()
+        val enforcementZoneEndDate =
+          order.enforcementZoneConditions.mapNotNull { it.endDate }.maxOrNull() ?: defaultEndDate
 
         monitoringOrder.enforceableCondition!!.add(
           EnforceableCondition(
@@ -480,7 +488,7 @@ data class MonitoringOrder(
                 description = it.description,
                 duration = it.duration,
                 start = getBritishDate(it.startDate),
-                end = getBritishDate(it.endDate) ?: "",
+                end = getBritishDate(it.endDate ?: defaultEndDate) ?: "",
               ),
             )
           } else if (it.zoneType == EnforcementZoneType.INCLUSION) {
@@ -489,7 +497,7 @@ data class MonitoringOrder(
                 description = it.description,
                 duration = it.duration,
                 start = getBritishDate(it.startDate),
-                end = getBritishDate(it.endDate) ?: "",
+                end = getBritishDate(it.endDate ?: defaultEndDate) ?: "",
               ),
             )
           }

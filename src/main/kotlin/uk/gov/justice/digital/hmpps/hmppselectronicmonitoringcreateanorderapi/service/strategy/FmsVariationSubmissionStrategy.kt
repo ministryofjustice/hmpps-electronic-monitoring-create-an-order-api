@@ -136,8 +136,12 @@ class FmsVariationSubmissionStrategy(
     )
   }
 
-  private fun updateMonitoringOrder(order: Order, deviceWearerId: String): FmsMonitoringOrderSubmissionResult {
-    val monitoringOrderResult = this.getMonitoringOrder(order, deviceWearerId)
+  private fun updateMonitoringOrder(
+    order: Order,
+    deviceWearerId: String,
+    orderSource: FmsOrderSource,
+  ): FmsMonitoringOrderSubmissionResult {
+    val monitoringOrderResult = this.getMonitoringOrder(order, deviceWearerId, orderSource)
 
     if (!monitoringOrderResult.success) {
       return FmsMonitoringOrderSubmissionResult(
@@ -186,7 +190,7 @@ class FmsVariationSubmissionStrategy(
       )
     }
 
-    val createMonitoringOrderResult = this.updateMonitoringOrder(order, deviceWearerId)
+    val createMonitoringOrderResult = this.updateMonitoringOrder(order, deviceWearerId, orderSource)
 
     if (createMonitoringOrderResult.status == SubmissionStatus.FAILURE) {
       return FmsSubmissionResult(
