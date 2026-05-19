@@ -53,6 +53,7 @@ jobs:
       - app_version
   build:
     name: Build docker image from hmpps-github-actions
+    if: github.ref == 'refs/heads/main'
     uses: ministryofjustice/hmpps-github-actions/.github/workflows/docker_build.yml@v2 # WORKFLOW_VERSION
     needs:
       - gradle_verify
@@ -63,17 +64,31 @@ jobs:
       push: ${{ inputs.push || inputs.push == null }}
       docker_multiplatform: false
       download_build_artifacts: true
+  build_dev:
+    name: Build docker image from hmpps-github-actions for dev
+    if: github.ref != 'refs/heads/main'
+    uses: ministryofjustice/hmpps-github-actions/.github/workflows/docker_build.yml@v2 # WORKFLOW_VERSION
+    needs:
+      - gradle_verify
+    with:
+      docker_registry: 'ghcr.io'
+      registry_org: 'ministryofjustice'
+      additional_docker_tag: 'dev'
+      push: ${{ inputs.push || inputs.push == null }}
+      docker_multiplatform: false
+      download_build_artifacts: true
+      tag_latest: false
   deploy_dev:
     name: Deploy to the dev environment
     if: github.ref != 'refs/heads/main'
     needs:
-      - build
+      - build_dev
       - helm_lint
     uses: ministryofjustice/hmpps-github-actions/.github/workflows/deploy_env.yml@v2
     secrets: inherit
     with:
       environment: 'dev'
-      app_version: '${{ needs.build.outputs.app_version }}'
+      app_version: '${{ needs.build_dev.outputs.app_version }}'
       helm_timeout: '5m'
   deploy_preprod:
     name: Deploy to the preprod environment

@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms
 
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ArgumentsSource
@@ -36,7 +37,9 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DeviceType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.EnforcementZoneType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FamilyCourtDDv5
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.InstallationLocationType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisationDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderType
@@ -81,7 +84,12 @@ class MonitoringOrderTest : OrderTestBase() {
         createMandatoryAttendanceCondition(),
       ),
     )
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order = order, caseId = "", featureFlags = mockFeatureFlags)
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(
+      order = order,
+      caseId = "",
+      featureFlags = mockFeatureFlags,
+      FmsOrderSource.CEMO,
+    )
 
     assertThat(fmsMonitoringOrder.inclusionZones).isEqualTo(
       listOf(
@@ -104,201 +112,513 @@ class MonitoringOrderTest : OrderTestBase() {
     assertThat(fmsMonitoringOrder.enforceableCondition).contains(
       EnforceableCondition(
         condition = "Attendance Requirement",
-        startDate = "2025-01-01 01:01:01",
-        endDate = "2025-02-01 01:01:01",
+        startDate = "2025-01-01 23:59:00",
+        endDate = "2025-02-01 00:00:00",
       ),
     )
   }
 
-  @Test
-  fun `It should map curfew timeable for primary address to an FMS Monitoring Order`() {
-    val startTime = "19:00:00"
-    val endTime = "07:00:00"
-    val primaryAddress = createAddress(
-      addressLine1 = "Primary Line 1",
-      addressLine2 = "Primary Line 2",
-      addressLine3 = "Primary Line 3",
-      addressLine4 = "Primary Line 4",
-      postcode = "Primary Post code",
-      addressType = AddressType.PRIMARY,
-    )
+  @Nested
+  inner class EnforcementZone {
+    @Test
+    fun `It should map exclusion inclusion enforceable condition dates from enforcement zones`() {
+      val overallStartDate = ZonedDateTime.of(2026, 1, 1, 12, 0, 0, 0, ZoneId.of("UTC"))
+      val overallEndDate = ZonedDateTime.of(2026, 4, 1, 12, 0, 0, 0, ZoneId.of("UTC"))
+      val firstZoneStartDate = ZonedDateTime.of(2026, 1, 23, 12, 0, 0, 0, ZoneId.of("UTC"))
+      val firstZoneEndDate = ZonedDateTime.of(2026, 2, 23, 12, 0, 0, 0, ZoneId.of("UTC"))
+      val earliestZoneStartDate = ZonedDateTime.of(2026, 1, 20, 12, 0, 0, 0, ZoneId.of("UTC"))
+      val latestZoneEndDate = ZonedDateTime.of(2026, 3, 23, 12, 0, 0, 0, ZoneId.of("UTC"))
 
-    val order = createOrder(
-      addresses = mutableListOf(primaryAddress),
-      monitoringConditions = createMonitoringConditions(curfew = true),
-      curfewTimetable = createCurfewTimeTable(
-        startTime = startTime,
-        endTime = endTime,
-        curfewAddress = "PRIMARY_ADDRESS",
-      ),
+      val order = createOrder(
+        monitoringConditions = createMonitoringConditions(
+          startDate = overallStartDate,
+          endDate = overallEndDate,
+          exclusionZone = true,
+        ),
+        enforcementZoneConditions = listOf(
+          createEnforcementZoneCondition(
+            startDate = firstZoneStartDate,
+            endDate = firstZoneEndDate,
+          ),
+          createEnforcementZoneCondition(
+            startDate = earliestZoneStartDate,
+            endDate = latestZoneEndDate,
+            zoneType = EnforcementZoneType.INCLUSION,
+          ),
+        ),
+      )
 
-    )
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags)
-    val days = listOf("Mo", "Tu", "Wed", "Th", "Fr", "Sa", "Su")
+      val fmsMonitoringOrder = MonitoringOrder.fromOrder(
+        order,
+        caseId = "",
+        featureFlags = mockFeatureFlags,
+        FmsOrderSource.CEMO,
+      )
 
-    val primaryAddressCurfew = fmsMonitoringOrder.curfewDuration!!.firstOrNull { it.location == "primary" }
-    assertThat(primaryAddressCurfew).isNotNull
-    days.forEach { it ->
-      val day = primaryAddressCurfew?.schedule?.firstOrNull { schedule -> schedule.day == it }
-      assertThat(day).isNotNull
-      assertThat(day!!.start).isEqualTo(startTime)
-      assertThat(day.end).isEqualTo(endTime)
+      assertThat(fmsMonitoringOrder.enforceableCondition).contains(
+        EnforceableCondition(
+          condition = "EM Exclusion / Inclusion Zone",
+          startDate = "2026-01-20 12:00:00",
+          endDate = "2026-03-23 12:00:00",
+        ),
+      )
+    }
+
+    @Test
+    fun `It should default end date to 2040 when no end date provided and data source is CEMO`() {
+      val zoneStartDate = ZonedDateTime.of(2026, 1, 23, 12, 0, 0, 0, ZoneId.of("UTC"))
+      val order = createOrder(
+        monitoringConditions = createMonitoringConditions(
+          exclusionZone = true,
+          endDate = null,
+        ),
+        enforcementZoneConditions = listOf(
+          createEnforcementZoneCondition(
+            startDate = zoneStartDate,
+            endDate = null,
+          ),
+        ),
+      )
+      val fmsMonitoringOrder = MonitoringOrder.fromOrder(
+        order,
+        caseId = "",
+        featureFlags = mockFeatureFlags,
+        FmsOrderSource.CEMO,
+      )
+
+      assertThat(fmsMonitoringOrder.enforceableCondition).contains(
+        EnforceableCondition(
+          condition = "EM Exclusion / Inclusion Zone",
+          startDate = "2026-01-23 12:00:00",
+          endDate = "2040-01-01 23:59:00",
+        ),
+      )
+      assertThat(fmsMonitoringOrder.exclusionZones).contains(
+        Zone(
+          start = "2026-01-23",
+          end = "2040-01-01",
+        ),
+      )
+      assertThat(fmsMonitoringOrder.orderEnd).isEqualTo("2040-01-01 23:59:00")
+    }
+
+    @Test
+    fun `It should default end date to 2040 when no end date provided and data source is COMMON_PLATFORM`() {
+      val zoneStartDate = ZonedDateTime.of(2026, 1, 23, 12, 0, 0, 0, ZoneId.of("UTC"))
+      val order = createOrder(
+        monitoringConditions = createMonitoringConditions(
+          exclusionZone = true,
+          endDate = null,
+        ),
+        enforcementZoneConditions = listOf(
+          createEnforcementZoneCondition(
+            startDate = zoneStartDate,
+            endDate = null,
+          ),
+        ),
+      )
+      val fmsMonitoringOrder = MonitoringOrder.fromOrder(
+        order,
+        caseId = "",
+        featureFlags = mockFeatureFlags,
+        FmsOrderSource.COMMON_PLATFORM,
+      )
+      assertThat(fmsMonitoringOrder.enforceableCondition).contains(
+        EnforceableCondition(
+          condition = "EM Exclusion / Inclusion Zone",
+          startDate = "2026-01-23 12:00:00",
+          endDate = "",
+        ),
+      )
+
+      assertThat(fmsMonitoringOrder.exclusionZones).contains(
+        Zone(
+          start = "2026-01-23",
+          end = "",
+        ),
+      )
+      assertThat(fmsMonitoringOrder.orderEnd).isEqualTo("")
     }
   }
 
   @Test
-  fun `It should map curfew timeable for secondary address to an FMS Monitoring Order`() {
-    val startTime = "19:00:00"
-    val endTime = "07:00:00"
-    val primaryAddress = createAddress(
-      addressLine1 = "Primary Line 1",
-      addressLine2 = "Primary Line 2",
-      addressLine3 = "Primary Line 3",
-      addressLine4 = "Primary Line 4",
-      postcode = "Primary Post code",
-      addressType = AddressType.PRIMARY,
-    )
+  fun `It should map attendance enforceable condition dates from mandatory attendance conditions`() {
+    val overallStartDate = ZonedDateTime.of(2026, 1, 1, 12, 0, 0, 0, ZoneId.of("UTC"))
+    val overallEndDate = ZonedDateTime.of(2026, 4, 1, 12, 0, 0, 0, ZoneId.of("UTC"))
+    val firstAttendanceStartDate = ZonedDateTime.of(2026, 1, 23, 12, 0, 0, 0, ZoneId.of("UTC"))
+    val firstAttendanceEndDate = ZonedDateTime.of(2026, 2, 23, 12, 0, 0, 0, ZoneId.of("UTC"))
+    val earliestAttendanceStartDate = ZonedDateTime.of(2026, 1, 20, 12, 0, 0, 0, ZoneId.of("UTC"))
+    val latestAttendanceEndDate = ZonedDateTime.of(2026, 3, 23, 12, 0, 0, 0, ZoneId.of("UTC"))
 
-    val mockAddress = createAddress(
-      addressLine1 = "TERTIARY Line 1",
-      addressLine2 = "TERTIARY Line 2",
-      addressLine3 = "TERTIARY Line 3",
-      addressLine4 = "TERTIARY Line 4",
-      postcode = "TERTIARY Post code",
-      addressType = AddressType.SECONDARY,
-    )
     val order = createOrder(
-      addresses = mutableListOf(primaryAddress, mockAddress),
-      monitoringConditions = createMonitoringConditions(curfew = true),
-      curfewTimetable = createCurfewTimeTable(
-        startTime = startTime,
-        endTime = endTime,
-        curfewAddress = "SECONDARY_ADDRESS",
+      monitoringConditions = createMonitoringConditions(
+        startDate = overallStartDate,
+        endDate = overallEndDate,
+        mandatoryAttendance = true,
+      ),
+      mandatoryAttendanceConditions = listOf(
+        createMandatoryAttendanceCondition(
+          startDate = firstAttendanceStartDate,
+          endDate = firstAttendanceEndDate,
+        ),
+        createMandatoryAttendanceCondition(
+          startDate = earliestAttendanceStartDate,
+          endDate = latestAttendanceEndDate,
+        ),
       ),
     )
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags)
-    val days = listOf("Mo", "Tu", "Wed", "Th", "Fr", "Sa", "Su")
 
-    val primaryAddressCurfew = fmsMonitoringOrder.curfewDuration!!.firstOrNull { it.location == "secondary" }
-    assertThat(primaryAddressCurfew).isNotNull
-    days.forEach { it ->
-      val day = primaryAddressCurfew?.schedule?.firstOrNull { schedule -> schedule.day == it }
-      assertThat(day).isNotNull
-      assertThat(day!!.start).isEqualTo(startTime)
-      assertThat(day.end).isEqualTo(endTime)
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(
+      order,
+      caseId = "",
+      featureFlags = mockFeatureFlags,
+      FmsOrderSource.CEMO,
+    )
+
+    assertThat(fmsMonitoringOrder.enforceableCondition).contains(
+      EnforceableCondition(
+        condition = "Attendance Requirement",
+        startDate = "2026-01-20 12:00:00",
+        endDate = "2026-03-23 12:00:00",
+      ),
+    )
+  }
+
+  @Nested
+  inner class Curfew {
+    @Test
+    fun `It should map curfew timeable for primary address to an FMS Monitoring Order`() {
+      val startTime = "19:00:00"
+      val endTime = "07:00:00"
+      val primaryAddress = createAddress(
+        addressLine1 = "Primary Line 1",
+        addressLine2 = "Primary Line 2",
+        addressLine3 = "Primary Line 3",
+        addressLine4 = "Primary Line 4",
+        postcode = "Primary Post code",
+        addressType = AddressType.PRIMARY,
+      )
+
+      val order = createOrder(
+        addresses = mutableListOf(primaryAddress),
+        monitoringConditions = createMonitoringConditions(curfew = true),
+        curfewTimetable = createCurfewTimeTable(
+          startTime = startTime,
+          endTime = endTime,
+          curfewAddress = "PRIMARY_ADDRESS",
+        ),
+
+      )
+      val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags, FmsOrderSource.CEMO)
+      val days = listOf("Mo", "Tu", "Wed", "Th", "Fr", "Sa", "Su")
+
+      val primaryAddressCurfew = fmsMonitoringOrder.curfewDuration!!.firstOrNull { it.location == "primary" }
+      assertThat(primaryAddressCurfew).isNotNull
+      days.forEach { it ->
+        val day = primaryAddressCurfew?.schedule?.firstOrNull { schedule -> schedule.day == it }
+        assertThat(day).isNotNull
+        assertThat(day!!.start).isEqualTo(startTime)
+        assertThat(day.end).isEqualTo(endTime)
+      }
+    }
+
+    @Test
+    fun `It should map curfew timeable for secondary address to an FMS Monitoring Order`() {
+      val startTime = "19:00:00"
+      val endTime = "07:00:00"
+      val primaryAddress = createAddress(
+        addressLine1 = "Primary Line 1",
+        addressLine2 = "Primary Line 2",
+        addressLine3 = "Primary Line 3",
+        addressLine4 = "Primary Line 4",
+        postcode = "Primary Post code",
+        addressType = AddressType.PRIMARY,
+      )
+
+      val mockAddress = createAddress(
+        addressLine1 = "TERTIARY Line 1",
+        addressLine2 = "TERTIARY Line 2",
+        addressLine3 = "TERTIARY Line 3",
+        addressLine4 = "TERTIARY Line 4",
+        postcode = "TERTIARY Post code",
+        addressType = AddressType.SECONDARY,
+      )
+      val order = createOrder(
+        addresses = mutableListOf(primaryAddress, mockAddress),
+        monitoringConditions = createMonitoringConditions(curfew = true),
+        curfewTimetable = createCurfewTimeTable(
+          startTime = startTime,
+          endTime = endTime,
+          curfewAddress = "SECONDARY_ADDRESS",
+        ),
+      )
+      val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags, FmsOrderSource.CEMO)
+      val days = listOf("Mo", "Tu", "Wed", "Th", "Fr", "Sa", "Su")
+
+      val primaryAddressCurfew = fmsMonitoringOrder.curfewDuration!!.firstOrNull { it.location == "secondary" }
+      assertThat(primaryAddressCurfew).isNotNull
+      days.forEach { it ->
+        val day = primaryAddressCurfew?.schedule?.firstOrNull { schedule -> schedule.day == it }
+        assertThat(day).isNotNull
+        assertThat(day!!.start).isEqualTo(startTime)
+        assertThat(day.end).isEqualTo(endTime)
+      }
+    }
+
+    @Test
+    fun `It should map curfew timeable for tertiary address to an FMS Monitoring Order`() {
+      val startTime = "19:00:00"
+      val endTime = "07:00:00"
+      val primaryAddress = createAddress(
+        addressLine1 = "Primary Line 1",
+        addressLine2 = "Primary Line 2",
+        addressLine3 = "Primary Line 3",
+        addressLine4 = "Primary Line 4",
+        postcode = "Primary Post code",
+        addressType = AddressType.PRIMARY,
+      )
+      val mockAddress = createAddress(
+        addressLine1 = "TERTIARY Line 1",
+        addressLine2 = "TERTIARY Line 2",
+        addressLine3 = "TERTIARY Line 3",
+        addressLine4 = "TERTIARY Line 4",
+        postcode = "TERTIARY Post code",
+        addressType = AddressType.TERTIARY,
+      )
+      val order = createOrder(
+        addresses = mutableListOf(primaryAddress, mockAddress),
+        monitoringConditions = createMonitoringConditions(curfew = true),
+        curfewTimetable = createCurfewTimeTable(
+          startTime = startTime,
+          endTime = endTime,
+          curfewAddress = "TERTIARY_ADDRESS",
+        ),
+      )
+      val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags, FmsOrderSource.CEMO)
+      val days = listOf("Mo", "Tu", "Wed", "Th", "Fr", "Sa", "Su")
+
+      val primaryAddressCurfew = fmsMonitoringOrder.curfewDuration!!.firstOrNull { it.location == "tertiary" }
+      assertThat(primaryAddressCurfew).isNotNull
+      days.forEach { it ->
+        val day = primaryAddressCurfew?.schedule?.firstOrNull { schedule -> schedule.day == it }
+        assertThat(day).isNotNull
+        assertThat(day!!.start).isEqualTo(startTime)
+        assertThat(day.end).isEqualTo(endTime)
+      }
+    }
+
+    @Test
+    fun `It should map curfew day of release to an FMS Monitoring Order`() {
+      val startTime = "19:00:00"
+      val endTime = "07:00:00"
+      val primaryAddress = createAddress(
+        addressLine1 = "Primary Line 1",
+        addressLine2 = "Primary Line 2",
+        addressLine3 = "Primary Line 3",
+        addressLine4 = "Primary Line 4",
+        postcode = "Primary Post code",
+        addressType = AddressType.PRIMARY,
+      )
+      val mockeDayOfRelease = createCurfewDayOfReslse(
+        startTime = "20:00:00",
+        endTime = "08:00:00",
+        releaseDate = ZonedDateTime.now(),
+      )
+      val order = createOrder(
+        addresses = mutableListOf(primaryAddress),
+        monitoringConditions = createMonitoringConditions(curfew = true),
+        curfewTimetable = createCurfewTimeTable(
+          startTime = startTime,
+          endTime = endTime,
+          curfewAddress = "PRIMARY_ADDRESS",
+        ),
+        curfewDayOfRelease = mockeDayOfRelease,
+      )
+      val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags, FmsOrderSource.CEMO)
+
+      assertThat(fmsMonitoringOrder.conditionalReleaseStartTime).isEqualTo(mockeDayOfRelease.startTime)
+      assertThat(fmsMonitoringOrder.conditionalReleaseEndTime).isEqualTo(mockeDayOfRelease.endTime)
+      assertThat(fmsMonitoringOrder.conditionalReleaseDate).isEqualTo(getBritishDate(mockeDayOfRelease.releaseDate))
+    }
+
+    @Test
+    fun `It should have end date of 2040 when curfew end date is null and data source is CEMO`() {
+      val order = createOrder(
+        monitoringConditions = createMonitoringConditions(curfew = true, endDate = null),
+        curfewConditions = createCurfewConditions(
+          startDate = ZonedDateTime.of(2026, 1, 23, 12, 0, 0, 0, ZoneId.of("UTC")),
+          endDate = null,
+        ),
+      )
+      val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags, FmsOrderSource.CEMO)
+
+      assertThat(fmsMonitoringOrder.enforceableCondition).contains(
+        EnforceableCondition(
+          condition = "Curfew with EM",
+          startDate = "2026-01-23 12:00:00",
+          endDate = "2040-01-01 23:59:00",
+        ),
+      )
+      assertThat(fmsMonitoringOrder.curfewEnd).isEqualTo("2040-01-01 23:59:00")
+      assertThat(fmsMonitoringOrder.orderEnd).isEqualTo("2040-01-01 23:59:00")
+    }
+
+    @Test
+    fun `It should have value forend date when curfew end date is null and data source is COMMON_PLATFORM`() {
+      val order = createOrder(
+        monitoringConditions = createMonitoringConditions(curfew = true, endDate = null),
+        curfewConditions = createCurfewConditions(
+          startDate = ZonedDateTime.of(2026, 1, 23, 12, 0, 0, 0, ZoneId.of("UTC")),
+          endDate = null,
+        ),
+      )
+      val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags, FmsOrderSource.COMMON_PLATFORM)
+
+      assertThat(fmsMonitoringOrder.enforceableCondition).contains(
+        EnforceableCondition(
+          condition = "Curfew with EM",
+          startDate = "2026-01-23 12:00:00",
+          endDate = "",
+        ),
+      )
+      assertThat(fmsMonitoringOrder.curfewEnd).isEqualTo("")
+      assertThat(fmsMonitoringOrder.orderEnd).isEqualTo("")
     }
   }
 
-  @Test
-  fun `It should map curfew timeable for tertiary address to an FMS Monitoring Order`() {
-    val startTime = "19:00:00"
-    val endTime = "07:00:00"
-    val primaryAddress = createAddress(
-      addressLine1 = "Primary Line 1",
-      addressLine2 = "Primary Line 2",
-      addressLine3 = "Primary Line 3",
-      addressLine4 = "Primary Line 4",
-      postcode = "Primary Post code",
-      addressType = AddressType.PRIMARY,
-    )
-    val mockAddress = createAddress(
-      addressLine1 = "TERTIARY Line 1",
-      addressLine2 = "TERTIARY Line 2",
-      addressLine3 = "TERTIARY Line 3",
-      addressLine4 = "TERTIARY Line 4",
-      postcode = "TERTIARY Post code",
-      addressType = AddressType.TERTIARY,
-    )
-    val order = createOrder(
-      addresses = mutableListOf(primaryAddress, mockAddress),
-      monitoringConditions = createMonitoringConditions(curfew = true),
-      curfewTimetable = createCurfewTimeTable(
-        startTime = startTime,
-        endTime = endTime,
-        curfewAddress = "TERTIARY_ADDRESS",
-      ),
-    )
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags)
-    val days = listOf("Mo", "Tu", "Wed", "Th", "Fr", "Sa", "Su")
+  @Nested
+  inner class Offences {
+    @Test
+    fun `It should map offence as empty string when NO_OFFENCE_COMMITED is selected`() {
+      val order = createOrder(
+        installationAndRisk = createInstallationAndRisk(
+          offence = "NO_OFFENCE_COMMITTED",
+        ),
+      )
 
-    val primaryAddressCurfew = fmsMonitoringOrder.curfewDuration!!.firstOrNull { it.location == "tertiary" }
-    assertThat(primaryAddressCurfew).isNotNull
-    days.forEach { it ->
-      val day = primaryAddressCurfew?.schedule?.firstOrNull { schedule -> schedule.day == it }
-      assertThat(day).isNotNull
-      assertThat(day!!.start).isEqualTo(startTime)
-      assertThat(day.end).isEqualTo(endTime)
+      val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags, FmsOrderSource.CEMO)
+
+      assertThat(fmsMonitoringOrder.offence).isEqualTo("")
     }
-  }
 
-  @Test
-  fun `It should map offence as empty string when NO_OFFENCE_COMMITED is selected`() {
-    val order = createOrder(
-      installationAndRisk = createInstallationAndRisk(
-        offence = "NO_OFFENCE_COMMITTED",
-      ),
-    )
+    @Test
+    fun `It should map offence additional details to an FMS Monitoring Order`() {
+      val order = createOrder(
+        installationAndRisk = createInstallationAndRisk(
+          offenceAdditionalDetails = "Mock Additional Details",
+        ),
+        monitoringConditions = createMonitoringConditions(
+          offenceType = "Robbery",
+          policeArea = "Avon and Somerset Constabulary",
+        ),
+      )
+      val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags, FmsOrderSource.CEMO)
 
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags)
+      assertThat(
+        fmsMonitoringOrder.offenceAdditionalDetails,
+      ).isEqualTo(
+        "Mock Additional Details. AC Offence: Robbery. PFA: Avon and Somerset Constabulary",
+      )
+    }
 
-    assertThat(fmsMonitoringOrder.offence).isEqualTo("")
-  }
+    @Test
+    fun `It should map offence additional details from new entity for DDV6`() {
+      val order = createOrder(
+        dataDictionaryVersion = DataDictionaryVersion.DDV6,
+        offenceAdditionalDetails = "offence details",
+        monitoringConditions = createMonitoringConditions(
+          offenceType = "Robbery",
+          policeArea = "Avon and Somerset Constabulary",
+        ),
+      )
 
-  @Test
-  fun `It should map offence additional details to an FMS Monitoring Order`() {
-    val order = createOrder(
-      installationAndRisk = createInstallationAndRisk(
-        offenceAdditionalDetails = "Mock Additional Details",
-      ),
-      monitoringConditions = createMonitoringConditions(
-        offenceType = "Robbery",
-        policeArea = "Avon and Somerset Constabulary",
-      ),
-    )
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags)
+      val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags, FmsOrderSource.CEMO)
 
-    assertThat(
-      fmsMonitoringOrder.offenceAdditionalDetails,
-    ).isEqualTo(
-      "Mock Additional Details. AC Offence: Robbery. PFA: Avon and Somerset Constabulary",
-    )
-  }
+      assertThat(
+        fmsMonitoringOrder.offenceAdditionalDetails,
+      ).isEqualTo("offence details. AC Offence: Robbery. PFA: Avon and Somerset Constabulary")
+    }
 
-  @Test
-  fun `It should map offence additional details from new entity for DDV6`() {
-    val order = createOrder(
-      dataDictionaryVersion = DataDictionaryVersion.DDV6,
-      offenceAdditionalDetails = "offence details",
-      monitoringConditions = createMonitoringConditions(
-        offenceType = "Robbery",
-        policeArea = "Avon and Somerset Constabulary",
-      ),
-    )
+    @Test
+    fun `It should not map offence additional details from new entity for DDV6 and feature is true`() {
+      val order = createOrder(
+        dataDictionaryVersion = DataDictionaryVersion.DDV6,
+        offenceAdditionalDetails = "offence details",
+        monitoringConditions = createMonitoringConditions(
+          offenceType = "Robbery",
+          policeArea = "Avon and Somerset Constabulary",
+        ),
+      )
 
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags)
+      val featureFlags = FeatureFlags(ddV6CourtMappings = true, dataDictionaryVersion = DataDictionaryVersion.DDV6)
+      val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, featureFlags, FmsOrderSource.CEMO)
 
-    assertThat(
-      fmsMonitoringOrder.offenceAdditionalDetails,
-    ).isEqualTo("offence details. AC Offence: Robbery. PFA: Avon and Somerset Constabulary")
-  }
+      assertThat(
+        fmsMonitoringOrder.offenceAdditionalDetails,
+      ).isEqualTo("offence details. PFA: Avon and Somerset Constabulary")
+    }
 
-  @Test
-  fun `It should not map offence additional details from new entity for DDV6 and feature is true`() {
-    val order = createOrder(
-      dataDictionaryVersion = DataDictionaryVersion.DDV6,
-      offenceAdditionalDetails = "offence details",
-      monitoringConditions = createMonitoringConditions(
-        offenceType = "Robbery",
-        policeArea = "Avon and Somerset Constabulary",
-      ),
-    )
+    @Test
+    fun `should map dapo offences`() {
+      val mockDate = ZonedDateTime.now()
+      val order = createOrder(
+        type = RequestType.REQUEST,
+        dataDictionaryVersion = DataDictionaryVersion.DDV6,
+        dapoClauses = mutableListOf(
+          Dapo(versionId = UUID.randomUUID(), clause = "1234", date = mockDate),
+          Dapo(versionId = UUID.randomUUID(), clause = "5678", date = mockDate.plusMonths(1)),
+        ),
+      )
 
-    val featureFlags = FeatureFlags(ddV6CourtMappings = true, dataDictionaryVersion = DataDictionaryVersion.DDV6)
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, featureFlags)
+      val featureFlags = FeatureFlags(ddV6CourtMappings = true, dataDictionaryVersion = DataDictionaryVersion.DDV6)
+      val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, featureFlags, FmsOrderSource.CEMO)
 
-    assertThat(
-      fmsMonitoringOrder.offenceAdditionalDetails,
-    ).isEqualTo("offence details. PFA: Avon and Somerset Constabulary")
+      assertThat(fmsMonitoringOrder.dapoOrderClauseNumbers).contains(
+        DapoClause(
+          dapoOrderClauseNumber = "1234",
+          date = getBritishDate(mockDate),
+        ),
+        DapoClause(
+          dapoOrderClauseNumber = "5678",
+          date = getBritishDate(mockDate.plusMonths(1)),
+        ),
+      )
+    }
+
+    @Test
+    fun `should map offences`() {
+      val mockDate = ZonedDateTime.now()
+      val order = createOrder(
+        type = RequestType.REQUEST,
+        dataDictionaryVersion = DataDictionaryVersion.DDV6,
+        offences = mutableListOf(
+          Offence(
+            versionId = UUID.randomUUID(),
+            offenceType = "VIOLENCE_AGAINST_THE_PERSON",
+            offenceDate = mockDate,
+          ),
+          Offence(
+            versionId = UUID.randomUUID(),
+            offenceType = "SEXUAL_OFFENCES",
+            offenceDate = mockDate.plusMonths(1),
+          ),
+        ),
+      )
+
+      val featureFlags = FeatureFlags(ddV6CourtMappings = true, dataDictionaryVersion = DataDictionaryVersion.DDV6)
+      val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, featureFlags, FmsOrderSource.CEMO)
+
+      assertThat(fmsMonitoringOrder.offences).contains(
+        OffenceData(
+          offence = "Violence against the person",
+          offenceDate = getBritishDate(mockDate),
+        ),
+        OffenceData(
+          offence = "Sexual offences",
+          offenceDate = getBritishDate(mockDate.plusMonths(1)),
+        ),
+      )
+    }
   }
 
   @Test
@@ -311,7 +631,7 @@ class MonitoringOrderTest : OrderTestBase() {
       ),
     )
     val featureFlags = FeatureFlags(ddV6CourtMappings = true, dataDictionaryVersion = DataDictionaryVersion.DDV6)
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, featureFlags)
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, featureFlags, FmsOrderSource.CEMO)
 
     assertThat(fmsMonitoringOrder.acEligibleOffences).hasSize(1)
     assertThat(fmsMonitoringOrder.acEligibleOffences!![0].offence).isEqualTo("Burglary in a Dwelling - Indictable only")
@@ -328,7 +648,7 @@ class MonitoringOrderTest : OrderTestBase() {
         policeArea = "AVON_AND_SOMERSET",
       ),
     )
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags)
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags, FmsOrderSource.CEMO)
 
     assertThat(
       fmsMonitoringOrder.offenceAdditionalDetails,
@@ -337,556 +657,735 @@ class MonitoringOrderTest : OrderTestBase() {
     )
   }
 
-  @Test
-  fun `It should map curfew day of release to an FMS Monitoring Order`() {
-    val startTime = "19:00:00"
-    val endTime = "07:00:00"
-    val primaryAddress = createAddress(
-      addressLine1 = "Primary Line 1",
-      addressLine2 = "Primary Line 2",
-      addressLine3 = "Primary Line 3",
-      addressLine4 = "Primary Line 4",
-      postcode = "Primary Post code",
-      addressType = AddressType.PRIMARY,
-    )
-    val mockeDayOfRelease = createCurfewDayOfReslse(
-      startTime = "20:00:00",
-      endTime = "08:00:00",
-      releaseDate = ZonedDateTime.now(),
-    )
-    val order = createOrder(
-      addresses = mutableListOf(primaryAddress),
-      monitoringConditions = createMonitoringConditions(curfew = true),
-      curfewTimetable = createCurfewTimeTable(
-        startTime = startTime,
-        endTime = endTime,
-        curfewAddress = "PRIMARY_ADDRESS",
-      ),
-      curfewDayOfRelease = mockeDayOfRelease,
-    )
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags)
+  @Nested
+  inner class TagAtSource {
+    @Test
+    fun `should map Tag At Source as 'false' when installation location is primary address`() {
+      val primaryAddress = createAddress(
+        addressLine1 = "Primary Line 1",
+        addressLine2 = "Primary Line 2",
+        addressLine3 = "Primary Line 3",
+        addressLine4 = "Primary Line 4",
+        postcode = "Primary Post code",
+        addressType = AddressType.PRIMARY,
+      )
 
-    assertThat(fmsMonitoringOrder.conditionalReleaseStartTime).isEqualTo(mockeDayOfRelease.startTime)
-    assertThat(fmsMonitoringOrder.conditionalReleaseEndTime).isEqualTo(mockeDayOfRelease.endTime)
-    assertThat(fmsMonitoringOrder.conditionalReleaseDate).isEqualTo(getBritishDate(mockeDayOfRelease.releaseDate))
-  }
+      val installationLocation = InstallationLocation(
+        versionId = UUID.randomUUID(),
+        location = InstallationLocationType.PRIMARY,
+      )
+      val order = createOrder(
+        addresses = mutableListOf(primaryAddress),
+        monitoringConditions = createMonitoringConditions(curfew = true, alcohol = false),
+        installationLocation = installationLocation,
+      )
 
-  @Test
-  fun `should map Tag At Source as 'false' when installation location is primary address`() {
-    val primaryAddress = createAddress(
-      addressLine1 = "Primary Line 1",
-      addressLine2 = "Primary Line 2",
-      addressLine3 = "Primary Line 3",
-      addressLine4 = "Primary Line 4",
-      postcode = "Primary Post code",
-      addressType = AddressType.PRIMARY,
-    )
+      val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "", mockFeatureFlags, FmsOrderSource.CEMO)
 
-    val installationLocation = InstallationLocation(
-      versionId = UUID.randomUUID(),
-      location = InstallationLocationType.PRIMARY,
-    )
-    val order = createOrder(
-      addresses = mutableListOf(primaryAddress),
-      monitoringConditions = createMonitoringConditions(curfew = true, alcohol = false),
-      installationLocation = installationLocation,
-    )
+      assertThat(fmsMonitoringOrder.tagAtSource).isEqualTo("false")
 
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "", mockFeatureFlags)
+      assertThat(fmsMonitoringOrder.tagAtSourceDetails).isEqualTo("")
+      assertThat(fmsMonitoringOrder.dateAndTimeInstallationWillTakePlace).isEqualTo("")
 
-    assertThat(fmsMonitoringOrder.tagAtSource).isEqualTo("false")
+      assertThat(fmsMonitoringOrder.installationAddress1).isEqualTo("Primary Line 1")
+      assertThat(fmsMonitoringOrder.installationAddressPostcode).isEqualTo("Primary Post code")
+    }
 
-    assertThat(fmsMonitoringOrder.tagAtSourceDetails).isEqualTo("")
-    assertThat(fmsMonitoringOrder.dateAndTimeInstallationWillTakePlace).isEqualTo("")
+    @Test
+    fun `It should correctly map Tag At Source when installation location is a prison`() {
+      val installationLocation = InstallationLocation(
+        versionId = UUID.randomUUID(),
+        location = InstallationLocationType.PRISON,
+      )
+      val installationAppointment = InstallationAppointment(
+        versionId = UUID.randomUUID(),
+        placeName = "HMP Wandsworth",
+        appointmentDate = ZonedDateTime.of(2026, 10, 1, 10, 30, 0, 0, ZoneId.of("Europe/London")),
+      )
+      val trailMonitoringConditions = TrailMonitoringConditions(
+        versionId = UUID.randomUUID(),
+        startDate = ZonedDateTime.now(),
+        endDate = ZonedDateTime.now().plusMonths(1),
+      )
 
-    assertThat(fmsMonitoringOrder.installationAddress1).isEqualTo("Primary Line 1")
-    assertThat(fmsMonitoringOrder.installationAddressPostcode).isEqualTo("Primary Post code")
-  }
-
-  @Test
-  fun `It should correctly map Tag At Source when installation location is a prison`() {
-    val installationLocation = InstallationLocation(
-      versionId = UUID.randomUUID(),
-      location = InstallationLocationType.PRISON,
-    )
-    val installationAppointment = InstallationAppointment(
-      versionId = UUID.randomUUID(),
-      placeName = "HMP Wandsworth",
-      appointmentDate = ZonedDateTime.of(2026, 10, 1, 10, 30, 0, 0, ZoneId.of("Europe/London")),
-    )
-    val trailMonitoringConditions = TrailMonitoringConditions(
-      versionId = UUID.randomUUID(),
-      startDate = ZonedDateTime.now(),
-      endDate = ZonedDateTime.now().plusMonths(1),
-    )
-
-    val installationAddress = createAddress(
-      addressType = AddressType.INSTALLATION,
-      addressLine1 = "Installation Line 1",
-      postcode = "Installation Post code",
-    )
-
-    val order = createOrder(
-      addresses = mutableListOf(installationAddress),
-      monitoringConditions = createMonitoringConditions(trail = true, alcohol = false),
-      installationLocation = installationLocation,
-      trailMonitoringConditions = trailMonitoringConditions,
-    )
-
-    order.installationAppointment = installationAppointment
-
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags)
-
-    assertThat(fmsMonitoringOrder.tagAtSource).isEqualTo("true")
-    assertThat(fmsMonitoringOrder.tagAtSourceDetails).isEqualTo("HMP Wandsworth")
-    assertThat(fmsMonitoringOrder.dateAndTimeInstallationWillTakePlace).isEqualTo("2026-10-01 10:30:00")
-
-    assertThat(fmsMonitoringOrder.installationAddress1).isEqualTo("Installation Line 1")
-    assertThat(fmsMonitoringOrder.installationAddressPostcode).isEqualTo("Installation Post code")
-  }
-
-  @Test
-  fun `It should correctly map Tag At Source when installation location is a probation`() {
-    val installationLocation = InstallationLocation(
-      versionId = UUID.randomUUID(),
-      location = InstallationLocationType.PROBATION_OFFICE,
-    )
-    val installationAppointment = InstallationAppointment(
-      versionId = UUID.randomUUID(),
-      placeName = "HMP Wandsworth",
-      appointmentDate = ZonedDateTime.of(2026, 10, 1, 10, 30, 0, 0, ZoneId.of("Europe/London")),
-    )
-    val trailMonitoringConditions = TrailMonitoringConditions(
-      versionId = UUID.randomUUID(),
-      startDate = ZonedDateTime.now(),
-      endDate = ZonedDateTime.now().plusMonths(1),
-    )
-
-    val installationAddress = createAddress(
-      addressType = AddressType.INSTALLATION,
-      addressLine1 = "Installation Line 1",
-      postcode = "Installation Post code",
-    )
-
-    val order = createOrder(
-      addresses = mutableListOf(installationAddress),
-      monitoringConditions = createMonitoringConditions(trail = true, alcohol = false),
-      installationLocation = installationLocation,
-      trailMonitoringConditions = trailMonitoringConditions,
-    )
-
-    order.installationAppointment = installationAppointment
-
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags)
-
-    assertThat(fmsMonitoringOrder.tagAtSource).isEqualTo("true")
-    assertThat(fmsMonitoringOrder.tagAtSourceDetails).isEqualTo("HMP Wandsworth")
-    assertThat(fmsMonitoringOrder.dateAndTimeInstallationWillTakePlace).isEqualTo("2026-10-01 10:30:00")
-
-    assertThat(fmsMonitoringOrder.installationAddress1).isEqualTo("Installation Line 1")
-    assertThat(fmsMonitoringOrder.installationAddressPostcode).isEqualTo("Installation Post code")
-  }
-
-  @Test
-  fun `It should map new details when changing between tag at source locations`() {
-    val installationAddress = createAddress(
-      addressType = AddressType.INSTALLATION,
-      addressLine1 = "Installation Line 1",
-      postcode = "Installation Post code",
-    )
-
-    val installationLocation = InstallationLocation(
-      versionId = UUID.randomUUID(),
-      location = InstallationLocationType.PRISON,
-    )
-
-    val installationAppointment = InstallationAppointment(
-      versionId = UUID.randomUUID(),
-      placeName = "HMP Wandsworth",
-      appointmentDate = ZonedDateTime.of(2026, 10, 1, 10, 30, 0, 0, ZoneId.of("Europe/London")),
-    )
-
-    val trailMonitoringConditions = TrailMonitoringConditions(
-      versionId = UUID.randomUUID(),
-      startDate = ZonedDateTime.now(),
-      endDate = ZonedDateTime.now().plusMonths(1),
-    )
-
-    val order = createOrder(
-      addresses = mutableListOf(
-        installationAddress,
-      ),
-      monitoringConditions = createMonitoringConditions(trail = true),
-      installationLocation = installationLocation,
-      trailMonitoringConditions = trailMonitoringConditions,
-    )
-    order.installationAppointment = installationAppointment
-
-    order.installationLocation!!.location = InstallationLocationType.PROBATION_OFFICE
-    order.installationAppointment = null
-    order.addresses.removeAll { it.addressType == AddressType.INSTALLATION }
-
-    order.addresses.add(
-      createAddress(
+      val installationAddress = createAddress(
         addressType = AddressType.INSTALLATION,
-        addressLine1 = "New Probation Address Line 1",
-        addressLine2 = "New Probation Address Line 2",
-        postcode = "New Probation Postcode",
-      ),
-    )
-    order.installationAppointment = InstallationAppointment(
-      versionId = UUID.randomUUID(),
-      placeName = "London",
-      appointmentDate = ZonedDateTime.of(2026, 11, 15, 14, 30, 0, 0, ZoneId.of("Europe/London")),
-    )
+        addressLine1 = "Installation Line 1",
+        postcode = "Installation Post code",
+      )
 
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags)
+      val order = createOrder(
+        addresses = mutableListOf(installationAddress),
+        monitoringConditions = createMonitoringConditions(trail = true, alcohol = false),
+        installationLocation = installationLocation,
+        trailMonitoringConditions = trailMonitoringConditions,
+      )
 
-    assertThat(fmsMonitoringOrder.tagAtSource).isEqualTo("true")
-    assertThat(fmsMonitoringOrder.tagAtSourceDetails).isEqualTo("London")
-    assertThat(fmsMonitoringOrder.dateAndTimeInstallationWillTakePlace).isEqualTo("2026-11-15 14:30:00")
-    assertThat(fmsMonitoringOrder.installationAddress1).isEqualTo("New Probation Address Line 1")
-    assertThat(fmsMonitoringOrder.installationAddress2).isEqualTo("New Probation Address Line 2")
-    assertThat(fmsMonitoringOrder.installationAddressPostcode).isEqualTo("New Probation Postcode")
+      order.installationAppointment = installationAppointment
+
+      val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags, FmsOrderSource.CEMO)
+
+      assertThat(fmsMonitoringOrder.tagAtSource).isEqualTo("true")
+      assertThat(fmsMonitoringOrder.tagAtSourceDetails).isEqualTo("HMP Wandsworth")
+      assertThat(fmsMonitoringOrder.dateAndTimeInstallationWillTakePlace).isEqualTo("2026-10-01 10:30:00")
+
+      assertThat(fmsMonitoringOrder.installationAddress1).isEqualTo("Installation Line 1")
+      assertThat(fmsMonitoringOrder.installationAddressPostcode).isEqualTo("Installation Post code")
+    }
+
+    @Test
+    fun `It should correctly map Tag At Source when installation location is a probation`() {
+      val installationLocation = InstallationLocation(
+        versionId = UUID.randomUUID(),
+        location = InstallationLocationType.PROBATION_OFFICE,
+      )
+      val installationAppointment = InstallationAppointment(
+        versionId = UUID.randomUUID(),
+        placeName = "HMP Wandsworth",
+        appointmentDate = ZonedDateTime.of(2026, 10, 1, 10, 30, 0, 0, ZoneId.of("Europe/London")),
+      )
+      val trailMonitoringConditions = TrailMonitoringConditions(
+        versionId = UUID.randomUUID(),
+        startDate = ZonedDateTime.now(),
+        endDate = ZonedDateTime.now().plusMonths(1),
+      )
+
+      val installationAddress = createAddress(
+        addressType = AddressType.INSTALLATION,
+        addressLine1 = "Installation Line 1",
+        postcode = "Installation Post code",
+      )
+
+      val order = createOrder(
+        addresses = mutableListOf(installationAddress),
+        monitoringConditions = createMonitoringConditions(trail = true, alcohol = false),
+        installationLocation = installationLocation,
+        trailMonitoringConditions = trailMonitoringConditions,
+      )
+
+      order.installationAppointment = installationAppointment
+
+      val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags, FmsOrderSource.CEMO)
+
+      assertThat(fmsMonitoringOrder.tagAtSource).isEqualTo("true")
+      assertThat(fmsMonitoringOrder.tagAtSourceDetails).isEqualTo("HMP Wandsworth")
+      assertThat(fmsMonitoringOrder.dateAndTimeInstallationWillTakePlace).isEqualTo("2026-10-01 10:30:00")
+
+      assertThat(fmsMonitoringOrder.installationAddress1).isEqualTo("Installation Line 1")
+      assertThat(fmsMonitoringOrder.installationAddressPostcode).isEqualTo("Installation Post code")
+    }
+
+    @Test
+    fun `It should map new details when changing between tag at source locations`() {
+      val installationAddress = createAddress(
+        addressType = AddressType.INSTALLATION,
+        addressLine1 = "Installation Line 1",
+        postcode = "Installation Post code",
+      )
+
+      val installationLocation = InstallationLocation(
+        versionId = UUID.randomUUID(),
+        location = InstallationLocationType.PRISON,
+      )
+
+      val installationAppointment = InstallationAppointment(
+        versionId = UUID.randomUUID(),
+        placeName = "HMP Wandsworth",
+        appointmentDate = ZonedDateTime.of(2026, 10, 1, 10, 30, 0, 0, ZoneId.of("Europe/London")),
+      )
+
+      val trailMonitoringConditions = TrailMonitoringConditions(
+        versionId = UUID.randomUUID(),
+        startDate = ZonedDateTime.now(),
+        endDate = ZonedDateTime.now().plusMonths(1),
+      )
+
+      val order = createOrder(
+        addresses = mutableListOf(
+          installationAddress,
+        ),
+        monitoringConditions = createMonitoringConditions(trail = true),
+        installationLocation = installationLocation,
+        trailMonitoringConditions = trailMonitoringConditions,
+      )
+      order.installationAppointment = installationAppointment
+
+      order.installationLocation!!.location = InstallationLocationType.PROBATION_OFFICE
+      order.installationAppointment = null
+      order.addresses.removeAll { it.addressType == AddressType.INSTALLATION }
+
+      order.addresses.add(
+        createAddress(
+          addressType = AddressType.INSTALLATION,
+          addressLine1 = "New Probation Address Line 1",
+          addressLine2 = "New Probation Address Line 2",
+          postcode = "New Probation Postcode",
+        ),
+      )
+      order.installationAppointment = InstallationAppointment(
+        versionId = UUID.randomUUID(),
+        placeName = "London",
+        appointmentDate = ZonedDateTime.of(2026, 11, 15, 14, 30, 0, 0, ZoneId.of("Europe/London")),
+      )
+
+      val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags, FmsOrderSource.CEMO)
+
+      assertThat(fmsMonitoringOrder.tagAtSource).isEqualTo("true")
+      assertThat(fmsMonitoringOrder.tagAtSourceDetails).isEqualTo("London")
+      assertThat(fmsMonitoringOrder.dateAndTimeInstallationWillTakePlace).isEqualTo("2026-11-15 14:30:00")
+      assertThat(fmsMonitoringOrder.installationAddress1).isEqualTo("New Probation Address Line 1")
+      assertThat(fmsMonitoringOrder.installationAddress2).isEqualTo("New Probation Address Line 2")
+      assertThat(fmsMonitoringOrder.installationAddressPostcode).isEqualTo("New Probation Postcode")
+    }
+
+    @Test
+    fun `It should correctly map Install At Source Pilot when installation location is probation`() {
+      val installationLocation = InstallationLocation(
+        versionId = UUID.randomUUID(),
+        location = InstallationLocationType.PROBATION_OFFICE,
+      )
+      val installationAppointment = InstallationAppointment(
+        versionId = UUID.randomUUID(),
+        placeName = "Mock Place",
+        appointmentDate = ZonedDateTime.of(2026, 10, 1, 10, 30, 0, 0, ZoneId.of("Europe/London")),
+      )
+      val trailMonitoringConditions = TrailMonitoringConditions(
+        versionId = UUID.randomUUID(),
+        startDate = ZonedDateTime.now(),
+        endDate = ZonedDateTime.now().plusMonths(1),
+      )
+
+      val installationAddress = createAddress(
+        addressType = AddressType.INSTALLATION,
+        addressLine1 = "Installation Line 1",
+        postcode = "Installation Post code",
+      )
+
+      val order = createOrder(
+        dataDictionaryVersion = DataDictionaryVersion.DDV6,
+        interestedParties = createInterestedParty(
+          NotifyingOrganisationDDv5.PRISON.name,
+          Prison.SWANSEA_PRISON.name,
+        ),
+        addresses = mutableListOf(installationAddress),
+        monitoringConditions = createMonitoringConditions(trail = true, alcohol = false),
+        installationLocation = installationLocation,
+        trailMonitoringConditions = trailMonitoringConditions,
+      )
+
+      order.installationAppointment = installationAppointment
+
+      val featureFlags = FeatureFlags(ddV6CourtMappings = true, dataDictionaryVersion = DataDictionaryVersion.DDV6)
+      val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, featureFlags, FmsOrderSource.CEMO)
+
+      assertThat(fmsMonitoringOrder.installAtSourcePilot).isEqualTo("false")
+      assertThat(fmsMonitoringOrder.tagAtSource).isEqualTo("true")
+    }
+
+    @Test
+    fun `It should correctly map Install At Source Pilot when installation location is a prison but not in pilot`() {
+      val installationLocation = InstallationLocation(
+        versionId = UUID.randomUUID(),
+        location = InstallationLocationType.PRISON,
+      )
+      val installationAppointment = InstallationAppointment(
+        versionId = UUID.randomUUID(),
+        placeName = "Mock Place",
+        appointmentDate = ZonedDateTime.of(2026, 10, 1, 10, 30, 0, 0, ZoneId.of("Europe/London")),
+      )
+      val trailMonitoringConditions = TrailMonitoringConditions(
+        versionId = UUID.randomUUID(),
+        startDate = ZonedDateTime.now(),
+        endDate = ZonedDateTime.now().plusMonths(1),
+      )
+
+      val installationAddress = createAddress(
+        addressType = AddressType.INSTALLATION,
+        addressLine1 = "Installation Line 1",
+        postcode = "Installation Post code",
+      )
+
+      val order = createOrder(
+        dataDictionaryVersion = DataDictionaryVersion.DDV6,
+        interestedParties = createInterestedParty(
+          NotifyingOrganisationDDv5.PRISON.name,
+          Prison.BRONZEFIELD_PRISON.name,
+        ),
+        addresses = mutableListOf(installationAddress),
+        monitoringConditions = createMonitoringConditions(trail = true, alcohol = false),
+        installationLocation = installationLocation,
+        trailMonitoringConditions = trailMonitoringConditions,
+      )
+
+      order.installationAppointment = installationAppointment
+
+      val featureFlags = FeatureFlags(ddV6CourtMappings = true, dataDictionaryVersion = DataDictionaryVersion.DDV6)
+      val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, featureFlags, FmsOrderSource.CEMO)
+
+      assertThat(fmsMonitoringOrder.installAtSourcePilot).isEqualTo("false")
+      assertThat(fmsMonitoringOrder.tagAtSource).isEqualTo("true")
+    }
+
+    @Test
+    fun `It should correctly map Install At Source Pilot when installation location is a prison in the pilot`() {
+      val installationLocation = InstallationLocation(
+        versionId = UUID.randomUUID(),
+        location = InstallationLocationType.PRISON,
+      )
+      val installationAppointment = InstallationAppointment(
+        versionId = UUID.randomUUID(),
+        placeName = "Mock Place",
+        appointmentDate = ZonedDateTime.of(2026, 10, 1, 10, 30, 0, 0, ZoneId.of("Europe/London")),
+      )
+      val trailMonitoringConditions = TrailMonitoringConditions(
+        versionId = UUID.randomUUID(),
+        startDate = ZonedDateTime.now(),
+        endDate = ZonedDateTime.now().plusMonths(1),
+      )
+
+      val installationAddress = createAddress(
+        addressType = AddressType.INSTALLATION,
+        addressLine1 = "Installation Line 1",
+        postcode = "Installation Post code",
+      )
+
+      val order = createOrder(
+        dataDictionaryVersion = DataDictionaryVersion.DDV6,
+        interestedParties = createInterestedParty(NotifyingOrganisationDDv5.PRISON.name, Prison.SWANSEA_PRISON.name),
+        addresses = mutableListOf(installationAddress),
+        monitoringConditions = createMonitoringConditions(trail = true, alcohol = false),
+        installationLocation = installationLocation,
+        trailMonitoringConditions = trailMonitoringConditions,
+      )
+
+      order.installationAppointment = installationAppointment
+
+      val featureFlags = FeatureFlags(ddV6CourtMappings = true, dataDictionaryVersion = DataDictionaryVersion.DDV6)
+      val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, featureFlags, FmsOrderSource.CEMO)
+
+      assertThat(fmsMonitoringOrder.installAtSourcePilot).isEqualTo("true")
+      assertThat(fmsMonitoringOrder.tagAtSource).isEqualTo("false")
+    }
+
+    @Test
+    fun `It should correctly map Tag At Source and details when installation location is IRC`() {
+      val installationLocation = InstallationLocation(
+        versionId = UUID.randomUUID(),
+        location = InstallationLocationType.IMMIGRATION_REMOVAL_CENTRE,
+      )
+      val installationAppointment = InstallationAppointment(
+        versionId = UUID.randomUUID(),
+        placeName = "Mock Place",
+        appointmentDate = ZonedDateTime.of(2026, 10, 1, 10, 30, 0, 0, ZoneId.of("Europe/London")),
+      )
+      val installationAddress = createAddress(
+        addressType = AddressType.INSTALLATION,
+        addressLine1 = "Install Line 1",
+        postcode = "Install Postcode",
+      )
+
+      val order = createOrder(
+        interestedParties = createInterestedParty(
+          notifyingOrganisation = NotifyingOrganisationDDv5.HOME_OFFICE.name,
+        ),
+        addresses = mutableListOf(installationAddress),
+        monitoringConditions = createMonitoringConditions(trail = true, alcohol = false),
+        installationLocation = installationLocation,
+      )
+      order.installationAppointment = installationAppointment
+
+      val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags, FmsOrderSource.CEMO)
+
+      assertThat(fmsMonitoringOrder.tagAtSource).isEqualTo("true")
+      assertThat(fmsMonitoringOrder.tagAtSourceDetails).isEqualTo("Mock Place")
+      assertThat(fmsMonitoringOrder.dateAndTimeInstallationWillTakePlace).isEqualTo("2026-10-01 10:30:00")
+    }
+
+    @Test
+    fun `It should map home office fixed address installation details`() {
+      val installationLocation = InstallationLocation(
+        versionId = UUID.randomUUID(),
+        location = InstallationLocationType.PRIMARY,
+      )
+      val installationAppointment = InstallationAppointment(
+        versionId = UUID.randomUUID(),
+        placeName = "Mock Place",
+        appointmentDate = ZonedDateTime.of(2026, 10, 1, 10, 30, 0, 0, ZoneId.of("Europe/London")),
+      )
+
+      val order = createOrder(
+        interestedParties = createInterestedParty(
+          notifyingOrganisation = NotifyingOrganisationDDv5.HOME_OFFICE.name,
+        ),
+        monitoringConditions = createMonitoringConditions(trail = true, alcohol = false),
+        installationLocation = installationLocation,
+      )
+      order.installationAppointment = installationAppointment
+
+      val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags, FmsOrderSource.CEMO)
+
+      assertThat(fmsMonitoringOrder.installAtSourcePilot).isEqualTo("")
+      assertThat(fmsMonitoringOrder.tagAtSource).isEqualTo("false")
+      assertThat(fmsMonitoringOrder.tagAtSourceDetails).isEqualTo("Mock Place")
+      assertThat(fmsMonitoringOrder.dateAndTimeInstallationWillTakePlace).isEqualTo("2026-10-01 10:30:00")
+    }
+
+    @Test
+    fun `It should map another address installation details`() {
+      val installationLocation = InstallationLocation(
+        versionId = UUID.randomUUID(),
+        location = InstallationLocationType.INSTALLATION,
+      )
+      val installationAppointment = InstallationAppointment(
+        versionId = UUID.randomUUID(),
+        placeName = "Mock Place",
+        appointmentDate = ZonedDateTime.of(2026, 10, 1, 10, 30, 0, 0, ZoneId.of("Europe/London")),
+      )
+      val installationAddress = createAddress(
+        addressType = AddressType.INSTALLATION,
+        addressLine1 = "Install Line 1",
+        postcode = "Install Postcode",
+      )
+
+      val order = createOrder(
+        interestedParties = createInterestedParty(
+          notifyingOrganisation = NotifyingOrganisationDDv5.PRISON.name,
+        ),
+        monitoringConditions = createMonitoringConditions(trail = true, alcohol = false),
+        addresses = mutableListOf(installationAddress),
+        installationLocation = installationLocation,
+      )
+      order.installationAppointment = installationAppointment
+
+      val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags, FmsOrderSource.CEMO)
+
+      assertThat(fmsMonitoringOrder.installAtSourcePilot).isEqualTo("")
+      assertThat(fmsMonitoringOrder.tagAtSource).isEqualTo("false")
+      assertThat(fmsMonitoringOrder.tagAtSourceDetails).isEqualTo("Mock Place")
+      assertThat(fmsMonitoringOrder.dateAndTimeInstallationWillTakePlace).isEqualTo("2026-10-01 10:30:00")
+    }
   }
 
-  @Test
-  fun `It should correctly map Install At Source Pilot when installation location is probation`() {
-    val installationLocation = InstallationLocation(
-      versionId = UUID.randomUUID(),
-      location = InstallationLocationType.PROBATION_OFFICE,
-    )
-    val installationAppointment = InstallationAppointment(
-      versionId = UUID.randomUUID(),
-      placeName = "Mock Place",
-      appointmentDate = ZonedDateTime.of(2026, 10, 1, 10, 30, 0, 0, ZoneId.of("Europe/London")),
-    )
-    val trailMonitoringConditions = TrailMonitoringConditions(
-      versionId = UUID.randomUUID(),
-      startDate = ZonedDateTime.now(),
-      endDate = ZonedDateTime.now().plusMonths(1),
-    )
+  @Nested
+  inner class InterestedParties {
+    @ParameterizedTest(name = "it should map probation delivery unit to Serco - {0} -> {1}")
+    @ArgumentsSource(ProbationDeliveryUnitArgumentsProvider::class)
+    fun `It should correctly map saved probation delivery unit values to Serco`(
+      savedValue: String,
+      mappedValue: String,
+    ) {
+      val order = createOrder(
+        deviceWearer = createDeviceWearer(),
+        installationAndRisk = createInstallationAndRisk(riskCategory = savedValue),
+        interestedParties = createInterestedParty(responsibleOrganisation = "PROBATION"),
+        probationDeliveryUnits = createProbationDeliveryUnit(savedValue),
+      )
+      val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags, FmsOrderSource.CEMO)
 
-    val installationAddress = createAddress(
-      addressType = AddressType.INSTALLATION,
-      addressLine1 = "Installation Line 1",
-      postcode = "Installation Post code",
-    )
+      assertThat(fmsMonitoringOrder.pduResponsible).isEqualTo(mappedValue)
+    }
 
-    val order = createOrder(
-      dataDictionaryVersion = DataDictionaryVersion.DDV6,
-      interestedParties = createInterestedParty(
-        NotifyingOrganisationDDv5.PRISON.name,
-        Prison.SWANSEA_PRISON.name,
-      ),
-      addresses = mutableListOf(installationAddress),
-      monitoringConditions = createMonitoringConditions(trail = true, alcohol = false),
-      installationLocation = installationLocation,
-      trailMonitoringConditions = trailMonitoringConditions,
-    )
+    @ParameterizedTest(name = "it should map DDv6 probation delivery unit to Serco - {0} -> {1}")
+    @ArgumentsSource(ProbationDeliveryUnitDDv6ArgumentsProvider::class)
+    fun `It should correctly map DDv6 saved probation delivery unit values`(savedValue: String, mappedValue: String) {
+      val order = createOrder(
+        dataDictionaryVersion = DataDictionaryVersion.DDV6,
+        deviceWearer = createDeviceWearer(),
+        installationAndRisk = createInstallationAndRisk(riskCategory = savedValue),
+        interestedParties = createInterestedParty(responsibleOrganisation = "PROBATION"),
+        probationDeliveryUnits = createProbationDeliveryUnit(savedValue),
+      )
 
-    order.installationAppointment = installationAppointment
+      val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags, FmsOrderSource.CEMO)
 
-    val featureFlags = FeatureFlags(ddV6CourtMappings = true, dataDictionaryVersion = DataDictionaryVersion.DDV6)
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, featureFlags)
+      assertThat(fmsMonitoringOrder.pduResponsible).isEqualTo(mappedValue)
+    }
 
-    assertThat(fmsMonitoringOrder.installAtSourcePilot).isEqualTo("false")
-    assertThat(fmsMonitoringOrder.tagAtSource).isEqualTo("true")
-  }
+    @ParameterizedTest(name = "it should map DDv6 police areas to Serco - {0} -> {1}")
+    @ArgumentsSource(PoliceForceAreasDDv6ArgumentsProvider::class)
+    fun `It should correctly map DDv6 saved police force areas values in responsible organisation region`(
+      savedValue: String,
+      mappedValue: String,
+    ) {
+      val order = createOrder(
+        dataDictionaryVersion = DataDictionaryVersion.DDV6,
+        deviceWearer = createDeviceWearer(),
+        installationAndRisk = createInstallationAndRisk(riskCategory = savedValue),
+        interestedParties = createInterestedParty(
+          responsibleOrganisation = "POLICE",
+          responsibleOrganisationRegion = savedValue,
+        ),
+      )
 
-  @Test
-  fun `It should correctly map Install At Source Pilot when installation location is a prison but not in pilot`() {
-    val installationLocation = InstallationLocation(
-      versionId = UUID.randomUUID(),
-      location = InstallationLocationType.PRISON,
-    )
-    val installationAppointment = InstallationAppointment(
-      versionId = UUID.randomUUID(),
-      placeName = "Mock Place",
-      appointmentDate = ZonedDateTime.of(2026, 10, 1, 10, 30, 0, 0, ZoneId.of("Europe/London")),
-    )
-    val trailMonitoringConditions = TrailMonitoringConditions(
-      versionId = UUID.randomUUID(),
-      startDate = ZonedDateTime.now(),
-      endDate = ZonedDateTime.now().plusMonths(1),
-    )
+      val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags, FmsOrderSource.CEMO)
 
-    val installationAddress = createAddress(
-      addressType = AddressType.INSTALLATION,
-      addressLine1 = "Installation Line 1",
-      postcode = "Installation Post code",
-    )
+      assertThat(fmsMonitoringOrder.roRegion).isEqualTo(mappedValue)
+    }
 
-    val order = createOrder(
-      dataDictionaryVersion = DataDictionaryVersion.DDV6,
-      interestedParties = createInterestedParty(
-        NotifyingOrganisationDDv5.PRISON.name,
-        Prison.BRONZEFIELD_PRISON.name,
-      ),
-      addresses = mutableListOf(installationAddress),
-      monitoringConditions = createMonitoringConditions(trail = true, alcohol = false),
-      installationLocation = installationLocation,
-      trailMonitoringConditions = trailMonitoringConditions,
-    )
+    @ParameterizedTest(name = "it should map notifying organisation - {0} -> {1}")
+    @ArgumentsSource(NotifyingOrganisationArgumentsProvider::class)
+    fun `It should correctly map notifying organisation to Serco`(savedValue: String, mappedValue: String) {
+      val order = createOrder(
+        dataDictionaryVersion = DataDictionaryVersion.DDV5,
+        deviceWearer = createDeviceWearer(),
+        interestedParties = createInterestedParty(
+          responsibleOrganisation = "PROBATION",
+          notifyingOrganisation = savedValue,
+        ),
+      )
+      val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags, FmsOrderSource.CEMO)
 
-    order.installationAppointment = installationAppointment
+      assertThat(fmsMonitoringOrder.notifyingOrganization).isEqualTo(mappedValue)
+    }
 
-    val featureFlags = FeatureFlags(ddV6CourtMappings = true, dataDictionaryVersion = DataDictionaryVersion.DDV6)
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, featureFlags)
+    @ParameterizedTest(name = "it should map civil county court - {0} -> {1}")
+    @ArgumentsSource(CivilAndCountyCourtArgumentsProvider::class)
+    fun `It should correctly map saved civil county court values to Serco`(savedValue: String, mappedValue: String) {
+      assertNotifyingOrgNameMapping(savedValue, mappedValue)
+    }
 
-    assertThat(fmsMonitoringOrder.installAtSourcePilot).isEqualTo("false")
-    assertThat(fmsMonitoringOrder.tagAtSource).isEqualTo("true")
-  }
+    @ParameterizedTest(name = "it should map crown court - {0} -> {1}")
+    @ArgumentsSource(CrownCourtArgumentsProvider::class)
+    fun `It should correctly map saved crown court values to Serco`(savedValue: String, mappedValue: String) {
+      assertNotifyingOrgNameMapping(savedValue, mappedValue)
+    }
 
-  @Test
-  fun `It should correctly map Install At Source Pilot when installation location is a prison in the pilot`() {
-    val installationLocation = InstallationLocation(
-      versionId = UUID.randomUUID(),
-      location = InstallationLocationType.PRISON,
-    )
-    val installationAppointment = InstallationAppointment(
-      versionId = UUID.randomUUID(),
-      placeName = "Mock Place",
-      appointmentDate = ZonedDateTime.of(2026, 10, 1, 10, 30, 0, 0, ZoneId.of("Europe/London")),
-    )
-    val trailMonitoringConditions = TrailMonitoringConditions(
-      versionId = UUID.randomUUID(),
-      startDate = ZonedDateTime.now(),
-      endDate = ZonedDateTime.now().plusMonths(1),
-    )
+    @ParameterizedTest(name = "it should map family court - {0} -> {1}")
+    @ArgumentsSource(FamilyCourtArgumentsProvider::class)
+    fun `It should correctly map saved family court values to Serco`(savedValue: String, mappedValue: String) {
+      assertNotifyingOrgNameMapping(savedValue, mappedValue)
+    }
 
-    val installationAddress = createAddress(
-      addressType = AddressType.INSTALLATION,
-      addressLine1 = "Installation Line 1",
-      postcode = "Installation Post code",
-    )
+    @ParameterizedTest(name = "it should map magistrates court - {0} -> {1}")
+    @ArgumentsSource(MagistratesCourtArgumentsProvider::class)
+    fun `It should correctly map saved magistrates court values to Serco`(savedValue: String, mappedValue: String) {
+      assertNotifyingOrgNameMapping(savedValue, mappedValue)
+    }
 
-    val order = createOrder(
-      dataDictionaryVersion = DataDictionaryVersion.DDV6,
-      interestedParties = createInterestedParty(NotifyingOrganisationDDv5.PRISON.name, Prison.SWANSEA_PRISON.name),
-      addresses = mutableListOf(installationAddress),
-      monitoringConditions = createMonitoringConditions(trail = true, alcohol = false),
-      installationLocation = installationLocation,
-      trailMonitoringConditions = trailMonitoringConditions,
-    )
+    @ParameterizedTest(name = "it should map military court - {0} -> {1}")
+    @ArgumentsSource(MilitaryCourtArgumentsProvider::class)
+    fun `It should correctly map saved military court values to Serco`(savedValue: String, mappedValue: String) {
+      assertNotifyingOrgNameMapping(savedValue, mappedValue)
+    }
 
-    order.installationAppointment = installationAppointment
+    @ParameterizedTest(name = "it should map prison - {0} -> {1}")
+    @ArgumentsSource(PrisonArgumentsProvider::class)
+    fun `It should correctly map saved prison values to Serco`(savedValue: String, mappedValue: String) {
+      assertNotifyingOrgNameMapping(savedValue, mappedValue)
+    }
 
-    val featureFlags = FeatureFlags(ddV6CourtMappings = true, dataDictionaryVersion = DataDictionaryVersion.DDV6)
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, featureFlags)
+    @ParameterizedTest(name = "it should map youth court - {0} -> {1}")
+    @ArgumentsSource(YouthCourtArgumentsProvider::class)
+    fun `It should correctly map saved youth court values to Serco`(savedValue: String, mappedValue: String) {
+      assertNotifyingOrgNameMapping(savedValue, mappedValue)
+    }
 
-    assertThat(fmsMonitoringOrder.installAtSourcePilot).isEqualTo("true")
-    assertThat(fmsMonitoringOrder.tagAtSource).isEqualTo("false")
-  }
+    @ParameterizedTest(name = "it should map youth custody service region - {0} -> {1}")
+    @ArgumentsSource(YouthCustodyServiceRegionArgumentsProvider::class)
+    fun `It should correctly map saved youth custody service region values to Serco`(
+      savedValue: String,
+      mappedValue: String,
+    ) {
+      assertNotifyingOrgNameMapping(savedValue, mappedValue)
+    }
 
-  @Test
-  fun `It should correctly map Tag At Source and details when installation location is IRC`() {
-    val installationLocation = InstallationLocation(
-      versionId = UUID.randomUUID(),
-      location = InstallationLocationType.IMMIGRATION_REMOVAL_CENTRE,
-    )
-    val installationAppointment = InstallationAppointment(
-      versionId = UUID.randomUUID(),
-      placeName = "Mock Place",
-      appointmentDate = ZonedDateTime.of(2026, 10, 1, 10, 30, 0, 0, ZoneId.of("Europe/London")),
-    )
-    val installationAddress = createAddress(
-      addressType = AddressType.INSTALLATION,
-      addressLine1 = "Install Line 1",
-      postcode = "Install Postcode",
-    )
+    @ParameterizedTest(name = "it should map youth custody service region - {0} -> {1}")
+    @ArgumentsSource(YouthCustodyServiceRegionArgumentsProviderDDv6::class)
+    fun `It should correctly map saved youth custody service region DDV6 values to Serco`(
+      savedValue: String,
+      mappedValue: String,
+    ) {
+      assertNotifyingOrgNameMapping(savedValue, mappedValue, DataDictionaryVersion.DDV6)
+    }
 
-    val order = createOrder(
-      interestedParties = createInterestedParty(
-        notifyingOrganisation = NotifyingOrganisationDDv5.HOME_OFFICE.name,
-      ),
-      addresses = mutableListOf(installationAddress),
-      monitoringConditions = createMonitoringConditions(trail = true, alcohol = false),
-      installationLocation = installationLocation,
-    )
-    order.installationAppointment = installationAppointment
+    @Test
+    fun `It should map empty PROBATION name to 'Probation Board' for Serco`() {
+      val order = createOrder(
+        dataDictionaryVersion = DataDictionaryVersion.DDV5,
+        interestedParties = createInterestedParty(
+          notifyingOrganisation = NotifyingOrganisationDDv5.PROBATION.name,
+          notifyingOrganisationName = "",
+        ),
+      )
 
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags)
+      val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags, FmsOrderSource.CEMO)
+      assertThat(fmsMonitoringOrder.noName).isEqualTo("Probation Board")
+    }
 
-    assertThat(fmsMonitoringOrder.tagAtSource).isEqualTo("true")
-    assertThat(fmsMonitoringOrder.tagAtSourceDetails).isEqualTo("Mock Place")
-    assertThat(fmsMonitoringOrder.dateAndTimeInstallationWillTakePlace).isEqualTo("2026-10-01 10:30:00")
-  }
+    @Test
+    fun `It should map empty HOME OFFICE name to 'Home Office' for Serco`() {
+      val order = createOrder(
+        dataDictionaryVersion = DataDictionaryVersion.DDV5,
 
-  @Test
-  fun `It should map home office fixed address installation details`() {
-    val installationLocation = InstallationLocation(
-      versionId = UUID.randomUUID(),
-      location = InstallationLocationType.PRIMARY,
-    )
-    val installationAppointment = InstallationAppointment(
-      versionId = UUID.randomUUID(),
-      placeName = "Mock Place",
-      appointmentDate = ZonedDateTime.of(2026, 10, 1, 10, 30, 0, 0, ZoneId.of("Europe/London")),
-    )
+        interestedParties = createInterestedParty(
+          notifyingOrganisation = NotifyingOrganisationDDv5.HOME_OFFICE.name,
+          notifyingOrganisationName = "",
+        ),
+      )
 
-    val order = createOrder(
-      interestedParties = createInterestedParty(
-        notifyingOrganisation = NotifyingOrganisationDDv5.HOME_OFFICE.name,
-      ),
-      monitoringConditions = createMonitoringConditions(trail = true, alcohol = false),
-      installationLocation = installationLocation,
-    )
-    order.installationAppointment = installationAppointment
+      val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags, FmsOrderSource.CEMO)
 
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags)
+      assertThat(fmsMonitoringOrder.notifyingOrganization).isEqualTo("Home Office")
+      assertThat(fmsMonitoringOrder.noName).isEqualTo("Home Office")
+    }
 
-    assertThat(fmsMonitoringOrder.installAtSourcePilot).isEqualTo("")
-    assertThat(fmsMonitoringOrder.tagAtSource).isEqualTo("false")
-    assertThat(fmsMonitoringOrder.tagAtSourceDetails).isEqualTo("Mock Place")
-    assertThat(fmsMonitoringOrder.dateAndTimeInstallationWillTakePlace).isEqualTo("2026-10-01 10:30:00")
-  }
+    @Test
+    fun `It should map empty YCS name to empty string for Serco`() {
+      val order = createOrder(
+        dataDictionaryVersion = DataDictionaryVersion.DDV5,
+        interestedParties = createInterestedParty(
+          notifyingOrganisation = NotifyingOrganisationDDv5.YOUTH_CUSTODY_SERVICE.name,
+          notifyingOrganisationName = "",
+        ),
+      )
 
-  @Test
-  fun `It should map another address installation details`() {
-    val installationLocation = InstallationLocation(
-      versionId = UUID.randomUUID(),
-      location = InstallationLocationType.INSTALLATION,
-    )
-    val installationAppointment = InstallationAppointment(
-      versionId = UUID.randomUUID(),
-      placeName = "Mock Place",
-      appointmentDate = ZonedDateTime.of(2026, 10, 1, 10, 30, 0, 0, ZoneId.of("Europe/London")),
-    )
-    val installationAddress = createAddress(
-      addressType = AddressType.INSTALLATION,
-      addressLine1 = "Install Line 1",
-      postcode = "Install Postcode",
-    )
+      val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags, FmsOrderSource.CEMO)
 
-    val order = createOrder(
-      interestedParties = createInterestedParty(
-        notifyingOrganisation = NotifyingOrganisationDDv5.PRISON.name,
-      ),
-      monitoringConditions = createMonitoringConditions(trail = true, alcohol = false),
-      addresses = mutableListOf(installationAddress),
-      installationLocation = installationLocation,
-    )
-    order.installationAppointment = installationAppointment
+      assertThat(fmsMonitoringOrder.noName).isEqualTo("")
+    }
 
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags)
+    @Test
+    fun `It should map ro region to UKBA when responsible organisation is home office`() {
+      val order = createOrder(
+        dataDictionaryVersion = DataDictionaryVersion.DDV5,
+        interestedParties = createInterestedParty(
+          notifyingOrganisation = NotifyingOrganisationDDv5.HOME_OFFICE.name,
+          responsibleOrganisation = ResponsibleOrganisation.HOME_OFFICE.name,
+        ),
 
-    assertThat(fmsMonitoringOrder.installAtSourcePilot).isEqualTo("")
-    assertThat(fmsMonitoringOrder.tagAtSource).isEqualTo("false")
-    assertThat(fmsMonitoringOrder.tagAtSourceDetails).isEqualTo("Mock Place")
-    assertThat(fmsMonitoringOrder.dateAndTimeInstallationWillTakePlace).isEqualTo("2026-10-01 10:30:00")
-  }
+      )
+      val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags, FmsOrderSource.CEMO)
+      assertThat(fmsMonitoringOrder.notifyingOrganization).isEqualTo("Home Office")
+      assertThat(fmsMonitoringOrder.responsibleOrganization).isEqualTo("Home Office")
+      assertThat(fmsMonitoringOrder.roRegion).isEqualTo("UKBA")
+    }
 
-  @ParameterizedTest(name = "it should map probation delivery unit to Serco - {0} -> {1}")
-  @ArgumentsSource(ProbationDeliveryUnitArgumentsProvider::class)
-  fun `It should correctly map saved probation delivery unit values to Serco`(
-    savedValue: String,
-    mappedValue: String,
-  ) {
-    val order = createOrder(
-      deviceWearer = createDeviceWearer(),
-      installationAndRisk = createInstallationAndRisk(riskCategory = savedValue),
-      interestedParties = createInterestedParty(responsibleOrganisation = "PROBATION"),
-      probationDeliveryUnits = createProbationDeliveryUnit(savedValue),
-    )
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags)
+    @Test
+    fun `responsible_officer_details_received is yes if non-court, and not variation in past`() {
+      val order = createOrder(
+        dataDictionaryVersion = DataDictionaryVersion.DDV6,
+        interestedParties = createInterestedParty(
+          responsibleOfficerName = "officer name",
+          responsibleOfficerPhoneNumber = "01234567890",
+          responsibleOrganisationEmail = "a@b.com",
+        ),
+      )
+      val fmsMonitoringOrder = MonitoringOrder.fromOrder(
+        order,
+        null,
+        FeatureFlags(dataDictionaryVersion = DataDictionaryVersion.DDV6, ddV6CourtMappings = true),
+        FmsOrderSource.CEMO,
+      )
+      val condition =
+        fmsMonitoringOrder.responsibleOfficerDetailsReceived
+      assertThat(condition).isEqualTo("Yes")
+    }
 
-    assertThat(fmsMonitoringOrder.pduResponsible).isEqualTo(mappedValue)
-  }
+    @Test
+    fun `for court order, responsible_officer_details_received is always no`() {
+      val order = createOrder(
+        dataDictionaryVersion = DataDictionaryVersion.DDV6,
+        interestedParties = createInterestedParty(
+          notifyingOrganisation = NotifyingOrganisationDDv5.FAMILY_COURT.name,
+          notifyingOrganisationName = FamilyCourtDDv5.DONCASTER_FAMILY_COURT.name,
+          responsibleOfficerName = "",
+          responsibleOfficerPhoneNumber = "",
+          responsibleOrganisationEmail = "",
+        ),
+      )
+      val fmsMonitoringOrder = MonitoringOrder.fromOrder(
+        order,
+        null,
+        FeatureFlags(dataDictionaryVersion = DataDictionaryVersion.DDV6, ddV6CourtMappings = true),
+        FmsOrderSource.CEMO,
+      )
+      val condition =
+        fmsMonitoringOrder.responsibleOfficerDetailsReceived
+      assertThat(condition).isEqualTo("No")
+    }
 
-  @ParameterizedTest(name = "it should map DDv6 probation delivery unit to Serco - {0} -> {1}")
-  @ArgumentsSource(ProbationDeliveryUnitDDv6ArgumentsProvider::class)
-  fun `It should correctly map DDv6 saved probation delivery unit values`(savedValue: String, mappedValue: String) {
-    val order = createOrder(
-      dataDictionaryVersion = DataDictionaryVersion.DDV6,
-      deviceWearer = createDeviceWearer(),
-      installationAndRisk = createInstallationAndRisk(riskCategory = savedValue),
-      interestedParties = createInterestedParty(responsibleOrganisation = "PROBATION"),
-      probationDeliveryUnits = createProbationDeliveryUnit(savedValue),
-    )
+    @Test
+    fun `if variation and start date in future responsible_officer_details_received is yes`() {
+      val order = createOrder(
+        dataDictionaryVersion = DataDictionaryVersion.DDV6,
+        type = RequestType.VARIATION,
+        variationDetails = createvariationDetails(),
+        interestedParties = createInterestedParty(
+          notifyingOrganisation = "PROBATION",
+        ),
+        monitoringConditions = createMonitoringConditions(startDate = ZonedDateTime.now().plusDays(1)),
+      )
 
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags)
+      val fmsMonitoringOrder = MonitoringOrder.fromOrder(
+        order,
+        null,
+        FeatureFlags(dataDictionaryVersion = DataDictionaryVersion.DDV6, ddV6CourtMappings = true),
+        FmsOrderSource.CEMO,
+      )
 
-    assertThat(fmsMonitoringOrder.pduResponsible).isEqualTo(mappedValue)
-  }
+      val condition =
+        fmsMonitoringOrder.responsibleOfficerDetailsReceived
+      assertThat(condition).isEqualTo("Yes")
+    }
 
-  @ParameterizedTest(name = "it should map DDv6 police areas to Serco - {0} -> {1}")
-  @ArgumentsSource(PoliceForceAreasDDv6ArgumentsProvider::class)
-  fun `It should correctly map DDv6 saved police force areas values in responsible organisation region`(
-    savedValue: String,
-    mappedValue: String,
-  ) {
-    val order = createOrder(
-      dataDictionaryVersion = DataDictionaryVersion.DDV6,
-      deviceWearer = createDeviceWearer(),
-      installationAndRisk = createInstallationAndRisk(riskCategory = savedValue),
-      interestedParties = createInterestedParty(
-        responsibleOrganisation = "POLICE",
-        responsibleOrganisationRegion = savedValue,
-      ),
-    )
+    @Test
+    fun `It should map responsible officer name from responsibleOfficerName if full name is populated`() {
+      val order = createOrder(
+        interestedParties = createInterestedParty(
+          responsibleOfficerName = "Mock Name",
+        ),
+      )
 
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags)
+      val featureFlags = FeatureFlags(ddV6CourtMappings = true, dataDictionaryVersion = DataDictionaryVersion.DDV6)
+      val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, featureFlags, FmsOrderSource.CEMO)
 
-    assertThat(fmsMonitoringOrder.roRegion).isEqualTo(mappedValue)
-  }
+      assertThat(fmsMonitoringOrder.responsibleOfficerName).isEqualTo("Mock Name")
+    }
 
-  @ParameterizedTest(name = "it should map notifying organisation - {0} -> {1}")
-  @ArgumentsSource(NotifyingOrganisationArgumentsProvider::class)
-  fun `It should correctly map notifying organisation to Serco`(savedValue: String, mappedValue: String) {
-    val order = createOrder(
-      dataDictionaryVersion = DataDictionaryVersion.DDV5,
-      deviceWearer = createDeviceWearer(),
-      interestedParties = createInterestedParty(
-        responsibleOrganisation = "PROBATION",
-        notifyingOrganisation = savedValue,
-      ),
-    )
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags)
+    @Test
+    fun `It should map responsible officer name from first and last name if full is not populated`() {
+      val order = createOrder(
+        interestedParties = createInterestedParty(
+          responsibleOfficerName = "",
+          responsibleOfficerFirstName = "First",
+          responsibleOfficerLastName = "Last",
+        ),
+      )
 
-    assertThat(fmsMonitoringOrder.notifyingOrganization).isEqualTo(mappedValue)
-  }
+      val featureFlags = FeatureFlags(ddV6CourtMappings = true, dataDictionaryVersion = DataDictionaryVersion.DDV6)
+      val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, featureFlags, FmsOrderSource.CEMO)
 
-  @ParameterizedTest(name = "it should map civil county court - {0} -> {1}")
-  @ArgumentsSource(CivilAndCountyCourtArgumentsProvider::class)
-  fun `It should correctly map saved civil county court values to Serco`(savedValue: String, mappedValue: String) {
-    assertNotifyingOrgNameMapping(savedValue, mappedValue)
-  }
+      assertThat(fmsMonitoringOrder.responsibleOfficerName).isEqualTo("First Last")
+    }
 
-  @ParameterizedTest(name = "it should map crown court - {0} -> {1}")
-  @ArgumentsSource(CrownCourtArgumentsProvider::class)
-  fun `It should correctly map saved crown court values to Serco`(savedValue: String, mappedValue: String) {
-    assertNotifyingOrgNameMapping(savedValue, mappedValue)
-  }
+    @Test
+    fun `It should infer notifying officer name if notifying org home office`() {
+      val order = createOrder(
+        interestedParties = createInterestedParty(
+          notifyingOrganisation = NotifyingOrganisationDDv5.HOME_OFFICE.name,
+        ),
+      )
 
-  @ParameterizedTest(name = "it should map family court - {0} -> {1}")
-  @ArgumentsSource(FamilyCourtArgumentsProvider::class)
-  fun `It should correctly map saved family court values to Serco`(savedValue: String, mappedValue: String) {
-    assertNotifyingOrgNameMapping(savedValue, mappedValue)
-  }
+      val featureFlags = FeatureFlags(ddV6CourtMappings = true, dataDictionaryVersion = DataDictionaryVersion.DDV6)
+      val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, featureFlags, FmsOrderSource.CEMO)
 
-  @ParameterizedTest(name = "it should map magistrates court - {0} -> {1}")
-  @ArgumentsSource(MagistratesCourtArgumentsProvider::class)
-  fun `It should correctly map saved magistrates court values to Serco`(savedValue: String, mappedValue: String) {
-    assertNotifyingOrgNameMapping(savedValue, mappedValue)
-  }
+      assertThat(fmsMonitoringOrder.notifyingOfficerName).isEqualTo("Home Office")
+      assertThat(fmsMonitoringOrder.responsibleOfficerDetailsReceived).isEqualTo("Yes")
+    }
 
-  @ParameterizedTest(name = "it should map military court - {0} -> {1}")
-  @ArgumentsSource(MilitaryCourtArgumentsProvider::class)
-  fun `It should correctly map saved military court values to Serco`(savedValue: String, mappedValue: String) {
-    assertNotifyingOrgNameMapping(savedValue, mappedValue)
-  }
+    @Test
+    fun `It should map responsible officer email`() {
+      val order = createOrder(
+        interestedParties = createInterestedParty(
+          responsibleOfficerEmail = "a@b.com",
+        ),
+      )
 
-  @ParameterizedTest(name = "it should map prison - {0} -> {1}")
-  @ArgumentsSource(PrisonArgumentsProvider::class)
-  fun `It should correctly map saved prison values to Serco`(savedValue: String, mappedValue: String) {
-    assertNotifyingOrgNameMapping(savedValue, mappedValue)
-  }
+      val featureFlags = FeatureFlags(ddV6CourtMappings = true, dataDictionaryVersion = DataDictionaryVersion.DDV6)
+      val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, featureFlags, FmsOrderSource.CEMO)
 
-  @ParameterizedTest(name = "it should map youth court - {0} -> {1}")
-  @ArgumentsSource(YouthCourtArgumentsProvider::class)
-  fun `It should correctly map saved youth court values to Serco`(savedValue: String, mappedValue: String) {
-    assertNotifyingOrgNameMapping(savedValue, mappedValue)
+      assertThat(fmsMonitoringOrder.responsibleOfficerEmail).isEqualTo("a@b.com")
+    }
   }
 
   @ParameterizedTest(name = "it should map pilot to Serco - {0} -> {1}")
@@ -895,7 +1394,7 @@ class MonitoringOrderTest : OrderTestBase() {
     val order = createOrder(
       monitoringConditions = createMonitoringConditions(pilot = Pilot.entries.first { it.name == savedValue }),
     )
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags)
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags, FmsOrderSource.CEMO)
 
     assertThat(fmsMonitoringOrder.pilot).isEqualTo(mappedValue)
   }
@@ -914,7 +1413,7 @@ class MonitoringOrderTest : OrderTestBase() {
       ),
     )
 
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "", mockFeatureFlags)
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "", mockFeatureFlags, FmsOrderSource.CEMO)
 
     assertThat(fmsMonitoringOrder.enforceableCondition!!.first().condition).isEqualTo(mappedValue)
   }
@@ -931,7 +1430,7 @@ class MonitoringOrderTest : OrderTestBase() {
         ),
       )
 
-      val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "", mockFeatureFlags)
+      val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "", mockFeatureFlags, FmsOrderSource.CEMO)
       assertThat(fmsMonitoringOrder.abstinence).isEqualTo(mappedValue)
     }
   }
@@ -944,7 +1443,7 @@ class MonitoringOrderTest : OrderTestBase() {
       monitoringConditions = createMonitoringConditions(sentenceType = sentenceType),
     )
 
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "", mockFeatureFlags)
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "", mockFeatureFlags, FmsOrderSource.CEMO)
     assertThat(fmsMonitoringOrder.sentenceType).isEqualTo(mappedValue)
   }
 
@@ -957,7 +1456,7 @@ class MonitoringOrderTest : OrderTestBase() {
       monitoringConditions = createMonitoringConditions(sentenceType = sentenceType),
     )
     val featureFlags = FeatureFlags(ddV6CourtMappings = true, dataDictionaryVersion = DataDictionaryVersion.DDV6)
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "", featureFlags)
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "", featureFlags, FmsOrderSource.CEMO)
     assertThat(fmsMonitoringOrder.sentenceType).isEqualTo(mappedValue)
   }
 
@@ -969,7 +1468,7 @@ class MonitoringOrderTest : OrderTestBase() {
       variationDetails = createvariationDetails(),
       dataDictionaryVersion = DataDictionaryVersion.DDV6,
     )
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "", mockFeatureFlags)
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "", mockFeatureFlags, FmsOrderSource.CEMO)
     assertThat(fmsMonitoringOrder.subcategory).isEqualTo(mappedValue)
   }
 
@@ -983,314 +1482,286 @@ class MonitoringOrderTest : OrderTestBase() {
       ),
       dataDictionaryVersion = DataDictionaryVersion.DDV6,
     )
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "", mockFeatureFlags)
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "", mockFeatureFlags, FmsOrderSource.CEMO)
     assertThat(fmsMonitoringOrder.orderVariationType).isEqualTo(mappedValue)
   }
 
-  @Test
-  fun `It should correctly map subcategory To SR11 when order type is bail`() {
-    val order = createOrder(
-      type = RequestType.END_MONITORING,
-      monitoringConditions = createMonitoringConditions(orderType = OrderType.BAIL),
-      variationDetails = createvariationDetails(),
-      dataDictionaryVersion = DataDictionaryVersion.DDV6,
-    )
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "", mockFeatureFlags)
-    assertThat(fmsMonitoringOrder.subcategory).isEqualTo("SR11-Removal of devices (bail)")
+  @Nested
+  inner class Subcategory {
+    @Test
+    fun `It should correctly map subcategory To SR11 when order type is bail`() {
+      val order = createOrder(
+        type = RequestType.END_MONITORING,
+        monitoringConditions = createMonitoringConditions(orderType = OrderType.BAIL),
+        variationDetails = createvariationDetails(),
+        dataDictionaryVersion = DataDictionaryVersion.DDV6,
+      )
+      val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "", mockFeatureFlags, FmsOrderSource.CEMO)
+      assertThat(fmsMonitoringOrder.subcategory).isEqualTo("SR11-Removal of devices (bail)")
+    }
+
+    @Test
+    fun `It should correctly map subcategory to SR11 when order type is immigration`() {
+      val order = createOrder(
+        type = RequestType.END_MONITORING,
+        monitoringConditions = createMonitoringConditions(orderType = OrderType.IMMIGRATION),
+        variationDetails = createvariationDetails(),
+        dataDictionaryVersion = DataDictionaryVersion.DDV6,
+      )
+      val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "", mockFeatureFlags, FmsOrderSource.CEMO)
+      assertThat(fmsMonitoringOrder.subcategory).isEqualTo("SR11-Removal of devices (bail)")
+    }
+
+    @Test
+    fun `It should correctly map subcategory to SR21 when order type is not bail or immigration`() {
+      val order = createOrder(
+        type = RequestType.END_MONITORING,
+        monitoringConditions = createMonitoringConditions(orderType = OrderType.COMMUNITY),
+        variationDetails = createvariationDetails(),
+        dataDictionaryVersion = DataDictionaryVersion.DDV6,
+      )
+      val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "", mockFeatureFlags, FmsOrderSource.CEMO)
+      assertThat(fmsMonitoringOrder.subcategory).isEqualTo("SR21-Revocation monitoring requirements")
+    }
+
+    @Test
+    fun `It should correctly map subcategory as SR08 when monitoring start date is in the future`() {
+      val order = createOrder(
+        type = RequestType.REVOCATION,
+        monitoringConditions = createMonitoringConditions(
+          orderType = OrderType.BAIL,
+          startDate = ZonedDateTime.now().plusMonths(3),
+        ),
+        variationDetails = createvariationDetails(),
+        dataDictionaryVersion = DataDictionaryVersion.DDV6,
+      )
+      val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "", mockFeatureFlags, FmsOrderSource.CEMO)
+      assertThat(fmsMonitoringOrder.subcategory).isEqualTo("SR08-Amend monitoring requirements")
+    }
+
+    @Test
+    fun `It should correctly map subcategory as SR08 when monitoring start date is today`() {
+      val order = createOrder(
+        type = RequestType.REVOCATION,
+        monitoringConditions = createMonitoringConditions(
+          orderType = OrderType.BAIL,
+          startDate = ZonedDateTime.now(),
+        ),
+        variationDetails = createvariationDetails(),
+        dataDictionaryVersion = DataDictionaryVersion.DDV6,
+      )
+      val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "", mockFeatureFlags, FmsOrderSource.CEMO)
+      assertThat(fmsMonitoringOrder.subcategory).isEqualTo("SR08-Amend monitoring requirements")
+    }
+
+    @Test
+    fun `It should map subcategory as empty with future start date and request type is request`() {
+      val order = createOrder(
+        type = RequestType.REQUEST,
+        monitoringConditions = createMonitoringConditions(
+          orderType = OrderType.BAIL,
+
+          startDate = ZonedDateTime.now().plusMonths(3),
+        ),
+        variationDetails = createvariationDetails(),
+        dataDictionaryVersion = DataDictionaryVersion.DDV6,
+      )
+      val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "", mockFeatureFlags, FmsOrderSource.CEMO)
+      assertThat(fmsMonitoringOrder.subcategory).isEqualTo("")
+    }
+
+    @Test
+    fun `It should correctly map overall monitoring end date as today when SR11, order type bail`() {
+      val today = LocalDateTime.now()
+      val eodToday = ZonedDateTime.of(
+        today.year,
+        today.monthValue,
+        today.dayOfMonth,
+        23,
+        59,
+        0,
+        0,
+        ZoneId.systemDefault(),
+      )
+      val order = createOrder(
+        type = RequestType.END_MONITORING,
+        monitoringConditions = createMonitoringConditions(orderType = OrderType.BAIL),
+        variationDetails = createvariationDetails(),
+        dataDictionaryVersion = DataDictionaryVersion.DDV6,
+      )
+      val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "", mockFeatureFlags, FmsOrderSource.CEMO)
+      assertThat(fmsMonitoringOrder.orderEnd).isEqualTo(getBritishDateAndTime(eodToday))
+    }
+
+    @Test
+    fun `It should correctly map overall monitoring end date as today when SR11, order type immigration`() {
+      val today = LocalDateTime.now()
+      val eodToday = ZonedDateTime.of(
+        today.year,
+        today.monthValue,
+        today.dayOfMonth,
+        23,
+        59,
+        0,
+        0,
+        ZoneId.systemDefault(),
+      )
+      val order = createOrder(
+        type = RequestType.END_MONITORING,
+        monitoringConditions = createMonitoringConditions(orderType = OrderType.IMMIGRATION),
+        variationDetails = createvariationDetails(),
+        dataDictionaryVersion = DataDictionaryVersion.DDV6,
+      )
+      val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "", mockFeatureFlags, FmsOrderSource.CEMO)
+      assertThat(fmsMonitoringOrder.orderEnd).isEqualTo(getBritishDateAndTime(eodToday))
+    }
+
+    @Test
+    fun `It should correctly map overall monitoring end date for SR21 as today when end monitoring`() {
+      val today = LocalDateTime.now()
+      val eodToday = ZonedDateTime.of(
+        today.year,
+        today.monthValue,
+        today.dayOfMonth,
+        23,
+        59,
+        0,
+        0,
+        ZoneId.systemDefault(),
+      )
+      val order = createOrder(
+        type = RequestType.END_MONITORING,
+        monitoringConditions = createMonitoringConditions(orderType = OrderType.COMMUNITY),
+        variationDetails = createvariationDetails(),
+        dataDictionaryVersion = DataDictionaryVersion.DDV6,
+      )
+      val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "", mockFeatureFlags, FmsOrderSource.CEMO)
+      assertThat(fmsMonitoringOrder.orderEnd).isEqualTo(getBritishDateAndTime(eodToday))
+    }
+
+    @Test
+    fun `It should correctly map overall monitoring end date for SR21 as next week when revocation`() {
+      val aWeekInFuture = LocalDateTime.now().plusDays(7)
+      val eodNextWeek = ZonedDateTime.of(
+        aWeekInFuture.year,
+        aWeekInFuture.monthValue,
+        aWeekInFuture.dayOfMonth,
+        23,
+        59,
+        0,
+        0,
+        ZoneId.systemDefault(),
+      )
+      val order = createOrder(
+        type = RequestType.REVOCATION,
+        monitoringConditions = createMonitoringConditions(orderType = OrderType.BAIL),
+        variationDetails = createvariationDetails(),
+        dataDictionaryVersion = DataDictionaryVersion.DDV6,
+      )
+      val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "", mockFeatureFlags, FmsOrderSource.CEMO)
+      assertThat(fmsMonitoringOrder.orderEnd).isEqualTo(getBritishDateAndTime(eodNextWeek))
+    }
+
+    @Test
+    fun `should block sending responsible org and officer when SR20`() {
+      val order = createOrder(
+        type = RequestType.VARIATION,
+        variationDetails = createvariationDetails(),
+        interestedParties = createInterestedParty(
+          responsibleOfficerName = "ro name",
+          responsibleOfficerPhoneNumber = "01234",
+          responsibleOfficerEmail = "a@b.com",
+          responsibleOrganisation = "ro",
+          responsibleOrganisationRegion = "ro region",
+          responsibleOrganisationEmail = "b@a.com",
+        ),
+        monitoringConditions = createMonitoringConditions(startDate = ZonedDateTime.now().minusDays(1)),
+      )
+
+      val featureFlags = FeatureFlags(ddV6CourtMappings = true, dataDictionaryVersion = DataDictionaryVersion.DDV6)
+      val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, featureFlags, FmsOrderSource.CEMO)
+
+      assertThat(fmsMonitoringOrder.responsibleOfficerName).isEqualTo("")
+      assertThat(fmsMonitoringOrder.responsibleOfficerPhone).isEqualTo("")
+      assertThat(fmsMonitoringOrder.responsibleOfficerEmail).isEqualTo("")
+      assertThat(fmsMonitoringOrder.responsibleOrganization).isEqualTo("")
+      assertThat(fmsMonitoringOrder.roRegion).isEqualTo("")
+      assertThat(fmsMonitoringOrder.roEmail).isEqualTo("")
+      assertThat(fmsMonitoringOrder.responsibleOfficerDetailsReceived).isEqualTo("No")
+    }
   }
 
-  @Test
-  fun `It should correctly map subcategory to SR11 when order type is immigration`() {
-    val order = createOrder(
-      type = RequestType.END_MONITORING,
-      monitoringConditions = createMonitoringConditions(orderType = OrderType.IMMIGRATION),
-      variationDetails = createvariationDetails(),
-      dataDictionaryVersion = DataDictionaryVersion.DDV6,
-    )
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "", mockFeatureFlags)
-    assertThat(fmsMonitoringOrder.subcategory).isEqualTo("SR11-Removal of devices (bail)")
-  }
+  @Nested
+  inner class DapolMissedInError {
+    @Test
+    fun `It should correctly map dapolMissedInError when notifying organisation is probation and DAPOL pilot`() {
+      val order = createOrder(
+        dataDictionaryVersion = DataDictionaryVersion.DDV6,
+        interestedParties = createInterestedParty(notifyingOrganisation = NotifyingOrganisationDDv5.PROBATION.name),
+        monitoringConditions = createMonitoringConditions(
+          pilot = Pilot.DOMESTIC_ABUSE_PERPETRATOR_ON_LICENCE_DAPOL,
+          dapolMissedInError = YesNoUnknown.YES,
+        ),
+      )
+      val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags, FmsOrderSource.CEMO)
+      assertThat(fmsMonitoringOrder.dapolMissedInError).isEqualTo("true")
+    }
 
-  @Test
-  fun `It should correctly map subcategory to SR21 when order type is not bail or immigration`() {
-    val order = createOrder(
-      type = RequestType.END_MONITORING,
-      monitoringConditions = createMonitoringConditions(orderType = OrderType.COMMUNITY),
-      variationDetails = createvariationDetails(),
-      dataDictionaryVersion = DataDictionaryVersion.DDV6,
-    )
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "", mockFeatureFlags)
-    assertThat(fmsMonitoringOrder.subcategory).isEqualTo("SR21-Revocation monitoring requirements")
-  }
+    @Test
+    fun `It should map dapolMissedInError as empty string when pilot is not DAPOL`() {
+      val order = createOrder(
+        dataDictionaryVersion = DataDictionaryVersion.DDV6,
+        interestedParties = createInterestedParty(notifyingOrganisation = NotifyingOrganisationDDv5.PROBATION.name),
+        monitoringConditions = createMonitoringConditions(
+          pilot = Pilot.GPS_ACQUISITIVE_CRIME_PAROLE,
+          dapolMissedInError = YesNoUnknown.YES,
+        ),
+      )
+      val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags, FmsOrderSource.CEMO)
 
-  @Test
-  fun `It should correctly map subcategory as SR08 when monitoring start date is in the future`() {
-    val order = createOrder(
-      type = RequestType.REVOCATION,
-      monitoringConditions = createMonitoringConditions(
-        orderType = OrderType.BAIL,
-        startDate = ZonedDateTime.now().plusMonths(3),
-      ),
-      variationDetails = createvariationDetails(),
-      dataDictionaryVersion = DataDictionaryVersion.DDV6,
-    )
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "", mockFeatureFlags)
-    assertThat(fmsMonitoringOrder.subcategory).isEqualTo("SR08-Amend monitoring requirements")
-  }
+      assertThat(fmsMonitoringOrder.dapolMissedInError).isEqualTo("")
+    }
 
-  @Test
-  fun `It should correctly map subcategory as SR08 when monitoring start date is today`() {
-    val order = createOrder(
-      type = RequestType.REVOCATION,
-      monitoringConditions = createMonitoringConditions(
-        orderType = OrderType.BAIL,
-        startDate = ZonedDateTime.now(),
-      ),
-      variationDetails = createvariationDetails(),
-      dataDictionaryVersion = DataDictionaryVersion.DDV6,
-    )
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "", mockFeatureFlags)
-    assertThat(fmsMonitoringOrder.subcategory).isEqualTo("SR08-Amend monitoring requirements")
-  }
+    @Test
+    fun `It should map dapolMissedInError as empty string when notify org is not probation`() {
+      val order = createOrder(
+        dataDictionaryVersion = DataDictionaryVersion.DDV6,
+        interestedParties = createInterestedParty(notifyingOrganisation = NotifyingOrganisationDDv5.PRISON.name),
+        monitoringConditions = createMonitoringConditions(
+          pilot = Pilot.DOMESTIC_ABUSE_PERPETRATOR_ON_LICENCE_DAPOL,
+        ),
+      )
+      val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags, FmsOrderSource.CEMO)
+      assertThat(fmsMonitoringOrder.dapolMissedInError).isEqualTo("")
+    }
 
-  @Test
-  fun `It should map subcategory as empty with future start date and request type is request`() {
-    val order = createOrder(
-      type = RequestType.REQUEST,
-      monitoringConditions = createMonitoringConditions(
-        orderType = OrderType.BAIL,
+    @Test
+    fun `It should map dapolMissedInError as 'false' when DAPOL Pilot but value is no`() {
+      val order = createOrder(
+        dataDictionaryVersion = DataDictionaryVersion.DDV6,
+        interestedParties = createInterestedParty(notifyingOrganisation = NotifyingOrganisationDDv5.PROBATION.name),
+        monitoringConditions = createMonitoringConditions(
+          pilot = Pilot.DOMESTIC_ABUSE_PERPETRATOR_ON_LICENCE_DAPOL,
+          dapolMissedInError = YesNoUnknown.NO,
+        ),
+      )
+      val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags, FmsOrderSource.CEMO)
 
-        startDate = ZonedDateTime.now().plusMonths(3),
-      ),
-      variationDetails = createvariationDetails(),
-      dataDictionaryVersion = DataDictionaryVersion.DDV6,
-    )
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "", mockFeatureFlags)
-    assertThat(fmsMonitoringOrder.subcategory).isEqualTo("")
-  }
+      assertThat(fmsMonitoringOrder.dapolMissedInError).isEqualTo("false")
+    }
 
-  @Test
-  fun `It should correctly map overall monitoring end date as today when SR11, order type bail`() {
-    val today = LocalDateTime.now()
-    val eodToday = ZonedDateTime.of(
-      today.year,
-      today.monthValue,
-      today.dayOfMonth,
-      23,
-      59,
-      0,
-      0,
-      ZoneId.systemDefault(),
-    )
-    val order = createOrder(
-      type = RequestType.END_MONITORING,
-      monitoringConditions = createMonitoringConditions(orderType = OrderType.BAIL),
-      variationDetails = createvariationDetails(),
-      dataDictionaryVersion = DataDictionaryVersion.DDV6,
-    )
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "", mockFeatureFlags)
-    assertThat(fmsMonitoringOrder.orderEnd).isEqualTo(getBritishDateAndTime(eodToday))
-  }
-
-  @Test
-  fun `It should correctly map overall monitoring end date as today when SR11, order type immigration`() {
-    val today = LocalDateTime.now()
-    val eodToday = ZonedDateTime.of(
-      today.year,
-      today.monthValue,
-      today.dayOfMonth,
-      23,
-      59,
-      0,
-      0,
-      ZoneId.systemDefault(),
-    )
-    val order = createOrder(
-      type = RequestType.END_MONITORING,
-      monitoringConditions = createMonitoringConditions(orderType = OrderType.IMMIGRATION),
-      variationDetails = createvariationDetails(),
-      dataDictionaryVersion = DataDictionaryVersion.DDV6,
-    )
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "", mockFeatureFlags)
-    assertThat(fmsMonitoringOrder.orderEnd).isEqualTo(getBritishDateAndTime(eodToday))
-  }
-
-  @Test
-  fun `It should correctly map overall monitoring end date for SR21 as today when end monitoring`() {
-    val today = LocalDateTime.now()
-    val eodToday = ZonedDateTime.of(
-      today.year,
-      today.monthValue,
-      today.dayOfMonth,
-      23,
-      59,
-      0,
-      0,
-      ZoneId.systemDefault(),
-    )
-    val order = createOrder(
-      type = RequestType.END_MONITORING,
-      monitoringConditions = createMonitoringConditions(orderType = OrderType.COMMUNITY),
-      variationDetails = createvariationDetails(),
-      dataDictionaryVersion = DataDictionaryVersion.DDV6,
-    )
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "", mockFeatureFlags)
-    assertThat(fmsMonitoringOrder.orderEnd).isEqualTo(getBritishDateAndTime(eodToday))
-  }
-
-  @Test
-  fun `It should correctly map overall monitoring end date for SR21 as next week when revocation`() {
-    val aWeekInFuture = LocalDateTime.now().plusDays(7)
-    val eodNextWeek = ZonedDateTime.of(
-      aWeekInFuture.year,
-      aWeekInFuture.monthValue,
-      aWeekInFuture.dayOfMonth,
-      23,
-      59,
-      0,
-      0,
-      ZoneId.systemDefault(),
-    )
-    val order = createOrder(
-      type = RequestType.REVOCATION,
-      monitoringConditions = createMonitoringConditions(orderType = OrderType.BAIL),
-      variationDetails = createvariationDetails(),
-      dataDictionaryVersion = DataDictionaryVersion.DDV6,
-    )
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "", mockFeatureFlags)
-    assertThat(fmsMonitoringOrder.orderEnd).isEqualTo(getBritishDateAndTime(eodNextWeek))
-  }
-
-  @Test
-  fun `It should map empty PROBATION name to 'Probation Board' for Serco`() {
-    val order = createOrder(
-      dataDictionaryVersion = DataDictionaryVersion.DDV5,
-      interestedParties = createInterestedParty(
-        notifyingOrganisation = NotifyingOrganisationDDv5.PROBATION.name,
-        notifyingOrganisationName = "",
-      ),
-    )
-
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags)
-    assertThat(fmsMonitoringOrder.noName).isEqualTo("Probation Board")
-  }
-
-  @Test
-  fun `It should map empty HOME OFFICE name to 'Home Office' for Serco`() {
-    val order = createOrder(
-      dataDictionaryVersion = DataDictionaryVersion.DDV5,
-
-      interestedParties = createInterestedParty(
-        notifyingOrganisation = NotifyingOrganisationDDv5.HOME_OFFICE.name,
-        notifyingOrganisationName = "",
-      ),
-    )
-
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags)
-
-    assertThat(fmsMonitoringOrder.notifyingOrganization).isEqualTo("Home Office")
-    assertThat(fmsMonitoringOrder.noName).isEqualTo("Home Office")
-  }
-
-  @Test
-  fun `It should map empty YCS name to empty string for Serco`() {
-    val order = createOrder(
-      dataDictionaryVersion = DataDictionaryVersion.DDV5,
-      interestedParties = createInterestedParty(
-        notifyingOrganisation = NotifyingOrganisationDDv5.YOUTH_CUSTODY_SERVICE.name,
-        notifyingOrganisationName = "",
-      ),
-    )
-
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags)
-
-    assertThat(fmsMonitoringOrder.noName).isEqualTo("")
-  }
-
-  @Test
-  fun `It should correctly map dapolMissedInError when notifying organisation is probation and DAPOL pilot`() {
-    val order = createOrder(
-      dataDictionaryVersion = DataDictionaryVersion.DDV6,
-      interestedParties = createInterestedParty(notifyingOrganisation = NotifyingOrganisationDDv5.PROBATION.name),
-      monitoringConditions = createMonitoringConditions(
-        pilot = Pilot.DOMESTIC_ABUSE_PERPETRATOR_ON_LICENCE_DAPOL,
-        dapolMissedInError = YesNoUnknown.YES,
-      ),
-    )
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags)
-    assertThat(fmsMonitoringOrder.dapolMissedInError).isEqualTo("true")
-  }
-
-  @Test
-  fun `It should map dapolMissedInError as empty string when pilot is not DAPOL`() {
-    val order = createOrder(
-      dataDictionaryVersion = DataDictionaryVersion.DDV6,
-      interestedParties = createInterestedParty(notifyingOrganisation = NotifyingOrganisationDDv5.PROBATION.name),
-      monitoringConditions = createMonitoringConditions(
-        pilot = Pilot.GPS_ACQUISITIVE_CRIME_PAROLE,
-        dapolMissedInError = YesNoUnknown.YES,
-      ),
-    )
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags)
-
-    assertThat(fmsMonitoringOrder.dapolMissedInError).isEqualTo("")
-  }
-
-  @Test
-  fun `It should map dapolMissedInError as empty string when notify org is not probation`() {
-    val order = createOrder(
-      dataDictionaryVersion = DataDictionaryVersion.DDV6,
-      interestedParties = createInterestedParty(notifyingOrganisation = NotifyingOrganisationDDv5.PRISON.name),
-      monitoringConditions = createMonitoringConditions(
-        pilot = Pilot.DOMESTIC_ABUSE_PERPETRATOR_ON_LICENCE_DAPOL,
-      ),
-    )
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags)
-    assertThat(fmsMonitoringOrder.dapolMissedInError).isEqualTo("")
-  }
-
-  @Test
-  fun `It should map dapolMissedInError as 'false' when DAPOL Pilot but value is no`() {
-    val order = createOrder(
-      dataDictionaryVersion = DataDictionaryVersion.DDV6,
-      interestedParties = createInterestedParty(notifyingOrganisation = NotifyingOrganisationDDv5.PROBATION.name),
-      monitoringConditions = createMonitoringConditions(
-        pilot = Pilot.DOMESTIC_ABUSE_PERPETRATOR_ON_LICENCE_DAPOL,
-        dapolMissedInError = YesNoUnknown.NO,
-      ),
-    )
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags)
-
-    assertThat(fmsMonitoringOrder.dapolMissedInError).isEqualTo("false")
-  }
-
-  @Test
-  fun `It should map dapolMissedInError as empty string when order isn't ddv6`() {
-    val order = createOrder(
-      dataDictionaryVersion = DataDictionaryVersion.DDV5,
-      interestedParties = createInterestedParty(notifyingOrganisation = NotifyingOrganisationDDv5.PROBATION.name),
-      monitoringConditions = createMonitoringConditions(
-        pilot = Pilot.DOMESTIC_ABUSE_PERPETRATOR_ON_LICENCE_DAPOL,
-      ),
-    )
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags)
-    assertThat(fmsMonitoringOrder.dapolMissedInError).isEqualTo("")
-  }
-
-  @Test
-  fun `It should map ro region to UKBA when responsible organisation is home office`() {
-    val order = createOrder(
-      dataDictionaryVersion = DataDictionaryVersion.DDV5,
-      interestedParties = createInterestedParty(
-        notifyingOrganisation = NotifyingOrganisationDDv5.HOME_OFFICE.name,
-        responsibleOrganisation = ResponsibleOrganisation.HOME_OFFICE.name,
-      ),
-
-    )
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags)
-    assertThat(fmsMonitoringOrder.notifyingOrganization).isEqualTo("Home Office")
-    assertThat(fmsMonitoringOrder.responsibleOrganization).isEqualTo("Home Office")
-    assertThat(fmsMonitoringOrder.roRegion).isEqualTo("UKBA")
+    @Test
+    fun `It should map dapolMissedInError as empty string when order isn't ddv6`() {
+      val order = createOrder(
+        dataDictionaryVersion = DataDictionaryVersion.DDV5,
+        interestedParties = createInterestedParty(notifyingOrganisation = NotifyingOrganisationDDv5.PROBATION.name),
+        monitoringConditions = createMonitoringConditions(
+          pilot = Pilot.DOMESTIC_ABUSE_PERPETRATOR_ON_LICENCE_DAPOL,
+        ),
+      )
+      val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags, FmsOrderSource.CEMO)
+      assertThat(fmsMonitoringOrder.dapolMissedInError).isEqualTo("")
+    }
   }
 
   @Test
@@ -1304,27 +1775,9 @@ class MonitoringOrderTest : OrderTestBase() {
         notifyingOrganisation = NotifyingOrganisationDDv5.FAMILY_COURT.name,
       ),
     )
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags)
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags, FmsOrderSource.CEMO)
 
     assertThat(fmsMonitoringOrder.magistrateCourtCaseReferenceNumber).isEqualTo("CC123")
-  }
-
-  @ParameterizedTest(name = "it should map youth custody service region - {0} -> {1}")
-  @ArgumentsSource(YouthCustodyServiceRegionArgumentsProvider::class)
-  fun `It should correctly map saved youth custody service region values to Serco`(
-    savedValue: String,
-    mappedValue: String,
-  ) {
-    assertNotifyingOrgNameMapping(savedValue, mappedValue)
-  }
-
-  @ParameterizedTest(name = "it should map youth custody service region - {0} -> {1}")
-  @ArgumentsSource(YouthCustodyServiceRegionArgumentsProviderDDv6::class)
-  fun `It should correctly map saved youth custody service region DDV6 values to Serco`(
-    savedValue: String,
-    mappedValue: String,
-  ) {
-    assertNotifyingOrgNameMapping(savedValue, mappedValue, DataDictionaryVersion.DDV6)
   }
 
   @Test
@@ -1341,7 +1794,7 @@ class MonitoringOrderTest : OrderTestBase() {
       ),
 
     )
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags)
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags, FmsOrderSource.CEMO)
     val condition =
       fmsMonitoringOrder.enforceableCondition?.find { it.condition == "Location Monitoring (Fitted Device)" }
     assertThat(condition).isNotNull()
@@ -1361,231 +1814,17 @@ class MonitoringOrderTest : OrderTestBase() {
       ),
 
     )
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags)
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags, FmsOrderSource.CEMO)
     val condition =
       fmsMonitoringOrder.enforceableCondition?.find { it.condition == "Location Monitoring (using Non-Fitted Device)" }
     assertThat(condition).isNotNull()
   }
 
   @Test
-  fun `responsible_officer_details_received is yes if non-court, and not variation in past`() {
-    val order = createOrder(
-      dataDictionaryVersion = DataDictionaryVersion.DDV6,
-      interestedParties = createInterestedParty(
-        responsibleOfficerName = "officer name",
-        responsibleOfficerPhoneNumber = "01234567890",
-        responsibleOrganisationEmail = "a@b.com",
-      ),
-    )
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(
-      order,
-      null,
-      FeatureFlags(dataDictionaryVersion = DataDictionaryVersion.DDV6, ddV6CourtMappings = true),
-    )
-    val condition =
-      fmsMonitoringOrder.responsibleOfficerDetailsReceived
-    assertThat(condition).isEqualTo("Yes")
-  }
-
-  @Test
-  fun `for court order, responsible_officer_details_received is always no`() {
-    val order = createOrder(
-      dataDictionaryVersion = DataDictionaryVersion.DDV6,
-      interestedParties = createInterestedParty(
-        notifyingOrganisation = NotifyingOrganisationDDv5.FAMILY_COURT.name,
-        notifyingOrganisationName = FamilyCourtDDv5.DONCASTER_FAMILY_COURT.name,
-        responsibleOfficerName = "",
-        responsibleOfficerPhoneNumber = "",
-        responsibleOrganisationEmail = "",
-      ),
-    )
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(
-      order,
-      null,
-      FeatureFlags(dataDictionaryVersion = DataDictionaryVersion.DDV6, ddV6CourtMappings = true),
-    )
-    val condition =
-      fmsMonitoringOrder.responsibleOfficerDetailsReceived
-    assertThat(condition).isEqualTo("No")
-  }
-
-  @Test
-  fun `if variation and start date in future responsible_officer_details_received is yes`() {
-    val order = createOrder(
-      dataDictionaryVersion = DataDictionaryVersion.DDV6,
-      type = RequestType.VARIATION,
-      variationDetails = createvariationDetails(),
-      interestedParties = createInterestedParty(
-        notifyingOrganisation = "PROBATION",
-      ),
-      monitoringConditions = createMonitoringConditions(startDate = ZonedDateTime.now().plusDays(1)),
-    )
-
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(
-      order,
-      null,
-      FeatureFlags(dataDictionaryVersion = DataDictionaryVersion.DDV6, ddV6CourtMappings = true),
-    )
-
-    val condition =
-      fmsMonitoringOrder.responsibleOfficerDetailsReceived
-    assertThat(condition).isEqualTo("Yes")
-  }
-
-  @Test
-  fun `It should map responsible officer name from responsibleOfficerName if full name is populated`() {
-    val order = createOrder(
-      interestedParties = createInterestedParty(
-        responsibleOfficerName = "Mock Name",
-      ),
-    )
-
-    val featureFlags = FeatureFlags(ddV6CourtMappings = true, dataDictionaryVersion = DataDictionaryVersion.DDV6)
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, featureFlags)
-
-    assertThat(fmsMonitoringOrder.responsibleOfficerName).isEqualTo("Mock Name")
-  }
-
-  @Test
-  fun `It should map responsible officer name from first and last name if full is not populated`() {
-    val order = createOrder(
-      interestedParties = createInterestedParty(
-        responsibleOfficerName = "",
-        responsibleOfficerFirstName = "First",
-        responsibleOfficerLastName = "Last",
-      ),
-    )
-
-    val featureFlags = FeatureFlags(ddV6CourtMappings = true, dataDictionaryVersion = DataDictionaryVersion.DDV6)
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, featureFlags)
-
-    assertThat(fmsMonitoringOrder.responsibleOfficerName).isEqualTo("First Last")
-  }
-
-  @Test
-  fun `It should infer notifying officer name if notifying org home office`() {
-    val order = createOrder(
-      interestedParties = createInterestedParty(
-        notifyingOrganisation = NotifyingOrganisationDDv5.HOME_OFFICE.name,
-      ),
-    )
-
-    val featureFlags = FeatureFlags(ddV6CourtMappings = true, dataDictionaryVersion = DataDictionaryVersion.DDV6)
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, featureFlags)
-
-    assertThat(fmsMonitoringOrder.notifyingOfficerName).isEqualTo("Home Office")
-    assertThat(fmsMonitoringOrder.responsibleOfficerDetailsReceived).isEqualTo("Yes")
-  }
-
-  @Test
-  fun `It should map responsible officer email`() {
-    val order = createOrder(
-      interestedParties = createInterestedParty(
-        responsibleOfficerEmail = "a@b.com",
-      ),
-    )
-
-    val featureFlags = FeatureFlags(ddV6CourtMappings = true, dataDictionaryVersion = DataDictionaryVersion.DDV6)
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, featureFlags)
-
-    assertThat(fmsMonitoringOrder.responsibleOfficerEmail).isEqualTo("a@b.com")
-  }
-
-  @Test
-  fun `should block sending responsible org and officer when SR20`() {
-    val order = createOrder(
-      type = RequestType.VARIATION,
-      variationDetails = createvariationDetails(),
-      interestedParties = createInterestedParty(
-        responsibleOfficerName = "ro name",
-        responsibleOfficerPhoneNumber = "01234",
-        responsibleOfficerEmail = "a@b.com",
-        responsibleOrganisation = "ro",
-        responsibleOrganisationRegion = "ro region",
-        responsibleOrganisationEmail = "b@a.com",
-      ),
-      monitoringConditions = createMonitoringConditions(startDate = ZonedDateTime.now().minusDays(1)),
-    )
-
-    val featureFlags = FeatureFlags(ddV6CourtMappings = true, dataDictionaryVersion = DataDictionaryVersion.DDV6)
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, featureFlags)
-
-    assertThat(fmsMonitoringOrder.responsibleOfficerName).isEqualTo("")
-    assertThat(fmsMonitoringOrder.responsibleOfficerPhone).isEqualTo("")
-    assertThat(fmsMonitoringOrder.responsibleOfficerEmail).isEqualTo("")
-    assertThat(fmsMonitoringOrder.responsibleOrganization).isEqualTo("")
-    assertThat(fmsMonitoringOrder.roRegion).isEqualTo("")
-    assertThat(fmsMonitoringOrder.roEmail).isEqualTo("")
-    assertThat(fmsMonitoringOrder.responsibleOfficerDetailsReceived).isEqualTo("No")
-  }
-
-  @Test
-  fun `should map dapo offences`() {
-    val mockDate = ZonedDateTime.now()
-    val order = createOrder(
-      type = RequestType.REQUEST,
-      dataDictionaryVersion = DataDictionaryVersion.DDV6,
-      dapoClauses = mutableListOf(
-        Dapo(versionId = UUID.randomUUID(), clause = "1234", date = mockDate),
-        Dapo(versionId = UUID.randomUUID(), clause = "5678", date = mockDate.plusMonths(1)),
-      ),
-    )
-
-    val featureFlags = FeatureFlags(ddV6CourtMappings = true, dataDictionaryVersion = DataDictionaryVersion.DDV6)
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, featureFlags)
-
-    assertThat(fmsMonitoringOrder.dapoOrderClauseNumbers).contains(
-      DapoClause(
-        dapoOrderClauseNumber = "1234",
-        date = getBritishDate(mockDate),
-      ),
-      DapoClause(
-        dapoOrderClauseNumber = "5678",
-        date = getBritishDate(mockDate.plusMonths(1)),
-      ),
-    )
-  }
-
-  @Test
-  fun `should map offences`() {
-    val mockDate = ZonedDateTime.now()
-    val order = createOrder(
-      type = RequestType.REQUEST,
-      dataDictionaryVersion = DataDictionaryVersion.DDV6,
-      offences = mutableListOf(
-        Offence(
-          versionId = UUID.randomUUID(),
-          offenceType = "VIOLENCE_AGAINST_THE_PERSON",
-          offenceDate = mockDate,
-        ),
-        Offence(
-          versionId = UUID.randomUUID(),
-          offenceType = "SEXUAL_OFFENCES",
-          offenceDate = mockDate.plusMonths(1),
-        ),
-      ),
-    )
-
-    val featureFlags = FeatureFlags(ddV6CourtMappings = true, dataDictionaryVersion = DataDictionaryVersion.DDV6)
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, featureFlags)
-
-    assertThat(fmsMonitoringOrder.offences).contains(
-      OffenceData(
-        offence = "Violence against the person",
-        offenceDate = getBritishDate(mockDate),
-      ),
-      OffenceData(
-        offence = "Sexual offences",
-        offenceDate = getBritishDate(mockDate.plusMonths(1)),
-      ),
-    )
-  }
-
-  @Test
   fun `should map orderType as pre trial when it is civil`() {
     val order = createOrder(monitoringConditions = createMonitoringConditions(orderType = OrderType.CIVIL))
 
-    val result = MonitoringOrder.fromOrder(order, null, mockFeatureFlags)
+    val result = MonitoringOrder.fromOrder(order, null, mockFeatureFlags, FmsOrderSource.CEMO)
 
     assertThat(result.orderType).isEqualTo("Pre-Trial")
   }
@@ -1594,7 +1833,7 @@ class MonitoringOrderTest : OrderTestBase() {
   fun `should map orderType as pre trial when it is bail`() {
     val order = createOrder(monitoringConditions = createMonitoringConditions(orderType = OrderType.BAIL))
 
-    val result = MonitoringOrder.fromOrder(order, null, mockFeatureFlags)
+    val result = MonitoringOrder.fromOrder(order, null, mockFeatureFlags, FmsOrderSource.CEMO)
 
     assertThat(result.orderType).isEqualTo("Pre-Trial")
   }
@@ -1604,7 +1843,7 @@ class MonitoringOrderTest : OrderTestBase() {
     val order =
       createOrder(deviceWearer = createDeviceWearer(firstName = "First", middleName = "Middle", lastName = "Last"))
 
-    val result = MonitoringOrder.fromOrder(order, null, mockFeatureFlags)
+    val result = MonitoringOrder.fromOrder(order, null, mockFeatureFlags, FmsOrderSource.CEMO)
 
     assertThat(result.deviceWearer).isEqualTo("First Middle Last")
   }
@@ -1614,7 +1853,7 @@ class MonitoringOrderTest : OrderTestBase() {
     val order =
       createOrder(deviceWearer = createDeviceWearer(firstName = "First", middleName = null, lastName = "Last"))
 
-    val result = MonitoringOrder.fromOrder(order, null, mockFeatureFlags)
+    val result = MonitoringOrder.fromOrder(order, null, mockFeatureFlags, FmsOrderSource.CEMO)
 
     assertThat(result.deviceWearer).isEqualTo("First Last")
   }
@@ -1632,7 +1871,7 @@ class MonitoringOrderTest : OrderTestBase() {
         notifyingOrganisationName = savedValue,
       ),
     )
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags)
+    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags, FmsOrderSource.CEMO)
 
     assertThat(fmsMonitoringOrder.noName).isEqualTo(mappedValue)
   }

@@ -323,7 +323,7 @@ abstract class OrderTestBase {
   )
 
   protected fun createEnforcementZoneCondition(
-    endDate: ZonedDateTime = ZonedDateTime.of(2025, 2, 1, 0, 0, 0, 0, ZoneId.of("UTC")),
+    endDate: ZonedDateTime? = ZonedDateTime.of(2025, 2, 1, 0, 0, 0, 0, ZoneId.of("UTC")),
     startDate: ZonedDateTime = ZonedDateTime.of(2025, 1, 1, 23, 59, 0, 0, ZoneId.of("UTC")),
     zoneType: EnforcementZoneType = EnforcementZoneType.EXCLUSION,
     name: String = "",
@@ -356,7 +356,7 @@ abstract class OrderTestBase {
 
   protected fun createCurfewConditions(
     startDate: ZonedDateTime = ZonedDateTime.of(2025, 1, 1, 1, 1, 1, 1, ZoneId.of("UTC")),
-    endDate: ZonedDateTime = ZonedDateTime.of(2025, 2, 1, 1, 1, 1, 1, ZoneId.of("UTC")),
+    endDate: ZonedDateTime? = ZonedDateTime.of(2025, 2, 1, 1, 1, 1, 1, ZoneId.of("UTC")),
     curfewAddress: String = "PRIMARY",
     curfewAdditionalDetails: String = "",
   ): CurfewConditions = CurfewConditions(
