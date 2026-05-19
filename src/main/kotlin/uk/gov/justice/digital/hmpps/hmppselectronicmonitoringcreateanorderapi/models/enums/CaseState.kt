@@ -7,6 +7,7 @@ enum class CaseState(val value: String) {
   CANCELLED("7"),
   OPEN("10"),
   AWAITING_INFO("18"),
+  AWAITING_VALIDATION("11"),
   UNKNOWN("Unknown"),
   ;
 
