@@ -10,6 +10,14 @@ fun MonitoringOrder.compareTo(previous: MonitoringOrder): List<String> {
     }
   }
 
+  fun isNotNullOrEmpty(value: Any?): Boolean = value != null && value != ""
+
+  fun compareFiledIfNewExists(key: String, new: Any?, old: Any?) {
+    if (isNotNullOrEmpty(new) && old != new) {
+      MonitoringOrderChangedMessages.messages[key]?.let { messages += it }
+    }
+  }
+
   fun <T> compareList(key: String, new: List<T>?, old: List<T>?) {
     if ((old ?: emptyList()) != (new ?: emptyList<T>())) {
       MonitoringOrderChangedMessages.messages[key]?.let { messages += it }
@@ -113,12 +121,12 @@ fun MonitoringOrder.compareTo(previous: MonitoringOrder): List<String> {
   compareField("notifyingOrganization", notifyingOrganization, previous.notifyingOrganization)
   compareField("noEmail", noEmail, previous.noEmail)
   compareField("noName", noName, previous.noName)
-  compareField("pduResponsible", pduResponsible, previous.pduResponsible)
-  compareField("responsibleOfficerEmail", responsibleOfficerEmail, previous.responsibleOfficerEmail)
-  compareField("responsibleOfficerName", responsibleOfficerName, previous.responsibleOfficerName)
-  compareField("responsibleOrganization", responsibleOrganization, previous.responsibleOrganization)
-  compareField("roEmail", roEmail, previous.roEmail)
-  compareField("roRegion", roRegion, previous.roRegion)
+  compareFiledIfNewExists("pduResponsible", pduResponsible, previous.pduResponsible)
+  compareFiledIfNewExists("responsibleOfficerEmail", responsibleOfficerEmail, previous.responsibleOfficerEmail)
+  compareFiledIfNewExists("responsibleOfficerName", responsibleOfficerName, previous.responsibleOfficerName)
+  compareFiledIfNewExists("responsibleOrganization", responsibleOrganization, previous.responsibleOrganization)
+  compareFiledIfNewExists("roEmail", roEmail, previous.roEmail)
+  compareFiledIfNewExists("roRegion", roRegion, previous.roRegion)
   compareField("sentenceType", sentenceType, previous.sentenceType)
   compareField("tagAtSource", tagAtSource, previous.tagAtSource)
   compareField("tagAtSourceDetails", tagAtSourceDetails, previous.tagAtSourceDetails)

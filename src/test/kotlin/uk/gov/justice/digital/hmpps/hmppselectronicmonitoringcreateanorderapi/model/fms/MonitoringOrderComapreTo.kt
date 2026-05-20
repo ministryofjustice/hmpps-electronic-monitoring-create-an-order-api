@@ -58,6 +58,39 @@ class MonitoringOrderComapreTo {
   }
 
   @Test
+  fun `Should not send message if responsible organisation related fields been removed`() {
+    val old = baselineOrder().apply {
+      responsibleOrganization = "Mock RO"
+      roEmail = "mockROEmail"
+      roRegion = "mockRORegion"
+      responsibleOfficerEmail = "mockOfficerEmail"
+      responsibleOfficerName = "mockOfficerName"
+      pduResponsible = "Mock pdu responsible"
+    }
+    val new = baselineOrder().apply {
+      responsibleOrganization = ""
+      roEmail = ""
+      roRegion = ""
+      responsibleOfficerEmail = ""
+      responsibleOfficerName = ""
+      pduResponsible = ""
+    }
+
+    val result = new.compareTo(old)
+
+    assertThat(result).doesNotContainAnyElementsOf(
+      listOf(
+        "PDU has changed",
+        "Responsible officer's email has changed",
+        "Responsible officer's name has changed",
+        "Responsible organisation has changed",
+        "Responsible organisation email has changed",
+        "Responsible organisation region has changed",
+      ),
+    )
+  }
+
+  @Test
   fun `enforceable condition changes detected correctly`() {
     val old = baselineOrder().apply {
       enforceableCondition =
