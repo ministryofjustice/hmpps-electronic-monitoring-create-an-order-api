@@ -1,4 +1,5 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms
+
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.config.MonitoringOrderChangedMessages
 
 fun MonitoringOrder.compareTo(previous: MonitoringOrder): List<String> {
@@ -163,9 +164,14 @@ fun MonitoringOrder.compareTo(previous: MonitoringOrder): List<String> {
     MonitoringOrderChangedMessages.messages["installationAddress"]?.let { messages += it }
   }
   compareField(
-    "crownCourtCaseReferenceNumber",
+    "courtCaseReferenceNumber",
     crownCourtCaseReferenceNumber,
     previous.crownCourtCaseReferenceNumber,
+  )
+  compareField(
+    "courtCaseReferenceNumber",
+    magistrateCourtCaseReferenceNumber,
+    previous.magistrateCourtCaseReferenceNumber,
   )
 
   compareList("exclusionZones", exclusionZones, previous.exclusionZones)

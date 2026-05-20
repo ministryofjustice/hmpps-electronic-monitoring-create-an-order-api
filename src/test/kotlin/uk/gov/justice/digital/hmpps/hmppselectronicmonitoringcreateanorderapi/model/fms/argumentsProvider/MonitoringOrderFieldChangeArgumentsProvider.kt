@@ -220,9 +220,17 @@ class MonitoringOrderFieldChangeArgumentsProvider : ArgumentsProvider {
     ),
 
     MonitoringOrderFieldCase(
-      "crownCourtCaseReferenceNumber",
+      "courtCaseReferenceNumber",
       { it.crownCourtCaseReferenceNumber = "NEW123" },
-      "Device wearer's personal ID number(s) have changed",
+      "Device wearer's court case reference number(s) have changed",
+    ),
+
+    MonitoringOrderFieldCase(
+      "courtCaseReferenceNumber",
+      {
+        it.magistrateCourtCaseReferenceNumber = "MAG123"
+      },
+      "Device wearer's court case reference number(s) have changed",
     ),
 
     MonitoringOrderFieldCase(
@@ -286,12 +294,18 @@ class MonitoringOrderNegativeArgumentsProvider : ArgumentsProvider {
     MonitoringOrderFieldCase("mediaInterest", { it.mediaInterest = "Yes" }),
     MonitoringOrderFieldCase("newOrderReceived", { it.newOrderReceived = "Yes" }),
 
-    MonitoringOrderFieldCase("notifyingOfficerEmail", {
-      it.notifyingOfficerEmail = "officer@test.com"
-    }),
-    MonitoringOrderFieldCase("notifyingOfficerName", {
-      it.notifyingOfficerName = "Officer X"
-    }),
+    MonitoringOrderFieldCase(
+      "notifyingOfficerEmail",
+      {
+        it.notifyingOfficerEmail = "officer@test.com"
+      },
+    ),
+    MonitoringOrderFieldCase(
+      "notifyingOfficerName",
+      {
+        it.notifyingOfficerName = "Officer X"
+      },
+    ),
 
     MonitoringOrderFieldCase("noPostCode", { it.noPostCode = "NP1 1AA" }),
     MonitoringOrderFieldCase("noAddress1", { it.noAddress1 = "Line1" }),
@@ -314,12 +328,18 @@ class MonitoringOrderNegativeArgumentsProvider : ArgumentsProvider {
 
     MonitoringOrderFieldCase("pduResponsibleEmail", { it.pduResponsibleEmail = "pdu@test.com" }),
     MonitoringOrderFieldCase("plannedOrderEndDate", { it.plannedOrderEndDate = "2025-12-31" }),
-    MonitoringOrderFieldCase("responsibleOfficerDetailsReceived", {
-      it.responsibleOfficerDetailsReceived = "Yes"
-    }),
-    MonitoringOrderFieldCase("responsibleOfficerPhone", {
-      it.responsibleOfficerPhone = "07000000000"
-    }),
+    MonitoringOrderFieldCase(
+      "responsibleOfficerDetailsReceived",
+      {
+        it.responsibleOfficerDetailsReceived = "Yes"
+      },
+    ),
+    MonitoringOrderFieldCase(
+      "responsibleOfficerPhone",
+      {
+        it.responsibleOfficerPhone = "07000000000"
+      },
+    ),
 
     MonitoringOrderFieldCase("roPostCode", { it.roPostCode = "RO1" }),
     MonitoringOrderFieldCase("roAddress1", { it.roAddress1 = "Addr1" }),
@@ -335,33 +355,41 @@ class MonitoringOrderNegativeArgumentsProvider : ArgumentsProvider {
     MonitoringOrderFieldCase("trialDate", { it.trialDate = "2026-01-01" }),
     MonitoringOrderFieldCase("trialOutcome", { it.trialOutcome = "Success" }),
     MonitoringOrderFieldCase("conditionalReleaseDate", { it.conditionalReleaseDate = "2025-01-01" }),
-    MonitoringOrderFieldCase("conditionalReleaseStartTime", {
-      it.conditionalReleaseStartTime = "09:00"
-    }),
-    MonitoringOrderFieldCase("conditionalReleaseEndTime", {
-      it.conditionalReleaseEndTime = "17:00"
-    }),
+    MonitoringOrderFieldCase(
+      "conditionalReleaseStartTime",
+      {
+        it.conditionalReleaseStartTime = "09:00"
+      },
+    ),
+    MonitoringOrderFieldCase(
+      "conditionalReleaseEndTime",
+      {
+        it.conditionalReleaseEndTime = "17:00"
+      },
+    ),
 
-    MonitoringOrderFieldCase("reasonForOrderEndingEarly", {
-      it.reasonForOrderEndingEarly = "Completed"
-    }),
+    MonitoringOrderFieldCase(
+      "reasonForOrderEndingEarly",
+      {
+        it.reasonForOrderEndingEarly = "Completed"
+      },
+    ),
 
     MonitoringOrderFieldCase("businessUnit", { it.businessUnit = "Unit1" }),
     MonitoringOrderFieldCase("serviceEndDate", { it.serviceEndDate = "2026-01-01" }),
 
     MonitoringOrderFieldCase("schedule", { it.schedule = "Updated" }),
-    MonitoringOrderFieldCase("checkinSchedule", {
-      it.checkinSchedule = mutableListOf(
-        Schedule("Mo", "10:00", "11:00"),
-      )
-    }),
+    MonitoringOrderFieldCase(
+      "checkinSchedule",
+      {
+        it.checkinSchedule = mutableListOf(
+          Schedule("Mo", "10:00", "11:00"),
+        )
+      },
+    ),
 
     MonitoringOrderFieldCase("revocationDate", { it.revocationDate = "2025-05-01" }),
     MonitoringOrderFieldCase("revocationType", { it.revocationType = "TypeA" }),
-
-    MonitoringOrderFieldCase("magistrateCourtCaseReferenceNumber", {
-      it.magistrateCourtCaseReferenceNumber = "MAG123"
-    }),
 
     MonitoringOrderFieldCase("orderStatus", { it.orderStatus = "Active" }),
     MonitoringOrderFieldCase("subcategory", { it.subcategory = "Sub1" }),

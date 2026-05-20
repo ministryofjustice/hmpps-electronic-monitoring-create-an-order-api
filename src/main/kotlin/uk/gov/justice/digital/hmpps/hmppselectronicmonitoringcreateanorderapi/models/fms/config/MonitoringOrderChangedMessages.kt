@@ -44,7 +44,7 @@ object MonitoringOrderChangedMessages {
 
     // Addresses / IDs
     "installationAddress" to "Installation address has changed",
-    "crownCourtCaseReferenceNumber" to "Device wearer's personal ID number(s) have changed",
+    "courtCaseReferenceNumber" to "Device wearer's court case reference number(s) have changed",
 
     // Lists / complex structures
     "exclusionZones" to "One or more of the exclusion zones has changed",
