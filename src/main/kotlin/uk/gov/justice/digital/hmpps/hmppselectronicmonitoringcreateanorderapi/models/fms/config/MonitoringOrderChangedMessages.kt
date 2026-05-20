@@ -30,7 +30,7 @@ object MonitoringOrderChangedMessages {
 
     // Curfew
     "curfewDescription" to "Curfew boundary has changed",
-    "curfewStart" to "Curfew start time has changed",
+    "curfewStart" to "Curfew start date has changed",
     "curfewEnd" to "Curfew end date has changed",
 
     // Flags / pilots

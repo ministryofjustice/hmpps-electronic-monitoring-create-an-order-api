@@ -138,7 +138,7 @@ class MonitoringOrderFieldChangeArgumentsProvider : ArgumentsProvider {
     MonitoringOrderFieldCase(
       "curfewStart",
       { it.curfewStart = "18:00" },
-      "Curfew start time has changed",
+      "Curfew start date has changed",
     ),
 
     MonitoringOrderFieldCase(
