@@ -150,7 +150,7 @@ class FmsVariationSubmissionStrategy(
     lastSuccessfulSubmitResult: FmsSubmissionResult?,
     orderSource: FmsOrderSource,
   ): FmsMonitoringOrderSubmissionResult {
-    val monitoringOrderResult = this.getMonitoringOrder(order, deviceWearerId,orderSource)
+    val monitoringOrderResult = this.getMonitoringOrder(order, deviceWearerId, orderSource)
 
     if (!monitoringOrderResult.success) {
       return FmsMonitoringOrderSubmissionResult(

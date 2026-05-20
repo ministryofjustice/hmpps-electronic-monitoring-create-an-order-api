@@ -116,8 +116,14 @@ class FmsVariationSubmissionStrategyTest {
           deviceWearerId = "1",
         ),
         monitoringOrderResult = FmsMonitoringOrderSubmissionResult(
-          payload = objectMapper.writeValueAsString(MonitoringOrder.fromOrder(order, "1", mockFeatureFlags,
-            FmsOrderSource.CEMO)),
+          payload = objectMapper.writeValueAsString(
+            MonitoringOrder.fromOrder(
+              order,
+              "1",
+              mockFeatureFlags,
+              FmsOrderSource.CEMO,
+            ),
+          ),
         ),
       ),
     )
@@ -164,7 +170,9 @@ class FmsVariationSubmissionStrategyTest {
           deviceWearerId = "1",
         ),
         monitoringOrderResult = FmsMonitoringOrderSubmissionResult(
-          payload = objectMapper.writeValueAsString(MonitoringOrder.fromOrder(order, "1", mockFeatureFlags,FmsOrderSource.CEMO)),
+          payload = objectMapper.writeValueAsString(
+            MonitoringOrder.fromOrder(order, "1", mockFeatureFlags, FmsOrderSource.CEMO),
+          ),
         ),
       ),
     )

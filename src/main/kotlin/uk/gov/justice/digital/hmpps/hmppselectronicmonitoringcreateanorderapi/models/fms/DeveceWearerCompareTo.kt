@@ -39,11 +39,11 @@ fun DeviceWearer.compareTo(previous: DeviceWearer): List<String> {
   fun compareNoFixedAddress(new: String?, old: String?) {
     if (new != old) {
       if (new == "true") {
-        DeviceWearerChangedMessages.messages["hasFixedAddress"]?.let {
+        DeviceWearerChangedMessages.messages["noFixedAddress"]?.let {
           messages += it
         }
       } else if (new == "false") {
-        DeviceWearerChangedMessages.messages["noFixedAddress"]?.let {
+        DeviceWearerChangedMessages.messages["hasFixedAddress"]?.let {
           messages += it
         }
       }

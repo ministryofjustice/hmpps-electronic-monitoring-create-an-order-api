@@ -199,7 +199,7 @@ class DeviceWearerCompareTo {
     updated.noFixedAddress = "true"
     val result = updated.compareTo(old)
     Assertions.assertThat(result)
-      .contains("Device wearer now has a fixed address")
+      .contains("Device wearer now doesn't have a fixed address")
   }
 
   @Test
@@ -210,7 +210,7 @@ class DeviceWearerCompareTo {
     updated.noFixedAddress = "false"
     val result = updated.compareTo(old)
     Assertions.assertThat(result)
-      .contains("Device wearer now doesn't have a fixed address")
+      .contains("Device wearer now has a fixed address")
   }
 
   @ParameterizedTest(name = "changing {0} does NOT emit any message")
