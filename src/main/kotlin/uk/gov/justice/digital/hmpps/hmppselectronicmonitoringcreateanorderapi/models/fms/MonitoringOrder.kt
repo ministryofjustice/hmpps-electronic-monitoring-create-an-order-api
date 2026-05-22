@@ -728,7 +728,7 @@ data class MonitoringOrder(
     private fun getResponsibleOrganisation(interestedParties: InterestedParties): String =
       ResponsibleOrganisation.from(interestedParties.responsibleOrganisation)?.value
         ?: interestedParties.responsibleOrganisation?.takeIf { it.isNotBlank() }
-        ?: "N/A".takeIf { interestedParties.notifyingOrganisation != NotifyingOrganisation.HOME_OFFICE.value }
+        ?: "".takeIf { interestedParties.notifyingOrganisation != NotifyingOrganisation.HOME_OFFICE.value }
         ?: ResponsibleOrganisation.HOME_OFFICE.value
 
     private fun getResponsibleOrganisationRegion(interestedParties: InterestedParties): String {
