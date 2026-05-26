@@ -148,6 +148,18 @@ class MonitoringOrderFieldChangeArgumentsProvider : ArgumentsProvider {
     ),
 
     MonitoringOrderFieldCase(
+      "conditionalReleaseStartTime",
+      { it.conditionalReleaseStartTime = "07:00" },
+      "Curfew start time on day of release has changed",
+    ),
+
+    MonitoringOrderFieldCase(
+      "conditionalReleaseEndTime",
+      { it.conditionalReleaseEndTime = "18:00" },
+      "Curfew end time on day of release has changed",
+    ),
+
+    MonitoringOrderFieldCase(
       "abstinence",
       { it.abstinence = "Yes" },
       "Alcohol abstinence has been changed",
@@ -355,18 +367,6 @@ class MonitoringOrderNegativeArgumentsProvider : ArgumentsProvider {
     MonitoringOrderFieldCase("trialDate", { it.trialDate = "2026-01-01" }),
     MonitoringOrderFieldCase("trialOutcome", { it.trialOutcome = "Success" }),
     MonitoringOrderFieldCase("conditionalReleaseDate", { it.conditionalReleaseDate = "2025-01-01" }),
-    MonitoringOrderFieldCase(
-      "conditionalReleaseStartTime",
-      {
-        it.conditionalReleaseStartTime = "09:00"
-      },
-    ),
-    MonitoringOrderFieldCase(
-      "conditionalReleaseEndTime",
-      {
-        it.conditionalReleaseEndTime = "17:00"
-      },
-    ),
 
     MonitoringOrderFieldCase(
       "reasonForOrderEndingEarly",

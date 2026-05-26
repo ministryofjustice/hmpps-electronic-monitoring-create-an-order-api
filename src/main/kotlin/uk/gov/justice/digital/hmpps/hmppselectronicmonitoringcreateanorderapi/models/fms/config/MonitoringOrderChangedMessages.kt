@@ -32,6 +32,8 @@ object MonitoringOrderChangedMessages {
     "curfewDescription" to "Curfew boundary has changed",
     "curfewStart" to "Curfew start date has changed",
     "curfewEnd" to "Curfew end date has changed",
+    "conditionalReleaseStartTime" to "Curfew start time on day of release has changed",
+    "conditionalReleaseEndTime" to "Curfew end time on day of release has changed",
 
     // Flags / pilots
     "abstinence" to "Alcohol abstinence has been changed",
