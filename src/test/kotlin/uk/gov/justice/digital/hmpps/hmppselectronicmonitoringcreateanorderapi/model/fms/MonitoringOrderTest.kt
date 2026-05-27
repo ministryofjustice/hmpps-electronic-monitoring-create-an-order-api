@@ -1736,7 +1736,7 @@ class MonitoringOrderTest : OrderTestBase() {
     }
 
     @Test
-    fun `It should map dapolMissedInError as 'false' when DAPOL Pilot but value is no`() {
+    fun `It should map dapolMissedInError as empty string when DAPOL Pilot but value is no`() {
       val order = createOrder(
         dataDictionaryVersion = DataDictionaryVersion.DDV6,
         interestedParties = createInterestedParty(notifyingOrganisation = NotifyingOrganisationDDv5.PROBATION.name),
@@ -1747,7 +1747,7 @@ class MonitoringOrderTest : OrderTestBase() {
       )
       val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags, FmsOrderSource.CEMO)
 
-      assertThat(fmsMonitoringOrder.dapolMissedInError).isEqualTo("false")
+      assertThat(fmsMonitoringOrder.dapolMissedInError).isEqualTo("")
     }
 
     @Test
