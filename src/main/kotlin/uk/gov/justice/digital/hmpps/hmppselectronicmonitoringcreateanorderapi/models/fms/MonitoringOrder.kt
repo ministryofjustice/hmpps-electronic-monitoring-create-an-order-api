@@ -836,7 +836,7 @@ data class MonitoringOrder(
         return ""
       }
 
-      return if (conditions.dapolMissedInError == YesNoUnknown.YES) "true" else "false"
+      return if (conditions.dapolMissedInError == YesNoUnknown.YES) "true" else ""
     }
 
     private fun getOrderType(orderType: OrderType): String = when (orderType) {
