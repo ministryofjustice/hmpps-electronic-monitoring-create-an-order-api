@@ -727,8 +727,9 @@ data class MonitoringOrder(
 
     private fun getResponsibleOrganisation(interestedParties: InterestedParties): String =
       ResponsibleOrganisation.from(interestedParties.responsibleOrganisation)?.value
-        ?: interestedParties.responsibleOrganisation
-        ?: "N/A"
+        ?: interestedParties.responsibleOrganisation?.takeIf { it.isNotBlank() }
+        ?: "".takeIf { interestedParties.notifyingOrganisation != NotifyingOrganisation.HOME_OFFICE.value }
+        ?: ResponsibleOrganisation.HOME_OFFICE.value
 
     private fun getResponsibleOrganisationRegion(interestedParties: InterestedParties): String {
       if (ResponsibleOrganisation.from(interestedParties.responsibleOrganisation) ==
@@ -835,7 +836,7 @@ data class MonitoringOrder(
         return ""
       }
 
-      return if (conditions.dapolMissedInError == YesNoUnknown.YES) "true" else "false"
+      return if (conditions.dapolMissedInError == YesNoUnknown.YES) "true" else ""
     }
 
     private fun getOrderType(orderType: OrderType): String = when (orderType) {

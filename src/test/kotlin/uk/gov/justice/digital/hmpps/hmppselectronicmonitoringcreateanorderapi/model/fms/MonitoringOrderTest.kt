@@ -41,6 +41,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FamilyCourtDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.InstallationLocationType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisationDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Pilot
@@ -1736,7 +1737,7 @@ class MonitoringOrderTest : OrderTestBase() {
     }
 
     @Test
-    fun `It should map dapolMissedInError as 'false' when DAPOL Pilot but value is no`() {
+    fun `It should map dapolMissedInError as empty string when DAPOL Pilot but value is no`() {
       val order = createOrder(
         dataDictionaryVersion = DataDictionaryVersion.DDV6,
         interestedParties = createInterestedParty(notifyingOrganisation = NotifyingOrganisationDDv5.PROBATION.name),
@@ -1747,7 +1748,7 @@ class MonitoringOrderTest : OrderTestBase() {
       )
       val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags, FmsOrderSource.CEMO)
 
-      assertThat(fmsMonitoringOrder.dapolMissedInError).isEqualTo("false")
+      assertThat(fmsMonitoringOrder.dapolMissedInError).isEqualTo("")
     }
 
     @Test
@@ -1856,6 +1857,26 @@ class MonitoringOrderTest : OrderTestBase() {
     val result = MonitoringOrder.fromOrder(order, null, mockFeatureFlags, FmsOrderSource.CEMO)
 
     assertThat(result.deviceWearer).isEqualTo("First Last")
+  }
+
+  @Test
+  fun `should default to home office if responsible org`() {
+    val order =
+      createOrder(
+        deviceWearer = createDeviceWearer(
+          firstName = "First",
+          middleName = null,
+          lastName = "Last",
+        ),
+        interestedParties = createInterestedParty(
+          responsibleOrganisation = "",
+          notifyingOrganisation = NotifyingOrganisation.HOME_OFFICE.value,
+        ),
+      )
+
+    val result = MonitoringOrder.fromOrder(order, null, mockFeatureFlags, FmsOrderSource.CEMO)
+
+    assertThat(result.responsibleOrganization).isEqualTo("Home Office")
   }
 
   private fun assertNotifyingOrgNameMapping(
