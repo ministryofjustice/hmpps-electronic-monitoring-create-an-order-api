@@ -6,7 +6,7 @@ object DeviceWearerChangedMessages {
     "nameChange" to "Device wearer's name has changed",
     "alias" to "Device wearer's preferred name has changed",
     "dateOfBirth" to "Device wearer's date of birth has changed",
-    "adultToChild" to "Order has changed from a adult to youth",
+    "adultToChild" to "Order has changed from an adult to youth",
     "childToAdult" to "Order has changed from a youth to adult",
     "sex" to "Device wearer's sex has changed",
     "genderIdentity" to "Device wearer's gender has changed",

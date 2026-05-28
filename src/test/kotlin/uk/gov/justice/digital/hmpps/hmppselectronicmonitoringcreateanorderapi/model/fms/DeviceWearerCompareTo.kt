@@ -177,7 +177,7 @@ class DeviceWearerCompareTo {
     updated.adultChild = "child"
     val result = updated.compareTo(old)
     Assertions.assertThat(result)
-      .contains("Order has changed from a adult to youth")
+      .contains("Order has changed from an adult to youth")
   }
 
   @Test
