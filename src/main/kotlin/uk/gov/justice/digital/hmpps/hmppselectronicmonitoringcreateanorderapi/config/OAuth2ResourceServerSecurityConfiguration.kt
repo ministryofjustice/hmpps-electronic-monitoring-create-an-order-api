@@ -96,7 +96,7 @@ class AuthAwareTokenConverter : Converter<Jwt, AbstractAuthenticationToken> {
       val claimAuthorities = (jwt.claims[CLAIM_AUTHORITY] as Collection<String>).toList()
       authorities.addAll(claimAuthorities.map(::SimpleGrantedAuthority))
       // Grant HOME_OFFICE users standard CEMO role for access
-      if (UserRole.PRISON.code in claimAuthorities) {
+      if (UserRole.HOME_OFFICE.code in claimAuthorities) {
         authorities.add(SimpleGrantedAuthority("ROLE_EM_CEMO__CREATE_ORDER"))
       }
     }
