@@ -42,4 +42,17 @@ class UserCohortControllerTest : IntegrationTestBase() {
     Assertions.assertThat(result.responseBody?.cohort).isEqualTo(Cohort.PRISON)
     Assertions.assertThat(result.responseBody?.activeCaseLoadName).isEqualTo("HMP ABC")
   }
+
+  @Test
+  fun `Should return HOME_OFFICE cohort when user only has ROLE_EM_CEMO_HOME_OFFICE`() {
+    val result = webTestClient.get().uri("/api/user-cohort")
+      .headers(setAuthorisation("AUTH_ADM", roles = listOf("ROLE_EM_CEMO_HOME_OFFICE")))
+      .exchange()
+      .expectStatus()
+      .isOk
+      .expectBody(UserCohort::class.java)
+      .returnResult()
+
+    Assertions.assertThat(result.responseBody?.cohort).isEqualTo(Cohort.HOME_OFFICE)
+  }
 }

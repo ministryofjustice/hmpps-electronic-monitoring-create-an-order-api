@@ -94,6 +94,10 @@ class AuthAwareTokenConverter : Converter<Jwt, AbstractAuthenticationToken> {
       @Suppress("UNCHECKED_CAST")
       val claimAuthorities = (jwt.claims[CLAIM_AUTHORITY] as Collection<String>).toList()
       authorities.addAll(claimAuthorities.map(::SimpleGrantedAuthority))
+      // Grant HOME_OFFICE users standard CEMO role for access
+      if ("ROLE_EM_CEMO_HOME_OFFICE" in claimAuthorities) {
+        authorities.add(SimpleGrantedAuthority("ROLE_EM_CEMO__CREATE_ORDER"))
+      }
     }
     return authorities.toSet()
   }
