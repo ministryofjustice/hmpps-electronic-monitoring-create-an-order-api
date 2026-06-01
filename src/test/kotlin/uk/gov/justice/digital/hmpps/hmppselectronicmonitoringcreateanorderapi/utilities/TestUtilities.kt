@@ -64,6 +64,8 @@ class TestUtilities {
       dataDictionaryVersion: DataDictionaryVersion = DataDictionaryVersion.DDV4,
       notifyingOrganisation: String = "PRISON",
       notifyingOrganisationName: String = "WAYLAND_PRISON",
+      versionNumber: Int = 0,
+      fmsResultId: UUID? = null,
       offences: MutableList<Offence> = mutableListOf(),
     ): Order {
       val order = Order(
@@ -73,6 +75,7 @@ class TestUtilities {
       order.versions = mutableListOf(
         OrderVersion(
           id = versionId,
+          versionId = versionNumber,
           username = username,
           status = OrderStatus.IN_PROGRESS,
           type = requestType,
@@ -310,6 +313,9 @@ class TestUtilities {
           variationDate = startDate,
           variationDetails = "Change to address",
         )
+      }
+      if (fmsResultId != null) {
+        order.fmsResultId = fmsResultId
       }
       order.installationLocation =
         installationLocation

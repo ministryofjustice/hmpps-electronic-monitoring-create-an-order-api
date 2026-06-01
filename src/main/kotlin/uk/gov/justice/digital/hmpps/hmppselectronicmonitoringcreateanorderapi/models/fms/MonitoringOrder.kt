@@ -101,7 +101,7 @@ data class MonitoringOrder(
   @JsonProperty("offence")
   var offence: String? = "",
   @JsonProperty("offence_additional_details")
-  val offenceAdditionalDetails: String? = "",
+  var offenceAdditionalDetails: String? = "",
   @JsonProperty("offence_date")
   var offenceDate: String? = "",
   @JsonProperty("order_end")

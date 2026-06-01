@@ -7,15 +7,21 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.co
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AdditionalDocument
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Result
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.CaseState
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DocumentType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.SubmissionStatus
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.DeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsAttachmentSubmissionResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsDeviceWearerSubmissionResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsMonitoringOrderSubmissionResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsSubmissionResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsSubmissionStrategyKind
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.MonitoringOrder
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.compareTo
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.FmsSubmissionResultRepository
 import java.util.*
 
 class FmsVariationSubmissionStrategy(
@@ -23,6 +29,7 @@ class FmsVariationSubmissionStrategy(
   val fmsClient: FmsClient,
   val documentApiClient: DocumentApiClient,
   private val featureFlags: FeatureFlags,
+  val repo: FmsSubmissionResultRepository,
 ) : FmsSubmissionStrategyBase(objectMapper, featureFlags) {
 
   private fun submitUpdateDeviceWearerRequest(deviceWearerPayload: String, orderId: UUID): Result<String> = try {
@@ -139,6 +146,8 @@ class FmsVariationSubmissionStrategy(
   private fun updateMonitoringOrder(
     order: Order,
     deviceWearerId: String,
+    submitDeviceWearerResult: FmsDeviceWearerSubmissionResult,
+    lastSuccessfulSubmitResult: FmsSubmissionResult?,
     orderSource: FmsOrderSource,
   ): FmsMonitoringOrderSubmissionResult {
     val monitoringOrderResult = this.getMonitoringOrder(order, deviceWearerId, orderSource)
@@ -151,6 +160,10 @@ class FmsVariationSubmissionStrategy(
     }
 
     val monitoringOrder = monitoringOrderResult.data!!
+
+    monitoringOrder.orderVariationDetails =
+      getListOfChanges(monitoringOrder, submitDeviceWearerResult, lastSuccessfulSubmitResult)
+
     val serialiseResult = this.serialiseMonitoringOrder(monitoringOrder)
 
     if (!serialiseResult.success) {
@@ -177,6 +190,52 @@ class FmsVariationSubmissionStrategy(
     )
   }
 
+  private fun getListOfChanges(
+    monitoringOrder: MonitoringOrder,
+    submitDeviceWearerResult: FmsDeviceWearerSubmissionResult,
+    lastSuccessfulSubmitResult: FmsSubmissionResult?,
+  ): String {
+    val changeDetails = StringBuilder()
+    changeDetails.appendLine("User entered:")
+    changeDetails.appendLine(monitoringOrder.orderVariationDetails)
+
+    if (lastSuccessfulSubmitResult != null) {
+      changeDetails.appendLine("CEMO determined changes:")
+
+      val deviceWearerPayload = objectMapper.readValue(submitDeviceWearerResult.payload, DeviceWearer::class.java)
+      val lastSuccessfulDeviceWearerPayload = objectMapper.readValue(
+        lastSuccessfulSubmitResult.deviceWearerResult.payload,
+        DeviceWearer::class.java,
+      )
+      deviceWearerPayload.compareTo(lastSuccessfulDeviceWearerPayload).forEach { change ->
+        changeDetails.appendLine(change)
+      }
+
+      val lastSuccessFulMonitoringOrderPayload = objectMapper.readValue(
+        lastSuccessfulSubmitResult.monitoringOrderResult.payload,
+        MonitoringOrder::class.java,
+      )
+      monitoringOrder.compareTo(lastSuccessFulMonitoringOrderPayload).forEach { change ->
+        changeDetails.appendLine(change)
+      }
+    }
+    return changeDetails.toString()
+  }
+
+  private fun getLastSuccessfulSubmissionResult(order: Order): FmsSubmissionResult? {
+    order.versions
+      .filter { it.fmsResultId != null && it.status == OrderStatus.SUBMITTED }
+      .sortedByDescending { it.versionId }
+      .forEach { version ->
+        val submissionResult = repo.getReferenceById(version.fmsResultId!!)
+        val state = fmsClient.getState(submissionResult.deviceWearerResult.deviceWearerId)
+        if (state != CaseState.CANCELLED && state != CaseState.UNKNOWN) {
+          return submissionResult
+        }
+      }
+    return null
+  }
+
   override fun submitOrder(order: Order, orderSource: FmsOrderSource): FmsSubmissionResult {
     val createDeviceWearerResult = this.updateDeviceWearer(order)
     val deviceWearerId = createDeviceWearerResult.deviceWearerId
@@ -189,8 +248,14 @@ class FmsVariationSubmissionStrategy(
         orderSource = orderSource,
       )
     }
-
-    val createMonitoringOrderResult = this.updateMonitoringOrder(order, deviceWearerId, orderSource)
+    val lastSubmissionResult = this.getLastSuccessfulSubmissionResult(order)
+    val createMonitoringOrderResult = this.updateMonitoringOrder(
+      order,
+      deviceWearerId,
+      createDeviceWearerResult,
+      lastSubmissionResult,
+      orderSource,
+    )
 
     if (createMonitoringOrderResult.status == SubmissionStatus.FAILURE) {
       return FmsSubmissionResult(
