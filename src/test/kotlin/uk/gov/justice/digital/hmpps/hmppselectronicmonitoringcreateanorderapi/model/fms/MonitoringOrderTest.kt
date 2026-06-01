@@ -1944,7 +1944,7 @@ class MonitoringOrderTest : OrderTestBase() {
   }
 
   @Test
-  fun `should include responsible officer name, org, details as true, if home office and start date in past`() {
+  fun `should not include responsible officer name, org, details, if home office and start date in past`() {
     val order =
       createOrder(
         deviceWearer = createDeviceWearer(
@@ -1960,6 +1960,8 @@ class MonitoringOrderTest : OrderTestBase() {
         monitoringConditions = createMonitoringConditions(
           startDate = ZonedDateTime.now().minusDays(10),
         ),
+        type = RequestType.REINSTALL_AT_DIFFERENT_ADDRESS,
+        variationDetails = createvariationDetails()
       )
 
     val result = MonitoringOrder.fromOrder(
@@ -1969,9 +1971,9 @@ class MonitoringOrderTest : OrderTestBase() {
       FmsOrderSource.CEMO,
     )
 
-    assertThat(result.responsibleOrganization).isEqualTo("Home Office")
-    assertThat(result.responsibleOfficerName).isEqualTo("Bobby")
-    assertThat(result.responsibleOfficerDetailsReceived).isEqualTo("Yes")
+    assertThat(result.responsibleOrganization).isEqualTo("")
+    assertThat(result.responsibleOfficerName).isEqualTo("")
+    assertThat(result.responsibleOfficerDetailsReceived).isEqualTo("No")
   }
 
   private fun assertNotifyingOrgNameMapping(

@@ -383,16 +383,13 @@ data class MonitoringOrder(
         val startDateIsInPast =
           monitoringStartDate != null && (monitoringStartDate.toLocalDate() < ZonedDateTime.now().toLocalDate())
         val orderIsVariation = RequestType.VARIATION_TYPES.contains(order.type)
-        val isHomeOffice =
-          getNotifyingOrganisation(parties, order.dataDictionaryVersion) == NotifyingOrganisationDDv5.HOME_OFFICE.value
         val variationInPast = startDateIsInPast && orderIsVariation
-        val shouldBlankVariationFields = variationInPast && !isHomeOffice
 
         monitoringOrder.apply {
-          responsibleOfficerName = if (shouldBlankVariationFields) "" else parties.getResponsibleOfficerFullName()
+          responsibleOfficerName = if (variationInPast) "" else parties.getResponsibleOfficerFullName()
           responsibleOfficerPhone = if (variationInPast) "" else getResponsibleOfficerPhoneNumber(parties)
           responsibleOfficerEmail = if (variationInPast) "" else parties.responsibleOfficerEmail ?: ""
-          responsibleOrganization = if (shouldBlankVariationFields) "" else getResponsibleOrganisation(parties)
+          responsibleOrganization = if (variationInPast) "" else getResponsibleOrganisation(parties)
           roRegion = if (variationInPast) "" else getResponsibleOrganisationRegion(parties)
           if (responsibleOrganization == ResponsibleOrganisation.PROBATION.value
           ) {
@@ -415,14 +412,14 @@ data class MonitoringOrder(
 
             val isCourt = matchingEnum != null && NotifyingOrganisationDDv5.COURTS.contains(matchingEnum)
 
-            responsibleOfficerDetailsReceived = if (isCourt || shouldBlankVariationFields) {
+            responsibleOfficerDetailsReceived = if (isCourt || variationInPast) {
               "No"
             } else {
               "Yes"
             }
           }
 
-          if (shouldBlankVariationFields) {
+          if (variationInPast) {
             responsibleOfficerName = ""
             responsibleOfficerPhone = ""
             responsibleOfficerEmail = ""
