@@ -162,7 +162,6 @@ object ValidationErrors {
 
   object TrailMonitoringConditions {
     const val START_DATE_REQUIRED: String = "Enter date trail monitoring starts"
-    const val END_DATE_REQUIRED: String = "Enter date trail monitoring ends"
     const val END_DATE_MUST_BE_IN_FUTURE: String = "End date must be in the future"
     const val END_DATE_MUST_BE_AFTER_START_DATE: String =
       "Date trail monitoring ends must be after the date trail monitoring starts"
