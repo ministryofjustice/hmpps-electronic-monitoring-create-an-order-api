@@ -1,12 +1,17 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.resource
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.web.reactive.function.BodyInserters
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.UpdateOrderIntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.UriTestCase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.TrailMonitoringConditions
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateTrailMonitoringConditionsDto
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DeviceType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidationError
 import java.time.LocalDate
 import java.time.LocalTime
@@ -14,7 +19,8 @@ import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.util.*
 
-class MonitoringConditionsTrailControllerTest : IntegrationTestBase() {
+class MonitoringConditionsTrailControllerTest(@Autowired private val objectMapper: ObjectMapper) :
+  UpdateOrderIntegrationTestBase() {
 
   private val mockStartDate: ZonedDateTime = ZonedDateTime.of(
     LocalDate.of(2025, 1, 1),
@@ -34,77 +40,17 @@ class MonitoringConditionsTrailControllerTest : IntegrationTestBase() {
       "Date trail monitoring ends must be after the date trail monitoring starts"
   }
 
+  override val testUris: List<UriTestCase> =
+    listOf(
+      UriTestCase(
+        uri = "/api/orders/:orderId/monitoring-conditions-trail",
+        createValidBody = { mockValidRequestBody() },
+      ),
+    )
+
   @BeforeEach
   fun setup() {
     repo.deleteAll()
-  }
-
-  @Test
-  fun `Trail monitoring conditions cannot be updated by a different user`() {
-    val order = createOrder()
-
-    webTestClient.put()
-      .uri("/api/orders/${order.id}/monitoring-conditions-trail")
-      .contentType(MediaType.APPLICATION_JSON)
-      .body(
-        BodyInserters.fromValue(
-          """
-            {
-              "startDate": "$mockStartDate",
-              "endDate": "$mockEndDate"
-            }
-          """.trimIndent(),
-        ),
-      )
-      .headers(setAuthorisation("AUTH_ADM_2"))
-      .exchange()
-      .expectStatus()
-      .isNotFound
-  }
-
-  @Test
-  fun `Trail monitoring conditions for a non-existent order are not update-able`() {
-    webTestClient.put()
-      .uri("/api/orders/${UUID.randomUUID()}/monitoring-conditions-trail")
-      .contentType(MediaType.APPLICATION_JSON)
-      .body(
-        BodyInserters.fromValue(
-          """
-            {
-              "startDate": "$mockStartDate",
-              "endDate": "$mockEndDate"
-            }
-          """.trimIndent(),
-        ),
-      )
-      .headers(setAuthorisation("AUTH_ADM"))
-      .exchange()
-      .expectStatus()
-      .isNotFound
-  }
-
-  @Test
-  fun `Trail monitoring conditions cannot be updated for a submitted order`() {
-    val order = createSubmittedOrder()
-
-    webTestClient.put()
-      .uri("/api/orders/${order.id}/monitoring-conditions-trail")
-      .contentType(MediaType.APPLICATION_JSON)
-      .body(
-        BodyInserters.fromValue(
-          """
-            {
-              "startDate": "$mockStartDate",
-              "endDate": "$mockEndDate",
-              "deviceType": "FITTED"
-            }
-          """.trimIndent(),
-        ),
-      )
-      .headers(setAuthorisation("AUTH_ADM"))
-      .exchange()
-      .expectStatus()
-      .isNotFound
   }
 
   @Test
@@ -233,5 +179,14 @@ class MonitoringConditionsTrailControllerTest : IntegrationTestBase() {
     Assertions.assertThat(result.responseBody!!).contains(
       ValidationError("endDate", ErrorMessages.END_DATE_MUST_BE_AFTER_START_DATE),
     )
+  }
+
+  private fun mockValidRequestBody(
+    startDate: ZonedDateTime = ZonedDateTime.now(),
+    endDate: ZonedDateTime = ZonedDateTime.now().plusMonths(1),
+  ): String {
+    val dto = UpdateTrailMonitoringConditionsDto(startDate, endDate, DeviceType.FITTED)
+
+    return objectMapper.writeValueAsString(dto)
   }
 }
