@@ -120,6 +120,70 @@ class MonitoringOrderTest : OrderTestBase() {
   }
 
   @Nested
+  inner class Trail {
+    @Test
+    fun `It should default end date to 2040 when no end date provided and data source is CEMO`() {
+      val trailStartDate = ZonedDateTime.of(2026, 1, 23, 12, 0, 0, 0, ZoneId.of("UTC"))
+      val order = createOrder(
+        monitoringConditions = createMonitoringConditions(
+          trail = true,
+          endDate = null,
+        ),
+        trailMonitoringConditions = TrailMonitoringConditions(
+          versionId = UUID.randomUUID(),
+          startDate = trailStartDate,
+          deviceType = DeviceType.FITTED,
+        ),
+      )
+      val fmsMonitoringOrder = MonitoringOrder.fromOrder(
+        order,
+        caseId = "",
+        featureFlags = mockFeatureFlags,
+        FmsOrderSource.CEMO,
+      )
+
+      assertThat(fmsMonitoringOrder.enforceableCondition).contains(
+        EnforceableCondition(
+          condition = "Location Monitoring (Fitted Device)",
+          startDate = "2026-01-23 12:00:00",
+          endDate = "2040-01-01 23:59:00",
+        ),
+      )
+      assertThat(fmsMonitoringOrder.orderEnd).isEqualTo("2040-01-01 23:59:00")
+    }
+
+    @Test
+    fun `It not should default end date to 2040 when no end date provided and data source is COMMON_PLATFORM`() {
+      val trailStartDate = ZonedDateTime.of(2026, 1, 23, 12, 0, 0, 0, ZoneId.of("UTC"))
+      val order = createOrder(
+        monitoringConditions = createMonitoringConditions(
+          trail = true,
+          endDate = null,
+        ),
+        trailMonitoringConditions = TrailMonitoringConditions(
+          versionId = UUID.randomUUID(),
+          startDate = trailStartDate,
+          deviceType = DeviceType.FITTED,
+        ),
+      )
+      val fmsMonitoringOrder = MonitoringOrder.fromOrder(
+        order,
+        caseId = "",
+        featureFlags = mockFeatureFlags,
+        FmsOrderSource.COMMON_PLATFORM,
+      )
+      assertThat(fmsMonitoringOrder.enforceableCondition).contains(
+        EnforceableCondition(
+          condition = "Location Monitoring (Fitted Device)",
+          startDate = "2026-01-23 12:00:00",
+          endDate = "",
+        ),
+      )
+      assertThat(fmsMonitoringOrder.orderEnd).isEqualTo("")
+    }
+  }
+
+  @Nested
   inner class EnforcementZone {
     @Test
     fun `It should map exclusion inclusion enforceable condition dates from enforcement zones`() {
