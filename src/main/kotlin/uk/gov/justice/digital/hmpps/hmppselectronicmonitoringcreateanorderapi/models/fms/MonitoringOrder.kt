@@ -462,7 +462,7 @@ data class MonitoringOrder(
           EnforceableCondition(
             deviceType,
             startDate = getBritishDateAndTime(order.monitoringConditionsTrail!!.startDate),
-            endDate = getBritishDateAndTime(order.monitoringConditionsTrail!!.endDate ?: defaultEndDate),
+            endDate = getBritishDateAndTime(order.monitoringConditionsTrail!!.endDate ?: defaultEndDate) ?: "",
           ),
 
         )
