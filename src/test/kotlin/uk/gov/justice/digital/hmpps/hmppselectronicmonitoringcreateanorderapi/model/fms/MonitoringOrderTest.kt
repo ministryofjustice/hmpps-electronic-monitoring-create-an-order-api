@@ -1943,6 +1943,37 @@ class MonitoringOrderTest : OrderTestBase() {
     assertThat(result.responsibleOrganization).isEqualTo("Home Office")
   }
 
+  @Test
+  fun `should include responsible officer name, org, details as true, if home office and start date in past`() {
+    val order =
+      createOrder(
+        deviceWearer = createDeviceWearer(
+          firstName = "First",
+          middleName = null,
+          lastName = "Last",
+        ),
+        interestedParties = createInterestedParty(
+          responsibleOrganisation = "",
+          notifyingOrganisation = NotifyingOrganisation.HOME_OFFICE.value,
+          responsibleOfficerName = "Bobby",
+        ),
+        monitoringConditions = createMonitoringConditions(
+          startDate = ZonedDateTime.now().minusDays(10),
+        ),
+      )
+
+    val result = MonitoringOrder.fromOrder(
+      order,
+      null,
+      FeatureFlags(dataDictionaryVersion = DataDictionaryVersion.DDV6, ddV6CourtMappings = true),
+      FmsOrderSource.CEMO,
+    )
+
+    assertThat(result.responsibleOrganization).isEqualTo("Home Office")
+    assertThat(result.responsibleOfficerName).isEqualTo("Bobby")
+    assertThat(result.responsibleOfficerDetailsReceived).isEqualTo("Yes")
+  }
+
   private fun assertNotifyingOrgNameMapping(
     savedValue: String,
     mappedValue: String,
