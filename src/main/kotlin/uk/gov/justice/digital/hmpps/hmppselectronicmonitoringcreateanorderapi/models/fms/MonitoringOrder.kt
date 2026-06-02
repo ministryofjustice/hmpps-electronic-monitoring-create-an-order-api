@@ -728,12 +728,12 @@ data class MonitoringOrder(
     private fun getResponsibleOrganisation(interestedParties: InterestedParties): String =
       ResponsibleOrganisation.from(interestedParties.responsibleOrganisation)?.value
         ?: interestedParties.responsibleOrganisation?.takeIf { it.isNotBlank() }
-        ?: "".takeIf { interestedParties.notifyingOrganisation != NotifyingOrganisation.HOME_OFFICE.value }
+        ?: "".takeIf { interestedParties.notifyingOrganisation != NotifyingOrganisation.HOME_OFFICE.name }
         ?: ResponsibleOrganisation.HOME_OFFICE.value
 
     private fun getResponsibleOrganisationRegion(interestedParties: InterestedParties): String {
-      if (ResponsibleOrganisation.from(interestedParties.responsibleOrganisation) ==
-        ResponsibleOrganisation.HOME_OFFICE
+      if (NotifyingOrganisationDDv5.from(interestedParties.notifyingOrganisation) ==
+        NotifyingOrganisationDDv5.HOME_OFFICE
       ) {
         return "UKBA"
       }
