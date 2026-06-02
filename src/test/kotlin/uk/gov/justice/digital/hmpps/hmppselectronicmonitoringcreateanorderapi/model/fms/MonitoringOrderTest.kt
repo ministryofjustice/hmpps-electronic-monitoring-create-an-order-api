@@ -1961,7 +1961,7 @@ class MonitoringOrderTest : OrderTestBase() {
           startDate = ZonedDateTime.now().minusDays(10),
         ),
         type = RequestType.REINSTALL_AT_DIFFERENT_ADDRESS,
-        variationDetails = createvariationDetails()
+        variationDetails = createvariationDetails(),
       )
 
     val result = MonitoringOrder.fromOrder(
