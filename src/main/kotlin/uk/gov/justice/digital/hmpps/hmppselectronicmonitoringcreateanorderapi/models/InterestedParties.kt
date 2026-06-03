@@ -7,6 +7,7 @@ import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisationDDv5
 import java.util.*
 
 @Entity
@@ -65,6 +66,9 @@ data class InterestedParties(
   fun getResponsibleOfficerFullName(): String? {
     if (!responsibleOfficerFirstName.isNullOrBlank() && !responsibleOfficerLastName.isNullOrBlank()) {
       return "$responsibleOfficerFirstName $responsibleOfficerLastName"
+    }
+    if (notifyingOrganisation == NotifyingOrganisationDDv5.HOME_OFFICE.name) {
+      return NotifyingOrganisationDDv5.HOME_OFFICE.value
     }
     return responsibleOfficerName
   }
