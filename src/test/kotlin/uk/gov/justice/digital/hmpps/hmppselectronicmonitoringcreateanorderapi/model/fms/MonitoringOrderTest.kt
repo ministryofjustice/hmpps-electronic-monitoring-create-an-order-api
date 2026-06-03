@@ -1924,7 +1924,7 @@ class MonitoringOrderTest : OrderTestBase() {
   }
 
   @Test
-  fun `should default to home office if responsible org`() {
+  fun `should default to home office if responsible org is empty`() {
     val order =
       createOrder(
         deviceWearer = createDeviceWearer(
@@ -1934,7 +1934,7 @@ class MonitoringOrderTest : OrderTestBase() {
         ),
         interestedParties = createInterestedParty(
           responsibleOrganisation = "",
-          notifyingOrganisation = NotifyingOrganisation.HOME_OFFICE.value,
+          notifyingOrganisation = NotifyingOrganisation.HOME_OFFICE.name,
         ),
       )
 
@@ -1944,7 +1944,7 @@ class MonitoringOrderTest : OrderTestBase() {
   }
 
   @Test
-  fun `should include responsible officer name, org, details as true, if home office and start date in past`() {
+  fun `should not include responsible officer name, org, details, if home office, variation and start date in past`() {
     val order =
       createOrder(
         deviceWearer = createDeviceWearer(
@@ -1953,13 +1953,53 @@ class MonitoringOrderTest : OrderTestBase() {
           lastName = "Last",
         ),
         interestedParties = createInterestedParty(
-          responsibleOrganisation = "",
-          notifyingOrganisation = NotifyingOrganisation.HOME_OFFICE.value,
-          responsibleOfficerName = "Bobby",
+          responsibleOrganisation = null,
+          notifyingOrganisation = NotifyingOrganisation.HOME_OFFICE.name,
+          responsibleOfficerFirstName = null,
+          responsibleOfficerLastName = null,
+          responsibleOfficerEmail = null,
         ),
         monitoringConditions = createMonitoringConditions(
           startDate = ZonedDateTime.now().minusDays(10),
         ),
+        type = RequestType.REINSTALL_AT_DIFFERENT_ADDRESS,
+        variationDetails = createvariationDetails(),
+      )
+
+    val result = MonitoringOrder.fromOrder(
+      order,
+      null,
+      FeatureFlags(dataDictionaryVersion = DataDictionaryVersion.DDV6, ddV6CourtMappings = true),
+      FmsOrderSource.CEMO,
+    )
+
+    assertThat(result.responsibleOrganization).isEqualTo("")
+    assertThat(result.responsibleOfficerName).isEqualTo("")
+    assertThat(result.roRegion).isEqualTo("")
+    assertThat(result.responsibleOfficerDetailsReceived).isEqualTo("No")
+  }
+
+  @Test
+  fun `should include responsible officer name, org, details, if home office, variation and start date in future`() {
+    val order =
+      createOrder(
+        deviceWearer = createDeviceWearer(
+          firstName = "First",
+          middleName = null,
+          lastName = "Last",
+        ),
+        interestedParties = createInterestedParty(
+          responsibleOrganisation = null,
+          notifyingOrganisation = NotifyingOrganisation.HOME_OFFICE.name,
+          responsibleOfficerFirstName = null,
+          responsibleOfficerLastName = null,
+          responsibleOfficerEmail = null,
+        ),
+        monitoringConditions = createMonitoringConditions(
+          startDate = ZonedDateTime.now().plusDays(10),
+        ),
+        type = RequestType.REINSTALL_AT_DIFFERENT_ADDRESS,
+        variationDetails = createvariationDetails(),
       )
 
     val result = MonitoringOrder.fromOrder(
@@ -1970,7 +2010,43 @@ class MonitoringOrderTest : OrderTestBase() {
     )
 
     assertThat(result.responsibleOrganization).isEqualTo("Home Office")
-    assertThat(result.responsibleOfficerName).isEqualTo("Bobby")
+    assertThat(result.responsibleOfficerName).isEqualTo("Home Office")
+    assertThat(result.roRegion).isEqualTo("UKBA")
+    assertThat(result.responsibleOfficerDetailsReceived).isEqualTo("Yes")
+  }
+
+  @Test
+  fun `should  include responsible officer name, org, details, if home office and new order`() {
+    val order =
+      createOrder(
+        deviceWearer = createDeviceWearer(
+          firstName = "First",
+          middleName = null,
+          lastName = "Last",
+        ),
+        interestedParties = createInterestedParty(
+          notifyingOrganisation = NotifyingOrganisation.HOME_OFFICE.name,
+          responsibleOrganisation = null,
+          responsibleOfficerFirstName = null,
+          responsibleOfficerLastName = null,
+          responsibleOfficerEmail = null,
+        ),
+        monitoringConditions = createMonitoringConditions(
+          startDate = ZonedDateTime.now().minusDays(10),
+        ),
+        type = RequestType.REQUEST,
+      )
+
+    val result = MonitoringOrder.fromOrder(
+      order,
+      null,
+      FeatureFlags(dataDictionaryVersion = DataDictionaryVersion.DDV6, ddV6CourtMappings = true),
+      FmsOrderSource.CEMO,
+    )
+
+    assertThat(result.responsibleOrganization).isEqualTo("Home Office")
+    assertThat(result.responsibleOfficerName).isEqualTo("Home Office")
+    assertThat(result.roRegion).isEqualTo("UKBA")
     assertThat(result.responsibleOfficerDetailsReceived).isEqualTo("Yes")
   }
 
