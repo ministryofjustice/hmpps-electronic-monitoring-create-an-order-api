@@ -31,7 +31,7 @@ data class VariationDetails(
   var variationDate: ZonedDateTime,
 
   @Column(name = "VARIATION_DETAILS", nullable = false, length = 200)
-  val variationDetails: String,
+  val variationDetails: String = "",
 
   @Schema(hidden = true)
   @OneToOne
