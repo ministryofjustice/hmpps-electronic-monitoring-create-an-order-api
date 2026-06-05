@@ -21,6 +21,6 @@ enum class DeviceWearerChange(val message: String) {
   RiskCategory("Device wearer's risk categories have changed"),
   PersonalIdChanged("Device wearer's personal ID number(s) have changed"),
   InterpreterRequired("Device wearer's interpreter needs have changed"),
-  ResponsibleAdultChanged("Responsible adult's detailDTreeFocusnged"),
+  ResponsibleAdultChanged("Responsible adult's details have changed"),
   ParentPhoneNumber("Responsible adult's phone number has changed"),
 }
