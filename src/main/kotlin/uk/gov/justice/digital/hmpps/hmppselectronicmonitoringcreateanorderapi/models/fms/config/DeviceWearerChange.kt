@@ -1,0 +1,26 @@
+package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.config
+
+enum class DeviceWearerChange(val message: String) {
+  NameChange("Device wearer's name has changed"),
+  Alias("Device wearer's preferred name has changed"),
+  DateOfBirth("Device wearer's date of birth has changed"),
+  AdultToChild("Order has changed from an adult to youth"),
+  ChildToAdult("Order has changed from a youth to adult"),
+  Sex("Device wearer's sex has changed"),
+  GenderIdentity("Device wearer's gender has changed"),
+  Disability("Device wearer's disability or health conditions have changed"),
+  PrimaryAddressChange("Device wearer's main address has changed"),
+  SecondaryAddressChange("Device wearer's secondary address has changed"),
+  TertiaryAddressChange("Device wearer's tertiary address has changed"),
+  NoFixedAddress("Device wearer now doesn't have a fixed address"),
+  HasFixedAddress("Device wearer now has a fixed address"),
+  PhoneNumber("Device wearer's phone number has changed"),
+  Mappa("Device wearer's MAPPA level has changed"),
+  MappaCategory("Device wearer's MAPPA category has changed"),
+  MappaCaseType("Device wearer's MAPPA case type has changed"),
+  RiskCategory("Device wearer's risk categories have changed"),
+  PersonalIdChanged("Device wearer's personal ID number(s) have changed"),
+  InterpreterRequired("Device wearer's interpreter needs have changed"),
+  ResponsibleAdultChanged("Responsible adult's detailDTreeFocusnged"),
+  ParentPhoneNumber("Responsible adult's phone number has changed"),
+}
