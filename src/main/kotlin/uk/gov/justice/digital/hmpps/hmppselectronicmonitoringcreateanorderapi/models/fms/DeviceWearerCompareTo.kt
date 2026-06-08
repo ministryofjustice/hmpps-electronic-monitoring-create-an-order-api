@@ -1,20 +1,24 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms
 
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.VariationType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.config.DeviceWearerChange
 import kotlin.collections.plusAssign
 
-fun DeviceWearer.compareTo(previous: DeviceWearer): List<String> {
+fun DeviceWearer.compareTo(previous: DeviceWearer): CompareToResult {
   val messages = mutableListOf<String>()
+  val orderVariationTypes: MutableSet<VariationType> = mutableSetOf()
 
   fun compareField(change: DeviceWearerChange, newValue: Any?, oldValue: Any?) {
     if (oldValue != newValue) {
       messages += change.message
+      orderVariationTypes += change.orderVariationType
     }
   }
 
   fun <T> compareList(change: DeviceWearerChange, new: List<T>?, old: List<T>?) {
     if ((old ?: emptyList()) != (new ?: emptyList<T>())) {
       messages += change.message
+      orderVariationTypes += change.orderVariationType
     }
   }
 
@@ -22,8 +26,10 @@ fun DeviceWearer.compareTo(previous: DeviceWearer): List<String> {
     if (new != old) {
       if (new == "adult") {
         messages += DeviceWearerChange.ChildToAdult.message
+        orderVariationTypes += DeviceWearerChange.ChildToAdult.orderVariationType
       } else if (new == "child") {
         messages += DeviceWearerChange.AdultToChild.message
+        orderVariationTypes += DeviceWearerChange.AdultToChild.orderVariationType
       }
     }
   }
@@ -32,8 +38,10 @@ fun DeviceWearer.compareTo(previous: DeviceWearer): List<String> {
     if (new != old) {
       if (new == "true") {
         messages += DeviceWearerChange.NoFixedAddress.message
+        orderVariationTypes += DeviceWearerChange.NoFixedAddress.orderVariationType
       } else if (new == "false") {
         messages += DeviceWearerChange.HasFixedAddress.message
+        orderVariationTypes += DeviceWearerChange.HasFixedAddress.orderVariationType
       }
     }
   }
@@ -63,6 +71,7 @@ fun DeviceWearer.compareTo(previous: DeviceWearer): List<String> {
     )
   ) {
     messages += DeviceWearerChange.PrimaryAddressChange.message
+    orderVariationTypes += DeviceWearerChange.PrimaryAddressChange.orderVariationType
   }
 
   if (listOf(
@@ -80,6 +89,7 @@ fun DeviceWearer.compareTo(previous: DeviceWearer): List<String> {
     )
   ) {
     messages += DeviceWearerChange.SecondaryAddressChange.message
+    orderVariationTypes += DeviceWearerChange.SecondaryAddressChange.orderVariationType
   }
 
   if (listOf(
@@ -97,6 +107,7 @@ fun DeviceWearer.compareTo(previous: DeviceWearer): List<String> {
     )
   ) {
     messages += DeviceWearerChange.TertiaryAddressChange.message
+    orderVariationTypes += DeviceWearerChange.TertiaryAddressChange.orderVariationType
   }
 
   compareNoFixedAddress(this.noFixedAddress, previous.noFixedAddress)
@@ -122,6 +133,7 @@ fun DeviceWearer.compareTo(previous: DeviceWearer): List<String> {
     )
   ) {
     messages += DeviceWearerChange.PersonalIdChanged.message
+    orderVariationTypes += DeviceWearerChange.PersonalIdChanged.orderVariationType
   }
 
   if (listOf(
@@ -133,6 +145,7 @@ fun DeviceWearer.compareTo(previous: DeviceWearer): List<String> {
     )
   ) {
     messages += DeviceWearerChange.InterpreterRequired.message
+    orderVariationTypes += DeviceWearerChange.InterpreterRequired.orderVariationType
   }
 
   if (listOf(
@@ -146,11 +159,16 @@ fun DeviceWearer.compareTo(previous: DeviceWearer): List<String> {
     )
   ) {
     messages += DeviceWearerChange.ResponsibleAdultChanged.message
+    orderVariationTypes += DeviceWearerChange.ResponsibleAdultChanged.orderVariationType
   }
   compareField(DeviceWearerChange.ParentPhoneNumber, this.parentPhoneNumber, previous.parentPhoneNumber)
 
   compareList(DeviceWearerChange.Disability, this.disability, previous.disability)
   compareList(DeviceWearerChange.RiskCategory, this.riskCategory, previous.riskCategory)
 
-  return messages
+  return CompareToResult(messages, orderVariationTypes)
+}
+
+class CompareToResult(val messages: List<String>, private val orderVariationTypes: Set<VariationType>) {
+  val orderVariationType: VariationType get() = this.orderVariationTypes.first()
 }

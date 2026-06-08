@@ -13,7 +13,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.Schedule
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.compareTo
 
-class MonitoringOrderComapreTo {
+class MonitoringOrderCompareTo {
 
   private fun baselineOrder() = MonitoringOrder(
     caseId = "CASE1",

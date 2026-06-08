@@ -207,7 +207,7 @@ class FmsVariationSubmissionStrategy(
         lastSuccessfulSubmitResult.deviceWearerResult.payload,
         DeviceWearer::class.java,
       )
-      deviceWearerPayload.compareTo(lastSuccessfulDeviceWearerPayload).forEach { change ->
+      deviceWearerPayload.compareTo(lastSuccessfulDeviceWearerPayload).messages.forEach { change ->
         changeDetails.appendLine(change)
       }
 

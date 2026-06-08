@@ -6,7 +6,9 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ArgumentsSource
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.DeviceWearerFieldChangeArgumentsProvider
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.DeviceWearerNegativeFieldArgumentsProvider
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.DeviceWearerOrderVariationTypeArgumentsProvider
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.FieldChangeCase
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.OVTChangeCase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.DeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.Disability
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsRiskCategory
@@ -40,7 +42,7 @@ class DeviceWearerCompareTo {
 
     val result = updated.compareTo(old)
 
-    Assertions.assertThat(result).isEmpty()
+    Assertions.assertThat(result.messages).isEmpty()
   }
 
   @Test
@@ -54,7 +56,7 @@ class DeviceWearerCompareTo {
 
     val result = updated.compareTo(old)
 
-    Assertions.assertThat(result)
+    Assertions.assertThat(result.messages)
       .containsExactly("Device wearer's phone number has changed")
   }
 
@@ -67,7 +69,7 @@ class DeviceWearerCompareTo {
 
     val result = updated.compareTo(old)
 
-    Assertions.assertThat(result)
+    Assertions.assertThat(result.messages)
       .containsExactly("Device wearer's phone number has changed")
   }
 
@@ -80,7 +82,7 @@ class DeviceWearerCompareTo {
 
     val result = updated.compareTo(old)
 
-    Assertions.assertThat(result)
+    Assertions.assertThat(result.messages)
       .containsExactly(
         "Device wearer's disability or health conditions have changed",
       )
@@ -95,7 +97,7 @@ class DeviceWearerCompareTo {
 
     val result = updated.compareTo(old)
 
-    Assertions.assertThat(result)
+    Assertions.assertThat(result.messages)
       .contains("Device wearer's disability or health conditions have changed")
   }
 
@@ -108,7 +110,7 @@ class DeviceWearerCompareTo {
 
     val result = updated.compareTo(old)
 
-    Assertions.assertThat(result)
+    Assertions.assertThat(result.messages)
       .contains("Device wearer's risk categories have changed")
   }
 
@@ -123,7 +125,7 @@ class DeviceWearerCompareTo {
 
     val result = updated.compareTo(old)
 
-    Assertions.assertThat(result).containsExactlyInAnyOrder(
+    Assertions.assertThat(result.messages).containsExactlyInAnyOrder(
       "Device wearer's name has changed",
       "Device wearer's main address has changed",
       "Device wearer's MAPPA level has changed",
@@ -140,7 +142,7 @@ class DeviceWearerCompareTo {
 
     val result = updated.compareTo(old)
 
-    Assertions.assertThat(result).containsExactly(
+    Assertions.assertThat(result.messages).containsExactly(
       "Device wearer's personal ID number(s) have changed",
     )
   }
@@ -154,7 +156,7 @@ class DeviceWearerCompareTo {
 
     val result = updated.compareTo(old)
 
-    Assertions.assertThat(result).isEmpty()
+    Assertions.assertThat(result.messages).isEmpty()
   }
 
   @ParameterizedTest(name = "changing {0} field emits expected message")
@@ -164,7 +166,7 @@ class DeviceWearerCompareTo {
     val updated = baselineWearer()
     case.mutate(updated)
     val result = updated.compareTo(old)
-    Assertions.assertThat(result)
+    Assertions.assertThat(result.messages)
       .withFailMessage("Field ${case.name} did not emit expected message")
       .contains(case.expectedMessage)
   }
@@ -176,7 +178,7 @@ class DeviceWearerCompareTo {
     val updated = baselineWearer()
     updated.adultChild = "child"
     val result = updated.compareTo(old)
-    Assertions.assertThat(result)
+    Assertions.assertThat(result.messages)
       .contains("Order has changed from an adult to youth")
   }
 
@@ -187,7 +189,7 @@ class DeviceWearerCompareTo {
     val updated = baselineWearer()
     updated.adultChild = "adult"
     val result = updated.compareTo(old)
-    Assertions.assertThat(result)
+    Assertions.assertThat(result.messages)
       .contains("Order has changed from a youth to adult")
   }
 
@@ -198,7 +200,7 @@ class DeviceWearerCompareTo {
     val updated = baselineWearer()
     updated.noFixedAddress = "true"
     val result = updated.compareTo(old)
-    Assertions.assertThat(result)
+    Assertions.assertThat(result.messages)
       .contains("Device wearer now doesn't have a fixed address")
   }
 
@@ -209,7 +211,7 @@ class DeviceWearerCompareTo {
     val updated = baselineWearer()
     updated.noFixedAddress = "false"
     val result = updated.compareTo(old)
-    Assertions.assertThat(result)
+    Assertions.assertThat(result.messages)
       .contains("Device wearer now has a fixed address")
   }
 
@@ -223,10 +225,23 @@ class DeviceWearerCompareTo {
 
     val result = updated.compareTo(old)
 
-    Assertions.assertThat(result)
+    Assertions.assertThat(result.messages)
       .withFailMessage(
-        "Field ${case.name} should not emit any change message but got: $result",
+        "Field ${case.name} should not emit any change message but got: ${result.messages}",
       )
       .isEmpty()
+  }
+
+  @ParameterizedTest(name = "changing {0} produces expected variation")
+  @ArgumentsSource(DeviceWearerOrderVariationTypeArgumentsProvider::class)
+  fun `changing order variation fields produces expected variation`(case: OVTChangeCase) {
+    val old = baselineWearer()
+    val updated = baselineWearer()
+
+    case.mutate(updated)
+
+    val result = updated.compareTo(old)
+
+    Assertions.assertThat(result.orderVariationType).isEqualTo(case.expected)
   }
 }

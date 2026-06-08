@@ -3,12 +3,17 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.m
 import org.junit.jupiter.api.extension.ExtensionContext
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.ArgumentsProvider
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.VariationType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.DeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.Disability
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsRiskCategory
 import java.util.stream.Stream
 
 data class FieldChangeCase(val name: String, val mutate: (DeviceWearer) -> Unit, val expectedMessage: String? = null) {
+  override fun toString(): String = name
+}
+
+data class OVTChangeCase(val name: String, val mutate: (DeviceWearer) -> Unit, val expected: VariationType) {
   override fun toString(): String = name
 }
 
@@ -258,6 +263,7 @@ class DeviceWearerFieldChangeArgumentsProvider : ArgumentsProvider {
     return cases.map { Arguments.of(it) }.stream()
   }
 }
+
 class DeviceWearerNegativeFieldArgumentsProvider : ArgumentsProvider {
 
   override fun provideArguments(context: ExtensionContext): Stream<out Arguments> {
@@ -274,6 +280,66 @@ class DeviceWearerNegativeFieldArgumentsProvider : ArgumentsProvider {
       FieldChangeCase(
         name = "riskSelfHarm",
         mutate = { it.riskSelfHarm = "Updated" },
+      ),
+    )
+    return cases
+      .map { Arguments.of(it) }
+      .stream()
+  }
+}
+
+class DeviceWearerOrderVariationTypeArgumentsProvider : ArgumentsProvider {
+  override fun provideArguments(context: ExtensionContext): Stream<out Arguments> {
+    val cases = listOf(
+      OVTChangeCase(
+        name = "first_name",
+        mutate = { it.firstName = "Jane" },
+        expected = VariationType.CHANGE_TO_PERSONAL_DETAILS,
+      ),
+      OVTChangeCase(
+        name = "alias",
+        mutate = { it.alias = "new alias" },
+        expected = VariationType.CHANGE_TO_PERSONAL_DETAILS,
+      ),
+      OVTChangeCase(
+        name = "date_of_birth",
+        mutate = { it.dateOfBirth = "2000-01-01" },
+        expected = VariationType.CHANGE_TO_PERSONAL_DETAILS,
+      ),
+      OVTChangeCase(
+        name = "mappa",
+        mutate = { it.mappa = "Level 1" },
+        expected = VariationType.CHANGE_TO_PERSONAL_DETAILS,
+      ),
+      OVTChangeCase(
+        name = "pnc_id",
+        mutate = { it.pncId = "123456A" },
+        expected = VariationType.CHANGE_TO_PERSONAL_DETAILS,
+      ),
+      OVTChangeCase(
+        name = "interpreter_required",
+        mutate = { it.interpreterRequired = "Yes" },
+        expected = VariationType.CHANGE_TO_PERSONAL_DETAILS,
+      ),
+      OVTChangeCase(
+        name = "address_1",
+        mutate = { it.address1 = "10 Downing St" },
+        expected = VariationType.CHANGE_TO_ADDRESS,
+      ),
+      OVTChangeCase(
+        name = "secondary_address_1",
+        mutate = { it.secondaryAddress1 = "Flat 4" },
+        expected = VariationType.CHANGE_TO_ADDRESS,
+      ),
+      OVTChangeCase(
+        name = "tertiary_address_1",
+        mutate = { it.tertiaryAddress1 = "Care Home" },
+        expected = VariationType.CHANGE_TO_ADDRESS,
+      ),
+      OVTChangeCase(
+        name = "no_fixed_address",
+        mutate = { it.noFixedAddress = "true" },
+        expected = VariationType.CHANGE_TO_ADDRESS,
       ),
     )
     return cases
