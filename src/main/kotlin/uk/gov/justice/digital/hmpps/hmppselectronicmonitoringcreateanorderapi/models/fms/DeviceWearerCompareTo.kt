@@ -5,7 +5,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import kotlin.collections.plusAssign
 
 fun DeviceWearer.compareTo(previous: DeviceWearer): CompareToResult {
-  val result = CompareToResult.new()
+  val result = CompareToResult()
 
   fun compareField(change: DeviceWearerChange, newValue: Any?, oldValue: Any?) {
     if (oldValue != newValue) {
@@ -156,30 +156,22 @@ fun DeviceWearer.compareTo(previous: DeviceWearer): CompareToResult {
   return result
 }
 
-class CompareToResult(val messages: MutableList<String>, private val orderVariationTypes: MutableSet<VariationType>) {
+class CompareToResult {
+  private val _messages = mutableListOf<String>()
+  val messages: MutableList<String> get() = _messages
+
+  private val orderVariationTypes = mutableListOf<VariationType>()
   val orderVariationType: VariationType
     get() {
-      if (this.orderVariationTypes.isEmpty()) {
-        return VariationType.OTHER
-      }
-
-      return this.orderVariationTypes.minBy { it.priority }
+      return orderVariationTypes.minByOrNull { it.priority } ?: VariationType.OTHER
     }
 
-  private fun addMessage(message: String) {
-    this.messages += message
-  }
-
-  private fun addOrderVariationType(variationType: VariationType) {
-    this.orderVariationTypes += variationType
-  }
-
   fun addChange(change: DeviceWearerChange) {
-    this.addMessage(change.message)
-    this.addOrderVariationType(change.orderVariationType)
+    messages += change.message
+    orderVariationTypes += change.orderVariationType
   }
 
-  companion object {
-    fun new(): CompareToResult = CompareToResult(mutableListOf(), mutableSetOf())
+  override fun toString(): String = buildString {
+    _messages.forEach(this::appendLine)
   }
 }
