@@ -1,37 +1,29 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms
 
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.config.DeviceWearerChangedMessages
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.config.DeviceWearerChange
 import kotlin.collections.plusAssign
 
 fun DeviceWearer.compareTo(previous: DeviceWearer): List<String> {
   val messages = mutableListOf<String>()
 
-  fun compareField(fieldName: String, newValue: Any?, oldValue: Any?) {
+  fun compareField(change: DeviceWearerChange, newValue: Any?, oldValue: Any?) {
     if (oldValue != newValue) {
-      DeviceWearerChangedMessages.messages[fieldName]?.let {
-        messages += it
-      }
+      messages += change.message
     }
   }
 
-  fun <T> compareList(fieldName: String, new: List<T>?, old: List<T>?) {
+  fun <T> compareList(change: DeviceWearerChange, new: List<T>?, old: List<T>?) {
     if ((old ?: emptyList()) != (new ?: emptyList<T>())) {
-      DeviceWearerChangedMessages.messages[fieldName]?.let {
-        messages += it
-      }
+      messages += change.message
     }
   }
 
   fun compareAdultChild(new: String?, old: String?) {
     if (new != old) {
       if (new == "adult") {
-        DeviceWearerChangedMessages.messages["childToAdult"]?.let {
-          messages += it
-        }
+        messages += DeviceWearerChange.ChildToAdult.message
       } else if (new == "child") {
-        DeviceWearerChangedMessages.messages["adultToChild"]?.let {
-          messages += it
-        }
+        messages += DeviceWearerChange.AdultToChild.message
       }
     }
   }
@@ -39,26 +31,22 @@ fun DeviceWearer.compareTo(previous: DeviceWearer): List<String> {
   fun compareNoFixedAddress(new: String?, old: String?) {
     if (new != old) {
       if (new == "true") {
-        DeviceWearerChangedMessages.messages["noFixedAddress"]?.let {
-          messages += it
-        }
+        messages += DeviceWearerChange.NoFixedAddress.message
       } else if (new == "false") {
-        DeviceWearerChangedMessages.messages["hasFixedAddress"]?.let {
-          messages += it
-        }
+        messages += DeviceWearerChange.HasFixedAddress.message
       }
     }
   }
 
-  compareField("nameChange", this.firstName, previous.firstName)
-  compareField("nameChange", this.middleName, previous.middleName)
-  compareField("nameChange", this.lastName, previous.lastName)
-  compareField("alias", this.alias, previous.alias)
+  compareField(DeviceWearerChange.NameChange, this.firstName, previous.firstName)
+  compareField(DeviceWearerChange.NameChange, this.middleName, previous.middleName)
+  compareField(DeviceWearerChange.NameChange, this.lastName, previous.lastName)
+  compareField(DeviceWearerChange.Alias, this.alias, previous.alias)
 
-  compareField("dateOfBirth", this.dateOfBirth, previous.dateOfBirth)
+  compareField(DeviceWearerChange.DateOfBirth, this.dateOfBirth, previous.dateOfBirth)
   compareAdultChild(this.adultChild, previous.adultChild)
-  compareField("sex", this.sex, previous.sex)
-  compareField("genderIdentity", this.genderIdentity, previous.genderIdentity)
+  compareField(DeviceWearerChange.Sex, this.sex, previous.sex)
+  compareField(DeviceWearerChange.GenderIdentity, this.genderIdentity, previous.genderIdentity)
 
   if (listOf(
       address1,
@@ -74,7 +62,7 @@ fun DeviceWearer.compareTo(previous: DeviceWearer): List<String> {
       previous.addressPostCode,
     )
   ) {
-    DeviceWearerChangedMessages.messages["primaryAddressChange"]?.let { messages += it }
+    messages += DeviceWearerChange.PrimaryAddressChange.message
   }
 
   if (listOf(
@@ -91,7 +79,7 @@ fun DeviceWearer.compareTo(previous: DeviceWearer): List<String> {
       previous.secondaryAddressPostCode,
     )
   ) {
-    DeviceWearerChangedMessages.messages["secondaryAddressChange"]?.let { messages += it }
+    messages += DeviceWearerChange.SecondaryAddressChange.message
   }
 
   if (listOf(
@@ -108,17 +96,16 @@ fun DeviceWearer.compareTo(previous: DeviceWearer): List<String> {
       previous.tertiaryAddressPostCode,
     )
   ) {
-    DeviceWearerChangedMessages.messages["tertiaryAddressChange"]?.let { messages += it }
+    messages += DeviceWearerChange.TertiaryAddressChange.message
   }
 
-  compareField("addressPostCode", this.addressPostCode, previous.addressPostCode)
   compareNoFixedAddress(this.noFixedAddress, previous.noFixedAddress)
 
-  compareField("phoneNumber", this.phoneNumber, previous.phoneNumber)
+  compareField(DeviceWearerChange.PhoneNumber, this.phoneNumber, previous.phoneNumber)
 
-  compareField("mappa", this.mappa, previous.mappa)
-  compareField("mappaCategory", this.mappaCategory, previous.mappaCategory)
-  compareField("mappaCaseType", this.mappaCaseType, previous.mappaCaseType)
+  compareField(DeviceWearerChange.Mappa, this.mappa, previous.mappa)
+  compareField(DeviceWearerChange.MappaCategory, this.mappaCategory, previous.mappaCategory)
+  compareField(DeviceWearerChange.MappaCaseType, this.mappaCaseType, previous.mappaCaseType)
 
   if (listOf(
       pncId,
@@ -134,7 +121,7 @@ fun DeviceWearer.compareTo(previous: DeviceWearer): List<String> {
       previous.complianceAndEnforcementPersonReference,
     )
   ) {
-    DeviceWearerChangedMessages.messages["personalIdChanged"]?.let { messages += it }
+    messages += DeviceWearerChange.PersonalIdChanged.message
   }
 
   if (listOf(
@@ -145,7 +132,7 @@ fun DeviceWearer.compareTo(previous: DeviceWearer): List<String> {
       previous.language,
     )
   ) {
-    DeviceWearerChangedMessages.messages["interpreterRequired"]?.let { messages += it }
+    messages += DeviceWearerChange.InterpreterRequired.message
   }
 
   if (listOf(
@@ -158,12 +145,12 @@ fun DeviceWearer.compareTo(previous: DeviceWearer): List<String> {
       previous.guardian,
     )
   ) {
-    DeviceWearerChangedMessages.messages["responsibleAdultChanged"]?.let { messages += it }
+    messages += DeviceWearerChange.ResponsibleAdultChanged.message
   }
-  compareField("parentPhoneNumber", this.parentPhoneNumber, previous.parentPhoneNumber)
+  compareField(DeviceWearerChange.ParentPhoneNumber, this.parentPhoneNumber, previous.parentPhoneNumber)
 
-  compareList("disability", this.disability, previous.disability)
-  compareList("riskCategory", this.riskCategory, previous.riskCategory)
+  compareList(DeviceWearerChange.Disability, this.disability, previous.disability)
+  compareList(DeviceWearerChange.RiskCategory, this.riskCategory, previous.riskCategory)
 
   return messages
 }

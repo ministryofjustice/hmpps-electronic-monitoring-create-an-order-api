@@ -1,27 +1,27 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms
 
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.config.MonitoringOrderChangedMessages
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.config.MonitoringOrderChange
 
 fun MonitoringOrder.compareTo(previous: MonitoringOrder): List<String> {
   val messages = mutableSetOf<String>()
 
-  fun compareField(key: String, new: Any?, old: Any?) {
+  fun compareField(change: MonitoringOrderChange, new: Any?, old: Any?) {
     if (old != new) {
-      MonitoringOrderChangedMessages.messages[key]?.let { messages += it }
+      messages += change.message
     }
   }
 
   fun isNotNullOrEmpty(value: Any?): Boolean = value != null && value != ""
 
-  fun compareFiledIfNewExists(key: String, new: Any?, old: Any?) {
+  fun compareFiledIfNewExists(change: MonitoringOrderChange, new: Any?, old: Any?) {
     if (isNotNullOrEmpty(new) && old != new) {
-      MonitoringOrderChangedMessages.messages[key]?.let { messages += it }
+      messages += change.message
     }
   }
 
-  fun <T> compareList(key: String, new: List<T>?, old: List<T>?) {
+  fun <T> compareList(change: MonitoringOrderChange, new: List<T>?, old: List<T>?) {
     if ((old ?: emptyList()) != (new ?: emptyList<T>())) {
-      MonitoringOrderChangedMessages.messages[key]?.let { messages += it }
+      messages += change.message
     }
   }
 
@@ -114,40 +114,64 @@ fun MonitoringOrder.compareTo(previous: MonitoringOrder): List<String> {
     previous.curfewDuration,
   )
 
-  compareField("conditionType", conditionType, previous.conditionType)
-  compareField("offenceAdditionalDetails", offenceAdditionalDetails, previous.offenceAdditionalDetails)
-  compareField("orderStart", orderStart, previous.orderStart)
-  compareField("orderEnd", orderEnd, previous.orderEnd)
-  compareField("orderType", orderType, previous.orderType)
-  compareField("notifyingOrganization", notifyingOrganization, previous.notifyingOrganization)
-  compareField("noEmail", noEmail, previous.noEmail)
-  compareField("noName", noName, previous.noName)
-  compareFiledIfNewExists("pduResponsible", pduResponsible, previous.pduResponsible)
-  compareFiledIfNewExists("responsibleOfficerEmail", responsibleOfficerEmail, previous.responsibleOfficerEmail)
-  compareFiledIfNewExists("responsibleOfficerName", responsibleOfficerName, previous.responsibleOfficerName)
-  compareFiledIfNewExists("responsibleOrganization", responsibleOrganization, previous.responsibleOrganization)
-  compareFiledIfNewExists("roEmail", roEmail, previous.roEmail)
-  compareFiledIfNewExists("roRegion", roRegion, previous.roRegion)
-  compareField("sentenceType", sentenceType, previous.sentenceType)
-  compareField("tagAtSource", tagAtSource, previous.tagAtSource)
-  compareField("tagAtSourceDetails", tagAtSourceDetails, previous.tagAtSourceDetails)
+  compareField(MonitoringOrderChange.ConditionType, conditionType, previous.conditionType)
   compareField(
-    "dateAndTimeInstallationWillTakePlace",
+    MonitoringOrderChange.OffenceAdditionalDetails,
+    offenceAdditionalDetails,
+    previous.offenceAdditionalDetails,
+  )
+  compareField(MonitoringOrderChange.OrderStart, orderStart, previous.orderStart)
+  compareField(MonitoringOrderChange.OrderEnd, orderEnd, previous.orderEnd)
+  compareField(MonitoringOrderChange.OrderType, orderType, previous.orderType)
+  compareField(MonitoringOrderChange.NotifyingOrganization, notifyingOrganization, previous.notifyingOrganization)
+  compareField(MonitoringOrderChange.NoEmail, noEmail, previous.noEmail)
+  compareField(MonitoringOrderChange.NoName, noName, previous.noName)
+  compareFiledIfNewExists(MonitoringOrderChange.PduResponsible, pduResponsible, previous.pduResponsible)
+  compareFiledIfNewExists(
+    MonitoringOrderChange.ResponsibleOfficerEmail,
+    responsibleOfficerEmail,
+    previous.responsibleOfficerEmail,
+  )
+  compareFiledIfNewExists(
+    MonitoringOrderChange.ResponsibleOfficerName,
+    responsibleOfficerName,
+    previous.responsibleOfficerName,
+  )
+  compareFiledIfNewExists(
+    MonitoringOrderChange.ResponsibleOrganization,
+    responsibleOrganization,
+    previous.responsibleOrganization,
+  )
+  compareFiledIfNewExists(MonitoringOrderChange.RoEmail, roEmail, previous.roEmail)
+  compareFiledIfNewExists(MonitoringOrderChange.RoRegion, roRegion, previous.roRegion)
+  compareField(MonitoringOrderChange.SentenceType, sentenceType, previous.sentenceType)
+  compareField(MonitoringOrderChange.TagAtSource, tagAtSource, previous.tagAtSource)
+  compareField(MonitoringOrderChange.TagAtSourceDetails, tagAtSourceDetails, previous.tagAtSourceDetails)
+  compareField(
+    MonitoringOrderChange.DateAndTimeInstallationWillTakePlace,
     dateAndTimeInstallationWillTakePlace,
     previous.dateAndTimeInstallationWillTakePlace,
   )
-  compareField("curfewDescription", curfewDescription, previous.curfewDescription)
-  compareField("curfewStart", curfewStart, previous.curfewStart)
-  compareField("curfewEnd", curfewEnd, previous.curfewEnd)
-  compareField("conditionalReleaseStartTime", conditionalReleaseStartTime, previous.conditionalReleaseStartTime)
-  compareField("conditionalReleaseEndTime", conditionalReleaseEndTime, previous.conditionalReleaseEndTime)
-  compareField("abstinence", abstinence, previous.abstinence)
-  compareField("issp", issp, previous.issp)
-  compareField("hdc", hdc, previous.hdc)
-  compareField("pilot", pilot, previous.pilot)
-  compareField("releasedUnderPrarr", releasedUnderPrarr, previous.releasedUnderPrarr)
-  compareField("dapolMissedInError", dapolMissedInError, previous.dapolMissedInError)
-  compareField("installAtSourcePilot", installAtSourcePilot, previous.installAtSourcePilot)
+  compareField(MonitoringOrderChange.CurfewDescription, curfewDescription, previous.curfewDescription)
+  compareField(MonitoringOrderChange.CurfewStart, curfewStart, previous.curfewStart)
+  compareField(MonitoringOrderChange.CurfewEnd, curfewEnd, previous.curfewEnd)
+  compareField(
+    MonitoringOrderChange.ConditionalReleaseStartTime,
+    conditionalReleaseStartTime,
+    previous.conditionalReleaseStartTime,
+  )
+  compareField(
+    MonitoringOrderChange.ConditionalReleaseEndTime,
+    conditionalReleaseEndTime,
+    previous.conditionalReleaseEndTime,
+  )
+  compareField(MonitoringOrderChange.Abstinence, abstinence, previous.abstinence)
+  compareField(MonitoringOrderChange.Issp, issp, previous.issp)
+  compareField(MonitoringOrderChange.Hdc, hdc, previous.hdc)
+  compareField(MonitoringOrderChange.Pilot, pilot, previous.pilot)
+  compareField(MonitoringOrderChange.ReleasedUnderPrarr, releasedUnderPrarr, previous.releasedUnderPrarr)
+  compareField(MonitoringOrderChange.DapolMissedInError, dapolMissedInError, previous.dapolMissedInError)
+  compareField(MonitoringOrderChange.InstallAtSourcePilot, installAtSourcePilot, previous.installAtSourcePilot)
 
   if (listOf(
       installationAddress1,
@@ -163,22 +187,22 @@ fun MonitoringOrder.compareTo(previous: MonitoringOrder): List<String> {
       previous.installationAddressPostcode,
     )
   ) {
-    MonitoringOrderChangedMessages.messages["installationAddress"]?.let { messages += it }
+    messages += MonitoringOrderChange.InstallationAddress.message
   }
   compareField(
-    "courtCaseReferenceNumber",
+    MonitoringOrderChange.CourtCaseReferenceNumber,
     crownCourtCaseReferenceNumber,
     previous.crownCourtCaseReferenceNumber,
   )
   compareField(
-    "courtCaseReferenceNumber",
+    MonitoringOrderChange.CourtCaseReferenceNumber,
     magistrateCourtCaseReferenceNumber,
     previous.magistrateCourtCaseReferenceNumber,
   )
 
-  compareList("exclusionZones", exclusionZones, previous.exclusionZones)
-  compareList("acEligibleOffences", acEligibleOffences, previous.acEligibleOffences)
-  compareList("dapoOrderClauseNumbers", dapoOrderClauseNumbers, previous.dapoOrderClauseNumbers)
-  compareList("offences", offences, previous.offences)
+  compareList(MonitoringOrderChange.ExclusionZones, exclusionZones, previous.exclusionZones)
+  compareList(MonitoringOrderChange.AcEligibleOffences, acEligibleOffences, previous.acEligibleOffences)
+  compareList(MonitoringOrderChange.DapoOrderClauseNumbers, dapoOrderClauseNumbers, previous.dapoOrderClauseNumbers)
+  compareList(MonitoringOrderChange.Offences, offences, previous.offences)
   return messages.toList()
 }
