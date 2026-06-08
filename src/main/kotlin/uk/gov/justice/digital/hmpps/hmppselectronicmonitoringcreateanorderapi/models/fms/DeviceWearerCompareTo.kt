@@ -5,31 +5,26 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import kotlin.collections.plusAssign
 
 fun DeviceWearer.compareTo(previous: DeviceWearer): CompareToResult {
-  val messages = mutableListOf<String>()
-  val orderVariationTypes: MutableSet<VariationType> = mutableSetOf()
+  val result = CompareToResult.new()
 
   fun compareField(change: DeviceWearerChange, newValue: Any?, oldValue: Any?) {
     if (oldValue != newValue) {
-      messages += change.message
-      orderVariationTypes += change.orderVariationType
+      result.addChange(change)
     }
   }
 
   fun <T> compareList(change: DeviceWearerChange, new: List<T>?, old: List<T>?) {
     if ((old ?: emptyList()) != (new ?: emptyList<T>())) {
-      messages += change.message
-      orderVariationTypes += change.orderVariationType
+      result.addChange(change)
     }
   }
 
   fun compareAdultChild(new: String?, old: String?) {
     if (new != old) {
       if (new == "adult") {
-        messages += DeviceWearerChange.ChildToAdult.message
-        orderVariationTypes += DeviceWearerChange.ChildToAdult.orderVariationType
+        result.addChange(DeviceWearerChange.ChildToAdult)
       } else if (new == "child") {
-        messages += DeviceWearerChange.AdultToChild.message
-        orderVariationTypes += DeviceWearerChange.AdultToChild.orderVariationType
+        result.addChange(DeviceWearerChange.AdultToChild)
       }
     }
   }
@@ -37,11 +32,9 @@ fun DeviceWearer.compareTo(previous: DeviceWearer): CompareToResult {
   fun compareNoFixedAddress(new: String?, old: String?) {
     if (new != old) {
       if (new == "true") {
-        messages += DeviceWearerChange.NoFixedAddress.message
-        orderVariationTypes += DeviceWearerChange.NoFixedAddress.orderVariationType
+        result.addChange(DeviceWearerChange.NoFixedAddress)
       } else if (new == "false") {
-        messages += DeviceWearerChange.HasFixedAddress.message
-        orderVariationTypes += DeviceWearerChange.HasFixedAddress.orderVariationType
+        result.addChange(DeviceWearerChange.HasFixedAddress)
       }
     }
   }
@@ -70,8 +63,7 @@ fun DeviceWearer.compareTo(previous: DeviceWearer): CompareToResult {
       previous.addressPostCode,
     )
   ) {
-    messages += DeviceWearerChange.PrimaryAddressChange.message
-    orderVariationTypes += DeviceWearerChange.PrimaryAddressChange.orderVariationType
+    result.addChange(DeviceWearerChange.PrimaryAddressChange)
   }
 
   if (listOf(
@@ -88,8 +80,7 @@ fun DeviceWearer.compareTo(previous: DeviceWearer): CompareToResult {
       previous.secondaryAddressPostCode,
     )
   ) {
-    messages += DeviceWearerChange.SecondaryAddressChange.message
-    orderVariationTypes += DeviceWearerChange.SecondaryAddressChange.orderVariationType
+    result.addChange(DeviceWearerChange.SecondaryAddressChange)
   }
 
   if (listOf(
@@ -106,8 +97,7 @@ fun DeviceWearer.compareTo(previous: DeviceWearer): CompareToResult {
       previous.tertiaryAddressPostCode,
     )
   ) {
-    messages += DeviceWearerChange.TertiaryAddressChange.message
-    orderVariationTypes += DeviceWearerChange.TertiaryAddressChange.orderVariationType
+    result.addChange(DeviceWearerChange.TertiaryAddressChange)
   }
 
   compareNoFixedAddress(this.noFixedAddress, previous.noFixedAddress)
@@ -132,8 +122,7 @@ fun DeviceWearer.compareTo(previous: DeviceWearer): CompareToResult {
       previous.complianceAndEnforcementPersonReference,
     )
   ) {
-    messages += DeviceWearerChange.PersonalIdChanged.message
-    orderVariationTypes += DeviceWearerChange.PersonalIdChanged.orderVariationType
+    result.addChange(DeviceWearerChange.PersonalIdChanged)
   }
 
   if (listOf(
@@ -144,8 +133,7 @@ fun DeviceWearer.compareTo(previous: DeviceWearer): CompareToResult {
       previous.language,
     )
   ) {
-    messages += DeviceWearerChange.InterpreterRequired.message
-    orderVariationTypes += DeviceWearerChange.InterpreterRequired.orderVariationType
+    result.addChange(DeviceWearerChange.InterpreterRequired)
   }
 
   if (listOf(
@@ -158,18 +146,17 @@ fun DeviceWearer.compareTo(previous: DeviceWearer): CompareToResult {
       previous.guardian,
     )
   ) {
-    messages += DeviceWearerChange.ResponsibleAdultChanged.message
-    orderVariationTypes += DeviceWearerChange.ResponsibleAdultChanged.orderVariationType
+    result.addChange(DeviceWearerChange.ResponsibleAdultChanged)
   }
   compareField(DeviceWearerChange.ParentPhoneNumber, this.parentPhoneNumber, previous.parentPhoneNumber)
 
   compareList(DeviceWearerChange.Disability, this.disability, previous.disability)
   compareList(DeviceWearerChange.RiskCategory, this.riskCategory, previous.riskCategory)
 
-  return CompareToResult(messages, orderVariationTypes)
+  return result
 }
 
-class CompareToResult(val messages: List<String>, private val orderVariationTypes: Set<VariationType>) {
+class CompareToResult(val messages: MutableList<String>, private val orderVariationTypes: MutableSet<VariationType>) {
   val orderVariationType: VariationType
     get() {
       if (this.orderVariationTypes.isEmpty()) {
@@ -178,4 +165,21 @@ class CompareToResult(val messages: List<String>, private val orderVariationType
 
       return this.orderVariationTypes.minBy { it.priority }
     }
+
+  private fun addMessage(message: String) {
+    this.messages += message
+  }
+
+  private fun addOrderVariationType(variationType: VariationType) {
+    this.orderVariationTypes += variationType
+  }
+
+  fun addChange(change: DeviceWearerChange) {
+    this.addMessage(change.message)
+    this.addOrderVariationType(change.orderVariationType)
+  }
+
+  companion object {
+    fun new(): CompareToResult = CompareToResult(mutableListOf(), mutableSetOf())
+  }
 }
