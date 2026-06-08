@@ -10,6 +10,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.DeviceWearerOrderVariationTypeArgumentsProvider
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.FieldChangeCase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.OVTChangeCase
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.VariationType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.DeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.Disability
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsRiskCategory
@@ -256,6 +257,73 @@ class DeviceWearerCompareTo {
 
     val result = updated.compareTo(old)
 
-    Assertions.assertThat(result.orderVariationType).isEqualTo(null)
+    Assertions.assertThat(result.orderVariationType).isEqualTo(VariationType.OTHER)
+  }
+
+  @Test
+  fun `setting same value should not produce variation`() {
+    val old = baselineWearer()
+    val updated = baselineWearer()
+
+    val result = updated.compareTo(old)
+
+    Assertions.assertThat(result.orderVariationType).isEqualTo(VariationType.OTHER)
+  }
+
+  @Test
+  fun `null to null should not produce variation`() {
+    val old = baselineWearer()
+    val updated = baselineWearer()
+
+    old.firstName = null
+    updated.firstName = null
+
+    val result = updated.compareTo(old)
+
+    Assertions.assertThat(result.orderVariationType).isEqualTo(VariationType.OTHER)
+  }
+
+  @Test
+  fun `multiple non ovt fields should not produce variation`() {
+    val old = baselineWearer()
+    val updated = baselineWearer()
+
+    updated.title = "Mx"
+    updated.riskDetails = "Some risky details"
+
+    val result = updated.compareTo(old)
+
+    Assertions.assertThat(result.orderVariationType).isEqualTo(VariationType.OTHER)
+  }
+
+  @Test
+  fun `multiple personal detail changes should produce single variation type`() {
+    val old = baselineWearer()
+    val updated = baselineWearer()
+
+    updated.firstName = "Jane"
+    updated.lastName = "Doe"
+    updated.phoneNumber = "07123456789"
+
+    val result = updated.compareTo(old)
+
+    Assertions.assertThat(result.orderVariationType)
+      .isEqualTo(VariationType.CHANGE_TO_PERSONAL_DETAILS)
+  }
+
+  @Test
+  fun `only the most important change is returned`() {
+    val old = baselineWearer()
+    val updated = baselineWearer()
+
+    updated.firstName = "Jane"
+    updated.address1 = "10 Downing St"
+
+    val result = updated.compareTo(old)
+
+    Assertions.assertThat(result.orderVariationType)
+      .isEqualTo(
+        VariationType.CHANGE_TO_ADDRESS,
+      )
   }
 }
