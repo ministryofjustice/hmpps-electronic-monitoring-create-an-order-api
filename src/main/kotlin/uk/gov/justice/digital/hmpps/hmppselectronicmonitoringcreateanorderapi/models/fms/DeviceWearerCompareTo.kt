@@ -170,5 +170,11 @@ fun DeviceWearer.compareTo(previous: DeviceWearer): CompareToResult {
 }
 
 class CompareToResult(val messages: List<String>, private val orderVariationTypes: Set<VariationType>) {
-  val orderVariationType: VariationType get() = this.orderVariationTypes.first()
+  val orderVariationType: VariationType?
+    get() {
+      if (this.orderVariationTypes.isEmpty()) {
+        return null
+      }
+      return this.orderVariationTypes.first()
+    }
 }

@@ -6,6 +6,7 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ArgumentsSource
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.DeviceWearerFieldChangeArgumentsProvider
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.DeviceWearerNegativeFieldArgumentsProvider
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.DeviceWearerNoOrderVariationTypeArgumentsProvider
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.DeviceWearerOrderVariationTypeArgumentsProvider
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.FieldChangeCase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.OVTChangeCase
@@ -232,7 +233,7 @@ class DeviceWearerCompareTo {
       .isEmpty()
   }
 
-  @ParameterizedTest(name = "changing {0} produces expected variation")
+  @ParameterizedTest(name = "changing {0} produces expected variation type")
   @ArgumentsSource(DeviceWearerOrderVariationTypeArgumentsProvider::class)
   fun `changing order variation fields produces expected variation`(case: OVTChangeCase) {
     val old = baselineWearer()
@@ -243,5 +244,18 @@ class DeviceWearerCompareTo {
     val result = updated.compareTo(old)
 
     Assertions.assertThat(result.orderVariationType).isEqualTo(case.expected)
+  }
+
+  @ParameterizedTest(name = "changing {0} produces no variation type")
+  @ArgumentsSource(DeviceWearerNoOrderVariationTypeArgumentsProvider::class)
+  fun `changing order variation fields produces no variation`(case: OVTChangeCase) {
+    val old = baselineWearer()
+    val updated = baselineWearer()
+
+    case.mutate(updated)
+
+    val result = updated.compareTo(old)
+
+    Assertions.assertThat(result.orderVariationType).isEqualTo(null)
   }
 }
