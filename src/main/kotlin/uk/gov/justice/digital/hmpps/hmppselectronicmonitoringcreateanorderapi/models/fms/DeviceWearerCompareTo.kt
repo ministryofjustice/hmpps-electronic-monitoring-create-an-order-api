@@ -4,8 +4,8 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.config.DeviceWearerChange
 import kotlin.collections.plusAssign
 
-fun DeviceWearer.compareTo(previous: DeviceWearer): CompareToResult {
-  val result = CompareToResult()
+fun DeviceWearer.compareTo(previous: DeviceWearer): DeviceWearerCompareToResult {
+  val result = DeviceWearerCompareToResult()
 
   fun compareField(change: DeviceWearerChange, newValue: Any?, oldValue: Any?) {
     if (oldValue != newValue) {
@@ -156,7 +156,7 @@ fun DeviceWearer.compareTo(previous: DeviceWearer): CompareToResult {
   return result
 }
 
-class CompareToResult {
+class DeviceWearerCompareToResult {
   private val _messages = mutableListOf<String>()
   val messages: MutableList<String> get() = _messages
 

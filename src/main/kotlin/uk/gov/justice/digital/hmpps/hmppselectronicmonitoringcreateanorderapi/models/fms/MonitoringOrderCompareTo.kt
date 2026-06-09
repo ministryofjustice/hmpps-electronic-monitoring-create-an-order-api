@@ -1,13 +1,14 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms
 
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.config.MonitoringOrderChange
+import MonitoringOrderChange
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.VariationType
 
-fun MonitoringOrder.compareTo(previous: MonitoringOrder): List<String> {
-  val messages = mutableSetOf<String>()
+fun MonitoringOrder.compareTo(previous: MonitoringOrder): MonitoringOrderCompareToResult {
+  val result = MonitoringOrderCompareToResult()
 
   fun compareField(change: MonitoringOrderChange, new: Any?, old: Any?) {
     if (old != new) {
-      messages += change.message
+      result.addChange(change)
     }
   }
 
@@ -15,14 +16,28 @@ fun MonitoringOrder.compareTo(previous: MonitoringOrder): List<String> {
 
   fun compareFiledIfNewExists(change: MonitoringOrderChange, new: Any?, old: Any?) {
     if (isNotNullOrEmpty(new) && old != new) {
-      messages += change.message
+      result.addChange(change)
     }
   }
 
   fun <T> compareList(change: MonitoringOrderChange, new: List<T>?, old: List<T>?) {
     if ((old ?: emptyList()) != (new ?: emptyList<T>())) {
-      messages += change.message
+      result.addChange(change)
     }
+  }
+
+  fun findVariationTypeForAddEnforceableCondition(condition: String): VariationType = when (condition) {
+    "Location Monitoring (using Non-Fitted Device)" -> VariationType.CHANGE_TO_DEVICE_TYPE
+    "Location Monitoring (Fitted Device)" -> VariationType.CHANGE_TO_DEVICE_TYPE
+    "EM Exclusion / Inclusion Zone" -> VariationType.CHANGE_TO_ADD_AN_EXCLUSION_ZONES
+    else -> VariationType.CHANGE_TO_ENFORCEABLE_CONDITION
+  }
+
+  fun findVariationTypeForEditEnforceableCondition(condition: String): VariationType = when (condition) {
+    "Location Monitoring (using Non-Fitted Device)" -> VariationType.CHANGE_TO_DEVICE_TYPE
+    "Location Monitoring (Fitted Device)" -> VariationType.CHANGE_TO_DEVICE_TYPE
+    "EM Exclusion / Inclusion Zone" -> VariationType.CHANGE_TO_AN_EXISTING_EXCLUSION
+    else -> VariationType.CHANGE_TO_ENFORCEABLE_CONDITION
   }
 
   fun compareEnforceableConditions(
@@ -37,26 +52,38 @@ fun MonitoringOrder.compareTo(previous: MonitoringOrder): List<String> {
     // Added conditions
     val addedConditions = newByCondition.keys - oldByCondition.keys
     addedConditions.forEach { condition ->
-      messages += "$condition has been added"
+      if (!condition.isNullOrEmpty()) {
+        result.messages += "$condition has been added"
+        result.addOrderVariationType(findVariationTypeForAddEnforceableCondition(condition))
+      }
     }
 
     // Deleted conditions
     val deletedConditions = oldByCondition.keys - newByCondition.keys
     deletedConditions.forEach { condition ->
       messages += "$condition has been deleted"
+      if (!condition.isNullOrEmpty()) {
+        result.messages += "$condition has been deleted"
+        result.addOrderVariationType(findVariationTypeForEditEnforceableCondition(condition))
+      }
     }
 
     // Changed conditions
     oldByCondition.keys
       .intersect(newByCondition.keys)
       .forEach { condition ->
-        val oldCond = oldByCondition[condition]!!
-        val newCond = newByCondition[condition]!!
-        if (oldCond.startDate != newCond.startDate) {
-          messages += "$condition start date has changed"
-        }
-        if (oldCond.endDate != newCond.endDate) {
-          messages += "$condition end date has changed"
+        if (!condition.isNullOrEmpty()) {
+          val oldCond = oldByCondition[condition]!!
+          val newCond = newByCondition[condition]!!
+
+          if (oldCond.startDate != newCond.startDate) {
+            result.messages += "$condition start date has changed"
+            result.addOrderVariationType(VariationType.CHANGE_TO_ENFORCEABLE_CONDITION)
+          }
+          if (oldCond.endDate != newCond.endDate) {
+            result.messages += "$condition end date has changed"
+            result.addOrderVariationType(VariationType.CHANGE_TO_ENFORCEABLE_CONDITION)
+          }
         }
       }
     return messages
@@ -82,12 +109,14 @@ fun MonitoringOrder.compareTo(previous: MonitoringOrder): List<String> {
 
     val added = newByLocation.keys - oldByLocation.keys
     added.filterNotNull().forEach { location ->
-      messages += "Curfew timetable for $location address has been added"
+      result.messages += "Curfew timetable for $location address has been added"
+      result.addOrderVariationType(VariationType.CHANGE_TO_CURFEW_HOURS)
     }
 
     val deleted = oldByLocation.keys - newByLocation.keys
     deleted.filterNotNull().forEach { location ->
-      messages += "Curfew timetable for $location address has been deleted"
+      result.messages += "Curfew timetable for $location address has been deleted"
+      result.addOrderVariationType(VariationType.CHANGE_TO_CURFEW_HOURS)
     }
 
     oldByLocation.keys
@@ -97,19 +126,20 @@ fun MonitoringOrder.compareTo(previous: MonitoringOrder): List<String> {
         val oldSchedule = normalizeSchedule(oldByLocation[location]?.schedule)
         val newSchedule = normalizeSchedule(newByLocation[location]?.schedule)
         if (oldSchedule != newSchedule) {
-          messages += "Curfew timetable for $location address has been changed"
+          result.messages += "Curfew timetable for $location address has been changed"
+          result.addOrderVariationType(VariationType.CHANGE_TO_CURFEW_HOURS)
         }
       }
 
     return messages
   }
 
-  messages += compareEnforceableConditions(
+  result.messages += compareEnforceableConditions(
     this.enforceableCondition,
     previous.enforceableCondition,
   )
 
-  messages += compareCurfewDuration(
+  result.messages += compareCurfewDuration(
     this.curfewDuration,
     previous.curfewDuration,
   )
@@ -187,7 +217,8 @@ fun MonitoringOrder.compareTo(previous: MonitoringOrder): List<String> {
       previous.installationAddressPostcode,
     )
   ) {
-    messages += MonitoringOrderChange.InstallationAddress.message
+    result.messages += MonitoringOrderChange.InstallationAddress.message
+    result.addOrderVariationType(VariationType.CHANGE_TO_ADDRESS)
   }
   compareField(
     MonitoringOrderChange.CourtCaseReferenceNumber,
@@ -204,5 +235,29 @@ fun MonitoringOrder.compareTo(previous: MonitoringOrder): List<String> {
   compareList(MonitoringOrderChange.AcEligibleOffences, acEligibleOffences, previous.acEligibleOffences)
   compareList(MonitoringOrderChange.DapoOrderClauseNumbers, dapoOrderClauseNumbers, previous.dapoOrderClauseNumbers)
   compareList(MonitoringOrderChange.Offences, offences, previous.offences)
-  return messages.toList()
+  return result
+}
+
+class MonitoringOrderCompareToResult {
+  private val _messages = mutableListOf<String>()
+  val messages: MutableList<String> get() = _messages
+
+  private val orderVariationTypes = mutableListOf<VariationType>()
+  val orderVariationType: VariationType
+    get() {
+      return orderVariationTypes.minByOrNull { it.priority } ?: VariationType.OTHER
+    }
+
+  fun addChange(change: MonitoringOrderChange) {
+    messages += change.message
+    orderVariationTypes += change.orderVariationType
+  }
+
+  fun addOrderVariationType(variationType: VariationType) {
+    orderVariationTypes += variationType
+  }
+
+  override fun toString(): String = buildString {
+    _messages.forEach(this::appendLine)
+  }
 }

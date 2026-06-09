@@ -222,15 +222,15 @@ class FmsVariationSubmissionStrategy(
       appendLine("User entered:")
       appendLine(monitoringOrder.orderVariationDetails)
 
-      if (deviceWearerChanges.messages.isNotEmpty() || monitoringOrderChanges.isNotEmpty()) {
+      if (deviceWearerChanges.messages.isNotEmpty() || monitoringOrderChanges.messages.isNotEmpty()) {
         appendLine("CEMO determined changes:")
         deviceWearerChanges.messages.forEach(this::appendLine)
-        monitoringOrderChanges.forEach(this::appendLine)
+        monitoringOrderChanges.messages.forEach(this::appendLine)
       }
     }
 
-    // TODO: replace OTHER with monitoring order variation type
-    val variationType = listOf(deviceWearerChanges.orderVariationType, VariationType.OTHER).minBy { it.priority }
+    val variationType =
+      listOf(deviceWearerChanges.orderVariationType, monitoringOrderChanges.orderVariationType).minBy { it.priority }
 
     return OrderChanges(changeDetails, variationType)
   }
@@ -293,5 +293,4 @@ class FmsVariationSubmissionStrategy(
   }
 }
 
-// TODO: move to somewhere nicer
 data class OrderChanges(val variationDetails: String, val variationType: VariationType)
