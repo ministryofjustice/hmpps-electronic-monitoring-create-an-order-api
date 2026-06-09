@@ -170,8 +170,4 @@ class DeviceWearerCompareToResult {
     messages += change.message
     orderVariationTypes += change.orderVariationType
   }
-
-  override fun toString(): String = buildString {
-    _messages.forEach(this::appendLine)
-  }
 }

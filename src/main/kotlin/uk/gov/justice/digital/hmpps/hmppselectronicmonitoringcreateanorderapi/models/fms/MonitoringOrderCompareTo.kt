@@ -40,12 +40,7 @@ fun MonitoringOrder.compareTo(previous: MonitoringOrder): MonitoringOrderCompare
     else -> VariationType.CHANGE_TO_ENFORCEABLE_CONDITION
   }
 
-  fun compareEnforceableConditions(
-    newList: List<EnforceableCondition>?,
-    oldList: List<EnforceableCondition>?,
-  ): List<String> {
-    val messages = mutableListOf<String>()
-
+  fun compareEnforceableConditions(newList: List<EnforceableCondition>?, oldList: List<EnforceableCondition>?) {
     val oldByCondition = oldList.orEmpty().associateBy { it.condition }
     val newByCondition = newList.orEmpty().associateBy { it.condition }
 
@@ -53,7 +48,7 @@ fun MonitoringOrder.compareTo(previous: MonitoringOrder): MonitoringOrderCompare
     val addedConditions = newByCondition.keys - oldByCondition.keys
     addedConditions.forEach { condition ->
       if (!condition.isNullOrEmpty()) {
-        result.messages += "$condition has been added"
+        result.addMessage("$condition has been added")
         result.addOrderVariationType(findVariationTypeForAddEnforceableCondition(condition))
       }
     }
@@ -61,9 +56,8 @@ fun MonitoringOrder.compareTo(previous: MonitoringOrder): MonitoringOrderCompare
     // Deleted conditions
     val deletedConditions = oldByCondition.keys - newByCondition.keys
     deletedConditions.forEach { condition ->
-      messages += "$condition has been deleted"
       if (!condition.isNullOrEmpty()) {
-        result.messages += "$condition has been deleted"
+        result.addMessage("$condition has been deleted")
         result.addOrderVariationType(findVariationTypeForEditEnforceableCondition(condition))
       }
     }
@@ -77,16 +71,15 @@ fun MonitoringOrder.compareTo(previous: MonitoringOrder): MonitoringOrderCompare
           val newCond = newByCondition[condition]!!
 
           if (oldCond.startDate != newCond.startDate) {
-            result.messages += "$condition start date has changed"
+            result.addMessage("$condition start date has changed")
             result.addOrderVariationType(VariationType.CHANGE_TO_ENFORCEABLE_CONDITION)
           }
           if (oldCond.endDate != newCond.endDate) {
-            result.messages += "$condition end date has changed"
+            result.addMessage("$condition end date has changed")
             result.addOrderVariationType(VariationType.CHANGE_TO_ENFORCEABLE_CONDITION)
           }
         }
       }
-    return messages
   }
 
   fun normalizeSchedule(schedule: List<Schedule>?): List<Triple<String?, String?, String?>> = schedule.orEmpty()
@@ -99,9 +92,7 @@ fun MonitoringOrder.compareTo(previous: MonitoringOrder): MonitoringOrderCompare
     }
     .sortedWith(compareBy({ it.first }, { it.second }, { it.third }))
 
-  fun compareCurfewDuration(newList: List<CurfewSchedule>?, oldList: List<CurfewSchedule>?): List<String> {
-    val messages = mutableListOf<String>()
-
+  fun compareCurfewDuration(newList: List<CurfewSchedule>?, oldList: List<CurfewSchedule>?) {
     val oldByLocation = oldList.orEmpty()
       .associateBy { it.location?.lowercase() }
     val newByLocation = newList.orEmpty()
@@ -109,13 +100,13 @@ fun MonitoringOrder.compareTo(previous: MonitoringOrder): MonitoringOrderCompare
 
     val added = newByLocation.keys - oldByLocation.keys
     added.filterNotNull().forEach { location ->
-      result.messages += "Curfew timetable for $location address has been added"
+      result.addMessage("Curfew timetable for $location address has been added")
       result.addOrderVariationType(VariationType.CHANGE_TO_CURFEW_HOURS)
     }
 
     val deleted = oldByLocation.keys - newByLocation.keys
     deleted.filterNotNull().forEach { location ->
-      result.messages += "Curfew timetable for $location address has been deleted"
+      result.addMessage("Curfew timetable for $location address has been deleted")
       result.addOrderVariationType(VariationType.CHANGE_TO_CURFEW_HOURS)
     }
 
@@ -126,20 +117,18 @@ fun MonitoringOrder.compareTo(previous: MonitoringOrder): MonitoringOrderCompare
         val oldSchedule = normalizeSchedule(oldByLocation[location]?.schedule)
         val newSchedule = normalizeSchedule(newByLocation[location]?.schedule)
         if (oldSchedule != newSchedule) {
-          result.messages += "Curfew timetable for $location address has been changed"
+          result.addMessage("Curfew timetable for $location address has been changed")
           result.addOrderVariationType(VariationType.CHANGE_TO_CURFEW_HOURS)
         }
       }
-
-    return messages
   }
 
-  result.messages += compareEnforceableConditions(
+  compareEnforceableConditions(
     this.enforceableCondition,
     previous.enforceableCondition,
   )
 
-  result.messages += compareCurfewDuration(
+  compareCurfewDuration(
     this.curfewDuration,
     previous.curfewDuration,
   )
@@ -217,7 +206,7 @@ fun MonitoringOrder.compareTo(previous: MonitoringOrder): MonitoringOrderCompare
       previous.installationAddressPostcode,
     )
   ) {
-    result.messages += MonitoringOrderChange.InstallationAddress.message
+    result.addMessage(MonitoringOrderChange.InstallationAddress.message)
     result.addOrderVariationType(VariationType.CHANGE_TO_ADDRESS)
   }
   compareField(
@@ -249,7 +238,7 @@ class MonitoringOrderCompareToResult {
     }
 
   fun addChange(change: MonitoringOrderChange) {
-    messages += change.message
+    _messages += change.message
     orderVariationTypes += change.orderVariationType
   }
 
@@ -257,7 +246,7 @@ class MonitoringOrderCompareToResult {
     orderVariationTypes += variationType
   }
 
-  override fun toString(): String = buildString {
-    _messages.forEach(this::appendLine)
+  fun addMessage(message: String) {
+    _messages += message
   }
 }
