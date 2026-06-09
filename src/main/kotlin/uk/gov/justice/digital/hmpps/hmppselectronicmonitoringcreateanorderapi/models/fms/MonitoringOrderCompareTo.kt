@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.m
 
 import MonitoringOrderChange
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.VariationType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.config.OrderChangeDetail
 
 fun MonitoringOrder.compareTo(previous: MonitoringOrder): MonitoringOrderCompareToResult {
   val result = MonitoringOrderCompareToResult()
@@ -227,7 +228,9 @@ fun MonitoringOrder.compareTo(previous: MonitoringOrder): MonitoringOrderCompare
   return result
 }
 
-class MonitoringOrderCompareToResult {
+class MonitoringOrderCompareToResult : CompareToResult<MonitoringOrderChange>()
+
+open class CompareToResult<T : OrderChangeDetail> {
   private val _messages = mutableListOf<String>()
   val messages: MutableList<String> get() = _messages
 
@@ -237,7 +240,7 @@ class MonitoringOrderCompareToResult {
       return orderVariationTypes.minByOrNull { it.priority } ?: VariationType.OTHER
     }
 
-  fun addChange(change: MonitoringOrderChange) {
+  fun addChange(change: T) {
     _messages += change.message
     orderVariationTypes += change.orderVariationType
   }

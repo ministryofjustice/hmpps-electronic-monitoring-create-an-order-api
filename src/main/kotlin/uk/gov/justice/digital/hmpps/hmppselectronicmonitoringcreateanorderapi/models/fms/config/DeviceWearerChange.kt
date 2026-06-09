@@ -2,7 +2,10 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.m
 
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.VariationType
 
-enum class DeviceWearerChange(val message: String, val orderVariationType: VariationType = VariationType.OTHER) {
+enum class DeviceWearerChange(
+  override val message: String,
+  override val orderVariationType: VariationType = VariationType.OTHER,
+) : OrderChangeDetail {
   NameChange(
     "Device wearer's name has changed",
     VariationType.CHANGE_TO_PERSONAL_DETAILS,

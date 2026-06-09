@@ -1,8 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms
 
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.VariationType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.config.DeviceWearerChange
-import kotlin.collections.plusAssign
 
 fun DeviceWearer.compareTo(previous: DeviceWearer): DeviceWearerCompareToResult {
   val result = DeviceWearerCompareToResult()
@@ -156,18 +154,4 @@ fun DeviceWearer.compareTo(previous: DeviceWearer): DeviceWearerCompareToResult 
   return result
 }
 
-class DeviceWearerCompareToResult {
-  private val _messages = mutableListOf<String>()
-  val messages: MutableList<String> get() = _messages
-
-  private val orderVariationTypes = mutableListOf<VariationType>()
-  val orderVariationType: VariationType
-    get() {
-      return orderVariationTypes.minByOrNull { it.priority } ?: VariationType.OTHER
-    }
-
-  fun addChange(change: DeviceWearerChange) {
-    messages += change.message
-    orderVariationTypes += change.orderVariationType
-  }
-}
+class DeviceWearerCompareToResult : CompareToResult<DeviceWearerChange>()

@@ -1,6 +1,10 @@
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.VariationType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.config.OrderChangeDetail
 
-enum class MonitoringOrderChange(val message: String, val orderVariationType: VariationType = VariationType.OTHER) {
+enum class MonitoringOrderChange(
+  override val message: String,
+  override val orderVariationType: VariationType = VariationType.OTHER,
+) : OrderChangeDetail {
 
   // Core order fields
   ConditionType(
