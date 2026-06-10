@@ -40,6 +40,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 import java.io.ByteArrayInputStream
 import java.util.*
+import kotlin.collections.plus
 
 @ActiveProfiles("test")
 @JsonTest
@@ -285,7 +286,13 @@ class AdditionalDocumentServiceTest {
             "file",
             "file-name.pdf",
             MediaType.TEXT_PLAIN_VALUE,
-            "Test file content".toByteArray(),
+            byteArrayOf(
+              0x25,
+              0x50,
+              0x44,
+              0x46,
+              0x2D,
+            ) + ByteArray(10),
           ),
         )
 
@@ -371,7 +378,13 @@ class AdditionalDocumentServiceTest {
             "file",
             "file-name.pdf",
             MediaType.TEXT_PLAIN_VALUE,
-            "Test file content".toByteArray(),
+            byteArrayOf(
+              0x25,
+              0x50,
+              0x44,
+              0x46,
+              0x2D,
+            ) + ByteArray(10),
           ),
         )
 
