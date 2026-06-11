@@ -69,8 +69,9 @@ abstract class IntegrationTestBase {
   }
 
   fun mockFile(fileName: String? = "file-name.jpeg", sizeInMB: Int? = 1): MockMultipartFile {
+    val extension = fileName!!.split('.').last()
     val testFileContent: ByteArray = if (sizeInMB != null) {
-      ByteArray(sizeInMB * 1024 * 1024) { 0 }
+      createFileContent(extension, sizeInMB)
     } else {
       "Test file content".toByteArray()
     }
@@ -81,6 +82,49 @@ abstract class IntegrationTestBase {
       MediaType.IMAGE_JPEG_VALUE,
       testFileContent,
     )
+  }
+
+  fun createFileContent(extension: String, sizeInMB: Int): ByteArray = when (extension.lowercase()) {
+    "pdf" -> byteArrayOf(
+      0x25,
+      0x50,
+      0x44,
+      0x46,
+      0x2D,
+    ) + ByteArray(sizeInMB * 1024 * 1024)
+
+    "png" -> byteArrayOf(
+      0x89.toByte(),
+      0x50,
+      0x4E,
+      0x47,
+      0x0D,
+      0x0A,
+      0x1A,
+      0x0A,
+    ) + ByteArray(sizeInMB * 1024 * 1024)
+
+    "jpg", "jpeg" -> byteArrayOf(
+      0xFF.toByte(),
+      0xD8.toByte(),
+      0xFF.toByte(),
+    ) + ByteArray(sizeInMB * 1024 * 1024)
+
+    "doc" -> byteArrayOf(
+      0xD0.toByte(),
+      0xCF.toByte(),
+      0x11.toByte(),
+      0xE0.toByte(),
+    ) + ByteArray(sizeInMB * 1024 * 1024)
+
+    "docx" -> byteArrayOf(
+      0x50,
+      0x4B,
+      0x03,
+      0x04,
+    ) + ByteArray(sizeInMB * 1024 * 1024)
+
+    else -> ByteArray(sizeInMB * 1024 * 1024)
   }
 
   fun createMultiPartBodyBuilder(multiPartFile: MockMultipartFile): MultipartBodyBuilder {
