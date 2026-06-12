@@ -1,14 +1,18 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider
 
+import MonitoringOrderChange
 import org.junit.jupiter.api.extension.ExtensionContext
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.ArgumentsProvider
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisation
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.VariationType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.AcEligibleOffence
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.DapoClause
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.MonitoringOrder
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.OffenceData
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.Schedule
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.Zone
+import java.util.stream.Stream
 
 data class MonitoringOrderFieldCase(
   val name: String,
@@ -17,6 +21,12 @@ data class MonitoringOrderFieldCase(
 ) {
   override fun toString(): String = name
 }
+
+data class MonitoringOrderOVTCase(
+  val field: MonitoringOrderChange,
+  val mutate: (MonitoringOrder) -> Unit,
+  val expected: VariationType,
+)
 
 class MonitoringOrderFieldChangeArgumentsProvider : ArgumentsProvider {
 
@@ -396,4 +406,131 @@ class MonitoringOrderNegativeArgumentsProvider : ArgumentsProvider {
 
   ).map { Arguments.of(it) }
     .stream()
+}
+
+class MonitoringOrderOVTTypeArgumentsProvider : ArgumentsProvider {
+
+  override fun provideArguments(context: ExtensionContext): Stream<out Arguments> =
+    cases().map { Arguments.of(it) }.stream()
+
+  private fun cases(): List<MonitoringOrderOVTCase> = MonitoringOrderChange.entries.map { change ->
+    MonitoringOrderOVTCase(
+      field = change,
+      expected = change.orderVariationType,
+      mutate = mutationFor(change),
+    )
+  }
+
+  private fun mutationFor(change: MonitoringOrderChange): (MonitoringOrder) -> Unit = { order ->
+    when (change) {
+      MonitoringOrderChange.ConditionType ->
+        order.conditionType = "NEW"
+
+      MonitoringOrderChange.OffenceAdditionalDetails ->
+        order.offenceAdditionalDetails = "updated"
+
+      MonitoringOrderChange.OrderStart ->
+        order.orderStart = "2030-01-01"
+
+      MonitoringOrderChange.OrderEnd ->
+        order.orderEnd = "2030-01-01"
+
+      MonitoringOrderChange.OrderType ->
+        order.orderType = "NEW_TYPE"
+
+      MonitoringOrderChange.NotifyingOrganization ->
+        order.notifyingOrganization = NotifyingOrganisation.HOME_OFFICE.value
+
+      MonitoringOrderChange.NoEmail ->
+        order.notifyingOfficerEmail = "new@email.com"
+
+      MonitoringOrderChange.NoName ->
+        order.notifyingOfficerName = "NEW NAME"
+
+      MonitoringOrderChange.PduResponsible ->
+        order.pduResponsible = "NEW"
+
+      MonitoringOrderChange.ResponsibleOfficerEmail ->
+        order.responsibleOfficerEmail = "new@email.com"
+
+      MonitoringOrderChange.ResponsibleOfficerName ->
+        order.responsibleOfficerName = "NEW NAME"
+
+      MonitoringOrderChange.ResponsibleOrganization ->
+        order.responsibleOrganization = "NEW"
+
+      MonitoringOrderChange.RoEmail ->
+        order.roEmail = "new@email.com"
+
+      MonitoringOrderChange.RoRegion ->
+        order.roRegion = "NEW"
+
+      MonitoringOrderChange.SentenceType ->
+        order.sentenceType = "NEW"
+
+      MonitoringOrderChange.TagAtSource ->
+        order.tagAtSource = "true"
+
+      MonitoringOrderChange.TagAtSourceDetails ->
+        order.tagAtSourceDetails = "NEW LOCATION"
+
+      MonitoringOrderChange.DateAndTimeInstallationWillTakePlace ->
+        order.dateAndTimeInstallationWillTakePlace = "2030-01-01"
+
+      MonitoringOrderChange.CurfewDescription ->
+        order.curfewDescription = "UPDATED"
+
+      MonitoringOrderChange.CurfewStart ->
+        order.curfewStart = "2030-01-01"
+
+      MonitoringOrderChange.CurfewEnd ->
+        order.curfewEnd = "2030-01-01"
+
+      MonitoringOrderChange.ConditionalReleaseStartTime ->
+        order.conditionalReleaseStartTime = "2030-01-01"
+
+      MonitoringOrderChange.ConditionalReleaseEndTime ->
+        order.conditionalReleaseEndTime = "2030-01-01"
+
+      MonitoringOrderChange.Abstinence ->
+        order.abstinence = "true"
+
+      MonitoringOrderChange.Issp ->
+        order.issp = "true"
+
+      MonitoringOrderChange.Hdc ->
+        order.hdc = "true"
+
+      MonitoringOrderChange.Pilot ->
+        order.pilot = "true"
+
+      MonitoringOrderChange.ReleasedUnderPrarr ->
+        order.releasedUnderPrarr = "true"
+
+      MonitoringOrderChange.DapolMissedInError ->
+        order.dapolMissedInError = "true"
+
+      MonitoringOrderChange.InstallAtSourcePilot ->
+        order.installAtSourcePilot = "true"
+
+      MonitoringOrderChange.InstallationAddress ->
+        order.installationAddress1 = "NEW ADDRESS"
+
+      MonitoringOrderChange.CourtCaseReferenceNumber ->
+        order.crownCourtCaseReferenceNumber = "NEW REF"
+
+      MonitoringOrderChange.ExclusionZones ->
+        order.exclusionZones = (order.exclusionZones + Zone()) as MutableList<Zone>
+
+      MonitoringOrderChange.AcEligibleOffences ->
+        order.acEligibleOffences =
+          (order.acEligibleOffences?.plus(AcEligibleOffence())) as MutableList<AcEligibleOffence>?
+
+      MonitoringOrderChange.DapoOrderClauseNumbers ->
+        order.dapoOrderClauseNumbers = (order.dapoOrderClauseNumbers?.plus(DapoClause())) as MutableList<DapoClause>?
+
+      MonitoringOrderChange.Offences ->
+        order.offences = (order.offences?.plus(OffenceData())) as MutableList<OffenceData>?
+    }
+  }
 }

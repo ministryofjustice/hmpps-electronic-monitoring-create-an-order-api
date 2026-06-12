@@ -63,7 +63,7 @@
   "order_variation_date": "{mockVariationDate}",
   "order_variation_details": "User entered:\nChange to address\n",
   "order_variation_req_received_date": "",
-  "order_variation_type": "Change of address",
+  "order_variation_type": "Other",
   "pdu_responsible": "Camden and Islington",
   "pdu_responsible_email": "",
   "planned_order_end_date": "",

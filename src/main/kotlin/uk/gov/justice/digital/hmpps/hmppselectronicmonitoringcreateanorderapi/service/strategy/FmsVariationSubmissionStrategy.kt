@@ -13,6 +13,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.SubmissionStatus
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.VariationType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.DeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsAttachmentSubmissionResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsDeviceWearerSubmissionResult
@@ -161,8 +162,13 @@ class FmsVariationSubmissionStrategy(
 
     val monitoringOrder = monitoringOrderResult.data!!
 
-    monitoringOrder.orderVariationDetails =
-      getListOfChanges(monitoringOrder, submitDeviceWearerResult, lastSuccessfulSubmitResult)
+    val orderChanges = calculateOrderChanges(monitoringOrder, submitDeviceWearerResult, lastSuccessfulSubmitResult)
+    monitoringOrder.orderVariationDetails = orderChanges.variationDetails
+    if (order.type == RequestType.VARIATION) {
+      monitoringOrder.orderVariationType = orderChanges.variationType.value
+    } else {
+      monitoringOrder.orderVariationType = VariationType.OTHER.value
+    }
 
     val serialiseResult = this.serialiseMonitoringOrder(monitoringOrder)
 
@@ -190,36 +196,47 @@ class FmsVariationSubmissionStrategy(
     )
   }
 
-  private fun getListOfChanges(
+  private fun calculateOrderChanges(
     monitoringOrder: MonitoringOrder,
     submitDeviceWearerResult: FmsDeviceWearerSubmissionResult,
     lastSuccessfulSubmitResult: FmsSubmissionResult?,
-  ): String {
-    val changeDetails = StringBuilder()
-    changeDetails.appendLine("User entered:")
-    changeDetails.appendLine(monitoringOrder.orderVariationDetails)
-
-    if (lastSuccessfulSubmitResult != null) {
-      changeDetails.appendLine("CEMO determined changes:")
-
-      val deviceWearerPayload = objectMapper.readValue(submitDeviceWearerResult.payload, DeviceWearer::class.java)
-      val lastSuccessfulDeviceWearerPayload = objectMapper.readValue(
-        lastSuccessfulSubmitResult.deviceWearerResult.payload,
-        DeviceWearer::class.java,
-      )
-      deviceWearerPayload.compareTo(lastSuccessfulDeviceWearerPayload).forEach { change ->
-        changeDetails.appendLine(change)
+  ): OrderChanges {
+    if (lastSuccessfulSubmitResult == null) {
+      val details = buildString {
+        appendLine("User entered:")
+        appendLine(monitoringOrder.orderVariationDetails)
       }
+      return OrderChanges(details, VariationType.OTHER)
+    }
 
-      val lastSuccessFulMonitoringOrderPayload = objectMapper.readValue(
-        lastSuccessfulSubmitResult.monitoringOrderResult.payload,
-        MonitoringOrder::class.java,
-      )
-      monitoringOrder.compareTo(lastSuccessFulMonitoringOrderPayload).forEach { change ->
-        changeDetails.appendLine(change)
+    val currentDeviceWearer = objectMapper.readValue(submitDeviceWearerResult.payload, DeviceWearer::class.java)
+    val lastDeviceWearer = objectMapper.readValue(
+      lastSuccessfulSubmitResult.deviceWearerResult.payload,
+      DeviceWearer::class.java,
+    )
+    val lastMonitoringOrder = objectMapper.readValue(
+      lastSuccessfulSubmitResult.monitoringOrderResult.payload,
+      MonitoringOrder::class.java,
+    )
+
+    val deviceWearerChanges = currentDeviceWearer.compareTo(lastDeviceWearer)
+    val monitoringOrderChanges = monitoringOrder.compareTo(lastMonitoringOrder)
+
+    val changeDetails = buildString {
+      appendLine("User entered:")
+      appendLine(monitoringOrder.orderVariationDetails)
+
+      if (deviceWearerChanges.messages.isNotEmpty() || monitoringOrderChanges.messages.isNotEmpty()) {
+        appendLine("CEMO determined changes:")
+        deviceWearerChanges.messages.forEach(this::appendLine)
+        monitoringOrderChanges.messages.forEach(this::appendLine)
       }
     }
-    return changeDetails.toString()
+
+    val variationType =
+      listOf(deviceWearerChanges.orderVariationType, monitoringOrderChanges.orderVariationType).minBy { it.priority }
+
+    return OrderChanges(changeDetails, variationType)
   }
 
   private fun getLastSuccessfulSubmissionResult(order: Order): FmsSubmissionResult? {
@@ -279,3 +296,5 @@ class FmsVariationSubmissionStrategy(
     )
   }
 }
+
+data class OrderChanges(val variationDetails: String, val variationType: VariationType)

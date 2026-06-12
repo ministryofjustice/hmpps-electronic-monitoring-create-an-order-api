@@ -1,29 +1,28 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms
 
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.config.DeviceWearerChange
-import kotlin.collections.plusAssign
 
-fun DeviceWearer.compareTo(previous: DeviceWearer): List<String> {
-  val messages = mutableListOf<String>()
+fun DeviceWearer.compareTo(previous: DeviceWearer): DeviceWearerCompareToResult {
+  val result = DeviceWearerCompareToResult()
 
   fun compareField(change: DeviceWearerChange, newValue: Any?, oldValue: Any?) {
     if (oldValue != newValue) {
-      messages += change.message
+      result.addChange(change)
     }
   }
 
   fun <T> compareList(change: DeviceWearerChange, new: List<T>?, old: List<T>?) {
     if ((old ?: emptyList()) != (new ?: emptyList<T>())) {
-      messages += change.message
+      result.addChange(change)
     }
   }
 
   fun compareAdultChild(new: String?, old: String?) {
     if (new != old) {
       if (new == "adult") {
-        messages += DeviceWearerChange.ChildToAdult.message
+        result.addChange(DeviceWearerChange.ChildToAdult)
       } else if (new == "child") {
-        messages += DeviceWearerChange.AdultToChild.message
+        result.addChange(DeviceWearerChange.AdultToChild)
       }
     }
   }
@@ -31,9 +30,9 @@ fun DeviceWearer.compareTo(previous: DeviceWearer): List<String> {
   fun compareNoFixedAddress(new: String?, old: String?) {
     if (new != old) {
       if (new == "true") {
-        messages += DeviceWearerChange.NoFixedAddress.message
+        result.addChange(DeviceWearerChange.NoFixedAddress)
       } else if (new == "false") {
-        messages += DeviceWearerChange.HasFixedAddress.message
+        result.addChange(DeviceWearerChange.HasFixedAddress)
       }
     }
   }
@@ -62,7 +61,7 @@ fun DeviceWearer.compareTo(previous: DeviceWearer): List<String> {
       previous.addressPostCode,
     )
   ) {
-    messages += DeviceWearerChange.PrimaryAddressChange.message
+    result.addChange(DeviceWearerChange.PrimaryAddressChange)
   }
 
   if (listOf(
@@ -79,7 +78,7 @@ fun DeviceWearer.compareTo(previous: DeviceWearer): List<String> {
       previous.secondaryAddressPostCode,
     )
   ) {
-    messages += DeviceWearerChange.SecondaryAddressChange.message
+    result.addChange(DeviceWearerChange.SecondaryAddressChange)
   }
 
   if (listOf(
@@ -96,7 +95,7 @@ fun DeviceWearer.compareTo(previous: DeviceWearer): List<String> {
       previous.tertiaryAddressPostCode,
     )
   ) {
-    messages += DeviceWearerChange.TertiaryAddressChange.message
+    result.addChange(DeviceWearerChange.TertiaryAddressChange)
   }
 
   compareNoFixedAddress(this.noFixedAddress, previous.noFixedAddress)
@@ -121,7 +120,7 @@ fun DeviceWearer.compareTo(previous: DeviceWearer): List<String> {
       previous.complianceAndEnforcementPersonReference,
     )
   ) {
-    messages += DeviceWearerChange.PersonalIdChanged.message
+    result.addChange(DeviceWearerChange.PersonalIdChanged)
   }
 
   if (listOf(
@@ -132,7 +131,7 @@ fun DeviceWearer.compareTo(previous: DeviceWearer): List<String> {
       previous.language,
     )
   ) {
-    messages += DeviceWearerChange.InterpreterRequired.message
+    result.addChange(DeviceWearerChange.InterpreterRequired)
   }
 
   if (listOf(
@@ -145,12 +144,14 @@ fun DeviceWearer.compareTo(previous: DeviceWearer): List<String> {
       previous.guardian,
     )
   ) {
-    messages += DeviceWearerChange.ResponsibleAdultChanged.message
+    result.addChange(DeviceWearerChange.ResponsibleAdultChanged)
   }
   compareField(DeviceWearerChange.ParentPhoneNumber, this.parentPhoneNumber, previous.parentPhoneNumber)
 
   compareList(DeviceWearerChange.Disability, this.disability, previous.disability)
   compareList(DeviceWearerChange.RiskCategory, this.riskCategory, previous.riskCategory)
 
-  return messages
+  return result
 }
+
+class DeviceWearerCompareToResult : CompareToResult<DeviceWearerChange>()
