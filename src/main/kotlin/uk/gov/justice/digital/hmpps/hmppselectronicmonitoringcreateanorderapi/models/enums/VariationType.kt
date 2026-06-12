@@ -1,21 +1,23 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums
 
-enum class VariationType(val value: String) {
-  CURFEW_HOURS("Change of curfew hours"),
+enum class VariationType(val value: String, val priority: Int = Int.MAX_VALUE) {
+  CHANGE_TO_ADDRESS("Change to Address", 1),
+  CHANGE_TO_ADD_AN_EXCLUSION_ZONES("Change to add an Inclusion or Exclusion Zone(s)", 2),
+  CHANGE_TO_AN_EXISTING_EXCLUSION("Change to an existing Inclusion or Exclusion Zone(s)", 3),
+  CHANGE_TO_CURFEW_HOURS("Change to Curfew Hours", 4),
+  CHANGE_TO_DEVICE_TYPE("Change to Device Type", 5),
+  CHANGE_TO_ENFORCEABLE_CONDITION("Change to Enforceable Condition", 6),
+  CHANGE_TO_PERSONAL_DETAILS("Change to Personal Details", 7),
+  OTHER("Other", 8),
+
+  // Legacy
   ADDRESS("Change of address"),
   ENFORCEMENT_ADD("Change to add an Inclusion or Exclusion Zone(s)"),
   ENFORCEMENT_UPDATE("Change to an existing Inclusion or Exclusion Zone(s)"),
-  SUSPENSION("Order Suspension"),
-  CHANGE_TO_ADDRESS("Change to Address"),
-  CHANGE_TO_PERSONAL_DETAILS("Change to Personal Details"),
-  CHANGE_TO_ADD_AN_EXCLUSION_ZONES("Change to add an Inclusion or Exclusion Zone(s)"),
-  CHANGE_TO_AN_EXISTING_EXCLUSION("Change to an existing Inclusion or Exclusion Zone(s)"),
-  CHANGE_TO_CURFEW_HOURS("Change to Curfew Hours"),
+  CURFEW_HOURS("Change of curfew hours"),
   ORDER_SUSPENSION("Order Suspension"),
-  CHANGE_TO_DEVICE_TYPE("Change to Device Type"),
-  CHANGE_TO_ENFORCEABLE_CONDITION("Change to Enforceable Condition"),
+  SUSPENSION("Order Suspension"),
   ADMIN_ERROR("Admin Error"),
-  OTHER("Other"),
   ;
 
   companion object {
@@ -39,6 +41,7 @@ enum class VariationType(val value: String) {
       ADMIN_ERROR,
       OTHER,
     )
+
     fun from(value: String?): VariationType? = VariationType.entries.firstOrNull {
       it.name == value
     }
