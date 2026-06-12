@@ -108,7 +108,12 @@ class InstallationAppointmentServiceTest {
     whenever(repo.findById(mockOrderId)).thenReturn(Optional.of(mockOrder))
     whenever(repo.save(mockOrder)).thenReturn(mockOrder)
 
-    val updateRecord = UpdateInstallationAppointmentDto(placeName = "Mock Place", appointmentDate = ZonedDateTime.now())
+    val updateRecord =
+      UpdateInstallationAppointmentDto(
+        placeName = "Mock Place",
+        appointmentDate = ZonedDateTime.now(),
+        appointmentTimeDetails = "Mock Details",
+      )
     val result = service.createOrUpdateInstallationAppointment(
       mockOrderId,
       mockUsername,
@@ -124,5 +129,6 @@ class InstallationAppointmentServiceTest {
     ).isEqualTo(updateRecord.appointmentDate)
     assertThat(result.placeName).isEqualTo(updateRecord.placeName)
     assertThat(result.appointmentDate).isEqualTo(updateRecord.appointmentDate)
+    assertThat(result.appointmentTimeDetails).isEqualTo(updateRecord.appointmentTimeDetails)
   }
 }
