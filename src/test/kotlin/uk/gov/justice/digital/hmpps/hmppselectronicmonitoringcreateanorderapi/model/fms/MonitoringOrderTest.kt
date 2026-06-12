@@ -739,6 +739,7 @@ class MonitoringOrderTest : OrderTestBase() {
         versionId = UUID.randomUUID(),
         location = InstallationLocationType.PRIMARY,
       )
+
       val order = createOrder(
         addresses = mutableListOf(primaryAddress),
         monitoringConditions = createMonitoringConditions(curfew = true, alcohol = false),
@@ -876,7 +877,6 @@ class MonitoringOrderTest : OrderTestBase() {
       order.installationAppointment = installationAppointment
 
       order.installationLocation!!.location = InstallationLocationType.PROBATION_OFFICE
-      order.installationAppointment = null
       order.addresses.removeAll { it.addressType == AddressType.INSTALLATION }
 
       order.addresses.add(
@@ -891,12 +891,13 @@ class MonitoringOrderTest : OrderTestBase() {
         versionId = UUID.randomUUID(),
         placeName = "London",
         appointmentDate = ZonedDateTime.of(2026, 11, 15, 14, 30, 0, 0, ZoneId.of("Europe/London")),
+        appointmentTimeDetails = "Mock Details",
       )
 
       val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, mockFeatureFlags, FmsOrderSource.CEMO)
 
       assertThat(fmsMonitoringOrder.tagAtSource).isEqualTo("true")
-      assertThat(fmsMonitoringOrder.tagAtSourceDetails).isEqualTo("London")
+      assertThat(fmsMonitoringOrder.tagAtSourceDetails).isEqualTo("London Mock Details")
       assertThat(fmsMonitoringOrder.dateAndTimeInstallationWillTakePlace).isEqualTo("2026-11-15 14:30:00")
       assertThat(fmsMonitoringOrder.installationAddress1).isEqualTo("New Probation Address Line 1")
       assertThat(fmsMonitoringOrder.installationAddress2).isEqualTo("New Probation Address Line 2")

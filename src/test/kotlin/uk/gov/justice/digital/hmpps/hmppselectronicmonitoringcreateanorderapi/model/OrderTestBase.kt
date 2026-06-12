@@ -11,6 +11,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.EnforcementZoneConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationAndRisk
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationAppointment
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationLocation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InterestedParties
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.MandatoryAttendanceConditions
@@ -56,6 +57,7 @@ abstract class OrderTestBase {
     probationDeliveryUnits: ProbationDeliveryUnit? = null,
     trailMonitoringConditions: TrailMonitoringConditions? = null,
     installationLocation: InstallationLocation? = null,
+    installationAppointment: InstallationAppointment? = null,
     additionalDocuments: MutableList<AdditionalDocument> = mutableListOf(),
     alcoholMonitoringConditions: AlcoholMonitoringConditions? = null,
     curfewConditions: CurfewConditions? = createCurfewConditions(),
@@ -114,6 +116,8 @@ abstract class OrderTestBase {
     }
 
     order.installationLocation = installationLocation
+
+    order.installationAppointment = installationAppointment
 
     order.additionalDocuments.addAll(additionalDocuments)
 
@@ -410,5 +414,16 @@ abstract class OrderTestBase {
     variationDate = variationDate,
     variationDetails = variationDetails,
     variationType = variationType,
+  )
+
+  protected fun createInstallationAppointment(
+    placeName: String = "Mock Place",
+    appointmentDate: ZonedDateTime = ZonedDateTime.now(),
+    appointmentTimeDetails: String? = null,
+  ): InstallationAppointment = InstallationAppointment(
+    versionId = UUID.randomUUID(),
+    placeName = placeName,
+    appointmentDate = appointmentDate,
+    appointmentTimeDetails = appointmentTimeDetails,
   )
 }

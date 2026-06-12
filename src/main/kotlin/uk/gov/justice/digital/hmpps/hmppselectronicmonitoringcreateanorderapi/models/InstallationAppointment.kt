@@ -26,6 +26,9 @@ data class InstallationAppointment(
   @Column(name = "APPOINTMENT_DATE", nullable = true)
   var appointmentDate: ZonedDateTime? = null,
 
+  @Column(name = "APPOINTMENT_TIME_DETAILS", nullable = true)
+  var appointmentTimeDetails: String? = null,
+
   @Schema(hidden = true)
   @OneToOne
   @JoinColumn(name = "VERSION_ID", updatable = false, insertable = false)
