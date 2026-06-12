@@ -166,6 +166,8 @@ class FmsVariationSubmissionStrategy(
     monitoringOrder.orderVariationDetails = orderChanges.variationDetails
     if (order.type == RequestType.VARIATION) {
       monitoringOrder.orderVariationType = orderChanges.variationType.value
+    } else {
+      monitoringOrder.orderVariationType = VariationType.OTHER.value
     }
 
     val serialiseResult = this.serialiseMonitoringOrder(monitoringOrder)
