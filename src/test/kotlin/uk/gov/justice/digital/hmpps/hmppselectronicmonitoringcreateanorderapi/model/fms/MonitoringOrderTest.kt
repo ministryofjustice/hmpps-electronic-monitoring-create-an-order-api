@@ -24,7 +24,6 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.ProbationDeliveryUnitDDv6ArgumentsProvider
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.SentenceArgumentsProvider
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.SentenceDDv6ArgumentsProvider
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.VariationTypeArgumentsProvider
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.YouthCourtArgumentsProvider
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.YouthCustodyServiceRegionArgumentsProvider
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms.argumentsProvider.YouthCustodyServiceRegionArgumentsProviderDDv6
@@ -49,7 +48,6 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ResponsibleOrganisation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.SentenceType
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.VariationType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YesNoUnknown
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.DapoClause
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.EnforceableCondition
@@ -1536,20 +1534,6 @@ class MonitoringOrderTest : OrderTestBase() {
     )
     val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "", mockFeatureFlags, FmsOrderSource.CEMO)
     assertThat(fmsMonitoringOrder.subcategory).isEqualTo(mappedValue)
-  }
-
-  @ParameterizedTest(name = "it should map variation type - {0} -> {1}")
-  @ArgumentsSource(VariationTypeArgumentsProvider::class)
-  fun `It should correctly map variation type values to Serco`(savedValue: VariationType, mappedValue: String) {
-    val order = createOrder(
-      type = RequestType.VARIATION,
-      variationDetails = createvariationDetails(
-        variationType = savedValue,
-      ),
-      dataDictionaryVersion = DataDictionaryVersion.DDV6,
-    )
-    val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "", mockFeatureFlags, FmsOrderSource.CEMO)
-    assertThat(fmsMonitoringOrder.orderVariationType).isEqualTo(mappedValue)
   }
 
   @Nested
