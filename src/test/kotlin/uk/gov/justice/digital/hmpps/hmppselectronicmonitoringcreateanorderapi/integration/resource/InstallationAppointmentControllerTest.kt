@@ -110,7 +110,7 @@ class InstallationAppointmentControllerTest : IntegrationTestBase() {
             {
               "placeName": "Mock Place",
               "appointmentDate": "$appointmentDate",
-              "appointmentTimeDetails": "${"n".repeat(1001)}"
+              "appointmentTimeDetails": "${"n".repeat(501)}"
             }
           """.trimIndent(),
         ),

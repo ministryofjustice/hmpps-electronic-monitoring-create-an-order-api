@@ -14,6 +14,6 @@ data class UpdateInstallationAppointmentDto(
   @field:Future(message = ValidationErrors.InstallationAppointment.APPOINTMENT_DATE_MUST_BE_IN_FUTURE)
   val appointmentDate: ZonedDateTime? = null,
 
-  @field:Size(max = 1000, message = ValidationErrors.InstallationAppointment.APPOINTMENT_TIME_DETAILS_MAX_LENGTH)
+  @field:Size(max = 500, message = ValidationErrors.InstallationAppointment.APPOINTMENT_TIME_DETAILS_MAX_LENGTH)
   val appointmentTimeDetails: String? = null,
 )

@@ -1,2 +1,2 @@
 ALTER TABLE installation_appointment
-    ADD COLUMN appointment_time_details VARCHAR(1000);
+    ADD COLUMN appointment_time_details VARCHAR(500);
