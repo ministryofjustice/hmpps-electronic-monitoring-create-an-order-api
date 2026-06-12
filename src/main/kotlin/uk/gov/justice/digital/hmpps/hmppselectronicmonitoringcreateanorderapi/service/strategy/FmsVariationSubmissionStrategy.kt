@@ -164,7 +164,9 @@ class FmsVariationSubmissionStrategy(
 
     val orderChanges = calculateOrderChanges(monitoringOrder, submitDeviceWearerResult, lastSuccessfulSubmitResult)
     monitoringOrder.orderVariationDetails = orderChanges.variationDetails
-    monitoringOrder.orderVariationType = orderChanges.variationType.value
+    if (order.type == RequestType.VARIATION) {
+      monitoringOrder.orderVariationType = orderChanges.variationType.value
+    }
 
     val serialiseResult = this.serialiseMonitoringOrder(monitoringOrder)
 
