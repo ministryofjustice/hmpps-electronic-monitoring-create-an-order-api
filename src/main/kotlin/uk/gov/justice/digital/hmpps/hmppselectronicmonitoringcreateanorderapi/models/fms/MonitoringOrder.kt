@@ -572,6 +572,10 @@ data class MonitoringOrder(
         } else {
           monitoringOrder.tagAtSource = "false"
         }
+
+        if (!order.installationAppointment?.appointmentTimeDetails.isNullOrEmpty()) {
+          monitoringOrder.tagAtSourceDetails += " ${order.installationAppointment!!.appointmentTimeDetails}"
+        }
       }
 
       if (DataDictionaryVersion.isVersionSameOrAbove(order.dataDictionaryVersion, DataDictionaryVersion.DDV6) &&
