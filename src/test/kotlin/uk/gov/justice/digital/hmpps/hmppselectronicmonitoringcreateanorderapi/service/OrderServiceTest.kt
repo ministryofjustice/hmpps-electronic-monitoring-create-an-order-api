@@ -573,6 +573,9 @@ class OrderServiceTest {
           assertThat(firstValue.versions.last().interestedParties).isNotNull()
           assertThat(newIP?.versionId).isEqualTo(firstValue.versions.last().id)
           assertThat(newIP?.versionId).isNotEqualTo(originalVersionId)
+          assertThat(newIP?.responsibleOrganisation).isEqualTo(originalIP?.responsibleOrganisation)
+          assertThat(newIP?.responsibleOrganisationRegion).isEqualTo(originalIP?.responsibleOrganisationRegion)
+          assertThat(newIP?.responsibleOrganisationEmail).isEqualTo(originalIP?.responsibleOrganisationEmail)
           assertThat(newIP?.responsibleOfficerName).isEqualTo(originalIP?.responsibleOfficerName)
           assertThat(newIP?.responsibleOfficerFirstName).isEqualTo(originalIP?.responsibleOfficerFirstName)
           assertThat(newIP?.responsibleOfficerLastName).isEqualTo(originalIP?.responsibleOfficerLastName)
@@ -880,6 +883,9 @@ class OrderServiceTest {
           verify(repo, times(1)).save(capture())
 
           val newIP = firstValue.versions.last().interestedParties
+          assertThat(newIP?.responsibleOrganisation).isNull()
+          assertThat(newIP?.responsibleOrganisationRegion).isNull()
+          assertThat(newIP?.responsibleOrganisationEmail).isNull()
           assertThat(newIP?.responsibleOfficerName).isNull()
           assertThat(newIP?.responsibleOfficerFirstName).isNull()
           assertThat(newIP?.responsibleOfficerLastName).isNull()

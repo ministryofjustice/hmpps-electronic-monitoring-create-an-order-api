@@ -157,7 +157,14 @@ class OrderService(
               ?.takeIf { isUserFromOriginalNotifyingOrganistion },
             notifyingOrganisationEmail = currentIPs?.notifyingOrganisationEmail
               ?.takeIf { isUserFromOriginalNotifyingOrganistion },
+
             responsibleOrganisation = currentIPs?.responsibleOrganisation?.takeIf {
+              isStartDateInFuture
+            },
+            responsibleOrganisationRegion = currentIPs?.responsibleOrganisationRegion?.takeIf {
+              isStartDateInFuture
+            },
+            responsibleOrganisationEmail = currentIPs?.responsibleOrganisationEmail?.takeIf {
               isStartDateInFuture
             },
             responsibleOfficerName = currentIPs?.responsibleOfficerName?.takeIf {
