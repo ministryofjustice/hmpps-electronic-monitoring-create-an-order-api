@@ -41,10 +41,15 @@ class DocumentApiClient(private val documentManagementApiWebClient: WebClient) {
       )
       .bodyToMono(DocumentUploadResponse::class.java)
       .retryWhen(
-        Retry.fixedDelay(1, Duration.ofMillis(250))
-          // Only retry on 5xx status error, do not retry for bad request
+        Retry.fixedDelay(1, Duration.ofMillis(2000))
+          // Only retry on 5xx/429/408 status error, do not retry for bad request
           .filter {
-            it is WebClientResponseException && it.statusCode.is5xxServerError
+            it is WebClientResponseException &&
+              (
+                it.statusCode.is5xxServerError ||
+                  it.statusCode.isSameCodeAs(HttpStatus.TOO_MANY_REQUESTS) ||
+                  it.statusCode.isSameCodeAs(HttpStatus.REQUEST_TIMEOUT)
+                )
           },
       )
       .block()
