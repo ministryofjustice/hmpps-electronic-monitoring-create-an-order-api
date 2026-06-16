@@ -282,6 +282,44 @@ class OrderServiceTest {
     }
   }
 
+  @Test
+  fun `Should add Adult YCS to tags when notifying org is YCS and responsible adult not required`() {
+    val mockOrder = TestUtilities.createReadyToSubmitOrder(
+      startDate = mockStartDate,
+      endDate = mockEndDate,
+      username = "mockUser",
+      notifyingOrganisation = NotifyingOrganisationDDv5.YOUTH_CUSTODY_SERVICE.name,
+    )
+
+    mockOrder.deviceWearer!!.adultAtTimeOfInstallation = true
+
+    reset(repo)
+
+    val mockFmsResult = FmsSubmissionResult(
+      orderId = mockOrder.getCurrentVersion().id,
+      deviceWearerResult = FmsDeviceWearerSubmissionResult(
+        status = SubmissionStatus.SUCCESS,
+        deviceWearerId = "mockDeviceWearerId",
+      ),
+      monitoringOrderResult = FmsMonitoringOrderSubmissionResult(
+        status = SubmissionStatus.SUCCESS,
+        monitoringOrderId = "mockMonitoringOrderId",
+      ),
+      orderSource = FmsOrderSource.CEMO,
+      strategy = FmsSubmissionStrategyKind.ORDER,
+    )
+    whenever(repo.findById(mockOrder.id)).thenReturn(Optional.of(mockOrder))
+    whenever(fmsService.submitOrder(any<Order>(), eq(FmsOrderSource.CEMO))).thenReturn(
+      mockFmsResult,
+    )
+    service.submitOrder(mockOrder.id, authentication, "mockName")
+
+    argumentCaptor<Order>().apply {
+      verify(repo, times(1)).save(capture())
+      assertThat(firstValue.tags!!.split(',')).contains("Adult YCS")
+    }
+  }
+
   @ParameterizedTest
   @MethodSource("tagScenarios")
   fun `Should add correct tag for notifying organisation`(notifyOrgName: String, expectedTag: String) {
@@ -1085,7 +1123,6 @@ class OrderServiceTest {
       Arguments.of(NotifyingOrganisationDDv5.CIVIL_COUNTY_COURT.name, "Civil Court"),
       Arguments.of(NotifyingOrganisationDDv5.FAMILY_COURT.name, "Family Court"),
       Arguments.of(NotifyingOrganisationDDv5.HOME_OFFICE.name, "Home Office"),
-      Arguments.of(NotifyingOrganisationDDv5.YOUTH_CUSTODY_SERVICE.name, ""),
     )
   }
 }

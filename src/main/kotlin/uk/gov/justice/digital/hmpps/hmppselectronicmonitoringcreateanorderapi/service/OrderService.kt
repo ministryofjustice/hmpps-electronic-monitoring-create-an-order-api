@@ -303,7 +303,7 @@ class OrderService(
       }
 
       NotifyingOrganisationDDv5.YOUTH_CUSTODY_SERVICE.name -> {
-        if (order.deviceWearer?.adultAtTimeOfInstallation == false) "Youth YCS" else ""
+        if (order.deviceWearer?.adultAtTimeOfInstallation == false) "Youth YCS" else "Adult YCS"
       }
 
       NotifyingOrganisationDDv5.PROBATION.name -> "Probation"

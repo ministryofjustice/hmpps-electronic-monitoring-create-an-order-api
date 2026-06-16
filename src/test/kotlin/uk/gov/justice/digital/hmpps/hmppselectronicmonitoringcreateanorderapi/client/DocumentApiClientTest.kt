@@ -90,6 +90,16 @@ class DocumentApiClientTest : IntegrationTestBase() {
 
         documentApi.verify(2, postRequestedFor(urlMatching("/documents/CEMO_ATTACHMENT/$documentUuid")))
       }
+
+      @Test
+      fun `it should retry if server returned 429 client error`() {
+        val documentId = UUID.randomUUID()
+        documentApi.stubUploadDocumentRetryOnClientErrorScenario(DocumentUploadResponse())
+
+        documentApiClient.createDocument(documentUuid, bodyBuilder)
+
+        documentApi.verify(2, postRequestedFor(urlMatching("/documents/CEMO_ATTACHMENT/$documentUuid")))
+      }
     }
   }
 }

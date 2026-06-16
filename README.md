@@ -189,7 +189,7 @@ Use your HMPPS Auth credentials (dev) to sign in.
 ### Integration tests
 1. Start localstack:
 ```bash
-  docker compose -f docker-compose-test.yml up`
+  docker compose -f docker-compose-test.yml up
   ```
 
 2.  Run integration tests:
