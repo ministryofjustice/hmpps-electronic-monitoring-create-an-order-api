@@ -606,12 +606,22 @@ class OrderServiceTest {
       fun `It should clone interestedParties referencing new version and clear notifying organisation data`() {
         argumentCaptor<Order>().apply {
           verify(repo, times(1)).save(capture())
+          val originalIP = firstValue.versions.last().interestedParties
+          val newIP = firstValue.versions.last().interestedParties
           assertThat(firstValue.versions.last().interestedParties).isNotNull()
-          assertThat(firstValue.versions.last().interestedParties?.versionId).isEqualTo(firstValue.versions.last().id)
-          assertThat(firstValue.versions.last().interestedParties?.versionId).isNotEqualTo(originalVersionId)
-          assertThat(firstValue.versions.last().interestedParties?.notifyingOrganisation).isNull()
-          assertThat(firstValue.versions.last().interestedParties?.notifyingOrganisationName).isNull()
-          assertThat(firstValue.versions.last().interestedParties?.notifyingOrganisationEmail).isNull()
+          assertThat(newIP?.versionId).isEqualTo(firstValue.versions.last().id)
+          assertThat(newIP?.versionId).isNotEqualTo(originalVersionId)
+          assertThat(newIP?.responsibleOrganisation).isEqualTo(originalIP?.responsibleOrganisation)
+          assertThat(newIP?.responsibleOrganisationRegion).isEqualTo(originalIP?.responsibleOrganisationRegion)
+          assertThat(newIP?.responsibleOrganisationEmail).isEqualTo(originalIP?.responsibleOrganisationEmail)
+          assertThat(newIP?.responsibleOfficerName).isEqualTo(originalIP?.responsibleOfficerName)
+          assertThat(newIP?.responsibleOfficerFirstName).isEqualTo(originalIP?.responsibleOfficerFirstName)
+          assertThat(newIP?.responsibleOfficerLastName).isEqualTo(originalIP?.responsibleOfficerLastName)
+          assertThat(newIP?.responsibleOfficerEmail).isEqualTo(originalIP?.responsibleOfficerEmail)
+          assertThat(newIP?.responsibleOfficerPhoneNumber).isEqualTo(originalIP?.responsibleOfficerPhoneNumber)
+          assertThat(newIP?.notifyingOrganisation).isNull()
+          assertThat(newIP?.notifyingOrganisationName).isNull()
+          assertThat(newIP?.notifyingOrganisationEmail).isNull()
           assertThat(firstValue.versions.last().interestedParties)
             .usingRecursiveComparison()
             .ignoringCollectionOrder()
@@ -879,6 +889,46 @@ class OrderServiceTest {
           assertThat(firstValue.versions.last().interestedParties?.notifyingOrganisation).isNotNull()
           assertThat(firstValue.versions.last().interestedParties?.notifyingOrganisationName).isNotNull()
           assertThat(firstValue.versions.last().interestedParties?.notifyingOrganisationEmail).isNotNull()
+        }
+      }
+    }
+
+    @Nested
+    @DisplayName("Create Version as Variation")
+    inner class CreateVersionAsVariationInPast {
+      val orderInPast = TestUtilities.createReadyToSubmitOrder(
+        versionId = originalVersionId,
+        startDate = mockStartDate,
+        endDate = mockEndDate,
+        status = OrderStatus.SUBMITTED,
+        dataDictionaryVersion = DataDictionaryVersion.DDV4,
+      ).apply {
+        monitoringConditions?.startDate = ZonedDateTime.now().minusMonths(1)
+      }
+
+      @BeforeEach
+      fun setup() {
+        val featureFlags = FeatureFlags(ddV6CourtMappings = true, dataDictionaryVersion = DataDictionaryVersion.DDV5)
+        service = OrderService(repo, fmsService, featureFlags, userCohortService)
+        whenever(repo.findById(orderInPast.id)).thenReturn(Optional.of(orderInPast))
+        whenever(repo.save(orderInPast)).thenReturn(orderInPast)
+      }
+
+      @Test
+      fun `Should clear notifying org when start date is in past`() {
+        service.createVersion(orderInPast.id, authentication, RequestType.VARIATION)
+        argumentCaptor<Order>().apply {
+          verify(repo, times(1)).save(capture())
+
+          val newIP = firstValue.versions.last().interestedParties
+          assertThat(newIP?.responsibleOrganisation).isNull()
+          assertThat(newIP?.responsibleOrganisationRegion).isNull()
+          assertThat(newIP?.responsibleOrganisationEmail).isNull()
+          assertThat(newIP?.responsibleOfficerName).isNull()
+          assertThat(newIP?.responsibleOfficerFirstName).isNull()
+          assertThat(newIP?.responsibleOfficerLastName).isNull()
+          assertThat(newIP?.responsibleOfficerEmail).isNull()
+          assertThat(newIP?.responsibleOfficerPhoneNumber).isNull()
         }
       }
     }

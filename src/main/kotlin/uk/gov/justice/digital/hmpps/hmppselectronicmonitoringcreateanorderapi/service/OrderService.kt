@@ -24,6 +24,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.specification.OrderListSpecification
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.specification.OrderSearchSpecification
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
+import java.time.ZonedDateTime
 import java.util.*
 
 @Service
@@ -144,6 +145,8 @@ class OrderService(
         val currentIPs = currentVersion.interestedParties
         val isUserFromOriginalNotifyingOrganistion =
           isUserFromOriginalNotifyingOrganistion(token, currentIPs?.notifyingOrganisation)
+        val isStartDateInFuture = order.getMonitoringStartDate()?.isAfter(ZonedDateTime.now()) == true
+
         interestedParties =
           currentVersion.interestedParties?.copy(
             versionId = this.id,
@@ -155,7 +158,32 @@ class OrderService(
             notifyingOrganisationEmail = currentIPs?.notifyingOrganisationEmail
               ?.takeIf { isUserFromOriginalNotifyingOrganistion },
 
+            responsibleOrganisation = currentIPs?.responsibleOrganisation?.takeIf {
+              isStartDateInFuture
+            },
+            responsibleOrganisationRegion = currentIPs?.responsibleOrganisationRegion?.takeIf {
+              isStartDateInFuture
+            },
+            responsibleOrganisationEmail = currentIPs?.responsibleOrganisationEmail?.takeIf {
+              isStartDateInFuture
+            },
+            responsibleOfficerName = currentIPs?.responsibleOfficerName?.takeIf {
+              isStartDateInFuture
+            },
+            responsibleOfficerFirstName = currentIPs?.responsibleOfficerFirstName?.takeIf {
+              isStartDateInFuture
+            },
+            responsibleOfficerLastName = currentIPs?.responsibleOfficerLastName?.takeIf {
+              isStartDateInFuture
+            },
+            responsibleOfficerEmail = currentIPs?.responsibleOfficerEmail?.takeIf {
+              isStartDateInFuture
+            },
+            responsibleOfficerPhoneNumber = currentIPs?.responsibleOfficerPhoneNumber?.takeIf {
+              isStartDateInFuture
+            },
           )
+
         probationDeliveryUnit =
           currentVersion.probationDeliveryUnit?.copy(versionId = this.id, id = UUID.randomUUID())
 
