@@ -42,7 +42,7 @@ class TagFilterTest {
     val userCohort = UserCohort(Cohort.PRISON, "Some AC name", "ACI")
     val filter = TagFilter.getTagFilterByUserCohort(userCohort)
 
-    val expected = TagFilter().allOf("PRISON", "ALTCOURSE_PRISON").exclude("Youth YOI", "Youth YCS")
+    val expected = TagFilter().allOf("PRISON", "ALTCOURSE_PRISON").exclude("Youth YOI", "Youth YCS", "Adult YCS")
 
     assertThat(filter).isEqualTo(expected)
   }
@@ -52,7 +52,7 @@ class TagFilterTest {
     val userCohort = UserCohort(Cohort.PRISON, "Some AC name", "PBI")
     val filter = TagFilter.getTagFilterByUserCohort(userCohort)
 
-    val expected = TagFilter().allOf("PRISON", "PETERBOROUGH_PRISON").exclude("Youth YOI", "Youth YCS")
+    val expected = TagFilter().allOf("PRISON", "PETERBOROUGH_PRISON").exclude("Youth YOI", "Youth YCS", "Adult YCS")
 
     assertThat(filter).isEqualTo(expected)
   }
@@ -62,7 +62,7 @@ class TagFilterTest {
     val userCohort = UserCohort(Cohort.PRISON, "Some AC name", "PFI")
     val filter = TagFilter.getTagFilterByUserCohort(userCohort)
 
-    val expected = TagFilter().allOf("PRISON", "PETERBOROUGH_PRISON").exclude("Youth YOI", "Youth YCS")
+    val expected = TagFilter().allOf("PRISON", "PETERBOROUGH_PRISON").exclude("Youth YOI", "Youth YCS", "Adult YCS")
 
     assertThat(filter).isEqualTo(expected)
   }
@@ -75,7 +75,7 @@ class TagFilterTest {
     val expected = TagFilter().allOf(
       "PRISON",
       "COOKHAM_WOOD_YOUNG_OFFENDER_INSTITUTION",
-    ).allOf("PRISON", "COOKHAM_WOOD_PRISON").anyOf("Youth YCS")
+    ).allOf("PRISON", "COOKHAM_WOOD_PRISON").allOf("Youth YCS", "Adult YCS")
 
     assertThat(filter).isEqualTo(expected)
   }
@@ -86,7 +86,7 @@ class TagFilterTest {
     val filter = TagFilter.getTagFilterByUserCohort(userCohort)
 
     val expected = TagFilter().allOf("PRISON", "ASKHAM_GRANGE_PRISON_AND_YOUNG_OFFENDER_INSTITUTION")
-      .anyOf("Youth YCS")
+      .allOf("Youth YCS", "Adult YCS")
 
     assertThat(filter).isEqualTo(expected)
   }
@@ -96,7 +96,7 @@ class TagFilterTest {
     val userCohort = UserCohort(Cohort.PRISON)
     val filter = TagFilter.getTagFilterByUserCohort(userCohort)
 
-    val expected = TagFilter().anyOf("Youth YCS")
+    val expected = TagFilter().allOf("Youth YCS", "Adult YCS")
 
     assertThat(filter).isEqualTo(expected)
   }
