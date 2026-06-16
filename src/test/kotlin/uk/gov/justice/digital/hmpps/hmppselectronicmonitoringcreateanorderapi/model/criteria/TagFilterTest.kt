@@ -75,7 +75,7 @@ class TagFilterTest {
     val expected = TagFilter().allOf(
       "PRISON",
       "COOKHAM_WOOD_YOUNG_OFFENDER_INSTITUTION",
-    ).allOf("PRISON", "COOKHAM_WOOD_PRISON").allOf("Youth YCS", "Adult YCS")
+    ).allOf("PRISON", "COOKHAM_WOOD_PRISON").anyOf("Youth YCS", "Adult YCS")
 
     assertThat(filter).isEqualTo(expected)
   }
@@ -86,7 +86,7 @@ class TagFilterTest {
     val filter = TagFilter.getTagFilterByUserCohort(userCohort)
 
     val expected = TagFilter().allOf("PRISON", "ASKHAM_GRANGE_PRISON_AND_YOUNG_OFFENDER_INSTITUTION")
-      .allOf("Youth YCS", "Adult YCS")
+      .anyOf("Youth YCS", "Adult YCS")
 
     assertThat(filter).isEqualTo(expected)
   }
@@ -96,7 +96,7 @@ class TagFilterTest {
     val userCohort = UserCohort(Cohort.PRISON)
     val filter = TagFilter.getTagFilterByUserCohort(userCohort)
 
-    val expected = TagFilter().allOf("Youth YCS", "Adult YCS")
+    val expected = TagFilter().anyOf("Youth YCS", "Adult YCS")
 
     assertThat(filter).isEqualTo(expected)
   }
