@@ -1551,7 +1551,7 @@ class MonitoringOrderTest : OrderTestBase() {
     }
 
     @Test
-    fun `It should correctly map subcategory to SR11 when order type is immigration for type END_MONITORING` () {
+    fun `It should correctly map subcategory to SR11 when order type is immigration for type END_MONITORING`() {
       val order = createOrder(
         type = RequestType.END_MONITORING,
         monitoringConditions = createMonitoringConditions(orderType = OrderType.IMMIGRATION),
@@ -1563,7 +1563,7 @@ class MonitoringOrderTest : OrderTestBase() {
     }
 
     @Test
-    fun `It should correctly map subcategory to SR21 when order type is not bail or immigration for type END_MONITORING`() {
+    fun `It should map subcategory to SR21 when order type is not bail or immigration for type END_MONITORING`() {
       val order = createOrder(
         type = RequestType.END_MONITORING,
         monitoringConditions = createMonitoringConditions(orderType = OrderType.COMMUNITY),
@@ -1724,7 +1724,7 @@ class MonitoringOrderTest : OrderTestBase() {
     }
 
     @Test
-    fun `It should correctly map subcategory to SR11 when order type is immigration for type REVOCATION` () {
+    fun `It should correctly map subcategory to SR11 when order type is immigration for type REVOCATION`() {
       val order = createOrder(
         type = RequestType.REVOCATION,
         monitoringConditions = createMonitoringConditions(orderType = OrderType.IMMIGRATION),
