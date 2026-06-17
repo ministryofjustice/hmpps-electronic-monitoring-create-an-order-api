@@ -28,8 +28,9 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
   implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-  implementation("io.awspring.cloud:spring-cloud-aws-starter-s3:3.4.2")
+  implementation("io.awspring.cloud:spring-cloud-aws-starter-s3:4.0.2")
   implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:7.4.0")
+  implementation("org.springframework.boot:spring-boot-starter-webclient")
 
   // TODO: REMOVE
   runtimeOnly("org.springframework.boot:spring-boot-properties-migrator")
@@ -37,9 +38,12 @@ dependencies {
   // other
   runtimeOnly("org.flywaydb:flyway-database-postgresql")
   runtimeOnly("org.postgresql:postgresql:42.7.10")
-  testImplementation("com.h2database:h2:2.4.240")
-  testImplementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter-test:1.8.2")
+
+  // test
+  testImplementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter-test:2.5.0")
+  testImplementation("org.springframework.boot:spring-boot-webtestclient")
   testImplementation("org.wiremock:wiremock-standalone:3.13.2")
+  testImplementation("com.h2database:h2:2.4.240")
   testImplementation("org.springframework.boot:spring-boot-starter-data-jpa-test")
 }
 
