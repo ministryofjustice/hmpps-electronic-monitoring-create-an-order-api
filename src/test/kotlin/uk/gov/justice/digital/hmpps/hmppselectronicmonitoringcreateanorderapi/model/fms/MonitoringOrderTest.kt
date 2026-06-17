@@ -1539,7 +1539,7 @@ class MonitoringOrderTest : OrderTestBase() {
   @Nested
   inner class Subcategory {
     @Test
-    fun `It should correctly map subcategory To SR11 when order type is bail`() {
+    fun `It should correctly map subcategory To SR11 when order type is bail for type END_MONITORING`() {
       val order = createOrder(
         type = RequestType.END_MONITORING,
         monitoringConditions = createMonitoringConditions(orderType = OrderType.BAIL),
@@ -1551,7 +1551,7 @@ class MonitoringOrderTest : OrderTestBase() {
     }
 
     @Test
-    fun `It should correctly map subcategory to SR11 when order type is immigration`() {
+    fun `It should correctly map subcategory to SR11 when order type is immigration for type END_MONITORING` () {
       val order = createOrder(
         type = RequestType.END_MONITORING,
         monitoringConditions = createMonitoringConditions(orderType = OrderType.IMMIGRATION),
@@ -1563,7 +1563,7 @@ class MonitoringOrderTest : OrderTestBase() {
     }
 
     @Test
-    fun `It should correctly map subcategory to SR21 when order type is not bail or immigration`() {
+    fun `It should correctly map subcategory to SR21 when order type is not bail or immigration for type END_MONITORING`() {
       val order = createOrder(
         type = RequestType.END_MONITORING,
         monitoringConditions = createMonitoringConditions(orderType = OrderType.COMMUNITY),
@@ -1704,12 +1704,47 @@ class MonitoringOrderTest : OrderTestBase() {
       )
       val order = createOrder(
         type = RequestType.REVOCATION,
-        monitoringConditions = createMonitoringConditions(orderType = OrderType.BAIL),
+        monitoringConditions = createMonitoringConditions(orderType = OrderType.COMMUNITY),
         variationDetails = createvariationDetails(),
         dataDictionaryVersion = DataDictionaryVersion.DDV6,
       )
       val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "", mockFeatureFlags, FmsOrderSource.CEMO)
       assertThat(fmsMonitoringOrder.orderEnd).isEqualTo(getBritishDateAndTime(eodNextWeek))
+    }
+
+    fun `It should correctly map subcategory To SR11 when order type is bail for type REVOCATION`() {
+      val order = createOrder(
+        type = RequestType.REVOCATION,
+        monitoringConditions = createMonitoringConditions(orderType = OrderType.BAIL),
+        variationDetails = createvariationDetails(),
+        dataDictionaryVersion = DataDictionaryVersion.DDV6,
+      )
+      val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "", mockFeatureFlags, FmsOrderSource.CEMO)
+      assertThat(fmsMonitoringOrder.subcategory).isEqualTo("SR11-Removal of devices (bail)")
+    }
+
+    @Test
+    fun `It should correctly map subcategory to SR11 when order type is immigration for type REVOCATION` () {
+      val order = createOrder(
+        type = RequestType.REVOCATION,
+        monitoringConditions = createMonitoringConditions(orderType = OrderType.IMMIGRATION),
+        variationDetails = createvariationDetails(),
+        dataDictionaryVersion = DataDictionaryVersion.DDV6,
+      )
+      val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "", mockFeatureFlags, FmsOrderSource.CEMO)
+      assertThat(fmsMonitoringOrder.subcategory).isEqualTo("SR11-Removal of devices (bail)")
+    }
+
+    @Test
+    fun `It should correctly map subcategory to SR21 when order type is not bail or immigration for type REVOCATION`() {
+      val order = createOrder(
+        type = RequestType.REVOCATION,
+        monitoringConditions = createMonitoringConditions(orderType = OrderType.COMMUNITY),
+        variationDetails = createvariationDetails(),
+        dataDictionaryVersion = DataDictionaryVersion.DDV6,
+      )
+      val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, "", mockFeatureFlags, FmsOrderSource.CEMO)
+      assertThat(fmsMonitoringOrder.subcategory).isEqualTo("SR21-Revocation monitoring requirements")
     }
 
     @Test
