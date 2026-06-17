@@ -9,6 +9,7 @@ import org.springframework.http.MediaType
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.UpdateOrderIntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.UriTestCase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Dapo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateDapoDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidationError
@@ -21,8 +22,10 @@ class DapoControllerTest : UpdateOrderIntegrationTestBase() {
   @Autowired
   lateinit var objectMapper: ObjectMapper
 
-  override val uri = "/api/orders/:orderId/dapo"
-  override fun createValidBody(): String = mockValidRequestBody()
+  fun createValidBody(): String = mockValidRequestBody()
+  override val testUris: List<UriTestCase> = listOf(
+    UriTestCase(uri = "/api/orders/:orderId/dapo", createValidBody = { createValidBody() }),
+  )
 
   @BeforeEach
   fun setup() {

@@ -6,8 +6,10 @@ import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.WebClientResponseException
+import org.springframework.web.reactive.function.client.bodyToMono
 import reactor.core.publisher.Mono
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.UserGroup
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.hmpps.HmppsCaseload
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.hmpps.HmppsUserCaseloadResponse
 
 @Component
@@ -23,13 +25,13 @@ class ManageUserApiClient(private val manageUserApiWebClient: WebClient) : Manag
     .block()
     ?: emptyList()
 
-  override fun getUserActiveCaseloadName(token: Jwt): String? = manageUserApiWebClient
+  override fun getUserActiveCaseload(token: Jwt): HmppsCaseload? = manageUserApiWebClient
     .get()
     .uri("/users/me/caseloads")
     .header(HttpHeaders.AUTHORIZATION, "Bearer ${token.tokenValue}")
     .retrieve()
-    .bodyToMono(HmppsUserCaseloadResponse::class.java)
+    .bodyToMono<HmppsUserCaseloadResponse>()
     .onErrorResume(WebClientResponseException::class.java) { Mono.empty() }
     .block()!!
-    .activeCaseload?.name
+    .activeCaseload
 }

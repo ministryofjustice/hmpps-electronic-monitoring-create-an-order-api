@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.resource
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
@@ -7,10 +8,16 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.web.reactive.function.BodyInserters
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.data.ValidationErrors
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.UpdateOrderIntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.UriTestCase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateDeviceWearerDto
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateIdentityNumbersDto
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateNoFixedAbodeDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidationError
 import java.time.LocalDate
 import java.time.LocalTime
@@ -18,13 +25,28 @@ import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.util.*
 
-class DeviceWearerControllerTest : IntegrationTestBase() {
+class DeviceWearerControllerTest : UpdateOrderIntegrationTestBase() {
+  @Autowired
+  lateinit var objectMapper: ObjectMapper
+
+  override val testUris: List<UriTestCase> = listOf(
+    UriTestCase(uri = "/api/orders/:orderId/device-wearer", createValidBody = { mockValidDeviceWearerBody() }),
+    UriTestCase(
+      uri = "/api/orders/:orderId/device-wearer/no-fixed-abode",
+      createValidBody = { mockValidFixedAbodeBody() },
+    ),
+    UriTestCase(
+      uri = "/api/orders/:orderId/device-wearer/identity-numbers",
+      createValidBody = { mockValidIdentityNumbersBody() },
+    ),
+  )
 
   private val mockNomisId: String = "mockNomisId"
   private val mockPncId: String = "mockPncId"
   private val mockDeliusId: String = "mockDeliusId"
   private val mockPrisonNumber: String = "mockPrisonerNumber"
   private val mockFirstName: String = "mockFirstName"
+  private val mockMiddleName: String = "mockMiddleName"
   private val mockLastName: String = "mockLastName"
   private val mockAlias: String = "mockAlias"
   private val mockSex: String = "MALE"
@@ -40,21 +62,6 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
     LocalTime.NOON,
     ZoneId.of("UTC"),
   )
-
-  private object ErrorMessages {
-    const val FIRST_NAME_REQUIRED: String = "Enter device wearer's first name"
-    const val LAST_NAME_REQUIRED: String = "Enter device wearer's last name"
-    const val IS_ADULT_REQUIRED: String = "Select yes if a responsible adult is required"
-    const val SEX_REQUIRED: String = "Select the device wearer's sex, or select 'Not able to provide this information'"
-    const val GENDER_REQUIRED: String =
-      "Select the device wearer's gender, or select 'Not able to provide this information'"
-    const val DOB_REQUIRED: String = "Enter date of birth"
-    const val DOB_MUST_BE_IN_PAST: String = "Date of birth must be in the past"
-    const val INTERPRETER_REQUIRED: String = "Select yes if the device wearer requires an interpreter"
-    const val LANGUAGE_REQUIRED: String = "Select the language required"
-    const val NO_FIXED_ABODE_REQUIRED: String = "Select yes if the device wearer has a fixed address"
-    const val OTHER_DISABILITY: String = "Enter device wearer's disability or health condition"
-  }
 
   @BeforeEach
   fun setup() {
@@ -75,6 +82,7 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
             """
             {
               "firstName": "$mockFirstName",
+              "middleName": "$mockMiddleName",
               "lastName": "$mockLastName",
               "alias": "$mockAlias",
               "adultAtTimeOfInstallation": "false",
@@ -97,6 +105,7 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
         .returnResult()
 
       Assertions.assertThat(updateDeviceWearer.responseBody?.firstName).isEqualTo(mockFirstName)
+      Assertions.assertThat(updateDeviceWearer.responseBody?.middleName).isEqualTo(mockMiddleName)
       Assertions.assertThat(updateDeviceWearer.responseBody?.lastName).isEqualTo(mockLastName)
       Assertions.assertThat(updateDeviceWearer.responseBody?.alias).isEqualTo(mockAlias)
       Assertions.assertThat(
@@ -200,30 +209,30 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
       Assertions.assertThat(result.responseBody).isNotNull
       Assertions.assertThat(result.responseBody).hasSize(7)
       Assertions.assertThat(result.responseBody!!).contains(
-        ValidationError("firstName", ErrorMessages.FIRST_NAME_REQUIRED),
+        ValidationError("firstName", ValidationErrors.DeviceWearer.FIRST_NAME_REQUIRED),
       )
       Assertions.assertThat(result.responseBody!!).contains(
-        ValidationError("lastName", ErrorMessages.LAST_NAME_REQUIRED),
+        ValidationError("lastName", ValidationErrors.DeviceWearer.LAST_NAME_REQUIRED),
       )
       Assertions.assertThat(result.responseBody!!).contains(
         ValidationError(
           "adultAtTimeOfInstallation",
-          ErrorMessages.IS_ADULT_REQUIRED,
+          ValidationErrors.DeviceWearer.IS_ADULT_REQUIRED,
         ),
       )
       Assertions.assertThat(result.responseBody!!).contains(
-        ValidationError("sex", ErrorMessages.SEX_REQUIRED),
+        ValidationError("sex", ValidationErrors.DeviceWearer.SEX_REQUIRED),
       )
       Assertions.assertThat(result.responseBody!!).contains(
-        ValidationError("gender", ErrorMessages.GENDER_REQUIRED),
+        ValidationError("gender", ValidationErrors.DeviceWearer.GENDER_REQUIRED),
       )
       Assertions.assertThat(result.responseBody!!).contains(
-        ValidationError("dateOfBirth", ErrorMessages.DOB_REQUIRED),
+        ValidationError("dateOfBirth", ValidationErrors.DeviceWearer.DOB_REQUIRED),
       )
       Assertions.assertThat(result.responseBody!!).contains(
         ValidationError(
           "interpreterRequired",
-          ErrorMessages.INTERPRETER_REQUIRED,
+          ValidationErrors.DeviceWearer.INTERPRETER_REQUIRED,
         ),
       )
     }
@@ -261,7 +270,7 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
       Assertions.assertThat(result.responseBody).isNotNull
       Assertions.assertThat(result.responseBody).hasSize(1)
       Assertions.assertThat(result.responseBody!!).contains(
-        ValidationError("dateOfBirth", ErrorMessages.DOB_MUST_BE_IN_PAST),
+        ValidationError("dateOfBirth", ValidationErrors.DeviceWearer.DOB_MUST_BE_IN_PAST),
       )
     }
 
@@ -298,7 +307,7 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
       Assertions.assertThat(result.responseBody).isNotNull
       Assertions.assertThat(result.responseBody).hasSize(1)
       Assertions.assertThat(result.responseBody!!).contains(
-        ValidationError("language", ErrorMessages.LANGUAGE_REQUIRED),
+        ValidationError("language", ValidationErrors.DeviceWearer.LANGUAGE_REQUIRED),
       )
     }
 
@@ -337,7 +346,7 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
       Assertions.assertThat(result.responseBody).isNotNull
       Assertions.assertThat(result.responseBody).hasSize(1)
       Assertions.assertThat(result.responseBody!!).contains(
-        ValidationError("otherDisability", ErrorMessages.OTHER_DISABILITY),
+        ValidationError("otherDisability", ValidationErrors.DeviceWearer.OTHER_DISABILITY),
       )
     }
 
@@ -561,7 +570,7 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
       Assertions.assertThat(result.responseBody!!).contains(
         ValidationError(
           "noFixedAbode",
-          ErrorMessages.NO_FIXED_ABODE_REQUIRED,
+          ValidationErrors.NoFixedAbode.NO_FIXED_ABODE_REQUIRED,
         ),
       )
     }
@@ -874,5 +883,43 @@ class DeviceWearerControllerTest : IntegrationTestBase() {
         updatedOrder.deviceWearer!!.courtCaseReferenceNumber,
       ).isEqualTo(mockCourtCaseReferenceNumber)
     }
+  }
+
+  private fun mockValidDeviceWearerBody(): String {
+    val dto = UpdateDeviceWearerDto(
+      alias = mockAlias,
+      firstName = mockFirstName,
+      middleName = mockMiddleName,
+      lastName = mockLastName,
+      gender = mockGender,
+      dateOfBirth = mockDateOfBirth,
+      interpreterRequired = false,
+      sex = mockSex,
+      adultAtTimeOfInstallation = true,
+    )
+
+    return objectMapper.writeValueAsString(dto)
+  }
+
+  private fun mockValidFixedAbodeBody(): String {
+    val dto = UpdateNoFixedAbodeDto(
+      noFixedAbode = true,
+    )
+
+    return objectMapper.writeValueAsString(dto)
+  }
+
+  private fun mockValidIdentityNumbersBody(): String {
+    val dto = UpdateIdentityNumbersDto(
+      nomisId = mockNomisId,
+      pncId = mockPncId,
+      deliusId = mockDeliusId,
+      prisonNumber = mockPrisonNumber,
+      homeOfficeReferenceNumber = mockHomeOfficeReferenceNumber,
+      complianceAndEnforcementPersonReference = mockComplianceAndEnforcementPersonReference,
+      courtCaseReferenceNumber = mockCourtCaseReferenceNumber,
+    )
+
+    return objectMapper.writeValueAsString(dto)
   }
 }

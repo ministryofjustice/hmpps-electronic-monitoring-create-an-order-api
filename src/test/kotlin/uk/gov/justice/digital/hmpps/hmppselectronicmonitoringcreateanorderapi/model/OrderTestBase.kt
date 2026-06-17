@@ -7,13 +7,16 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewReleaseDateConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewTimeTable
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Dapo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.EnforcementZoneConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationAndRisk
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationAppointment
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationLocation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InterestedParties
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.MandatoryAttendanceConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.MonitoringConditions
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Offence
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OffenceAdditionalDetails
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
@@ -54,6 +57,7 @@ abstract class OrderTestBase {
     probationDeliveryUnits: ProbationDeliveryUnit? = null,
     trailMonitoringConditions: TrailMonitoringConditions? = null,
     installationLocation: InstallationLocation? = null,
+    installationAppointment: InstallationAppointment? = null,
     additionalDocuments: MutableList<AdditionalDocument> = mutableListOf(),
     alcoholMonitoringConditions: AlcoholMonitoringConditions? = null,
     curfewConditions: CurfewConditions? = createCurfewConditions(),
@@ -62,6 +66,8 @@ abstract class OrderTestBase {
     type: RequestType = RequestType.REQUEST,
     variationDetails: VariationDetails? = null,
     offenceAdditionalDetails: String? = null,
+    dapoClauses: MutableList<Dapo> = mutableListOf(),
+    offences: MutableList<Offence> = mutableListOf(),
   ): Order {
     val orderId = UUID.randomUUID()
     val versionId = UUID.randomUUID()
@@ -111,6 +117,8 @@ abstract class OrderTestBase {
 
     order.installationLocation = installationLocation
 
+    order.installationAppointment = installationAppointment
+
     order.additionalDocuments.addAll(additionalDocuments)
 
     if (monitoringConditions.alcohol == true) {
@@ -125,12 +133,16 @@ abstract class OrderTestBase {
       order.curfewTimeTable = curfewTimetable
     }
 
+    order.dapoClauses.addAll(dapoClauses)
+    order.offences.addAll(offences)
+
     order.variationDetails = variationDetails
     return order
   }
 
   protected fun createDeviceWearer(
     firstName: String = "John",
+    middleName: String? = "",
     lastName: String = "Smith",
     alias: String = "Johnny",
     dateOfBirth: ZonedDateTime = ZonedDateTime.of(1990, 1, 1, 1, 1, 1, 1, ZoneId.systemDefault()),
@@ -152,6 +164,7 @@ abstract class OrderTestBase {
   ): DeviceWearer = DeviceWearer(
     versionId = UUID.randomUUID(),
     firstName = firstName,
+    middleName = middleName,
     lastName = lastName,
     alias = alias,
     dateOfBirth = dateOfBirth,
@@ -193,9 +206,9 @@ abstract class OrderTestBase {
     notifyingOrganisationName: String = "",
     notifyingOrganisationEmail: String = "",
     responsibleOfficerPhoneNumber: String = "",
-    responsibleOrganisation: String = "PROBATION",
+    responsibleOrganisation: String? = "PROBATION",
     responsibleOrganisationRegion: String = "",
-    responsibleOfficerName: String = "",
+    responsibleOfficerName: String? = "",
     responsibleOrganisationEmail: String = "",
     responsibleOfficerFirstName: String? = null,
     responsibleOfficerLastName: String? = null,
@@ -314,7 +327,7 @@ abstract class OrderTestBase {
   )
 
   protected fun createEnforcementZoneCondition(
-    endDate: ZonedDateTime = ZonedDateTime.of(2025, 2, 1, 0, 0, 0, 0, ZoneId.of("UTC")),
+    endDate: ZonedDateTime? = ZonedDateTime.of(2025, 2, 1, 0, 0, 0, 0, ZoneId.of("UTC")),
     startDate: ZonedDateTime = ZonedDateTime.of(2025, 1, 1, 23, 59, 0, 0, ZoneId.of("UTC")),
     zoneType: EnforcementZoneType = EnforcementZoneType.EXCLUSION,
     name: String = "",
@@ -347,7 +360,7 @@ abstract class OrderTestBase {
 
   protected fun createCurfewConditions(
     startDate: ZonedDateTime = ZonedDateTime.of(2025, 1, 1, 1, 1, 1, 1, ZoneId.of("UTC")),
-    endDate: ZonedDateTime = ZonedDateTime.of(2025, 2, 1, 1, 1, 1, 1, ZoneId.of("UTC")),
+    endDate: ZonedDateTime? = ZonedDateTime.of(2025, 2, 1, 1, 1, 1, 1, ZoneId.of("UTC")),
     curfewAddress: String = "PRIMARY",
     curfewAdditionalDetails: String = "",
   ): CurfewConditions = CurfewConditions(
@@ -401,5 +414,16 @@ abstract class OrderTestBase {
     variationDate = variationDate,
     variationDetails = variationDetails,
     variationType = variationType,
+  )
+
+  protected fun createInstallationAppointment(
+    placeName: String = "Mock Place",
+    appointmentDate: ZonedDateTime = ZonedDateTime.now(),
+    appointmentTimeDetails: String? = null,
+  ): InstallationAppointment = InstallationAppointment(
+    versionId = UUID.randomUUID(),
+    placeName = placeName,
+    appointmentDate = appointmentDate,
+    appointmentTimeDetails = appointmentTimeDetails,
   )
 }

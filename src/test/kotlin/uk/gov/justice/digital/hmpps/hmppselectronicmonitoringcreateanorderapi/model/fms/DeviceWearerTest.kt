@@ -8,9 +8,14 @@ import org.junit.jupiter.params.provider.MethodSource
 import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.config.FeatureFlags
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.OrderTestBase
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DetailsOfInstallation
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Mappa
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MappaCategory
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MappaLevel
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisationDDv5
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YesNoUnknown
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.DeviceWearer as FmsDeviceWearer
 
 @ActiveProfiles("test")
@@ -203,6 +208,62 @@ class DeviceWearerTest : OrderTestBase() {
     val fmsDeviceWearer = FmsDeviceWearer.fromCemoOrder(order, featureFlags)
 
     assertThat(fmsDeviceWearer.disability!!.first().disability).isEqualTo(mappedValue)
+  }
+
+  @Test
+  fun `It should map risk data from detailsOfInstallation`() {
+    val order = createOrder(
+      dataDictionaryVersion = DataDictionaryVersion.DDV6,
+      deviceWearer = createDeviceWearer(),
+    )
+
+    order.installationAndRisk = null
+
+    order.detailsOfInstallation =
+      DetailsOfInstallation(
+        versionId = order.getCurrentVersion().id,
+        riskDetails = "History of violence",
+        riskCategory = arrayOf("THREATS_OF_VIOLENCE"),
+      )
+
+    val featureFlags = FeatureFlags(dataDictionaryVersion = DataDictionaryVersion.DDV6, ddV6CourtMappings = true)
+    val fmsDeviceWearer = FmsDeviceWearer.fromCemoOrder(order, featureFlags)
+
+    assertThat(fmsDeviceWearer.riskDetails).isEqualTo("History of violence")
+    assertThat(fmsDeviceWearer.riskCategory).isNotNull
+    assertThat(fmsDeviceWearer.riskCategory).hasSize(1)
+    assertThat(fmsDeviceWearer.riskCategory!!.first().category).isEqualTo("Threats of Violence")
+  }
+
+  @Test
+  fun `It should map mappa category correctly for serco`() {
+    val order = createOrder(
+      dataDictionaryVersion = DataDictionaryVersion.DDV6,
+    )
+
+    order.mappa = Mappa(
+      versionId = order.getCurrentVersion().id,
+      level = MappaLevel.MAPPA_ONE,
+      category = MappaCategory.CATEGORY_ONE,
+      isMappa = YesNoUnknown.YES,
+    )
+
+    val fmsDeviceWearer = FmsDeviceWearer.fromCemoOrder(order, featureFlags)
+
+    assertThat(fmsDeviceWearer.mappaCaseType).isEqualTo("Category 1")
+    assertThat(fmsDeviceWearer.mappa).isEqualTo("MAPPA 1")
+  }
+
+  @Test
+  fun `It should map all names`() {
+    val order =
+      createOrder(deviceWearer = createDeviceWearer(firstName = "First", middleName = "Middle", lastName = "Last"))
+
+    val result = FmsDeviceWearer.fromCemoOrder(order, featureFlags)
+
+    assertThat(result.firstName).isEqualTo("First")
+    assertThat(result.middleName).isEqualTo("Middle")
+    assertThat(result.lastName).isEqualTo("Last")
   }
 
   companion object {

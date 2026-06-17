@@ -21,6 +21,5 @@ data class UpdateCurfewReleaseDateConditionsDto(
   var endTime: String? = null,
 
   @Enumerated(EnumType.STRING)
-  @field:NotNull(message = ValidationErrors.CurfewReleaseDateConditions.ADDRESS_REQUIRED)
   var curfewAddress: AddressType? = null,
 )

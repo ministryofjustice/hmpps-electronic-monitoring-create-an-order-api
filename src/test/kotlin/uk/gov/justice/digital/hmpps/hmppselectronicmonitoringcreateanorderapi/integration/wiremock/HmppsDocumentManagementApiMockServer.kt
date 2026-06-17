@@ -162,6 +162,36 @@ class HmppsDocumentManagementApi : WireMockServer(WIREMOCK_PORT) {
     )
   }
 
+  fun stubUploadDocumentRetryOnClientErrorScenario(result: DocumentUploadResponse) {
+    val file = Files.readAllBytes(
+      Paths.get(
+        this.filePath,
+      ),
+    )
+    stubFor(
+      post(urlPathTemplate("/documents/CEMO_ATTACHMENT/{uuid}")).inScenario("post document retry client scenario")
+        .whenScenarioStateIs(STARTED)
+        .willReturn(
+          aResponse()
+            .withStatus(429),
+        )
+        .willSetStateTo("Okay state"),
+    )
+
+    stubFor(
+      post(urlPathTemplate("/documents/CEMO_ATTACHMENT/{uuid}")).inScenario("post document retry client scenario")
+        .whenScenarioStateIs("Okay state")
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withBody(
+              mapper.writeValueAsString(result),
+            )
+            .withStatus(200),
+        ),
+    )
+  }
+
   fun stubDeleteDocument(uuid: String = "xxx") {
     stubFor(
       delete(urlMatching("/documents/$uuid"))

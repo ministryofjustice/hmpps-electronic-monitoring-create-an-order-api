@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.config.FeatureFlags
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Gender
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RiskCategory
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Sex
@@ -104,6 +105,9 @@ data class DeviceWearer(
   @JsonProperty("mappa_case_type")
   var mappaCaseType: String? = "",
 
+  @JsonProperty("mappa_category")
+  var mappaCategory: String? = null,
+
   @JsonProperty("risk_categories")
   var riskCategory: List<FmsRiskCategory>? = emptyList(),
 
@@ -175,6 +179,7 @@ data class DeviceWearer(
 
       val deviceWearer = DeviceWearer(
         firstName = order.deviceWearer?.firstName,
+        middleName = order.deviceWearer?.middleName ?: "",
         lastName = order.deviceWearer?.lastName,
         alias = order.deviceWearer?.alias,
         dateOfBirth = order.deviceWearer?.dateOfBirth?.format(formatter) ?: "",
@@ -183,8 +188,8 @@ data class DeviceWearer(
         genderIdentity = getGender(order),
         disability = disabilities,
         phoneNumber = getPhoneNumber(order),
-        riskDetails = order.installationAndRisk?.riskDetails,
-        riskCategory = getRiskCategories(order),
+        riskDetails = getRiskDetails(order, featureFlags),
+        riskCategory = getRiskCategories(order, featureFlags),
         mappa = order.mappa?.level?.value,
         mappaCaseType = order.mappa?.category?.value,
         responsibleAdultRequired = (order.deviceWearerResponsibleAdult != null).toString(),
@@ -198,6 +203,11 @@ data class DeviceWearer(
         prisonNumber = order.deviceWearer?.prisonNumber,
         homeOfficeReferenceNumber = "",
       )
+
+      if (featureFlags.ddV6CourtMappings) {
+        deviceWearer.mappaCaseType = null
+        deviceWearer.mappaCategory = order.mappa?.category?.value
+      }
 
       if (featureFlags.ddV6CourtMappings) {
         deviceWearer.complianceAndEnforcementPersonReference =
@@ -271,9 +281,27 @@ data class DeviceWearer(
     private fun getGender(order: Order): String =
       Gender.from(order.deviceWearer?.gender)?.value ?: order.deviceWearer?.gender ?: ""
 
-    private fun getRiskCategories(order: Order): List<FmsRiskCategory> {
-      if (order.installationAndRisk?.riskCategory?.any() == true) {
-        return order.installationAndRisk!!.riskCategory!!
+    private fun getRiskDetails(order: Order, featureFlags: FeatureFlags): String? =
+      if (DataDictionaryVersion.isVersionSameOrAbove(order.dataDictionaryVersion, DataDictionaryVersion.DDV6) &&
+        featureFlags.ddV6CourtMappings
+      ) {
+        order.detailsOfInstallation?.riskDetails ?: order.installationAndRisk?.riskDetails
+      } else {
+        order.installationAndRisk?.riskDetails
+      }
+
+    private fun getRiskCategories(order: Order, featureFlags: FeatureFlags): List<FmsRiskCategory> {
+      val riskCategories =
+        if (DataDictionaryVersion.isVersionSameOrAbove(order.dataDictionaryVersion, DataDictionaryVersion.DDV6) &&
+          featureFlags.ddV6CourtMappings
+        ) {
+          order.detailsOfInstallation?.riskCategory ?: order.installationAndRisk?.riskCategory
+        } else {
+          order.installationAndRisk?.riskCategory
+        }
+
+      if (riskCategories?.any() == true) {
+        return riskCategories
           .filter {
             RiskCategory.entries.any { riskCategory ->
               riskCategory != RiskCategory.NO_RISK &&
@@ -291,3 +319,8 @@ data class DeviceWearer(
 data class Disability(var disability: String? = "")
 
 data class FmsRiskCategory(var category: String? = "")
+
+class DeviceWearerViews {
+  interface Prod
+  interface Dev : Prod
+}

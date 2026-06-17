@@ -39,8 +39,12 @@ class FmsDummySubmissionStrategy(objectMapper: ObjectMapper, private val feature
     )
   }
 
-  private fun createMonitoringOrder(order: Order, deviceWearerId: String): FmsMonitoringOrderSubmissionResult {
-    val monitoringOrderResult = this.getMonitoringOrder(order, deviceWearerId)
+  private fun createMonitoringOrder(
+    order: Order,
+    deviceWearerId: String,
+    orderSource: FmsOrderSource,
+  ): FmsMonitoringOrderSubmissionResult {
+    val monitoringOrderResult = this.getMonitoringOrder(order, deviceWearerId, orderSource)
 
     if (!monitoringOrderResult.success) {
       return FmsMonitoringOrderSubmissionResult(
@@ -78,7 +82,7 @@ class FmsDummySubmissionStrategy(objectMapper: ObjectMapper, private val feature
       )
     }
 
-    val createMonitoringOrderResult = this.createMonitoringOrder(order, deviceWearerId)
+    val createMonitoringOrderResult = this.createMonitoringOrder(order, deviceWearerId, orderSource)
 
     return FmsSubmissionResult(
       orderId = order.id,

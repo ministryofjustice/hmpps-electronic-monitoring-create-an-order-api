@@ -9,6 +9,8 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
 import org.springframework.http.HttpStatus.BAD_REQUEST
 import org.springframework.http.MediaType
+import org.springframework.test.web.reactive.server.expectBody
+import org.springframework.test.web.reactive.server.expectBodyList
 import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.VariationDetails
@@ -166,7 +168,7 @@ class VariationControllerTest : IntegrationTestBase() {
     }
 
     @Test
-    fun `it should not be possible to update the variation details with an invalid variationDetails`() {
+    fun `it should be possible to update the variation details without variation detailS`() {
       val variation = createVariation()
 
       val result = webTestClient.put()
@@ -177,8 +179,7 @@ class VariationControllerTest : IntegrationTestBase() {
             """
               {
                 "variationType": "CHANGE_TO_ADDRESS",
-                "variationDate": "2024-01-01T00:00:00.000Z",
-                "variationDetails": ""                
+                "variationDate": "2024-01-01T00:00:00.000Z"
               }
             """.trimIndent(),
           ),
@@ -186,15 +187,12 @@ class VariationControllerTest : IntegrationTestBase() {
         .headers(setAuthorisation("AUTH_ADM"))
         .exchange()
         .expectStatus()
-        .isBadRequest
-        .expectBodyList(ValidationError::class.java)
+        .isOk
+        .expectBody<VariationDetails>()
         .returnResult()
+        .responseBody!!
 
-      Assertions.assertThat(result.responseBody).isNotNull
-      Assertions.assertThat(result.responseBody).hasSize(1)
-      Assertions.assertThat(result.responseBody!!).contains(
-        ValidationError("variationDetails", "Enter information on what you have changed"),
-      )
+      Assertions.assertThat(result.variationDetails).isEqualTo("")
     }
 
     @ParameterizedTest(name = "it should not be possible to update the variation details with DDv4 variationType = {0}")

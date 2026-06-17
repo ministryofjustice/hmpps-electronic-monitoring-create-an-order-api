@@ -99,6 +99,40 @@ class InstallationAppointmentControllerTest : IntegrationTestBase() {
   }
 
   @Test
+  fun `Update appointment returns 400 if appointment time details too long`() {
+    val order = createStoredOrder()
+    val result = webTestClient.put()
+      .uri("/api/orders/${order.id}/installation-appointment")
+      .contentType(MediaType.APPLICATION_JSON)
+      .body(
+        BodyInserters.fromValue(
+          """
+            {
+              "placeName": "Mock Place",
+              "appointmentDate": "$appointmentDate",
+              "appointmentTimeDetails": "${"n".repeat(501)}"
+            }
+          """.trimIndent(),
+        ),
+      )
+      .headers(setAuthorisation("AUTH_ADM"))
+      .exchange()
+      .expectStatus()
+      .isBadRequest
+      .expectBodyList(ValidationError::class.java)
+      .returnResult()
+
+    Assertions.assertThat(result.responseBody).isNotNull
+    Assertions.assertThat(result.responseBody).hasSize(1)
+    Assertions.assertThat(result.responseBody!!).contains(
+      ValidationError(
+        "appointmentTimeDetails",
+        ValidationErrors.InstallationAppointment.APPOINTMENT_TIME_DETAILS_MAX_LENGTH,
+      ),
+    )
+  }
+
+  @Test
   fun `It should store installation appointment to database`() {
     val order = createStoredOrder()
     webTestClient.put()
@@ -109,7 +143,8 @@ class InstallationAppointmentControllerTest : IntegrationTestBase() {
           """
             {
               "placeName": "Mock Place",
-              "appointmentDate": "$appointmentDate"
+              "appointmentDate": "$appointmentDate",
+              "appointmentTimeDetails": "Mock Details"
             }
           """.trimIndent(),
         ),
@@ -123,5 +158,6 @@ class InstallationAppointmentControllerTest : IntegrationTestBase() {
     assertThat(
       updatedOrder.installationAppointment.appointmentDate,
     ).isEqualTo(appointmentDate)
+    assertThat(updatedOrder.installationAppointment.appointmentTimeDetails).isEqualTo("Mock Details")
   }
 }

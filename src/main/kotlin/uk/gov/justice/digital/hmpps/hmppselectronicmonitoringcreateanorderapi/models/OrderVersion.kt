@@ -17,7 +17,6 @@ import jakarta.persistence.UniqueConstraint
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DocumentType
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisationDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
@@ -183,32 +182,29 @@ data class OrderVersion(
 
   private val isOrderOrHasVariationDetails: Boolean
     get() = (
-      if (type === RequestType.VARIATION) {
-        variationDetails != null
+      if (RequestType.VARIATION_TYPES.contains(type)) {
+        variationDetails?.variationDate != null
       } else {
         true
       }
       )
 
   private val requiredDocuments: Boolean
-    get() = (
-      if (interestedParties!!.notifyingOrganisation == NotifyingOrganisation.HOME_OFFICE.name) {
-        if (orderParameters?.haveGrantOfBail == true) {
-          additionalDocuments.any { it.fileType == DocumentType.GRANT_OF_BAIL }
-        } else {
-          true
-        }
-      } else if (NotifyingOrganisationDDv5.isCourt(interestedParties!!.notifyingOrganisation!!)) {
-        if (orderParameters?.haveCourtOrder == true) {
-          additionalDocuments.any { it.fileType == DocumentType.COURT_ORDER }
-        } else {
-          true
-        }
-      } else {
-        additionalDocuments.any { it.fileType == DocumentType.LICENCE }
-      }
+    get() {
+      val hasLicence = additionalDocuments.any { it.fileType == DocumentType.LICENCE }
+      val satisfiesCourtOrderRequirement =
+        orderParameters?.haveCourtOrder != true || additionalDocuments.any { it.fileType == DocumentType.COURT_ORDER }
+      val satisfiesPhotoIDRequirement =
+        orderParameters?.havePhoto != true || additionalDocuments.any { it.fileType == DocumentType.PHOTO_ID }
 
-      )
+      return if (NotifyingOrganisationDDv5.isCourt(interestedParties!!.notifyingOrganisation!!)) {
+        satisfiesPhotoIDRequirement && satisfiesCourtOrderRequirement
+      } else if (interestedParties?.notifyingOrganisation == NotifyingOrganisationDDv5.HOME_OFFICE.name) {
+        satisfiesPhotoIDRequirement
+      } else {
+        satisfiesPhotoIDRequirement && hasLicence
+      }
+    }
 
   val isValid: Boolean
     get() = (
