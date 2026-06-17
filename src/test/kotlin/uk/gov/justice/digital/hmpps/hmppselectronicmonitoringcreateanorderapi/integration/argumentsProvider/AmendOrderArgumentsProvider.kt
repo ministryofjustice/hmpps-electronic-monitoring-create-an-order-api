@@ -3,12 +3,16 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.i
 import org.junit.jupiter.api.extension.ExtensionContext
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.ArgumentsProvider
+import org.junit.jupiter.params.support.ParameterDeclarations
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ServiceRequestType
 import java.util.stream.Stream
 
 class AmendOrderArgumentsProvider : ArgumentsProvider {
-  override fun provideArguments(context: ExtensionContext?): Stream<out Arguments?>? = Stream.of(
+  override fun provideArguments(
+    parameterDeclarations: ParameterDeclarations,
+    context: ExtensionContext,
+  ): Stream<out Arguments?> = Stream.of(
     Arguments.of(ServiceRequestType.REINSTALL_AT_DIFFERENT_ADDRESS, RequestType.REINSTALL_AT_DIFFERENT_ADDRESS),
     Arguments.of(ServiceRequestType.REINSTALL_DEVICE, RequestType.REINSTALL_DEVICE),
     Arguments.of(ServiceRequestType.REVOCATION, RequestType.REVOCATION),

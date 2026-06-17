@@ -3,10 +3,14 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.m
 import org.junit.jupiter.api.extension.ExtensionContext
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.ArgumentsProvider
+import org.junit.jupiter.params.support.ParameterDeclarations
 import java.util.stream.Stream
 
 class YouthCustodyServiceRegionArgumentsProviderDDv6 : ArgumentsProvider {
-  override fun provideArguments(context: ExtensionContext?): Stream<out Arguments?>? = Stream.of(
+  override fun provideArguments(
+    parameterDeclarations: ParameterDeclarations,
+    context: ExtensionContext,
+  ): Stream<out Arguments?> = Stream.of(
     Arguments.of("SOUTH_WEST_AND_SOUTH_CENTRAL", "South West and South Central"),
     Arguments.of("EAST_AND_SOUTH_EAST", "East and South East"),
     Arguments.of("LONDON", "London"),
