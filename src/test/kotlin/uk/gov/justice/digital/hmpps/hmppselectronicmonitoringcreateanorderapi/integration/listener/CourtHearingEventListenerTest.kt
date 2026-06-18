@@ -99,7 +99,7 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
   fun `Will not process a malformed court hearing event and dead letter hearing event`() {
     sendDomainSqsMessage("BAD JSON")
     await().until { getNumberOfMessagesCurrentlyOnDeadLetterQueue() == 1 }
-    val deadLetterQueueMessage = geMessagesCurrentlyOnDeadLetterQueue()
+    val deadLetterQueueMessage = getMessagesCurrentlyOnDeadLetterQueue()
     val message = deadLetterQueueMessage.messages().first()
     assertThat(message.body()).isEqualTo("BAD JSON")
     assertThat(
@@ -348,7 +348,7 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
       courtHearingEventDeadLetterSqsUrl,
     ).get()
 
-  fun geMessagesCurrentlyOnDeadLetterQueue(): ReceiveMessageResponse =
+  fun getMessagesCurrentlyOnDeadLetterQueue(): ReceiveMessageResponse =
     courtHearingEventDeadLetterSqsClient.receiveMessage(
       ReceiveMessageRequest.builder().queueUrl(courtHearingEventDeadLetterSqsUrl).messageAttributeNames("All").build(),
     ).get()

@@ -269,7 +269,7 @@ class HearingEventHandler(
     deviceWearer.middleName = person?.middleName
     deviceWearer.lastName = person?.lastName
     deviceWearer.sex = getSex(person?.gender)
-    deviceWearer.adultAtTimeOfInstallation = !defendant.isYouth
+    deviceWearer.adultAtTimeOfInstallation = !(defendant.isYouth ?: false)
 
     val address = person?.address
     if (address != null) {
