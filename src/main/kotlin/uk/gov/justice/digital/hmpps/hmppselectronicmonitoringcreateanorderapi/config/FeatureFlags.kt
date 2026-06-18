@@ -7,9 +7,9 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 
 @ConfigurationProperties(prefix = "settings")
 class FeatureFlags(
-  @Value("\${data-dictionary-version}") val dataDictionaryVersion: DataDictionaryVersion,
-  @Value("\${ddv6-court-mappings:false}") val ddV6CourtMappings: Boolean,
-  @Value(
-    "\${device-wearer-payload-version}",
+  @param:Value($$"${data-dictionary-version}") val dataDictionaryVersion: DataDictionaryVersion,
+  @param:Value($$"${ddv6-court-mappings:false}") val ddV6CourtMappings: Boolean,
+  @param:Value(
+    $$"${device-wearer-payload-version}",
   ) val deviceWearerPayloadVersion: DeviceWearerPayloadVersion = DeviceWearerPayloadVersion.Prod,
 )

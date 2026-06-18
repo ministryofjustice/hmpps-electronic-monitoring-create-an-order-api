@@ -1,8 +1,5 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.listener
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
 import com.microsoft.applicationinsights.TelemetryClient
 import io.micrometer.core.instrument.util.StringEscapeUtils
 import org.assertj.core.api.Assertions.assertThat
@@ -29,6 +26,9 @@ import software.amazon.awssdk.services.sqs.model.ReceiveMessageRequest
 import software.amazon.awssdk.services.sqs.model.ReceiveMessageResponse
 import software.amazon.awssdk.services.sqs.model.SendMessageRequest
 import software.amazon.awssdk.services.sqs.model.SendMessageResponse
+import tools.jackson.databind.ObjectMapper
+import tools.jackson.module.kotlin.jacksonObjectMapper
+import tools.jackson.module.kotlin.readValue
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.utilities.S3Uploader
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.SercoAuthMockServerExtension.Companion.sercoAuthApi
@@ -99,7 +99,7 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
   fun `Will not process a malformed court hearing event and dead letter hearing event`() {
     sendDomainSqsMessage("BAD JSON")
     await().until { getNumberOfMessagesCurrentlyOnDeadLetterQueue() == 1 }
-    val deadLetterQueueMessage = geMessagesCurrentlyOnDeadLetterQueue()
+    val deadLetterQueueMessage = getMessagesCurrentlyOnDeadLetterQueue()
     val message = deadLetterQueueMessage.messages().first()
     assertThat(message.body()).isEqualTo("BAD JSON")
     assertThat(
@@ -348,7 +348,7 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
       courtHearingEventDeadLetterSqsUrl,
     ).get()
 
-  fun geMessagesCurrentlyOnDeadLetterQueue(): ReceiveMessageResponse =
+  fun getMessagesCurrentlyOnDeadLetterQueue(): ReceiveMessageResponse =
     courtHearingEventDeadLetterSqsClient.receiveMessage(
       ReceiveMessageRequest.builder().queueUrl(courtHearingEventDeadLetterSqsUrl).messageAttributeNames("All").build(),
     ).get()

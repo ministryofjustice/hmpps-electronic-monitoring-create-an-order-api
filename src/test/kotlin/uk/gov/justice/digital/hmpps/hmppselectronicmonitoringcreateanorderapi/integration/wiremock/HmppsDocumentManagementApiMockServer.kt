@@ -1,8 +1,5 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.delete
@@ -15,6 +12,8 @@ import org.junit.jupiter.api.extension.AfterAllCallback
 import org.junit.jupiter.api.extension.BeforeAllCallback
 import org.junit.jupiter.api.extension.BeforeEachCallback
 import org.junit.jupiter.api.extension.ExtensionContext
+import tools.jackson.databind.ObjectMapper
+import tools.jackson.module.kotlin.jacksonObjectMapper
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.documentmanagement.DocumentUploadResponse
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 import java.nio.file.Files
@@ -47,10 +46,11 @@ class HmppsDocumentManagementApi : WireMockServer(WIREMOCK_PORT) {
     private const val WIREMOCK_PORT = 8092
   }
 
-  private val mapper: ObjectMapper = jacksonObjectMapper().registerModule(JavaTimeModule())
+  private val mapper: ObjectMapper = jacksonObjectMapper()
 
   @Suppress("ktlint:standard:max-line-length")
-  private val filePath: String = "src/test/kotlin/uk/gov/justice/digital/hmpps/hmppselectronicmonitoringcreateanorderapi/integration/assets/profile.jpeg"
+  private val filePath: String =
+    "src/test/kotlin/uk/gov/justice/digital/hmpps/hmppselectronicmonitoringcreateanorderapi/integration/assets/profile.jpeg"
 
   fun stubUploadDocument(result: DocumentUploadResponse?) {
     stubFor(

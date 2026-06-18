@@ -3,10 +3,14 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.m
 import org.junit.jupiter.api.extension.ExtensionContext
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.ArgumentsProvider
+import org.junit.jupiter.params.support.ParameterDeclarations
 import java.util.stream.Stream
 
 class CivilAndCountyCourtArgumentsProvider : ArgumentsProvider {
-  override fun provideArguments(context: ExtensionContext?): Stream<out Arguments?>? = Stream.of(
+  override fun provideArguments(
+    parameterDeclarations: ParameterDeclarations,
+    context: ExtensionContext,
+  ): Stream<out Arguments?> = Stream.of(
     Arguments.of("ABERYSTWYTH_COUNTY_AND_CIVIL_COURT", "Aberystwyth County and Civil Court"),
     Arguments.of("ALDERSHOT_COUNTY_AND_CIVIL_COURT", "Aldershot County and Civil Court"),
     Arguments.of("BARNET_COUNTY_AND_CIVIL_COURT", "Barnet County and Civil Court"),

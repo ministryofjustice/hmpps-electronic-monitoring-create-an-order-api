@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service
 
 import DeviceWearerPayloadVersion
-import com.fasterxml.jackson.databind.ObjectMapper
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -14,6 +13,9 @@ import org.mockito.kotlin.whenever
 import org.springframework.boot.test.autoconfigure.json.JsonTest
 import org.springframework.core.env.Environment
 import org.springframework.test.context.ActiveProfiles
+import tools.jackson.databind.MapperFeature
+import tools.jackson.databind.ObjectMapper
+import tools.jackson.databind.json.JsonMapper
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.DocumentApiClient
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.FmsClient
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.config.FeatureFlags
@@ -52,7 +54,9 @@ class FmsServiceTest {
   fun setUp() {
     mockClient = mock(FmsClient::class.java)
     mockDocumentApiClient = mock(DocumentApiClient::class.java)
-    objectMapper = ObjectMapper()
+    objectMapper = JsonMapper.builder()
+      .configure(MapperFeature.DEFAULT_VIEW_INCLUSION, true)
+      .build()
     repo = mock(FmsSubmissionResultRepository::class.java)
     env = mock(Environment::class.java)
     service =
@@ -131,7 +135,7 @@ class FmsServiceTest {
 //  }
 
   @Test
-  fun `should map dev devicer wearer fields in dev`() {
+  fun `should map dev device wearer fields in dev`() {
     val mockOrder = TestUtilities.createReadyToSubmitOrder()
 
     val mockFmsResponse = FmsResponse(result = listOf(FmsResult(id = mockOrder.id.toString())))
@@ -165,8 +169,8 @@ class FmsServiceTest {
     val jsonNode = objectMapper.readTree(capturedJsonString)
 
     print(jsonNode.toString())
-    assertThat(jsonNode.has("mappaCaseType")).isTrue
+    assertThat(jsonNode.has("mappa_case_type")).isTrue
 
-    assertThat(jsonNode.has("mappaCategory")).isTrue
+    assertThat(jsonNode.has("mappa_category")).isTrue
   }
 }
