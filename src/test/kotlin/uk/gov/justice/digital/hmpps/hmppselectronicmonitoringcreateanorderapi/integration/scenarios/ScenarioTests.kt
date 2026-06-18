@@ -7,8 +7,9 @@ import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
-import tools.jackson.databind.ObjectMapper
-import tools.jackson.module.kotlin.jacksonObjectMapper
+import tools.jackson.databind.MapperFeature
+import tools.jackson.databind.json.JsonMapper
+import tools.jackson.module.kotlin.KotlinModule
 import tools.jackson.module.kotlin.readValue
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.HmppsDocumentManagementApiExtension.Companion.documentApi
@@ -29,7 +30,11 @@ class ScenarioTests : IntegrationTestBase() {
   @Autowired
   lateinit var fmsResultRepository: FmsSubmissionResultRepository
 
-  private val objectMapper: ObjectMapper = jacksonObjectMapper()
+  private val objectMapper = JsonMapper.builder()
+    .addModule(KotlinModule.Builder().build())
+    .configure(MapperFeature.DEFAULT_VIEW_INCLUSION, true)
+    .configure(MapperFeature.USE_GETTERS_AS_SETTERS, true)
+    .build()
 
   @BeforeEach
   fun setup() {
@@ -173,7 +178,6 @@ class ScenarioTests : IntegrationTestBase() {
   private fun getOrderFromFile(filePath: String): Order {
     // Create variation from JSON and save to DB
     val rawOrder = Files.readString(Paths.get(filePath))
-    val objectMapper = ObjectMapper()
     return objectMapper.readValue(rawOrder)
   }
 

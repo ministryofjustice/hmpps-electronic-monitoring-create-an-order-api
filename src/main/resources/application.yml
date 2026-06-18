@@ -12,6 +12,7 @@ spring:
   codec:
     max-in-memory-size: 36MB
   jackson:
+    use-jackson2-defaults: true
     date-format: "yyyy-MM-dd HH:mm:ss"
     mapper:
       default-view-inclusion: true
