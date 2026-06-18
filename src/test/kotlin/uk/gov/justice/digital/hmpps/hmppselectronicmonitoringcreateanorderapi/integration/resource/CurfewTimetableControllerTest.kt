@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.resource
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -9,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.web.reactive.function.BodyInserters
+import tools.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateCurfewTimetableDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository

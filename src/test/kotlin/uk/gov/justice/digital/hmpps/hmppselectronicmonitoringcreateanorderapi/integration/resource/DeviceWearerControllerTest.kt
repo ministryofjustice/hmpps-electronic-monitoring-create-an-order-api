@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.resource
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
@@ -11,6 +10,7 @@ import org.junit.jupiter.params.provider.ValueSource
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.web.reactive.function.BodyInserters
+import tools.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.data.ValidationErrors
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.UpdateOrderIntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.UriTestCase

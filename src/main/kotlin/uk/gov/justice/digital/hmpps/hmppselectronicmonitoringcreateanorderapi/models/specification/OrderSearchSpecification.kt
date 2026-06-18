@@ -6,7 +6,6 @@ import jakarta.persistence.criteria.Join
 import jakarta.persistence.criteria.Predicate
 import jakarta.persistence.criteria.Root
 import org.springframework.data.jpa.domain.Specification
-import org.springframework.lang.Nullable
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
@@ -93,16 +92,12 @@ class OrderSearchSpecification(private val criteria: OrderSearchCriteria) : Spec
     return criteriaBuilder.like(criteriaBuilder.lower(paddedTags), "%,${tag.lowercase()},%")
   }
 
-  override fun toPredicate(
-    root: Root<Order>,
-    @Nullable query: CriteriaQuery<*>?,
-    criteriaBuilder: CriteriaBuilder,
-  ): Predicate? {
+  override fun toPredicate(root: Root<Order>, query: CriteriaQuery<*>, criteriaBuilder: CriteriaBuilder): Predicate? {
     val version: Join<Order, OrderVersion> = root.join("versions")
     val deviceWearer: Join<OrderVersion, DeviceWearer> = version.join("deviceWearer")
 
     // Subquery to get the max version number
-    val subquery = query?.subquery(Int::class.java)
+    val subquery = query.subquery(Int::class.java)
     val subqueryRoot = subquery?.from(OrderVersion::class.java)
     subquery?.select(criteriaBuilder.max(subqueryRoot?.get("versionId")))
     subquery?.where(criteriaBuilder.equal(subqueryRoot?.get<Order>("order"), root))

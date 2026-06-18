@@ -4,6 +4,7 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
+import org.springframework.boot.webtestclient.autoconfigure.AutoConfigureWebTestClient
 import org.springframework.core.io.ByteArrayResource
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
@@ -35,6 +36,7 @@ import java.util.*
 )
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @ActiveProfiles("test")
+@AutoConfigureWebTestClient
 abstract class IntegrationTestBase {
 
   @Autowired
@@ -64,6 +66,7 @@ abstract class IntegrationTestBase {
     roles: List<String> = listOf("ROLE_EM_CEMO__CREATE_ORDER"),
     scopes: List<String> = listOf("read"),
   ): (HttpHeaders) -> Unit = jwtAuthHelper.setAuthorisationHeader(scope = scopes, roles = roles)
+
   protected fun stubPingWithResponse(status: Int) {
     hmppsAuth.stubHealthPing(status)
   }
@@ -185,6 +188,7 @@ abstract class IntegrationTestBase {
     )
     return repo.save(order)
   }
+
   fun createSubmittedOrder(
     type: RequestType = RequestType.REQUEST,
     dataDictionaryVersion: DataDictionaryVersion = DataDictionaryVersion.DDV4,

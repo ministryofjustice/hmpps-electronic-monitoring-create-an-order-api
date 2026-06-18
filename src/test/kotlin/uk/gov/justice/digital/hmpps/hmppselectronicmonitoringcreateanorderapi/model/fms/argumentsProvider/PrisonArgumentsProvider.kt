@@ -3,10 +3,14 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.m
 import org.junit.jupiter.api.extension.ExtensionContext
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.ArgumentsProvider
+import org.junit.jupiter.params.support.ParameterDeclarations
 import java.util.stream.Stream
 
 class PrisonArgumentsProvider : ArgumentsProvider {
-  override fun provideArguments(context: ExtensionContext?): Stream<out Arguments?>? = Stream.of(
+  override fun provideArguments(
+    parameterDeclarations: ParameterDeclarations,
+    context: ExtensionContext,
+  ): Stream<out Arguments?> = Stream.of(
     Arguments.of("ALTCOURSE_PRISON", "Altcourse Prison"),
     Arguments.of("ASHFIELD_PRISON", "Ashfield Prison"),
     Arguments.of(

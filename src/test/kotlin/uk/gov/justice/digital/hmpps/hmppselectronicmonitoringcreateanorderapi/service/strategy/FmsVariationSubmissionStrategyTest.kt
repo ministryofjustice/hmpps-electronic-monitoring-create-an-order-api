@@ -1,7 +1,5 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.strategy
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -9,6 +7,8 @@ import org.mockito.Mockito.mock
 import org.mockito.kotlin.any
 import org.mockito.kotlin.whenever
 import org.springframework.test.context.ActiveProfiles
+import tools.jackson.databind.ObjectMapper
+import tools.jackson.module.kotlin.jacksonObjectMapper
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.DocumentApiClient
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.FmsClient
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.config.FeatureFlags

@@ -21,5 +21,5 @@ data class Defendant(
 
   val croNumber: String?,
 
-  val isYouth: Boolean,
+  val isYouth: Boolean?,
 )

@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.m
 import org.junit.jupiter.api.extension.ExtensionContext
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.ArgumentsProvider
+import org.junit.jupiter.params.support.ParameterDeclarations
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.VariationType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.DeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.Disability
@@ -19,7 +20,10 @@ data class OVTChangeCase(val name: String, val mutate: (DeviceWearer) -> Unit, v
 
 class DeviceWearerFieldChangeArgumentsProvider : ArgumentsProvider {
 
-  override fun provideArguments(context: ExtensionContext?): Stream<out Arguments?> {
+  override fun provideArguments(
+    parameterDeclarations: ParameterDeclarations,
+    context: ExtensionContext,
+  ): Stream<out Arguments?> {
     val cases = listOf(
 
       FieldChangeCase(

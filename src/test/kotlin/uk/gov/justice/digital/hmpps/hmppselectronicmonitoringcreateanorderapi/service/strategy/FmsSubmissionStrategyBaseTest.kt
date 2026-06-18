@@ -1,15 +1,18 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.strategy
 
 import DeviceWearerPayloadVersion
-import com.fasterxml.jackson.databind.ObjectMapper
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import tools.jackson.databind.MapperFeature
+import tools.jackson.databind.ObjectMapper
+import tools.jackson.databind.json.JsonMapper
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.config.FeatureFlags
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.DeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsSubmissionResult
+import java.text.SimpleDateFormat
 
 class TestFmsStrategy(objectMapper: ObjectMapper, featureFlags: FeatureFlags) :
   FmsSubmissionStrategyBase(objectMapper, featureFlags) {
@@ -24,8 +27,13 @@ class TestFmsStrategy(objectMapper: ObjectMapper, featureFlags: FeatureFlags) :
 class FmsSubmissionStrategyBaseTest {
   @Test
   fun `uses Dev view when deviceWearerPayloadVersion is Dev`() {
+    val objectMapper = JsonMapper.builder()
+      .configure(MapperFeature.DEFAULT_VIEW_INCLUSION, true)
+      .defaultDateFormat(SimpleDateFormat("yyyy-MM-dd HH:mm:ss"))
+      .build()
+
     val strategy = TestFmsStrategy(
-      ObjectMapper(),
+      objectMapper,
       FeatureFlags(
         dataDictionaryVersion = DataDictionaryVersion.DDV6,
         ddV6CourtMappings = true,
@@ -37,8 +45,8 @@ class FmsSubmissionStrategyBaseTest {
     val result = strategy.executeSerialiseDeviceWearer(deviceWearer)
 
     assertThat(result.success).isTrue()
-    assertThat(result.data).contains("mappaCaseType")
-    assertThat(result.data).contains("mappaCategory")
+    assertThat(result.data).contains("mappa_case_type")
+    assertThat(result.data).contains("mappa_category")
   }
 
 //  @Test
