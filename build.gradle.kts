@@ -31,9 +31,7 @@ dependencies {
   implementation("io.awspring.cloud:spring-cloud-aws-starter-s3:4.0.2")
   implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:7.4.0")
   implementation("org.springframework.boot:spring-boot-starter-webclient")
-
-  // TODO: REMOVE
-  runtimeOnly("org.springframework.boot:spring-boot-properties-migrator")
+  implementation("org.springframework.boot:spring-boot-starter-flyway")
 
   // other
   runtimeOnly("org.flywaydb:flyway-database-postgresql")
