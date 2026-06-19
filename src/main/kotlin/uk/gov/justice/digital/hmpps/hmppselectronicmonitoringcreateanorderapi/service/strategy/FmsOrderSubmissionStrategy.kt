@@ -72,7 +72,9 @@ class FmsOrderSubmissionStrategy(
     } catch (e: Exception) {
       return FmsAttachmentSubmissionResult(
         status = SubmissionStatus.FAILURE,
-        error = Exception("Failed to submit FMS Attachment", e).toString(),
+        fileType = document.fileType.toString(),
+        attachmentId = document.documentId.toString(),
+        error = Exception("Failed to submit FMS Attachment: ${e.message}", e).toString(),
       )
     }
   }
