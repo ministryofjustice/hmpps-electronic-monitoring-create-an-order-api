@@ -1130,7 +1130,7 @@ class MonitoringOrderTest : OrderTestBase() {
     }
 
     @Test
-    fun `It should not map tag at source fields if inallation location is installation already taken place`() {
+    fun `It should not map tag at source fields if installation location is installation already taken place`() {
       val installationLocation = InstallationLocation(
         versionId = UUID.randomUUID(),
         location = InstallationLocationType.INSTALLATION_ALREADY_TAKEN_PLACE,
