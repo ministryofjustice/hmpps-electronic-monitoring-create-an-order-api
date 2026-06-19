@@ -9,8 +9,9 @@ spring:
       max-request-size: 36MB
   application:
     name: hmpps-electronic-monitoring-create-an-order-api
-  codec:
-    max-in-memory-size: 36MB
+  http:
+    codecs:
+      max-in-memory-size: 36MB
   jackson:
     use-jackson2-defaults: true
     date-format: "yyyy-MM-dd HH:mm:ss"
