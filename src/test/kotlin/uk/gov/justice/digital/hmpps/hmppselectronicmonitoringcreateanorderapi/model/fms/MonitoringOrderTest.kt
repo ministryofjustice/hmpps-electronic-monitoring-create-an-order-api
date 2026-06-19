@@ -1128,6 +1128,55 @@ class MonitoringOrderTest : OrderTestBase() {
       assertThat(fmsMonitoringOrder.tagAtSourceDetails).isEqualTo("Mock Place")
       assertThat(fmsMonitoringOrder.dateAndTimeInstallationWillTakePlace).isEqualTo("2026-10-01 10:30:00")
     }
+
+    @Test
+    fun `It should not map tag at source fields if installation location is installation already taken place`() {
+      val installationLocation = InstallationLocation(
+        versionId = UUID.randomUUID(),
+        location = InstallationLocationType.INSTALLATION_ALREADY_TAKEN_PLACE,
+      )
+      val installationAppointment = InstallationAppointment(
+        versionId = UUID.randomUUID(),
+        placeName = "HMP Wandsworth",
+        appointmentDate = ZonedDateTime.of(2026, 10, 1, 10, 30, 0, 0, ZoneId.of("Europe/London")),
+      )
+      val trailMonitoringConditions = TrailMonitoringConditions(
+        versionId = UUID.randomUUID(),
+        startDate = ZonedDateTime.now(),
+        endDate = ZonedDateTime.now().plusMonths(1),
+      )
+
+      val installationAddress = createAddress(
+        addressType = AddressType.INSTALLATION,
+        addressLine1 = "Installation Line 1",
+        postcode = "Installation Post code",
+      )
+
+      val order = createOrder(
+        addresses = mutableListOf(installationAddress),
+        monitoringConditions = createMonitoringConditions(trail = true, alcohol = false),
+        installationLocation = installationLocation,
+        trailMonitoringConditions = trailMonitoringConditions,
+        dataDictionaryVersion = DataDictionaryVersion.DDV6,
+      )
+
+      order.installationAppointment = installationAppointment
+
+      val fmsMonitoringOrder = MonitoringOrder.fromOrder(
+        order,
+        null,
+        FeatureFlags(dataDictionaryVersion = DataDictionaryVersion.DDV6, ddV6CourtMappings = true),
+        FmsOrderSource.CEMO,
+      )
+
+      assertThat(fmsMonitoringOrder.tagAtSource).isEqualTo("false")
+      assertThat(fmsMonitoringOrder.tagAtSourceDetails).isEqualTo("")
+      assertThat(fmsMonitoringOrder.dateAndTimeInstallationWillTakePlace).isEqualTo("")
+
+      assertThat(fmsMonitoringOrder.installationAddress1).isEqualTo("")
+      assertThat(fmsMonitoringOrder.installationAddressPostcode).isEqualTo("")
+      assertThat(fmsMonitoringOrder.installAtSourcePilot).isEqualTo("false")
+    }
   }
 
   @Nested

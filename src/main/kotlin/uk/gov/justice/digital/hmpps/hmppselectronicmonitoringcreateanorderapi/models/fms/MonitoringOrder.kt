@@ -576,6 +576,16 @@ data class MonitoringOrder(
         if (!order.installationAppointment?.appointmentTimeDetails.isNullOrEmpty()) {
           monitoringOrder.tagAtSourceDetails += " ${order.installationAppointment!!.appointmentTimeDetails}"
         }
+
+        if (order.installationLocation!!.location != InstallationLocationType.INSTALLATION_ALREADY_TAKEN_PLACE) {
+          getInstallationAddress(order)?.let {
+            monitoringOrder.installationAddress1 = it.addressLine1
+            monitoringOrder.installationAddress2 = it.addressLine2
+            monitoringOrder.installationAddress3 = it.addressLine3
+            monitoringOrder.installationAddress4 = it.addressLine4
+            monitoringOrder.installationAddressPostcode = it.postcode
+          }
+        }
       }
 
       if (DataDictionaryVersion.isVersionSameOrAbove(order.dataDictionaryVersion, DataDictionaryVersion.DDV6) &&
@@ -591,14 +601,6 @@ data class MonitoringOrder(
             monitoringOrder.installAtSourcePilot = "false"
           }
         }
-      }
-
-      getInstallationAddress(order)?.let {
-        monitoringOrder.installationAddress1 = it.addressLine1
-        monitoringOrder.installationAddress2 = it.addressLine2
-        monitoringOrder.installationAddress3 = it.addressLine3
-        monitoringOrder.installationAddress4 = it.addressLine4
-        monitoringOrder.installationAddressPostcode = it.postcode
       }
 
       if (RequestType.VARIATION_TYPES.contains(order.type)) {
