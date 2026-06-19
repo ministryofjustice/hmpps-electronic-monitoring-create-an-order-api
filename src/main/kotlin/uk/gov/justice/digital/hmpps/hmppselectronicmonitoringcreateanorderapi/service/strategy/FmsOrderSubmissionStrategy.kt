@@ -70,11 +70,15 @@ class FmsOrderSubmissionStrategy(
         attachmentId = fileId,
       )
     } catch (e: Exception) {
+      var error = e.message ?: ""
+      if (error.length > 4950) {
+        error = error.substring(0, 4950)
+      }
       return FmsAttachmentSubmissionResult(
         status = SubmissionStatus.FAILURE,
         fileType = document.fileType.toString(),
         attachmentId = document.documentId.toString(),
-        error = Exception("Failed to submit FMS Attachment: ${e.message}", e).toString(),
+        error = Exception("Failed to submit FMS Attachment: $error", e).toString(),
       )
     }
   }
