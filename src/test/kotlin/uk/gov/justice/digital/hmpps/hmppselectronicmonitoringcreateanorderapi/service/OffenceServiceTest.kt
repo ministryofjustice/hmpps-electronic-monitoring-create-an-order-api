@@ -24,23 +24,24 @@ class OffenceServiceTest {
   private val mockOrderId: UUID = UUID.randomUUID()
   private val mockVersionId: UUID = UUID.randomUUID()
   private val mockUsername: String = "username"
-  private val mockOrder = Order(
-    id = mockOrderId,
-    versions = mutableListOf(
-      OrderVersion(
-        id = mockVersionId,
-        versionId = 0,
-        status = OrderStatus.IN_PROGRESS,
-        orderId = mockOrderId,
-        type = RequestType.REQUEST,
-        username = mockUsername,
-        dataDictionaryVersion = DataDictionaryVersion.DDV4,
-      ),
-    ),
-  )
+  private lateinit var mockOrder: Order
 
   @BeforeEach
   fun setup() {
+    mockOrder = Order(
+      id = mockOrderId,
+      versions = mutableListOf(
+        OrderVersion(
+          id = mockVersionId,
+          versionId = 0,
+          status = OrderStatus.IN_PROGRESS,
+          orderId = mockOrderId,
+          type = RequestType.REQUEST,
+          username = mockUsername,
+          dataDictionaryVersion = DataDictionaryVersion.DDV4,
+        ),
+      ),
+    )
     repo = Mockito.mock(OrderRepository::class.java)
     service = OffenceService()
     service.orderRepo = repo
@@ -83,5 +84,26 @@ class OffenceServiceTest {
     assertThat(updateResult.id).isEqualTo(updateDto.id)
     assertThat(updateResult.offenceType).isEqualTo(updateDto.offenceType)
     assertThat(updateResult.offenceDate).isEqualTo(updateDto.offenceDate)
+  }
+
+  @Test
+  fun `can delete offence`() {
+    mockOrder.offences.add(
+      uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Offence(
+        versionId = mockOrder.versionId,
+        offenceDate = ZonedDateTime.now(),
+        offenceType = "SEXUAL_OFFENCES",
+      ),
+    )
+    whenever(repo.findById(mockOrderId)).thenReturn(Optional.of(mockOrder))
+    whenever(repo.save(mockOrder)).thenReturn(mockOrder)
+
+    service.deleteOffence(
+      mockOrderId,
+      mockUsername,
+      mockOrder.offences[0].id,
+    )
+
+    assertThat(mockOrder.offences).isEmpty()
   }
 }

@@ -1,9 +1,12 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service
 
 import jakarta.persistence.EntityNotFoundException
-import org.springframework.beans.factory.annotation.Value
+import org.springframework.boot.context.properties.EnableConfigurationProperties
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.config.FeatureFlags
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.BadRequestException
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.ForbiddenException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.SubmitOrderException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.MonitoringConditions
@@ -11,29 +14,33 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.OrderListCriteria
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.OrderSearchCriteria
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.TagFilter
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.CreateOrderDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.VersionInformationDTO
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisationDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.specification.OrderListSpecification
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.specification.OrderSearchSpecification
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
+import java.time.ZonedDateTime
 import java.util.*
 
 @Service
+@EnableConfigurationProperties(
+  FeatureFlags::class,
+)
 class OrderService(
   val repo: OrderRepository,
   val fmsService: FmsService,
-  @Value("\${settings.data-dictionary-version}") val defaultDataDictionaryVersion: String,
+  private val featureFlags: FeatureFlags,
+  private val userCohortService: UserCohortService,
 ) {
 
   fun createOrder(username: String, createRecord: CreateOrderDto): Order {
     val order = Order()
-    val dataDictionaryVersion = DataDictionaryVersion.entries.first { it.name == defaultDataDictionaryVersion }
+    val dataDictionaryVersion = featureFlags.dataDictionaryVersion
     order.versions.add(
       OrderVersion(
         username = username,
@@ -56,8 +63,8 @@ class OrderService(
     return order
   }
 
-  fun deleteCurrentVersionForOrder(id: UUID, username: String) {
-    val order = getOrder(id, username)
+  fun deleteCurrentVersionForOrder(id: UUID, token: JwtAuthenticationToken) {
+    val order = getOrder(id, token)
 
     order.deleteCurrentVersion()
 
@@ -68,7 +75,9 @@ class OrderService(
     }
   }
 
-  fun getOrder(id: UUID, username: String): Order {
+  fun getOrder(id: UUID, token: JwtAuthenticationToken): Order {
+    val username = token.name
+
     val order = repo.findById(id).orElseThrow {
       EntityNotFoundException("Order with id $id does not exist")
     }
@@ -77,11 +86,27 @@ class OrderService(
       throw EntityNotFoundException("Order ($id) for $username not found")
     }
 
+    if (order.status == OrderStatus.SUBMITTED) {
+      val userCohort = userCohortService.getUserCohort(token)
+      val filter = TagFilter.getTagFilterByUserCohort(userCohort)
+      if (!filter.matchesTags(order.tags)) {
+        throw ForbiddenException("Order forbidden", errorCode = 40301)
+      }
+    }
+
     return order
   }
 
-  fun createVersion(orderId: UUID, username: String, versionType: RequestType): Order {
-    val order = getOrder(orderId, username)
+  private fun isUserFromOriginalNotifyingOrganistion(
+    token: JwtAuthenticationToken,
+    notifyingOrganisation: String?,
+  ): Boolean {
+    val userCohort = userCohortService.getUserCohort(token)
+    return userCohortService.matchesNofifyingOrg(userCohort.cohort, notifyingOrganisation)
+  }
+
+  fun createVersion(orderId: UUID, token: JwtAuthenticationToken, versionType: RequestType): Order {
+    val order = getOrder(orderId, token)
     val currentVersion = order.getCurrentVersion()
     if (currentVersion.status != OrderStatus.SUBMITTED) {
       throw BadRequestException("Order latest version not submitted")
@@ -90,13 +115,13 @@ class OrderService(
       currentVersion.type = RequestType.REJECTED
     }
     val newVersionNumber = currentVersion.versionId + 1
-    val dataDictionaryVersion = DataDictionaryVersion.entries.first { it.name == defaultDataDictionaryVersion }
+    val dataDictionaryVersion = featureFlags.dataDictionaryVersion
     val newOrderVersion = OrderVersion(
       orderId = orderId,
       versionId = newVersionNumber,
       status = OrderStatus.IN_PROGRESS,
       type = versionType,
-      username = username,
+      username = token.name,
       dataDictionaryVersion = dataDictionaryVersion,
       fmsResultId = null,
       fmsResultDate = null,
@@ -116,18 +141,52 @@ class OrderService(
           currentVersion.curfewConditions?.copy(versionId = this.id, id = UUID.randomUUID())
         curfewReleaseDateConditions =
           currentVersion.curfewReleaseDateConditions?.copy(versionId = this.id, id = UUID.randomUUID())
-        installationAndRisk =
-          currentVersion.installationAndRisk?.copy(versionId = this.id, id = UUID.randomUUID())
+
+        val currentIPs = currentVersion.interestedParties
+        val isUserFromOriginalNotifyingOrganistion =
+          isUserFromOriginalNotifyingOrganistion(token, currentIPs?.notifyingOrganisation)
+        val isStartDateInFuture = order.getMonitoringStartDate()?.isAfter(ZonedDateTime.now()) == true
+
         interestedParties =
           currentVersion.interestedParties?.copy(
             versionId = this.id,
             id = UUID.randomUUID(),
-            notifyingOrganisation = null,
-            notifyingOrganisationName = null,
-            notifyingOrganisationEmail = null,
+            notifyingOrganisation = currentIPs?.notifyingOrganisation
+              ?.takeIf { isUserFromOriginalNotifyingOrganistion },
+            notifyingOrganisationName = currentIPs?.notifyingOrganisationName
+              ?.takeIf { isUserFromOriginalNotifyingOrganistion },
+            notifyingOrganisationEmail = currentIPs?.notifyingOrganisationEmail
+              ?.takeIf { isUserFromOriginalNotifyingOrganistion },
+
+            responsibleOrganisation = currentIPs?.responsibleOrganisation?.takeIf {
+              isStartDateInFuture
+            },
+            responsibleOrganisationRegion = currentIPs?.responsibleOrganisationRegion?.takeIf {
+              isStartDateInFuture
+            },
+            responsibleOrganisationEmail = currentIPs?.responsibleOrganisationEmail?.takeIf {
+              isStartDateInFuture
+            },
+            responsibleOfficerName = currentIPs?.responsibleOfficerName?.takeIf {
+              isStartDateInFuture
+            },
+            responsibleOfficerFirstName = currentIPs?.responsibleOfficerFirstName?.takeIf {
+              isStartDateInFuture
+            },
+            responsibleOfficerLastName = currentIPs?.responsibleOfficerLastName?.takeIf {
+              isStartDateInFuture
+            },
+            responsibleOfficerEmail = currentIPs?.responsibleOfficerEmail?.takeIf {
+              isStartDateInFuture
+            },
+            responsibleOfficerPhoneNumber = currentIPs?.responsibleOfficerPhoneNumber?.takeIf {
+              isStartDateInFuture
+            },
           )
+
         probationDeliveryUnit =
           currentVersion.probationDeliveryUnit?.copy(versionId = this.id, id = UUID.randomUUID())
+
         monitoringConditions =
           currentVersion.monitoringConditions?.copy(
             versionId = this.id,
@@ -135,6 +194,7 @@ class OrderService(
             startDate = null,
             endDate = null,
           )
+
         monitoringConditionsAlcohol =
           currentVersion.monitoringConditionsAlcohol?.copy(versionId = this.id, id = UUID.randomUUID())
         monitoringConditionsTrail =
@@ -143,6 +203,12 @@ class OrderService(
           currentVersion.installationLocation?.copy(versionId = this.id, id = UUID.randomUUID())
         installationAppointment =
           currentVersion.installationAppointment?.copy(versionId = this.id, id = UUID.randomUUID())
+        offenceAdditionalDetails =
+          currentVersion.offenceAdditionalDetails?.copy(versionId = this.id, id = UUID.randomUUID())
+        detailsOfInstallation =
+          currentVersion.detailsOfInstallation?.copy(versionId = this.id, id = UUID.randomUUID())
+        mappa =
+          currentVersion.mappa?.copy(versionId = this.id, id = UUID.randomUUID())
 
         additionalDocuments =
           currentVersion.additionalDocuments.map {
@@ -164,14 +230,20 @@ class OrderService(
           currentVersion.mandatoryAttendanceConditions.map {
             it.copy(versionId = this.id, id = UUID.randomUUID())
           }.toMutableList()
+        offences = currentVersion.offences.map {
+          it.copy(versionId = this.id, id = UUID.randomUUID())
+        }.toMutableList()
+        dapoClauses = currentVersion.dapoClauses.map {
+          it.copy(versionId = this.id, id = UUID.randomUUID())
+        }.toMutableList()
       }
 
     order.versions.add(newOrderVersion)
     return repo.save(order)
   }
 
-  fun submitOrder(id: UUID, username: String, fullName: String): Order {
-    val order = getOrder(id, username)
+  fun submitOrder(id: UUID, token: JwtAuthenticationToken, fullName: String): Order {
+    val order = getOrder(id, token)
 
     if (order.status == OrderStatus.SUBMITTED) {
       throw SubmitOrderException("This order has already been submitted")
@@ -218,29 +290,45 @@ class OrderService(
   }
 
   fun getTags(order: Order): String {
-    var tags = ""
-    if (order.interestedParties?.notifyingOrganisation!! == NotifyingOrganisation.PRISON.name) {
-      tags = "PRISON,${order.interestedParties?.notifyingOrganisationName!!}"
+    val notifyingOrganisation = order.interestedParties?.notifyingOrganisation!!
 
-      if (order.deviceWearer?.adultAtTimeOfInstallation == false) {
-        tags += ",Youth YOI"
+    return when (notifyingOrganisation) {
+      NotifyingOrganisationDDv5.PRISON.name -> {
+        var tags = "PRISON," + order.interestedParties?.notifyingOrganisationName!!
+
+        if (order.deviceWearer?.adultAtTimeOfInstallation == false) {
+          tags += ",Youth YOI"
+        }
+        tags
       }
+
+      NotifyingOrganisationDDv5.YOUTH_CUSTODY_SERVICE.name -> {
+        if (order.deviceWearer?.adultAtTimeOfInstallation == false) "Youth YCS" else "Adult YCS"
+      }
+
+      NotifyingOrganisationDDv5.PROBATION.name -> "Probation"
+      NotifyingOrganisationDDv5.CIVIL_COUNTY_COURT.name -> "Civil Court"
+      NotifyingOrganisationDDv5.FAMILY_COURT.name -> "Family Court"
+      NotifyingOrganisationDDv5.HOME_OFFICE.name -> "Home Office"
+      else -> ""
     }
-    if (order.interestedParties?.notifyingOrganisation!! == NotifyingOrganisationDDv5.YOUTH_CUSTODY_SERVICE.name &&
-      order.deviceWearer?.adultAtTimeOfInstallation == false
-    ) {
-      tags = "Youth YCS"
-    }
-    return tags
   }
 
   fun listOrders(searchCriteria: OrderListCriteria): List<Order> = repo.findAll(
     OrderListSpecification(searchCriteria),
   )
 
-  fun searchOrders(searchCriteria: OrderSearchCriteria): List<Order> = repo.findAll(
-    OrderSearchSpecification(searchCriteria),
-  )
+  fun searchOrders(searchTerm: String, authentication: JwtAuthenticationToken): List<Order> {
+    val userCohort = userCohortService.getUserCohort(authentication)
+
+    val filter = TagFilter.getTagFilterByUserCohort(userCohort)
+
+    val searchCriteria = OrderSearchCriteria(searchTerm, filter)
+
+    return repo.findAll(
+      OrderSearchSpecification(searchCriteria),
+    )
+  }
 
   fun getVersionInformation(orderId: UUID): List<VersionInformationDTO> {
     val order = repo.findById(orderId).orElseThrow {

@@ -1,8 +1,11 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.config.FeatureFlags
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Address
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewTimeTable
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InterestedParties
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
@@ -13,6 +16,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DeviceType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.EnforcementZoneType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FamilyCourtDDv5
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.InstallationLocationType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MagistrateCourt
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MagistrateCourtDDv5
@@ -24,7 +28,6 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Pilot
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.PoliceAreas
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Prison
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.PrisonDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ProbationDeliveryUnits
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ProbationServiceRegion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
@@ -98,7 +101,7 @@ data class MonitoringOrder(
   @JsonProperty("offence")
   var offence: String? = "",
   @JsonProperty("offence_additional_details")
-  val offenceAdditionalDetails: String? = "",
+  var offenceAdditionalDetails: String? = "",
   @JsonProperty("offence_date")
   var offenceDate: String? = "",
   @JsonProperty("order_end")
@@ -237,20 +240,36 @@ data class MonitoringOrder(
   var subcategory: String? = "",
   @JsonProperty("dapol_missed_in_error")
   var dapolMissedInError: String? = "",
+  @JsonProperty("ac_eligible_offences")
+  var acEligibleOffences: MutableList<AcEligibleOffence>? = mutableListOf(),
+  @JsonProperty("install_at_source_pilot")
+  var installAtSourcePilot: String? = "",
+  @JsonProperty("dapo_order_clause_numbers")
+  var dapoOrderClauseNumbers: MutableList<DapoClause>? = mutableListOf(),
+  @JsonProperty("offences")
+  var offences: MutableList<OffenceData>? = mutableListOf(),
 ) {
 
   companion object {
     private val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
     private val dateTimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
     private val londonTimeZone = ZoneId.of("Europe/London")
-
     private fun getBritishDateAndTime(dateTime: ZonedDateTime?): String? =
       dateTime?.toInstant()?.atZone(londonTimeZone)?.format(dateTimeFormatter)
 
     private fun getBritishDate(dateTime: ZonedDateTime?): String? =
       dateTime?.toInstant()?.atZone(londonTimeZone)?.format(dateFormatter)
 
-    fun fromOrder(order: Order, caseId: String?): MonitoringOrder {
+    fun fromOrder(
+      order: Order,
+      caseId: String?,
+      featureFlags: FeatureFlags,
+      orderSource: FmsOrderSource,
+    ): MonitoringOrder {
+      val defaultEndDate =
+        ZonedDateTime.of(2040, 1, 1, 23, 59, 0, 0, ZoneId.of("Europe/London"))
+          .takeIf { orderSource == FmsOrderSource.CEMO }
+
       val conditions = order.monitoringConditions!!
       val monitoringStartDate = order.getMonitoringStartDate()
 
@@ -262,29 +281,39 @@ data class MonitoringOrder(
           val now = LocalDateTime.now()
           ZonedDateTime.of(now.year, now.monthValue, now.dayOfMonth, 23, 59, 0, 0, ZoneId.systemDefault())
         }
+
         "SR21-Revocation monitoring requirements" -> {
-          val aWeekInFuture = LocalDateTime.now().plusDays(7)
-          ZonedDateTime.of(
-            aWeekInFuture.year,
-            aWeekInFuture.monthValue,
-            aWeekInFuture.dayOfMonth,
-            23,
-            59,
-            0,
-            0,
-            ZoneId.systemDefault(),
-          )
+          if (monitoringStartDate != null &&
+            monitoringStartDate.toLocalDate() < ZonedDateTime.now().toLocalDate() &&
+            order.type == RequestType.END_MONITORING
+          ) {
+            val now = LocalDateTime.now()
+            ZonedDateTime.of(now.year, now.monthValue, now.dayOfMonth, 23, 59, 0, 0, ZoneId.systemDefault())
+          } else {
+            val aWeekInFuture = LocalDateTime.now().plusDays(7)
+            ZonedDateTime.of(
+              aWeekInFuture.year,
+              aWeekInFuture.monthValue,
+              aWeekInFuture.dayOfMonth,
+              23,
+              59,
+              0,
+              0,
+              ZoneId.systemDefault(),
+            )
+          }
         }
+
         else -> {
-          order.getMonitoringEndDate()
+          order.getMonitoringEndDate() ?: defaultEndDate
         }
       }
 
       val monitoringOrder = MonitoringOrder(
-        deviceWearer = "${order.deviceWearer!!.firstName} ${order.deviceWearer!!.lastName}",
-        orderType = conditions.orderType!!.value,
+        deviceWearer = getDeviceWearerName(order.deviceWearer!!),
+        orderType = getOrderType(conditions.orderType!!),
         orderRequestType = order.type.value,
-        orderTypeDescription = conditions.orderTypeDescription?.value,
+        orderTypeDescription = conditions.orderTypeDescription?.value ?: "",
         orderStart = getBritishDateAndTime(monitoringStartDate),
         orderEnd = getBritishDateAndTime(monitoringEndDate) ?: "",
         serviceEndDate = getBritishDate(monitoringEndDate) ?: "",
@@ -292,18 +321,26 @@ data class MonitoringOrder(
         conditionType = conditions.conditionType!!.value,
         orderId = order.id.toString(),
         orderStatus = "Not Started",
-        offence = getOffence(order),
-        offenceAdditionalDetails = getOffenceAdditionalDetails(order),
+        offenceAdditionalDetails = getOffenceAdditionalDetails(order, featureFlags),
         pilot = conditions.pilot?.value ?: "",
         magistrateCourtCaseReferenceNumber = order.deviceWearer?.courtCaseReferenceNumber ?: "",
       )
       if (DataDictionaryVersion.isVersionSameOrAbove(order.dataDictionaryVersion, DataDictionaryVersion.DDV6)) {
         monitoringOrder.subcategory = subcategory
-
         monitoringOrder.dapolMissedInError = getDapolMissedInError(order)
+        if (featureFlags.ddV6CourtMappings) {
+          conditions.offenceType?.takeIf { it.isNotBlank() }?.let {
+            monitoringOrder.acEligibleOffences = mutableListOf(
+              AcEligibleOffence(
+                offence = it,
+                offenceDate = "",
+              ),
+            )
+          }
+        }
       }
 
-      monitoringOrder.sentenceType = getSentenceType(order)
+      monitoringOrder.sentenceType = getSentenceType(order, featureFlags)
       monitoringOrder.issp = if (conditions.issp == YesNoUnknown.YES) {
         "Yes"
       } else {
@@ -315,20 +352,82 @@ data class MonitoringOrder(
         "No"
       }
 
-      if (order.interestedParties != null) {
-        val interestedParties = order.interestedParties!!
-        monitoringOrder.responsibleOfficerName = interestedParties.responsibleOfficerName
-        monitoringOrder.responsibleOfficerPhone = getResponsibleOfficerPhoneNumber(order)
-        monitoringOrder.responsibleOrganization = getResponsibleOrganisation(order)
-        monitoringOrder.roRegion = getResponsibleOrganisationRegion(order)
-        if (monitoringOrder.responsibleOrganization == ResponsibleOrganisation.PROBATION.value
-        ) {
-          monitoringOrder.pduResponsible = getProbationDeliveryUnit(order)
+      if (DataDictionaryVersion.isVersionSameOrAbove(
+          order.dataDictionaryVersion,
+          DataDictionaryVersion.DDV6,
+        ) &&
+        featureFlags.ddV6CourtMappings
+      ) {
+        monitoringOrder.dapoOrderClauseNumbers?.addAll(
+          order.dapoClauses.map {
+            DapoClause(
+              dapoOrderClauseNumber = it.clause,
+              date = getBritishDate(it.date),
+            )
+          },
+        )
+
+        monitoringOrder.offences?.addAll(
+          order.offences.map {
+            OffenceData(
+              offence = Offence.from(it.offenceType)?.value ?: it.offenceType,
+              offenceDate = getBritishDate(it.offenceDate),
+            )
+          },
+        )
+      } else {
+        monitoringOrder.offence = getOffence(order)
+      }
+
+      order.interestedParties?.let { parties ->
+        val startDateIsInPast =
+          monitoringStartDate != null && (monitoringStartDate.toLocalDate() < ZonedDateTime.now().toLocalDate())
+        val orderIsVariation = RequestType.VARIATION_TYPES.contains(order.type)
+        val variationInPast = startDateIsInPast && orderIsVariation
+
+        monitoringOrder.apply {
+          responsibleOfficerName = if (variationInPast) "" else parties.getResponsibleOfficerFullName()
+          responsibleOfficerPhone = if (variationInPast) "" else getResponsibleOfficerPhoneNumber(parties)
+          responsibleOfficerEmail = if (variationInPast) "" else parties.responsibleOfficerEmail ?: ""
+          responsibleOrganization = if (variationInPast) "" else getResponsibleOrganisation(parties)
+          roRegion = if (variationInPast) "" else getResponsibleOrganisationRegion(parties)
+          if (responsibleOrganization == ResponsibleOrganisation.PROBATION.value
+          ) {
+            pduResponsible = if (variationInPast) "" else getProbationDeliveryUnit(order)
+          }
+          roEmail = if (variationInPast) "" else parties.responsibleOrganisationEmail
+
+          notifyingOrganization = getNotifyingOrganisation(parties, order.dataDictionaryVersion)
+          notifyingOfficerName =
+            if (notifyingOrganization == NotifyingOrganisationDDv5.HOME_OFFICE.value) "Home Office" else ""
+          noName = getNotifyingOrganisationName(parties, order.dataDictionaryVersion)
+          noEmail = parties.notifyingOrganisationEmail
+
+          if (featureFlags.ddV6CourtMappings) {
+            val parties = order.interestedParties
+            val orgValue = parties?.notifyingOrganisation
+
+            val matchingEnum = NotifyingOrganisationDDv5.from(orgValue)
+              ?: NotifyingOrganisationDDv5.entries.find { it.value == orgValue }
+
+            val isCourt = matchingEnum != null && NotifyingOrganisationDDv5.COURTS.contains(matchingEnum)
+
+            responsibleOfficerDetailsReceived = if (isCourt || variationInPast) {
+              "No"
+            } else {
+              "Yes"
+            }
+          }
+
+          if (variationInPast) {
+            responsibleOfficerName = ""
+            responsibleOfficerPhone = ""
+            responsibleOfficerEmail = ""
+            responsibleOrganization = ""
+            roRegion = ""
+            roEmail = ""
+          }
         }
-        monitoringOrder.roEmail = interestedParties.responsibleOrganisationEmail
-        monitoringOrder.notifyingOrganization = getNotifyingOrganisation(order)
-        monitoringOrder.noName = getNotifyingOrganisationName(order)
-        monitoringOrder.noEmail = interestedParties.notifyingOrganisationEmail
       }
 
       if (order.curfewConditions?.startDate != null) {
@@ -337,7 +436,7 @@ data class MonitoringOrder(
           EnforceableCondition(
             "Curfew with EM",
             startDate = getBritishDateAndTime(curfew.startDate),
-            endDate = getBritishDateAndTime(curfew.endDate) ?: "",
+            endDate = getBritishDateAndTime(curfew.endDate ?: defaultEndDate) ?: "",
           ),
         )
         monitoringOrder.curfewDescription = curfew.curfewAdditionalDetails ?: ""
@@ -345,7 +444,7 @@ data class MonitoringOrder(
         monitoringOrder.conditionalReleaseStartTime = order.curfewReleaseDateConditions?.startTime ?: ""
         monitoringOrder.conditionalReleaseEndTime = order.curfewReleaseDateConditions?.endTime ?: ""
         monitoringOrder.curfewStart = getBritishDateAndTime(curfew.startDate)
-        monitoringOrder.curfewEnd = getBritishDateAndTime(curfew.endDate)
+        monitoringOrder.curfewEnd = getBritishDateAndTime(curfew.endDate ?: defaultEndDate) ?: ""
         monitoringOrder.curfewDuration = getCurfewSchedules(order)
       }
 
@@ -363,7 +462,7 @@ data class MonitoringOrder(
           EnforceableCondition(
             deviceType,
             startDate = getBritishDateAndTime(order.monitoringConditionsTrail!!.startDate),
-            endDate = getBritishDateAndTime(order.monitoringConditionsTrail!!.endDate),
+            endDate = getBritishDateAndTime(order.monitoringConditionsTrail!!.endDate ?: defaultEndDate) ?: "",
           ),
 
         )
@@ -371,11 +470,15 @@ data class MonitoringOrder(
       }
 
       if (order.enforcementZoneConditions.count() > 0) {
+        val enforcementZoneStartDate = order.enforcementZoneConditions.mapNotNull { it.startDate }.minOrNull()
+        val enforcementZoneEndDate =
+          order.enforcementZoneConditions.mapNotNull { it.endDate }.maxOrNull() ?: defaultEndDate
+
         monitoringOrder.enforceableCondition!!.add(
           EnforceableCondition(
             "EM Exclusion / Inclusion Zone",
-            startDate = getBritishDateAndTime(monitoringStartDate),
-            endDate = getBritishDateAndTime(monitoringEndDate) ?: "",
+            startDate = getBritishDateAndTime(enforcementZoneStartDate),
+            endDate = getBritishDateAndTime(enforcementZoneEndDate) ?: "",
           ),
         )
         order.enforcementZoneConditions.forEach {
@@ -385,7 +488,7 @@ data class MonitoringOrder(
                 description = it.description,
                 duration = it.duration,
                 start = getBritishDate(it.startDate),
-                end = getBritishDate(it.endDate) ?: "",
+                end = getBritishDate(it.endDate ?: defaultEndDate) ?: "",
               ),
             )
           } else if (it.zoneType == EnforcementZoneType.INCLUSION) {
@@ -394,7 +497,7 @@ data class MonitoringOrder(
                 description = it.description,
                 duration = it.duration,
                 start = getBritishDate(it.startDate),
-                end = getBritishDate(it.endDate) ?: "",
+                end = getBritishDate(it.endDate ?: defaultEndDate) ?: "",
               ),
             )
           }
@@ -404,11 +507,14 @@ data class MonitoringOrder(
       }
 
       if (order.mandatoryAttendanceConditions.count() > 0) {
+        val mandatoryAttendanceStartDate = order.mandatoryAttendanceConditions.mapNotNull { it.startDate }.minOrNull()
+        val mandatoryAttendanceEndDate = order.mandatoryAttendanceConditions.mapNotNull { it.endDate }.maxOrNull()
+
         monitoringOrder.enforceableCondition!!.add(
           EnforceableCondition(
             "Attendance Requirement",
-            startDate = getBritishDateAndTime(monitoringStartDate) ?: "",
-            endDate = getBritishDateAndTime(monitoringEndDate) ?: "",
+            startDate = getBritishDateAndTime(mandatoryAttendanceStartDate) ?: "",
+            endDate = getBritishDateAndTime(mandatoryAttendanceEndDate) ?: "",
           ),
         )
         monitoringOrder.inclusionZones.addAll(getInclusionZones(order))
@@ -445,31 +551,59 @@ data class MonitoringOrder(
 
       if (order.installationLocation != null) {
         if (order.installationLocation?.location == InstallationLocationType.PROBATION_OFFICE ||
-          order.installationLocation?.location == InstallationLocationType.PRISON
+          order.installationLocation?.location == InstallationLocationType.PRISON ||
+          order.installationLocation?.location == InstallationLocationType.IMMIGRATION_REMOVAL_CENTRE
         ) {
           monitoringOrder.tagAtSource = "true"
+          monitoringOrder.tagAtSourceDetails = order.installationAppointment?.placeName ?: ""
+          monitoringOrder.dateAndTimeInstallationWillTakePlace =
+            getBritishDateAndTime(order.installationAppointment?.appointmentDate) ?: ""
+        } else if (
+          (
+            order.interestedParties?.notifyingOrganisation == NotifyingOrganisation.HOME_OFFICE.name &&
+              order.installationLocation?.location == InstallationLocationType.PRIMARY
+            ) ||
+          order.installationLocation?.location == InstallationLocationType.INSTALLATION
+        ) {
+          monitoringOrder.tagAtSource = "false"
           monitoringOrder.tagAtSourceDetails = order.installationAppointment?.placeName ?: ""
           monitoringOrder.dateAndTimeInstallationWillTakePlace =
             getBritishDateAndTime(order.installationAppointment?.appointmentDate) ?: ""
         } else {
           monitoringOrder.tagAtSource = "false"
         }
+
+        if (!order.installationAppointment?.appointmentTimeDetails.isNullOrEmpty()) {
+          monitoringOrder.tagAtSourceDetails += " ${order.installationAppointment!!.appointmentTimeDetails}"
+        }
+
+        if (order.installationLocation!!.location != InstallationLocationType.INSTALLATION_ALREADY_TAKEN_PLACE) {
+          getInstallationAddress(order)?.let {
+            monitoringOrder.installationAddress1 = it.addressLine1
+            monitoringOrder.installationAddress2 = it.addressLine2
+            monitoringOrder.installationAddress3 = it.addressLine3
+            monitoringOrder.installationAddress4 = it.addressLine4
+            monitoringOrder.installationAddressPostcode = it.postcode
+          }
+        }
       }
 
-      getInstallationAddress(order)?.let {
-        monitoringOrder.installationAddress1 = it.addressLine1
-        monitoringOrder.installationAddress2 = it.addressLine2
-        monitoringOrder.installationAddress3 = it.addressLine3
-        monitoringOrder.installationAddress4 = it.addressLine4
-        monitoringOrder.installationAddressPostcode = it.postcode
+      if (DataDictionaryVersion.isVersionSameOrAbove(order.dataDictionaryVersion, DataDictionaryVersion.DDV6) &&
+        featureFlags.ddV6CourtMappings
+      ) {
+        if (order.installationLocation != null) {
+          if (order.installationLocation?.location == InstallationLocationType.PRISON &&
+            Prison.PRISONS_IN_PILOT.any { it.name == order.interestedParties?.notifyingOrganisationName }
+          ) {
+            monitoringOrder.installAtSourcePilot = "true"
+            monitoringOrder.tagAtSource = "false"
+          } else {
+            monitoringOrder.installAtSourcePilot = "false"
+          }
+        }
       }
 
       if (RequestType.VARIATION_TYPES.contains(order.type)) {
-        if (order.type === RequestType.VARIATION) {
-          monitoringOrder.orderVariationType = order.variationDetails!!.variationType?.value
-        } else {
-          monitoringOrder.orderVariationType = "OTHER"
-        }
         monitoringOrder.orderVariationDate = order.variationDetails!!.variationDate.format(dateTimeFormatter)
         monitoringOrder.orderVariationDetails = order.variationDetails!!.variationDetails
       }
@@ -484,10 +618,12 @@ data class MonitoringOrder(
       else -> order.addresses.firstOrNull { it.addressType == AddressType.INSTALLATION }
     }
 
-    private fun getSentenceType(order: Order): String {
+    private fun getSentenceType(order: Order, featureFlags: FeatureFlags): String {
       val sentenceType = order.monitoringConditions?.sentenceType ?: return ""
 
-      if (DataDictionaryVersion.isVersionSameOrAbove(order.dataDictionaryVersion, DataDictionaryVersion.DDV6)) {
+      if (DataDictionaryVersion.isVersionSameOrAbove(order.dataDictionaryVersion, DataDictionaryVersion.DDV6) &&
+        featureFlags.ddV6CourtMappings
+      ) {
         return when (sentenceType) {
           // ELM-4515 update mapping for ddv6
           SentenceType.IPP -> "IPP (Imprisonment for Public Protection)"
@@ -542,10 +678,13 @@ data class MonitoringOrder(
       return schedules
     }
 
-    private fun getNotifyingOrganisation(order: Order): String {
-      val notifyingOrganisation = order.interestedParties?.notifyingOrganisation
+    private fun getNotifyingOrganisation(
+      interestedParties: InterestedParties,
+      dataDictionaryVersion: DataDictionaryVersion,
+    ): String {
+      val notifyingOrganisation = interestedParties.notifyingOrganisation
       val resolvedNotifyingOrganisation =
-        when (order.dataDictionaryVersion) {
+        when (dataDictionaryVersion) {
           DataDictionaryVersion.DDV4 -> NotifyingOrganisation.from(notifyingOrganisation)?.value
           else -> NotifyingOrganisationDDv5.from(notifyingOrganisation)?.value
         }
@@ -553,51 +692,69 @@ data class MonitoringOrder(
       return resolvedNotifyingOrganisation ?: notifyingOrganisation ?: "N/A"
     }
 
-    private fun getNotifyingOrganisationName(order: Order): String {
-      if (order.dataDictionaryVersion === DataDictionaryVersion.DDV4) {
-        return Prison.from(order.interestedParties?.notifyingOrganisationName)?.value
-          ?: CrownCourt.from(order.interestedParties?.notifyingOrganisationName)?.value
-          ?: MagistrateCourt.from(order.interestedParties?.notifyingOrganisationName)?.value
-          ?: order.interestedParties?.notifyingOrganisationName
+    private fun getNotifyingOrganisationName(
+      interestedParties: InterestedParties,
+      dataDictionaryVersion: DataDictionaryVersion,
+    ): String {
+      if (dataDictionaryVersion === DataDictionaryVersion.DDV4) {
+        return Prison.from(interestedParties.notifyingOrganisationName)?.name
+          ?: CrownCourt.from(interestedParties.notifyingOrganisationName)?.value
+          ?: MagistrateCourt.from(interestedParties.notifyingOrganisationName)?.value
+          ?: interestedParties.notifyingOrganisationName
           ?: ""
       }
-      val notifyOrg = order.interestedParties?.notifyingOrganisation
+      val notifyOrg = NotifyingOrganisationDDv5.from(interestedParties.notifyingOrganisation)
 
-      if (notifyOrg == NotifyingOrganisationDDv5.PROBATION.name) {
+      if (notifyOrg == NotifyingOrganisationDDv5.PROBATION) {
         return "Probation Board"
       }
 
-      return CivilCountyCourtDDv5.from(order.interestedParties?.notifyingOrganisationName)?.value
-        ?: CrownCourtDDv5.from(order.interestedParties?.notifyingOrganisationName)?.value
-        ?: FamilyCourtDDv5.from(order.interestedParties?.notifyingOrganisationName)?.value
-        ?: MagistrateCourtDDv5.from(order.interestedParties?.notifyingOrganisationName)?.value
-        ?: MilitaryCourtDDv5.from(order.interestedParties?.notifyingOrganisationName)?.value
-        ?: PrisonDDv5.from(order.interestedParties?.notifyingOrganisationName)?.value
-        ?: YouthCourtDDv5.from(order.interestedParties?.notifyingOrganisationName)?.value
-        ?: YouthCustodyServiceRegionDDv5.from(order.interestedParties?.notifyingOrganisationName)?.value
-        ?: YouthCustodyServiceRegionDDv6.from(order.interestedParties?.notifyingOrganisationName)?.value
-        ?: order.interestedParties?.notifyingOrganisationName
+      if (notifyOrg == NotifyingOrganisationDDv5.HOME_OFFICE) {
+        return NotifyingOrganisationDDv5.HOME_OFFICE.value
+      }
+
+      return CivilCountyCourtDDv5.from(interestedParties.notifyingOrganisationName)?.value
+        ?: CrownCourtDDv5.from(interestedParties.notifyingOrganisationName)?.value
+        ?: FamilyCourtDDv5.from(interestedParties.notifyingOrganisationName)?.value
+        ?: MagistrateCourtDDv5.from(interestedParties.notifyingOrganisationName)?.value
+        ?: MilitaryCourtDDv5.from(interestedParties.notifyingOrganisationName)?.value
+        ?: Prison.from(interestedParties.notifyingOrganisationName)?.value
+        ?: YouthCourtDDv5.from(interestedParties.notifyingOrganisationName)?.value
+        ?: YouthCustodyServiceRegionDDv5.from(interestedParties.notifyingOrganisationName)?.value
+        ?: YouthCustodyServiceRegionDDv6.from(interestedParties.notifyingOrganisationName)?.value
+        ?: interestedParties.notifyingOrganisationName
         ?: ""
     }
 
-    private fun getResponsibleOrganisation(order: Order): String =
-      ResponsibleOrganisation.from(order.interestedParties?.responsibleOrganisation)?.value
-        ?: order.interestedParties?.responsibleOrganisation
-        ?: "N/A"
+    private fun getResponsibleOrganisation(interestedParties: InterestedParties): String =
+      ResponsibleOrganisation.from(interestedParties.responsibleOrganisation)?.value
+        ?: interestedParties.responsibleOrganisation?.takeIf { it.isNotBlank() }
+        ?: "".takeIf { interestedParties.notifyingOrganisation != NotifyingOrganisation.HOME_OFFICE.name }
+        ?: ResponsibleOrganisation.HOME_OFFICE.value
 
-    private fun getResponsibleOrganisationRegion(order: Order): String {
-      if (ResponsibleOrganisation.from(order.interestedParties?.responsibleOrganisation) ==
-        ResponsibleOrganisation.HOME_OFFICE
+    private fun getResponsibleOrganisationRegion(interestedParties: InterestedParties): String {
+      if (NotifyingOrganisationDDv5.from(interestedParties.notifyingOrganisation) ==
+        NotifyingOrganisationDDv5.HOME_OFFICE
       ) {
         return "UKBA"
       }
 
-      return ProbationServiceRegion.from(order.interestedParties?.responsibleOrganisationRegion)?.value
-        ?: YouthJusticeServiceRegions.from(order.interestedParties?.responsibleOrganisationRegion)?.value
-        ?: PoliceAreas.from(order.interestedParties?.responsibleOrganisationRegion)?.value
-        ?: PoliceAreasDDv6.from(order.interestedParties?.responsibleOrganisationRegion)?.value
-        ?: order.interestedParties?.responsibleOrganisationRegion
-        ?: ""
+      val responsibleOrg = ResponsibleOrganisation.from(interestedParties.responsibleOrganisation)
+
+      val rawRegion = interestedParties.responsibleOrganisationRegion
+
+      return when (responsibleOrg) {
+        ResponsibleOrganisation.PROBATION ->
+          ProbationServiceRegion.from(rawRegion)?.value ?: rawRegion
+
+        ResponsibleOrganisation.YJS ->
+          YouthJusticeServiceRegions.from(rawRegion)?.value ?: rawRegion
+
+        ResponsibleOrganisation.POLICE ->
+          PoliceAreasDDv6.from(rawRegion)?.value ?: PoliceAreas.from(rawRegion)?.value ?: rawRegion
+
+        else -> rawRegion
+      } ?: ""
     }
 
     private fun getProbationDeliveryUnit(order: Order): String {
@@ -607,15 +764,15 @@ data class MonitoringOrder(
       return ProbationDeliveryUnits.from(order.probationDeliveryUnit?.unit)?.value ?: ""
     }
 
-    private fun getOffence(order: Order): String? = Offence.from(order.installationAndRisk?.offence)?.value
-      ?: order.installationAndRisk?.offence
+    private fun getOffence(order: Order): String? =
+      Offence.from(order.installationAndRisk?.offence)?.value ?: order.installationAndRisk?.offence ?: ""
 
-    private fun getResponsibleOfficerPhoneNumber(order: Order): String? {
-      if (order.interestedParties?.responsibleOfficerPhoneNumber == null) {
+    private fun getResponsibleOfficerPhoneNumber(interestedParties: InterestedParties): String? {
+      if (interestedParties.responsibleOfficerPhoneNumber == null) {
         return null
       }
       return PhoneNumberFormatter.formatAsInternationalDirectDialingNumber(
-        order.interestedParties!!.responsibleOfficerPhoneNumber!!,
+        interestedParties.responsibleOfficerPhoneNumber.toString(),
       )
     }
 
@@ -634,7 +791,7 @@ data class MonitoringOrder(
       )
     }
 
-    private fun getOffenceAdditionalDetails(order: Order): String {
+    private fun getOffenceAdditionalDetails(order: Order, featureFlags: FeatureFlags): String {
       val riskOffenceDetails =
         if (DataDictionaryVersion.isVersionSameOrAbove(order.dataDictionaryVersion, DataDictionaryVersion.DDV6)) {
           order.offenceAdditionalDetails?.additionalDetails ?: ""
@@ -651,7 +808,13 @@ data class MonitoringOrder(
 
       val parts = listOfNotNull(
         riskOffenceDetails.takeIf { it.isNotBlank() },
-        monitoringOffenceType.takeIf { it.isNotBlank() }?.let { "AC Offence: $it" },
+        if (DataDictionaryVersion.isVersionSameOrAbove(order.dataDictionaryVersion, DataDictionaryVersion.DDV6) &&
+          featureFlags.ddV6CourtMappings
+        ) {
+          null
+        } else {
+          monitoringOffenceType.takeIf { it.isNotBlank() }?.let { "AC Offence: $it" }
+        },
         monitoringPoliceArea.takeIf { it.isNotBlank() }
           ?.let { "PFA: $it" },
       )
@@ -674,7 +837,18 @@ data class MonitoringOrder(
         return ""
       }
 
-      return if (conditions.dapolMissedInError == YesNoUnknown.YES) "true" else "false"
+      return if (conditions.dapolMissedInError == YesNoUnknown.YES) "true" else ""
+    }
+
+    private fun getOrderType(orderType: OrderType): String = when (orderType) {
+      OrderType.CIVIL, OrderType.BAIL -> OrderType.PRE_TRIAL.value
+      else -> orderType.value
+    }
+
+    private fun getDeviceWearerName(deviceWearer: DeviceWearer): String = with(deviceWearer) {
+      listOfNotNull(firstName, middleName, lastName)
+        .filterNot { it.isBlank() }
+        .joinToString(" ")
     }
   }
 }
@@ -716,3 +890,21 @@ data class Schedule(val day: String? = "", val start: String? = "", val end: Str
       Schedule(getShortDayString(curfewTimeTable.dayOfWeek), curfewTimeTable.startTime, curfewTimeTable.endTime)
   }
 }
+
+data class AcEligibleOffence(
+  val offence: String? = "",
+  @JsonProperty("offence_date")
+  val offenceDate: String? = "",
+)
+
+data class DapoClause(
+  @JsonProperty("dapo_order_clause_number")
+  val dapoOrderClauseNumber: String? = "",
+  val date: String? = "",
+)
+
+data class OffenceData(
+  val offence: String? = "",
+  @JsonProperty("offence_date")
+  val offenceDate: String? = "",
+)

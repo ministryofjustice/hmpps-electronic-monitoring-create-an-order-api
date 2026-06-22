@@ -2,18 +2,25 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.m
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.Arguments
+import org.junit.jupiter.params.provider.MethodSource
 import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AdditionalDocument
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationLocation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderParameters
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.TrailMonitoringConditions
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.VariationDetails
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DocumentType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.InstallationLocationType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisationDDv5
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.PrisonDDv5
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Prison
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ProbationServiceRegion
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ResponsibleOrganisation
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.VariationType
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.util.UUID
@@ -42,10 +49,44 @@ class OrderTest : OrderTestBase() {
   }
 
   @Test
-  fun `It should return isValid false for order without responsible organisation`() {
+  fun `It should return isValid true for home office order without licence`() {
+    val order = createValidOrder()
+    order.additionalDocuments.clear()
+    order.interestedParties = createInterestedParty(notifyingOrganisation = NotifyingOrganisationDDv5.HOME_OFFICE.name)
+    assertThat(order.isValid).isTrue()
+  }
+
+  @Test
+  fun `It should return isValid true court order without licence`() {
+    val order = createValidOrder()
+    order.additionalDocuments.clear()
+    order.orderParameters = OrderParameters(versionId = order.versionId, haveCourtOrder = true)
+    order.additionalDocuments.add(
+      AdditionalDocument(
+        versionId = UUID.randomUUID(),
+        fileType = DocumentType.COURT_ORDER,
+        fileName = "test file",
+        documentId = UUID.randomUUID(),
+      ),
+    )
+    order.interestedParties = createInterestedParty(notifyingOrganisation = NotifyingOrganisationDDv5.CROWN_COURT.name)
+    assertThat(order.isValid).isTrue()
+  }
+
+  @Test
+  fun `It should return isValid false court order yes to court doc but missing`() {
+    val order = createValidOrder()
+    order.additionalDocuments.clear()
+    order.orderParameters = OrderParameters(versionId = order.versionId, haveCourtOrder = true)
+    order.interestedParties = createInterestedParty(notifyingOrganisation = NotifyingOrganisationDDv5.CROWN_COURT.name)
+    assertThat(order.isValid).isFalse()
+  }
+
+  @Test
+  fun `It should return isValid true for order without responsible organisation`() {
     val order = createValidOrder()
     order.interestedParties!!.responsibleOrganisation = ""
-    assertThat(order.isValid).isFalse()
+    assertThat(order.isValid).isTrue()
   }
 
   @Test
@@ -278,7 +319,32 @@ class OrderTest : OrderTestBase() {
     assertThat(result).isEqualTo(latestDate)
   }
 
-  private fun createValidOrder(): Order = createOrder(
+  @ParameterizedTest
+  @MethodSource("variationRequestTypeProvider")
+  fun `should return false if request type is a variation type but variation details is not set`(
+    requestType: RequestType,
+  ) {
+    val order = createValidOrder(requestType)
+    order.variationDetails = null
+    assertThat(order.isValid).isFalse()
+  }
+
+  @ParameterizedTest
+  @MethodSource("variationRequestTypeProvider")
+  fun `should return true if request type is a variation type and variation details is  set`(requestType: RequestType) {
+    val order = createValidOrder(requestType)
+    order.variationDetails = VariationDetails(
+      versionId = UUID.randomUUID(),
+      variationType = VariationType.CHANGE_TO_ADDRESS,
+      variationDate = ZonedDateTime.now(),
+      variationDetails = "Mock variation",
+    )
+
+    assertThat(order.isValid).isTrue()
+  }
+
+  private fun createValidOrder(requestType: RequestType = RequestType.REQUEST): Order = createOrder(
+    type = requestType,
     monitoringConditions = createMonitoringConditions(
       trail = true,
     ),
@@ -297,7 +363,7 @@ class OrderTest : OrderTestBase() {
       responsibleOrganisationRegion = ProbationServiceRegion.EAST_MIDLANDS.name,
       responsibleOrganisationEmail = "",
       notifyingOrganisation = NotifyingOrganisationDDv5.PRISON.name,
-      notifyingOrganisationName = PrisonDDv5.GARTH_PRISON.name,
+      notifyingOrganisationName = Prison.GARTH_PRISON.name,
       notifyingOrganisationEmail = "",
     ),
     additionalDocuments = mutableListOf(
@@ -309,4 +375,16 @@ class OrderTest : OrderTestBase() {
       ),
     ),
   )
+
+  companion object {
+    @JvmStatic
+    fun variationRequestTypeProvider(): List<Arguments> = listOf(
+
+      Arguments.of(RequestType.VARIATION),
+      Arguments.of(RequestType.REINSTALL_AT_DIFFERENT_ADDRESS),
+      Arguments.of(RequestType.REINSTALL_DEVICE),
+      Arguments.of(RequestType.REVOCATION),
+      Arguments.of(RequestType.END_MONITORING),
+    )
+  }
 }

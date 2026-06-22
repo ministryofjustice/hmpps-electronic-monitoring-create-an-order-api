@@ -27,4 +27,12 @@ class OffenceService : OrderSectionServiceBase() {
 
     return order.offences.find { it.id == id }!!
   }
+
+  fun deleteOffence(orderId: UUID, username: String, offenceId: UUID) {
+    val order = this.findEditableOrder(orderId, username)
+
+    order.offences.removeIf { it.id == offenceId }
+
+    orderRepo.save(order)
+  }
 }

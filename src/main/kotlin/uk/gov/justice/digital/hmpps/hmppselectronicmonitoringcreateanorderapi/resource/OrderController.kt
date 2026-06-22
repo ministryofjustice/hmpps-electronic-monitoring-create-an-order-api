@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.Authentication
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -17,7 +18,6 @@ import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.config.AuthAwareAuthenticationToken
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.OrderListCriteria
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.OrderSearchCriteria
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.CreateOrderDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateAmendOrderDto
@@ -44,9 +44,8 @@ class OrderController(@Autowired val orderService: OrderService) {
 
   @PostMapping("/orders/{orderId}/submit")
   fun submitOrder(@PathVariable orderId: UUID, authentication: AuthAwareAuthenticationToken): ResponseEntity<OrderDto> {
-    val username = authentication.name
     val userFullName = authentication.getUserFullName()
-    val order = orderService.submitOrder(orderId, username, userFullName)
+    val order = orderService.submitOrder(orderId, authentication as JwtAuthenticationToken, userFullName)
     return ResponseEntity(convertToDto(order), HttpStatus.OK)
   }
 
@@ -55,8 +54,8 @@ class OrderController(@Autowired val orderService: OrderService) {
     @PathVariable orderId: UUID,
     authentication: Authentication,
   ): ResponseEntity<OrderDto> {
-    val username = authentication.name
-    val newVersion = orderService.createVersion(orderId, username, RequestType.VARIATION)
+    val newVersion =
+      orderService.createVersion(orderId, authentication as JwtAuthenticationToken, RequestType.VARIATION)
     return ResponseEntity(convertToDto(newVersion), HttpStatus.OK)
   }
 
@@ -66,10 +65,9 @@ class OrderController(@Autowired val orderService: OrderService) {
     @RequestBody @Valid updateRecord: UpdateAmendOrderDto,
     authentication: Authentication,
   ): ResponseEntity<OrderDto> {
-    val username = authentication.name
     val newVersion = orderService.createVersion(
       orderId,
-      username,
+      authentication as JwtAuthenticationToken,
       RequestType.entries.first {
         it.name ==
           updateRecord.type!!.name
@@ -83,24 +81,21 @@ class OrderController(@Autowired val orderService: OrderService) {
     @PathVariable orderId: UUID,
     authentication: Authentication,
   ): ResponseEntity<OrderDto> {
-    val username = authentication.name
-    val newVersion = orderService.createVersion(orderId, username, RequestType.AMEND_ORIGINAL_REQUEST)
+    val newVersion =
+      orderService.createVersion(orderId, authentication as JwtAuthenticationToken, RequestType.AMEND_ORIGINAL_REQUEST)
     return ResponseEntity(convertToDto(newVersion), HttpStatus.OK)
   }
 
   @GetMapping("/orders/{orderId}")
   fun getOrder(@PathVariable orderId: UUID, authentication: Authentication): ResponseEntity<OrderDto> {
-    val username = authentication.name
-    val order = orderService.getOrder(orderId, username)
+    val order = orderService.getOrder(orderId, authentication as JwtAuthenticationToken)
 
     return ResponseEntity(convertToDto(order), HttpStatus.OK)
   }
 
   @DeleteMapping("/orders/{orderId}")
   fun deleteOrder(@PathVariable orderId: UUID, authentication: Authentication): ResponseEntity<Void> {
-    val username = authentication.name
-
-    orderService.deleteCurrentVersionForOrder(orderId, username)
+    orderService.deleteCurrentVersionForOrder(orderId, authentication as JwtAuthenticationToken)
 
     return ResponseEntity(HttpStatus.NO_CONTENT)
   }
@@ -118,7 +113,7 @@ class OrderController(@Autowired val orderService: OrderService) {
     @RequestParam searchTerm: String = "",
     authentication: Authentication,
   ): ResponseEntity<List<OrderDto>> {
-    val orders = orderService.searchOrders(OrderSearchCriteria(searchTerm))
+    val orders = orderService.searchOrders(searchTerm, authentication as JwtAuthenticationToken)
 
     return ResponseEntity(orders.map { convertToDto(it) }, HttpStatus.OK)
   }

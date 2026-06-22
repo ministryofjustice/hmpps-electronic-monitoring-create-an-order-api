@@ -19,8 +19,7 @@ annotation class ValidPhoneNumber(
 
 class PhoneNumberValidator : ConstraintValidator<ValidPhoneNumber, String> {
   override fun isValid(value: String?, context: ConstraintValidatorContext?): Boolean {
-    if (value == null) return true
-    if (value.isBlank()) return false
+    if (value.isNullOrBlank()) return true
     return this.isValidPhoneNumber(value)
   }
   private fun isValidPhoneNumber(value: String): Boolean = try {

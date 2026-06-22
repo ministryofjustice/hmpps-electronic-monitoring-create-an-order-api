@@ -1,12 +1,12 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.resource
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.web.reactive.function.BodyInserters
+import tools.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidationError
@@ -112,9 +112,8 @@ class CurfewConditionControllerTest : IntegrationTestBase() {
       .expectBodyList(ValidationError::class.java)
       .returnResult()
     val error = result.responseBody!!
-    Assertions.assertThat(result.responseBody).hasSize(2)
+    Assertions.assertThat(result.responseBody).hasSize(1)
     Assertions.assertThat(error).contains(ValidationError("startDate", ErrorMessages.START_DATE_REQUIRED))
-    Assertions.assertThat(error).contains(ValidationError("endDate", ErrorMessages.END_DATE_REQUIRED))
   }
 
   @Test
@@ -201,6 +200,31 @@ class CurfewConditionControllerTest : IntegrationTestBase() {
     Assertions.assertThat(
       error,
     ).contains(ValidationError("endDate", ErrorMessages.END_DATE_MUST_BE_AFTER_START_DATE))
+  }
+
+  @Test
+  fun `Should save order with no end date`() {
+    val order = createOrder()
+
+    webTestClient.put()
+      .uri("/api/orders/${order.id}/monitoring-conditions-curfew-conditions")
+      .contentType(MediaType.APPLICATION_JSON)
+      .body(
+        BodyInserters.fromValue(
+          mockValidRequestBody(order.id, endDate = null),
+        ),
+      )
+      .headers(setAuthorisation())
+      .exchange()
+      .expectStatus()
+      .isOk
+
+    // Get updated order
+    val updatedOrder = getOrder(order.id)
+
+    Assertions.assertThat(updatedOrder.curfewConditions?.startDate).isEqualTo(mockStartDate)
+    Assertions.assertThat(updatedOrder.curfewConditions?.endDate).isNull()
+    Assertions.assertThat(updatedOrder.curfewConditions?.curfewAddress).isEqualTo("PRIMARY,SECONDARY")
   }
 
   @Test

@@ -1,12 +1,12 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.resource
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.web.reactive.function.BodyInserters
+import tools.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewReleaseDateConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateCurfewReleaseDateConditionsDto
@@ -26,8 +26,6 @@ class CurfewReleaseDateControllerTest : IntegrationTestBase() {
     const val START_DATE_REQUIRED: String = "Enter date device wearer is released from custody"
     const val START_TIME_REQUIRED: String = "Enter time curfew starts on day of release"
     const val END_TIME_REQUIRED: String = "Enter time curfew ends on day after release"
-    const val ADDRESS_REQUIRED: String =
-      "Select the address the device wearer will be during curfew hours on the day of release"
   }
 
   @BeforeEach
@@ -102,10 +100,7 @@ class CurfewReleaseDateControllerTest : IntegrationTestBase() {
       .expectBodyList(ValidationError::class.java)
       .returnResult()
     val error = result.responseBody!!
-    Assertions.assertThat(result.responseBody).hasSize(4)
-    Assertions.assertThat(
-      error,
-    ).contains(ValidationError("curfewAddress", ErrorMessages.ADDRESS_REQUIRED))
+    Assertions.assertThat(result.responseBody).hasSize(3)
     Assertions.assertThat(error).contains(ValidationError("startTime", ErrorMessages.START_TIME_REQUIRED))
     Assertions.assertThat(error).contains(ValidationError("endTime", ErrorMessages.END_TIME_REQUIRED))
     Assertions.assertThat(

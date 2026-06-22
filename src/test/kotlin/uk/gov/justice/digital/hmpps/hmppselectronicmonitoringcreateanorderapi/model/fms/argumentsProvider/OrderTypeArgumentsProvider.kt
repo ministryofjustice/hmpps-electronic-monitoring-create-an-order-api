@@ -3,11 +3,15 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.m
 import org.junit.jupiter.api.extension.ExtensionContext
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.ArgumentsProvider
+import org.junit.jupiter.params.support.ParameterDeclarations
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import java.util.stream.Stream
 
 class OrderTypeArgumentsProvider : ArgumentsProvider {
-  override fun provideArguments(context: ExtensionContext?): Stream<out Arguments?>? = Stream.of(
+  override fun provideArguments(
+    parameterDeclarations: ParameterDeclarations,
+    context: ExtensionContext,
+  ): Stream<out Arguments?> = Stream.of(
     Arguments.of(RequestType.REQUEST, ""),
     Arguments.of(RequestType.REQUEST, ""),
     Arguments.of(RequestType.VARIATION, "SR08-Amend monitoring requirements"),
@@ -19,6 +23,6 @@ class OrderTypeArgumentsProvider : ArgumentsProvider {
     ),
     Arguments.of(RequestType.REINSTALL_DEVICE, "SR04-Re-install monitoring equipment"),
     Arguments.of(RequestType.REVOCATION, "SR21-Revocation monitoring requirements"),
-    Arguments.of(RequestType.END_MONITORING, "SR08-Amend monitoring requirements"),
+    Arguments.of(RequestType.END_MONITORING, "SR21-Revocation monitoring requirements"),
   )
 }

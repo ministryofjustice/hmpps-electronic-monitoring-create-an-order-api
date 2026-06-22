@@ -1,7 +1,7 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "9.2.0"
-  kotlin("plugin.spring") version "2.2.21"
-  kotlin("plugin.jpa") version "2.2.21"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "10.5.0"
+  kotlin("plugin.spring") version "2.3.10"
+  kotlin("plugin.jpa") version "2.3.10"
 }
 
 configurations {
@@ -14,23 +14,35 @@ repositories {
 
 dependencies {
   implementation("commons-io:commons-io:2.21.0")
-  implementation("com.googlecode.libphonenumber:libphonenumber:9.0.20")
-  implementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter:1.8.2")
+  implementation("com.googlecode.libphonenumber:libphonenumber:9.0.24")
+  implementation("org.apache.tika:tika-core:3.3.1")
+  implementation("org.apache.logging.log4j:log4j-api:2.25.3")
+  implementation("io.sentry:sentry-spring-boot-4:8.43.2")
+  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.1")
+
+  // starters
+  implementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter:2.5.0")
   implementation("org.springframework.boot:spring-boot-starter-webflux")
   implementation("org.springframework.boot:spring-boot-starter-security")
   implementation("org.springframework.boot:spring-boot-starter-web")
   implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
   implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-  implementation("io.awspring.cloud:spring-cloud-aws-starter-s3:3.4.2")
-  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:5.6.3")
-  implementation("io.sentry:sentry-spring-boot-starter-jakarta:8.28.0")
-  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.14")
+  implementation("io.awspring.cloud:spring-cloud-aws-starter-s3:4.0.2")
+  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:7.4.0")
+  implementation("org.springframework.boot:spring-boot-starter-webclient")
+  implementation("org.springframework.boot:spring-boot-starter-flyway")
+
+  // other
   runtimeOnly("org.flywaydb:flyway-database-postgresql")
-  runtimeOnly("org.postgresql:postgresql:42.7.8")
-  testImplementation("com.h2database:h2:2.4.240")
-  testImplementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter-test:1.8.2")
+  runtimeOnly("org.postgresql:postgresql:42.7.10")
+
+  // test
+  testImplementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter-test:2.5.0")
+  testImplementation("org.springframework.boot:spring-boot-webtestclient")
   testImplementation("org.wiremock:wiremock-standalone:3.13.2")
+  testImplementation("com.h2database:h2:2.4.240")
+  testImplementation("org.springframework.boot:spring-boot-starter-data-jpa-test")
 }
 
 kotlin {

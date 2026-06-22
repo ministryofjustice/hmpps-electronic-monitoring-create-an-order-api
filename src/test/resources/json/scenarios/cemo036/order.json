@@ -150,11 +150,13 @@
     "notifyingOrganisation": "PRISON",
     "notifyingOrganisationName": "LIVERPOOL_PRISON",
     "notifyingOrganisationEmail": "",
-    "responsibleOfficerName": "Sonia Pagac",
     "responsibleOfficerPhoneNumber": "0121 496 0961",
     "responsibleOrganisation": "PROBATION",
     "responsibleOrganisationRegion": "NORTH_WEST",
-    "responsibleOrganisationEmail": "probation@example.com"
+    "responsibleOrganisationEmail": "probation@example.com",
+    "responsibleOfficerEmail": "a@b.com",
+    "responsibleOfficerFirstName": "Sonia",
+    "responsibleOfficerLastName": "Pagac"
   },
   "probationDeliveryUnit": {
     "versionId": "3d589ad5-c741-45c0-9f16-49a1c06913ff",

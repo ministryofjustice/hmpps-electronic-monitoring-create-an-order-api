@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.resource
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -8,7 +7,10 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.web.reactive.function.BodyInserters
+import tools.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.UpdateOrderIntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.UriTestCase
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Dapo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateDapoDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidationError
 import java.time.ZoneId
@@ -20,8 +22,10 @@ class DapoControllerTest : UpdateOrderIntegrationTestBase() {
   @Autowired
   lateinit var objectMapper: ObjectMapper
 
-  override val uri = "/api/orders/:orderId/dapo"
-  override fun createValidBody(): String = mockValidRequestBody()
+  fun createValidBody(): String = mockValidRequestBody()
+  override val testUris: List<UriTestCase> = listOf(
+    UriTestCase(uri = "/api/orders/:orderId/dapo", createValidBody = { createValidBody() }),
+  )
 
   @BeforeEach
   fun setup() {
@@ -85,6 +89,31 @@ class DapoControllerTest : UpdateOrderIntegrationTestBase() {
     Assertions.assertThat(result.responseBody!!).contains(
       ValidationError("clause", "DAPO clause is too long"),
     )
+  }
+
+  @Test
+  fun `can remove a dapo`() {
+    val dapoId = UUID.randomUUID()
+    val order = createStoredOrder()
+    order.dapoClauses.add(
+      Dapo(
+        versionId = order.versions.first().id,
+        id = dapoId,
+        clause = "12345",
+        date = ZonedDateTime.now(),
+      ),
+    )
+    repo.save(order)
+
+    webTestClient.delete()
+      .uri("/api/orders/${order.id}/dapo/delete/$dapoId")
+      .headers(setAuthorisation("AUTH_ADM"))
+      .exchange()
+      .expectStatus()
+      .isNoContent
+
+    val updatedOrder = getOrder(order.id)
+    Assertions.assertThat(updatedOrder.dapoClauses).isEmpty()
   }
 
   private fun callDapoEndpoint(orderId: UUID, body: String, username: String? = null): WebTestClient.ResponseSpec {

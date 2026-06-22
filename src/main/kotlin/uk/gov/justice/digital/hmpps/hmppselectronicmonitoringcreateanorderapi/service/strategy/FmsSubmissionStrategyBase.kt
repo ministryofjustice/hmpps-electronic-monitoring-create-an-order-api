@@ -1,17 +1,22 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.strategy
 
-import com.fasterxml.jackson.databind.ObjectMapper
+import DeviceWearerPayloadVersion
+import tools.jackson.databind.ObjectMapper
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.config.FeatureFlags
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Result
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.DeviceWearer
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.DeviceWearerViews
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.MonitoringOrder
 
-abstract class FmsSubmissionStrategyBase(val objectMapper: ObjectMapper) : FmsSubmissionStrategy {
+abstract class FmsSubmissionStrategyBase(val objectMapper: ObjectMapper, private val featureFlags: FeatureFlags) :
+  FmsSubmissionStrategy {
 
   protected fun getDeviceWearer(order: Order): Result<DeviceWearer> = try {
     Result(
       success = true,
-      data = DeviceWearer.fromCemoOrder(order),
+      data = DeviceWearer.fromCemoOrder(order, featureFlags),
     )
   } catch (e: Exception) {
     Result(
@@ -21,9 +26,14 @@ abstract class FmsSubmissionStrategyBase(val objectMapper: ObjectMapper) : FmsSu
   }
 
   protected fun serialiseDeviceWearer(deviceWearer: DeviceWearer): Result<String> = try {
+    val viewClass = if (featureFlags.deviceWearerPayloadVersion == DeviceWearerPayloadVersion.Dev) {
+      DeviceWearerViews.Dev::class.java
+    } else {
+      DeviceWearerViews.Prod::class.java
+    }
     Result(
       success = true,
-      data = objectMapper.writeValueAsString(deviceWearer),
+      data = objectMapper.writerWithView(viewClass).writeValueAsString(deviceWearer),
     )
   } catch (e: Exception) {
     Result(
@@ -32,11 +42,15 @@ abstract class FmsSubmissionStrategyBase(val objectMapper: ObjectMapper) : FmsSu
     )
   }
 
-  protected fun getMonitoringOrder(order: Order, deviceWearerId: String): Result<MonitoringOrder> {
+  protected fun getMonitoringOrder(
+    order: Order,
+    deviceWearerId: String,
+    orderSource: FmsOrderSource,
+  ): Result<MonitoringOrder> {
     return try {
       return Result(
         success = true,
-        data = MonitoringOrder.fromOrder(order, deviceWearerId),
+        data = MonitoringOrder.fromOrder(order, deviceWearerId, featureFlags, orderSource),
       )
     } catch (e: Exception) {
       Result(

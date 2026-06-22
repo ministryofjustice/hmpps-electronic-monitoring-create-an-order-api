@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.config
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -21,6 +20,8 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.authentication.Http403ForbiddenEntryPoint
+import tools.jackson.databind.ObjectMapper
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.UserRole
 
 @Configuration
 @EnableWebSecurity
@@ -94,6 +95,10 @@ class AuthAwareTokenConverter : Converter<Jwt, AbstractAuthenticationToken> {
       @Suppress("UNCHECKED_CAST")
       val claimAuthorities = (jwt.claims[CLAIM_AUTHORITY] as Collection<String>).toList()
       authorities.addAll(claimAuthorities.map(::SimpleGrantedAuthority))
+      // Grant HOME_OFFICE users standard CEMO role for access
+      if (UserRole.HOME_OFFICE.code in claimAuthorities) {
+        authorities.add(SimpleGrantedAuthority("ROLE_EM_CEMO__CREATE_ORDER"))
+      }
     }
     return authorities.toSet()
   }

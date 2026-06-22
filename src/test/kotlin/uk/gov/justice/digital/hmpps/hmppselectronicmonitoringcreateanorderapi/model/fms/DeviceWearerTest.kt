@@ -6,14 +6,21 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 import org.springframework.test.context.ActiveProfiles
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.config.FeatureFlags
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.OrderTestBase
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DetailsOfInstallation
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Mappa
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MappaCategory
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MappaLevel
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisationDDv5
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YesNoUnknown
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.DeviceWearer as FmsDeviceWearer
 
 @ActiveProfiles("test")
 class DeviceWearerTest : OrderTestBase() {
+  private val featureFlags = FeatureFlags(ddV6CourtMappings = false, dataDictionaryVersion = DataDictionaryVersion.DDV6)
 
   @Test
   fun `It should map primary address to Serco`() {
@@ -29,7 +36,7 @@ class DeviceWearerTest : OrderTestBase() {
       addresses = mutableListOf(mockAddress),
     )
 
-    val fmsDeviceWearer = FmsDeviceWearer.fromCemoOrder(order)
+    val fmsDeviceWearer = FmsDeviceWearer.fromCemoOrder(order, featureFlags)
 
     assertThat(fmsDeviceWearer.address1).isEqualTo(mockAddress.addressLine1)
     assertThat(fmsDeviceWearer.address2).isEqualTo(mockAddress.addressLine2)
@@ -60,7 +67,7 @@ class DeviceWearerTest : OrderTestBase() {
       addresses = mutableListOf(primaryAddress, mockAddress),
     )
 
-    val fmsDeviceWearer = FmsDeviceWearer.fromCemoOrder(order)
+    val fmsDeviceWearer = FmsDeviceWearer.fromCemoOrder(order, featureFlags)
 
     assertThat(fmsDeviceWearer.secondaryAddress1).isEqualTo(mockAddress.addressLine1)
     assertThat(fmsDeviceWearer.secondaryAddress2).isEqualTo(mockAddress.addressLine2)
@@ -91,7 +98,7 @@ class DeviceWearerTest : OrderTestBase() {
       addresses = mutableListOf(primaryAddress, mockAddress),
     )
 
-    val fmsDeviceWearer = FmsDeviceWearer.fromCemoOrder(order)
+    val fmsDeviceWearer = FmsDeviceWearer.fromCemoOrder(order, featureFlags)
 
     assertThat(fmsDeviceWearer.tertiaryAddress1).isEqualTo(mockAddress.addressLine1)
     assertThat(fmsDeviceWearer.tertiaryAddress2).isEqualTo(mockAddress.addressLine2)
@@ -106,7 +113,7 @@ class DeviceWearerTest : OrderTestBase() {
     val order = createOrder(
       deviceWearer = createDeviceWearer(sex = savedValue),
     )
-    val fmsDeviceWearer = FmsDeviceWearer.fromCemoOrder(order)
+    val fmsDeviceWearer = FmsDeviceWearer.fromCemoOrder(order, featureFlags)
 
     assertThat(fmsDeviceWearer.sex).isEqualTo(mappedValue)
   }
@@ -117,7 +124,7 @@ class DeviceWearerTest : OrderTestBase() {
     val order = createOrder(
       deviceWearer = createDeviceWearer(gender = savedValue),
     )
-    val fmsDeviceWearer = FmsDeviceWearer.fromCemoOrder(order)
+    val fmsDeviceWearer = FmsDeviceWearer.fromCemoOrder(order, featureFlags)
 
     assertThat(fmsDeviceWearer.genderIdentity).isEqualTo(mappedValue)
   }
@@ -129,7 +136,7 @@ class DeviceWearerTest : OrderTestBase() {
       deviceWearer = createDeviceWearer(),
       installationAndRisk = createInstallationAndRisk(riskCategory = savedValue),
     )
-    val fmsDeviceWearer = FmsDeviceWearer.fromCemoOrder(order)
+    val fmsDeviceWearer = FmsDeviceWearer.fromCemoOrder(order, featureFlags)
 
     assertThat(fmsDeviceWearer.riskCategory!!.first().category).isEqualTo(mappedValue)
   }
@@ -140,7 +147,7 @@ class DeviceWearerTest : OrderTestBase() {
       deviceWearer = createDeviceWearer(),
       installationAndRisk = createInstallationAndRisk(riskCategory = "NO_RISK"),
     )
-    val fmsDeviceWearer = FmsDeviceWearer.fromCemoOrder(order)
+    val fmsDeviceWearer = FmsDeviceWearer.fromCemoOrder(order, featureFlags)
 
     assertThat(fmsDeviceWearer.riskCategory!!.count()).isEqualTo(0)
   }
@@ -150,13 +157,13 @@ class DeviceWearerTest : OrderTestBase() {
     val order = createOrder(
       deviceWearer = createDeviceWearer(disabilities = "NO_LISTED_CONDITION"),
     )
-    val fmsDeviceWearer = FmsDeviceWearer.fromCemoOrder(order)
+    val fmsDeviceWearer = FmsDeviceWearer.fromCemoOrder(order, featureFlags)
 
     assertThat(fmsDeviceWearer.disability!!.count()).isEqualTo(0)
   }
 
   @Test
-  fun `It should map cepr to home office reference number`() {
+  fun `It should map cepr correctly and not map it to home office reference number`() {
     val order = createOrder(
       dataDictionaryVersion = DataDictionaryVersion.DDV6,
       deviceWearer = createDeviceWearer(
@@ -167,43 +174,29 @@ class DeviceWearerTest : OrderTestBase() {
         notifyingOrganisation = NotifyingOrganisationDDv5.HOME_OFFICE.name,
       ),
     )
-    val fmsDeviceWearer = FmsDeviceWearer.fromCemoOrder(order)
+    val ddv6EnabledFlags = FeatureFlags(dataDictionaryVersion = DataDictionaryVersion.DDV6, ddV6CourtMappings = true)
+    val fmsDeviceWearer = FmsDeviceWearer.fromCemoOrder(order, ddv6EnabledFlags)
 
-    assertThat(fmsDeviceWearer.homeOfficeReferenceNumber).isEqualTo("CC123")
+    assertThat(fmsDeviceWearer.homeOfficeReferenceNumber).isEqualTo("")
+    assertThat(fmsDeviceWearer.complianceAndEnforcementPersonReference).isEqualTo("CC123")
   }
 
   @Test
-  fun `It should map home office reference number when cepr is null`() {
+  fun `It should map home office reference number as blank string and not map from cepr`() {
     val order = createOrder(
       dataDictionaryVersion = DataDictionaryVersion.DDV6,
       deviceWearer = createDeviceWearer(
         homeOfficeReferenceNumber = "CC123",
-        complianceAndEnforcementPersonReference = null,
+        complianceAndEnforcementPersonReference = "DD123",
       ),
       interestedParties = createInterestedParty(
         notifyingOrganisation = NotifyingOrganisationDDv5.HOME_OFFICE.name,
       ),
     )
-    val fmsDeviceWearer = FmsDeviceWearer.fromCemoOrder(order)
+    val ddv6EnabledFlags = FeatureFlags(dataDictionaryVersion = DataDictionaryVersion.DDV6, ddV6CourtMappings = true)
+    val fmsDeviceWearer = FmsDeviceWearer.fromCemoOrder(order, ddv6EnabledFlags)
 
-    assertThat(fmsDeviceWearer.homeOfficeReferenceNumber).isEqualTo("CC123")
-  }
-
-  @Test
-  fun `It should map home office reference number when cepr is empty string`() {
-    val order = createOrder(
-      dataDictionaryVersion = DataDictionaryVersion.DDV6,
-      deviceWearer = createDeviceWearer(
-        homeOfficeReferenceNumber = "CC123",
-        complianceAndEnforcementPersonReference = "",
-      ),
-      interestedParties = createInterestedParty(
-        notifyingOrganisation = NotifyingOrganisationDDv5.HOME_OFFICE.name,
-      ),
-    )
-    val fmsDeviceWearer = FmsDeviceWearer.fromCemoOrder(order)
-
-    assertThat(fmsDeviceWearer.homeOfficeReferenceNumber).isEqualTo("CC123")
+    assertThat(fmsDeviceWearer.homeOfficeReferenceNumber).isEqualTo("")
   }
 
   @ParameterizedTest(name = "it should map saved disability values to Serco - {0} -> {1}")
@@ -212,9 +205,65 @@ class DeviceWearerTest : OrderTestBase() {
     val order = createOrder(
       deviceWearer = createDeviceWearer(disabilities = savedValue),
     )
-    val fmsDeviceWearer = FmsDeviceWearer.fromCemoOrder(order)
+    val fmsDeviceWearer = FmsDeviceWearer.fromCemoOrder(order, featureFlags)
 
     assertThat(fmsDeviceWearer.disability!!.first().disability).isEqualTo(mappedValue)
+  }
+
+  @Test
+  fun `It should map risk data from detailsOfInstallation`() {
+    val order = createOrder(
+      dataDictionaryVersion = DataDictionaryVersion.DDV6,
+      deviceWearer = createDeviceWearer(),
+    )
+
+    order.installationAndRisk = null
+
+    order.detailsOfInstallation =
+      DetailsOfInstallation(
+        versionId = order.getCurrentVersion().id,
+        riskDetails = "History of violence",
+        riskCategory = arrayOf("THREATS_OF_VIOLENCE"),
+      )
+
+    val featureFlags = FeatureFlags(dataDictionaryVersion = DataDictionaryVersion.DDV6, ddV6CourtMappings = true)
+    val fmsDeviceWearer = FmsDeviceWearer.fromCemoOrder(order, featureFlags)
+
+    assertThat(fmsDeviceWearer.riskDetails).isEqualTo("History of violence")
+    assertThat(fmsDeviceWearer.riskCategory).isNotNull
+    assertThat(fmsDeviceWearer.riskCategory).hasSize(1)
+    assertThat(fmsDeviceWearer.riskCategory!!.first().category).isEqualTo("Threats of Violence")
+  }
+
+  @Test
+  fun `It should map mappa category correctly for serco`() {
+    val order = createOrder(
+      dataDictionaryVersion = DataDictionaryVersion.DDV6,
+    )
+
+    order.mappa = Mappa(
+      versionId = order.getCurrentVersion().id,
+      level = MappaLevel.MAPPA_ONE,
+      category = MappaCategory.CATEGORY_ONE,
+      isMappa = YesNoUnknown.YES,
+    )
+
+    val fmsDeviceWearer = FmsDeviceWearer.fromCemoOrder(order, featureFlags)
+
+    assertThat(fmsDeviceWearer.mappaCaseType).isEqualTo("Category 1")
+    assertThat(fmsDeviceWearer.mappa).isEqualTo("MAPPA 1")
+  }
+
+  @Test
+  fun `It should map all names`() {
+    val order =
+      createOrder(deviceWearer = createDeviceWearer(firstName = "First", middleName = "Middle", lastName = "Last"))
+
+    val result = FmsDeviceWearer.fromCemoOrder(order, featureFlags)
+
+    assertThat(result.firstName).isEqualTo("First")
+    assertThat(result.middleName).isEqualTo("Middle")
+    assertThat(result.lastName).isEqualTo("Last")
   }
 
   companion object {

@@ -45,8 +45,14 @@
   "no_email": "",
   "no_name": "Wayland Prison",
   "no_phone_number": "",
-  "offence": "Fraud Offences",
+  "offence": "",
   "offence_date": "",
+  "offences": [
+    {
+      "offence": "offence 1",
+      "offence_date": "2026-01-01"
+    }
+  ],
   "order_end": "{mockEndDateInBritishTime}",
   "order_id": "{orderId}",
   "order_request_type": "Variation",
@@ -55,14 +61,14 @@
   "order_type_description": "DAPOL",
   "order_type_detail": "",
   "order_variation_date": "{mockVariationDate}",
-  "order_variation_details": "Change to address",
+  "order_variation_details": "User entered:\nChange to address\n",
   "order_variation_req_received_date": "",
-  "order_variation_type": "Change of address",
+  "order_variation_type": "Other",
   "pdu_responsible": "Camden and Islington",
   "pdu_responsible_email": "",
   "planned_order_end_date": "",
   "released_under_prarr": "false",
-  "responsible_officer_details_received": "",
+  "responsible_officer_details_received": "Yes",
   "responsible_officer_email": "",
   "responsible_officer_phone": "00447401111111",
   "responsible_officer_name": "John Smith",
@@ -209,5 +215,6 @@
   "issp": "Yes",
   "hdc": "No",
   "order_status": "Not Started",
+  "install_at_source_pilot": "false",
   "subcategory": "SR08-Amend monitoring requirements"
 }

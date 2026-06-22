@@ -16,7 +16,7 @@ data class UpdateInstallationAndRiskDto(
 
   val mappaLevel: String? = "",
 
-  val mappaCaseType: String? = "",
+  val mappaCaseType: String? = null,
 ) {
   @AssertTrue(message = ValidationErrors.InstallationAndRisk.OFFENCE_VALID)
   fun isOffence(): Boolean {

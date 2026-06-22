@@ -11,7 +11,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MilitaryCourtDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisationDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.PoliceAreas
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.PrisonDDv5
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Prison
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ProbationServiceRegion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ResponsibleOrganisation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YouthCourtDDv5
@@ -31,21 +31,23 @@ data class UpdateInterestedPartiesDto(
 
   val notifyingOrganisationName: String = "",
 
-  @field:NotEmpty(message = ValidationErrors.InterestedParties.RESPONSIBLE_OFFICER_FULL_NAME_REQUIRED)
   @field:Size(max = 200, message = ValidationErrors.InterestedParties.RESPONSIBLE_OFFICER_NAME_MAX_LENGTH)
   val responsibleOfficerName: String = "",
 
-  @field:NotEmpty(message = ValidationErrors.InterestedParties.RESPONSIBLE_OFFICER_TELEPHONE_NUMBER_REQUIRED)
   @field:Size(max = 200, message = ValidationErrors.InterestedParties.RESPONSIBLE_OFFICER_TELEPHONE_NUMBER_MAX_LENGTH)
   @field:ValidPhoneNumber
   val responsibleOfficerPhoneNumber: String? = null,
 
-  @field:NotNull(message = ValidationErrors.InterestedParties.RESPONSIBLE_ORGANISATION_REQUIRED)
   val responsibleOrganisation: ResponsibleOrganisation? = null,
 
   val responsibleOrganisationRegion: String = "",
 
-  @field:NotNull(message = ValidationErrors.InterestedParties.RESPONSIBLE_ORGANISATION_EMAIL_REQUIRED)
+  val responsibleOfficerFirstName: String = "",
+
+  val responsibleOfficerLastName: String = "",
+
+  val responsibleOfficerEmail: String = "",
+
   @field:Size(max = 200, message = ValidationErrors.InterestedParties.RESPONSIBLE_ORGANISATION_EMAIL_MAX_LENGTH)
   val responsibleOrganisationEmail: String = "",
 ) {
@@ -72,7 +74,7 @@ data class UpdateInterestedPartiesDto(
     }
 
     if (notifyingOrganisation === NotifyingOrganisationDDv5.PRISON) {
-      return PrisonDDv5.entries.any { it.name == notifyingOrganisationName }
+      return Prison.entries.any { it.name == notifyingOrganisationName }
     }
 
     if (notifyingOrganisation === NotifyingOrganisationDDv5.YOUTH_COURT) {
@@ -86,7 +88,6 @@ data class UpdateInterestedPartiesDto(
     }
 
     if (notifyingOrganisation === NotifyingOrganisationDDv5.PROBATION) return true
-    if (notifyingOrganisation === NotifyingOrganisationDDv5.YOUTH_CUSTODY_SERVICE) return true
 
     return notifyingOrganisationName == ""
   }

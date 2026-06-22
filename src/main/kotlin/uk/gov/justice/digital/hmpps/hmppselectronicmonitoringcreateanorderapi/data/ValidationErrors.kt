@@ -49,6 +49,7 @@ object ValidationErrors {
   object DeviceWearer {
     const val FIRST_NAME_REQUIRED: String = "Enter device wearer's first name"
     const val FIRST_NAME_MAX_LENGTH: String = "First name must be 200 characters or less"
+    const val MIDDLE_NAME_MAX_LENGTH: String = "Middle name must be 200 characters or less"
     const val LAST_NAME_REQUIRED: String = "Enter device wearer's last name"
     const val LAST_NAME_MAX_LENGTH: String = "Last name must be 200 characters or less"
     const val ALIAS_MAX_LENGTH: String = "Preferred name must be 200 characters or less"
@@ -73,8 +74,8 @@ object ValidationErrors {
     const val TYPE_REQUIRED: String = "Exclusion Zone type is required"
     const val INVALID_MAP_FILE_EXTENSION: String = "Select a PDF, PNG, JPEG or JPG"
 
-    // Will be used once ELM-4162 is live
     const val NAME_REQUIRED = "Enter the name of the exclusion zone"
+    const val NAME_MAX_LENGTH: String = "Name must be 200 characters or less"
   }
 
   object IdentityNumbers {
@@ -161,7 +162,6 @@ object ValidationErrors {
 
   object TrailMonitoringConditions {
     const val START_DATE_REQUIRED: String = "Enter date trail monitoring starts"
-    const val END_DATE_REQUIRED: String = "Enter date trail monitoring ends"
     const val END_DATE_MUST_BE_IN_FUTURE: String = "End date must be in the future"
     const val END_DATE_MUST_BE_AFTER_START_DATE: String =
       "Date trail monitoring ends must be after the date trail monitoring starts"
@@ -170,7 +170,6 @@ object ValidationErrors {
   object VariationDetails {
     const val TYPE_REQUIRED: String = "Select what you have changed"
     const val DATE_REQUIRED: String = "Enter the date you want the changes to take effect"
-    const val DETAILS_REQUIRED: String = "Enter information on what you have changed"
     const val TYPE_MUST_BE_VALID: String = "Variation type must be a valid variation type"
     fun typeObsolete(type: String): String = "Variation type $type is obsolete"
     const val DATE_MUST_BE_VALID: String = "Date you want changes to take effect must be a real date"
@@ -185,6 +184,7 @@ object ValidationErrors {
     const val PLACE_NAME_REQUIRED: String = "Enter name of the place where installation takes place"
     const val APPOINTMENT_DATE_REQUIRED: String = "Enter date of installation"
     const val APPOINTMENT_DATE_MUST_BE_IN_FUTURE: String = "Date of installation must be in the future"
+    const val APPOINTMENT_TIME_DETAILS_MAX_LENGTH: String = "Appointment time details is too long"
   }
 
   object AdditionalDocuments {
@@ -192,6 +192,7 @@ object ValidationErrors {
     const val INVALID_PHOTO_ID_FILE_EXTENSION: String = "Select a PDF, PNG, JPEG or JPG"
     const val HAVE_PHOTO_REQUIRED: String = "Select if you have a photo to upload"
     const val HAVE_FIEL_REQIORED: String = "Select Yes if you have a document to upload"
+    const val INVALID_FILE = "The selected file could not be uploaded - there is an issue with the file"
   }
 
   object AmendOrder {
@@ -206,5 +207,9 @@ object ValidationErrors {
     const val OFFENCE_DETAILS_TOO_LONG: String = "Offence Additional details is too long"
     const val DETAILS_REQUIRED: String = "Enter additional information about the offence"
     const val RESPONSE_REQUIRED: String = "Select Yes if there is other information to be aware of about the offence"
+  }
+
+  object ContactDetails {
+    const val PHONE_NUMBER_REQUIRED: String = "Select Yes if the device wearer has a contact telephone number"
   }
 }

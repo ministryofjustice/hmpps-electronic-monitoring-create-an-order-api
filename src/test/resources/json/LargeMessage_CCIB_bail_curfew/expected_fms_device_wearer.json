@@ -1,7 +1,7 @@
 {
   "title": "",
   "first_name": "Person",
-  "middle_name": "",
+  "middle_name": "Middle",
   "last_name": "Mock",
   "alias": null,
   "date_of_birth": "",
@@ -40,7 +40,6 @@
   "nomis_id": null,
   "delius_id": null,
   "prison_number": null,
-  "home_office_case_reference_number": null,
   "interpreter_required": null,
   "language": null
 }

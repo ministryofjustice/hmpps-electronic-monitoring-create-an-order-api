@@ -18,6 +18,7 @@ class InstallationAppointmentService : OrderSectionServiceBase() {
       versionId = order.getCurrentVersion().id,
       placeName = updateRecord.placeName,
       appointmentDate = updateRecord.appointmentDate,
+      appointmentTimeDetails = updateRecord.appointmentTimeDetails,
     )
     return orderRepo.save(order).installationAppointment!!
   }

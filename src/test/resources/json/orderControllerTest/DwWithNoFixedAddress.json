@@ -37,7 +37,8 @@
   "risk_self_harm": "",
   "risk_details": "Danger",
   "mappa": "MAPPA 1",
-  "mappa_case_type": "Category 1",
+  "mappa_case_type": null,
+  "mappa_category": "Category 1",
   "risk_categories": [
     {
       "category": "Sexual Offences"
@@ -60,7 +61,8 @@
   "nomis_id": "nomisId",
   "delius_id": "deliusId",
   "prison_number": "prisonNumber",
-  "home_office_case_reference_number": "complianceAndEnforcementPersonReference",
+  "home_office_case_reference_number": "",
+  "cepr": "complianceAndEnforcementPersonReference",
   "interpreter_required": "true",
   "language": "British Sign"
 }

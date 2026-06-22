@@ -45,8 +45,14 @@
   "no_email": "",
   "no_name": "Wayland Prison",
   "no_phone_number": "",
-  "offence": "Fraud Offences",
+  "offence": "",
   "offence_date": "",
+  "offences": [
+    {
+      "offence": "offence 1",
+      "offence_date": "2026-01-01"
+    }
+  ],
   "order_end": "{mockEndDateInBritishTime}",
   "order_id": "{orderId}",
   "order_request_type": "New Order",
@@ -62,7 +68,7 @@
   "pdu_responsible_email": "",
   "planned_order_end_date": "",
   "released_under_prarr": "false",
-  "responsible_officer_details_received": "",
+  "responsible_officer_details_received": "Yes",
   "responsible_officer_email": "",
   "responsible_officer_phone": "00447401111111",
   "responsible_officer_name": "John Smith",
@@ -208,5 +214,6 @@
   "magistrate_court_case_reference_number": "courtCaseReferenceNumber",
   "issp": "Yes",
   "hdc": "No",
-  "order_status": "Not Started"
+  "order_status": "Not Started",
+  "install_at_source_pilot": "false"
 }

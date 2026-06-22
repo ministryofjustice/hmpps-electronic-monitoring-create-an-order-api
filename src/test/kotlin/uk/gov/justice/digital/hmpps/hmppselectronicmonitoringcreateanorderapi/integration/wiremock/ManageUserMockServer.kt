@@ -1,8 +1,5 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.get
@@ -11,7 +8,10 @@ import org.junit.jupiter.api.extension.AfterAllCallback
 import org.junit.jupiter.api.extension.BeforeAllCallback
 import org.junit.jupiter.api.extension.BeforeEachCallback
 import org.junit.jupiter.api.extension.ExtensionContext
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.UserCaseLoad
+import tools.jackson.databind.ObjectMapper
+import tools.jackson.module.kotlin.jacksonObjectMapper
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.UserGroup
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.hmpps.HmppsUserCaseloadResponse
 
 class ManageUserApiExtension :
   BeforeAllCallback,
@@ -40,9 +40,9 @@ class ManageUserMockServer : WireMockServer(WIREMOCK_PORT) {
     private const val WIREMOCK_PORT = 8095
   }
 
-  private val mapper: ObjectMapper = jacksonObjectMapper().registerModule(JavaTimeModule())
+  private val mapper: ObjectMapper = jacksonObjectMapper()
 
-  fun stubUserActiveCaseLoad(caseLoad: UserCaseLoad) {
+  fun stubUserActiveCaseLoad(caseLoad: HmppsUserCaseloadResponse) {
     stubFor(
       get(urlPathTemplate("/users/me/caseloads"))
         .willReturn(
@@ -50,6 +50,20 @@ class ManageUserMockServer : WireMockServer(WIREMOCK_PORT) {
             .withHeader("Content-Type", "application/json")
             .withBody(
               mapper.writeValueAsString(caseLoad),
+            )
+            .withStatus(200),
+        ),
+    )
+  }
+
+  fun stubGetUserGroups(groups: List<UserGroup>) {
+    stubFor(
+      get(urlPathTemplate("/users/me/groups"))
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withBody(
+              mapper.writeValueAsString(groups),
             )
             .withStatus(200),
         ),

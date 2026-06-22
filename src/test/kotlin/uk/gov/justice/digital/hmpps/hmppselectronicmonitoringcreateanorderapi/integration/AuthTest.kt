@@ -54,4 +54,14 @@ class AuthTest : IntegrationTestBase() {
       .expectStatus()
       .isForbidden
   }
+
+  @Test
+  fun `Providing JWT with only ROLE_EM_CEMO_HOME_OFFICE role can access a secured endpoint`() {
+    webTestClient.post()
+      .uri("/api/orders")
+      .headers(setAuthorisation(roles = listOf("ROLE_EM_CEMO_HOME_OFFICE")))
+      .exchange()
+      .expectStatus()
+      .isOk
+  }
 }

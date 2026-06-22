@@ -1,17 +1,19 @@
-
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock
 
-import com.fasterxml.jackson.databind.ObjectMapper
+import FmsStateResponse
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.equalTo
+import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.post
+import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
 import com.github.tomakehurst.wiremock.client.WireMock.urlPathTemplate
 import org.junit.jupiter.api.extension.AfterAllCallback
 import org.junit.jupiter.api.extension.BeforeAllCallback
 import org.junit.jupiter.api.extension.BeforeEachCallback
 import org.junit.jupiter.api.extension.ExtensionContext
 import org.springframework.http.HttpStatus
+import tools.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsAttachmentResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsErrorResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsResponse
@@ -138,6 +140,30 @@ class SercoMockApiServer : WireMockServer(WIREMOCK_PORT) {
         .withQueryParam("table_name", equalTo(result.result.tableName))
         .withQueryParam("table_sys_id", equalTo(result.result.tableSysId))
         .withQueryParam("file_name", equalTo(result.result.fileName))
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withBody(
+              body,
+            )
+            .withStatus(status.value()),
+        ),
+    )
+  }
+
+  fun stubGetState(
+    caseId: String,
+    status: HttpStatus,
+    result: FmsStateResponse,
+    errorResponse: FmsErrorResponse? = null,
+  ) {
+    val body = if (errorResponse != null) {
+      objectMapper.writeValueAsString(errorResponse)
+    } else {
+      objectMapper.writeValueAsString(result)
+    }
+    stubFor(
+      get(urlEqualTo("/now/table/x_serg2_ems_csm_case/$caseId?sysparm_fields=state"))
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")

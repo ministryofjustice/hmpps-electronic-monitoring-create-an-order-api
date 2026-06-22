@@ -1,6 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth
 
-enum class Cohorts {
+enum class Cohort {
   PRISON,
   PROBATION,
   COURT,

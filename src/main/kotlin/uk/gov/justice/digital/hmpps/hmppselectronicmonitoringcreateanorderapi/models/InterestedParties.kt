@@ -7,6 +7,7 @@ import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisationDDv5
 import java.util.*
 
 @Entity
@@ -19,20 +20,20 @@ data class InterestedParties(
   @Column(name = "VERSION_ID", nullable = false, unique = true)
   val versionId: UUID,
 
-  @Column(name = "RESPONSIBLE_OFFICER_NAME", nullable = false)
-  var responsibleOfficerName: String,
+  @Column(name = "RESPONSIBLE_OFFICER_NAME", nullable = true)
+  var responsibleOfficerName: String? = null,
 
   @Column(name = "RESPONSIBLE_OFFICER_PHONE_NUMBER", nullable = true)
-  var responsibleOfficerPhoneNumber: String?,
+  var responsibleOfficerPhoneNumber: String? = null,
 
   @Column(name = "RESPONSIBLE_ORGANISATION", nullable = true)
-  var responsibleOrganisation: String,
+  var responsibleOrganisation: String? = null,
 
-  @Column(name = "RESPONSIBLE_ORGANISATION_REGION", nullable = false)
-  var responsibleOrganisationRegion: String,
+  @Column(name = "RESPONSIBLE_ORGANISATION_REGION", nullable = true)
+  var responsibleOrganisationRegion: String? = null,
 
-  @Column(name = "RESPONSIBLE_ORGANISATION_EMAIL", nullable = false)
-  var responsibleOrganisationEmail: String,
+  @Column(name = "RESPONSIBLE_ORGANISATION_EMAIL", nullable = true)
+  var responsibleOrganisationEmail: String? = null,
 
   @Column(name = "NOTIFYING_ORGANISATION", nullable = true)
   var notifyingOrganisation: String? = null,
@@ -43,6 +44,15 @@ data class InterestedParties(
   @Column(name = "NOTIFYING_ORGANISATION_EMAIL", nullable = true)
   var notifyingOrganisationEmail: String? = null,
 
+  @Column(name = "RESPONSIBLE_OFFICER_FIRST_NAME", nullable = true)
+  var responsibleOfficerFirstName: String? = null,
+
+  @Column(name = "RESPONSIBLE_OFFICER_LAST_NAME", nullable = true)
+  var responsibleOfficerLastName: String? = null,
+
+  @Column(name = "RESPONSIBLE_OFFICER_EMAIL", nullable = true)
+  var responsibleOfficerEmail: String? = null,
+
   @Schema(hidden = true)
   @OneToOne
   @JoinColumn(name = "VERSION_ID", updatable = false, insertable = false)
@@ -50,7 +60,16 @@ data class InterestedParties(
 ) {
   val isValid: Boolean
     get() = (
-      !notifyingOrganisation.isNullOrBlank() &&
-        responsibleOrganisation.isNotBlank()
+      !notifyingOrganisation.isNullOrBlank()
       )
+
+  fun getResponsibleOfficerFullName(): String? {
+    if (!responsibleOfficerFirstName.isNullOrBlank() && !responsibleOfficerLastName.isNullOrBlank()) {
+      return "$responsibleOfficerFirstName $responsibleOfficerLastName"
+    }
+    if (notifyingOrganisation == NotifyingOrganisationDDv5.HOME_OFFICE.name) {
+      return NotifyingOrganisationDDv5.HOME_OFFICE.value
+    }
+    return responsibleOfficerName
+  }
 }

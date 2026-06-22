@@ -27,6 +27,9 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
   private val mockResponsibleOrganisation = ResponsibleOrganisation.HOME_OFFICE.toString()
   private val mockResponsibleOrganisationRegion = ""
   private val mockResponsibleOrganisationEmail = "mockResponsibleOrganisationEmail"
+  private val mockResponsibleOfficerFirstName = "mockResponsibleOfficerFirstName"
+  private val mockResponsibleOfficerLastName = "mockResponsibleOfficerLastName"
+  private val mockResponsibleOfficerEmail = "mockResponsibleOfficerEmail"
 
   private fun buildMockRequest(
     notifyingOrganisation: String? = mockNotifyingOrganisation,
@@ -37,6 +40,9 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
     responsibleOrganisation: String? = mockResponsibleOrganisation,
     responsibleOrganisationRegion: String? = mockResponsibleOrganisationRegion,
     responsibleOrganisationEmail: String? = mockResponsibleOrganisationEmail,
+    responsibleOfficerFirstName: String? = mockResponsibleOfficerFirstName,
+    responsibleOfficerLastName: String? = mockResponsibleOfficerLastName,
+    responsibleOfficerEmail: String? = mockResponsibleOfficerEmail,
   ): String = """
     {
       "notifyingOrganisation": "$notifyingOrganisation",
@@ -46,7 +52,10 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
       "responsibleOfficerPhoneNumber": "$responsibleOfficerPhoneNumber",
       "responsibleOrganisation": "$responsibleOrganisation",
       "responsibleOrganisationRegion": "$responsibleOrganisationRegion",
-      "responsibleOrganisationEmail": "$responsibleOrganisationEmail"
+      "responsibleOrganisationEmail": "$responsibleOrganisationEmail",
+      "responsibleOfficerFirstName": "$responsibleOfficerFirstName",
+      "responsibleOfficerLastName": "$responsibleOfficerLastName",
+      "responsibleOfficerEmail": "$responsibleOfficerEmail"
     }
   """.trimIndent()
 
@@ -135,6 +144,9 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
         interestedParties.responsibleOrganisationRegion,
       ).isEqualTo(mockResponsibleOrganisationRegion)
       Assertions.assertThat(interestedParties.responsibleOrganisationEmail).isEqualTo(mockResponsibleOrganisationEmail)
+      Assertions.assertThat(interestedParties.responsibleOfficerFirstName).isEqualTo(mockResponsibleOfficerFirstName)
+      Assertions.assertThat(interestedParties.responsibleOfficerLastName).isEqualTo(mockResponsibleOfficerLastName)
+      Assertions.assertThat(interestedParties.responsibleOfficerEmail).isEqualTo(mockResponsibleOfficerEmail)
     }
 
     @Test
@@ -206,18 +218,7 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
             "notifyingOrganisationEmail",
             ValidationErrors.InterestedParties.TEAM_EMAIL_REQUIRED,
           ),
-          ValidationError(
-            "responsibleOfficerName",
-            ValidationErrors.InterestedParties.RESPONSIBLE_OFFICER_FULL_NAME_REQUIRED,
-          ),
-          ValidationError(
-            "responsibleOfficerPhoneNumber",
-            ValidationErrors.InterestedParties.RESPONSIBLE_OFFICER_TELEPHONE_NUMBER_REQUIRED,
-          ),
-          ValidationError(
-            "responsibleOrganisation",
-            ValidationErrors.InterestedParties.RESPONSIBLE_ORGANISATION_REQUIRED,
-          ),
+
         ),
       )
     }
@@ -347,14 +348,6 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
           ValidationError(
             "notifyingOrganisationEmail",
             ValidationErrors.InterestedParties.TEAM_EMAIL_REQUIRED,
-          ),
-          ValidationError(
-            "responsibleOfficerName",
-            ValidationErrors.InterestedParties.RESPONSIBLE_OFFICER_FULL_NAME_REQUIRED,
-          ),
-          ValidationError(
-            "responsibleOfficerPhoneNumber",
-            ValidationErrors.InterestedParties.RESPONSIBLE_OFFICER_TELEPHONE_NUMBER_REQUIRED,
           ),
           ValidationError(
             "responsibleOrganisationRegion",

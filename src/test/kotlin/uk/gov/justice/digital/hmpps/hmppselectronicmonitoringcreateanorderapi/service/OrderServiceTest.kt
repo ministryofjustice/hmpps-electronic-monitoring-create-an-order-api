@@ -8,6 +8,9 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.Arguments
+import org.junit.jupiter.params.provider.MethodSource
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.reset
@@ -18,15 +21,18 @@ import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.boot.test.autoconfigure.json.JsonTest
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken
 import org.springframework.test.context.ActiveProfiles
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.config.FeatureFlags
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.BadRequestException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AdditionalDocument
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationAppointment
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationLocation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.Cohort
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.UserCohort
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.OrderListCriteria
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.OrderSearchCriteria
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.CreateOrderDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DocumentType
@@ -35,7 +41,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisationDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.PrisonDDv5
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Prison
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.SubmissionStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsDeviceWearerSubmissionResult
@@ -57,14 +63,24 @@ class OrderServiceTest {
   private lateinit var repo: OrderRepository
   private lateinit var fmsService: FmsService
   private lateinit var service: OrderService
+  private lateinit var userCohortService: UserCohortService
   val mockStartDate: ZonedDateTime = ZonedDateTime.now().plusMonths(1)
   val mockEndDate: ZonedDateTime = ZonedDateTime.now().plusMonths(2)
+  private lateinit var authentication: JwtAuthenticationToken
 
   @BeforeEach
   fun setup() {
     repo = mock(OrderRepository::class.java)
     fmsService = mock(FmsService::class.java)
-    service = OrderService(repo, fmsService, "DDV4")
+    userCohortService = mock()
+    val featureFlags = FeatureFlags(ddV6CourtMappings = true, dataDictionaryVersion = DataDictionaryVersion.DDV4)
+
+    service = OrderService(repo, fmsService, featureFlags, userCohortService)
+
+    authentication = mock(JwtAuthenticationToken::class.java)
+
+    whenever(authentication.name).thenReturn("mockUser")
+    whenever(userCohortService.getUserCohort(authentication)).thenReturn(UserCohort(Cohort.OTHER))
   }
 
   @Test
@@ -108,7 +124,7 @@ class OrderServiceTest {
     whenever(fmsService.submitOrder(any<Order>(), eq(FmsOrderSource.CEMO))).thenReturn(
       mockFmsResult,
     )
-    service.submitOrder(mockOrder.id, "mockUser", "mockName")
+    service.submitOrder(mockOrder.id, authentication, "mockName")
 
     argumentCaptor<Order>().apply {
       verify(repo, times(1)).save(capture())
@@ -142,7 +158,7 @@ class OrderServiceTest {
     whenever(fmsService.submitOrder(any<Order>(), eq(FmsOrderSource.CEMO))).thenReturn(
       mockFmsResult,
     )
-    service.submitOrder(mockOrder.id, "mockUser", "mockName")
+    service.submitOrder(mockOrder.id, authentication, "mockName")
 
     argumentCaptor<Order>().apply {
       verify(repo, times(1)).save(capture())
@@ -157,7 +173,7 @@ class OrderServiceTest {
       endDate = mockEndDate,
       username = "mockUser",
       notifyingOrganisation = NotifyingOrganisation.PRISON.name,
-      notifyingOrganisationName = PrisonDDv5.BEDFORD_PRISON.name,
+      notifyingOrganisationName = Prison.BEDFORD_PRISON.name,
     )
     reset(repo)
 
@@ -178,7 +194,7 @@ class OrderServiceTest {
     whenever(fmsService.submitOrder(any<Order>(), eq(FmsOrderSource.CEMO))).thenReturn(
       mockFmsResult,
     )
-    service.submitOrder(mockOrder.id, "mockUser", "mockName")
+    service.submitOrder(mockOrder.id, authentication, "mockName")
 
     argumentCaptor<Order>().apply {
       verify(repo, times(1)).save(capture())
@@ -194,7 +210,7 @@ class OrderServiceTest {
       endDate = mockEndDate,
       username = "mockUser",
       notifyingOrganisation = NotifyingOrganisation.PRISON.name,
-      notifyingOrganisationName = PrisonDDv5.BEDFORD_PRISON.name,
+      notifyingOrganisationName = Prison.BEDFORD_PRISON.name,
     )
 
     mockOrder.deviceWearer!!.adultAtTimeOfInstallation = false
@@ -218,7 +234,7 @@ class OrderServiceTest {
     whenever(fmsService.submitOrder(any<Order>(), eq(FmsOrderSource.CEMO))).thenReturn(
       mockFmsResult,
     )
-    service.submitOrder(mockOrder.id, "mockUser", "mockName")
+    service.submitOrder(mockOrder.id, authentication, "mockName")
 
     argumentCaptor<Order>().apply {
       verify(repo, times(1)).save(capture())
@@ -258,11 +274,85 @@ class OrderServiceTest {
     whenever(fmsService.submitOrder(any<Order>(), eq(FmsOrderSource.CEMO))).thenReturn(
       mockFmsResult,
     )
-    service.submitOrder(mockOrder.id, "mockUser", "mockName")
+    service.submitOrder(mockOrder.id, authentication, "mockName")
 
     argumentCaptor<Order>().apply {
       verify(repo, times(1)).save(capture())
       assertThat(firstValue.tags!!.split(',')).contains("Youth YCS")
+    }
+  }
+
+  @Test
+  fun `Should add Adult YCS to tags when notifying org is YCS and responsible adult not required`() {
+    val mockOrder = TestUtilities.createReadyToSubmitOrder(
+      startDate = mockStartDate,
+      endDate = mockEndDate,
+      username = "mockUser",
+      notifyingOrganisation = NotifyingOrganisationDDv5.YOUTH_CUSTODY_SERVICE.name,
+    )
+
+    mockOrder.deviceWearer!!.adultAtTimeOfInstallation = true
+
+    reset(repo)
+
+    val mockFmsResult = FmsSubmissionResult(
+      orderId = mockOrder.getCurrentVersion().id,
+      deviceWearerResult = FmsDeviceWearerSubmissionResult(
+        status = SubmissionStatus.SUCCESS,
+        deviceWearerId = "mockDeviceWearerId",
+      ),
+      monitoringOrderResult = FmsMonitoringOrderSubmissionResult(
+        status = SubmissionStatus.SUCCESS,
+        monitoringOrderId = "mockMonitoringOrderId",
+      ),
+      orderSource = FmsOrderSource.CEMO,
+      strategy = FmsSubmissionStrategyKind.ORDER,
+    )
+    whenever(repo.findById(mockOrder.id)).thenReturn(Optional.of(mockOrder))
+    whenever(fmsService.submitOrder(any<Order>(), eq(FmsOrderSource.CEMO))).thenReturn(
+      mockFmsResult,
+    )
+    service.submitOrder(mockOrder.id, authentication, "mockName")
+
+    argumentCaptor<Order>().apply {
+      verify(repo, times(1)).save(capture())
+      assertThat(firstValue.tags!!.split(',')).contains("Adult YCS")
+    }
+  }
+
+  @ParameterizedTest
+  @MethodSource("tagScenarios")
+  fun `Should add correct tag for notifying organisation`(notifyOrgName: String, expectedTag: String) {
+    val mockOrder = TestUtilities.createReadyToSubmitOrder(
+      startDate = mockStartDate,
+      endDate = mockEndDate,
+      username = "mockUser",
+      notifyingOrganisation = notifyOrgName,
+    )
+    reset(repo)
+
+    val mockFmsResult = FmsSubmissionResult(
+      orderId = mockOrder.getCurrentVersion().id,
+      deviceWearerResult = FmsDeviceWearerSubmissionResult(
+        status = SubmissionStatus.SUCCESS,
+        deviceWearerId = "mockDeviceWearerId",
+      ),
+      monitoringOrderResult = FmsMonitoringOrderSubmissionResult(
+        status = SubmissionStatus.SUCCESS,
+        monitoringOrderId = "mockMonitoringOrderId",
+      ),
+      orderSource = FmsOrderSource.CEMO,
+      strategy = FmsSubmissionStrategyKind.ORDER,
+    )
+
+    whenever(repo.findById(mockOrder.id)).thenReturn(Optional.of(mockOrder))
+    whenever(fmsService.submitOrder(any<Order>(), eq(FmsOrderSource.CEMO))).thenReturn(mockFmsResult)
+
+    service.submitOrder(mockOrder.id, authentication, "mockName")
+
+    argumentCaptor<Order>().apply {
+      verify(repo, times(1)).save(capture())
+      assertThat(firstValue.tags).isEqualTo(expectedTag)
     }
   }
 
@@ -281,11 +371,14 @@ class OrderServiceTest {
   @Test
   fun `Should be able to search for orders`() {
     val mockOrder = TestUtilities.createReadyToSubmitOrder(startDate = mockStartDate, endDate = mockEndDate)
-    val mockCriteria = OrderSearchCriteria(searchTerm = "Bob Smith")
 
+    val authentication = mock(JwtAuthenticationToken::class.java)
+    whenever(userCohortService.getUserCohort(authentication)).thenReturn(
+      UserCohort(Cohort.PRISON),
+    )
     whenever(repo.findAll(ArgumentMatchers.any(OrderSearchSpecification::class.java))).thenReturn(listOf(mockOrder))
 
-    val result = service.searchOrders(mockCriteria)
+    val result = service.searchOrders("Bob Smith", authentication)
 
     assertThat(result).isEqualTo(listOf(mockOrder))
   }
@@ -329,7 +422,8 @@ class OrderServiceTest {
 
     @BeforeEach
     fun setup() {
-      service = OrderService(repo, fmsService, "DDV5")
+      val featureFlags = FeatureFlags(ddV6CourtMappings = true, dataDictionaryVersion = DataDictionaryVersion.DDV5)
+      service = OrderService(repo, fmsService, featureFlags, userCohortService)
       whenever(repo.findById(order.id)).thenReturn(Optional.of(order))
       whenever(repo.save(order)).thenReturn(order)
     }
@@ -339,7 +433,8 @@ class OrderServiceTest {
     inner class CreateVersionAsVariation {
       @BeforeEach
       fun setup() {
-        service.createVersion(order.id, order.username, RequestType.VARIATION)
+        whenever(authentication.name).thenReturn(order.username)
+        service.createVersion(order.id, authentication, RequestType.VARIATION)
       }
 
       @Test
@@ -500,21 +595,10 @@ class OrderServiceTest {
       }
 
       @Test
-      fun `It should clone installationAndRisk referencing new version`() {
+      fun `It should not clone installationAndRisk`() {
         argumentCaptor<Order>().apply {
           verify(repo, times(1)).save(capture())
-          assertThat(firstValue.versions.last().installationAndRisk).isNotNull()
-          assertThat(firstValue.versions.last().installationAndRisk?.versionId).isEqualTo(firstValue.versions.last().id)
-          assertThat(firstValue.versions.last().installationAndRisk?.versionId).isNotEqualTo(originalVersionId)
-          assertThat(firstValue.versions.last().installationAndRisk)
-            .usingRecursiveComparison()
-            .ignoringCollectionOrder()
-            .ignoringFields(
-              "id",
-              "versionId",
-              "version",
-            )
-            .isEqualTo(originalVersion?.installationAndRisk)
+          assertThat(firstValue.versions.last().installationAndRisk).isNull()
         }
       }
 
@@ -522,12 +606,22 @@ class OrderServiceTest {
       fun `It should clone interestedParties referencing new version and clear notifying organisation data`() {
         argumentCaptor<Order>().apply {
           verify(repo, times(1)).save(capture())
+          val originalIP = firstValue.versions.last().interestedParties
+          val newIP = firstValue.versions.last().interestedParties
           assertThat(firstValue.versions.last().interestedParties).isNotNull()
-          assertThat(firstValue.versions.last().interestedParties?.versionId).isEqualTo(firstValue.versions.last().id)
-          assertThat(firstValue.versions.last().interestedParties?.versionId).isNotEqualTo(originalVersionId)
-          assertThat(firstValue.versions.last().interestedParties?.notifyingOrganisation).isNull()
-          assertThat(firstValue.versions.last().interestedParties?.notifyingOrganisationName).isNull()
-          assertThat(firstValue.versions.last().interestedParties?.notifyingOrganisationEmail).isNull()
+          assertThat(newIP?.versionId).isEqualTo(firstValue.versions.last().id)
+          assertThat(newIP?.versionId).isNotEqualTo(originalVersionId)
+          assertThat(newIP?.responsibleOrganisation).isEqualTo(originalIP?.responsibleOrganisation)
+          assertThat(newIP?.responsibleOrganisationRegion).isEqualTo(originalIP?.responsibleOrganisationRegion)
+          assertThat(newIP?.responsibleOrganisationEmail).isEqualTo(originalIP?.responsibleOrganisationEmail)
+          assertThat(newIP?.responsibleOfficerName).isEqualTo(originalIP?.responsibleOfficerName)
+          assertThat(newIP?.responsibleOfficerFirstName).isEqualTo(originalIP?.responsibleOfficerFirstName)
+          assertThat(newIP?.responsibleOfficerLastName).isEqualTo(originalIP?.responsibleOfficerLastName)
+          assertThat(newIP?.responsibleOfficerEmail).isEqualTo(originalIP?.responsibleOfficerEmail)
+          assertThat(newIP?.responsibleOfficerPhoneNumber).isEqualTo(originalIP?.responsibleOfficerPhoneNumber)
+          assertThat(newIP?.notifyingOrganisation).isNull()
+          assertThat(newIP?.notifyingOrganisationName).isNull()
+          assertThat(newIP?.notifyingOrganisationEmail).isNull()
           assertThat(firstValue.versions.last().interestedParties)
             .usingRecursiveComparison()
             .ignoringCollectionOrder()
@@ -540,6 +634,16 @@ class OrderServiceTest {
               "notifyingOrganisationEmail",
             )
             .isEqualTo(originalVersion?.interestedParties)
+        }
+      }
+
+      @Test
+      fun `Should only clear notifying org is user type does not match`() {
+        argumentCaptor<Order>().apply {
+          verify(repo, times(1)).save(capture())
+          assertThat(firstValue.versions.last().interestedParties?.notifyingOrganisation).isNull()
+          assertThat(firstValue.versions.last().interestedParties?.notifyingOrganisationName).isNull()
+          assertThat(firstValue.versions.last().interestedParties?.notifyingOrganisationEmail).isNull()
         }
       }
 
@@ -768,11 +872,74 @@ class OrderServiceTest {
     }
 
     @Nested
+    @DisplayName("Create Version as Variation")
+    inner class CreateVersionAsVariationSameCohort {
+      @BeforeEach
+      fun setup() {
+        val mockUserCohort = UserCohort(Cohort.PRISON)
+        whenever(userCohortService.getUserCohort(authentication)).thenReturn(mockUserCohort)
+        whenever(userCohortService.matchesNofifyingOrg(mockUserCohort.cohort, "PRISON")).thenReturn(true)
+      }
+
+      @Test
+      fun `Should not clear notifying org when user type matches`() {
+        service.createVersion(order.id, authentication, RequestType.VARIATION)
+        argumentCaptor<Order>().apply {
+          verify(repo, times(1)).save(capture())
+          assertThat(firstValue.versions.last().interestedParties?.notifyingOrganisation).isNotNull()
+          assertThat(firstValue.versions.last().interestedParties?.notifyingOrganisationName).isNotNull()
+          assertThat(firstValue.versions.last().interestedParties?.notifyingOrganisationEmail).isNotNull()
+        }
+      }
+    }
+
+    @Nested
+    @DisplayName("Create Version as Variation")
+    inner class CreateVersionAsVariationInPast {
+      val orderInPast = TestUtilities.createReadyToSubmitOrder(
+        versionId = originalVersionId,
+        startDate = mockStartDate,
+        endDate = mockEndDate,
+        status = OrderStatus.SUBMITTED,
+        dataDictionaryVersion = DataDictionaryVersion.DDV4,
+      ).apply {
+        monitoringConditions?.startDate = ZonedDateTime.now().minusMonths(1)
+      }
+
+      @BeforeEach
+      fun setup() {
+        val featureFlags = FeatureFlags(ddV6CourtMappings = true, dataDictionaryVersion = DataDictionaryVersion.DDV5)
+        service = OrderService(repo, fmsService, featureFlags, userCohortService)
+        whenever(repo.findById(orderInPast.id)).thenReturn(Optional.of(orderInPast))
+        whenever(repo.save(orderInPast)).thenReturn(orderInPast)
+      }
+
+      @Test
+      fun `Should clear notifying org when start date is in past`() {
+        service.createVersion(orderInPast.id, authentication, RequestType.VARIATION)
+        argumentCaptor<Order>().apply {
+          verify(repo, times(1)).save(capture())
+
+          val newIP = firstValue.versions.last().interestedParties
+          assertThat(newIP?.responsibleOrganisation).isNull()
+          assertThat(newIP?.responsibleOrganisationRegion).isNull()
+          assertThat(newIP?.responsibleOrganisationEmail).isNull()
+          assertThat(newIP?.responsibleOfficerName).isNull()
+          assertThat(newIP?.responsibleOfficerFirstName).isNull()
+          assertThat(newIP?.responsibleOfficerLastName).isNull()
+          assertThat(newIP?.responsibleOfficerEmail).isNull()
+          assertThat(newIP?.responsibleOfficerPhoneNumber).isNull()
+        }
+      }
+    }
+
+    @Nested
     @DisplayName("Create Version as amend original request")
     inner class CreateVersionAsRequest {
       @BeforeEach
       fun setup() {
-        service.createVersion(order.id, order.username, RequestType.AMEND_ORIGINAL_REQUEST)
+        whenever(authentication.name).thenReturn(order.username)
+        service.createVersion(order.id, authentication, RequestType.AMEND_ORIGINAL_REQUEST)
       }
 
       @Test
@@ -947,5 +1114,15 @@ class OrderServiceTest {
 
       assertThat(result).isEqualTo("mockPayload")
     }
+  }
+
+  companion object {
+    @JvmStatic
+    fun tagScenarios() = listOf(
+      Arguments.of(NotifyingOrganisationDDv5.PROBATION.name, "Probation"),
+      Arguments.of(NotifyingOrganisationDDv5.CIVIL_COUNTY_COURT.name, "Civil Court"),
+      Arguments.of(NotifyingOrganisationDDv5.FAMILY_COURT.name, "Family Court"),
+      Arguments.of(NotifyingOrganisationDDv5.HOME_OFFICE.name, "Home Office"),
+    )
   }
 }
