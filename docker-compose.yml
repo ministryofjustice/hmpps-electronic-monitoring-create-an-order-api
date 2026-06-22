@@ -9,7 +9,7 @@ services:
     ports:
       - "8080:8080"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/health/ping"]
+      test: [ "CMD", "curl", "-f", "http://localhost:8080/health/ping" ]
     environment:
       - SERVER_PORT=8080
       - HMPPS_AUTH_URL=${HMPPS_AUTH_URL:-http://hmpps-auth:8080/auth}
@@ -46,14 +46,14 @@ services:
     ports:
       - "9090:8080"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/auth/health"]
+      test: [ "CMD", "curl", "-f", "http://localhost:8080/auth/health" ]
     environment:
       - SERVER_PORT=8080
       - SPRING_PROFILES_ACTIVE=dev
       - APPLICATION_AUTHENTICATION_UI_ALLOWLIST=0.0.0.0/0
 
   localstack:
-    image: localstack/localstack:4.12
+    image: localstack/localstack:4.14
     container_name: localstack
     networks:
       - hmpps
