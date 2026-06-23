@@ -111,18 +111,24 @@ class OrderService(
     if (currentVersion.status != OrderStatus.SUBMITTED) {
       throw BadRequestException("Order latest version not submitted")
     }
+    val newVersionType =
+      if (versionType == RequestType.AMEND_ORIGINAL_REQUEST && currentVersion.type == RequestType.VARIATION) {
+        RequestType.VARIATION
+      } else {
+        versionType
+      }
+
     if (versionType == RequestType.AMEND_ORIGINAL_REQUEST) {
       currentVersion.type = RequestType.REJECTED
     }
-    val newVersionNumber = currentVersion.versionId + 1
-    val dataDictionaryVersion = featureFlags.dataDictionaryVersion
+
     val newOrderVersion = OrderVersion(
       orderId = orderId,
-      versionId = newVersionNumber,
+      versionId = currentVersion.versionId + 1,
       status = OrderStatus.IN_PROGRESS,
-      type = versionType,
+      type = newVersionType,
       username = token.name,
-      dataDictionaryVersion = dataDictionaryVersion,
+      dataDictionaryVersion = featureFlags.dataDictionaryVersion,
       fmsResultId = null,
       fmsResultDate = null,
     )

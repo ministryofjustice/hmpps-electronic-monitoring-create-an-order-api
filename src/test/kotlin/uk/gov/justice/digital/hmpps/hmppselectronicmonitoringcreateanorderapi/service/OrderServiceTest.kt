@@ -939,11 +939,11 @@ class OrderServiceTest {
       @BeforeEach
       fun setup() {
         whenever(authentication.name).thenReturn(order.username)
-        service.createVersion(order.id, authentication, RequestType.AMEND_ORIGINAL_REQUEST)
       }
 
       @Test
       fun `It should create an new order version with type Request`() {
+        service.createVersion(order.id, authentication, RequestType.AMEND_ORIGINAL_REQUEST)
         argumentCaptor<Order>().apply {
           verify(repo, times(1)).save(capture())
           assertThat(firstValue.id).isEqualTo(order.id)
@@ -957,7 +957,53 @@ class OrderServiceTest {
       }
 
       @Test
+      fun `It should set the type as variation when previous was variation`() {
+        val variationOrder = TestUtilities.createReadyToSubmitOrder(
+          versionId = originalVersionId,
+          requestType = RequestType.VARIATION,
+          startDate = mockStartDate,
+          endDate = mockEndDate,
+          status = OrderStatus.SUBMITTED,
+          dataDictionaryVersion = DataDictionaryVersion.DDV4,
+          installationLocation = InstallationLocation(
+            versionId = originalVersionId,
+            location = InstallationLocationType.PRISON,
+          ),
+          installationAppointment = InstallationAppointment(
+            versionId = originalVersionId,
+            appointmentDate = mockStartDate,
+          ),
+          documents = mutableListOf(
+            AdditionalDocument(
+              versionId = originalVersionId,
+              fileName = "MockFile",
+              fileType = DocumentType.LICENCE,
+              documentId = mockLicenceDocumentId,
+            ),
+            AdditionalDocument(
+              versionId = originalVersionId,
+              fileName = "MockPhotoFile",
+              fileType = DocumentType.PHOTO_ID,
+              documentId = mockPhotoDocumentId,
+            ),
+          ),
+        )
+        whenever(repo.findById(variationOrder.id)).thenReturn(Optional.of(variationOrder))
+        whenever(repo.save(variationOrder)).thenReturn(variationOrder)
+
+        service.createVersion(variationOrder.id, authentication, RequestType.AMEND_ORIGINAL_REQUEST)
+
+        argumentCaptor<Order>().apply {
+          verify(repo, times(1)).save(capture())
+          assertThat(firstValue.id).isEqualTo(variationOrder.id)
+          assertThat(firstValue.versions.count()).isEqualTo(2)
+          assertThat(firstValue.versions.last().type).isEqualTo(RequestType.VARIATION)
+        }
+      }
+
+      @Test
       fun `It should set previous version type to REJECTED`() {
+        service.createVersion(order.id, authentication, RequestType.AMEND_ORIGINAL_REQUEST)
         argumentCaptor<Order>().apply {
           verify(repo, times(1)).save(capture())
           assertThat(firstValue.id).isEqualTo(order.id)
