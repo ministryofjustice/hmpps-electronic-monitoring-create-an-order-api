@@ -57,6 +57,8 @@ import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
+import kotlin.time.Duration
+import kotlin.time.measureTime
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.DeviceWearer as FmsDeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.ErrorResponse as FmsErrorResponseDetails
 
@@ -506,6 +508,37 @@ class OrderControllerTest : IntegrationTestBase() {
         .isOk
         .expectBodyList(OrderDto::class.java)
         .hasSize(1)
+    }
+
+    @Test
+    fun `100 order benchmark`() {
+      for (i in 0..99) {
+        createAndPersistPopulatedOrder()
+      }
+
+      val iterations: Int = 5
+      val measurements: MutableList<Duration> = mutableListOf()
+
+      repeat(iterations) {
+        measurements.add(
+          measureTime {
+            webTestClient.get()
+              .uri("/api/orders")
+              .headers(setAuthorisation("AUTH_ADM"))
+              .exchange()
+              .expectStatus()
+              .isOk
+              .expectBodyList(OrderDto::class.java)
+              .hasSize(100)
+          },
+        )
+      }
+
+      val avg = measurements.reduce { acc, duration -> acc + duration } / iterations
+
+      println("Fetching 100 orders took on average: $avg")
+      println("max: ${measurements.max()}")
+      println("min: ${measurements.min()}")
     }
 
     @Test
