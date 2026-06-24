@@ -34,6 +34,9 @@ data class InstallationAndRisk(
   @Column(name = "RISK_DETAILS", nullable = true)
   var riskDetails: String? = "",
 
+  @Column(name = "GENDER_RISK_DETAILS", nullable = true)
+  var genderRiskDetails: String? = "",
+
   @Column(name = "MAPPA_LEVEL", nullable = true)
   var mappaLevel: String? = "",
 

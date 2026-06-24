@@ -20,6 +20,7 @@ class InstallationAndRiskService : OrderSectionServiceBase() {
       offenceAdditionalDetails = updateRecord.offenceAdditionalDetails,
       riskCategory = updateRecord.riskCategory,
       riskDetails = updateRecord.riskDetails,
+      genderRiskDetails = updateRecord.genderRiskDetails,
       mappaLevel = updateRecord.mappaLevel,
       mappaCaseType = updateRecord.mappaCaseType,
     )

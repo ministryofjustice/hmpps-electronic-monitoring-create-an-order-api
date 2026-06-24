@@ -14,6 +14,8 @@ data class UpdateInstallationAndRiskDto(
 
   val riskDetails: String? = "",
 
+  val genderRiskDetails: String? = "",
+
   val mappaLevel: String? = "",
 
   val mappaCaseType: String? = null,

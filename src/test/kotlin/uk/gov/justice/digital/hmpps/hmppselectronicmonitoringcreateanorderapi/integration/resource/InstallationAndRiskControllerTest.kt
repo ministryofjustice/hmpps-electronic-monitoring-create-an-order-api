@@ -160,6 +160,7 @@ class InstallationAndRiskControllerTest : IntegrationTestBase() {
       Assertions.assertThat(updatedOrder.installationAndRisk?.offenceAdditionalDetails).isNull()
       Assertions.assertThat(updatedOrder.installationAndRisk?.riskCategory).isNull()
       Assertions.assertThat(updatedOrder.installationAndRisk?.riskDetails).isNull()
+      Assertions.assertThat(updatedOrder.installationAndRisk?.genderRiskDetails).isNull()
       Assertions.assertThat(updatedOrder.installationAndRisk?.mappaLevel).isNull()
       Assertions.assertThat(updatedOrder.installationAndRisk?.mappaCaseType).isNull()
     }
@@ -210,6 +211,7 @@ class InstallationAndRiskControllerTest : IntegrationTestBase() {
                 "offenceAdditionalDetails": "",
                 "riskCategory": ["INVALID"],
                 "riskDetails": "",
+                "genderRiskDetails": "",
                 "mappaLevel": "",
                 "mappaCaseType": ""
               }
@@ -245,6 +247,7 @@ class InstallationAndRiskControllerTest : IntegrationTestBase() {
       offenceAdditionalDetails: String? = null,
       riskCategory: Array<String>? = null,
       riskDetails: String? = null,
+      genderRiskDetails: String? = null,
       mappaLevel: String? = null,
       mappaCaseType: String? = null,
     ): String {
@@ -253,6 +256,7 @@ class InstallationAndRiskControllerTest : IntegrationTestBase() {
         offenceAdditionalDetails = offenceAdditionalDetails,
         riskCategory = riskCategory,
         riskDetails = riskDetails,
+        genderRiskDetails = genderRiskDetails,
         mappaLevel = mappaLevel,
         mappaCaseType = mappaCaseType,
       )
