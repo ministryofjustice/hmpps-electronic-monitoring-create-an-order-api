@@ -192,6 +192,7 @@ class InstallationAndRiskControllerTest : IntegrationTestBase() {
       Assertions.assertThat(updatedOrder.installationAndRisk?.offenceAdditionalDetails).isNull()
       Assertions.assertThat(updatedOrder.installationAndRisk?.riskCategory).isNull()
       Assertions.assertThat(updatedOrder.installationAndRisk?.riskDetails).isNull()
+      Assertions.assertThat(updatedOrder.installationAndRisk?.genderRiskDetails).isNull()
       Assertions.assertThat(updatedOrder.installationAndRisk?.mappaLevel).isNull()
       Assertions.assertThat(updatedOrder.installationAndRisk?.mappaCaseType).isNull()
     }
