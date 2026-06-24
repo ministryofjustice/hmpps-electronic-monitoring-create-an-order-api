@@ -14,7 +14,12 @@ class DetailsOfInstallationService : OrderSectionServiceBase() {
     val order = this.findEditableOrder(orderId, username)
 
     order.detailsOfInstallation =
-      DetailsOfInstallation(versionId = order.versionId, riskCategory = dto.riskCategory, riskDetails = dto.riskDetails)
+      DetailsOfInstallation(
+        versionId = order.versionId,
+        riskCategory = dto.riskCategory,
+        riskDetails = dto.riskDetails,
+        genderRiskDetails = dto.genderRiskDetails,
+      )
 
     return orderRepo.save(order).detailsOfInstallation!!
   }
