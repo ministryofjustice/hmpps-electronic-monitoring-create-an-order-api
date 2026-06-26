@@ -16,6 +16,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.OrderSearchCriteria
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.TagFilter
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.CreateOrderDto
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderInformationDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.VersionInformationDTO
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisationDDv5
@@ -314,9 +315,14 @@ class OrderService(
     }
   }
 
-  fun listOrders(searchCriteria: OrderListCriteria): List<Order> = repo.findAll(
-    OrderListSpecification(searchCriteria),
-  )
+  fun listOrders(searchCriteria: OrderListCriteria): List<OrderInformationDto> {
+    val orders = repo.findAll(
+      OrderListSpecification(searchCriteria),
+    )
+    return orders.map {
+      it.toListInformationDto()
+    }
+  }
 
   fun searchOrders(searchTerm: String, authentication: JwtAuthenticationToken): List<Order> {
     val userCohort = userCohortService.getUserCohort(authentication)
@@ -338,6 +344,17 @@ class OrderService(
     return order.versions.map {
       it.toDTO()
     }.sortedByDescending { it.fmsResultDate }
+  }
+
+  private fun Order.toListInformationDto(): OrderInformationDto {
+    val latestVersion = this.getCurrentVersion()
+    return OrderInformationDto(
+      id = this.id,
+      status = latestVersion.status,
+      type = latestVersion.type,
+      deviceWearer = latestVersion.deviceWearer,
+      interestedParties = latestVersion.interestedParties,
+    )
   }
 
   private fun OrderVersion.toDTO() = VersionInformationDTO(

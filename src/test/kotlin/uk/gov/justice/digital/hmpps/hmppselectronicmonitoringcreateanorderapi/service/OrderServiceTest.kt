@@ -34,6 +34,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.UserCohort
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.OrderListCriteria
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.CreateOrderDto
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderInformationDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DocumentType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
@@ -364,8 +365,15 @@ class OrderServiceTest {
     whenever(repo.findAll(ArgumentMatchers.any(OrderListSpecification::class.java))).thenReturn(listOf(mockOrder))
 
     val result = service.listOrders(mockCriteria)
+    val expectedValue = OrderInformationDto(
+      mockOrder.id,
+      mockOrder.status,
+      mockOrder.type,
+      mockOrder.deviceWearer,
+      mockOrder.interestedParties,
+    )
 
-    assertThat(result).isEqualTo(listOf(mockOrder))
+    assertThat(result).isEqualTo(listOf(expectedValue))
   }
 
   @Test
