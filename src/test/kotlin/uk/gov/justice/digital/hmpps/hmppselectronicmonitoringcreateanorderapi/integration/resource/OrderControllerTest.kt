@@ -499,8 +499,9 @@ class OrderControllerTest : IntegrationTestBase() {
     @Test
     fun `It should return orders when no searchTerm is provided`() {
       createOrder("AUTH_ADM")
+      val benchMarkClient = webTestClient.mutate().responseTimeout(java.time.Duration.ofMillis(30000)).build()
 
-      webTestClient.get()
+      benchMarkClient.get()
         .uri("/api/orders")
         .headers(setAuthorisation("AUTH_ADM"))
         .exchange()
@@ -510,19 +511,31 @@ class OrderControllerTest : IntegrationTestBase() {
         .hasSize(1)
     }
 
+    // TODO: REMOVE
     @Test
     fun `100 order benchmark`() {
       for (i in 0..99) {
         createAndPersistPopulatedOrder()
       }
+      val benchMarkClient = webTestClient.mutate().responseTimeout(java.time.Duration.ofMillis(30000)).build()
 
-      val iterations: Int = 5
+      val warmupIterations = 5
+      val iterations = 15
       val measurements: MutableList<Duration> = mutableListOf()
+
+      repeat(warmupIterations) {
+        benchMarkClient.get()
+          .uri("/api/orders")
+          .headers(setAuthorisation("AUTH_ADM"))
+          .exchange()
+          .expectStatus()
+          .isOk
+      }
 
       repeat(iterations) {
         measurements.add(
           measureTime {
-            webTestClient.get()
+            benchMarkClient.get()
               .uri("/api/orders")
               .headers(setAuthorisation("AUTH_ADM"))
               .exchange()
@@ -539,6 +552,29 @@ class OrderControllerTest : IntegrationTestBase() {
       println("Fetching 100 orders took on average: $avg")
       println("max: ${measurements.max()}")
       println("min: ${measurements.min()}")
+    }
+
+    // TODO: REMOVE
+    @Test
+    fun `order sql benchmark`() {
+      createAndPersistPopulatedOrder()
+
+      println("*******************************")
+      println("Retrieving single order")
+      println("*******************************")
+
+      webTestClient.get()
+        .uri("/api/orders")
+        .headers(setAuthorisation("AUTH_ADM"))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBodyList(OrderDto::class.java)
+        .hasSize(1)
+
+      println("*******************************")
+      println("FINISHED")
+      println("*******************************")
     }
 
     @Test
