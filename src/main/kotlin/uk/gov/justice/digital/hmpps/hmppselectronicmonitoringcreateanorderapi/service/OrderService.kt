@@ -22,9 +22,9 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisationDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.specification.OrderListSpecification
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.specification.OrderSearchSpecification
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.projections.OrderVersionListInformation
 import java.time.ZonedDateTime
 import java.util.*
 
@@ -316,10 +316,10 @@ class OrderService(
   }
 
   fun listOrders(searchCriteria: OrderListCriteria): List<OrderInformationDto> {
-    val orders = repo.findAll(
-      OrderListSpecification(searchCriteria),
+    val orderListInformation = repo.findOrderInformation(
+      searchCriteria.username,
     )
-    return orders.map {
+    return orderListInformation.map {
       it.toListInformationDto()
     }
   }
@@ -346,16 +346,13 @@ class OrderService(
     }.sortedByDescending { it.fmsResultDate }
   }
 
-  private fun Order.toListInformationDto(): OrderInformationDto {
-    val latestVersion = this.getCurrentVersion()
-    return OrderInformationDto(
-      id = this.id,
-      status = latestVersion.status,
-      type = latestVersion.type,
-      deviceWearer = latestVersion.deviceWearer,
-      interestedParties = latestVersion.interestedParties,
-    )
-  }
+  private fun OrderVersionListInformation.toListInformationDto(): OrderInformationDto = OrderInformationDto(
+    id = this.getId(),
+    status = this.getStatus(),
+    type = this.getType(),
+    deviceWearer = this.getDeviceWearer(),
+    interestedParties = this.getInterestedParties(),
+  )
 
   private fun OrderVersion.toDTO() = VersionInformationDTO(
     orderId = this.orderId,
