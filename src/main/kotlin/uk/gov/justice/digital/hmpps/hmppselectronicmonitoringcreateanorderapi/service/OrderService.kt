@@ -350,8 +350,9 @@ class OrderService(
     id = this.getId(),
     status = this.getStatus(),
     type = this.getType(),
-    deviceWearer = this.getDeviceWearer(),
-    interestedParties = this.getInterestedParties(),
+    firstName = this.getDeviceWearer()?.getFirstName(),
+    lastName = this.getDeviceWearer()?.getLastName(),
+    notifyingOrganisation = this.getInterestedParties()?.getNotifyingOrganisation(),
   )
 
   private fun OrderVersion.toDTO() = VersionInformationDTO(

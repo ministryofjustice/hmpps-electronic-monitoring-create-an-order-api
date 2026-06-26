@@ -151,15 +151,17 @@ class OrderControllerTest {
         id = orderId,
         status = orderVersion.status,
         type = orderVersion.type,
-        deviceWearer = orderVersion.deviceWearer,
-        interestedParties = orderVersion.interestedParties,
+        firstName = null,
+        lastName = null,
+        notifyingOrganisation = null,
       ),
       OrderInformationDto(
         id = orderId2,
         status = orderVersion2.status,
         type = orderVersion2.type,
-        deviceWearer = orderVersion2.deviceWearer,
-        interestedParties = orderVersion2.interestedParties,
+        firstName = null,
+        lastName = null,
+        notifyingOrganisation = null,
       ),
     )
 
