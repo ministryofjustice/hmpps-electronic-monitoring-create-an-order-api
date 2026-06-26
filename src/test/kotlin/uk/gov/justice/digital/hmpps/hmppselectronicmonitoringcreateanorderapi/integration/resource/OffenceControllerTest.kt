@@ -143,6 +143,41 @@ class OffenceControllerTest : IntegrationTestBase() {
     Assertions.assertThat(updatedOrder.offences).isEmpty()
   }
 
+  @Test
+  fun `should set multiple offences in a single request`() {
+    val order = createOrder()
+
+    callOffenceEndpoint(order.id, mockMultiOffenceRequestBody(listOf("THEFT_OFFENCES", "SEXUAL_OFFENCES")))
+      .expectStatus()
+      .isOk
+
+    val updatedOrder = getOrder(order.id)
+
+    Assertions.assertThat(updatedOrder.offences.size).isEqualTo(2)
+    Assertions.assertThat(updatedOrder.offences.map { it.offenceType })
+      .containsExactlyInAnyOrder("THEFT_OFFENCES", "SEXUAL_OFFENCES")
+    Assertions.assertThat(updatedOrder.offences).allSatisfy {
+      Assertions.assertThat(it.offenceDate).isNull()
+    }
+  }
+
+  @Test
+  fun `setting offences returns the full list in the response`() {
+    val order = createOrder()
+
+    val result = callOffenceEndpoint(
+      order.id,
+      mockMultiOffenceRequestBody(listOf("THEFT_OFFENCES", "SEXUAL_OFFENCES")),
+    )
+      .expectStatus()
+      .isOk
+      .expectBodyList(Offence::class.java)
+      .returnResult()
+
+    Assertions.assertThat(result.responseBody!!.map { it.offenceType })
+      .containsExactlyInAnyOrder("THEFT_OFFENCES", "SEXUAL_OFFENCES")
+  }
+
   private fun callOffenceEndpoint(orderId: UUID, body: String, username: String? = null): WebTestClient.ResponseSpec {
     val headers = if (username != null) setAuthorisation(username) else setAuthorisation()
     return webTestClient.put()
@@ -164,6 +199,11 @@ class OffenceControllerTest : IntegrationTestBase() {
   ): String {
     val dto = UpdateOffenceDto(id = id, offenceType = offenceType, offenceDate = offenceDate)
 
+    return objectMapper.writeValueAsString(dto)
+  }
+
+  private fun mockMultiOffenceRequestBody(offences: List<String>): String {
+    val dto = UpdateOffenceDto(offences = offences)
     return objectMapper.writeValueAsString(dto)
   }
 }
