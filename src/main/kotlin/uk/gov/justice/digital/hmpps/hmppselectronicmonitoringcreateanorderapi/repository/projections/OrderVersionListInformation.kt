@@ -8,6 +8,7 @@ interface OrderVersionListInformation {
   fun getId(): UUID
   fun getType(): RequestType
   fun getStatus(): OrderStatus
-  fun getDeviceWearer(): DeviceWearerListInformation?
-  fun getInterestedParties(): InterestedPartiesListInformation?
+  fun getFirstName(): String?
+  fun getLastName(): String?
+  fun getNotifyingOrganisation(): String?
 }

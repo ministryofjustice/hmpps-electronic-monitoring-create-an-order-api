@@ -51,8 +51,6 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsSubmissionStrategyKind
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.specification.OrderSearchSpecification
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.projections.DeviceWearerListInformation
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.projections.InterestedPartiesListInformation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.projections.OrderVersionListInformation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.utilities.TestUtilities
 import java.time.OffsetDateTime
@@ -364,21 +362,13 @@ class OrderServiceTest {
     val mockOrder = TestUtilities.createReadyToSubmitOrder(startDate = mockStartDate, endDate = mockEndDate)
     val mockCriteria = OrderListCriteria(username = "test")
 
-    class MockDeviceWearerListInformation : DeviceWearerListInformation {
-      override fun getFirstName() = mockOrder.deviceWearer?.firstName
-      override fun getLastName() = mockOrder.deviceWearer?.lastName
-    }
-
-    class MockInterestedPartiesListInformation : InterestedPartiesListInformation {
-      override fun getNotifyingOrganisation() = mockOrder.interestedParties?.notifyingOrganisation
-    }
-
     class MockOrderListInformation : OrderVersionListInformation {
       override fun getId() = mockOrder.id
       override fun getType() = mockOrder.type
       override fun getStatus() = mockOrder.status
-      override fun getDeviceWearer() = MockDeviceWearerListInformation()
-      override fun getInterestedParties() = MockInterestedPartiesListInformation()
+      override fun getFirstName() = mockOrder.deviceWearer?.firstName
+      override fun getLastName() = mockOrder.deviceWearer?.firstName
+      override fun getNotifyingOrganisation() = mockOrder.interestedParties?.notifyingOrganisation
     }
 
     val mockOrderListInformation = MockOrderListInformation()
@@ -390,12 +380,13 @@ class OrderServiceTest {
       mockOrderListInformation.getId(),
       mockOrderListInformation.getStatus(),
       mockOrderListInformation.getType(),
-      mockOrderListInformation.getDeviceWearer().getFirstName(),
-      mockOrderListInformation.getDeviceWearer().getLastName(),
-      mockOrderListInformation.getInterestedParties().getNotifyingOrganisation(),
+      mockOrderListInformation.getFirstName(),
+      mockOrderListInformation.getLastName(),
+      mockOrderListInformation.getNotifyingOrganisation(),
     )
 
-    assertThat(result).isEqualTo(listOf(expectedValue))
+    assertThat(result).usingRecursiveComparison().ignoringFields("deviceWearer", "interestedParties")
+      .isEqualTo(listOf(expectedValue))
   }
 
   @Test

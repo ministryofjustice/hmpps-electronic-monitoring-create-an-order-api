@@ -59,7 +59,6 @@ import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
 import kotlin.time.Duration
-import kotlin.time.measureTime
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.DeviceWearer as FmsDeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.ErrorResponse as FmsErrorResponseDetails
 
@@ -187,7 +186,7 @@ class OrderControllerTest : IntegrationTestBase() {
         .responseBody!!
 
       assertThat(variationOrder.deviceWearer!!.id).isNotEqualTo(order.deviceWearer!!.id)
-      assertThat(variationOrder.deviceWearer!!.versionId).isNotEqualTo(order.deviceWearer!!.versionId)
+      assertThat(variationOrder.deviceWearer.versionId).isNotEqualTo(order.deviceWearer!!.versionId)
     }
 
     @Test
@@ -508,74 +507,8 @@ class OrderControllerTest : IntegrationTestBase() {
         .exchange()
         .expectStatus()
         .isOk
-        .expectBodyList(OrderDto::class.java)
+        .expectBodyList<OrderInformationDto>()
         .hasSize(1)
-    }
-
-    // TODO: REMOVE
-    @Test
-    fun `100 order benchmark`() {
-      for (i in 0..99) {
-        createAndPersistPopulatedOrder()
-      }
-      val benchMarkClient = webTestClient.mutate().responseTimeout(java.time.Duration.ofMillis(30000)).build()
-
-      val warmupIterations = 5
-      val iterations = 15
-      val measurements: MutableList<Duration> = mutableListOf()
-
-      repeat(warmupIterations) {
-        benchMarkClient.get()
-          .uri("/api/orders")
-          .headers(setAuthorisation("AUTH_ADM"))
-          .exchange()
-          .expectStatus()
-          .isOk
-      }
-
-      repeat(iterations) {
-        measurements.add(
-          measureTime {
-            benchMarkClient.get()
-              .uri("/api/orders")
-              .headers(setAuthorisation("AUTH_ADM"))
-              .exchange()
-              .expectStatus()
-              .isOk
-              .expectBodyList<OrderInformationDto>()
-              .hasSize(100)
-          },
-        )
-      }
-
-      val avg = measurements.reduce { acc, duration -> acc + duration } / iterations
-
-      println("Fetching 100 orders took on average: $avg")
-      println("max: ${measurements.max()}")
-      println("min: ${measurements.min()}")
-    }
-
-    // TODO: REMOVE
-    @Test
-    fun `order sql benchmark`() {
-      createAndPersistPopulatedOrder()
-
-      println("*******************************")
-      println("Retrieving single order")
-      println("*******************************")
-
-      webTestClient.get()
-        .uri("/api/orders")
-        .headers(setAuthorisation("AUTH_ADM"))
-        .exchange()
-        .expectStatus()
-        .isOk
-        .expectBodyList(OrderInformationDto::class.java)
-        .hasSize(1)
-
-      println("*******************************")
-      println("FINISHED")
-      println("*******************************")
     }
 
     @Test
@@ -711,7 +644,7 @@ class OrderControllerTest : IntegrationTestBase() {
         .exchange()
         .expectStatus()
         .isOk
-        .expectBodyList(OrderDto::class.java)
+        .expectBodyList<OrderInformationDto>()
         .hasSize(1)
     }
 
@@ -990,7 +923,7 @@ class OrderControllerTest : IntegrationTestBase() {
         .exchange()
         .expectStatus()
         .isOk
-        .expectBodyList(OrderDto::class.java)
+        .expectBodyList<OrderInformationDto>()
         .hasSize(1).returnResult().responseBody
 
       assertThat(result!!.first().deviceWearer?.versionId).isEqualTo(versionId2)

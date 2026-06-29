@@ -9,6 +9,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.ex
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.ForbiddenException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.SubmitOrderException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InterestedParties
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.MonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
@@ -350,9 +351,20 @@ class OrderService(
     id = this.getId(),
     status = this.getStatus(),
     type = this.getType(),
-    firstName = this.getDeviceWearer()?.getFirstName(),
-    lastName = this.getDeviceWearer()?.getLastName(),
-    notifyingOrganisation = this.getInterestedParties()?.getNotifyingOrganisation(),
+    firstName = this.getFirstName(),
+    lastName = this.getLastName(),
+    notifyingOrganisation = this.getNotifyingOrganisation(),
+
+    // deprecated fields
+    deviceWearer = DeviceWearer(
+      versionId = this.getId(),
+      firstName = this.getFirstName(),
+      lastName = this.getLastName(),
+    ),
+    interestedParties = InterestedParties(
+      versionId = this.getId(),
+      notifyingOrganisation = this.getNotifyingOrganisation(),
+    ),
   )
 
   private fun OrderVersion.toDTO() = VersionInformationDTO(
