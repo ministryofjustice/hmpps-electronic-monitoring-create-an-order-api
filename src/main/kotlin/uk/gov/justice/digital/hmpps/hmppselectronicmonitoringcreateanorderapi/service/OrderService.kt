@@ -349,6 +349,7 @@ class OrderService(
 
   private fun OrderVersionListInformation.toListInformationDto(): OrderInformationDto = OrderInformationDto(
     id = this.getId(),
+    versionId = this.getVersionId(),
     status = this.getStatus(),
     type = this.getType(),
     firstName = this.getFirstName(),
@@ -357,12 +358,12 @@ class OrderService(
 
     // deprecated fields
     deviceWearer = DeviceWearer(
-      versionId = this.getId(),
+      versionId = this.getVersionId(),
       firstName = this.getFirstName(),
       lastName = this.getLastName(),
     ),
     interestedParties = InterestedParties(
-      versionId = this.getId(),
+      versionId = this.getVersionId(),
       notifyingOrganisation = this.getNotifyingOrganisation(),
     ),
   )

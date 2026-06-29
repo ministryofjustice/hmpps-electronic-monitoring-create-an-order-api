@@ -18,7 +18,7 @@ interface OrderRepository :
 
   @Query(
     """
-    SELECT ov.id AS id, ov.status AS status, ov.type AS type, dw.firstName AS firstName, dw.lastName AS lastName, ip.notifyingOrganisation AS notifyingOrganisation 
+    SELECT ov.orderId as id, ov.id AS versionId, ov.status AS status, ov.type AS type, dw.firstName AS firstName, dw.lastName AS lastName, ip.notifyingOrganisation AS notifyingOrganisation 
     FROM OrderVersion ov 
     LEFT JOIN ov.deviceWearer dw 
     LEFT JOIN ov.interestedParties ip

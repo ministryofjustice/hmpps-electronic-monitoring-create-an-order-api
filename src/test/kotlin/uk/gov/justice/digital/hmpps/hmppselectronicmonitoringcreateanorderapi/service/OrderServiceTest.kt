@@ -364,6 +364,7 @@ class OrderServiceTest {
 
     class MockOrderListInformation : OrderVersionListInformation {
       override fun getId() = mockOrder.id
+      override fun getVersionId() = mockOrder.versions.last().id
       override fun getType() = mockOrder.type
       override fun getStatus() = mockOrder.status
       override fun getFirstName() = mockOrder.deviceWearer?.firstName
@@ -378,6 +379,7 @@ class OrderServiceTest {
     val result = service.listOrders(mockCriteria)
     val expectedValue = OrderInformationDto(
       mockOrderListInformation.getId(),
+      mockOrderListInformation.getVersionId(),
       mockOrderListInformation.getStatus(),
       mockOrderListInformation.getType(),
       mockOrderListInformation.getFirstName(),

@@ -6,6 +6,7 @@ import java.util.UUID
 
 interface OrderVersionListInformation {
   fun getId(): UUID
+  fun getVersionId(): UUID
   fun getType(): RequestType
   fun getStatus(): OrderStatus
   fun getFirstName(): String?

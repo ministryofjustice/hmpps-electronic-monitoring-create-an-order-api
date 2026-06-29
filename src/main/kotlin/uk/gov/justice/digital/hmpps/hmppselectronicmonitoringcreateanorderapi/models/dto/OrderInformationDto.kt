@@ -8,6 +8,7 @@ import java.util.UUID
 
 data class OrderInformationDto(
   val id: UUID,
+  val versionId: UUID,
   val status: OrderStatus,
   val type: RequestType,
   val firstName: String?,

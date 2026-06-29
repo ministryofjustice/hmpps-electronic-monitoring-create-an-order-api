@@ -149,6 +149,7 @@ class OrderControllerTest {
     val orderInformation: List<OrderInformationDto> = listOf(
       OrderInformationDto(
         id = orderId,
+        versionId = orderVersion.id,
         status = orderVersion.status,
         type = orderVersion.type,
         firstName = null,
@@ -156,7 +157,8 @@ class OrderControllerTest {
         notifyingOrganisation = null,
       ),
       OrderInformationDto(
-        id = orderId2,
+        id = orderId,
+        versionId = orderVersion2.id,
         status = orderVersion2.status,
         type = orderVersion2.type,
         firstName = null,
