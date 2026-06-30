@@ -9,6 +9,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.ex
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.ForbiddenException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.SubmitOrderException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InterestedParties
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.MonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
@@ -16,14 +17,15 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.OrderSearchCriteria
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.TagFilter
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.CreateOrderDto
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderInformationDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.VersionInformationDTO
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisationDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.specification.OrderListSpecification
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.specification.OrderSearchSpecification
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.projections.OrderVersionListInformation
 import java.time.ZonedDateTime
 import java.util.*
 
@@ -314,9 +316,14 @@ class OrderService(
     }
   }
 
-  fun listOrders(searchCriteria: OrderListCriteria): List<Order> = repo.findAll(
-    OrderListSpecification(searchCriteria),
-  )
+  fun listOrders(searchCriteria: OrderListCriteria): List<OrderInformationDto> {
+    val orderListInformation = repo.findOrderInformation(
+      searchCriteria.username,
+    )
+    return orderListInformation.map {
+      it.toListInformationDto()
+    }
+  }
 
   fun searchOrders(searchTerm: String, authentication: JwtAuthenticationToken): List<Order> {
     val userCohort = userCohortService.getUserCohort(authentication)
@@ -339,6 +346,27 @@ class OrderService(
       it.toDTO()
     }.sortedByDescending { it.fmsResultDate }
   }
+
+  private fun OrderVersionListInformation.toListInformationDto(): OrderInformationDto = OrderInformationDto(
+    id = this.getId(),
+    versionId = this.getVersionId(),
+    status = this.getStatus(),
+    type = this.getType(),
+    firstName = this.getFirstName(),
+    lastName = this.getLastName(),
+    notifyingOrganisation = this.getNotifyingOrganisation(),
+
+    // deprecated fields
+    deviceWearer = DeviceWearer(
+      versionId = this.getVersionId(),
+      firstName = this.getFirstName(),
+      lastName = this.getLastName(),
+    ),
+    interestedParties = InterestedParties(
+      versionId = this.getVersionId(),
+      notifyingOrganisation = this.getNotifyingOrganisation(),
+    ),
+  )
 
   private fun OrderVersion.toDTO() = VersionInformationDTO(
     orderId = this.orderId,
