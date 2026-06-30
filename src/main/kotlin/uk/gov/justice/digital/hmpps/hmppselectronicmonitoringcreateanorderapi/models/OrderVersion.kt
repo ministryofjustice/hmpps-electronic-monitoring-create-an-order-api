@@ -144,6 +144,15 @@ data class OrderVersion(
   @Column(name = "TAGS", nullable = true)
   var tags: String? = null,
 
+  @Column(name = "LAST_UPDATED_BY", nullable = true)
+  var lastUpdatedBy: String? = null,
+
+  @Column(name = "LAST_UPDATED_DATETIME", nullable = true)
+  var lastUpdateDateTime: OffsetDateTime? = null,
+
+  @Column(name = "OWNER_COHORT", nullable = true)
+  var ownerCohort: String? = null,
+
   @Schema(hidden = true)
   @ManyToOne
   @JoinColumn(name = "ORDER_ID", updatable = false, insertable = false)
