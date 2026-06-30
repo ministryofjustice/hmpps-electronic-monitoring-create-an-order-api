@@ -3,7 +3,6 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.v
 import jakarta.validation.ValidationException
 import org.apache.tika.Tika
 import org.apache.tika.metadata.Metadata
-import org.apache.tika.metadata.TikaCoreProperties
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
@@ -58,9 +57,8 @@ class FileUploadValidatorTest {
     whenever(multipartFile.size).thenReturn(11 * 1024 * 1024L) // 10MB
     whenever(multipartFile.inputStream).thenReturn(ByteArrayInputStream(ByteArray(10)))
 
-
     val tikaMock = mock<Tika>()
-    whenever(tikaMock.detect(any<java.io.InputStream>(),any<Metadata>()))
+    whenever(tikaMock.detect(any<java.io.InputStream>(), any<Metadata>()))
       .thenReturn("application/pdf")
 
     val ex = assertThrows(MaxUploadSizeExceededException::class.java) {
@@ -75,7 +73,7 @@ class FileUploadValidatorTest {
     whenever(multipartFile.inputStream).thenReturn(ByteArrayInputStream(ByteArray(10)))
 
     val tikaMock = mock<Tika>()
-    whenever(tikaMock.detect(any<java.io.InputStream>(),any<Metadata>()))
+    whenever(tikaMock.detect(any<java.io.InputStream>(), any<Metadata>()))
       .thenReturn("image/png")
 
     val ex = assertThrows(ValidationException::class.java) {
@@ -106,9 +104,8 @@ class FileUploadValidatorTest {
     val inputStream = ByteArrayInputStream(ByteArray(10))
     whenever(multipartFile.inputStream).thenReturn(inputStream)
 
-
     val tikaMock = mock<Tika>()
-    whenever(tikaMock.detect(any<java.io.InputStream>(),any<Metadata>()))
+    whenever(tikaMock.detect(any<java.io.InputStream>(), any<Metadata>()))
       .thenReturn("application/pdf")
 
     assertDoesNotThrow {
