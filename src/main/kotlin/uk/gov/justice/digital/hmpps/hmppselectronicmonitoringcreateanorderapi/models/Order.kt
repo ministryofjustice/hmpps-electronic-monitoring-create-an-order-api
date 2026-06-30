@@ -284,6 +284,30 @@ data class Order(
       getCurrentVersion().tags = tags
     }
 
+  var lastUpdatedBy: String?
+    get() {
+      return getCurrentVersion().lastUpdatedBy
+    }
+    set(lastUpdatedBy) {
+      getCurrentVersion().lastUpdatedBy = lastUpdatedBy
+    }
+
+  var lastUpdatedDateTime: OffsetDateTime?
+    get() {
+      return getCurrentVersion().lastUpdateDateTime
+    }
+    set(lastUpdateDateTime) {
+      getCurrentVersion().lastUpdateDateTime = lastUpdateDateTime
+    }
+
+  var ownerCohort: String?
+    get() {
+      return getCurrentVersion().ownerCohort
+    }
+    set(ownerCohort) {
+      getCurrentVersion().ownerCohort = ownerCohort
+    }
+
   fun getMonitoringStartDate(): ZonedDateTime? {
     var startDate = monitoringConditions?.startDate
 

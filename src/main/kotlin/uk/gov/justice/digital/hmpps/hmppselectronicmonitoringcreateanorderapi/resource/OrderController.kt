@@ -194,6 +194,9 @@ class OrderController(@Autowired val orderService: OrderService) {
       offenceAdditionalDetails = order.offenceAdditionalDetails,
       mappa = order.mappa,
       detailsOfInstallation = order.detailsOfInstallation,
+      lastUpdatedBy = order.lastUpdatedBy,
+      lastUpdatedDateTime = order.lastUpdatedDateTime,
+      ownerCohort = order.ownerCohort,
     )
 
     dto.monitoringConditions?.startDate = order.getMonitoringStartDate()
