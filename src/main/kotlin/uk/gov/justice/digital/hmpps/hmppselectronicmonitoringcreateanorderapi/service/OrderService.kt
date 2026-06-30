@@ -376,6 +376,8 @@ class OrderService(
     type = this.type,
     submittedBy = this.submittedBy,
     status = this.status,
+    notifyingOrganisation = this.interestedParties?.notifyingOrganisation,
+    notifyingOrganisationName = this.interestedParties?.notifyingOrganisationName,
   )
 
   fun getSpecificVersion(orderId: UUID, versionId: UUID): Order {
