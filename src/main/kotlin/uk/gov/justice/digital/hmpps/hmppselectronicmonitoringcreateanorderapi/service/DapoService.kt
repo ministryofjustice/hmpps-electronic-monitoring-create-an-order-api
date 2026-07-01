@@ -26,6 +26,6 @@ class DapoService : OrderSectionServiceBase() {
 
     order.dapoClauses.removeIf { it.id == dapoId }
 
-    orderRepo.save(order)
+    updateLastUpdatedByAndSaveOrder(order)
   }
 }

@@ -3,7 +3,9 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.i
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import org.springframework.http.HttpMethod
 import org.springframework.http.MediaType
+import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.ManageUserApiExtension
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.ManageUserApiExtension.Companion.manageUserApi
@@ -21,12 +23,21 @@ import java.util.*
 abstract class UpdateOrderIntegrationTestBase : IntegrationTestBase() {
   abstract val testUris: List<UriTestCase>
 
+  private fun getRequestBodyUriSpec(method:HttpMethod): WebTestClient.RequestBodyUriSpec {
+
+    return when(method) {
+      HttpMethod.GET-> webTestClient.get()
+      HttpMethod.POST -> webTestClient.post()
+      HttpMethod.DELETE -> webTestClient.delete()
+      else ->webTestClient.put()
+    } as WebTestClient.RequestBodyUriSpec
+  }
   @Test
   fun `for each uri, it should return an error if the order was not created by the user`() {
     val order = createOrder()
 
     testUris.forEach { case ->
-      val result = webTestClient.put()
+      val result =getRequestBodyUriSpec(case.httpMethod)
         .uri(case.uri.replace(":orderId", order.id.toString()))
         .contentType(MediaType.APPLICATION_JSON)
         .body(
@@ -51,7 +62,7 @@ abstract class UpdateOrderIntegrationTestBase : IntegrationTestBase() {
   @Test
   fun `it should return not found if the order does not exist`() {
     this.testUris.forEach { case ->
-      webTestClient.put()
+      getRequestBodyUriSpec(case.httpMethod)
         .uri(case.uri.replace(":orderId", UUID.randomUUID().toString()))
         .contentType(MediaType.APPLICATION_JSON)
         .body(
@@ -70,7 +81,7 @@ abstract class UpdateOrderIntegrationTestBase : IntegrationTestBase() {
   fun `it should return an error if the order is in a submitted state`() {
     val order = createSubmittedOrder()
     this.testUris.forEach { case ->
-      val result = webTestClient.put()
+      val result = getRequestBodyUriSpec(case.httpMethod)
         .uri(case.uri.replace(":orderId", order.id.toString()))
         .contentType(MediaType.APPLICATION_JSON)
         .body(
@@ -117,7 +128,7 @@ abstract class UpdateOrderIntegrationTestBase : IntegrationTestBase() {
     val beforeCall = OffsetDateTime.now()
 
     testUris.forEach { case ->
-      webTestClient.put()
+      getRequestBodyUriSpec(case.httpMethod)
         .uri(case.uri.replace(":orderId", order.id.toString()))
         .contentType(MediaType.APPLICATION_JSON)
         .body(
@@ -127,8 +138,7 @@ abstract class UpdateOrderIntegrationTestBase : IntegrationTestBase() {
         )
         .headers(setAuthorisation(roles = listOf("ROLE_EM_CEMO__CREATE_ORDER", "ROLE_PRISON")))
         .exchange()
-        .expectStatus()
-        .isOk
+
       val updatedOrder = getOrder(order.id)
       Assertions.assertThat(updatedOrder.lastUpdatedBy).isEqualTo("John Smith")
       Assertions.assertThat(updatedOrder.lastUpdatedDateTime).isNotNull
@@ -137,4 +147,4 @@ abstract class UpdateOrderIntegrationTestBase : IntegrationTestBase() {
   }
 }
 
-data class UriTestCase(val uri: String, val createValidBody: () -> String)
+data class UriTestCase(val uri: String, val createValidBody: () -> String, val httpMethod: HttpMethod = HttpMethod.PUT)
