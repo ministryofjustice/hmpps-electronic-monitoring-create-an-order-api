@@ -106,4 +106,20 @@ class OffenceServiceTest {
 
     assertThat(mockOrder.offences).isEmpty()
   }
+
+  @Test
+  fun `setOffences should populate the collection from the dto list`() {
+    whenever(repo.findById(mockOrderId)).thenReturn(Optional.of(mockOrder))
+    whenever(repo.save(mockOrder)).thenReturn(mockOrder)
+
+    val dto = UpdateOffenceDto(offences = listOf("THEFT_OFFENCES", "SEXUAL_OFFENCES"))
+    val result = service.setOffences(mockOrderId, mockUsername, dto)
+
+    assertThat(result).hasSize(2)
+    assertThat(mockOrder.offences.map { it.offenceType })
+      .containsExactlyInAnyOrder("THEFT_OFFENCES", "SEXUAL_OFFENCES")
+    assertThat(mockOrder.offences).allSatisfy {
+      assertThat(it.offenceDate).isNull()
+    }
+  }
 }

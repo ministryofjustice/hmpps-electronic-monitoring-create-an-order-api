@@ -35,4 +35,27 @@ class OffenceService : OrderSectionServiceBase() {
 
     orderRepo.save(order)
   }
+
+  fun setOffences(orderId: UUID, username: String, dto: UpdateOffenceDto): List<Offence> {
+    val order = findEditableOrder(orderId, username)
+
+    if (order.offences.isNotEmpty()) {
+      // Relying on frontend to dictate true offence
+      order.offences.clear()
+    }
+
+    order.offences.addAll(
+      dto.offences.orEmpty().map { code ->
+        Offence(
+          id = UUID.randomUUID(),
+          versionId = order.versionId,
+          offenceType = code,
+          offenceDate = null,
+        )
+      },
+    )
+
+    orderRepo.save(order)
+    return order.offences.toList()
+  }
 }
