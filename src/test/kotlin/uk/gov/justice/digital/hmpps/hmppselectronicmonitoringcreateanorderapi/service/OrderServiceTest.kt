@@ -134,7 +134,7 @@ class OrderServiceTest {
   }
 
   @Test
-  fun `Should update lastUpdatedBy to the new owner via updateOrderOwner`() {
+  fun `Should update lastUpdatedBy, username to the new owner via updateOrderOwner`() {
     val mockOrder = TestUtilities.createReadyToSubmitOrder(status = OrderStatus.IN_PROGRESS, username = "mockUser")
     whenever(authentication.name).thenReturn("mockUser")
     whenever(repo.findById(mockOrder.id)).thenReturn(Optional.of(mockOrder))
@@ -145,6 +145,7 @@ class OrderServiceTest {
     argumentCaptor<Order>().apply {
       verify(repo, times(1)).save(capture())
       assertThat(firstValue.lastUpdatedBy).isEqualTo("mockNewOwner")
+      assertThat(firstValue.username).isEqualTo("mockNewOwner")
     }
   }
 

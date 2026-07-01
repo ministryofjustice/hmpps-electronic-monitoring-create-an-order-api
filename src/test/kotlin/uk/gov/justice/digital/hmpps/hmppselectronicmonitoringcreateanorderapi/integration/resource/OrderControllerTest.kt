@@ -2003,6 +2003,7 @@ class OrderControllerTest : IntegrationTestBase() {
 
       val updatedOrder = getOrder(order.id)
       assertThat(updatedOrder.lastUpdatedBy).isEqualTo("AUTH_ADM")
+      assertThat(updatedOrder.username).isEqualTo("AUTH_ADM")
       assertThat(updatedOrder.lastUpdatedDateTime).isNotNull()
       assertThat(updatedOrder.lastUpdatedDateTime).isAfterOrEqualTo(before)
     }
