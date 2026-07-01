@@ -7,4 +7,5 @@ data class UpdateOffenceDto(
   val id: UUID? = null,
   val offenceType: String? = null,
   val offenceDate: ZonedDateTime? = null,
+  val offences: List<String>? = null,
 )
