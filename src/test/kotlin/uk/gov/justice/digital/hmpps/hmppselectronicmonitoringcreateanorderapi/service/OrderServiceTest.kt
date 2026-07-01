@@ -28,6 +28,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.ex
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AdditionalDocument
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationAppointment
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationLocation
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InterestedParties
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.Cohort
@@ -987,6 +988,11 @@ class OrderServiceTest {
             dataDictionaryVersion = DataDictionaryVersion.DDV5,
             type = RequestType.VARIATION,
             fmsResultDate = secondDate,
+            interestedParties = InterestedParties(
+              versionId = UUID.randomUUID(),
+              notifyingOrganisation = "PROBATION",
+              notifyingOrganisationName = "Mock Probation",
+            ),
           ),
         )
       }
@@ -995,10 +1001,14 @@ class OrderServiceTest {
 
       val result = service.getVersionInformation(mockOrder.id)
 
-      assertThat(result).hasSize(2).extracting("versionId", "fmsResultDate", "status")
+      assertThat(
+        result,
+      ).hasSize(
+        2,
+      ).extracting("versionId", "fmsResultDate", "status", "notifyingOrganisation", "notifyingOrganisationName")
         .containsExactly(
-          tuple(mockOrder.versions[1].id, secondDate, mockOrder.versions[1].status),
-          tuple(mockOrder.versions[0].id, fixedDate, mockOrder.versions[0].status),
+          tuple(mockOrder.versions[1].id, secondDate, mockOrder.versions[1].status, "PROBATION", "Mock Probation"),
+          tuple(mockOrder.versions[0].id, fixedDate, mockOrder.versions[0].status, "PRISON", "WAYLAND_PRISON"),
         )
     }
   }
