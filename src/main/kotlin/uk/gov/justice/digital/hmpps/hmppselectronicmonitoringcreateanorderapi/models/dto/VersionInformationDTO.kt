@@ -13,4 +13,6 @@ data class VersionInformationDTO(
   val submittedBy: String?,
   val type: RequestType,
   val status: OrderStatus,
+  val notifyingOrganisation: String?,
+  val notifyingOrganisationName: String?,
 )
