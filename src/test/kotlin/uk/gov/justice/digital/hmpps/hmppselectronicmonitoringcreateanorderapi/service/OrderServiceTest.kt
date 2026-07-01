@@ -28,12 +28,14 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.ex
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AdditionalDocument
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationAppointment
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationLocation
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InterestedParties
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.Cohort
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.UserCohort
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.OrderListCriteria
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.CreateOrderDto
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderInformationDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DocumentType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
@@ -48,9 +50,9 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsMonitoringOrderSubmissionResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsSubmissionResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsSubmissionStrategyKind
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.specification.OrderListSpecification
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.specification.OrderSearchSpecification
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.projections.OrderVersionListInformation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.utilities.TestUtilities
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
@@ -361,11 +363,33 @@ class OrderServiceTest {
     val mockOrder = TestUtilities.createReadyToSubmitOrder(startDate = mockStartDate, endDate = mockEndDate)
     val mockCriteria = OrderListCriteria(username = "test")
 
-    whenever(repo.findAll(ArgumentMatchers.any(OrderListSpecification::class.java))).thenReturn(listOf(mockOrder))
+    class MockOrderListInformation : OrderVersionListInformation {
+      override fun getId() = mockOrder.id
+      override fun getVersionId() = mockOrder.versions.last().id
+      override fun getType() = mockOrder.type
+      override fun getStatus() = mockOrder.status
+      override fun getFirstName() = mockOrder.deviceWearer?.firstName
+      override fun getLastName() = mockOrder.deviceWearer?.firstName
+      override fun getNotifyingOrganisation() = mockOrder.interestedParties?.notifyingOrganisation
+    }
+
+    val mockOrderListInformation = MockOrderListInformation()
+
+    whenever(repo.findOrderInformation("test")).thenReturn(listOf(mockOrderListInformation))
 
     val result = service.listOrders(mockCriteria)
+    val expectedValue = OrderInformationDto(
+      mockOrderListInformation.getId(),
+      mockOrderListInformation.getVersionId(),
+      mockOrderListInformation.getStatus(),
+      mockOrderListInformation.getType(),
+      mockOrderListInformation.getFirstName(),
+      mockOrderListInformation.getLastName(),
+      mockOrderListInformation.getNotifyingOrganisation(),
+    )
 
-    assertThat(result).isEqualTo(listOf(mockOrder))
+    assertThat(result).usingRecursiveComparison().ignoringFields("deviceWearer", "interestedParties")
+      .isEqualTo(listOf(expectedValue))
   }
 
   @Test
@@ -987,6 +1011,11 @@ class OrderServiceTest {
             dataDictionaryVersion = DataDictionaryVersion.DDV5,
             type = RequestType.VARIATION,
             fmsResultDate = secondDate,
+            interestedParties = InterestedParties(
+              versionId = UUID.randomUUID(),
+              notifyingOrganisation = "PROBATION",
+              notifyingOrganisationName = "Mock Probation",
+            ),
           ),
         )
       }
@@ -995,10 +1024,14 @@ class OrderServiceTest {
 
       val result = service.getVersionInformation(mockOrder.id)
 
-      assertThat(result).hasSize(2).extracting("versionId", "fmsResultDate", "status")
+      assertThat(
+        result,
+      ).hasSize(
+        2,
+      ).extracting("versionId", "fmsResultDate", "status", "notifyingOrganisation", "notifyingOrganisationName")
         .containsExactly(
-          tuple(mockOrder.versions[1].id, secondDate, mockOrder.versions[1].status),
-          tuple(mockOrder.versions[0].id, fixedDate, mockOrder.versions[0].status),
+          tuple(mockOrder.versions[1].id, secondDate, mockOrder.versions[1].status, "PROBATION", "Mock Probation"),
+          tuple(mockOrder.versions[0].id, fixedDate, mockOrder.versions[0].status, "PRISON", "WAYLAND_PRISON"),
         )
     }
   }
