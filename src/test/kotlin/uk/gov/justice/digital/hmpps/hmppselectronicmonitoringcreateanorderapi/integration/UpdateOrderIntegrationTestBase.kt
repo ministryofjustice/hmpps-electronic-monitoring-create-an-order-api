@@ -2,11 +2,22 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.i
 
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.http.MediaType
 import org.springframework.web.reactive.function.BodyInserters
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.ManageUserApiExtension
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.ManageUserApiExtension.Companion.manageUserApi
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.hmpps.HmppsCaseload
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.hmpps.HmppsUserCaseloadResponse
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.hmpps.UserDetails
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
+import java.time.OffsetDateTime
 import java.util.*
 
+@ExtendWith(
+
+  ManageUserApiExtension::class,
+)
 abstract class UpdateOrderIntegrationTestBase : IntegrationTestBase() {
   abstract val testUris: List<UriTestCase>
 
@@ -78,6 +89,50 @@ abstract class UpdateOrderIntegrationTestBase : IntegrationTestBase() {
       Assertions.assertThat(
         error.developerMessage,
       ).isEqualTo("An editable order with ${order.id} does not exist")
+    }
+  }
+
+  @Test
+  fun `it should update order last updated`() {
+    val mockUserCohort = HmppsUserCaseloadResponse(
+      "AUTH_ADM",
+      true,
+      "mock account",
+      HmppsCaseload("ACI", "HMP ABC"),
+      emptyList(),
+    )
+    manageUserApi.stubUserActiveCaseLoad(mockUserCohort)
+
+    val mockUserDetails = UserDetails(
+      username = "AUTH_ADM",
+      active = true,
+      name = "John Smith",
+      authSource = "mockSource",
+      userId = "ABC",
+      uuid = null,
+    )
+
+    manageUserApi.stubGetUserDetails(mockUserCohort.username, mockUserDetails)
+    val order = createOrder()
+    val beforeCall = OffsetDateTime.now()
+
+    testUris.forEach { case ->
+      webTestClient.put()
+        .uri(case.uri.replace(":orderId", order.id.toString()))
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(
+          BodyInserters.fromValue(
+            case.createValidBody(),
+          ),
+        )
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CEMO__CREATE_ORDER", "ROLE_PRISON")))
+        .exchange()
+        .expectStatus()
+        .isOk
+      val updatedOrder = getOrder(order.id)
+      Assertions.assertThat(updatedOrder.lastUpdatedBy).isEqualTo("John Smith")
+      Assertions.assertThat(updatedOrder.lastUpdatedDateTime).isNotNull
+      Assertions.assertThat(updatedOrder.lastUpdatedDateTime!!.isAfter(beforeCall))
     }
   }
 }

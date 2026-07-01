@@ -11,11 +11,12 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.DetailsOfInstallationService
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.OrderSectionServiceTestBase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.UpdateDetailsOfInstallationDto
 import java.util.*
 
-@ActiveProfiles("test")
-class DetailsOfInstallationServiceTest {
+
+class DetailsOfInstallationServiceTest: OrderSectionServiceTestBase()  {
   private val mockOrderRepo: OrderRepository = mock()
   private lateinit var service: DetailsOfInstallationService
 
@@ -45,6 +46,7 @@ class DetailsOfInstallationServiceTest {
 
     whenever(mockOrderRepo.findById(mockOrderId)).thenReturn(Optional.of(mockOrder))
     whenever(mockOrderRepo.save(mockOrder)).thenReturn(mockOrder)
+    baseSetup(service)
   }
 
   @Test

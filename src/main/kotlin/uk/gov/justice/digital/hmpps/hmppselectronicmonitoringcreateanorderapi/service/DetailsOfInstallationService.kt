@@ -16,6 +16,6 @@ class DetailsOfInstallationService : OrderSectionServiceBase() {
     order.detailsOfInstallation =
       DetailsOfInstallation(versionId = order.versionId, riskCategory = dto.riskCategory, riskDetails = dto.riskDetails)
 
-    return orderRepo.save(order).detailsOfInstallation!!
+    return updateLastUpdatedByAndSaveOrder(order).detailsOfInstallation!!
   }
 }

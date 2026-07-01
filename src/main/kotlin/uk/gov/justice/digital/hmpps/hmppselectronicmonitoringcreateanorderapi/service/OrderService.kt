@@ -102,7 +102,7 @@ class OrderService(
     notifyingOrganisation: String?,
   ): Boolean {
     val userCohort = userCohortService.getUserCohort(token)
-    return userCohortService.matchesNofifyingOrg(userCohort.cohort, notifyingOrganisation)
+    return userCohortService.matchesNotifyingOrg(userCohort.cohort, notifyingOrganisation)
   }
 
   fun createVersion(orderId: UUID, token: JwtAuthenticationToken, versionType: RequestType): Order {

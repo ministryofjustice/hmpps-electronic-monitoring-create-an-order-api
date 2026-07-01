@@ -17,11 +17,12 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YesNoUnknown
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.MappaService
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.OrderSectionServiceTestBase
 import java.util.Optional
 import java.util.UUID
 
 @ActiveProfiles("test")
-class MappaServiceTest {
+class MappaServiceTest: OrderSectionServiceTestBase()  {
   private val orderRepo: OrderRepository = mock()
   private lateinit var service: MappaService
 
@@ -48,6 +49,7 @@ class MappaServiceTest {
         ),
       ),
     )
+    baseSetup(service)
   }
 
   @Test

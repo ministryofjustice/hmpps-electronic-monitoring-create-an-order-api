@@ -27,7 +27,7 @@ import java.util.UUID
 
 @ActiveProfiles("test")
 @JsonTest
-class DeviceWearerServiceTest {
+class DeviceWearerServiceTest: OrderSectionServiceTestBase()  {
 
   private lateinit var service: DeviceWearerService
   private lateinit var orderRepo: OrderRepository
@@ -58,6 +58,7 @@ class DeviceWearerServiceTest {
     orderRepo = mock(OrderRepository::class.java)
     service = DeviceWearerService()
     service.orderRepo = orderRepo
+    baseSetup(service)
   }
 
   @Test

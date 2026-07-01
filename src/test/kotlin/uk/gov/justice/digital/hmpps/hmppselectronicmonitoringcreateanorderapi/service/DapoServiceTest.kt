@@ -5,7 +5,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.mockito.kotlin.whenever
-import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Dapo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
@@ -17,11 +16,8 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.re
 import java.time.ZonedDateTime
 import java.util.*
 
-@ActiveProfiles("test")
-class DapoServiceTest {
-  lateinit var repo: OrderRepository
-
-  lateinit var service: DapoService
+class DapoServiceTest : OrderSectionServiceTestBase() {
+   lateinit var service: DapoService
 
   private val mockOrderId: UUID = UUID.randomUUID()
   private val mockVersionId: UUID = UUID.randomUUID()
@@ -47,6 +43,7 @@ class DapoServiceTest {
     repo = Mockito.mock(OrderRepository::class.java)
     service = DapoService()
     service.orderRepo = repo
+    baseSetup(service)
   }
 
   @Test

@@ -879,7 +879,7 @@ class OrderServiceTest {
       fun setup() {
         val mockUserCohort = UserCohort(Cohort.PRISON)
         whenever(userCohortService.getUserCohort(authentication)).thenReturn(mockUserCohort)
-        whenever(userCohortService.matchesNofifyingOrg(mockUserCohort.cohort, "PRISON")).thenReturn(true)
+        whenever(userCohortService.matchesNotifyingOrg(mockUserCohort.cohort, "PRISON")).thenReturn(true)
       }
 
       @Test

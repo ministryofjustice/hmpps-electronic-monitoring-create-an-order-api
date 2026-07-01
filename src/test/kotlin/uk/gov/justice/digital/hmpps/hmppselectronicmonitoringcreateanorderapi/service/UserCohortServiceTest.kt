@@ -8,7 +8,6 @@ import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
-import org.mockito.kotlin.times
 import org.springframework.boot.test.autoconfigure.json.JsonTest
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.oauth2.jwt.Jwt
@@ -85,7 +84,7 @@ class UserCohortServiceTest {
     cohort: Cohort,
     notifyingOrganisation: String,
   ) {
-    val result = service.matchesNofifyingOrg(cohort, notifyingOrganisation)
+    val result = service.matchesNotifyingOrg(cohort, notifyingOrganisation)
 
     Assertions.assertThat(result).isEqualTo(true)
   }
@@ -98,7 +97,7 @@ class UserCohortServiceTest {
     cohort: Cohort,
     notifyingOrganisation: String,
   ) {
-    val result = service.matchesNofifyingOrg(cohort, notifyingOrganisation)
+    val result = service.matchesNotifyingOrg(cohort, notifyingOrganisation)
 
     Assertions.assertThat(result).isEqualTo(false)
   }
