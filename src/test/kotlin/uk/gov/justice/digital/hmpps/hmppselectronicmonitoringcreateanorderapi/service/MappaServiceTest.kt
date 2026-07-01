@@ -49,7 +49,6 @@ class MappaServiceTest : OrderSectionServiceTestBase() {
         ),
       ),
     )
-    baseSetup(service)
   }
 
   @Test

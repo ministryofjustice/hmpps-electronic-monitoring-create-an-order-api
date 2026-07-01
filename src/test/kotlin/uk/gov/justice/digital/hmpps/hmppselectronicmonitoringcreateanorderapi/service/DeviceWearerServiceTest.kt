@@ -58,7 +58,6 @@ class DeviceWearerServiceTest : OrderSectionServiceTestBase() {
     orderRepo = mock(OrderRepository::class.java)
     service = DeviceWearerService()
     service.orderRepo = orderRepo
-    baseSetup(service)
   }
 
   @Test

@@ -24,7 +24,6 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DocumentType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.hmpps.HmppsCaseload
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.hmpps.HmppsUserCaseloadResponse
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.hmpps.UserDetails
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidationError
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 import java.nio.file.Files
@@ -59,16 +58,6 @@ class AdditionalDocumentsControllerTest : UpdateOrderIntegrationTestBase() {
     )
     manageUserApi.stubUserActiveCaseLoad(mockUserCohort)
 
-    val mockUserDetails = UserDetails(
-      username = "AUTH_ADM",
-      active = true,
-      name = "John Smith",
-      authSource = "mockSource",
-      userId = "ABC",
-      uuid = null,
-    )
-
-    manageUserApi.stubGetUserDetails(mockUserCohort.username, mockUserDetails)
   }
 
   @Nested

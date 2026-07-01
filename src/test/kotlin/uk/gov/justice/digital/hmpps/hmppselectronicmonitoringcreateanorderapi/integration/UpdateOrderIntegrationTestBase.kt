@@ -6,10 +6,6 @@ import org.springframework.http.HttpMethod
 import org.springframework.http.MediaType
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.web.reactive.function.BodyInserters
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.ManageUserApiExtension.Companion.manageUserApi
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.hmpps.HmppsCaseload
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.hmpps.HmppsUserCaseloadResponse
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.hmpps.UserDetails
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 import java.time.OffsetDateTime
 import java.util.*
@@ -97,25 +93,6 @@ abstract class UpdateOrderIntegrationTestBase : IntegrationTestBase() {
 
   @Test
   fun `it should update order last updated`() {
-    val mockUserCohort = HmppsUserCaseloadResponse(
-      "AUTH_ADM",
-      true,
-      "mock account",
-      HmppsCaseload("ACI", "HMP ABC"),
-      emptyList(),
-    )
-    manageUserApi.stubUserActiveCaseLoad(mockUserCohort)
-
-    val mockUserDetails = UserDetails(
-      username = "AUTH_ADM",
-      active = true,
-      name = "John Smith",
-      authSource = "mockSource",
-      userId = "ABC",
-      uuid = null,
-    )
-
-    manageUserApi.stubGetUserDetails(mockUserCohort.username, mockUserDetails)
     val order = createOrder()
     val beforeCall = OffsetDateTime.now()
 

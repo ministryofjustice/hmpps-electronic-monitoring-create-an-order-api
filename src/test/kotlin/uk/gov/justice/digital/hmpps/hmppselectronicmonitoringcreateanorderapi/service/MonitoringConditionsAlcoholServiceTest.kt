@@ -27,7 +27,7 @@ import java.time.ZonedDateTime
 import java.util.*
 
 @ActiveProfiles("test")
-@SpringBootTest
+@SpringBootTest(properties = ["hmpps.test.jwt-helper-enabled=false"])
 class MonitoringConditionsAlcoholServiceTest {
   @MockitoBean
   lateinit var orderRepo: OrderRepository

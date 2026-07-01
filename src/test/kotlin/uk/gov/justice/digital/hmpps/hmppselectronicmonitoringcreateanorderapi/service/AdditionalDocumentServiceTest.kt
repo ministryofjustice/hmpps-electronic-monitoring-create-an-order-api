@@ -65,7 +65,6 @@ class AdditionalDocumentServiceTest : OrderSectionServiceTestBase() {
     client = mock(DocumentApiClient::class.java)
     service = AdditionalDocumentService(client)
     service.orderRepo = repo
-    baseSetup(service)
   }
 
   @Nested

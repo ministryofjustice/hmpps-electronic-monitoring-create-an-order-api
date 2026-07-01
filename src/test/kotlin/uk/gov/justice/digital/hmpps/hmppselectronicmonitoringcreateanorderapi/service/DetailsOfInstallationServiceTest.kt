@@ -44,7 +44,6 @@ class DetailsOfInstallationServiceTest : OrderSectionServiceTestBase() {
 
     whenever(mockOrderRepo.findById(mockOrderId)).thenReturn(Optional.of(mockOrder))
     whenever(mockOrderRepo.save(mockOrder)).thenReturn(mockOrder)
-    baseSetup(service)
   }
 
   @Test

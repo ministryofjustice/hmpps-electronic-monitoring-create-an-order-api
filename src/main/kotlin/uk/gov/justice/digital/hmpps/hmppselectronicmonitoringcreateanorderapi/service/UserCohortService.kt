@@ -7,12 +7,9 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.UserCohort
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.UserRole
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisationDDv5
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.hmpps.UserDetails
 
 @Service
 class UserCohortService(private val webClient: ManageUserApi) {
-
-  fun getUserDetails(authentication: JwtAuthenticationToken): UserDetails? = webClient.getUserDetails(authentication)
 
   fun getUserCohort(authentication: JwtAuthenticationToken): UserCohort {
     val roles = authentication.authorities.map { it.authority }.toSet()

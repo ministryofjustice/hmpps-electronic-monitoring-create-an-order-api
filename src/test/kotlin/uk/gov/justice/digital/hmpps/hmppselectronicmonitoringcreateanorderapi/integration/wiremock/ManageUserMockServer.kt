@@ -12,7 +12,6 @@ import tools.jackson.databind.ObjectMapper
 import tools.jackson.module.kotlin.jacksonObjectMapper
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.UserGroup
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.hmpps.HmppsUserCaseloadResponse
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.hmpps.UserDetails
 
 class ManageUserApiExtension :
   BeforeAllCallback,
@@ -65,20 +64,6 @@ class ManageUserMockServer : WireMockServer(WIREMOCK_PORT) {
             .withHeader("Content-Type", "application/json")
             .withBody(
               mapper.writeValueAsString(groups),
-            )
-            .withStatus(200),
-        ),
-    )
-  }
-
-  fun stubGetUserDetails(userName: String, user: UserDetails) {
-    stubFor(
-      get(urlPathTemplate("/users/$userName"))
-        .willReturn(
-          aResponse()
-            .withHeader("Content-Type", "application/json")
-            .withBody(
-              mapper.writeValueAsString(user),
             )
             .withStatus(200),
         ),

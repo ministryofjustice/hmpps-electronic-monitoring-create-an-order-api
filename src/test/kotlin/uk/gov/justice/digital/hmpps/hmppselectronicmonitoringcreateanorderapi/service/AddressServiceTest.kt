@@ -8,8 +8,6 @@ import org.mockito.Mockito
 import org.mockito.kotlin.any
 import org.mockito.kotlin.times
 import org.mockito.kotlin.whenever
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Address
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AlcoholMonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
@@ -28,8 +26,6 @@ import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.util.*
 
-@ActiveProfiles("test")
-@SpringBootTest
 class AddressServiceTest : OrderSectionServiceTestBase() {
 
   private val mockOrderId: UUID = UUID.randomUUID()
@@ -150,7 +146,6 @@ class AddressServiceTest : OrderSectionServiceTestBase() {
     repo = Mockito.mock(OrderRepository::class.java)
     addressService = AddressService()
     addressService.orderRepo = repo
-    baseSetup(addressService)
     whenever(repo.save(any<Order>())).thenReturn(orderWithExistingPrimaryAddressAndRelation)
   }
 

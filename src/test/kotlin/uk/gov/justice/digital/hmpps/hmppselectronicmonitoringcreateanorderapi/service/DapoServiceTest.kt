@@ -43,7 +43,6 @@ class DapoServiceTest : OrderSectionServiceTestBase() {
     repo = Mockito.mock(OrderRepository::class.java)
     service = DapoService()
     service.orderRepo = repo
-    baseSetup(service)
   }
 
   @Test
