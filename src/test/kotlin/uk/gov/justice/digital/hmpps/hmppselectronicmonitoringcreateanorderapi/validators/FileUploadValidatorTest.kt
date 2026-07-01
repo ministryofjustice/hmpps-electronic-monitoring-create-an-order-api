@@ -2,17 +2,20 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.v
 
 import jakarta.validation.ValidationException
 import org.apache.tika.Tika
+import org.apache.tika.metadata.Metadata
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import org.springframework.web.multipart.MaxUploadSizeExceededException
 import org.springframework.web.multipart.MultipartFile
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DocumentType
 import java.io.ByteArrayInputStream
+import java.io.FileInputStream
 
 class FileUploadValidatorTest {
 
@@ -55,7 +58,7 @@ class FileUploadValidatorTest {
     whenever(multipartFile.inputStream).thenReturn(ByteArrayInputStream(ByteArray(10)))
 
     val tikaMock = mock<Tika>()
-    whenever(tikaMock.detect(org.mockito.kotlin.any<java.io.InputStream>()))
+    whenever(tikaMock.detect(any<java.io.InputStream>(), any<Metadata>()))
       .thenReturn("application/pdf")
 
     val ex = assertThrows(MaxUploadSizeExceededException::class.java) {
@@ -70,7 +73,7 @@ class FileUploadValidatorTest {
     whenever(multipartFile.inputStream).thenReturn(ByteArrayInputStream(ByteArray(10)))
 
     val tikaMock = mock<Tika>()
-    whenever(tikaMock.detect(org.mockito.kotlin.any<java.io.InputStream>()))
+    whenever(tikaMock.detect(any<java.io.InputStream>(), any<Metadata>()))
       .thenReturn("image/png")
 
     val ex = assertThrows(ValidationException::class.java) {
@@ -102,11 +105,24 @@ class FileUploadValidatorTest {
     whenever(multipartFile.inputStream).thenReturn(inputStream)
 
     val tikaMock = mock<Tika>()
-    whenever(tikaMock.detect(org.mockito.kotlin.any<java.io.InputStream>()))
+    whenever(tikaMock.detect(any<java.io.InputStream>(), any<Metadata>()))
       .thenReturn("application/pdf")
 
     assertDoesNotThrow {
       FileUploadValidator.validateFileExtensionAndSize(multipartFile, documentType, tikaMock)
+    }
+  }
+
+  @Test
+  fun `should pass validation for valid docx file`() {
+    whenever(multipartFile.originalFilename).thenReturn("This_is_docx_file.docx")
+    whenever(multipartFile.size).thenReturn(100L)
+
+    val inputStream = FileInputStream("src/test/resources/docs/This_is_docx_file.docx")
+    whenever(multipartFile.inputStream).thenReturn(inputStream)
+
+    assertDoesNotThrow {
+      FileUploadValidator.validateFileExtensionAndSize(multipartFile, DocumentType.LICENCE)
     }
   }
 }
