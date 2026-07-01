@@ -57,7 +57,6 @@ class AdditionalDocumentsControllerTest : UpdateOrderIntegrationTestBase() {
       emptyList(),
     )
     manageUserApi.stubUserActiveCaseLoad(mockUserCohort)
-
   }
 
   @Nested

@@ -8,11 +8,22 @@ import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 import org.springframework.http.MediaType
 import org.springframework.web.reactive.function.BodyInserters
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.UpdateOrderIntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.UriTestCase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.InstallationLocationType
 import java.util.*
 
-class InstallationLocationControllerTest : IntegrationTestBase() {
+class InstallationLocationControllerTest : UpdateOrderIntegrationTestBase() {
+
+  override val testUris: List<UriTestCase> = listOf(
+    UriTestCase(uri = "/api/orders/:orderId/installation-location", createValidBody = {
+      """
+            {
+              "location": "INSTALLATION"
+            }
+      """.trimIndent()
+    }),
+  )
 
   @BeforeEach
   fun setup() {
