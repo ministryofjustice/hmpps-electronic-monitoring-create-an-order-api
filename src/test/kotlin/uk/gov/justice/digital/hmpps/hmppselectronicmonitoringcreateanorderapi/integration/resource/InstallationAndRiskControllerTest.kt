@@ -8,19 +8,27 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.http.HttpMethod
 import org.springframework.http.MediaType
 import org.springframework.web.reactive.function.BodyInserters
 import tools.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.data.ValidationErrors
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.UpdateOrderIntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.UriTestCase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateInstallationAndRiskDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidationError
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 import java.util.*
 
-class InstallationAndRiskControllerTest : IntegrationTestBase() {
+class InstallationAndRiskControllerTest : UpdateOrderIntegrationTestBase() {
   @Autowired
   lateinit var objectMapper: ObjectMapper
+
+  override val testUris: List<UriTestCase> = listOf(
+    UriTestCase(uri = "/api/orders/:orderId/installation-and-risk", createValidBody = {
+      mockValidRequestBody()
+    }, httpMethod = HttpMethod.PUT),
+  )
 
   @BeforeEach
   fun setup() {
@@ -30,45 +38,6 @@ class InstallationAndRiskControllerTest : IntegrationTestBase() {
   @Nested
   @DisplayName("PUT /api/orders/{orderId}/installation-and-risk")
   inner class UpdateInstallationAndRisk {
-    @Test
-    fun `it should return an error if the order was not created by the user`() {
-      val order = createOrder()
-      val result = webTestClient.put()
-        .uri("/api/orders/${order.id}/installation-and-risk")
-        .contentType(MediaType.APPLICATION_JSON)
-        .body(
-          BodyInserters.fromValue(
-            mockValidRequestBody(),
-          ),
-        )
-        .headers(setAuthorisation("AUTH_ADM_2"))
-        .exchange()
-        .expectStatus()
-        .isNotFound
-        .expectBodyList(ErrorResponse::class.java)
-        .returnResult()
-      val error = result.responseBody!!.first()
-      Assertions.assertThat(
-        error.developerMessage,
-      ).isEqualTo("An editable order with ${order.id} does not exist")
-    }
-
-    @Test
-    fun `it should return not found if the order does not exist`() {
-      webTestClient.put()
-        .uri("/api/orders/${UUID.randomUUID()}/installation-and-risk")
-        .contentType(MediaType.APPLICATION_JSON)
-        .body(
-          BodyInserters.fromValue(
-            mockValidRequestBody(),
-          ),
-        )
-        .headers(setAuthorisation("AUTH_ADM"))
-        .exchange()
-        .expectStatus()
-        .isNotFound
-    }
-
     @Test
     fun `it should return an error if the order is in a submitted state`() {
       val order = createSubmittedOrder()
@@ -239,24 +208,23 @@ class InstallationAndRiskControllerTest : IntegrationTestBase() {
         ),
       )
     }
-
-    fun mockValidRequestBody(
-      offence: String? = null,
-      offenceAdditionalDetails: String? = null,
-      riskCategory: Array<String>? = null,
-      riskDetails: String? = null,
-      mappaLevel: String? = null,
-      mappaCaseType: String? = null,
-    ): String {
-      val condition = UpdateInstallationAndRiskDto(
-        offence = offence,
-        offenceAdditionalDetails = offenceAdditionalDetails,
-        riskCategory = riskCategory,
-        riskDetails = riskDetails,
-        mappaLevel = mappaLevel,
-        mappaCaseType = mappaCaseType,
-      )
-      return objectMapper.writeValueAsString(condition)
-    }
+  }
+  fun mockValidRequestBody(
+    offence: String? = null,
+    offenceAdditionalDetails: String? = null,
+    riskCategory: Array<String>? = null,
+    riskDetails: String? = null,
+    mappaLevel: String? = null,
+    mappaCaseType: String? = null,
+  ): String {
+    val condition = UpdateInstallationAndRiskDto(
+      offence = offence,
+      offenceAdditionalDetails = offenceAdditionalDetails,
+      riskCategory = riskCategory,
+      riskDetails = riskDetails,
+      mappaLevel = mappaLevel,
+      mappaCaseType = mappaCaseType,
+    )
+    return objectMapper.writeValueAsString(condition)
   }
 }
