@@ -23,21 +23,19 @@ import java.util.*
 abstract class UpdateOrderIntegrationTestBase : IntegrationTestBase() {
   abstract val testUris: List<UriTestCase>
 
-  private fun getRequestBodyUriSpec(method:HttpMethod): WebTestClient.RequestBodyUriSpec {
+  private fun getRequestBodyUriSpec(method: HttpMethod): WebTestClient.RequestBodyUriSpec = when (method) {
+    HttpMethod.GET -> webTestClient.get()
+    HttpMethod.POST -> webTestClient.post()
+    HttpMethod.DELETE -> webTestClient.delete()
+    else -> webTestClient.put()
+  } as WebTestClient.RequestBodyUriSpec
 
-    return when(method) {
-      HttpMethod.GET-> webTestClient.get()
-      HttpMethod.POST -> webTestClient.post()
-      HttpMethod.DELETE -> webTestClient.delete()
-      else ->webTestClient.put()
-    } as WebTestClient.RequestBodyUriSpec
-  }
   @Test
   fun `for each uri, it should return an error if the order was not created by the user`() {
     val order = createOrder()
 
     testUris.forEach { case ->
-      val result =getRequestBodyUriSpec(case.httpMethod)
+      val result = getRequestBodyUriSpec(case.httpMethod)
         .uri(case.uri.replace(":orderId", order.id.toString()))
         .contentType(MediaType.APPLICATION_JSON)
         .body(

@@ -17,7 +17,7 @@ import java.time.ZonedDateTime
 import java.util.*
 
 class DapoServiceTest : OrderSectionServiceTestBase() {
-   lateinit var service: DapoService
+  lateinit var service: DapoService
 
   private val mockOrderId: UUID = UUID.randomUUID()
   private val mockVersionId: UUID = UUID.randomUUID()

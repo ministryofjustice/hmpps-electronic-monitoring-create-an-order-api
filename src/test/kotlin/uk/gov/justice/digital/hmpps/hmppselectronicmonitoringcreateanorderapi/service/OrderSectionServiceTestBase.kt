@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service
 
-import org.junit.jupiter.api.BeforeEach
 import org.mockito.Mockito.mock
 import org.mockito.kotlin.whenever
 import org.springframework.security.core.context.SecurityContextHolder
@@ -26,7 +25,7 @@ abstract class OrderSectionServiceTestBase {
     uuid = null,
   )
 
-  fun baseSetup( service: OrderSectionServiceBase) {
+  fun baseSetup(service: OrderSectionServiceBase) {
     userCohortService = mock()
     authentication = mock(JwtAuthenticationToken::class.java)
 

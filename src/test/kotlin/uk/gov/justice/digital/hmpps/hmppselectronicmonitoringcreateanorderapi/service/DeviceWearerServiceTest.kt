@@ -27,7 +27,7 @@ import java.util.UUID
 
 @ActiveProfiles("test")
 @JsonTest
-class DeviceWearerServiceTest: OrderSectionServiceTestBase()  {
+class DeviceWearerServiceTest : OrderSectionServiceTestBase() {
 
   private lateinit var service: DeviceWearerService
   private lateinit var orderRepo: OrderRepository

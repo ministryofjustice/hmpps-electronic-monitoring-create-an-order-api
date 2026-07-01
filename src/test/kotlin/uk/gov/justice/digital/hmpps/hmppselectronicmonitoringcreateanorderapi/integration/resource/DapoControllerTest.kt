@@ -27,7 +27,9 @@ class DapoControllerTest : UpdateOrderIntegrationTestBase() {
   val dapoId = UUID.randomUUID()
   override val testUris: List<UriTestCase> = listOf(
     UriTestCase(uri = "/api/orders/:orderId/dapo", createValidBody = { createValidBody() }),
-    UriTestCase(uri = "/api/orders/:orderId/dapo/delete/$dapoId", createValidBody = { createValidBody() }, httpMethod = HttpMethod.DELETE),
+    UriTestCase(uri = "/api/orders/:orderId/dapo/delete/$dapoId", createValidBody = {
+      createValidBody()
+    }, httpMethod = HttpMethod.DELETE),
   )
 
   @BeforeEach
@@ -96,7 +98,6 @@ class DapoControllerTest : UpdateOrderIntegrationTestBase() {
 
   @Test
   fun `can remove a dapo`() {
-
     val order = createStoredOrder()
     order.dapoClauses.add(
       Dapo(

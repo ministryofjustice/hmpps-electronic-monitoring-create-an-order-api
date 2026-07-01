@@ -22,7 +22,7 @@ import java.util.Optional
 import java.util.UUID
 
 @ActiveProfiles("test")
-class MappaServiceTest: OrderSectionServiceTestBase()  {
+class MappaServiceTest : OrderSectionServiceTestBase() {
   private val orderRepo: OrderRepository = mock()
   private lateinit var service: MappaService
 
