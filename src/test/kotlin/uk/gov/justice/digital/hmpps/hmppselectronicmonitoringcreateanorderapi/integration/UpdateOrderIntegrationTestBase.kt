@@ -2,12 +2,10 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.i
 
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.http.HttpMethod
 import org.springframework.http.MediaType
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.web.reactive.function.BodyInserters
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.ManageUserApiExtension
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.ManageUserApiExtension.Companion.manageUserApi
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.hmpps.HmppsCaseload
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.hmpps.HmppsUserCaseloadResponse
@@ -16,10 +14,6 @@ import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 import java.time.OffsetDateTime
 import java.util.*
 
-@ExtendWith(
-
-  ManageUserApiExtension::class,
-)
 abstract class UpdateOrderIntegrationTestBase : IntegrationTestBase() {
   abstract val testUris: List<UriTestCase>
 

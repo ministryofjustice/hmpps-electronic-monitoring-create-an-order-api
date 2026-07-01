@@ -16,6 +16,7 @@ import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.HmppsAuthApiExtension
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.HmppsAuthApiExtension.Companion.hmppsAuth
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.HmppsDocumentManagementApiExtension
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.ManageUserApiExtension
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.SercoAuthMockServerExtension
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.SercoMockApiExtension
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
@@ -33,6 +34,7 @@ import java.util.*
   HmppsDocumentManagementApiExtension::class,
   SercoAuthMockServerExtension::class,
   SercoMockApiExtension::class,
+  ManageUserApiExtension::class,
 )
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @ActiveProfiles("test")
