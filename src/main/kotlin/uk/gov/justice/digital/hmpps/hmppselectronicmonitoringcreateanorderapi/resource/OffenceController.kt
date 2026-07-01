@@ -22,19 +22,21 @@ import java.util.*
 class OffenceController(val service: OffenceService) {
 
   @PutMapping("/orders/{orderId}/offence")
-  fun updateDapo(
+  fun updateOffence(
     @PathVariable orderId: UUID,
     @RequestBody @Valid dto: UpdateOffenceDto,
     authentication: Authentication,
-  ): ResponseEntity<Offence> {
+  ): ResponseEntity<List<Offence>> {
     val username = authentication.name
-    val offence = service.addOffence(
-      orderId,
-      username,
-      dto,
-    )
 
-    return ResponseEntity(offence, HttpStatus.OK)
+    val offences =
+      if (dto.offences != null) {
+        service.setOffences(orderId, username, dto)
+      } else {
+        listOf(service.addOffence(orderId, username, dto))
+      }
+
+    return ResponseEntity(offences, HttpStatus.OK)
   }
 
   @DeleteMapping("/orders/{orderId}/offence/delete/{offenceId}")
