@@ -123,6 +123,7 @@ class OrderControllerTest {
         dataDictionaryVersion = mockDictionaryVersion,
         orderParameters = null,
         versionId = version.id,
+        isOwner = true,
       ),
     )
   }

@@ -160,6 +160,58 @@ class OrderServiceTest {
 
       assertThat(exception.message).isEqualTo("Order ($orderId) for mockUser not found")
     }
+
+    private fun orderWithCaseload(username: String, caseloadId: String?): Order {
+      val order = Order()
+      order.versions = mutableListOf(
+        OrderVersion(
+          orderId = order.id,
+          username = username,
+          status = OrderStatus.IN_PROGRESS,
+          type = RequestType.REQUEST,
+          dataDictionaryVersion = DataDictionaryVersion.DDV6,
+          ownerCohort = caseloadId,
+        ),
+      )
+      return order
+    }
+
+    @Test
+    fun `same prison can access draft order`() {
+      val order = orderWithCaseload("otherUser", "MDI")
+      whenever(repo.findById(order.id)).thenReturn(Optional.of(order))
+      whenever(userCohortService.getUserCohort(authentication)).thenReturn(
+        UserCohort(
+          Cohort.PRISON,
+          "HMP Bedford",
+          "MDI",
+        ),
+      )
+
+      val result = service.getOrder(order.id, authentication)
+
+      assertThat(result).isEqualTo(order)
+    }
+
+    @Test
+    fun `different prison cannot access draft order`() {
+      val order = orderWithCaseload("otherUser", "MDI")
+      whenever(repo.findById(order.id)).thenReturn(Optional.of(order))
+      whenever(userCohortService.getUserCohort(authentication)).thenReturn(
+        UserCohort(
+          Cohort.PRISON,
+          "HMP Leeds",
+          "LEI",
+        ),
+      )
+
+      assertThatThrownBy {
+        service.getOrder(
+          order.id,
+          authentication,
+        )
+      }.isInstanceOf(EntityNotFoundException::class.java)
+    }
   }
 
   @Test
