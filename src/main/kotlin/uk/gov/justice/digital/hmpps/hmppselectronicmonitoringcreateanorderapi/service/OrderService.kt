@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.s
 
 import jakarta.persistence.EntityNotFoundException
 import org.springframework.boot.context.properties.EnableConfigurationProperties
+import org.springframework.security.oauth2.client.web.reactive.function.client.ServletOAuth2AuthorizedClientExchangeFilterFunction.authentication
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.config.FeatureFlags
@@ -24,6 +25,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.specification.OrderListSpecification
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.specification.OrderSearchSpecification
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
+import java.time.OffsetDateTime
 import java.time.ZonedDateTime
 import java.util.*
 
@@ -328,6 +330,13 @@ class OrderService(
     return repo.findAll(
       OrderSearchSpecification(searchCriteria),
     )
+  }
+
+  fun updateOrderOwner(orderId: UUID, token: JwtAuthenticationToken, newOwner: String) {
+    val order = getOrder(orderId, token)
+    order.lastUpdatedBy = newOwner
+    order.lastUpdatedDateTime = OffsetDateTime.now() // consider variations?
+    repo.save(order)
   }
 
   fun getVersionInformation(orderId: UUID): List<VersionInformationDTO> {
