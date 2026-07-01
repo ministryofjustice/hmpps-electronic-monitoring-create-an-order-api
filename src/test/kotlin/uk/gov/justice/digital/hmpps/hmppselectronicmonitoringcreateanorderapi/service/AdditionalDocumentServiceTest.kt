@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.s
 import jakarta.persistence.EntityNotFoundException
 import jakarta.validation.ValidationException
 import org.assertj.core.api.Assertions
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
@@ -44,10 +45,9 @@ import kotlin.collections.plus
 
 @ActiveProfiles("test")
 @JsonTest
-class AdditionalDocumentServiceTest {
+class AdditionalDocumentServiceTest : OrderSectionServiceTestBase() {
   private lateinit var service: AdditionalDocumentService
   private lateinit var client: DocumentApiClient
-  private lateinit var orderRepo: OrderRepository
 
   val username: String = "username"
   val mockOrderId = UUID.randomUUID()
@@ -61,10 +61,11 @@ class AdditionalDocumentServiceTest {
 
   @BeforeEach
   fun setup() {
-    orderRepo = mock(OrderRepository::class.java)
+    repo = mock(OrderRepository::class.java)
     client = mock(DocumentApiClient::class.java)
     service = AdditionalDocumentService(client)
-    service.orderRepo = orderRepo
+    service.orderRepo = repo
+    baseSetup(service)
   }
 
   @Nested
@@ -74,7 +75,7 @@ class AdditionalDocumentServiceTest {
     fun `it should throw an error if document does not exist`() {
       // Mock an order with no documents
       whenever(
-        orderRepo.findById(mockOrderId),
+        repo.findById(mockOrderId),
       ).thenReturn(
         Optional.of(
           Order(
@@ -105,7 +106,7 @@ class AdditionalDocumentServiceTest {
     fun `it should return the object blob if the document exists`() {
       // Mock an order with a single document
       whenever(
-        orderRepo.findById(mockOrderId),
+        repo.findById(mockOrderId),
       ).thenReturn(
         Optional.of(
           Order(
@@ -148,51 +149,38 @@ class AdditionalDocumentServiceTest {
     @Test
     fun `it should delete the document from the database and the document management api`() {
       // Mock an order with a single document
-      whenever(
-        orderRepo.findById(mockOrderId),
-      ).thenReturn(
-        Optional.of(
-          Order(
-            id = mockOrderId,
-            versions = mutableListOf(
-              OrderVersion(
-                id = mockVersionId,
-                status = OrderStatus.IN_PROGRESS,
-                type = RequestType.REQUEST,
-                username = username,
-                orderId = mockOrderId,
-                additionalDocuments = mutableListOf(
-                  doc,
-                ),
-                dataDictionaryVersion = mockDictionaryVersion,
-              ),
+      val mockOrder = Order(
+        id = mockOrderId,
+        versions = mutableListOf(
+          OrderVersion(
+            id = mockVersionId,
+            status = OrderStatus.IN_PROGRESS,
+            type = RequestType.REQUEST,
+            username = username,
+            orderId = mockOrderId,
+            additionalDocuments = mutableListOf(
+              doc,
             ),
+            dataDictionaryVersion = mockDictionaryVersion,
           ),
         ),
       )
-
+      whenever(
+        repo.findById(mockOrderId),
+      ).thenReturn(
+        Optional.of(
+          mockOrder,
+        ),
+      )
+      whenever(repo.save(mockOrder)).thenReturn(mockOrder)
       // Delete the document
       service.deleteDocument(mockOrderId, username, docType)
 
       // Verify that the document was removed from the order
-      verify(orderRepo, times(1)).save(
-        Order(
-          id = mockOrderId,
-          versions = mutableListOf(
-            OrderVersion(
-              id = mockVersionId,
-              status = OrderStatus.IN_PROGRESS,
-              type = RequestType.REQUEST,
-              username = username,
-              versionId = 0,
-              orderId = mockOrderId,
-              additionalDocuments = mutableListOf(),
-              dataDictionaryVersion = mockDictionaryVersion,
-            ),
-          ),
-        ),
-
-      )
+      argumentCaptor<Order>().apply {
+        verify(repo, times(1)).save(capture())
+        assertThat(firstValue.additionalDocuments.size).isEqualTo(0)
+      }
 
       // Verify that the file was deleted from document api
       argumentCaptor<String>().apply {
@@ -209,7 +197,7 @@ class AdditionalDocumentServiceTest {
     fun `it should throw an error for unsupported document extensions`() {
       // Mock an order with no documents
       whenever(
-        orderRepo.findById(mockOrderId),
+        repo.findById(mockOrderId),
       ).thenReturn(
         Optional.of(
           Order(
@@ -254,29 +242,30 @@ class AdditionalDocumentServiceTest {
         it.`when`<Any> { UUID.randomUUID() }.thenReturn(defaultUuid)
 
         // Mock an order with a single pdf
-        whenever(
-          orderRepo.findById(mockOrderId),
-        ).thenReturn(
-          Optional.of(
-            Order(
-              id = mockOrderId,
-              versions = mutableListOf(
-                OrderVersion(
-                  id = mockVersionId,
-                  status = OrderStatus.IN_PROGRESS,
-                  type = RequestType.REQUEST,
-                  username = username,
-                  orderId = mockOrderId,
-                  additionalDocuments = mutableListOf(
-                    doc,
-                  ),
-                  dataDictionaryVersion = mockDictionaryVersion,
-                ),
+        val mockOrder = Order(
+          id = mockOrderId,
+          versions = mutableListOf(
+            OrderVersion(
+              id = mockVersionId,
+              status = OrderStatus.IN_PROGRESS,
+              type = RequestType.REQUEST,
+              username = username,
+              orderId = mockOrderId,
+              additionalDocuments = mutableListOf(
+                doc,
               ),
+              dataDictionaryVersion = mockDictionaryVersion,
             ),
           ),
         )
-
+        whenever(
+          repo.findById(mockOrderId),
+        ).thenReturn(
+          Optional.of(
+            mockOrder,
+          ),
+        )
+        whenever(repo.save(mockOrder)).thenReturn(mockOrder)
         // Upload a new pdf
         service.uploadDocument(
           mockOrderId,
@@ -297,30 +286,15 @@ class AdditionalDocumentServiceTest {
         )
 
         // Verify that the order contains only the new pdf
-        verify(orderRepo, times(2)).save(
-          Order(
-            id = mockOrderId,
-            versions = mutableListOf(
-              OrderVersion(
-                id = mockVersionId,
-                status = OrderStatus.IN_PROGRESS,
-                type = RequestType.REQUEST,
-                username = username,
-                orderId = mockOrderId,
-                additionalDocuments = mutableListOf(
-                  AdditionalDocument(
-                    id = defaultUuid,
-                    versionId = mockVersionId,
-                    fileType = docType,
-                    fileName = "file-name.pdf",
-                    documentId = defaultUuid,
-                  ),
-                ),
-                dataDictionaryVersion = mockDictionaryVersion,
-              ),
-            ),
-          ),
-        )
+        argumentCaptor<Order>().apply {
+          verify(repo, times(2)).save(capture())
+          assertThat(secondValue.additionalDocuments.size).isEqualTo(1)
+          assertThat(secondValue.additionalDocuments.first().id).isEqualTo(defaultUuid)
+          assertThat(secondValue.additionalDocuments.first().versionId).isEqualTo(mockVersionId)
+          assertThat(secondValue.additionalDocuments.first().fileType).isEqualTo(docType)
+          assertThat(secondValue.additionalDocuments.first().documentId).isEqualTo(defaultUuid)
+          assertThat(secondValue.additionalDocuments.first().fileName).isEqualTo("file-name.pdf")
+        }
 
         // Verify that the old file was deleted from document api
         argumentCaptor<String>().apply {
@@ -348,27 +322,28 @@ class AdditionalDocumentServiceTest {
         it.`when`<Any> { UUID.randomUUID() }.thenReturn(defaultUuid)
 
         // Mock an order with no documents
-        whenever(
-          orderRepo.findById(mockOrderId),
-        ).thenReturn(
-          Optional.of(
-            Order(
-              id = mockOrderId,
-              versions = mutableListOf(
-                OrderVersion(
-                  id = mockVersionId,
-                  status = OrderStatus.IN_PROGRESS,
-                  type = RequestType.REQUEST,
-                  username = username,
-                  orderId = mockOrderId,
-                  dataDictionaryVersion = mockDictionaryVersion,
-                ),
-
-              ),
+        val mockOrder = Order(
+          id = mockOrderId,
+          versions = mutableListOf(
+            OrderVersion(
+              id = mockVersionId,
+              status = OrderStatus.IN_PROGRESS,
+              type = RequestType.REQUEST,
+              username = username,
+              orderId = mockOrderId,
+              dataDictionaryVersion = mockDictionaryVersion,
             ),
+
           ),
         )
-
+        whenever(
+          repo.findById(mockOrderId),
+        ).thenReturn(
+          Optional.of(
+            mockOrder,
+          ),
+        )
+        whenever(repo.save(mockOrder)).thenReturn(mockOrder)
         // Upload a document
         service.uploadDocument(
           mockOrderId,
@@ -389,30 +364,15 @@ class AdditionalDocumentServiceTest {
         )
 
         // Verify that the order contains only the new pdf
-        verify(orderRepo, times(1)).save(
-          Order(
-            id = mockOrderId,
-            versions = mutableListOf(
-              OrderVersion(
-                id = mockVersionId,
-                status = OrderStatus.IN_PROGRESS,
-                type = RequestType.REQUEST,
-                username = username,
-                orderId = mockOrderId,
-                additionalDocuments = mutableListOf(
-                  AdditionalDocument(
-                    id = defaultUuid,
-                    versionId = mockVersionId,
-                    fileType = docType,
-                    fileName = "file-name.pdf",
-                    documentId = defaultUuid,
-                  ),
-                ),
-                dataDictionaryVersion = mockDictionaryVersion,
-              ),
-            ),
-          ),
-        )
+        argumentCaptor<Order>().apply {
+          verify(repo, times(1)).save(capture())
+          assertThat(firstValue.additionalDocuments.size).isEqualTo(1)
+          assertThat(firstValue.additionalDocuments.first().id).isEqualTo(defaultUuid)
+          assertThat(firstValue.additionalDocuments.first().versionId).isEqualTo(mockVersionId)
+          assertThat(firstValue.additionalDocuments.first().fileType).isEqualTo(docType)
+          assertThat(firstValue.additionalDocuments.first().documentId).isEqualTo(defaultUuid)
+          assertThat(firstValue.additionalDocuments.first().fileName).isEqualTo("file-name.pdf")
+        }
 
         // Verify the new file was uploaded to the document api
         argumentCaptor<String, MultipartBodyBuilder>().apply {
@@ -447,13 +407,13 @@ class AdditionalDocumentServiceTest {
         ),
       )
       whenever(
-        orderRepo.findById(mockOrderId),
+        repo.findById(mockOrderId),
       ).thenReturn(
         Optional.of(
           mockOrder,
         ),
       )
-      whenever(orderRepo.save(mockOrder)).thenReturn(mockOrder)
+      whenever(repo.save(mockOrder)).thenReturn(mockOrder)
 
       val result = service.updateHavePhoto(
         mockOrderId,
@@ -481,13 +441,13 @@ class AdditionalDocumentServiceTest {
         ),
       )
       whenever(
-        orderRepo.findById(mockOrderId),
+        repo.findById(mockOrderId),
       ).thenReturn(
         Optional.of(
           mockOrder,
         ),
       )
-      whenever(orderRepo.save(mockOrder)).thenReturn(mockOrder)
+      whenever(repo.save(mockOrder)).thenReturn(mockOrder)
 
       val result = service.updateHavePhoto(
         mockOrderId,
@@ -527,13 +487,13 @@ class AdditionalDocumentServiceTest {
         ),
       )
       whenever(
-        orderRepo.findById(mockOrderId),
+        repo.findById(mockOrderId),
       ).thenReturn(
         Optional.of(
           mockOrder,
         ),
       )
-      whenever(orderRepo.save(mockOrder)).thenReturn(mockOrder)
+      whenever(repo.save(mockOrder)).thenReturn(mockOrder)
 
       val result = service.updateHavePhoto(
         mockOrderId,
@@ -565,13 +525,13 @@ class AdditionalDocumentServiceTest {
       ),
     )
     whenever(
-      orderRepo.findById(mockOrderId),
+      repo.findById(mockOrderId),
     ).thenReturn(
       Optional.of(
         mockOrder,
       ),
     )
-    whenever(orderRepo.save(mockOrder)).thenReturn(mockOrder)
+    whenever(repo.save(mockOrder)).thenReturn(mockOrder)
 
     val result = service.updateFileRequired(
       mockOrderId,
@@ -609,13 +569,13 @@ class AdditionalDocumentServiceTest {
       ),
     )
     whenever(
-      orderRepo.findById(mockOrderId),
+      repo.findById(mockOrderId),
     ).thenReturn(
       Optional.of(
         mockOrder,
       ),
     )
-    whenever(orderRepo.save(mockOrder)).thenReturn(mockOrder)
+    whenever(repo.save(mockOrder)).thenReturn(mockOrder)
 
     val result = service.updateFileRequired(
       mockOrderId,
@@ -665,13 +625,13 @@ class AdditionalDocumentServiceTest {
       ),
     )
     whenever(
-      orderRepo.findById(mockOrderId),
+      repo.findById(mockOrderId),
     ).thenReturn(
       Optional.of(
         mockOrder,
       ),
     )
-    whenever(orderRepo.save(mockOrder)).thenReturn(mockOrder)
+    whenever(repo.save(mockOrder)).thenReturn(mockOrder)
 
     val result = service.updateFileRequired(
       mockOrderId,

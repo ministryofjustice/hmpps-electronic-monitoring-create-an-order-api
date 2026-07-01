@@ -5,9 +5,11 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
+import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus.BAD_REQUEST
 import org.springframework.http.HttpStatus.NOT_FOUND
 import org.springframework.http.MediaType
@@ -15,23 +17,64 @@ import org.springframework.http.client.MultipartBodyBuilder
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.DocumentApiClient
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.UpdateOrderIntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.UriTestCase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.HmppsDocumentManagementApiExtension.Companion.documentApi
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.ManageUserApiExtension
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.ManageUserApiExtension.Companion.manageUserApi
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.documentmanagement.DocumentUploadResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DocumentType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.hmpps.HmppsCaseload
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.hmpps.HmppsUserCaseloadResponse
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.hmpps.UserDetails
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidationError
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 import java.nio.file.Files
 import java.nio.file.Paths
+import java.time.OffsetDateTime
 
-class AdditionalDocumentsControllerTest : IntegrationTestBase() {
+@ExtendWith(
+
+  ManageUserApiExtension::class,
+)
+class AdditionalDocumentsControllerTest : UpdateOrderIntegrationTestBase() {
 
   @MockitoSpyBean
   lateinit var apiClient: DocumentApiClient
 
+  override val testUris: List<UriTestCase> = listOf(
+    UriTestCase(uri = "/api/orders/:orderId/attachments/have-photo", createValidBody = {
+      """
+            {
+              "havePhoto": true
+            }
+      """.trimIndent()
+    }, httpMethod = HttpMethod.PUT),
+  )
+
   @BeforeEach
   fun setup() {
     repo.deleteAll()
+
+    val mockUserCohort = HmppsUserCaseloadResponse(
+      "AUTH_ADM",
+      true,
+      "mock account",
+      HmppsCaseload("ACI", "HMP ABC"),
+      emptyList(),
+    )
+    manageUserApi.stubUserActiveCaseLoad(mockUserCohort)
+
+    val mockUserDetails = UserDetails(
+      username = "AUTH_ADM",
+      active = true,
+      name = "John Smith",
+      authSource = "mockSource",
+      userId = "ABC",
+      uuid = null,
+    )
+
+    manageUserApi.stubGetUserDetails(mockUserCohort.username, mockUserDetails)
   }
 
   @Nested
@@ -179,12 +222,13 @@ class AdditionalDocumentsControllerTest : IntegrationTestBase() {
     }
 
     @Test
-    fun `it should upload a document to the document api`() {
+    fun `it should upload a document to the document api and update last updated by`() {
       val order = createOrder()
       val bodyBuilder = createMultiPartBodyBuilder(mockFile())
 
       documentApi.stubUploadDocument(DocumentUploadResponse())
 
+      val beforeCall = OffsetDateTime.now()
       // Upload document
       webTestClient.post()
         .uri("/api/orders/${order.id}/document-type/${DocumentType.PHOTO_ID}")
@@ -211,6 +255,9 @@ class AdditionalDocumentsControllerTest : IntegrationTestBase() {
           multipartBody["metadata"]?.get(0)?.body.toString(),
         ).isEqualTo("DocumentMetadata(orderId=${order.id}, documentType=PHOTO_ID)")
       }
+      Assertions.assertThat(updatedOrder.lastUpdatedBy).isEqualTo("John Smith")
+      Assertions.assertThat(updatedOrder.lastUpdatedDateTime).isNotNull
+      Assertions.assertThat(updatedOrder.lastUpdatedDateTime!!.isAfter(beforeCall))
     }
 
     @Test
@@ -434,7 +481,7 @@ class AdditionalDocumentsControllerTest : IntegrationTestBase() {
       // Stub the document api
       documentApi.stubUploadDocument(DocumentUploadResponse())
       documentApi.stubDeleteDocument("(.*)")
-
+      val beforeCall = OffsetDateTime.now()
       // Upload a document
       webTestClient.post()
         .uri("/api/orders/${order.id}/document-type/${DocumentType.PHOTO_ID}")
@@ -456,6 +503,9 @@ class AdditionalDocumentsControllerTest : IntegrationTestBase() {
       val updatedOrder = getOrder(order.id)
 
       Assertions.assertThat(updatedOrder.additionalDocuments).hasSize(0)
+      Assertions.assertThat(updatedOrder.lastUpdatedBy).isEqualTo("John Smith")
+      Assertions.assertThat(updatedOrder.lastUpdatedDateTime).isNotNull
+      Assertions.assertThat(updatedOrder.lastUpdatedDateTime!!.isAfter(beforeCall))
     }
   }
 
