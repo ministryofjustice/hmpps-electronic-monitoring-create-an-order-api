@@ -926,7 +926,7 @@ class OrderControllerTest : IntegrationTestBase() {
         .expectBodyList<OrderInformationDto>()
         .hasSize(1).returnResult().responseBody
 
-      assertThat(result!!.first().deviceWearer?.versionId).isEqualTo(versionId2)
+      assertThat(result!!.first().versionId).isEqualTo(versionId2)
     }
 
     @Test
