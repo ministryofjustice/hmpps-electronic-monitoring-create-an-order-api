@@ -16,8 +16,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.re
 import java.util.*
 
 @ActiveProfiles("test")
-class OffenceAdditionalDetailsServiceTest {
-  lateinit var repo: OrderRepository
+class OffenceAdditionalDetailsServiceTest : OrderSectionServiceTestBase() {
 
   lateinit var service: OffenceAdditionalDetailsService
 
