@@ -203,6 +203,7 @@ class OrderControllerTest {
           dataDictionaryVersion = mockDictionaryVersion,
           orderParameters = null,
           versionId = orderVersion.id,
+          isOwner = true,
         ),
         OrderDto(
           id = orderId2,
@@ -240,6 +241,7 @@ class OrderControllerTest {
           dataDictionaryVersion = mockDictionaryVersion,
           orderParameters = null,
           versionId = orderVersion2.id,
+          isOwner = true,
         ),
       ),
     )
@@ -343,6 +345,7 @@ class OrderControllerTest {
           dataDictionaryVersion = mockDictionaryVersion,
           orderParameters = null,
           versionId = orderVersion.id,
+          isOwner = true,
         ),
         OrderDto(
           id = orderId2,
@@ -380,6 +383,7 @@ class OrderControllerTest {
           dataDictionaryVersion = mockDictionaryVersion,
           orderParameters = null,
           versionId = orderVersion2.id,
+          isOwner = true,
         ),
       ),
     )

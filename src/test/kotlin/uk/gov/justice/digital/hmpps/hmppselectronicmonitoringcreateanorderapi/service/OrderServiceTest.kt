@@ -161,7 +161,7 @@ class OrderServiceTest {
       assertThat(exception.message).isEqualTo("Order ($orderId) for mockUser not found")
     }
 
-    private fun orderWithCaseload(username: String, caseloadId: String?): Order {
+    private fun orderWithCaseload(username: String, caseloadName: String?): Order {
       val order = Order()
       order.versions = mutableListOf(
         OrderVersion(
@@ -170,7 +170,7 @@ class OrderServiceTest {
           status = OrderStatus.IN_PROGRESS,
           type = RequestType.REQUEST,
           dataDictionaryVersion = DataDictionaryVersion.DDV6,
-          ownerCohort = caseloadId,
+          ownerCohort = caseloadName,
         ),
       )
       return order
@@ -178,13 +178,13 @@ class OrderServiceTest {
 
     @Test
     fun `same prison can access draft order`() {
-      val order = orderWithCaseload("otherUser", "MDI")
+      val order = orderWithCaseload("otherUser", "Bedford Prison")
       whenever(repo.findById(order.id)).thenReturn(Optional.of(order))
       whenever(userCohortService.getUserCohort(authentication)).thenReturn(
         UserCohort(
           Cohort.PRISON,
-          "HMP Bedford",
-          "MDI",
+          "Bedford Prison",
+          "BFI",
         ),
       )
 

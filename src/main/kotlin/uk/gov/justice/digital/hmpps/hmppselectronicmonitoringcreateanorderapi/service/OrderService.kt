@@ -12,6 +12,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.MonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.Cohort
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.OrderListCriteria
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.OrderSearchCriteria
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.TagFilter
@@ -20,6 +21,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisationDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Prison
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.specification.OrderListSpecification
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.specification.OrderSearchSpecification
@@ -81,10 +83,17 @@ class OrderService(
     }
 
     val userCohort = userCohortService.getUserCohort(token)
+    val userPrisons = if (userCohort.cohort == Cohort.PRISON) {
+      Prison.fromId(userCohort.activeCaseLoadId)
+    } else {
+      null
+    }
 
     if (order.status != OrderStatus.SUBMITTED && order.username != username) {
-      val requestCaseloadId = userCohort.activeCaseLoadId
-      if (order.ownerCohort == null || requestCaseloadId.isNullOrEmpty() || order.ownerCohort != requestCaseloadId) {
+      if (order.ownerCohort == null ||
+        userPrisons.isNullOrEmpty() ||
+        userPrisons.all { it.value != order.ownerCohort }
+      ) {
         throw EntityNotFoundException("Order ($id) for $username not found")
       }
     }
