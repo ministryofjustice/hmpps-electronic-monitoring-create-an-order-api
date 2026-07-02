@@ -39,6 +39,7 @@ class DetailsOfInstallationControllerTest : UpdateOrderIntegrationTestBase() {
           mockValidRequestBody(
             riskCategory = arrayOf("THREATS_OF_VIOLENCE", "SEXUAL_OFFENCES"),
             riskDetails = "some details",
+            genderRiskDetails = "some gender",
           ),
         ),
       )
@@ -51,6 +52,7 @@ class DetailsOfInstallationControllerTest : UpdateOrderIntegrationTestBase() {
     Assertions.assertThat(updatedOrder.detailsOfInstallation?.riskCategory)
       .isEqualTo(arrayOf("THREATS_OF_VIOLENCE", "SEXUAL_OFFENCES"))
     Assertions.assertThat(updatedOrder.detailsOfInstallation?.riskDetails).isEqualTo("some details")
+    Assertions.assertThat(updatedOrder.detailsOfInstallation?.genderRiskDetails).isEqualTo("some gender")
   }
 
   @Test
@@ -65,6 +67,7 @@ class DetailsOfInstallationControllerTest : UpdateOrderIntegrationTestBase() {
           mockValidRequestBody(
             riskCategory = arrayOf("some invalid category"),
             riskDetails = "",
+            genderRiskDetails = "",
           ),
         ),
       )
@@ -76,8 +79,17 @@ class DetailsOfInstallationControllerTest : UpdateOrderIntegrationTestBase() {
     )
   }
 
-  private fun mockValidRequestBody(riskCategory: Array<String>? = arrayOf(), riskDetails: String? = null): String {
-    val dto = UpdateDetailsOfInstallationDto(riskCategory = riskCategory, riskDetails = riskDetails)
+  private fun mockValidRequestBody(
+    riskCategory: Array<String>? = arrayOf(),
+    riskDetails: String? = null,
+    genderRiskDetails: String? = null,
+  ): String {
+    val dto =
+      UpdateDetailsOfInstallationDto(
+        riskCategory = riskCategory,
+        riskDetails = riskDetails,
+        genderRiskDetails = genderRiskDetails,
+      )
 
     return objectMapper.writeValueAsString(dto)
   }
