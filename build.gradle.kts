@@ -14,10 +14,10 @@ repositories {
 
 dependencies {
   implementation("commons-io:commons-io:2.22.0")
-  implementation("com.googlecode.libphonenumber:libphonenumber:9.0.33")
+  implementation("com.googlecode.libphonenumber:libphonenumber:9.0.34")
   implementation("org.apache.tika:tika-core:3.3.1")
   implementation("org.apache.logging.log4j:log4j-api:2.26.0")
-  implementation("io.sentry:sentry-spring-boot-4:8.44.1")
+  implementation("io.sentry:sentry-spring-boot-4:8.47.0")
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.3")
 
   // starters
@@ -35,7 +35,7 @@ dependencies {
 
   // other
   runtimeOnly("org.flywaydb:flyway-database-postgresql")
-  runtimeOnly("org.postgresql:postgresql:42.7.11")
+  runtimeOnly("org.postgresql:postgresql:42.7.12")
 
   // test
   testImplementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter-test:2.5.0")
