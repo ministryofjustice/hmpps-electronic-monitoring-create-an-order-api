@@ -7,7 +7,6 @@ import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus.BAD_REQUEST
 import org.springframework.http.MediaType
 import org.springframework.web.reactive.function.BodyInserters
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.UpdateOrderIntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.UriTestCase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InterestedParties
@@ -27,6 +26,7 @@ class ProbationDeliveryUnitControllerTest : UpdateOrderIntegrationTestBase() {
       """.trimIndent()
     }, httpMethod = HttpMethod.PUT),
   )
+
   @BeforeEach
   fun setup() {
     repo.deleteAll()

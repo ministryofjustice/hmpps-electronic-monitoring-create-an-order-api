@@ -22,6 +22,6 @@ class ResponsibleAdultService : OrderSectionServiceBase() {
       contactNumber = updateRecord.contactNumber,
     )
 
-    return orderRepo.save(order).deviceWearerResponsibleAdult!!
+    return updateLastUpdatedByAndSaveOrder(order).deviceWearerResponsibleAdult!!
   }
 }
