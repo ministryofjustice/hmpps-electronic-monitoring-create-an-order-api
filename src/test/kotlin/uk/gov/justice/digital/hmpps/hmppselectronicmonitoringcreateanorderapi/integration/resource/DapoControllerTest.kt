@@ -4,6 +4,7 @@ import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.http.HttpMethod
 import org.springframework.http.MediaType
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.web.reactive.function.BodyInserters
@@ -23,8 +24,12 @@ class DapoControllerTest : UpdateOrderIntegrationTestBase() {
   lateinit var objectMapper: ObjectMapper
 
   fun createValidBody(): String = mockValidRequestBody()
+  val dapoId = UUID.randomUUID()
   override val testUris: List<UriTestCase> = listOf(
     UriTestCase(uri = "/api/orders/:orderId/dapo", createValidBody = { createValidBody() }),
+    UriTestCase(uri = "/api/orders/:orderId/dapo/delete/$dapoId", createValidBody = {
+      createValidBody()
+    }, httpMethod = HttpMethod.DELETE),
   )
 
   @BeforeEach
@@ -93,7 +98,6 @@ class DapoControllerTest : UpdateOrderIntegrationTestBase() {
 
   @Test
   fun `can remove a dapo`() {
-    val dapoId = UUID.randomUUID()
     val order = createStoredOrder()
     order.dapoClauses.add(
       Dapo(

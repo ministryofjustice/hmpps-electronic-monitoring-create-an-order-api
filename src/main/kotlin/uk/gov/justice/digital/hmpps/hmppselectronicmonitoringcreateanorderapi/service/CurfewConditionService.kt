@@ -25,7 +25,7 @@ class CurfewConditionService : OrderSectionServiceBase() {
       curfewAdditionalDetails = order.curfewConditions?.curfewAdditionalDetails,
     )
 
-    return orderRepo.save(order).curfewConditions!!
+    return updateLastUpdatedByAndSaveOrder(order).curfewConditions!!
   }
 
   fun updateCurfewAdditionalDetails(
@@ -40,6 +40,6 @@ class CurfewConditionService : OrderSectionServiceBase() {
 
     curfewConditions.curfewAdditionalDetails = updateRecord.curfewAdditionalDetails
 
-    return orderRepo.save(order).curfewConditions!!
+    return updateLastUpdatedByAndSaveOrder(order).curfewConditions!!
   }
 }

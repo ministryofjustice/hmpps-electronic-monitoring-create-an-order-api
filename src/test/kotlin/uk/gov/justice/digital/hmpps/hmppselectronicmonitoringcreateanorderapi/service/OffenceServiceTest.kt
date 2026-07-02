@@ -12,13 +12,12 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.OffenceService
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.OrderSectionServiceTestBase
 import java.time.ZonedDateTime
 import java.util.*
 
 @ActiveProfiles("test")
-class OffenceServiceTest {
-  lateinit var repo: OrderRepository
-
+class OffenceServiceTest : OrderSectionServiceTestBase() {
   lateinit var service: OffenceService
 
   private val mockOrderId: UUID = UUID.randomUUID()

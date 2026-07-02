@@ -4,21 +4,28 @@ import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.http.HttpMethod
 import org.springframework.http.MediaType
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.web.reactive.function.BodyInserters
 import tools.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.data.ValidationErrors
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.UpdateOrderIntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.UriTestCase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateOffenceAdditionalDetailsDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidationError
-import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 import java.util.UUID
 
-class OffenceAdditionalDetailsControllerTest : IntegrationTestBase() {
+class OffenceAdditionalDetailsControllerTest : UpdateOrderIntegrationTestBase() {
 
   @Autowired
   lateinit var objectMapper: ObjectMapper
+
+  override val testUris: List<UriTestCase> = listOf(
+    UriTestCase(uri = "/api/orders/:orderId/offence-additional-details", createValidBody = {
+      mockValidRequestBody(additionalDetails = "mock")
+    }, httpMethod = HttpMethod.PUT),
+  )
 
   @BeforeEach
   fun setup() {
@@ -110,23 +117,6 @@ class OffenceAdditionalDetailsControllerTest : IntegrationTestBase() {
     val updatedOrder = getOrder(order.id)
 
     Assertions.assertThat(updatedOrder.offenceAdditionalDetails?.additionalDetails).isNull()
-  }
-
-  @Test
-  fun `it should return an error if the order is in a submitted state`() {
-    val order = createSubmittedOrder()
-    val result = callOffenceAdditionalDetailsEndpoint(
-      order.id,
-      mockValidRequestBody(order.id, additionalDetails = "some details about offence"),
-    ).expectStatus()
-      .isNotFound
-      .expectBodyList(ErrorResponse::class.java)
-      .returnResult()
-
-    val error = result.responseBody!!.first()
-    Assertions.assertThat(
-      error.developerMessage,
-    ).isEqualTo("An editable order with ${order.id} does not exist")
   }
 
   private fun callOffenceAdditionalDetailsEndpoint(

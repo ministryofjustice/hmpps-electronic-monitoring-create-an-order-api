@@ -40,7 +40,7 @@ class AddressService : OrderSectionServiceBase() {
     if (updateRecord.hasAnotherAddress == false) {
       removeSubsequentAddresses(order, updateRecord.addressType)
     }
-    orderRepo.save(order)
+    updateLastUpdatedByAndSaveOrder(order)
     return (existingAddress ?: newAddress)!!
   }
 

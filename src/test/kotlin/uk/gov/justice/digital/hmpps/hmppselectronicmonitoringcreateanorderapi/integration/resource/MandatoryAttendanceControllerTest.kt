@@ -4,11 +4,12 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.http.MediaType
 import org.springframework.web.reactive.function.BodyInserters
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.UpdateOrderIntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.UriTestCase
 import java.time.ZonedDateTime
 import java.util.*
 
-class MandatoryAttendanceControllerTest : IntegrationTestBase() {
+class MandatoryAttendanceControllerTest : UpdateOrderIntegrationTestBase() {
   private val mockId: UUID = UUID.randomUUID()
   private val mockStartDate: ZonedDateTime = ZonedDateTime.now()
   private val mockEndDate: ZonedDateTime = ZonedDateTime.now().plusDays(1)
@@ -22,106 +23,30 @@ class MandatoryAttendanceControllerTest : IntegrationTestBase() {
   private val mockAddressLine4: String = "mockAddressLine4"
   private val mockPostcode: String = "mockPostcode"
 
+  override val testUris: List<UriTestCase> = listOf(
+    UriTestCase(uri = "/api/orders/:orderId/mandatory-attendance", createValidBody = {
+      """
+            {
+              "id": "$mockId",
+              "startDate": "$mockStartDate",
+              "endDate": "$mockEndDate",
+              "purpose": "$mockPurpose",
+              "appointmentDay": "$mockAppointmentDay",
+              "startTime": "$mockStartTime",
+              "endTime": "$mockEndTime",
+              "addressLine1": "$mockAddressLine1",
+              "addressLine2": "$mockAddressLine2",
+              "addressLine3": "$mockAddressLine3",
+              "addressLine4": "$mockAddressLine4",
+              "postcode": "$mockPostcode"
+            }
+      """.trimIndent()
+    }),
+  )
+
   @BeforeEach
   fun setup() {
     repo.deleteAll()
-  }
-
-  @Test
-  fun `Mandatory Attendance details for an order created by a different user are not update-able`() {
-    val order = createOrder()
-
-    webTestClient.put()
-      .uri("/api/orders/${order.id}/mandatory-attendance")
-      .contentType(MediaType.APPLICATION_JSON)
-      .body(
-        BodyInserters.fromValue(
-          """
-            {
-              "id": "$mockId",
-              "startDate": "$mockStartDate",
-              "endDate": "$mockEndDate",
-              "purpose": "$mockPurpose",
-              "appointmentDay": "$mockAppointmentDay",
-              "startTime": "$mockStartTime",
-              "endTime": "$mockEndTime",
-              "addressLine1": "$mockAddressLine1",
-              "addressLine2": "$mockAddressLine2",
-              "addressLine3": "$mockAddressLine3",
-              "addressLine4": "$mockAddressLine4",
-              "postcode": "$mockPostcode"
-            }
-          """.trimIndent(),
-        ),
-      )
-      .headers(setAuthorisation("AUTH_ADM_2"))
-      .exchange()
-      .expectStatus()
-      .isNotFound
-  }
-
-  @Test
-  fun `Mandatory Attendance details for a non-existent order are not update-able`() {
-    webTestClient.put()
-      .uri("/api/orders/${UUID.randomUUID()}/mandatory-attendance")
-      .contentType(MediaType.APPLICATION_JSON)
-      .body(
-        BodyInserters.fromValue(
-          """
-            {
-              "id": "$mockId",
-              "startDate": "$mockStartDate",
-              "endDate": "$mockEndDate",
-              "purpose": "$mockPurpose",
-              "appointmentDay": "$mockAppointmentDay",
-              "startTime": "$mockStartTime",
-              "endTime": "$mockEndTime",
-              "addressLine1": "$mockAddressLine1",
-              "addressLine2": "$mockAddressLine2",
-              "addressLine3": "$mockAddressLine3",
-              "addressLine4": "$mockAddressLine4",
-              "postcode": "$mockPostcode"
-            }
-          """.trimIndent(),
-        ),
-      )
-      .headers(setAuthorisation("AUTH_ADM"))
-      .exchange()
-      .expectStatus()
-      .isNotFound
-  }
-
-  @Test
-  fun `Mandatory Attendance details for a submitted order are not update-able`() {
-    val order = createSubmittedOrder()
-
-    webTestClient.put()
-      .uri("/api/orders/${order.id}/mandatory-attendance")
-      .contentType(MediaType.APPLICATION_JSON)
-      .body(
-        BodyInserters.fromValue(
-          """
-            {
-              "id": "$mockId",
-              "startDate": "$mockStartDate",
-              "endDate": "$mockEndDate",
-              "purpose": "$mockPurpose",
-              "appointmentDay": "$mockAppointmentDay",
-              "startTime": "$mockStartTime",
-              "endTime": "$mockEndTime",
-              "addressLine1": "$mockAddressLine1",
-              "addressLine2": "$mockAddressLine2",
-              "addressLine3": "$mockAddressLine3",
-              "addressLine4": "$mockAddressLine4",
-              "postcode": "$mockPostcode"
-            }
-          """.trimIndent(),
-        ),
-      )
-      .headers(setAuthorisation("AUTH_ADM"))
-      .exchange()
-      .expectStatus()
-      .isNotFound
   }
 
   @Test

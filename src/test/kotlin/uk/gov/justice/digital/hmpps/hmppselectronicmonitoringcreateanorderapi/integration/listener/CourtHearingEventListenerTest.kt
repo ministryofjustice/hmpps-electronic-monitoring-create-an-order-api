@@ -15,8 +15,6 @@ import org.mockito.kotlin.argThat
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.verify
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 import org.springframework.http.HttpStatus
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.transaction.annotation.Transactional
@@ -49,7 +47,6 @@ import java.nio.file.Paths
 import java.util.*
 import java.util.concurrent.CompletableFuture
 
-@SpringBootTest(webEnvironment = RANDOM_PORT)
 @Transactional
 class CourtHearingEventListenerTest : IntegrationTestBase() {
 

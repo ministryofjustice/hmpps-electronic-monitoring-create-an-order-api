@@ -9,7 +9,9 @@ import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.BodyInserters
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.WebClientResponseException
+import org.springframework.web.reactive.function.client.bodyToMono
 import org.springframework.web.reactive.function.client.toEntity
+import org.springframework.web.reactive.function.client.toEntityFlux
 import reactor.core.publisher.Flux
 import reactor.util.retry.Retry
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.DocumentApiBadRequestException
@@ -34,12 +36,12 @@ class DocumentApiClient(private val documentManagementApiWebClient: WebClient) {
       .onStatus(
         { status -> status === HttpStatus.BAD_REQUEST },
         { clientResponse ->
-          clientResponse.bodyToMono(ErrorResponse::class.java).map { error ->
+          clientResponse.bodyToMono<ErrorResponse>().map { error ->
             DocumentApiBadRequestException(error)
           }
         },
       )
-      .bodyToMono(DocumentUploadResponse::class.java)
+      .bodyToMono<DocumentUploadResponse>()
       .retryWhen(
         Retry.fixedDelay(1, Duration.ofMillis(2000))
           // Only retry on 5xx/429/408 status error, do not retry for bad request
@@ -63,12 +65,12 @@ class DocumentApiClient(private val documentManagementApiWebClient: WebClient) {
     .onStatus(
       { status -> status === HttpStatus.BAD_REQUEST },
       { clientResponse ->
-        clientResponse.bodyToMono(ErrorResponse::class.java).map { error ->
+        clientResponse.bodyToMono<ErrorResponse>().map { error ->
           DocumentApiBadRequestException(error)
         }
       },
     )
-    .toEntityFlux(InputStreamResource::class.java)
+    .toEntityFlux<InputStreamResource>()
     .retryWhen(Retry.fixedDelay(1, Duration.ofMillis(250)))
     .block()
 

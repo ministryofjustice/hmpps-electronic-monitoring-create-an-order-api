@@ -6,7 +6,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ArgumentsSource
 import org.junit.jupiter.params.provider.ValueSource
@@ -14,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.util.JsonPathExpectationsHelper
+import org.springframework.test.web.reactive.server.expectBody
 import org.springframework.test.web.reactive.server.expectBodyList
 import org.springframework.web.reactive.function.BodyInserters
 import tools.jackson.databind.ObjectMapper
@@ -22,7 +22,6 @@ import tools.jackson.module.kotlin.readValue
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.argumentsProvider.AmendOrderArgumentsProvider
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.HmppsDocumentManagementApiExtension.Companion.documentApi
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.ManageUserApiExtension
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.ManageUserApiExtension.Companion.manageUserApi
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.SercoAuthMockServerExtension.Companion.sercoAuthApi
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.SercoMockApiExtension.Companion.sercoApi
@@ -60,10 +59,6 @@ import java.util.*
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.DeviceWearer as FmsDeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.ErrorResponse as FmsErrorResponseDetails
 
-@ExtendWith(
-
-  ManageUserApiExtension::class,
-)
 class OrderControllerTest : IntegrationTestBase() {
 
   @Autowired
@@ -72,7 +67,7 @@ class OrderControllerTest : IntegrationTestBase() {
   val mockStartDate = ZonedDateTime.parse("2040-02-07T10:00:00Z")
   val mockEndDate = ZonedDateTime.parse("2040-03-07T11:00:00Z")
   val mockDocumentId = UUID.randomUUID()
-
+  val testUserFullName = "John Smith"
   private val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
   private val dateTimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
   val mockStartDateInBritishTime = mockStartDate.toInstant().atZone(
@@ -114,6 +109,7 @@ class OrderControllerTest : IntegrationTestBase() {
       assertThat(order.status).isEqualTo(OrderStatus.IN_PROGRESS)
       assertThat(order.type).isEqualTo(RequestType.REQUEST)
       assertThat(order.username).isEqualTo(testUser)
+      assertThat(order.lastUpdatedBy).isEqualTo(testUserFullName)
     }
 
     @Test
@@ -142,6 +138,7 @@ class OrderControllerTest : IntegrationTestBase() {
       assertThat(order.status).isEqualTo(OrderStatus.IN_PROGRESS)
       assertThat(order.type).isEqualTo(RequestType.VARIATION)
       assertThat(order.username).isEqualTo(testUser)
+      assertThat(order.lastUpdatedBy).isEqualTo(testUserFullName)
     }
   }
 
@@ -167,6 +164,7 @@ class OrderControllerTest : IntegrationTestBase() {
       assertThat(variationOrder.status).isEqualTo(OrderStatus.IN_PROGRESS)
       assertThat(variationOrder.type).isEqualTo(RequestType.VARIATION)
       assertThat(variationOrder.username).isEqualTo(testUser)
+      assertThat(variationOrder.lastUpdatedBy).isEqualTo(testUserFullName)
     }
 
     @Test
@@ -184,7 +182,7 @@ class OrderControllerTest : IntegrationTestBase() {
         .responseBody!!
 
       assertThat(variationOrder.deviceWearer!!.id).isNotEqualTo(order.deviceWearer!!.id)
-      assertThat(variationOrder.deviceWearer!!.versionId).isNotEqualTo(order.deviceWearer!!.versionId)
+      assertThat(variationOrder.deviceWearer.versionId).isNotEqualTo(order.deviceWearer!!.versionId)
     }
 
     @Test
@@ -321,6 +319,7 @@ class OrderControllerTest : IntegrationTestBase() {
       assertThat(variationOrder.deviceWearer!!.id).isNotEqualTo(order.deviceWearer!!.id)
       assertThat(variationOrder.deviceWearer.versionId).isNotEqualTo(order.deviceWearer!!.versionId)
       assertThat(variationOrder.username).isEqualTo(testUser)
+      assertThat(variationOrder.lastUpdatedBy).isEqualTo(testUserFullName)
     }
 
     @Test
@@ -488,6 +487,7 @@ class OrderControllerTest : IntegrationTestBase() {
       assertThat(variationOrder.status).isEqualTo(OrderStatus.IN_PROGRESS)
       assertThat(variationOrder.type).isEqualTo(RequestType.AMEND_ORIGINAL_REQUEST)
       assertThat(variationOrder.username).isEqualTo(testUser)
+      assertThat(variationOrder.lastUpdatedBy).isEqualTo(testUserFullName)
     }
   }
 
@@ -954,8 +954,7 @@ class OrderControllerTest : IntegrationTestBase() {
         .exchange()
         .expectStatus()
         .isOk
-        .expectBody(OrderDto::class.java)
-        .isEqualTo(order)
+        .expectBody<OrderDto>()
     }
 
     @Test
@@ -1703,6 +1702,8 @@ class OrderControllerTest : IntegrationTestBase() {
       val updatedOrder = getOrder(order.id)
       assertThat(updatedOrder.fmsResultId).isEqualTo(submitResult.id)
       assertThat(updatedOrder.status).isEqualTo(OrderStatus.SUBMITTED)
+
+      assertThat(updatedOrder.lastUpdatedBy).isEqualTo(testUserFullName)
 
       assertThat(submitResult.attachmentResults[0])
         .usingRecursiveComparison()

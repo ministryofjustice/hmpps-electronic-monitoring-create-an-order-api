@@ -4,22 +4,32 @@ import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.http.HttpMethod
 import org.springframework.http.MediaType
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.web.reactive.function.BodyInserters
 import tools.jackson.databind.ObjectMapper
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.UpdateOrderIntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.UriTestCase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Offence
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateOffenceDto
-import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.util.*
 
-class OffenceControllerTest : IntegrationTestBase() {
+class OffenceControllerTest : UpdateOrderIntegrationTestBase() {
 
   @Autowired
   lateinit var objectMapper: ObjectMapper
+  val offenceId: UUID = UUID.randomUUID()
+  override val testUris: List<UriTestCase> = listOf(
+    UriTestCase(uri = "/api/orders/:orderId/offence", createValidBody = {
+      mockValidRequestBody(offenceType = "some offence", offenceDate = ZonedDateTime.now())
+    }, httpMethod = HttpMethod.PUT),
+    UriTestCase(uri = "/api/orders/:orderId/offence/delete/$offenceId", createValidBody = {
+      ""
+    }, httpMethod = HttpMethod.DELETE),
+  )
 
   @BeforeEach
   fun setup() {
@@ -72,55 +82,7 @@ class OffenceControllerTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `it should return an error if the order was not created by the user`() {
-    val order = createOrder()
-
-    val result =
-      callOffenceEndpoint(
-        order.id,
-        mockValidRequestBody(offenceType = "some offence", offenceDate = ZonedDateTime.now()),
-        username = "AUTH_ADM_2",
-      )
-        .expectStatus()
-        .isNotFound
-        .expectBodyList(ErrorResponse::class.java)
-        .returnResult()
-
-    val error = result.responseBody!!.first()
-    Assertions.assertThat(
-      error.developerMessage,
-    ).isEqualTo("An editable order with ${order.id} does not exist")
-  }
-
-  @Test
-  fun `it should return not found if the order does not exist`() {
-    callOffenceEndpoint(UUID.randomUUID(), mockValidRequestBody())
-      .expectStatus()
-      .isNotFound
-  }
-
-  @Test
-  fun `it should return an error if the order is in a submitted state`() {
-    val order = createSubmittedOrder()
-
-    val result = callOffenceEndpoint(
-      order.id,
-      mockValidRequestBody(),
-    )
-      .expectStatus()
-      .isNotFound
-      .expectBodyList(ErrorResponse::class.java)
-      .returnResult()
-
-    val error = result.responseBody!!.first()
-    Assertions.assertThat(
-      error.developerMessage,
-    ).isEqualTo("An editable order with ${order.id} does not exist")
-  }
-
-  @Test
   fun `can remove an offence`() {
-    val offenceId = UUID.randomUUID()
     val order = createStoredOrder()
     order.offences.add(
       Offence(

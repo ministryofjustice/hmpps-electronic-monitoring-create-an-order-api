@@ -21,8 +21,10 @@ import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.boot.test.autoconfigure.json.JsonTest
+import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken
 import org.springframework.test.context.ActiveProfiles
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.config.AuthAwareAuthenticationToken
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.config.FeatureFlags
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.BadRequestException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AdditionalDocument
@@ -76,12 +78,15 @@ class OrderServiceTest {
     userCohortService = mock()
     val featureFlags = FeatureFlags(ddV6CourtMappings = true, dataDictionaryVersion = DataDictionaryVersion.DDV4)
 
-    service = OrderService(repo, fmsService, featureFlags, userCohortService)
-
-    authentication = mock(JwtAuthenticationToken::class.java)
-
+    service = OrderService(fmsService, featureFlags, userCohortService)
+    service.orderRepo = repo
+    authentication = mock(AuthAwareAuthenticationToken::class.java)
     whenever(authentication.name).thenReturn("mockUser")
     whenever(userCohortService.getUserCohort(authentication)).thenReturn(UserCohort(Cohort.OTHER))
+    val context = SecurityContextHolder.createEmptyContext()
+    context.authentication = authentication
+    SecurityContextHolder.setContext(context)
+    whenever(repo.save(any<Order>())).thenReturn(TestUtilities.createReadyToSubmitOrder())
   }
 
   @Test
@@ -125,6 +130,7 @@ class OrderServiceTest {
     whenever(fmsService.submitOrder(any<Order>(), eq(FmsOrderSource.CEMO))).thenReturn(
       mockFmsResult,
     )
+    whenever(repo.save(any<Order>())).thenReturn(TestUtilities.createReadyToSubmitOrder())
     service.submitOrder(mockOrder.id, authentication, "mockName")
 
     argumentCaptor<Order>().apply {
@@ -159,6 +165,7 @@ class OrderServiceTest {
     whenever(fmsService.submitOrder(any<Order>(), eq(FmsOrderSource.CEMO))).thenReturn(
       mockFmsResult,
     )
+    whenever(repo.save(any<Order>())).thenReturn(TestUtilities.createReadyToSubmitOrder())
     service.submitOrder(mockOrder.id, authentication, "mockName")
 
     argumentCaptor<Order>().apply {
@@ -195,6 +202,7 @@ class OrderServiceTest {
     whenever(fmsService.submitOrder(any<Order>(), eq(FmsOrderSource.CEMO))).thenReturn(
       mockFmsResult,
     )
+    whenever(repo.save(any<Order>())).thenReturn(TestUtilities.createReadyToSubmitOrder())
     service.submitOrder(mockOrder.id, authentication, "mockName")
 
     argumentCaptor<Order>().apply {
@@ -235,6 +243,7 @@ class OrderServiceTest {
     whenever(fmsService.submitOrder(any<Order>(), eq(FmsOrderSource.CEMO))).thenReturn(
       mockFmsResult,
     )
+    whenever(repo.save(any<Order>())).thenReturn(TestUtilities.createReadyToSubmitOrder())
     service.submitOrder(mockOrder.id, authentication, "mockName")
 
     argumentCaptor<Order>().apply {
@@ -275,6 +284,7 @@ class OrderServiceTest {
     whenever(fmsService.submitOrder(any<Order>(), eq(FmsOrderSource.CEMO))).thenReturn(
       mockFmsResult,
     )
+    whenever(repo.save(any<Order>())).thenReturn(TestUtilities.createReadyToSubmitOrder())
     service.submitOrder(mockOrder.id, authentication, "mockName")
 
     argumentCaptor<Order>().apply {
@@ -313,6 +323,7 @@ class OrderServiceTest {
     whenever(fmsService.submitOrder(any<Order>(), eq(FmsOrderSource.CEMO))).thenReturn(
       mockFmsResult,
     )
+    whenever(repo.save(any<Order>())).thenReturn(TestUtilities.createReadyToSubmitOrder())
     service.submitOrder(mockOrder.id, authentication, "mockName")
 
     argumentCaptor<Order>().apply {
@@ -348,7 +359,7 @@ class OrderServiceTest {
 
     whenever(repo.findById(mockOrder.id)).thenReturn(Optional.of(mockOrder))
     whenever(fmsService.submitOrder(any<Order>(), eq(FmsOrderSource.CEMO))).thenReturn(mockFmsResult)
-
+    whenever(repo.save(any<Order>())).thenReturn(TestUtilities.createReadyToSubmitOrder())
     service.submitOrder(mockOrder.id, authentication, "mockName")
 
     argumentCaptor<Order>().apply {
@@ -424,7 +435,8 @@ class OrderServiceTest {
     @BeforeEach
     fun setup() {
       val featureFlags = FeatureFlags(ddV6CourtMappings = true, dataDictionaryVersion = DataDictionaryVersion.DDV5)
-      service = OrderService(repo, fmsService, featureFlags, userCohortService)
+      service = OrderService(fmsService, featureFlags, userCohortService)
+      service.orderRepo = repo
       whenever(repo.findById(order.id)).thenReturn(Optional.of(order))
       whenever(repo.save(order)).thenReturn(order)
     }
@@ -879,7 +891,7 @@ class OrderServiceTest {
       fun setup() {
         val mockUserCohort = UserCohort(Cohort.PRISON)
         whenever(userCohortService.getUserCohort(authentication)).thenReturn(mockUserCohort)
-        whenever(userCohortService.matchesNofifyingOrg(mockUserCohort.cohort, "PRISON")).thenReturn(true)
+        whenever(userCohortService.matchesNotifyingOrg(mockUserCohort.cohort, "PRISON")).thenReturn(true)
       }
 
       @Test
@@ -910,7 +922,8 @@ class OrderServiceTest {
       @BeforeEach
       fun setup() {
         val featureFlags = FeatureFlags(ddV6CourtMappings = true, dataDictionaryVersion = DataDictionaryVersion.DDV5)
-        service = OrderService(repo, fmsService, featureFlags, userCohortService)
+        service = OrderService(fmsService, featureFlags, userCohortService)
+        service.orderRepo = repo
         whenever(repo.findById(orderInPast.id)).thenReturn(Optional.of(orderInPast))
         whenever(repo.save(orderInPast)).thenReturn(orderInPast)
       }

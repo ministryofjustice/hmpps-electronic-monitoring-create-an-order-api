@@ -24,6 +24,6 @@ class OffenceAdditionalDetailsService : OrderSectionServiceBase() {
       additionalDetails = dto.additionalDetails,
     )
 
-    return orderRepo.save(order).offenceAdditionalDetails!!
+    return updateLastUpdatedByAndSaveOrder(order).offenceAdditionalDetails!!
   }
 }

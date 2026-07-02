@@ -23,7 +23,7 @@ class OffenceService : OrderSectionServiceBase() {
       ),
     )
 
-    orderRepo.save(order)
+    updateLastUpdatedByAndSaveOrder(order)
 
     return order.offences.find { it.id == id }!!
   }
@@ -33,6 +33,6 @@ class OffenceService : OrderSectionServiceBase() {
 
     order.offences.removeIf { it.id == offenceId }
 
-    orderRepo.save(order)
+    updateLastUpdatedByAndSaveOrder(order)
   }
 }
