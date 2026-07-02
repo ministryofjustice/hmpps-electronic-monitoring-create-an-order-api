@@ -34,6 +34,6 @@ class VariationService : OrderSectionServiceBase() {
       )
     }
 
-    return orderRepo.save(order).variationDetails!!
+    return updateLastUpdatedByAndSaveOrder(order).variationDetails!!
   }
 }

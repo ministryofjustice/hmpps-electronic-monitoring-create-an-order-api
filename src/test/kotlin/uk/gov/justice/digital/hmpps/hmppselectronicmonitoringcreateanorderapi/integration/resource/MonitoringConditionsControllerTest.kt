@@ -3,9 +3,11 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.i
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.springframework.http.HttpMethod
 import org.springframework.http.MediaType
 import org.springframework.web.reactive.function.BodyInserters
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.UpdateOrderIntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.UriTestCase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Address
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationAppointment
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationLocation
@@ -23,22 +25,45 @@ import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.util.*
 
-class MonitoringConditionsControllerTest : IntegrationTestBase() {
+class MonitoringConditionsControllerTest : UpdateOrderIntegrationTestBase() {
 
   private val mockOrderType = OrderType.COMMUNITY
   private val mockOrderTypeDescription = OrderTypeDescription.DAPOL
   private val mockConditionType = MonitoringConditionType.LICENSE_CONDITION_OF_A_CUSTODIAL_ORDER
   private val mockStartDate = ZonedDateTime.now(ZoneId.of("UTC")).plusMonths(1)
   private val mockEndDate = ZonedDateTime.now(ZoneId.of("UTC")).plusMonths(2)
-
+  val trailId: UUID = UUID.randomUUID()
   private object ErrorMessages {
-    const val ORDER_TYPE_REQUIRED: String = "Select order type"
-    const val START_DATE_REQUIRED: String = "Enter start date for monitoring"
-    const val END_DATE_REQUIRED: String = "Enter end date for monitoring"
-    const val TYPE_REQUIRED: String = "Select order type"
     const val END_DATE_MUST_BE_AFTER_START_DATE: String = "End date must be after start date"
-    const val END_DATE_MUST_BE_IN_FUTURE: String = "End date of monitoring must be in the future"
   }
+
+  override val testUris: List<UriTestCase> = listOf(
+    UriTestCase(uri = "/api/orders/:orderId/monitoring-conditions", createValidBody = {
+      """
+            {
+              "orderType": "$mockOrderType",
+              "orderTypeDescription": "$mockOrderTypeDescription",
+              "conditionType": "$mockConditionType",
+              "acquisitiveCrime": null,
+              "dapol": null,
+              "curfew": "true",
+              "exclusionZone": "true",
+              "trail": "true",
+              "mandatoryAttendance": "true",
+              "alcohol": "true",
+              "startDate": "$mockStartDate",
+              "endDate": "$mockEndDate",
+              "offenceType": null
+            }
+      """.trimIndent()
+    }, httpMethod = HttpMethod.PUT),
+    UriTestCase(uri = "/api/orders/:orderId/monitoring-conditions/monitoring-type/$trailId", createValidBody = {
+      ""
+    }, httpMethod = HttpMethod.DELETE),
+    UriTestCase(uri = "/api/orders/:orderId/monitoring-conditions/tag-at-source", createValidBody = {
+      ""
+    }, httpMethod = HttpMethod.DELETE),
+  )
 
   @BeforeEach
   fun setup() {
@@ -298,105 +323,6 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `Monitoring conditions cannot be updated by a different user`() {
-    val order = createOrder()
-    webTestClient.put()
-      .uri("/api/orders/${order.id}/monitoring-conditions")
-      .contentType(MediaType.APPLICATION_JSON)
-      .body(
-        BodyInserters.fromValue(
-          """
-            {
-              "orderType": "$mockOrderType",
-              "orderTypeDescription": "$mockOrderTypeDescription",
-              "conditionType": "$mockConditionType",
-              "acquisitiveCrime": "true",
-              "dapol": "true",
-              "curfew": "true",
-              "exclusionZone": "true",
-              "trail": "true",
-              "mandatoryAttendance": "true",
-              "alcohol": "true",
-              "startDate": "$mockStartDate",
-              "endDate": "$mockEndDate"
-            }
-          """.trimIndent(),
-        ),
-      )
-      .headers(setAuthorisation("AUTH_ADM_2"))
-      .exchange()
-      .expectStatus()
-      .isNotFound
-  }
-
-  @Test
-  fun `Monitoring conditions cannot be updated for a submitted order`() {
-    val order = createSubmittedOrder()
-
-    webTestClient.put()
-      .uri("/api/orders/${order.id}/monitoring-conditions")
-      .contentType(MediaType.APPLICATION_JSON)
-      .body(
-        BodyInserters.fromValue(
-          """
-            {
-              "orderType": "$mockOrderType",
-              "orderTypeDescription": "$mockOrderTypeDescription",
-              "conditionType": "$mockConditionType",
-              "acquisitiveCrime": "true",
-              "dapol": "true",
-              "curfew": "true",
-              "exclusionZone": "true",
-              "trail": "true",
-              "mandatoryAttendance": "true",
-              "alcohol": "true",
-              "startDate": "$mockStartDate",
-              "endDate": "$mockEndDate"
-            }
-          """.trimIndent(),
-        ),
-      )
-      .headers(setAuthorisation("AUTH_ADM"))
-      .exchange()
-      .expectStatus()
-      .isNotFound
-  }
-
-  @Test
-  fun `Monitoring conditions for a non-existent order are not accessible`() {
-    createOrder()
-    webTestClient.put()
-      .uri("/api/orders/${UUID.randomUUID()}/monitoring-conditions")
-      .contentType(MediaType.APPLICATION_JSON)
-      .body(
-        BodyInserters.fromValue(
-          """
-            {
-              "orderType": "$mockOrderType",
-              "orderTypeDescription": "$mockOrderTypeDescription",
-              "conditionType": "$mockConditionType",
-              "acquisitiveCrime": "true",
-              "dapol": "true",
-              "curfew": "true",
-              "exclusionZone": "true",
-              "trail": "true",
-              "mandatoryAttendance": "true",
-              "alcohol": "true",
-              "startDate": "$mockStartDate",
-              "endDate": "$mockEndDate"
-            }
-          """.trimIndent(),
-        ),
-      )
-      .headers(setAuthorisation("AUTH_ADM"))
-      .exchange()
-      .expectStatus()
-      .isNotFound
-      .expectBody()
-      .returnResult()
-  }
-
-  @Test
   fun `Monitoring conditions can update pilot`() {
     val order = createOrder()
     val updateMonitoringConditions = webTestClient.put()
@@ -435,7 +361,6 @@ class MonitoringConditionsControllerTest : IntegrationTestBase() {
 
   @Test
   fun `can remove a monitoring type`() {
-    val trailId = UUID.randomUUID()
     val order = createStoredOrder()
     order.monitoringConditionsTrail = TrailMonitoringConditions(
       versionId = order.versions.first().id,

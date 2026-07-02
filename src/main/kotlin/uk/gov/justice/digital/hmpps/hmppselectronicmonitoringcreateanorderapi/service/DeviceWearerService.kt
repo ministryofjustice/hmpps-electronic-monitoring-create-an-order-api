@@ -44,7 +44,7 @@ class DeviceWearerService : OrderSectionServiceBase() {
       order.deviceWearerResponsibleAdult = null
     }
 
-    return orderRepo.save(order).deviceWearer!!
+    return updateLastUpdatedByAndSaveOrder(order).deviceWearer!!
   }
 
   fun updateNoFixedAbode(orderId: UUID, username: String, updateRecord: UpdateNoFixedAbodeDto): DeviceWearer {
@@ -66,7 +66,7 @@ class DeviceWearerService : OrderSectionServiceBase() {
       order.addresses.removeAll { it.addressType in personalAddressTypes }
     }
 
-    orderRepo.save(order)
+    updateLastUpdatedByAndSaveOrder(order)
 
     return order.deviceWearer!!
   }
@@ -89,7 +89,7 @@ class DeviceWearerService : OrderSectionServiceBase() {
       updateRecord.complianceAndEnforcementPersonReference?.trim()
     order.deviceWearer?.courtCaseReferenceNumber = updateRecord.courtCaseReferenceNumber?.trim()
 
-    orderRepo.save(order)
+    updateLastUpdatedByAndSaveOrder(order)
 
     return order.deviceWearer!!
   }

@@ -49,7 +49,7 @@ class MonitoringConditionsService(@Value("\${toggle.tag-at-source.enabled}") pri
 
     clearDeselectedConditionDetails(order)
 
-    return orderRepo.save(order).monitoringConditions!!
+    return updateLastUpdatedByAndSaveOrder(order).monitoringConditions!!
   }
 
   private fun clearDeselectedConditionDetails(order: Order) {
@@ -108,7 +108,7 @@ class MonitoringConditionsService(@Value("\${toggle.tag-at-source.enabled}") pri
 
     this.clearTagAtSource(order)
 
-    orderRepo.save(order)
+    updateLastUpdatedByAndSaveOrder(order)
   }
 
   fun removeMonitoringType(orderId: UUID, username: String, monitoringTypeId: UUID) {
@@ -144,7 +144,7 @@ class MonitoringConditionsService(@Value("\${toggle.tag-at-source.enabled}") pri
       }
     }
 
-    orderRepo.save(order)
+    updateLastUpdatedByAndSaveOrder(order)
   }
 
   private fun idMatchesAlcohol(order: Order, monitoringConditionId: UUID) =

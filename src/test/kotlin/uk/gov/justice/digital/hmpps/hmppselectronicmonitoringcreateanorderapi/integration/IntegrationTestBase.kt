@@ -16,6 +16,7 @@ import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.HmppsAuthApiExtension
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.HmppsAuthApiExtension.Companion.hmppsAuth
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.HmppsDocumentManagementApiExtension
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.ManageUserApiExtension
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.SercoAuthMockServerExtension
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.SercoMockApiExtension
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
@@ -25,20 +26,24 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
-import uk.gov.justice.hmpps.test.kotlin.auth.JwtAuthorisationHelper
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.utilities.JwtAuthorisationHelperWithUserFullName
 import java.util.*
+import kotlin.collections.listOf
 
 @ExtendWith(
   HmppsAuthApiExtension::class,
   HmppsDocumentManagementApiExtension::class,
   SercoAuthMockServerExtension::class,
   SercoMockApiExtension::class,
+  ManageUserApiExtension::class,
 )
-@SpringBootTest(webEnvironment = RANDOM_PORT)
+@SpringBootTest(
+  webEnvironment = RANDOM_PORT,
+  properties = ["hmpps.test.jwt-helper-enabled=false"],
+)
 @ActiveProfiles("test")
 @AutoConfigureWebTestClient
 abstract class IntegrationTestBase {
-
   @Autowired
   lateinit var repo: OrderRepository
 
@@ -46,7 +51,7 @@ abstract class IntegrationTestBase {
   protected lateinit var webTestClient: WebTestClient
 
   @Autowired
-  protected lateinit var jwtAuthHelper: JwtAuthorisationHelper
+  protected lateinit var jwtAuthHelper: JwtAuthorisationHelperWithUserFullName
 
   protected val testUser = "AUTH_ADM"
 
@@ -54,12 +59,14 @@ abstract class IntegrationTestBase {
     username: String? = testUser,
     roles: List<String> = listOf("ROLE_EM_CEMO__CREATE_ORDER"),
     scopes: List<String> = listOf("read"),
+    userFullName: String? = "John Smith",
   ): (
     HttpHeaders,
   ) -> Unit = jwtAuthHelper.setAuthorisationHeader(
     username = username,
     scope = scopes,
     roles = roles,
+    userFullName = userFullName,
   )
 
   internal fun setAuthorisationWithoutUsername(

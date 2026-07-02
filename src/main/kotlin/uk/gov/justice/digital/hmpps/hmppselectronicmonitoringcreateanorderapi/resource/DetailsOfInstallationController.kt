@@ -11,8 +11,8 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DetailsOfInstallation
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateDetailsOfInstallationDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.DetailsOfInstallationService
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.UpdateDetailsOfInstallationDto
 import java.util.UUID
 
 @RestController

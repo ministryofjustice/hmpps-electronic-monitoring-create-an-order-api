@@ -21,6 +21,6 @@ class MonitoringConditionsTrailService : OrderSectionServiceBase() {
       deviceType = updateRecord.deviceType,
     )
 
-    return orderRepo.save(order).monitoringConditionsTrail!!
+    return updateLastUpdatedByAndSaveOrder(order).monitoringConditionsTrail!!
   }
 }

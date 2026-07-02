@@ -2,7 +2,6 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.s
 
 import jakarta.persistence.EntityNotFoundException
 import org.springframework.boot.context.properties.EnableConfigurationProperties
-import org.springframework.security.oauth2.client.web.reactive.function.client.ServletOAuth2AuthorizedClientExchangeFilterFunction.authentication
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.config.FeatureFlags
@@ -24,7 +23,6 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.specification.OrderListSpecification
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.specification.OrderSearchSpecification
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 import java.time.OffsetDateTime
 import java.time.ZonedDateTime
 import java.util.*
@@ -34,11 +32,10 @@ import java.util.*
   FeatureFlags::class,
 )
 class OrderService(
-  val repo: OrderRepository,
   val fmsService: FmsService,
   private val featureFlags: FeatureFlags,
   private val userCohortService: UserCohortService,
-) {
+) : OrderSectionServiceBase() {
 
   fun createOrder(username: String, createRecord: CreateOrderDto): Order {
     val order = Order()
@@ -61,7 +58,7 @@ class OrderService(
       versionId = order.versions[0].id,
     )
 
-    repo.save(order)
+    updateLastUpdatedByAndSaveOrder(order)
     return order
   }
 
@@ -71,16 +68,16 @@ class OrderService(
     order.deleteCurrentVersion()
 
     if (order.versions.isEmpty()) {
-      repo.delete(order)
+      orderRepo.delete(order)
     } else {
-      repo.save(order)
+      orderRepo.save(order)
     }
   }
 
   fun getOrder(id: UUID, token: JwtAuthenticationToken): Order {
     val username = token.name
 
-    val order = repo.findById(id).orElseThrow {
+    val order = orderRepo.findById(id).orElseThrow {
       EntityNotFoundException("Order with id $id does not exist")
     }
 
@@ -104,7 +101,7 @@ class OrderService(
     notifyingOrganisation: String?,
   ): Boolean {
     val userCohort = userCohortService.getUserCohort(token)
-    return userCohortService.matchesNofifyingOrg(userCohort.cohort, notifyingOrganisation)
+    return userCohortService.matchesNotifyingOrg(userCohort.cohort, notifyingOrganisation)
   }
 
   fun createVersion(orderId: UUID, token: JwtAuthenticationToken, versionType: RequestType): Order {
@@ -241,7 +238,7 @@ class OrderService(
       }
 
     order.versions.add(newOrderVersion)
-    return repo.save(order)
+    return updateLastUpdatedByAndSaveOrder(order)
   }
 
   fun submitOrder(id: UUID, token: JwtAuthenticationToken, fullName: String): Order {
@@ -266,21 +263,21 @@ class OrderService(
         order.fmsResultDate = submitResult.submissionDate
         if (!submitResult.partialSuccess) {
           order.status = OrderStatus.ERROR
-          repo.save(order)
+          updateLastUpdatedByAndSaveOrder(order)
           throw Exception(submitResult.error)
         } else if (!submitResult.attachmentSuccess) {
           order.status = OrderStatus.ERROR
-          repo.save(order)
+          updateLastUpdatedByAndSaveOrder(order)
           throw SubmitOrderException("Error submit attachments to Serco")
         } else {
           order.status = OrderStatus.SUBMITTED
           order.getCurrentVersion().submittedBy = fullName
           order.tags = getTags(order)
-          repo.save(order)
+          updateLastUpdatedByAndSaveOrder(order)
         }
       } catch (e: Exception) {
         order.status = OrderStatus.ERROR
-        repo.save(order)
+        updateLastUpdatedByAndSaveOrder(order)
         if (e is SubmitOrderException) {
           throw e
         }
@@ -316,7 +313,7 @@ class OrderService(
     }
   }
 
-  fun listOrders(searchCriteria: OrderListCriteria): List<Order> = repo.findAll(
+  fun listOrders(searchCriteria: OrderListCriteria): List<Order> = orderRepo.findAll(
     OrderListSpecification(searchCriteria),
   )
 
@@ -327,7 +324,7 @@ class OrderService(
 
     val searchCriteria = OrderSearchCriteria(searchTerm, filter)
 
-    return repo.findAll(
+    return orderRepo.findAll(
       OrderSearchSpecification(searchCriteria),
     )
   }
@@ -337,11 +334,11 @@ class OrderService(
     order.lastUpdatedBy = userFullName
     order.lastUpdatedDateTime = OffsetDateTime.now()
     order.username = newOwner
-    repo.save(order)
+    orderRepo.save(order)
   }
 
   fun getVersionInformation(orderId: UUID): List<VersionInformationDTO> {
-    val order = repo.findById(orderId).orElseThrow {
+    val order = orderRepo.findById(orderId).orElseThrow {
       EntityNotFoundException("Order with id $orderId does not exist")
     }
 
@@ -363,7 +360,7 @@ class OrderService(
   )
 
   fun getSpecificVersion(orderId: UUID, versionId: UUID): Order {
-    val order = repo.findById(orderId).orElseThrow {
+    val order = orderRepo.findById(orderId).orElseThrow {
       EntityNotFoundException("Order with id $orderId does not exist")
     }
     val specificVersion = order.getSpecificVersion(versionId)

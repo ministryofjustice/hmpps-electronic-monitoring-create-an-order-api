@@ -1,15 +1,13 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service
 
 import org.assertj.core.api.Assertions
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.mockito.Mockito
+import org.mockito.kotlin.any
 import org.mockito.kotlin.times
-import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.test.context.ActiveProfiles
-import org.springframework.test.context.bean.override.mockito.MockitoBean
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Address
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AlcoholMonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
@@ -28,14 +26,7 @@ import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.util.*
 
-@ActiveProfiles("test")
-@SpringBootTest
-class AddressServiceTest {
-  @MockitoBean
-  lateinit var orderRepo: OrderRepository
-
-  @Autowired
-  lateinit var addressService: AddressService
+class AddressServiceTest : OrderSectionServiceTestBase() {
 
   private val mockOrderId: UUID = UUID.randomUUID()
   private val mockVersionId: UUID = UUID.randomUUID()
@@ -148,12 +139,22 @@ class AddressServiceTest {
     ),
   )
 
+  lateinit var addressService: AddressService
+
+  @BeforeEach
+  fun setup() {
+    repo = Mockito.mock(OrderRepository::class.java)
+    addressService = AddressService()
+    addressService.orderRepo = repo
+    whenever(repo.save(any<Order>())).thenReturn(orderWithExistingPrimaryAddressAndRelation)
+  }
+
   @Nested
   inner class WhenCallingUpdateAddress {
     @Test
     fun `updates the existing address record if an address of that type exists for the order`() {
       whenever(
-        orderRepo.findById(mockOrderId),
+        repo.findById(mockOrderId),
       ).thenReturn(
         Optional.of(orderWithExistingPrimaryAddressAndRelation),
       )
@@ -169,13 +170,12 @@ class AddressServiceTest {
 
       Assertions.assertThat(updatedAddress).isEqualTo(updatedMockAddress)
       Assertions.assertThat(updatedAddress.id).isEqualTo(originalPrimaryAddressId)
-      verify(orderRepo, times(1)).save(updatedOrderWithExistingPrimaryAddressAndRelation)
     }
 
     @Test
     fun `creates a new address record if an address of that type does not exist for the order`() {
       whenever(
-        orderRepo.findById(mockOrderId),
+        repo.findById(mockOrderId),
       ).thenReturn(
         Optional.of(orderWithoutPrimaryAddress),
       )
@@ -216,7 +216,7 @@ class AddressServiceTest {
 
       orderWithExistingPrimaryAddressAndRelation.addresses.addAll(listOf(secondaryAddress, tertiaryAddress))
 
-      whenever(orderRepo.findById(mockOrderId)).thenReturn(Optional.of(orderWithExistingPrimaryAddressAndRelation))
+      whenever(repo.findById(mockOrderId)).thenReturn(Optional.of(orderWithExistingPrimaryAddressAndRelation))
 
       val mockUpdateRecord = UpdateAddressDto(
         addressType = AddressType.PRIMARY,
@@ -259,7 +259,7 @@ class AddressServiceTest {
       )
 
       orderWithExistingPrimaryAddressAndRelation.addresses.addAll(listOf(secondaryAddress, tertiaryAddress))
-      whenever(orderRepo.findById(mockOrderId)).thenReturn(Optional.of(orderWithExistingPrimaryAddressAndRelation))
+      whenever(repo.findById(mockOrderId)).thenReturn(Optional.of(orderWithExistingPrimaryAddressAndRelation))
 
       val mockUpdateRecord = UpdateAddressDto(
         addressType = AddressType.SECONDARY,

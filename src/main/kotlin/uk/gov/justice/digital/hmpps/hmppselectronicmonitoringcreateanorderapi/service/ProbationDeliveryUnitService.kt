@@ -53,6 +53,6 @@ class ProbationDeliveryUnitService : OrderSectionServiceBase() {
       versionId = order.getCurrentVersion().id,
       unit = unitInput,
     )
-    return orderRepo.save(order).probationDeliveryUnit!!
+    return updateLastUpdatedByAndSaveOrder(order).probationDeliveryUnit!!
   }
 }
