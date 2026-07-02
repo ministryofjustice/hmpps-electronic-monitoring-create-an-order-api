@@ -27,6 +27,6 @@ class MonitoringConditionsAlcoholService : OrderSectionServiceBase() {
 
     order.monitoringConditionsAlcohol = alcoholMonitoringConditions
 
-    return orderRepo.save(order).monitoringConditionsAlcohol!!
+    return updateLastUpdatedByAndSaveOrder(order).monitoringConditionsAlcohol!!
   }
 }
