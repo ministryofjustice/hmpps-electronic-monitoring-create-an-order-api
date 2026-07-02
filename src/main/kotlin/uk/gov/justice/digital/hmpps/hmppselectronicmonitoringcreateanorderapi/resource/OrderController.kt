@@ -94,8 +94,8 @@ class OrderController(@Autowired val orderService: OrderService) {
   ): ResponseEntity<OrderDto> {
     val username = authentication.name
     val userFullName = authentication.getUserFullName()
-    orderService.updateOrderOwner(orderId, authentication as JwtAuthenticationToken, username, userFullName)
-    return ResponseEntity(HttpStatus.OK)
+    val order = orderService.updateOrderOwner(orderId, authentication as JwtAuthenticationToken, username, userFullName)
+    return ResponseEntity(convertToDto(order), HttpStatus.OK)
   }
 
   @GetMapping("/orders/{orderId}")
