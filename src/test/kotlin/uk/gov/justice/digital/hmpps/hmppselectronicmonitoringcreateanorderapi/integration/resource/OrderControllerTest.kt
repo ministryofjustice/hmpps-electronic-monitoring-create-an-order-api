@@ -72,7 +72,7 @@ class OrderControllerTest : IntegrationTestBase() {
   val mockStartDate = ZonedDateTime.parse("2040-02-07T10:00:00Z")
   val mockEndDate = ZonedDateTime.parse("2040-03-07T11:00:00Z")
   val mockDocumentId = UUID.randomUUID()
-
+  val testUserFullName = "John Smith"
   private val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
   private val dateTimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
   val mockStartDateInBritishTime = mockStartDate.toInstant().atZone(
@@ -114,6 +114,7 @@ class OrderControllerTest : IntegrationTestBase() {
       assertThat(order.status).isEqualTo(OrderStatus.IN_PROGRESS)
       assertThat(order.type).isEqualTo(RequestType.REQUEST)
       assertThat(order.username).isEqualTo(testUser)
+      assertThat(order.lastUpdatedBy).isEqualTo(testUserFullName)
     }
 
     @Test
@@ -142,6 +143,7 @@ class OrderControllerTest : IntegrationTestBase() {
       assertThat(order.status).isEqualTo(OrderStatus.IN_PROGRESS)
       assertThat(order.type).isEqualTo(RequestType.VARIATION)
       assertThat(order.username).isEqualTo(testUser)
+      assertThat(order.lastUpdatedBy).isEqualTo(testUserFullName)
     }
   }
 
@@ -167,6 +169,7 @@ class OrderControllerTest : IntegrationTestBase() {
       assertThat(variationOrder.status).isEqualTo(OrderStatus.IN_PROGRESS)
       assertThat(variationOrder.type).isEqualTo(RequestType.VARIATION)
       assertThat(variationOrder.username).isEqualTo(testUser)
+      assertThat(variationOrder.lastUpdatedBy).isEqualTo(testUserFullName)
     }
 
     @Test
@@ -184,7 +187,7 @@ class OrderControllerTest : IntegrationTestBase() {
         .responseBody!!
 
       assertThat(variationOrder.deviceWearer!!.id).isNotEqualTo(order.deviceWearer!!.id)
-      assertThat(variationOrder.deviceWearer!!.versionId).isNotEqualTo(order.deviceWearer!!.versionId)
+      assertThat(variationOrder.deviceWearer.versionId).isNotEqualTo(order.deviceWearer!!.versionId)
     }
 
     @Test
@@ -321,6 +324,7 @@ class OrderControllerTest : IntegrationTestBase() {
       assertThat(variationOrder.deviceWearer!!.id).isNotEqualTo(order.deviceWearer!!.id)
       assertThat(variationOrder.deviceWearer.versionId).isNotEqualTo(order.deviceWearer!!.versionId)
       assertThat(variationOrder.username).isEqualTo(testUser)
+      assertThat(variationOrder.lastUpdatedBy).isEqualTo(testUserFullName)
     }
 
     @Test
@@ -488,6 +492,7 @@ class OrderControllerTest : IntegrationTestBase() {
       assertThat(variationOrder.status).isEqualTo(OrderStatus.IN_PROGRESS)
       assertThat(variationOrder.type).isEqualTo(RequestType.AMEND_ORIGINAL_REQUEST)
       assertThat(variationOrder.username).isEqualTo(testUser)
+      assertThat(variationOrder.lastUpdatedBy).isEqualTo(testUserFullName)
     }
   }
 
@@ -1703,6 +1708,8 @@ class OrderControllerTest : IntegrationTestBase() {
       val updatedOrder = getOrder(order.id)
       assertThat(updatedOrder.fmsResultId).isEqualTo(submitResult.id)
       assertThat(updatedOrder.status).isEqualTo(OrderStatus.SUBMITTED)
+
+      assertThat(updatedOrder.lastUpdatedBy).isEqualTo(testUserFullName)
 
       assertThat(submitResult.attachmentResults[0])
         .usingRecursiveComparison()
