@@ -7,7 +7,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 data class UpdateDetailsOfInstallationDto(
   val riskCategory: Array<String>? = null,
   val riskDetails: String? = "",
-  val genderRiskDetails: String? = "",
+  val genderRiskDetails: String? = null,
 ) {
 
   @AssertTrue(message = ValidationErrors.InstallationAndRisk.RISK_CATEGORY_VALID)
