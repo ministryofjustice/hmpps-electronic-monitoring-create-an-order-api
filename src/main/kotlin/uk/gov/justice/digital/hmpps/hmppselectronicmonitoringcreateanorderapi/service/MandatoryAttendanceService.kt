@@ -38,7 +38,7 @@ class MandatoryAttendanceService : OrderSectionServiceBase() {
       order.mandatoryAttendanceConditions.add(conditions)
     }
 
-    val saved = this.orderRepo.save(order)
+    val saved = this.updateLastUpdatedByAndSaveOrder(order)
 
     return saved.mandatoryAttendanceConditions.find { x -> x.id == conditions.id }!!
   }
