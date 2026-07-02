@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
@@ -84,6 +85,17 @@ class OrderController(@Autowired val orderService: OrderService) {
     val newVersion =
       orderService.createVersion(orderId, authentication as JwtAuthenticationToken, RequestType.AMEND_ORIGINAL_REQUEST)
     return ResponseEntity(convertToDto(newVersion), HttpStatus.OK)
+  }
+
+  @PutMapping("/orders/{orderId}/update-order-owner")
+  fun updateOrderOwner(
+    @PathVariable orderId: UUID,
+    authentication: AuthAwareAuthenticationToken,
+  ): ResponseEntity<OrderDto> {
+    val username = authentication.name
+    val userFullName = authentication.getUserFullName()
+    val order = orderService.updateOrderOwner(orderId, authentication as JwtAuthenticationToken, username, userFullName)
+    return ResponseEntity(convertToDto(order), HttpStatus.OK)
   }
 
   @GetMapping("/orders/{orderId}")

@@ -52,6 +52,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.ut
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 import java.nio.file.Files
 import java.nio.file.Paths
+import java.time.OffsetDateTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
@@ -1981,6 +1982,41 @@ class OrderControllerTest : IntegrationTestBase() {
 
       assertThat(result).isNotNull()
       assertThat(result?.versionId).isEqualTo(versionId2)
+    }
+  }
+
+  @Nested
+  @DisplayName("PUT /api/orders/{orderId}/update-order-owner")
+  inner class UpdateOrderOwner {
+
+    @Test
+    fun `It should set lastUpdatedBy to the authenticated user and return 200`() {
+      val order = createOrder("AUTH_ADM")
+
+      val before = OffsetDateTime.now()
+
+      webTestClient.put()
+        .uri("/api/orders/${order.id}/update-order-owner")
+        .headers(setAuthorisation("AUTH_ADM", userFullName = "KRS-One"))
+        .exchange()
+        .expectStatus()
+        .isOk
+
+      val updatedOrder = getOrder(order.id)
+      assertThat(updatedOrder.lastUpdatedBy).isEqualTo("KRS-One")
+      assertThat(updatedOrder.username).isEqualTo("AUTH_ADM")
+      assertThat(updatedOrder.lastUpdatedDateTime).isNotNull()
+      assertThat(updatedOrder.lastUpdatedDateTime).isAfterOrEqualTo(before)
+    }
+
+    @Test
+    fun `It should return not found if the order does not exist`() {
+      webTestClient.put()
+        .uri("/api/orders/${UUID.randomUUID()}/update-order-owner")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .isNotFound()
     }
   }
 

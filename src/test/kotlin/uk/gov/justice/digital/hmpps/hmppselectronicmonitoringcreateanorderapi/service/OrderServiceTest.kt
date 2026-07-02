@@ -140,6 +140,50 @@ class OrderServiceTest {
   }
 
   @Test
+  fun `Should update lastUpdatedBy, username to the new owner via updateOrderOwner`() {
+    val mockOrder = TestUtilities.createReadyToSubmitOrder(status = OrderStatus.IN_PROGRESS, username = "mockUser")
+    whenever(authentication.name).thenReturn("mockUser")
+    whenever(repo.findById(mockOrder.id)).thenReturn(Optional.of(mockOrder))
+    whenever(repo.save(any<Order>())).thenAnswer { it.arguments[0] }
+
+    service.updateOrderOwner(mockOrder.id, authentication, "mockNewOwner", "mockNewOwnerFullName")
+
+    argumentCaptor<Order>().apply {
+      verify(repo, times(1)).save(capture())
+      assertThat(firstValue.lastUpdatedBy).isEqualTo("mockNewOwnerFullName")
+      assertThat(firstValue.username).isEqualTo("mockNewOwner")
+    }
+  }
+
+  @Test
+  fun `Should set lastUpdatedDateTime to roughly now via updateOrderOwner`() {
+    val mockOrder = TestUtilities.createReadyToSubmitOrder(status = OrderStatus.IN_PROGRESS, username = "mockUser")
+    whenever(authentication.name).thenReturn("mockUser")
+    whenever(repo.findById(mockOrder.id)).thenReturn(Optional.of(mockOrder))
+
+    val before = OffsetDateTime.now()
+    service.updateOrderOwner(mockOrder.id, authentication, "mockNewOwner", "mockNewOwnerFullName")
+    val after = OffsetDateTime.now()
+
+    argumentCaptor<Order>().apply {
+      verify(repo, times(1)).save(capture())
+      assertThat(firstValue.lastUpdatedDateTime)
+        .isBetween(before, after)
+    }
+  }
+
+  @Test
+  fun `Should persist exactly once via updateOrderOwner`() {
+    val mockOrder = TestUtilities.createReadyToSubmitOrder(status = OrderStatus.IN_PROGRESS, username = "mockUser")
+    whenever(authentication.name).thenReturn("mockUser")
+    whenever(repo.findById(mockOrder.id)).thenReturn(Optional.of(mockOrder))
+
+    service.updateOrderOwner(mockOrder.id, authentication, "mockNewOwner", "mockNewOwnerFullName")
+
+    verify(repo, times(1)).save(any<Order>())
+  }
+
+  @Test
   fun `Should create fms device wearer and monitoring order and save both id to database`() {
     val mockOrder = TestUtilities.createReadyToSubmitOrder(
       startDate = mockStartDate,
