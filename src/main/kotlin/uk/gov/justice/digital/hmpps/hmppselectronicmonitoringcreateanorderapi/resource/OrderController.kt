@@ -88,9 +88,13 @@ class OrderController(@Autowired val orderService: OrderService) {
   }
 
   @PutMapping("/orders/{orderId}/update-order-owner")
-  fun updateOrderOwner(@PathVariable orderId: UUID, authentication: Authentication): ResponseEntity<OrderDto> {
+  fun updateOrderOwner(
+    @PathVariable orderId: UUID,
+    authentication: AuthAwareAuthenticationToken,
+  ): ResponseEntity<OrderDto> {
     val username = authentication.name
-    orderService.updateOrderOwner(orderId, authentication as JwtAuthenticationToken, username)
+    val userFullName = authentication.getUserFullName()
+    orderService.updateOrderOwner(orderId, authentication as JwtAuthenticationToken, username, userFullName)
     return ResponseEntity(HttpStatus.OK)
   }
 

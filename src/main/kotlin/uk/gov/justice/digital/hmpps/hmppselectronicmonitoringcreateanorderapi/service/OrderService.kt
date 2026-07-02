@@ -332,9 +332,9 @@ class OrderService(
     )
   }
 
-  fun updateOrderOwner(orderId: UUID, token: JwtAuthenticationToken, newOwner: String) {
+  fun updateOrderOwner(orderId: UUID, token: JwtAuthenticationToken, newOwner: String, userFullName: String) {
     val order = getOrder(orderId, token)
-    order.lastUpdatedBy = newOwner
+    order.lastUpdatedBy = userFullName
     order.lastUpdatedDateTime = OffsetDateTime.now()
     order.username = newOwner
     repo.save(order)

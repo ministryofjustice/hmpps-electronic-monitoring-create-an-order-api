@@ -140,11 +140,11 @@ class OrderServiceTest {
     whenever(repo.findById(mockOrder.id)).thenReturn(Optional.of(mockOrder))
     whenever(repo.save(any<Order>())).thenAnswer { it.arguments[0] }
 
-    service.updateOrderOwner(mockOrder.id, authentication, "mockNewOwner")
+    service.updateOrderOwner(mockOrder.id, authentication, "mockNewOwner", "mockNewOwnerFullName")
 
     argumentCaptor<Order>().apply {
       verify(repo, times(1)).save(capture())
-      assertThat(firstValue.lastUpdatedBy).isEqualTo("mockNewOwner")
+      assertThat(firstValue.lastUpdatedBy).isEqualTo("mockNewOwnerFullName")
       assertThat(firstValue.username).isEqualTo("mockNewOwner")
     }
   }
@@ -156,7 +156,7 @@ class OrderServiceTest {
     whenever(repo.findById(mockOrder.id)).thenReturn(Optional.of(mockOrder))
 
     val before = OffsetDateTime.now()
-    service.updateOrderOwner(mockOrder.id, authentication, "mockNewOwner")
+    service.updateOrderOwner(mockOrder.id, authentication, "mockNewOwner", "mockNewOwnerFullName")
     val after = OffsetDateTime.now()
 
     argumentCaptor<Order>().apply {
@@ -172,7 +172,7 @@ class OrderServiceTest {
     whenever(authentication.name).thenReturn("mockUser")
     whenever(repo.findById(mockOrder.id)).thenReturn(Optional.of(mockOrder))
 
-    service.updateOrderOwner(mockOrder.id, authentication, "mockNewOwner")
+    service.updateOrderOwner(mockOrder.id, authentication, "mockNewOwner", "mockNewOwnerFullName")
 
     verify(repo, times(1)).save(any<Order>())
   }
