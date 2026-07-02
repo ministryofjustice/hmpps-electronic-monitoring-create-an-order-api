@@ -6,7 +6,9 @@ import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.config.AuthAwareAuthenticationToken
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.data.ValidationErrors
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InterestedParties
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisationDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 import java.time.OffsetDateTime
@@ -33,10 +35,17 @@ abstract class OrderSectionServiceBase {
     return order
   }
 
-  internal fun updateLastUpdatedByAndSaveOrder(order: Order): Order {
+  internal fun updateLastUpdatedByAndSaveOrder(order: Order, interestedParties: InterestedParties? = null): Order {
     val authentication = SecurityContextHolder.getContext().authentication as AuthAwareAuthenticationToken
     order.lastUpdatedBy = authentication.getUserFullName()
     order.lastUpdatedDateTime = OffsetDateTime.now()
+    if (interestedParties != null) {
+      if (interestedParties.notifyingOrganisation == NotifyingOrganisationDDv5.PRISON.name) {
+        order.ownerCohort = interestedParties.notifyingOrganisationName
+      } else {
+        order.ownerCohort = interestedParties.notifyingOrganisation
+      }
+    }
     return orderRepo.save(order)
   }
 }

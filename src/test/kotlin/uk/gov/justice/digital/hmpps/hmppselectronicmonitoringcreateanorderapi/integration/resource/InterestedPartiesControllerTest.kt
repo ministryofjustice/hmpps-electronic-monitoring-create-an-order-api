@@ -10,14 +10,15 @@ import org.junit.jupiter.params.provider.ValueSource
 import org.springframework.http.MediaType
 import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.data.ValidationErrors
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.UpdateOrderIntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.UriTestCase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InterestedParties
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ResponsibleOrganisation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidationError
 import java.util.*
 
-class InterestedPartiesControllerTest : IntegrationTestBase() {
+class InterestedPartiesControllerTest : UpdateOrderIntegrationTestBase() {
 
   private val mockNotifyingOrganisation = NotifyingOrganisation.HOME_OFFICE.toString()
   private val mockNotifyingOrganisationName = ""
@@ -64,55 +65,15 @@ class InterestedPartiesControllerTest : IntegrationTestBase() {
     repo.deleteAll()
   }
 
+  override val testUris: List<UriTestCase> = listOf(
+    UriTestCase(uri = "/api/orders/:orderId/interested-parties", createValidBody = {
+      buildMockRequest()
+    }),
+  )
+
   @Nested
   @DisplayName("PUT /api/orders/{orderId}/interested-parties")
   inner class UpdateInterestedParties {
-    @Test
-    fun `it should return an error if the order was not created by the user`() {
-      val order = createOrder()
-
-      webTestClient.put()
-        .uri("/api/orders/${order.id}/interested-parties")
-        .contentType(MediaType.APPLICATION_JSON)
-        .body(
-          BodyInserters.fromValue(buildMockRequest()),
-        )
-        .headers(setAuthorisation("AUTH_ADM_2"))
-        .exchange()
-        .expectStatus()
-        .isNotFound
-    }
-
-    @Test
-    fun `it should return not found if the order does not exist`() {
-      webTestClient.put()
-        .uri("/api/orders/${UUID.randomUUID()}/interested-parties")
-        .contentType(MediaType.APPLICATION_JSON)
-        .body(
-          BodyInserters.fromValue(buildMockRequest()),
-        )
-        .headers(setAuthorisation("AUTH_ADM"))
-        .exchange()
-        .expectStatus()
-        .isNotFound
-    }
-
-    @Test
-    fun `it should return an error if the order is in a submitted state`() {
-      val order = createSubmittedOrder()
-
-      webTestClient.put()
-        .uri("/api/orders/${order.id}/interested-parties")
-        .contentType(MediaType.APPLICATION_JSON)
-        .body(
-          BodyInserters.fromValue(buildMockRequest()),
-        )
-        .headers(setAuthorisation("AUTH_ADM"))
-        .exchange()
-        .expectStatus()
-        .isNotFound
-    }
-
     @Test
     fun `it should update the interested parties with valid request body`() {
       val order = createOrder()
