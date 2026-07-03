@@ -14,16 +14,20 @@ abstract class OrderSectionServiceBase {
   @Autowired
   lateinit var orderRepo: OrderRepository
 
-  internal fun findEditableOrder(id: UUID, username: String): Order {
+  internal fun findOrder(id: UUID, username: String): Order {
     val order = orderRepo.findById(id).orElseThrow {
       EntityNotFoundException(ValidationErrors.OrderSectionServiceBase.noEditableOrderExists(id))
     }
 
-    if (order.status !== OrderStatus.IN_PROGRESS) {
+    if (order.username != username) {
       throw EntityNotFoundException(ValidationErrors.OrderSectionServiceBase.noEditableOrderExists(id))
     }
+    return order
+  }
 
-    if (order.username != username) {
+  internal fun findEditableOrder(id: UUID, username: String): Order {
+    val order = findOrder(id, username)
+    if (order.status !== OrderStatus.IN_PROGRESS) {
       throw EntityNotFoundException(ValidationErrors.OrderSectionServiceBase.noEditableOrderExists(id))
     }
 

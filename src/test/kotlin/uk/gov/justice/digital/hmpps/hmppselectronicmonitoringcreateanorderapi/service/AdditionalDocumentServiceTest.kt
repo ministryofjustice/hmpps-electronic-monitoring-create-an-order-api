@@ -140,6 +140,46 @@ class AdditionalDocumentServiceTest {
       // Verify the document api was called
       verify(client, times(1)).getDocument(doc.documentId.toString())
     }
+
+    @Test
+    fun `it should return the object blob for submitted order`() {
+      // Mock an order with a single document
+      whenever(
+        orderRepo.findById(mockOrderId),
+      ).thenReturn(
+        Optional.of(
+          Order(
+            id = mockOrderId,
+            versions = mutableListOf(
+              OrderVersion(
+                id = mockVersionId,
+                status = OrderStatus.SUBMITTED,
+                type = RequestType.REQUEST,
+                username = username,
+                orderId = mockOrderId,
+                additionalDocuments = mutableListOf(
+                  doc,
+                ),
+                dataDictionaryVersion = mockDictionaryVersion,
+              ),
+            ),
+          ),
+        ),
+      )
+
+      // Mock the document api response
+      `when`(client.getDocument(mockOrderId.toString())).thenReturn(
+        ResponseEntity.ok().body(
+          Flux.just(InputStreamResource(ByteArrayInputStream("".toByteArray()))),
+        ),
+      )
+
+      // Get the document
+      val result = service.getDocument(mockOrderId, username, docType)
+
+      // Verify the document api was called
+      verify(client, times(1)).getDocument(doc.documentId.toString())
+    }
   }
 
   @Nested
