@@ -285,7 +285,18 @@ data class DeviceWearer(
       if (DataDictionaryVersion.isVersionSameOrAbove(order.dataDictionaryVersion, DataDictionaryVersion.DDV6) &&
         featureFlags.ddV6CourtMappings
       ) {
-        order.detailsOfInstallation?.riskDetails ?: order.installationAndRisk?.riskDetails
+        val genderRisk = order.detailsOfInstallation?.genderRiskDetails?.takeIf { it.isNotBlank() }
+        val riskDetails = order.detailsOfInstallation?.riskDetails ?: order.installationAndRisk?.riskDetails
+        genderRisk?.let { gender ->
+          "Risk to gender: $gender" +
+            (
+              riskDetails?.takeIf { details ->
+                details.isNotBlank()
+              }?.let { details -> " Additional risk details: $details" }
+                ?: ""
+              )
+        }
+          ?: riskDetails
       } else {
         order.installationAndRisk?.riskDetails
       }

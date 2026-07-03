@@ -20,6 +20,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.OrderListCriteria
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.CreateOrderDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderDto
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderInformationDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateAmendOrderDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.VersionInformationDTO
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
@@ -101,11 +102,11 @@ class OrderController(@Autowired val orderService: OrderService) {
   }
 
   @GetMapping("/orders")
-  fun listOrders(authentication: Authentication): ResponseEntity<List<OrderDto>> {
+  fun listOrders(authentication: Authentication): ResponseEntity<List<OrderInformationDto>> {
     val username = authentication.name
-    val orders = orderService.listOrders(OrderListCriteria(username))
+    val orderListInformation = orderService.listOrders(OrderListCriteria(username))
 
-    return ResponseEntity(orders.map { convertToDto(it) }, HttpStatus.OK)
+    return ResponseEntity(orderListInformation, HttpStatus.OK)
   }
 
   @GetMapping("/orders/search")

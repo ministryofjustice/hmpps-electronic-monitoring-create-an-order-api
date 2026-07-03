@@ -29,6 +29,9 @@ data class DetailsOfInstallation(
   @Column(name = "RISK_DETAILS", nullable = true)
   var riskDetails: String? = "",
 
+  @Column(name = "GENDER_RISK_DETAILS", nullable = true)
+  var genderRiskDetails: String? = "",
+
   @Schema(hidden = true)
   @OneToOne
   @JoinColumn(name = "VERSION_ID", updatable = false, insertable = false)

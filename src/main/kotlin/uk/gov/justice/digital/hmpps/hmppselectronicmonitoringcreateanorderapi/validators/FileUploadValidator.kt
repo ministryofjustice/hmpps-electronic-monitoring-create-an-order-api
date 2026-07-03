@@ -3,6 +3,8 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.v
 import jakarta.validation.ValidationException
 import org.apache.commons.io.FilenameUtils
 import org.apache.tika.Tika
+import org.apache.tika.metadata.Metadata
+import org.apache.tika.metadata.TikaCoreProperties
 import org.springframework.util.StringUtils
 import org.springframework.web.multipart.MaxUploadSizeExceededException
 import org.springframework.web.multipart.MultipartFile
@@ -23,7 +25,11 @@ object FileUploadValidator {
 
     var detectedMimeType: String? = null
     try {
-      detectedMimeType = multipartFile.inputStream.use { tika.detect(it) }
+      val metadata = Metadata().apply {
+        set(TikaCoreProperties.RESOURCE_NAME_KEY, multipartFile.originalFilename)
+      }
+
+      detectedMimeType = multipartFile.inputStream.use { tika.detect(it, metadata) }
     } catch (ex: Exception) {
       throw ValidationException(ValidationErrors.AdditionalDocuments.INVALID_FILE)
     }
