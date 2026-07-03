@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.m
 
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
+import java.time.OffsetDateTime
 import java.util.UUID
 
 data class OrderInformationDto(
@@ -12,4 +13,6 @@ data class OrderInformationDto(
   val firstName: String?,
   val lastName: String?,
   val notifyingOrganisation: String?,
+  val lastUpdatedBy: String? = null,
+  val lastUpdateDateTime: OffsetDateTime? = null,
 )

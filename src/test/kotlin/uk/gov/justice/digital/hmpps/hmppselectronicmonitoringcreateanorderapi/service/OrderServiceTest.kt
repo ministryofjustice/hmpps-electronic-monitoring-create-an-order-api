@@ -35,15 +35,14 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.Cohort
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.UserCohort
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.OrderListCriteria
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.CreateOrderDto
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderInformationDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DocumentType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.InstallationLocationType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisationDDv5
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderListView
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Prison
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
@@ -369,12 +368,11 @@ class OrderServiceTest {
     }
   }
 
-  @Test
-  fun `Should be able to list all orders`() {
-    val mockOrder = TestUtilities.createReadyToSubmitOrder(startDate = mockStartDate, endDate = mockEndDate)
-    val mockCriteria = OrderListCriteria(username = "test")
+  @Nested
+  @DisplayName("List orders")
+  inner class ListOrders {
 
-    class MockOrderListInformation : OrderVersionListInformation {
+    private fun mockOrderListInformation(mockOrder: Order) = object : OrderVersionListInformation {
       override fun getId() = mockOrder.id
       override fun getVersionId() = mockOrder.versions.last().id
       override fun getType() = mockOrder.type
@@ -382,25 +380,72 @@ class OrderServiceTest {
       override fun getFirstName() = mockOrder.deviceWearer?.firstName
       override fun getLastName() = mockOrder.deviceWearer?.firstName
       override fun getNotifyingOrganisation() = mockOrder.interestedParties?.notifyingOrganisation
+      override fun getLastUpdatedBy() = mockOrder.lastUpdatedBy
+      override fun getLastUpdateDateTime() = mockOrder.lastUpdatedDateTime
     }
 
-    val mockOrderListInformation = MockOrderListInformation()
+    @Test
+    fun `MY_ORDERS returns in-progress orders for the current user`() {
+      val mockOrder = TestUtilities.createReadyToSubmitOrder(startDate = mockStartDate, endDate = mockEndDate)
+      val mockInfo = mockOrderListInformation(mockOrder)
+      whenever(repo.findMyOrders("mockUser")).thenReturn(listOf(mockInfo))
 
-    whenever(repo.findOrderInformation("test")).thenReturn(listOf(mockOrderListInformation))
+      val results = service.listOrders(authentication, OrderListView.MY_ORDERS)
 
-    val result = service.listOrders(mockCriteria)
-    val expectedValue = OrderInformationDto(
-      mockOrderListInformation.getId(),
-      mockOrderListInformation.getVersionId(),
-      mockOrderListInformation.getStatus(),
-      mockOrderListInformation.getType(),
-      mockOrderListInformation.getFirstName(),
-      mockOrderListInformation.getLastName(),
-      mockOrderListInformation.getNotifyingOrganisation(),
-    )
+      assertThat(results.first().id).isEqualTo(mockOrder.id)
+    }
 
-    assertThat(result).usingRecursiveComparison().ignoringFields("deviceWearer", "interestedParties")
-      .isEqualTo(listOf(expectedValue))
+    @Test
+    fun `MY_ORDERS is the default view`() {
+      val mockOrder = TestUtilities.createReadyToSubmitOrder(startDate = mockStartDate, endDate = mockEndDate)
+      val mockInfo = mockOrderListInformation(mockOrder)
+      whenever(repo.findMyOrders("mockUser")).thenReturn(listOf(mockInfo))
+
+      val results = service.listOrders(authentication)
+
+      assertThat(results.first().id).isEqualTo(mockOrder.id)
+    }
+
+    @Test
+    fun `PRISON_ORDERS throws AccessDeniedException for non-prison users`() {
+      whenever(userCohortService.getUserCohort(authentication)).thenReturn(UserCohort(Cohort.PROBATION))
+
+      assertThatThrownBy { service.listOrders(authentication, OrderListView.PRISON_ORDERS) }.isInstanceOf(
+        AccessDeniedException::class.java,
+      )
+    }
+
+    @Test
+    fun `PRISON_ORDERS returns all in-progress orders the user's prison`() {
+      val mockOrder = TestUtilities.createReadyToSubmitOrder(startDate = mockStartDate, endDate = mockEndDate)
+      val mockInfo = mockOrderListInformation(mockOrder)
+      whenever(userCohortService.getUserCohort(authentication)).thenReturn(
+        UserCohort(
+          Cohort.PRISON,
+          activeCaseLoadId = "BFI",
+        ),
+      )
+      whenever(repo.findPrisonOrders(listOf("Bedford Prison"))).thenReturn(listOf(mockInfo))
+
+      val results = service.listOrders(authentication, OrderListView.PRISON_ORDERS)
+
+      assertThat(results.first().id).isEqualTo(mockOrder.id)
+    }
+
+    @Test
+    fun `listOrders maps lastUpdatedBy and lastUpdatedDateTime into the response`() {
+      val fixedTime = OffsetDateTime.of(2025, 1, 15, 10, 0, 0, 0, ZoneOffset.UTC)
+      val mockOrder = TestUtilities.createReadyToSubmitOrder(startDate = mockStartDate, endDate = mockEndDate)
+      mockOrder.lastUpdatedBy = "Bob Smith"
+      mockOrder.lastUpdatedDateTime = fixedTime
+      val mockInfo = mockOrderListInformation(mockOrder)
+      whenever(repo.findMyOrders("mockUser")).thenReturn(listOf(mockInfo))
+
+      val results = service.listOrders(authentication, OrderListView.MY_ORDERS)
+
+      assertThat(results.first().lastUpdatedBy).isEqualTo("Bob Smith")
+      assertThat(results.first().lastUpdatedDateTime).isEqualTo(fixedTime)
+    }
   }
 
   @Test
