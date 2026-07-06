@@ -57,7 +57,6 @@ import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
-import kotlin.time.Duration
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.DeviceWearer as FmsDeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.ErrorResponse as FmsErrorResponseDetails
 
@@ -86,7 +85,7 @@ class OrderControllerTest : IntegrationTestBase() {
       "mockUser",
       true,
       "mock account",
-      HmppsCaseload("ACI", "HMP ABC"),
+      HmppsCaseload("ACI", "ALTCOURSE_PRISON"),
       emptyList(),
     )
     manageUserApi.stubUserActiveCaseLoad(mockUserCohort)
@@ -824,11 +823,11 @@ class OrderControllerTest : IntegrationTestBase() {
       ],
     )
     fun `Can search for orders given a valid search term`(searchTerm: String) {
-      createAndPersistPopulatedOrder(status = OrderStatus.SUBMITTED)
+      createAndPersistPopulatedOrder(status = OrderStatus.SUBMITTED, tags = "PRISON,ALTCOURSE_PRISON")
 
       webTestClient.get()
         .uri("/api/orders/search?searchTerm=$searchTerm")
-        .headers(setAuthorisation("AUTH_ADM"))
+        .headers(setAuthorisation("AUTH_ADM", roles = listOf("ROLE_EM_CEMO__CREATE_ORDER", "ROLE_PRISON")))
         .exchange()
         .expectStatus()
         .isOk
@@ -852,11 +851,11 @@ class OrderControllerTest : IntegrationTestBase() {
 
     @Test
     fun `It should return orders created by a different user`() {
-      createAndPersistPopulatedOrder(status = OrderStatus.SUBMITTED)
+      createAndPersistPopulatedOrder(status = OrderStatus.SUBMITTED, tags = "PRISON,ALTCOURSE_PRISON")
 
       webTestClient.get()
         .uri("/api/orders/search?searchTerm=john smith")
-        .headers(setAuthorisation("SOME_OTHER_USER"))
+        .headers(setAuthorisation("SOME_OTHER_USER", roles = listOf("ROLE_EM_CEMO__CREATE_ORDER", "ROLE_PRISON")))
         .exchange()
         .expectStatus()
         .isOk
@@ -865,9 +864,74 @@ class OrderControllerTest : IntegrationTestBase() {
     }
 
     @Test
-    fun `It should only return submitted orders`() {
-      createAndPersistPopulatedOrder(status = OrderStatus.IN_PROGRESS)
+    fun `It should not return draft order created by a different user in a different prison`() {
+      createAndPersistPopulatedOrder(status = OrderStatus.IN_PROGRESS, ownerCohort = "ALTCOURSE_PRISON")
 
+      val mockUserCohort = HmppsUserCaseloadResponse(
+        "mockUser",
+        true,
+        "mock account",
+        HmppsCaseload("WLI", "WAYLAND_PRISON"),
+        emptyList(),
+      )
+      manageUserApi.stubUserActiveCaseLoad(mockUserCohort)
+      webTestClient.get()
+        .uri("/api/orders/search?searchTerm=john smith")
+        .headers(setAuthorisation("SOME_OTHER_USER", roles = listOf("ROLE_EM_CEMO__CREATE_ORDER", "ROLE_PRISON")))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBodyList(OrderDto::class.java)
+        .hasSize(0)
+    }
+
+    @Test
+    fun `It should not return draft order created by a different user in a different cohort`() {
+      createAndPersistPopulatedOrder(status = OrderStatus.IN_PROGRESS, ownerCohort = "PROBATION")
+
+      webTestClient.get()
+        .uri("/api/orders/search?searchTerm=john smith")
+        .headers(setAuthorisation("SOME_OTHER_USER", roles = listOf("ROLE_EM_CEMO__CREATE_ORDER", "ROLE_PRISON")))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBodyList(OrderDto::class.java)
+        .hasSize(0)
+    }
+
+    @Test
+    fun `It should return draft order created by a different user in the same cohort`() {
+      createAndPersistPopulatedOrder(status = OrderStatus.IN_PROGRESS, ownerCohort = "ALTCOURSE_PRISON")
+
+      webTestClient.get()
+        .uri("/api/orders/search?searchTerm=john smith")
+        .headers(setAuthorisation("SOME_OTHER_USER", roles = listOf("ROLE_EM_CEMO__CREATE_ORDER", "ROLE_PRISON")))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBodyList(OrderDto::class.java)
+        .hasSize(1)
+    }
+
+    @Test
+    fun `It should not return order with error status`() {
+      createAndPersistPopulatedOrder(status = OrderStatus.ERROR, ownerCohort = "ALTCOURSE_PRISON")
+
+      webTestClient.get()
+        .uri("/api/orders/search?searchTerm=john smith")
+        .headers(setAuthorisation("SOME_OTHER_USER", roles = listOf("ROLE_EM_CEMO__CREATE_ORDER", "ROLE_PRISON")))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBodyList(OrderDto::class.java)
+        .hasSize(0)
+    }
+
+    @Test
+    fun `It should only return submitted and draft orders`() {
+      createAndPersistPopulatedOrder(status = OrderStatus.IN_PROGRESS, ownerCohort = "ALTCOURSE_PRISON")
+      createAndPersistPopulatedOrder(status = OrderStatus.SUBMITTED, tags = "PRISON,ALTCOURSE_PRISON")
+      createAndPersistPopulatedOrder(status = OrderStatus.ERROR, ownerCohort = "ALTCOURSE_PRISON")
       webTestClient.get()
         .uri("/api/orders/search?searchTerm=john smith")
         .headers(setAuthorisation("AUTH_ADM"))
@@ -875,7 +939,7 @@ class OrderControllerTest : IntegrationTestBase() {
         .expectStatus()
         .isOk
         .expectBodyList(OrderDto::class.java)
-        .hasSize(0)
+        .hasSize(2)
     }
   }
 
@@ -1995,6 +2059,8 @@ class OrderControllerTest : IntegrationTestBase() {
     status: OrderStatus = OrderStatus.IN_PROGRESS,
     documents: MutableList<AdditionalDocument> = mutableListOf(),
     dataDictionaryVersion: DataDictionaryVersion = DataDictionaryVersion.DDV4,
+    ownerCohort: String = "",
+    tags: String = "",
   ): Order {
     val order = TestUtilities.createReadyToSubmitOrder(
       id = id,
@@ -2006,6 +2072,8 @@ class OrderControllerTest : IntegrationTestBase() {
       mockStartDate,
       mockEndDate,
       dataDictionaryVersion = dataDictionaryVersion,
+      ownerCohort = ownerCohort,
+        tags= tags,
     )
     repo.save(order)
     return order

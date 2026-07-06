@@ -104,7 +104,11 @@ class OrderSearchSpecification(private val criteria: OrderSearchCriteria) : Spec
 
     val predicates = mutableListOf(
       criteriaBuilder.equal(version.get<Int>("versionId"), subquery),
-      criteriaBuilder.equal(version.get<String>("status"), OrderStatus.SUBMITTED),
+      criteriaBuilder.or(listOf<Predicate>(
+        criteriaBuilder.equal(version.get<String>("status"), OrderStatus.SUBMITTED),
+        criteriaBuilder.equal(version.get<String>("status"), OrderStatus.IN_PROGRESS)
+      )
+      ),
     )
 
     val normalizedKeyword = this.criteria.searchTerm.trim().replace(Regex("\\s+"), " ").lowercase()
@@ -123,7 +127,17 @@ class OrderSearchSpecification(private val criteria: OrderSearchCriteria) : Spec
           val groupRequirement = group.map { tag -> hasTag(criteriaBuilder, version, tag) }
           criteriaBuilder.and(*groupRequirement.toTypedArray())
         }
-      predicates.add(criteriaBuilder.or(*groupPredicates.toTypedArray()))
+      // OR logic to check owner cohort
+      if (this.criteria.ownerCohort != null) {
+       val ownerCohortQuery = criteriaBuilder.equal(criteriaBuilder.lower(version.get("ownerCohort")), this.criteria.ownerCohort.lowercase())
+        predicates.add(criteriaBuilder.or(
+          criteriaBuilder.or(*groupPredicates.toTypedArray()),
+          ownerCohortQuery)
+        )
+      }
+      else{
+        predicates.add(criteriaBuilder.or(*groupPredicates.toTypedArray()))
+      }
     }
 
     if (filter.exclude.isNotEmpty()) {
