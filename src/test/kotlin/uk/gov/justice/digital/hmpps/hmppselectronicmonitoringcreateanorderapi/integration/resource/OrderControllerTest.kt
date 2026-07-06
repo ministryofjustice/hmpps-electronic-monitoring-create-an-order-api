@@ -2073,7 +2073,7 @@ class OrderControllerTest : IntegrationTestBase() {
       mockEndDate,
       dataDictionaryVersion = dataDictionaryVersion,
       ownerCohort = ownerCohort,
-        tags= tags,
+      tags = tags,
     )
     repo.save(order)
     return order

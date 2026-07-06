@@ -104,10 +104,11 @@ class OrderSearchSpecification(private val criteria: OrderSearchCriteria) : Spec
 
     val predicates = mutableListOf(
       criteriaBuilder.equal(version.get<Int>("versionId"), subquery),
-      criteriaBuilder.or(listOf<Predicate>(
-        criteriaBuilder.equal(version.get<String>("status"), OrderStatus.SUBMITTED),
-        criteriaBuilder.equal(version.get<String>("status"), OrderStatus.IN_PROGRESS)
-      )
+      criteriaBuilder.or(
+        listOf<Predicate>(
+          criteriaBuilder.equal(version.get<String>("status"), OrderStatus.SUBMITTED),
+          criteriaBuilder.equal(version.get<String>("status"), OrderStatus.IN_PROGRESS),
+        ),
       ),
     )
 
@@ -129,13 +130,17 @@ class OrderSearchSpecification(private val criteria: OrderSearchCriteria) : Spec
         }
       // OR logic to check owner cohort
       if (this.criteria.ownerCohort != null) {
-       val ownerCohortQuery = criteriaBuilder.equal(criteriaBuilder.lower(version.get("ownerCohort")), this.criteria.ownerCohort.lowercase())
-        predicates.add(criteriaBuilder.or(
-          criteriaBuilder.or(*groupPredicates.toTypedArray()),
-          ownerCohortQuery)
+        val ownerCohortQuery = criteriaBuilder.equal(
+          criteriaBuilder.lower(version.get("ownerCohort")),
+          this.criteria.ownerCohort.lowercase(),
         )
-      }
-      else{
+        predicates.add(
+          criteriaBuilder.or(
+            criteriaBuilder.or(*groupPredicates.toTypedArray()),
+            ownerCohortQuery,
+          ),
+        )
+      } else {
         predicates.add(criteriaBuilder.or(*groupPredicates.toTypedArray()))
       }
     }

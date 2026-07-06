@@ -67,8 +67,8 @@ class TestUtilities {
       versionNumber: Int = 0,
       fmsResultId: UUID? = null,
       offences: MutableList<Offence> = mutableListOf(),
-      ownerCohort:String = "",
-        tags: String = "",
+      ownerCohort: String = "",
+      tags: String = "",
     ): Order {
       val order = Order(
         id = id,
@@ -84,7 +84,7 @@ class TestUtilities {
           orderId = id,
           dataDictionaryVersion = dataDictionaryVersion,
           ownerCohort = ownerCohort,
-            tags =  tags
+          tags = tags,
         ),
       )
 
