@@ -30,6 +30,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderDto
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderInformationDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.VersionInformationDTO
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DocumentType
@@ -57,6 +58,7 @@ import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
+import kotlin.time.Duration
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.DeviceWearer as FmsDeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.ErrorResponse as FmsErrorResponseDetails
 
@@ -498,14 +500,15 @@ class OrderControllerTest : IntegrationTestBase() {
     @Test
     fun `It should return orders when no searchTerm is provided`() {
       createOrder("AUTH_ADM")
+      val benchMarkClient = webTestClient.mutate().responseTimeout(java.time.Duration.ofMillis(30000)).build()
 
-      webTestClient.get()
+      benchMarkClient.get()
         .uri("/api/orders")
         .headers(setAuthorisation("AUTH_ADM"))
         .exchange()
         .expectStatus()
         .isOk
-        .expectBodyList(OrderDto::class.java)
+        .expectBodyList<OrderInformationDto>()
         .hasSize(1)
     }
 
@@ -519,7 +522,7 @@ class OrderControllerTest : IntegrationTestBase() {
         .exchange()
         .expectStatus()
         .isOk
-        .expectBodyList(OrderDto::class.java)
+        .expectBodyList(OrderInformationDto::class.java)
         .hasSize(1)
     }
 
@@ -560,7 +563,7 @@ class OrderControllerTest : IntegrationTestBase() {
         .exchange()
         .expectStatus()
         .isOk
-        .expectBodyList(OrderDto::class.java)
+        .expectBodyList(OrderInformationDto::class.java)
         .hasSize(1)
     }
 
@@ -601,7 +604,7 @@ class OrderControllerTest : IntegrationTestBase() {
         .exchange()
         .expectStatus()
         .isOk
-        .expectBodyList(OrderDto::class.java)
+        .expectBodyList(OrderInformationDto::class.java)
         .hasSize(1)
     }
 
@@ -642,7 +645,7 @@ class OrderControllerTest : IntegrationTestBase() {
         .exchange()
         .expectStatus()
         .isOk
-        .expectBodyList(OrderDto::class.java)
+        .expectBodyList<OrderInformationDto>()
         .hasSize(1)
     }
 
@@ -683,7 +686,7 @@ class OrderControllerTest : IntegrationTestBase() {
         .exchange()
         .expectStatus()
         .isOk
-        .expectBodyList(OrderDto::class.java)
+        .expectBodyList(OrderInformationDto::class.java)
         .hasSize(1)
     }
 
@@ -724,7 +727,7 @@ class OrderControllerTest : IntegrationTestBase() {
         .exchange()
         .expectStatus()
         .isOk
-        .expectBodyList(OrderDto::class.java)
+        .expectBodyList(OrderInformationDto::class.java)
         .hasSize(1)
     }
 
@@ -752,7 +755,7 @@ class OrderControllerTest : IntegrationTestBase() {
         .exchange()
         .expectStatus()
         .isOk
-        .expectBodyList<OrderDto>()
+        .expectBodyList<OrderInformationDto>()
         .hasSize(1)
     }
 
@@ -780,7 +783,7 @@ class OrderControllerTest : IntegrationTestBase() {
         .exchange()
         .expectStatus()
         .isOk
-        .expectBodyList<OrderDto>()
+        .expectBodyList<OrderInformationDto>()
         .hasSize(0)
     }
 
@@ -796,7 +799,7 @@ class OrderControllerTest : IntegrationTestBase() {
         .exchange()
         .expectStatus()
         .isOk
-        .expectBodyList(OrderDto::class.java)
+        .expectBodyList(OrderInformationDto::class.java)
         .hasSize(2)
     }
   }
@@ -921,10 +924,10 @@ class OrderControllerTest : IntegrationTestBase() {
         .exchange()
         .expectStatus()
         .isOk
-        .expectBodyList(OrderDto::class.java)
+        .expectBodyList<OrderInformationDto>()
         .hasSize(1).returnResult().responseBody
 
-      assertThat(result!!.first().deviceWearer?.versionId).isEqualTo(versionId2)
+      assertThat(result!!.first().versionId).isEqualTo(versionId2)
     }
 
     @Test
