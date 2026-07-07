@@ -329,8 +329,14 @@ class OrderService(
         if (userCohort.cohort != Cohort.PRISON || userCohort.activeCaseLoadId == "CADM_I") {
           throw AccessDeniedException("Prison view is only available to prison users")
         }
-        val prisonNames = Prison.fromId(userCohort.activeCaseLoadId).map { it.value }
-        orderRepo.findPrisonOrders(prisonNames)
+        val caseLoadId = userCohort.activeCaseLoadId
+          ?: throw AccessDeniedException("Prison user has no active caseload")
+        val prisonNames = Prison.fromId(caseLoadId).map { it.value }
+        if (prisonNames.isEmpty()) {
+          emptyList()
+        } else {
+          orderRepo.findPrisonOrders(prisonNames)
+        }
       }
     }
 
@@ -368,7 +374,7 @@ class OrderService(
     lastName = this.getLastName(),
     notifyingOrganisation = this.getNotifyingOrganisation(),
     lastUpdatedBy = this.getLastUpdatedBy(),
-    lastUpdateDateTime = this.getLastUpdateDateTime(),
+    lastUpdatedDateTime = this.getLastUpdatedDateTime(),
   )
 
   private fun OrderVersion.toDTO() = VersionInformationDTO(

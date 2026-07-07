@@ -294,10 +294,10 @@ data class Order(
 
   var lastUpdatedDateTime: OffsetDateTime?
     get() {
-      return getCurrentVersion().lastUpdateDateTime
+      return getCurrentVersion().lastUpdatedDateTime
     }
-    set(lastUpdateDateTime) {
-      getCurrentVersion().lastUpdateDateTime = lastUpdateDateTime
+    set(lastUpdatedDateTime) {
+      getCurrentVersion().lastUpdatedDateTime = lastUpdatedDateTime
     }
 
   var ownerCohort: String?

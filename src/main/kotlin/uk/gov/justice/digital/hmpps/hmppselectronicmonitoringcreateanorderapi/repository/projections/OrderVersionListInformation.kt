@@ -14,5 +14,5 @@ interface OrderVersionListInformation {
   fun getLastName(): String?
   fun getNotifyingOrganisation(): String?
   fun getLastUpdatedBy(): String?
-  fun getLastUpdateDateTime(): OffsetDateTime?
+  fun getLastUpdatedDateTime(): OffsetDateTime?
 }

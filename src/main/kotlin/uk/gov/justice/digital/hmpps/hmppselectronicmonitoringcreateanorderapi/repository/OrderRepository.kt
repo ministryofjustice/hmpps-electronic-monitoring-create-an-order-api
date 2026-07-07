@@ -18,42 +18,42 @@ interface OrderRepository :
 
   @Query(
     """
-    SELECT ov.orderId as id, ov.id AS versionId, ov.status AS status, ov.type AS type, dw.firstName AS firstName, dw.lastName AS lastName, ip.notifyingOrganisation AS notifyingOrganisation, ov.lastUpdatedBy AS lastUpdatedBy, ov.lastUpdateDateTime AS lastUpdatedDateTime
+    SELECT ov.orderId as id, ov.id AS versionId, ov.status AS status, ov.type AS type, dw.firstName AS firstName, dw.lastName AS lastName, ip.notifyingOrganisation AS notifyingOrganisation, ov.lastUpdatedBy AS lastUpdatedBy, ov.lastUpdatedDateTime AS lastUpdatedDateTime
     FROM OrderVersion ov 
     LEFT JOIN ov.deviceWearer dw 
     LEFT JOIN ov.interestedParties ip
     WHERE ov.versionId = (SELECT MAX(ov2.versionId) FROM OrderVersion ov2 WHERE ov2.orderId = ov.orderId)
     AND ov.username = :username
     AND ov.status = 'IN_PROGRESS'
-    ORDER BY ov.lastUpdateDateTime DESC 
+    ORDER BY ov.lastUpdatedDateTime DESC 
     """,
   )
   fun findMyOrders(@Param("username") username: String): List<OrderVersionListInformation>
 
   @Query(
     """
-    SELECT ov.orderId as id, ov.id AS versionId, ov.status AS status, ov.type AS type, dw.firstName AS firstName, dw.lastName AS lastName, ip.notifyingOrganisation AS notifyingOrganisation, ov.lastUpdatedBy AS lastUpdatedBy, ov.lastUpdateDateTime AS lastUpdatedDateTime
+    SELECT ov.orderId as id, ov.id AS versionId, ov.status AS status, ov.type AS type, dw.firstName AS firstName, dw.lastName AS lastName, ip.notifyingOrganisation AS notifyingOrganisation, ov.lastUpdatedBy AS lastUpdatedBy, ov.lastUpdatedDateTime AS lastUpdatedDateTime
     FROM OrderVersion ov 
     LEFT JOIN ov.deviceWearer dw 
     LEFT JOIN ov.interestedParties ip
     WHERE ov.versionId = (SELECT MAX(ov2.versionId) FROM OrderVersion ov2 WHERE ov2.orderId = ov.orderId)
     AND ov.username = :username
     AND ov.status = 'ERROR'
-    ORDER BY ov.lastUpdateDateTime DESC 
+    ORDER BY ov.lastUpdatedDateTime DESC 
     """,
   )
   fun findFailedOrders(@Param("username") username: String): List<OrderVersionListInformation>
 
   @Query(
     """
-    SELECT ov.orderId as id, ov.id AS versionId, ov.status AS status, ov.type AS type, dw.firstName AS firstName, dw.lastName AS lastName, ip.notifyingOrganisation AS notifyingOrganisation, ov.lastUpdatedBy AS lastUpdatedBy, ov.lastUpdateDateTime AS lastUpdatedDateTime
+    SELECT ov.orderId as id, ov.id AS versionId, ov.status AS status, ov.type AS type, dw.firstName AS firstName, dw.lastName AS lastName, ip.notifyingOrganisation AS notifyingOrganisation, ov.lastUpdatedBy AS lastUpdatedBy, ov.lastUpdatedDateTime AS lastUpdatedDateTime
     FROM OrderVersion ov 
     LEFT JOIN ov.deviceWearer dw 
     LEFT JOIN ov.interestedParties ip
     WHERE ov.versionId = (SELECT MAX(ov2.versionId) FROM OrderVersion ov2 WHERE ov2.orderId = ov.orderId)
     AND ov.ownerCohort IN :prisonNames
     AND ov.status = 'IN_PROGRESS'
-    ORDER BY ov.lastUpdateDateTime DESC 
+    ORDER BY ov.lastUpdatedDateTime DESC 
     """,
   )
   fun findPrisonOrders(@Param("prisonNames") prisonNames: List<String>): List<OrderVersionListInformation>

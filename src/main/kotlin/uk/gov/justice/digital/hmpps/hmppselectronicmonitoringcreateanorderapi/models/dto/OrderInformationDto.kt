@@ -14,5 +14,5 @@ data class OrderInformationDto(
   val lastName: String?,
   val notifyingOrganisation: String?,
   val lastUpdatedBy: String? = null,
-  val lastUpdateDateTime: OffsetDateTime? = null,
+  val lastUpdatedDateTime: OffsetDateTime? = null,
 )

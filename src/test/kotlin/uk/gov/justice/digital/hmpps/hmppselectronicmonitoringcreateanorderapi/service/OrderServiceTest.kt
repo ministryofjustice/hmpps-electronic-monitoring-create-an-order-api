@@ -13,6 +13,7 @@ import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito.mock
+import org.mockito.Mockito.never
 import org.mockito.Mockito.reset
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
@@ -378,10 +379,10 @@ class OrderServiceTest {
       override fun getType() = mockOrder.type
       override fun getStatus() = mockOrder.status
       override fun getFirstName() = mockOrder.deviceWearer?.firstName
-      override fun getLastName() = mockOrder.deviceWearer?.firstName
+      override fun getLastName() = mockOrder.deviceWearer?.lastName
       override fun getNotifyingOrganisation() = mockOrder.interestedParties?.notifyingOrganisation
       override fun getLastUpdatedBy() = mockOrder.lastUpdatedBy
-      override fun getLastUpdateDateTime() = mockOrder.lastUpdatedDateTime
+      override fun getLastUpdatedDateTime() = mockOrder.lastUpdatedDateTime
     }
 
     @Test
@@ -430,6 +431,18 @@ class OrderServiceTest {
       val results = service.listOrders(authentication, OrderListView.PRISON_ORDERS)
 
       assertThat(results.first().id).isEqualTo(mockOrder.id)
+    }
+
+    @Test
+    fun `PRISON_ORDERS returns empty when the caseload maps to no prisons`() {
+      whenever(userCohortService.getUserCohort(authentication)).thenReturn(
+        UserCohort(Cohort.PRISON, activeCaseLoadId = "UNKNOWN"),
+      )
+
+      val results = service.listOrders(authentication, OrderListView.PRISON_ORDERS)
+
+      assertThat(results).isEmpty()
+      verify(repo, never()).findPrisonOrders(any())
     }
 
     @Test
