@@ -94,8 +94,7 @@ class OrderController(@Autowired val orderService: OrderService) {
     authentication: AuthAwareAuthenticationToken,
   ): ResponseEntity<OrderDto> {
     val username = authentication.name
-    val userFullName = authentication.getUserFullName()
-    val order = orderService.updateOrderOwner(orderId, authentication as JwtAuthenticationToken, username, userFullName)
+    val order = orderService.updateOrderOwner(orderId, authentication as JwtAuthenticationToken, username)
     return ResponseEntity(convertToDto(order), HttpStatus.OK)
   }
 

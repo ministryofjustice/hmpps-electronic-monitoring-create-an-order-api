@@ -24,7 +24,6 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.specification.OrderSearchSpecification
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.projections.OrderVersionListInformation
-import java.time.OffsetDateTime
 import java.time.ZonedDateTime
 import java.util.*
 
@@ -335,12 +334,10 @@ class OrderService(
     )
   }
 
-  fun updateOrderOwner(orderId: UUID, token: JwtAuthenticationToken, newOwner: String, userFullName: String): Order {
+  fun updateOrderOwner(orderId: UUID, token: JwtAuthenticationToken, newOwner: String): Order {
     val order = getOrder(orderId, token)
-    order.lastUpdatedBy = userFullName
-    order.lastUpdatedDateTime = OffsetDateTime.now()
     order.username = newOwner
-    orderRepo.save(order)
+    updateLastUpdatedByAndSaveOrder(order)
     return order
   }
 
