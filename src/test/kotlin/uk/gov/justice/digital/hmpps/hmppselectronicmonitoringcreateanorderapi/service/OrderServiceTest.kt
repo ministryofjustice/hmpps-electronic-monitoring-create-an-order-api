@@ -90,6 +90,131 @@ class OrderServiceTest {
     whenever(repo.save(any<Order>())).thenReturn(TestUtilities.createReadyToSubmitOrder())
   }
 
+  @Nested
+  @DisplayName("Get order")
+  inner class GetOrder {
+    @Test
+    fun `Get order returns order when status is not submitted and username matches`() {
+      val orderId = UUID.randomUUID()
+      val existingOrder = TestUtilities.createReadyToSubmitOrder(
+        id = orderId,
+        username = "mockUser",
+        status = OrderStatus.IN_PROGRESS,
+      )
+
+      whenever(repo.findById(orderId)).thenReturn(Optional.of(existingOrder))
+
+      val result = service.getOrder(orderId, authentication)
+
+      assertThat(result).isNotNull
+      assertThat(result.id).isEqualTo(orderId)
+      assertThat(result.username).isEqualTo("mockUser")
+      assertThat(result.status).isEqualTo(OrderStatus.IN_PROGRESS)
+
+      verify(repo, times(1)).findById(orderId)
+    }
+
+    @Test
+    fun `Get order returns order when status is submitted and user cohort tags match`() {
+      val orderId = UUID.randomUUID()
+      val existingOrder = TestUtilities.createReadyToSubmitOrder(
+        id = orderId,
+        username = "mockUser",
+        status = OrderStatus.IN_PROGRESS,
+      )
+      existingOrder.tags = "Probation"
+
+      whenever(repo.findById(orderId)).thenReturn(Optional.of(existingOrder))
+      whenever(userCohortService.getUserCohort(authentication)).thenReturn(UserCohort(Cohort.PROBATION))
+
+      val result = service.getOrder(orderId, authentication)
+
+      assertThat(result).isEqualTo(existingOrder)
+    }
+
+    @Test
+    fun `Get order throws EntityNotFoundException when order does not exist`() {
+      val orderId = UUID.randomUUID()
+      whenever(repo.findById(orderId)).thenReturn(Optional.empty())
+
+      val exception = org.junit.jupiter.api.assertThrows<EntityNotFoundException> {
+        service.getOrder(orderId, authentication)
+      }
+
+      assertThat(exception.message).isEqualTo("Order with id $orderId does not exist")
+    }
+
+    @Test
+    fun `Get order throws EntityNotFoundException when order is not submitted and username mismatches`() {
+      val orderId = UUID.randomUUID()
+      val existingOrder = TestUtilities.createReadyToSubmitOrder(
+        id = orderId,
+        username = "differentUser",
+        status = OrderStatus.IN_PROGRESS,
+      )
+
+      whenever(repo.findById(orderId)).thenReturn(Optional.of(existingOrder))
+
+      val exception = org.junit.jupiter.api.assertThrows<EntityNotFoundException> {
+        service.getOrder(orderId, authentication)
+      }
+
+      assertThat(exception.message).isEqualTo("Order ($orderId) for mockUser not found")
+    }
+
+    private fun orderWithCaseload(username: String, caseloadName: String?): Order {
+      val order = Order()
+      order.versions = mutableListOf(
+        OrderVersion(
+          orderId = order.id,
+          username = username,
+          status = OrderStatus.IN_PROGRESS,
+          type = RequestType.REQUEST,
+          dataDictionaryVersion = DataDictionaryVersion.DDV6,
+          ownerCohort = caseloadName,
+        ),
+      )
+      return order
+    }
+
+    @Test
+    fun `same prison can access draft order`() {
+      val order = orderWithCaseload("otherUser", "Bedford Prison")
+      whenever(repo.findById(order.id)).thenReturn(Optional.of(order))
+      whenever(userCohortService.getUserCohort(authentication)).thenReturn(
+        UserCohort(
+          Cohort.PRISON,
+          "Bedford Prison",
+          "BFI",
+        ),
+      )
+
+      val result = service.getOrder(order.id, authentication)
+
+      assertThat(result).isEqualTo(order)
+    }
+
+    @Test
+    fun `different prison cannot access draft order`() {
+      val order = orderWithCaseload("otherUser", "MDI")
+      whenever(repo.findById(order.id)).thenReturn(Optional.of(order))
+      whenever(userCohortService.getUserCohort(authentication)).thenReturn(
+        UserCohort(
+          Cohort.PRISON,
+          "HMP Leeds",
+          "LEI",
+        ),
+      )
+
+      assertThatThrownBy {
+        service.getOrder(
+          order.id,
+          authentication,
+        )
+      }.isInstanceOf(EntityNotFoundException::class.java)
+    }
+  }
+
   @Test
   fun `Create a new order for user and save to database`() {
     val result = service.createOrder("mockUser", CreateOrderDto())
