@@ -13,6 +13,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.Cohort
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.UserCohort
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.OrderListCriteria
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.OrderSearchCriteria
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.TagFilter
@@ -339,12 +340,17 @@ class OrderService(
     val userCohort = userCohortService.getUserCohort(authentication)
 
     val filter = TagFilter.getTagFilterByUserCohort(userCohort)
-
-    val searchCriteria = OrderSearchCriteria(searchTerm, filter)
+    val ownerCohort = getOwnerCohort(userCohort)
+    val searchCriteria = OrderSearchCriteria(searchTerm, filter, ownerCohort)
 
     return orderRepo.findAll(
       OrderSearchSpecification(searchCriteria),
     )
+  }
+
+  private fun getOwnerCohort(cohort: UserCohort): String? = when (cohort.cohort) {
+    Cohort.PRISON -> Prison.fromId(cohort.activeCaseLoadId).firstOrNull()?.name
+    else -> cohort.cohort.name
   }
 
   fun getVersionInformation(orderId: UUID): List<VersionInformationDTO> {
