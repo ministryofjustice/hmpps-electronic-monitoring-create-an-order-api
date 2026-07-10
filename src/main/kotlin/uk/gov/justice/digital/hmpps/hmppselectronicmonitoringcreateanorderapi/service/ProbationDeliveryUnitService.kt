@@ -32,7 +32,7 @@ class ProbationDeliveryUnitService : OrderSectionServiceBase() {
 
     if (unitInput != null) {
       val isValid =
-        if (order.dataDictionaryVersion.isLaterThan(DataDictionaryVersion.DDV6)) {
+        if (order.dataDictionaryVersion.isLaterThanOrEqual(DataDictionaryVersion.DDV6)) {
           val unitEnum = ProbationDeliveryUnitsDDv6.from(unitInput)
           unitEnum != null &&
             ProbationDeliveryUnitsDDv6.PROBATION_REGION_DELIVERY_UNIT[responsibleOrganisationRegion]?.contains(

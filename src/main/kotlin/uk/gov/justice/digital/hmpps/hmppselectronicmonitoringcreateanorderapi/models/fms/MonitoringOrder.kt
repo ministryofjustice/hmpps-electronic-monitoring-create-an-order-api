@@ -325,7 +325,7 @@ data class MonitoringOrder(
         pilot = conditions.pilot?.value ?: "",
         magistrateCourtCaseReferenceNumber = order.deviceWearer?.courtCaseReferenceNumber ?: "",
       )
-      if (order.dataDictionaryVersion.isLaterThan(DataDictionaryVersion.DDV6)) {
+      if (order.dataDictionaryVersion.isLaterThanOrEqual(DataDictionaryVersion.DDV6)) {
         monitoringOrder.subcategory = subcategory
         monitoringOrder.dapolMissedInError = getDapolMissedInError(order)
         if (featureFlags.ddV6CourtMappings) {
@@ -352,7 +352,7 @@ data class MonitoringOrder(
         "No"
       }
 
-      if (order.dataDictionaryVersion.isLaterThan(DataDictionaryVersion.DDV6)
+      if (order.dataDictionaryVersion.isLaterThanOrEqual(DataDictionaryVersion.DDV6)
       ) {
         monitoringOrder.dapoOrderClauseNumbers?.addAll(
           order.dapoClauses.map {
@@ -584,7 +584,7 @@ data class MonitoringOrder(
         }
       }
 
-      if (order.dataDictionaryVersion.isLaterThan(DataDictionaryVersion.DDV6)
+      if (order.dataDictionaryVersion.isLaterThanOrEqual(DataDictionaryVersion.DDV6)
       ) {
         if (order.installationLocation != null) {
           if (order.installationLocation?.location == InstallationLocationType.PRISON &&
@@ -616,7 +616,7 @@ data class MonitoringOrder(
     private fun getSentenceType(order: Order, featureFlags: FeatureFlags): String {
       val sentenceType = order.monitoringConditions?.sentenceType ?: return ""
 
-      if (order.dataDictionaryVersion.isLaterThan(DataDictionaryVersion.DDV6)
+      if (order.dataDictionaryVersion.isLaterThanOrEqual(DataDictionaryVersion.DDV6)
       ) {
         return when (sentenceType) {
           // ELM-4515 update mapping for ddv6
@@ -752,7 +752,7 @@ data class MonitoringOrder(
     }
 
     private fun getProbationDeliveryUnit(order: Order): String {
-      if (order.dataDictionaryVersion.isLaterThan(DataDictionaryVersion.DDV6)) {
+      if (order.dataDictionaryVersion.isLaterThanOrEqual(DataDictionaryVersion.DDV6)) {
         return ProbationDeliveryUnitsDDv6.from(order.probationDeliveryUnit?.unit)?.value ?: ""
       }
       return ProbationDeliveryUnits.from(order.probationDeliveryUnit?.unit)?.value ?: ""
@@ -787,7 +787,7 @@ data class MonitoringOrder(
 
     private fun getOffenceAdditionalDetails(order: Order): String {
       val riskOffenceDetails =
-        if (order.dataDictionaryVersion.isLaterThan(DataDictionaryVersion.DDV6)) {
+        if (order.dataDictionaryVersion.isLaterThanOrEqual(DataDictionaryVersion.DDV6)) {
           order.offenceAdditionalDetails?.additionalDetails ?: ""
         } else {
           order.installationAndRisk?.offenceAdditionalDetails ?: ""
@@ -802,7 +802,7 @@ data class MonitoringOrder(
 
       val parts = listOfNotNull(
         riskOffenceDetails.takeIf { it.isNotBlank() },
-        if (order.dataDictionaryVersion.isLaterThan(DataDictionaryVersion.DDV6)
+        if (order.dataDictionaryVersion.isLaterThanOrEqual(DataDictionaryVersion.DDV6)
         ) {
           null
         } else {

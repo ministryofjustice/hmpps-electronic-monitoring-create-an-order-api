@@ -7,5 +7,5 @@ enum class DataDictionaryVersion {
   DDV7,
   ;
 
-  fun isLaterThan(compareVersion: DataDictionaryVersion): Boolean = this >= compareVersion
+  fun isLaterThanOrEqual(compareVersion: DataDictionaryVersion): Boolean = this >= compareVersion
 }

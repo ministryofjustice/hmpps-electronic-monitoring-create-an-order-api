@@ -282,7 +282,7 @@ data class DeviceWearer(
       Gender.from(order.deviceWearer?.gender)?.value ?: order.deviceWearer?.gender ?: ""
 
     private fun getRiskDetails(order: Order): String? =
-      if (order.dataDictionaryVersion.isLaterThan(DataDictionaryVersion.DDV6)
+      if (order.dataDictionaryVersion.isLaterThanOrEqual(DataDictionaryVersion.DDV6)
       ) {
         val genderRisk = order.detailsOfInstallation?.genderRiskDetails?.takeIf { it.isNotBlank() }
         val riskDetails = order.detailsOfInstallation?.riskDetails ?: order.installationAndRisk?.riskDetails
@@ -302,7 +302,7 @@ data class DeviceWearer(
 
     private fun getRiskCategories(order: Order, featureFlags: FeatureFlags): List<FmsRiskCategory> {
       val riskCategories =
-        if (order.dataDictionaryVersion.isLaterThan(DataDictionaryVersion.DDV6) &&
+        if (order.dataDictionaryVersion.isLaterThanOrEqual(DataDictionaryVersion.DDV6) &&
           featureFlags.ddV6CourtMappings
         ) {
           order.detailsOfInstallation?.riskCategory ?: order.installationAndRisk?.riskCategory
