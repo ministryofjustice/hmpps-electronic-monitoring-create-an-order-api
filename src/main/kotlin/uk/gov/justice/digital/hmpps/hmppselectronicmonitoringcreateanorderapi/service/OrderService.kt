@@ -407,6 +407,8 @@ class OrderService(
     status = this.status,
     notifyingOrganisation = this.interestedParties?.notifyingOrganisation,
     notifyingOrganisationName = this.interestedParties?.notifyingOrganisationName,
+    lastUpdatedDateTime = this.lastUpdatedDateTime,
+    lastUpdatedBy = this.lastUpdatedBy,
   )
 
   fun getSpecificVersion(orderId: UUID, versionId: UUID): Order {
