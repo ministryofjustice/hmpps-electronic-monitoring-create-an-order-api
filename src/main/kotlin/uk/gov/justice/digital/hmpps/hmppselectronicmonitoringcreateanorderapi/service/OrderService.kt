@@ -86,19 +86,21 @@ class OrderService(
     }
 
     val userCohort = userCohortService.getUserCohort(token)
-    val userPrisons = if (userCohort.cohort == Cohort.PRISON) {
-      Prison.fromId(userCohort.activeCaseLoadId)
-    } else {
-      null
-    }
 
     if (order.status != OrderStatus.SUBMITTED && order.username != username) {
-      if (order.ownerCohort == null ||
-        userPrisons.isNullOrEmpty() ||
-        userPrisons.all { it.name != order.ownerCohort }
-      ) {
-        // allow admin user to all draft orders
-        if (userCohort.activeCaseLoadId != "CADM_I") {
+      if (userCohort.cohort == Cohort.PRISON) {
+        val userPrisons = Prison.fromId(userCohort.activeCaseLoadId)
+
+        if (order.ownerCohort == null ||
+          userPrisons.all { it.name != order.ownerCohort }
+        ) {
+          // allow admin user to all draft orders
+          if (userCohort.activeCaseLoadId != "CADM_I") {
+            throw ForbiddenException("Order forbidden", errorCode = 40301)
+          }
+        }
+      } else {
+        if (order.ownerCohort != userCohort.cohort.name) {
           throw ForbiddenException("Order forbidden", errorCode = 40301)
         }
       }

@@ -198,6 +198,39 @@ class OrderServiceTest {
     }
 
     @Test
+    fun `same cohort can access draft order`() {
+      val order = orderWithCaseload("otherUser", Cohort.HOME_OFFICE.name)
+      whenever(repo.findById(order.id)).thenReturn(Optional.of(order))
+      whenever(userCohortService.getUserCohort(authentication)).thenReturn(
+        UserCohort(
+          Cohort.HOME_OFFICE,
+        ),
+      )
+
+      val result = service.getOrder(order.id, authentication)
+
+      assertThat(result).isEqualTo(order)
+    }
+
+    @Test
+    fun `different cohort cannot access draft order`() {
+      val order = orderWithCaseload("otherUser", Cohort.HOME_OFFICE.name)
+      whenever(repo.findById(order.id)).thenReturn(Optional.of(order))
+      whenever(userCohortService.getUserCohort(authentication)).thenReturn(
+        UserCohort(
+          Cohort.COURT,
+        ),
+      )
+
+      assertThatThrownBy {
+        service.getOrder(
+          order.id,
+          authentication,
+        )
+      }.isInstanceOf(ForbiddenException::class.java)
+    }
+
+    @Test
     fun `different prison cannot access draft order`() {
       val order = orderWithCaseload("otherUser", "MDI")
       whenever(repo.findById(order.id)).thenReturn(Optional.of(order))
