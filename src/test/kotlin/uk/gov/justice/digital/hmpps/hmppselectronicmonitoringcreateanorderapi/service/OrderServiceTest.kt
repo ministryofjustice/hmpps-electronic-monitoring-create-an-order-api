@@ -182,13 +182,13 @@ class OrderServiceTest {
 
     @Test
     fun `same prison can access draft order`() {
-      val order = orderWithCaseload("otherUser", "Bedford Prison")
+      val order = orderWithCaseload("otherUser", Prison.BEDFORD_PRISON.name)
       whenever(repo.findById(order.id)).thenReturn(Optional.of(order))
       whenever(userCohortService.getUserCohort(authentication)).thenReturn(
         UserCohort(
           Cohort.PRISON,
-          "Bedford Prison",
-          "BFI",
+          Prison.BEDFORD_PRISON.name   ,
+          Prison.BEDFORD_PRISON.ids.first(),
         ),
       )
 
@@ -546,15 +546,15 @@ class OrderServiceTest {
 
     @Test
     fun `PRISON_ORDERS returns all in-progress orders the user's prison`() {
-      val mockOrder = TestUtilities.createReadyToSubmitOrder(startDate = mockStartDate, endDate = mockEndDate)
+      val mockOrder = TestUtilities.createReadyToSubmitOrder(startDate = mockStartDate, endDate = mockEndDate, ownerCohort = Prison.BEDFORD_PRISON.name)
       val mockInfo = mockOrderListInformation(mockOrder)
       whenever(userCohortService.getUserCohort(authentication)).thenReturn(
         UserCohort(
           Cohort.PRISON,
-          activeCaseLoadId = "BFI",
+          activeCaseLoadId = Prison.BEDFORD_PRISON.ids.first(),
         ),
       )
-      whenever(repo.findPrisonOrders(listOf("Bedford Prison"))).thenReturn(listOf(mockInfo))
+      whenever(repo.findPrisonOrders(listOf(Prison.BEDFORD_PRISON.name))).thenReturn(listOf(mockInfo))
 
       val results = service.listOrders(authentication, OrderListView.PRISON_ORDERS)
 

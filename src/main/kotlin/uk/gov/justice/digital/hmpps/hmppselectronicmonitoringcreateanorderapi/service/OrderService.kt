@@ -95,7 +95,7 @@ class OrderService(
     if (order.status != OrderStatus.SUBMITTED && order.username != username) {
       if (order.ownerCohort == null ||
         userPrisons.isNullOrEmpty() ||
-        userPrisons.all { it.value != order.ownerCohort }
+        userPrisons.all { it.name != order.ownerCohort }
       ) {
         // allow admin user to all draft orders
         if (userCohort.activeCaseLoadId != "CADM_I") {
@@ -346,7 +346,7 @@ class OrderService(
         }
         val caseLoadId = userCohort.activeCaseLoadId
           ?: throw AccessDeniedException("Prison user has no active caseload")
-        val prisonNames = Prison.fromId(caseLoadId).map { it.value }
+        val prisonNames = Prison.fromId(caseLoadId).map { it.name }
         if (prisonNames.isEmpty()) {
           emptyList()
         } else {
