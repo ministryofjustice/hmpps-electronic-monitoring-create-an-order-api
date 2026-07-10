@@ -321,7 +321,7 @@ data class MonitoringOrder(
         conditionType = conditions.conditionType!!.value,
         orderId = order.id.toString(),
         orderStatus = "Not Started",
-        offenceAdditionalDetails = getOffenceAdditionalDetails(order),
+        offenceAdditionalDetails = getOffenceAdditionalDetails(order, featureFlags),
         pilot = conditions.pilot?.value ?: "",
         magistrateCourtCaseReferenceNumber = order.deviceWearer?.courtCaseReferenceNumber ?: "",
       )
@@ -352,7 +352,8 @@ data class MonitoringOrder(
         "No"
       }
 
-      if (order.dataDictionaryVersion.isLaterThanOrEqual(DataDictionaryVersion.DDV6)
+      if (order.dataDictionaryVersion.isLaterThanOrEqual(DataDictionaryVersion.DDV6) &&
+        featureFlags.ddV6CourtMappings
       ) {
         monitoringOrder.dapoOrderClauseNumbers?.addAll(
           order.dapoClauses.map {
@@ -584,7 +585,8 @@ data class MonitoringOrder(
         }
       }
 
-      if (order.dataDictionaryVersion.isLaterThanOrEqual(DataDictionaryVersion.DDV6)
+      if (order.dataDictionaryVersion.isLaterThanOrEqual(DataDictionaryVersion.DDV6) &&
+        featureFlags.ddV6CourtMappings
       ) {
         if (order.installationLocation != null) {
           if (order.installationLocation?.location == InstallationLocationType.PRISON &&
@@ -616,7 +618,8 @@ data class MonitoringOrder(
     private fun getSentenceType(order: Order, featureFlags: FeatureFlags): String {
       val sentenceType = order.monitoringConditions?.sentenceType ?: return ""
 
-      if (order.dataDictionaryVersion.isLaterThanOrEqual(DataDictionaryVersion.DDV6)
+      if (order.dataDictionaryVersion.isLaterThanOrEqual(DataDictionaryVersion.DDV6) &&
+        featureFlags.ddV6CourtMappings
       ) {
         return when (sentenceType) {
           // ELM-4515 update mapping for ddv6
@@ -785,7 +788,7 @@ data class MonitoringOrder(
       )
     }
 
-    private fun getOffenceAdditionalDetails(order: Order): String {
+    private fun getOffenceAdditionalDetails(order: Order, featureFlags: FeatureFlags): String {
       val riskOffenceDetails =
         if (order.dataDictionaryVersion.isLaterThanOrEqual(DataDictionaryVersion.DDV6)) {
           order.offenceAdditionalDetails?.additionalDetails ?: ""
@@ -802,7 +805,8 @@ data class MonitoringOrder(
 
       val parts = listOfNotNull(
         riskOffenceDetails.takeIf { it.isNotBlank() },
-        if (order.dataDictionaryVersion.isLaterThanOrEqual(DataDictionaryVersion.DDV6)
+        if (order.dataDictionaryVersion.isLaterThanOrEqual(DataDictionaryVersion.DDV6) &&
+          featureFlags.ddV6CourtMappings
         ) {
           null
         } else {
