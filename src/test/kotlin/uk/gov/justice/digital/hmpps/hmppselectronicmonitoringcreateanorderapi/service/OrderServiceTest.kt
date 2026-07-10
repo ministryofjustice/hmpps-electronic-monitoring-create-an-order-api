@@ -187,7 +187,7 @@ class OrderServiceTest {
       whenever(userCohortService.getUserCohort(authentication)).thenReturn(
         UserCohort(
           Cohort.PRISON,
-          Prison.BEDFORD_PRISON.name   ,
+          Prison.BEDFORD_PRISON.name,
           Prison.BEDFORD_PRISON.ids.first(),
         ),
       )
@@ -546,7 +546,11 @@ class OrderServiceTest {
 
     @Test
     fun `PRISON_ORDERS returns all in-progress orders the user's prison`() {
-      val mockOrder = TestUtilities.createReadyToSubmitOrder(startDate = mockStartDate, endDate = mockEndDate, ownerCohort = Prison.BEDFORD_PRISON.name)
+      val mockOrder = TestUtilities.createReadyToSubmitOrder(
+        startDate = mockStartDate,
+        endDate = mockEndDate,
+        ownerCohort = Prison.BEDFORD_PRISON.name,
+      )
       val mockInfo = mockOrderListInformation(mockOrder)
       whenever(userCohortService.getUserCohort(authentication)).thenReturn(
         UserCohort(
