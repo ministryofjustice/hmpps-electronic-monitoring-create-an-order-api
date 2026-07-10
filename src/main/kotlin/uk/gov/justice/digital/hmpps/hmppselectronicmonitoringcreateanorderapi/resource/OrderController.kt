@@ -18,12 +18,12 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.config.AuthAwareAuthenticationToken
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.OrderListCriteria
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.CreateOrderDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderInformationDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateAmendOrderDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.VersionInformationDTO
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderListView
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.OrderService
 import java.util.UUID
@@ -100,9 +100,10 @@ class OrderController(@Autowired val orderService: OrderService) {
 
   @GetMapping("/orders/{orderId}")
   fun getOrder(@PathVariable orderId: UUID, authentication: Authentication): ResponseEntity<OrderDto> {
-    val order = orderService.getOrder(orderId, authentication as JwtAuthenticationToken)
+    val token = authentication as JwtAuthenticationToken
+    val order = orderService.getOrder(orderId, token)
 
-    return ResponseEntity(convertToDto(order), HttpStatus.OK)
+    return ResponseEntity(convertToDto(order, token), HttpStatus.OK)
   }
 
   @DeleteMapping("/orders/{orderId}")
@@ -113,9 +114,12 @@ class OrderController(@Autowired val orderService: OrderService) {
   }
 
   @GetMapping("/orders")
-  fun listOrders(authentication: Authentication): ResponseEntity<List<OrderInformationDto>> {
-    val username = authentication.name
-    val orderListInformation = orderService.listOrders(OrderListCriteria(username))
+  fun listOrders(
+    authentication: Authentication,
+    @RequestParam view: OrderListView = OrderListView.MY_ORDERS,
+  ): ResponseEntity<List<OrderInformationDto>> {
+    val orderListInformation =
+      orderService.listOrders(authentication as JwtAuthenticationToken, view)
 
     return ResponseEntity(orderListInformation, HttpStatus.OK)
   }
@@ -169,7 +173,8 @@ class OrderController(@Autowired val orderService: OrderService) {
     return ResponseEntity(monitoringOrderRequest, HttpStatus.OK)
   }
 
-  private fun convertToDto(order: Order): OrderDto {
+  private fun convertToDto(order: Order, authentication: JwtAuthenticationToken? = null): OrderDto {
+    val isOwner = authentication == null || authentication.name == order.username
     val dto = OrderDto(
       id = order.id,
       additionalDocuments = order.additionalDocuments,
@@ -209,6 +214,7 @@ class OrderController(@Autowired val orderService: OrderService) {
       lastUpdatedBy = order.lastUpdatedBy,
       lastUpdatedDateTime = order.lastUpdatedDateTime,
       ownerCohort = order.ownerCohort,
+      isOwner = isOwner,
     )
 
     dto.monitoringConditions?.startDate = order.getMonitoringStartDate()
