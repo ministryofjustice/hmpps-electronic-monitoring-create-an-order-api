@@ -321,11 +321,11 @@ data class MonitoringOrder(
         conditionType = conditions.conditionType!!.value,
         orderId = order.id.toString(),
         orderStatus = "Not Started",
-        offenceAdditionalDetails = getOffenceAdditionalDetails(order, featureFlags),
+        offenceAdditionalDetails = getOffenceAdditionalDetails(order),
         pilot = conditions.pilot?.value ?: "",
         magistrateCourtCaseReferenceNumber = order.deviceWearer?.courtCaseReferenceNumber ?: "",
       )
-      if (DataDictionaryVersion.isVersionSameOrAbove(order.dataDictionaryVersion, DataDictionaryVersion.DDV6)) {
+      if (order.dataDictionaryVersion.isLaterThan(DataDictionaryVersion.DDV6)) {
         monitoringOrder.subcategory = subcategory
         monitoringOrder.dapolMissedInError = getDapolMissedInError(order)
         if (featureFlags.ddV6CourtMappings) {
@@ -352,11 +352,7 @@ data class MonitoringOrder(
         "No"
       }
 
-      if (DataDictionaryVersion.isVersionSameOrAbove(
-          order.dataDictionaryVersion,
-          DataDictionaryVersion.DDV6,
-        ) &&
-        featureFlags.ddV6CourtMappings
+      if (order.dataDictionaryVersion.isLaterThan(DataDictionaryVersion.DDV6)
       ) {
         monitoringOrder.dapoOrderClauseNumbers?.addAll(
           order.dapoClauses.map {
@@ -588,8 +584,7 @@ data class MonitoringOrder(
         }
       }
 
-      if (DataDictionaryVersion.isVersionSameOrAbove(order.dataDictionaryVersion, DataDictionaryVersion.DDV6) &&
-        featureFlags.ddV6CourtMappings
+      if (order.dataDictionaryVersion.isLaterThan(DataDictionaryVersion.DDV6)
       ) {
         if (order.installationLocation != null) {
           if (order.installationLocation?.location == InstallationLocationType.PRISON &&
@@ -621,8 +616,7 @@ data class MonitoringOrder(
     private fun getSentenceType(order: Order, featureFlags: FeatureFlags): String {
       val sentenceType = order.monitoringConditions?.sentenceType ?: return ""
 
-      if (DataDictionaryVersion.isVersionSameOrAbove(order.dataDictionaryVersion, DataDictionaryVersion.DDV6) &&
-        featureFlags.ddV6CourtMappings
+      if (order.dataDictionaryVersion.isLaterThan(DataDictionaryVersion.DDV6)
       ) {
         return when (sentenceType) {
           // ELM-4515 update mapping for ddv6
@@ -758,13 +752,13 @@ data class MonitoringOrder(
     }
 
     private fun getProbationDeliveryUnit(order: Order): String {
-      if (order.dataDictionaryVersion == DataDictionaryVersion.DDV6) {
+      if (order.dataDictionaryVersion.isLaterThan(DataDictionaryVersion.DDV6)) {
         return ProbationDeliveryUnitsDDv6.from(order.probationDeliveryUnit?.unit)?.value ?: ""
       }
       return ProbationDeliveryUnits.from(order.probationDeliveryUnit?.unit)?.value ?: ""
     }
 
-    private fun getOffence(order: Order): String? =
+    private fun getOffence(order: Order): String =
       Offence.from(order.installationAndRisk?.offence)?.value ?: order.installationAndRisk?.offence ?: ""
 
     private fun getResponsibleOfficerPhoneNumber(interestedParties: InterestedParties): String? {
@@ -791,9 +785,9 @@ data class MonitoringOrder(
       )
     }
 
-    private fun getOffenceAdditionalDetails(order: Order, featureFlags: FeatureFlags): String {
+    private fun getOffenceAdditionalDetails(order: Order): String {
       val riskOffenceDetails =
-        if (DataDictionaryVersion.isVersionSameOrAbove(order.dataDictionaryVersion, DataDictionaryVersion.DDV6)) {
+        if (order.dataDictionaryVersion.isLaterThan(DataDictionaryVersion.DDV6)) {
           order.offenceAdditionalDetails?.additionalDetails ?: ""
         } else {
           order.installationAndRisk?.offenceAdditionalDetails ?: ""
@@ -808,8 +802,7 @@ data class MonitoringOrder(
 
       val parts = listOfNotNull(
         riskOffenceDetails.takeIf { it.isNotBlank() },
-        if (DataDictionaryVersion.isVersionSameOrAbove(order.dataDictionaryVersion, DataDictionaryVersion.DDV6) &&
-          featureFlags.ddV6CourtMappings
+        if (order.dataDictionaryVersion.isLaterThan(DataDictionaryVersion.DDV6)
         ) {
           null
         } else {

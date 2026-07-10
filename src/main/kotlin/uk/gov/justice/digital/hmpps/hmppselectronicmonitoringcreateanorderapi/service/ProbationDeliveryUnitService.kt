@@ -31,19 +31,20 @@ class ProbationDeliveryUnitService : OrderSectionServiceBase() {
     val unitInput = updateProbationDeliveryUnitRecord.unit
 
     if (unitInput != null) {
-      val isValid = if (order.dataDictionaryVersion == DataDictionaryVersion.DDV6) {
-        val unitEnum = ProbationDeliveryUnitsDDv6.from(unitInput)
-        unitEnum != null &&
-          ProbationDeliveryUnitsDDv6.PROBATION_REGION_DELIVERY_UNIT[responsibleOrganisationRegion]?.contains(
-            unitEnum,
-          ) == true
-      } else {
-        val unitEnum = ProbationDeliveryUnits.from(unitInput)
-        unitEnum != null &&
-          ProbationDeliveryUnits.PROBATION_REGION_DELIVERY_UNIT[responsibleOrganisationRegion]?.contains(
-            unitEnum,
-          ) == true
-      }
+      val isValid =
+        if (order.dataDictionaryVersion.isLaterThan(DataDictionaryVersion.DDV6)) {
+          val unitEnum = ProbationDeliveryUnitsDDv6.from(unitInput)
+          unitEnum != null &&
+            ProbationDeliveryUnitsDDv6.PROBATION_REGION_DELIVERY_UNIT[responsibleOrganisationRegion]?.contains(
+              unitEnum,
+            ) == true
+        } else {
+          val unitEnum = ProbationDeliveryUnits.from(unitInput)
+          unitEnum != null &&
+            ProbationDeliveryUnits.PROBATION_REGION_DELIVERY_UNIT[responsibleOrganisationRegion]?.contains(
+              unitEnum,
+            ) == true
+        }
       if (!isValid) {
         throw ValidationException(ValidationErrors.ProbationDeliveryUnit.DELIVERY_UNIT_NOT_IN_REGION)
       }
