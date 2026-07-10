@@ -208,9 +208,12 @@ data class Order(
       return getCurrentVersion().type
     }
 
-  val username: String
+  var username: String
     get() {
       return getCurrentVersion().username
+    }
+    set(username) {
+      getCurrentVersion().username = username
     }
 
   val submittedBy: String?

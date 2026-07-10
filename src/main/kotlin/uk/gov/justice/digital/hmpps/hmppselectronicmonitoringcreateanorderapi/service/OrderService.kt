@@ -370,6 +370,13 @@ class OrderService(
     )
   }
 
+  fun updateOrderOwner(orderId: UUID, token: JwtAuthenticationToken, newOwner: String): Order {
+    val order = getOrder(orderId, token)
+    order.username = newOwner
+    updateLastUpdatedByAndSaveOrder(order)
+    return order
+  }
+  
   private fun getOwnerCohort(cohort: UserCohort): String? = when (cohort.cohort) {
     Cohort.PRISON -> Prison.fromId(cohort.activeCaseLoadId).firstOrNull()?.name
     else -> cohort.cohort.name
