@@ -148,7 +148,7 @@ data class OrderVersion(
   var lastUpdatedBy: String? = null,
 
   @Column(name = "LAST_UPDATED_DATETIME", nullable = true)
-  var lastUpdateDateTime: OffsetDateTime? = null,
+  var lastUpdatedDateTime: OffsetDateTime? = null,
 
   @Column(name = "OWNER_COHORT", nullable = true)
   var ownerCohort: String? = null,

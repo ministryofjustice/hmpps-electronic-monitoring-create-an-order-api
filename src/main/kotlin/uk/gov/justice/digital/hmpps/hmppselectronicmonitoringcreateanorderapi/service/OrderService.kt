@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.s
 
 import jakarta.persistence.EntityNotFoundException
 import org.springframework.boot.context.properties.EnableConfigurationProperties
+import org.springframework.security.access.AccessDeniedException
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.config.FeatureFlags
@@ -14,7 +15,6 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.Cohort
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.UserCohort
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.OrderListCriteria
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.OrderSearchCriteria
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.TagFilter
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.CreateOrderDto
@@ -22,6 +22,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.VersionInformationDTO
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisationDDv5
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderListView
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Prison
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
@@ -327,13 +328,31 @@ class OrderService(
     }
   }
 
-  fun listOrders(searchCriteria: OrderListCriteria): List<OrderInformationDto> {
-    val orderListInformation = orderRepo.findOrderInformation(
-      searchCriteria.username,
-    )
-    return orderListInformation.map {
-      it.toListInformationDto()
+  fun listOrders(
+    authentication: JwtAuthenticationToken,
+    view: OrderListView = OrderListView.MY_ORDERS,
+  ): List<OrderInformationDto> {
+    val username = authentication.name
+    val results = when (view) {
+      OrderListView.MY_ORDERS -> orderRepo.findMyOrders(username)
+      OrderListView.FAILED_ORDERS -> orderRepo.findFailedOrders(username)
+      OrderListView.PRISON_ORDERS -> {
+        val userCohort = userCohortService.getUserCohort(authentication)
+        if (userCohort.cohort != Cohort.PRISON || userCohort.activeCaseLoadId == "CADM_I") {
+          throw AccessDeniedException("Prison view is only available to prison users")
+        }
+        val caseLoadId = userCohort.activeCaseLoadId
+          ?: throw AccessDeniedException("Prison user has no active caseload")
+        val prisonNames = Prison.fromId(caseLoadId).map { it.value }
+        if (prisonNames.isEmpty()) {
+          emptyList()
+        } else {
+          orderRepo.findPrisonOrders(prisonNames)
+        }
+      }
     }
+
+    return results.map { it.toListInformationDto() }
   }
 
   fun searchOrders(searchTerm: String, authentication: JwtAuthenticationToken): List<Order> {
@@ -371,6 +390,8 @@ class OrderService(
     firstName = this.getFirstName(),
     lastName = this.getLastName(),
     notifyingOrganisation = this.getNotifyingOrganisation(),
+    lastUpdatedBy = this.getLastUpdatedBy(),
+    lastUpdatedDateTime = this.getLastUpdatedDateTime(),
   )
 
   private fun OrderVersion.toDTO() = VersionInformationDTO(
