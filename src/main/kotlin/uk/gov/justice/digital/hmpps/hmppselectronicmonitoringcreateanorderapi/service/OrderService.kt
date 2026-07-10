@@ -376,7 +376,7 @@ class OrderService(
     updateLastUpdatedByAndSaveOrder(order)
     return order
   }
-  
+
   private fun getOwnerCohort(cohort: UserCohort): String? = when (cohort.cohort) {
     Cohort.PRISON -> Prison.fromId(cohort.activeCaseLoadId).firstOrNull()?.name
     else -> cohort.cohort.name
