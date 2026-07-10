@@ -39,18 +39,16 @@ abstract class OrderSectionServiceBase {
     val authentication = SecurityContextHolder.getContext().authentication as AuthAwareAuthenticationToken
     order.lastUpdatedBy = authentication.getUserFullName()
     order.lastUpdatedDateTime = OffsetDateTime.now()
-    order.ownerCohort = getOwnerCohort(order, interestedParties)
+    if (interestedParties != null) {
+      order.ownerCohort = getOwnerCohort(interestedParties)
+    }
 
     return orderRepo.save(order)
   }
 
-  internal fun getOwnerCohort(order: Order, interestedParties: InterestedParties? = null): String? {
-    if (interestedParties == null) {
-      return order.ownerCohort
-    }
-    return when (interestedParties.notifyingOrganisation) {
+  internal fun getOwnerCohort(interestedParties: InterestedParties): String? =
+    when (interestedParties.notifyingOrganisation) {
       NotifyingOrganisationDDv5.PRISON.name -> interestedParties.notifyingOrganisationName
       else -> interestedParties.notifyingOrganisation
     }
-  }
 }
