@@ -97,7 +97,10 @@ class OrderService(
         userPrisons.isNullOrEmpty() ||
         userPrisons.all { it.value != order.ownerCohort }
       ) {
-        throw EntityNotFoundException("Order ($id) for $username not found")
+        // allow admin user to all draft orders
+        if (userCohort.activeCaseLoadId != "CADM_I") {
+          throw ForbiddenException("Order forbidden", errorCode = 40301)
+        }
       }
     }
 

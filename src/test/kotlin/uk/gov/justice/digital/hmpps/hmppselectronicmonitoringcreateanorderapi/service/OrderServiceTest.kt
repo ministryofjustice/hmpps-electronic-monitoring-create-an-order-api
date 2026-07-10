@@ -8,6 +8,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
@@ -29,6 +30,7 @@ import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.config.AuthAwareAuthenticationToken
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.config.FeatureFlags
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.BadRequestException
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.ForbiddenException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AdditionalDocument
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationAppointment
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationLocation
@@ -138,7 +140,7 @@ class OrderServiceTest {
       val orderId = UUID.randomUUID()
       whenever(repo.findById(orderId)).thenReturn(Optional.empty())
 
-      val exception = org.junit.jupiter.api.assertThrows<EntityNotFoundException> {
+      val exception = assertThrows<EntityNotFoundException> {
         service.getOrder(orderId, authentication)
       }
 
@@ -146,7 +148,7 @@ class OrderServiceTest {
     }
 
     @Test
-    fun `Get order throws EntityNotFoundException when order is not submitted and username mismatches`() {
+    fun `Get order throws ForbiddenException when order is not submitted and username mismatches`() {
       val orderId = UUID.randomUUID()
       val existingOrder = TestUtilities.createReadyToSubmitOrder(
         id = orderId,
@@ -156,11 +158,11 @@ class OrderServiceTest {
 
       whenever(repo.findById(orderId)).thenReturn(Optional.of(existingOrder))
 
-      val exception = org.junit.jupiter.api.assertThrows<EntityNotFoundException> {
+      val exception = assertThrows<ForbiddenException> {
         service.getOrder(orderId, authentication)
       }
 
-      assertThat(exception.message).isEqualTo("Order ($orderId) for mockUser not found")
+      assertThat(exception.message).isEqualTo("Order forbidden")
     }
 
     private fun orderWithCaseload(username: String, caseloadName: String?): Order {
@@ -212,7 +214,7 @@ class OrderServiceTest {
           order.id,
           authentication,
         )
-      }.isInstanceOf(EntityNotFoundException::class.java)
+      }.isInstanceOf(ForbiddenException::class.java)
     }
   }
 

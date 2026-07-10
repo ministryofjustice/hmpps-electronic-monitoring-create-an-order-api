@@ -1043,7 +1043,7 @@ class OrderControllerTest : IntegrationTestBase() {
         .headers(setAuthorisation("AUTH_ADM_2"))
         .exchange()
         .expectStatus()
-        .isNotFound()
+        .isForbidden()
     }
 
     @Test
@@ -1129,7 +1129,7 @@ class OrderControllerTest : IntegrationTestBase() {
         .headers(setAuthorisation("AUTH_ADM_2"))
         .exchange()
         .expectStatus()
-        .isNotFound()
+        .isForbidden()
         .expectBodyList(ErrorResponse::class.java)
         .returnResult()
 
@@ -1137,7 +1137,7 @@ class OrderControllerTest : IntegrationTestBase() {
 
       assertThat(
         error.developerMessage,
-      ).isEqualTo("Order (${order.id}) for AUTH_ADM_2 not found")
+      ).isEqualTo("Order forbidden")
     }
 
     @Test
