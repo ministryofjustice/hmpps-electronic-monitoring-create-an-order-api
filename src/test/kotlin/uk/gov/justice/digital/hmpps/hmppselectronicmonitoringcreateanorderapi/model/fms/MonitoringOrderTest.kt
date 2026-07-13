@@ -34,6 +34,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.TrailMonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.CivilCountyCourtDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DeviceType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.EnforcementZoneType
@@ -1961,6 +1962,44 @@ class MonitoringOrderTest : OrderTestBase() {
     val result = MonitoringOrder.fromOrder(order, null, mockFeatureFlags, FmsOrderSource.CEMO)
 
     assertThat(result.orderType).isEqualTo("Pre-Trial")
+  }
+
+  @Test
+  fun `should map orderType as civil when family court and DDV7`() {
+    val order = createOrder(
+      dataDictionaryVersion = DataDictionaryVersion.DDV7,
+      interestedParties = createInterestedParty(
+        notifyingOrganisation = NotifyingOrganisationDDv5.FAMILY_COURT.name,
+        notifyingOrganisationName = FamilyCourtDDv5.DONCASTER_FAMILY_COURT.name,
+        responsibleOfficerName = "",
+        responsibleOfficerPhoneNumber = "",
+        responsibleOrganisationEmail = "",
+      ),
+      monitoringConditions = createMonitoringConditions(orderType = OrderType.CIVIL),
+    )
+
+    val result = MonitoringOrder.fromOrder(order, null, mockFeatureFlags, FmsOrderSource.CEMO)
+
+    assertThat(result.orderType).isEqualTo("Civil")
+  }
+
+  @Test
+  fun `should map orderType as civil when civil court and DDV7`() {
+    val order = createOrder(
+      dataDictionaryVersion = DataDictionaryVersion.DDV7,
+      interestedParties = createInterestedParty(
+        notifyingOrganisation = NotifyingOrganisationDDv5.CIVIL_COUNTY_COURT.name,
+        notifyingOrganisationName = CivilCountyCourtDDv5.KINGSTON_UPON_THAMES_COUNTY_AND_CIVIL_COURT.name,
+        responsibleOfficerName = "",
+        responsibleOfficerPhoneNumber = "",
+        responsibleOrganisationEmail = "",
+      ),
+      monitoringConditions = createMonitoringConditions(orderType = OrderType.CIVIL),
+    )
+
+    val result = MonitoringOrder.fromOrder(order, null, mockFeatureFlags, FmsOrderSource.CEMO)
+
+    assertThat(result.orderType).isEqualTo("Civil")
   }
 
   @Test
