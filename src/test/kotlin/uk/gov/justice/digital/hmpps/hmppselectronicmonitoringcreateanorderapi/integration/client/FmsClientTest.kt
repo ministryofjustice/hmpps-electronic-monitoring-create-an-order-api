@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client
+package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.client
 
 import FmsState
 import FmsStateResponse
@@ -12,6 +12,7 @@ import org.springframework.core.io.InputStreamResource
 import org.springframework.http.HttpStatus
 import org.springframework.test.context.ActiveProfiles
 import tools.jackson.databind.ObjectMapper
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.FmsClient
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.CreateSercoEntityException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.SercoAuthMockServerExtension.Companion.sercoAuthApi

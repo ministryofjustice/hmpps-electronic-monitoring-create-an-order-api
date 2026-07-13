@@ -101,4 +101,9 @@ data class OrderDto(
   val mappa: Mappa?,
 
   val detailsOfInstallation: DetailsOfInstallation?,
+
+  val lastUpdatedBy: String? = null,
+  val lastUpdatedDateTime: OffsetDateTime? = null,
+  val ownerCohort: String? = null,
+  val isOwner: Boolean = false,
 )

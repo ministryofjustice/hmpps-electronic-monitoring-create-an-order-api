@@ -7,64 +7,30 @@ import org.junit.jupiter.api.Test
 import org.springframework.http.MediaType
 import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.data.ValidationErrors
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.UpdateOrderIntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.UriTestCase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidationError
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 
-class InstallationAppointmentControllerTest : IntegrationTestBase() {
+class InstallationAppointmentControllerTest : UpdateOrderIntegrationTestBase() {
 
   private val appointmentDate = ZonedDateTime.now(ZoneId.of("UTC")).plusMonths(2).truncatedTo(ChronoUnit.SECONDS)
+  override val testUris: List<UriTestCase> = listOf(
+    UriTestCase(uri = "/api/orders/:orderId/installation-appointment", createValidBody = {
+      """
+            {
+              "placeName": "Mock Place",
+              "appointmentDate": "$appointmentDate"
+            }
+      """.trimIndent()
+    }),
+  )
 
   @BeforeEach
   fun setup() {
     repo.deleteAll()
-  }
-
-  @Test
-  fun `Installation appointment cannot be updated by a different user`() {
-    val order = createStoredOrder()
-    webTestClient.put()
-      .uri("/api/orders/${order.id}/installation-appointment")
-      .contentType(MediaType.APPLICATION_JSON)
-      .body(
-        BodyInserters.fromValue(
-          """
-            {
-              "placeName": "Mock Place",
-              "appointmentDate": "$appointmentDate"
-            }
-          """.trimIndent(),
-        ),
-      )
-      .headers(setAuthorisation("AUTH_ADM_2"))
-      .exchange()
-      .expectStatus()
-      .isNotFound
-  }
-
-  @Test
-  fun `Installation appointment cannot be updated for a submitted order`() {
-    val order = createSubmittedOrder()
-
-    webTestClient.put()
-      .uri("/api/orders/${order.id}/installation-appointment")
-      .contentType(MediaType.APPLICATION_JSON)
-      .body(
-        BodyInserters.fromValue(
-          """
-            {
-              "placeName": "Mock Place",
-              "appointmentDate": "$appointmentDate"
-            }
-          """.trimIndent(),
-        ),
-      )
-      .headers(setAuthorisation("AUTH_ADM"))
-      .exchange()
-      .expectStatus()
-      .isNotFound
   }
 
   @Test

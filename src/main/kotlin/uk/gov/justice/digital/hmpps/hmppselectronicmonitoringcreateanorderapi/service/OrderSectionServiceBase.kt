@@ -2,11 +2,16 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.s
 
 import jakarta.persistence.EntityNotFoundException
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.config.AuthAwareAuthenticationToken
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.data.ValidationErrors
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InterestedParties
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisationDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
+import java.time.OffsetDateTime
 import java.util.*
 
 @Service
@@ -29,4 +34,21 @@ abstract class OrderSectionServiceBase {
 
     return order
   }
+
+  internal fun updateLastUpdatedByAndSaveOrder(order: Order, interestedParties: InterestedParties? = null): Order {
+    val authentication = SecurityContextHolder.getContext().authentication as AuthAwareAuthenticationToken
+    order.lastUpdatedBy = authentication.getUserFullName()
+    order.lastUpdatedDateTime = OffsetDateTime.now()
+    if (interestedParties != null) {
+      order.ownerCohort = getOwnerCohort(interestedParties)
+    }
+
+    return orderRepo.save(order)
+  }
+
+  internal fun getOwnerCohort(interestedParties: InterestedParties): String? =
+    when (interestedParties.notifyingOrganisation) {
+      NotifyingOrganisationDDv5.PRISON.name -> interestedParties.notifyingOrganisationName
+      else -> interestedParties.notifyingOrganisation
+    }
 }

@@ -9,21 +9,22 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.http.HttpStatus.BAD_REQUEST
-import org.springframework.http.HttpStatus.NOT_FOUND
 import org.springframework.http.MediaType
 import org.springframework.test.web.reactive.server.expectBodyList
 import org.springframework.web.reactive.function.BodyInserters
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.UpdateOrderIntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.UriTestCase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.HmppsDocumentManagementApiExtension.Companion.documentApi
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.documentmanagement.DocumentUploadResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidationError
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 import java.time.LocalDate
 import java.time.LocalTime
+import java.time.OffsetDateTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
 
-class EnforcementZoneControllerTest : IntegrationTestBase() {
+class EnforcementZoneControllerTest : UpdateOrderIntegrationTestBase() {
 
   private val mockStartDate = ZonedDateTime.of(
     LocalDate.now(ZoneId.of("UTC")),
@@ -42,6 +43,11 @@ class EnforcementZoneControllerTest : IntegrationTestBase() {
   )
   private val mockPastEndDate = mockPastStartDate.plusDays(1)
   private final val mockUser = "AUTH_ADM"
+  override val testUris: List<UriTestCase> = listOf(
+    UriTestCase(uri = "/api/orders/:orderId/enforcementZone", createValidBody = {
+      mockRequestBody()
+    }),
+  )
 
   @BeforeEach
   fun setup() {
@@ -51,61 +57,6 @@ class EnforcementZoneControllerTest : IntegrationTestBase() {
   @Nested
   @DisplayName("PUT /api/orders/{orderId}/enforcementZone")
   inner class UpdateEnforcementZone {
-    @Test
-    fun `it should return an error if the order is not created by the user`() {
-      val order = createOrder()
-
-      val result = webTestClient.put()
-        .uri("/api/orders/${order.id}/enforcementZone")
-        .contentType(MediaType.APPLICATION_JSON)
-        .body(
-          BodyInserters.fromValue(
-            mockRequestBody(),
-          ),
-        )
-        .headers(setAuthorisation("AUTH_ADM_2"))
-        .exchange()
-        .expectStatus()
-        .isNotFound
-        .expectBodyList(ErrorResponse::class.java)
-        .returnResult()
-
-      Assertions.assertThat(result.responseBody!!).contains(
-        ErrorResponse(
-          status = NOT_FOUND,
-          developerMessage = "An editable order with ${order.id} does not exist",
-          userMessage = "Not Found",
-        ),
-      )
-    }
-
-    @Test
-    fun `it should return an error if the order is in a submitted state`() {
-      val order = createSubmittedOrder()
-
-      val result = webTestClient.put()
-        .uri("/api/orders/${order.id}/enforcementZone")
-        .contentType(MediaType.APPLICATION_JSON)
-        .body(
-          BodyInserters.fromValue(
-            mockRequestBody(),
-          ),
-        )
-        .headers(setAuthorisation(mockUser))
-        .exchange()
-        .expectStatus()
-        .isNotFound
-        .expectBodyList(ErrorResponse::class.java)
-        .returnResult()
-
-      Assertions.assertThat(result.responseBody!!).contains(
-        ErrorResponse(
-          status = NOT_FOUND,
-          developerMessage = "An editable order with ${order.id} does not exist",
-          userMessage = "Not Found",
-        ),
-      )
-    }
 
     @Test
     fun `it should return a validation error when request is not valid`() {
@@ -479,7 +430,7 @@ class EnforcementZoneControllerTest : IntegrationTestBase() {
     }
 
     @Test
-    fun `it should replace the enforcement zone condition and delete file from document api`() {
+    fun `it should replace the enforcement zone condition and delete previous file and update last updated by`() {
       val order = createOrder()
       val bodyBuilder = createMultiPartBodyBuilder(mockFile())
       val bodyBuilder2 = createMultiPartBodyBuilder(mockFile("file-name-2.jpeg"))
@@ -536,17 +487,21 @@ class EnforcementZoneControllerTest : IntegrationTestBase() {
         .expectStatus()
         .isOk
 
+      val beforeCall = OffsetDateTime.now()
       // Get updated order
       val updatedOrder = getOrder(order.id)
 
       // Verify order state matches expected state
       Assertions.assertThat(updatedOrder.enforcementZoneConditions).hasSize(1)
       Assertions.assertThat(updatedOrder.enforcementZoneConditions!![0].startDate).isEqualTo(mockStartDate)
-      Assertions.assertThat(updatedOrder.enforcementZoneConditions!![0].endDate).isEqualTo(mockEndDate)
-      Assertions.assertThat(updatedOrder.enforcementZoneConditions!![0].name).isEqualTo("MockName")
-      Assertions.assertThat(updatedOrder.enforcementZoneConditions!![0].description).isEqualTo("MockDescription")
-      Assertions.assertThat(updatedOrder.enforcementZoneConditions!![0].duration).isEqualTo("MockDuration")
-      Assertions.assertThat(updatedOrder.enforcementZoneConditions!![0].zoneId).isEqualTo(0)
+      Assertions.assertThat(updatedOrder.enforcementZoneConditions[0].endDate).isEqualTo(mockEndDate)
+      Assertions.assertThat(updatedOrder.enforcementZoneConditions[0].name).isEqualTo("MockName")
+      Assertions.assertThat(updatedOrder.enforcementZoneConditions[0].description).isEqualTo("MockDescription")
+      Assertions.assertThat(updatedOrder.enforcementZoneConditions[0].duration).isEqualTo("MockDuration")
+      Assertions.assertThat(updatedOrder.enforcementZoneConditions[0].zoneId).isEqualTo(0)
+      Assertions.assertThat(updatedOrder.lastUpdatedBy).isEqualTo("John Smith")
+      Assertions.assertThat(updatedOrder.lastUpdatedDateTime).isNotNull
+      Assertions.assertThat(updatedOrder.lastUpdatedDateTime!!.isAfter(beforeCall))
 
       // Verify 2 document were uploaded to the document api
       documentApi.verify(2, postRequestedFor(urlMatching("/documents/CEMO_ATTACHMENT/(.*)")))

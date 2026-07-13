@@ -30,6 +30,6 @@ class InstallationLocationService : OrderSectionServiceBase() {
       order.installationAppointment = null
       order.addresses.removeAll { it.addressType == AddressType.INSTALLATION }
     }
-    return orderRepo.save(order).installationLocation!!
+    return updateLastUpdatedByAndSaveOrder(order).installationLocation!!
   }
 }

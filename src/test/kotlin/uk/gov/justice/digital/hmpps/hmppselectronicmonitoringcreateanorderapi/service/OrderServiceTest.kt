@@ -8,11 +8,13 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito.mock
+import org.mockito.Mockito.never
 import org.mockito.Mockito.reset
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
@@ -21,10 +23,14 @@ import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.boot.test.autoconfigure.json.JsonTest
+import org.springframework.security.access.AccessDeniedException
+import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken
 import org.springframework.test.context.ActiveProfiles
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.config.AuthAwareAuthenticationToken
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.config.FeatureFlags
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.BadRequestException
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.ForbiddenException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AdditionalDocument
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationAppointment
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationLocation
@@ -33,15 +39,14 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.Cohort
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.UserCohort
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.OrderListCriteria
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.CreateOrderDto
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderInformationDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DocumentType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.InstallationLocationType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisationDDv5
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderListView
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Prison
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
@@ -77,12 +82,173 @@ class OrderServiceTest {
     userCohortService = mock()
     val featureFlags = FeatureFlags(ddV6CourtMappings = true, dataDictionaryVersion = DataDictionaryVersion.DDV4)
 
-    service = OrderService(repo, fmsService, featureFlags, userCohortService)
-
-    authentication = mock(JwtAuthenticationToken::class.java)
-
+    service = OrderService(fmsService, featureFlags, userCohortService)
+    service.orderRepo = repo
+    authentication = mock(AuthAwareAuthenticationToken::class.java)
     whenever(authentication.name).thenReturn("mockUser")
     whenever(userCohortService.getUserCohort(authentication)).thenReturn(UserCohort(Cohort.OTHER))
+    val context = SecurityContextHolder.createEmptyContext()
+    context.authentication = authentication
+    SecurityContextHolder.setContext(context)
+    whenever(repo.save(any<Order>())).thenReturn(TestUtilities.createReadyToSubmitOrder())
+  }
+
+  @Nested
+  @DisplayName("Get order")
+  inner class GetOrder {
+    @Test
+    fun `Get order returns order when status is not submitted and username matches`() {
+      val orderId = UUID.randomUUID()
+      val existingOrder = TestUtilities.createReadyToSubmitOrder(
+        id = orderId,
+        username = "mockUser",
+        status = OrderStatus.IN_PROGRESS,
+      )
+
+      whenever(repo.findById(orderId)).thenReturn(Optional.of(existingOrder))
+
+      val result = service.getOrder(orderId, authentication)
+
+      assertThat(result).isNotNull
+      assertThat(result.id).isEqualTo(orderId)
+      assertThat(result.username).isEqualTo("mockUser")
+      assertThat(result.status).isEqualTo(OrderStatus.IN_PROGRESS)
+
+      verify(repo, times(1)).findById(orderId)
+    }
+
+    @Test
+    fun `Get order returns order when status is submitted and user cohort tags match`() {
+      val orderId = UUID.randomUUID()
+      val existingOrder = TestUtilities.createReadyToSubmitOrder(
+        id = orderId,
+        username = "mockUser",
+        status = OrderStatus.IN_PROGRESS,
+      )
+      existingOrder.tags = "Probation"
+
+      whenever(repo.findById(orderId)).thenReturn(Optional.of(existingOrder))
+      whenever(userCohortService.getUserCohort(authentication)).thenReturn(UserCohort(Cohort.PROBATION))
+
+      val result = service.getOrder(orderId, authentication)
+
+      assertThat(result).isEqualTo(existingOrder)
+    }
+
+    @Test
+    fun `Get order throws EntityNotFoundException when order does not exist`() {
+      val orderId = UUID.randomUUID()
+      whenever(repo.findById(orderId)).thenReturn(Optional.empty())
+
+      val exception = assertThrows<EntityNotFoundException> {
+        service.getOrder(orderId, authentication)
+      }
+
+      assertThat(exception.message).isEqualTo("Order with id $orderId does not exist")
+    }
+
+    @Test
+    fun `Get order throws ForbiddenException when order is not submitted and username mismatches`() {
+      val orderId = UUID.randomUUID()
+      val existingOrder = TestUtilities.createReadyToSubmitOrder(
+        id = orderId,
+        username = "differentUser",
+        status = OrderStatus.IN_PROGRESS,
+      )
+
+      whenever(repo.findById(orderId)).thenReturn(Optional.of(existingOrder))
+
+      val exception = assertThrows<ForbiddenException> {
+        service.getOrder(orderId, authentication)
+      }
+
+      assertThat(exception.message).isEqualTo("Order forbidden")
+    }
+
+    private fun orderWithCaseload(username: String, caseloadName: String?): Order {
+      val order = Order()
+      order.versions = mutableListOf(
+        OrderVersion(
+          orderId = order.id,
+          username = username,
+          status = OrderStatus.IN_PROGRESS,
+          type = RequestType.REQUEST,
+          dataDictionaryVersion = DataDictionaryVersion.DDV6,
+          ownerCohort = caseloadName,
+        ),
+      )
+      return order
+    }
+
+    @Test
+    fun `same prison can access draft order`() {
+      val order = orderWithCaseload("otherUser", Prison.BEDFORD_PRISON.name)
+      whenever(repo.findById(order.id)).thenReturn(Optional.of(order))
+      whenever(userCohortService.getUserCohort(authentication)).thenReturn(
+        UserCohort(
+          Cohort.PRISON,
+          Prison.BEDFORD_PRISON.name,
+          Prison.BEDFORD_PRISON.ids.first(),
+        ),
+      )
+
+      val result = service.getOrder(order.id, authentication)
+
+      assertThat(result).isEqualTo(order)
+    }
+
+    @Test
+    fun `same cohort can access draft order`() {
+      val order = orderWithCaseload("otherUser", Cohort.HOME_OFFICE.name)
+      whenever(repo.findById(order.id)).thenReturn(Optional.of(order))
+      whenever(userCohortService.getUserCohort(authentication)).thenReturn(
+        UserCohort(
+          Cohort.HOME_OFFICE,
+        ),
+      )
+
+      val result = service.getOrder(order.id, authentication)
+
+      assertThat(result).isEqualTo(order)
+    }
+
+    @Test
+    fun `different cohort cannot access draft order`() {
+      val order = orderWithCaseload("otherUser", Cohort.HOME_OFFICE.name)
+      whenever(repo.findById(order.id)).thenReturn(Optional.of(order))
+      whenever(userCohortService.getUserCohort(authentication)).thenReturn(
+        UserCohort(
+          Cohort.COURT,
+        ),
+      )
+
+      assertThatThrownBy {
+        service.getOrder(
+          order.id,
+          authentication,
+        )
+      }.isInstanceOf(ForbiddenException::class.java)
+    }
+
+    @Test
+    fun `different prison cannot access draft order`() {
+      val order = orderWithCaseload("otherUser", "MDI")
+      whenever(repo.findById(order.id)).thenReturn(Optional.of(order))
+      whenever(userCohortService.getUserCohort(authentication)).thenReturn(
+        UserCohort(
+          Cohort.PRISON,
+          "HMP Leeds",
+          "LEI",
+        ),
+      )
+
+      assertThatThrownBy {
+        service.getOrder(
+          order.id,
+          authentication,
+        )
+      }.isInstanceOf(ForbiddenException::class.java)
+    }
   }
 
   @Test
@@ -126,12 +292,56 @@ class OrderServiceTest {
     whenever(fmsService.submitOrder(any<Order>(), eq(FmsOrderSource.CEMO))).thenReturn(
       mockFmsResult,
     )
+    whenever(repo.save(any<Order>())).thenReturn(TestUtilities.createReadyToSubmitOrder())
     service.submitOrder(mockOrder.id, authentication, "mockName")
 
     argumentCaptor<Order>().apply {
       verify(repo, times(1)).save(capture())
       assertThat(firstValue.getCurrentVersion().submittedBy).isEqualTo("mockName")
     }
+  }
+
+  @Test
+  fun `Should update lastUpdatedBy, username to the new owner via updateOrderOwner`() {
+    val mockOrder = TestUtilities.createReadyToSubmitOrder(status = OrderStatus.IN_PROGRESS, username = "mockUser")
+    whenever(authentication.name).thenReturn("mockUser")
+    whenever(repo.findById(mockOrder.id)).thenReturn(Optional.of(mockOrder))
+    whenever(repo.save(any<Order>())).thenAnswer { it.arguments[0] }
+
+    service.updateOrderOwner(mockOrder.id, authentication, "mockNewOwner")
+
+    argumentCaptor<Order>().apply {
+      verify(repo, times(1)).save(capture())
+      assertThat(firstValue.username).isEqualTo("mockNewOwner")
+    }
+  }
+
+  @Test
+  fun `Should set lastUpdatedDateTime to roughly now via updateOrderOwner`() {
+    val mockOrder = TestUtilities.createReadyToSubmitOrder(status = OrderStatus.IN_PROGRESS, username = "mockUser")
+    whenever(authentication.name).thenReturn("mockUser")
+    whenever(repo.findById(mockOrder.id)).thenReturn(Optional.of(mockOrder))
+
+    val before = OffsetDateTime.now()
+    service.updateOrderOwner(mockOrder.id, authentication, "mockNewOwner")
+    val after = OffsetDateTime.now()
+
+    argumentCaptor<Order>().apply {
+      verify(repo, times(1)).save(capture())
+      assertThat(firstValue.lastUpdatedDateTime)
+        .isBetween(before, after)
+    }
+  }
+
+  @Test
+  fun `Should persist exactly once via updateOrderOwner`() {
+    val mockOrder = TestUtilities.createReadyToSubmitOrder(status = OrderStatus.IN_PROGRESS, username = "mockUser")
+    whenever(authentication.name).thenReturn("mockUser")
+    whenever(repo.findById(mockOrder.id)).thenReturn(Optional.of(mockOrder))
+
+    service.updateOrderOwner(mockOrder.id, authentication, "mockNewOwner")
+
+    verify(repo, times(1)).save(any<Order>())
   }
 
   @Test
@@ -160,6 +370,7 @@ class OrderServiceTest {
     whenever(fmsService.submitOrder(any<Order>(), eq(FmsOrderSource.CEMO))).thenReturn(
       mockFmsResult,
     )
+    whenever(repo.save(any<Order>())).thenReturn(TestUtilities.createReadyToSubmitOrder())
     service.submitOrder(mockOrder.id, authentication, "mockName")
 
     argumentCaptor<Order>().apply {
@@ -196,6 +407,7 @@ class OrderServiceTest {
     whenever(fmsService.submitOrder(any<Order>(), eq(FmsOrderSource.CEMO))).thenReturn(
       mockFmsResult,
     )
+    whenever(repo.save(any<Order>())).thenReturn(TestUtilities.createReadyToSubmitOrder())
     service.submitOrder(mockOrder.id, authentication, "mockName")
 
     argumentCaptor<Order>().apply {
@@ -236,6 +448,7 @@ class OrderServiceTest {
     whenever(fmsService.submitOrder(any<Order>(), eq(FmsOrderSource.CEMO))).thenReturn(
       mockFmsResult,
     )
+    whenever(repo.save(any<Order>())).thenReturn(TestUtilities.createReadyToSubmitOrder())
     service.submitOrder(mockOrder.id, authentication, "mockName")
 
     argumentCaptor<Order>().apply {
@@ -276,6 +489,7 @@ class OrderServiceTest {
     whenever(fmsService.submitOrder(any<Order>(), eq(FmsOrderSource.CEMO))).thenReturn(
       mockFmsResult,
     )
+    whenever(repo.save(any<Order>())).thenReturn(TestUtilities.createReadyToSubmitOrder())
     service.submitOrder(mockOrder.id, authentication, "mockName")
 
     argumentCaptor<Order>().apply {
@@ -314,6 +528,7 @@ class OrderServiceTest {
     whenever(fmsService.submitOrder(any<Order>(), eq(FmsOrderSource.CEMO))).thenReturn(
       mockFmsResult,
     )
+    whenever(repo.save(any<Order>())).thenReturn(TestUtilities.createReadyToSubmitOrder())
     service.submitOrder(mockOrder.id, authentication, "mockName")
 
     argumentCaptor<Order>().apply {
@@ -349,7 +564,7 @@ class OrderServiceTest {
 
     whenever(repo.findById(mockOrder.id)).thenReturn(Optional.of(mockOrder))
     whenever(fmsService.submitOrder(any<Order>(), eq(FmsOrderSource.CEMO))).thenReturn(mockFmsResult)
-
+    whenever(repo.save(any<Order>())).thenReturn(TestUtilities.createReadyToSubmitOrder())
     service.submitOrder(mockOrder.id, authentication, "mockName")
 
     argumentCaptor<Order>().apply {
@@ -358,38 +573,100 @@ class OrderServiceTest {
     }
   }
 
-  @Test
-  fun `Should be able to list all orders`() {
-    val mockOrder = TestUtilities.createReadyToSubmitOrder(startDate = mockStartDate, endDate = mockEndDate)
-    val mockCriteria = OrderListCriteria(username = "test")
+  @Nested
+  @DisplayName("List orders")
+  inner class ListOrders {
 
-    class MockOrderListInformation : OrderVersionListInformation {
+    private fun mockOrderListInformation(mockOrder: Order) = object : OrderVersionListInformation {
       override fun getId() = mockOrder.id
       override fun getVersionId() = mockOrder.versions.last().id
       override fun getType() = mockOrder.type
       override fun getStatus() = mockOrder.status
       override fun getFirstName() = mockOrder.deviceWearer?.firstName
-      override fun getLastName() = mockOrder.deviceWearer?.firstName
+      override fun getLastName() = mockOrder.deviceWearer?.lastName
       override fun getNotifyingOrganisation() = mockOrder.interestedParties?.notifyingOrganisation
+      override fun getLastUpdatedBy() = mockOrder.lastUpdatedBy
+      override fun getLastUpdatedDateTime() = mockOrder.lastUpdatedDateTime
     }
 
-    val mockOrderListInformation = MockOrderListInformation()
+    @Test
+    fun `MY_ORDERS returns in-progress orders for the current user`() {
+      val mockOrder = TestUtilities.createReadyToSubmitOrder(startDate = mockStartDate, endDate = mockEndDate)
+      val mockInfo = mockOrderListInformation(mockOrder)
+      whenever(repo.findMyOrders("mockUser")).thenReturn(listOf(mockInfo))
 
-    whenever(repo.findOrderInformation("test")).thenReturn(listOf(mockOrderListInformation))
+      val results = service.listOrders(authentication, OrderListView.MY_ORDERS)
 
-    val result = service.listOrders(mockCriteria)
-    val expectedValue = OrderInformationDto(
-      mockOrderListInformation.getId(),
-      mockOrderListInformation.getVersionId(),
-      mockOrderListInformation.getStatus(),
-      mockOrderListInformation.getType(),
-      mockOrderListInformation.getFirstName(),
-      mockOrderListInformation.getLastName(),
-      mockOrderListInformation.getNotifyingOrganisation(),
-    )
+      assertThat(results.first().id).isEqualTo(mockOrder.id)
+    }
 
-    assertThat(result).usingRecursiveComparison().ignoringFields("deviceWearer", "interestedParties")
-      .isEqualTo(listOf(expectedValue))
+    @Test
+    fun `MY_ORDERS is the default view`() {
+      val mockOrder = TestUtilities.createReadyToSubmitOrder(startDate = mockStartDate, endDate = mockEndDate)
+      val mockInfo = mockOrderListInformation(mockOrder)
+      whenever(repo.findMyOrders("mockUser")).thenReturn(listOf(mockInfo))
+
+      val results = service.listOrders(authentication)
+
+      assertThat(results.first().id).isEqualTo(mockOrder.id)
+    }
+
+    @Test
+    fun `PRISON_ORDERS throws AccessDeniedException for non-prison users`() {
+      whenever(userCohortService.getUserCohort(authentication)).thenReturn(UserCohort(Cohort.PROBATION))
+
+      assertThatThrownBy { service.listOrders(authentication, OrderListView.PRISON_ORDERS) }.isInstanceOf(
+        AccessDeniedException::class.java,
+      )
+    }
+
+    @Test
+    fun `PRISON_ORDERS returns all in-progress orders the user's prison`() {
+      val mockOrder = TestUtilities.createReadyToSubmitOrder(
+        startDate = mockStartDate,
+        endDate = mockEndDate,
+        ownerCohort = Prison.BEDFORD_PRISON.name,
+      )
+      val mockInfo = mockOrderListInformation(mockOrder)
+      whenever(userCohortService.getUserCohort(authentication)).thenReturn(
+        UserCohort(
+          Cohort.PRISON,
+          activeCaseLoadId = Prison.BEDFORD_PRISON.ids.first(),
+        ),
+      )
+      whenever(repo.findPrisonOrders(listOf(Prison.BEDFORD_PRISON.name))).thenReturn(listOf(mockInfo))
+
+      val results = service.listOrders(authentication, OrderListView.PRISON_ORDERS)
+
+      assertThat(results.first().id).isEqualTo(mockOrder.id)
+    }
+
+    @Test
+    fun `PRISON_ORDERS returns empty when the caseload maps to no prisons`() {
+      whenever(userCohortService.getUserCohort(authentication)).thenReturn(
+        UserCohort(Cohort.PRISON, activeCaseLoadId = "UNKNOWN"),
+      )
+
+      val results = service.listOrders(authentication, OrderListView.PRISON_ORDERS)
+
+      assertThat(results).isEmpty()
+      verify(repo, never()).findPrisonOrders(any())
+    }
+
+    @Test
+    fun `listOrders maps lastUpdatedBy and lastUpdatedDateTime into the response`() {
+      val fixedTime = OffsetDateTime.of(2025, 1, 15, 10, 0, 0, 0, ZoneOffset.UTC)
+      val mockOrder = TestUtilities.createReadyToSubmitOrder(startDate = mockStartDate, endDate = mockEndDate)
+      mockOrder.lastUpdatedBy = "Bob Smith"
+      mockOrder.lastUpdatedDateTime = fixedTime
+      val mockInfo = mockOrderListInformation(mockOrder)
+      whenever(repo.findMyOrders("mockUser")).thenReturn(listOf(mockInfo))
+
+      val results = service.listOrders(authentication, OrderListView.MY_ORDERS)
+
+      assertThat(results.first().lastUpdatedBy).isEqualTo("Bob Smith")
+      assertThat(results.first().lastUpdatedDateTime).isEqualTo(fixedTime)
+    }
   }
 
   @Test
@@ -447,7 +724,8 @@ class OrderServiceTest {
     @BeforeEach
     fun setup() {
       val featureFlags = FeatureFlags(ddV6CourtMappings = true, dataDictionaryVersion = DataDictionaryVersion.DDV5)
-      service = OrderService(repo, fmsService, featureFlags, userCohortService)
+      service = OrderService(fmsService, featureFlags, userCohortService)
+      service.orderRepo = repo
       whenever(repo.findById(order.id)).thenReturn(Optional.of(order))
       whenever(repo.save(order)).thenReturn(order)
     }
@@ -902,7 +1180,7 @@ class OrderServiceTest {
       fun setup() {
         val mockUserCohort = UserCohort(Cohort.PRISON)
         whenever(userCohortService.getUserCohort(authentication)).thenReturn(mockUserCohort)
-        whenever(userCohortService.matchesNofifyingOrg(mockUserCohort.cohort, "PRISON")).thenReturn(true)
+        whenever(userCohortService.matchesNotifyingOrg(mockUserCohort.cohort, "PRISON")).thenReturn(true)
       }
 
       @Test
@@ -933,7 +1211,8 @@ class OrderServiceTest {
       @BeforeEach
       fun setup() {
         val featureFlags = FeatureFlags(ddV6CourtMappings = true, dataDictionaryVersion = DataDictionaryVersion.DDV5)
-        service = OrderService(repo, fmsService, featureFlags, userCohortService)
+        service = OrderService(fmsService, featureFlags, userCohortService)
+        service.orderRepo = repo
         whenever(repo.findById(orderInPast.id)).thenReturn(Optional.of(orderInPast))
         whenever(repo.save(orderInPast)).thenReturn(orderInPast)
       }

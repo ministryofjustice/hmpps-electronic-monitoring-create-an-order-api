@@ -13,11 +13,11 @@ import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.config.AuthAwareAuthenticationToken
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.OrderListCriteria
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.CreateOrderDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderInformationDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderListView
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.OrderController
@@ -124,6 +124,7 @@ class OrderControllerTest {
         dataDictionaryVersion = mockDictionaryVersion,
         orderParameters = null,
         versionId = version.id,
+        isOwner = true,
       ),
     )
   }
@@ -167,7 +168,7 @@ class OrderControllerTest {
       ),
     )
 
-    `when`(orderService.listOrders(OrderListCriteria(username = "mockUser"))).thenReturn(orderInformation)
+    `when`(orderService.listOrders(authentication, OrderListView.MY_ORDERS)).thenReturn(orderInformation)
     `when`(authentication.name).thenReturn("mockUser")
 
     val result = controller.listOrders(authentication)
@@ -274,6 +275,7 @@ class OrderControllerTest {
           dataDictionaryVersion = mockDictionaryVersion,
           orderParameters = null,
           versionId = orderVersion.id,
+          isOwner = true,
         ),
         OrderDto(
           id = orderId2,
@@ -311,6 +313,7 @@ class OrderControllerTest {
           dataDictionaryVersion = mockDictionaryVersion,
           orderParameters = null,
           versionId = orderVersion2.id,
+          isOwner = true,
         ),
       ),
     )

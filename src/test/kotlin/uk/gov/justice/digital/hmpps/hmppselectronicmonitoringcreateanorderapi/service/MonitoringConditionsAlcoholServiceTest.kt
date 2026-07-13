@@ -1,13 +1,13 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service
 
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.mockito.Mockito
+import org.mockito.kotlin.any
 import org.mockito.kotlin.whenever
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.test.context.ActiveProfiles
-import org.springframework.test.context.bean.override.mockito.MockitoBean
+import org.springframework.boot.test.autoconfigure.json.JsonTest
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Address
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AlcoholMonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
@@ -26,13 +26,9 @@ import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.util.*
 
-@ActiveProfiles("test")
-@SpringBootTest
-class MonitoringConditionsAlcoholServiceTest {
-  @MockitoBean
-  lateinit var orderRepo: OrderRepository
+@JsonTest
+class MonitoringConditionsAlcoholServiceTest : OrderSectionServiceTestBase() {
 
-  @Autowired
   lateinit var alcoholMonitoringConditionsService: MonitoringConditionsAlcoholService
 
   private val mockOrderId: UUID = UUID.randomUUID()
@@ -41,6 +37,13 @@ class MonitoringConditionsAlcoholServiceTest {
   private val mockAddressId = UUID.randomUUID()
   private val mockAlcoholMonitoringConditionsId = UUID.randomUUID()
   private val mockDictionaryVersion = DataDictionaryVersion.DDV4
+
+  @BeforeEach
+  fun setup() {
+    repo = Mockito.mock(OrderRepository::class.java)
+    alcoholMonitoringConditionsService = MonitoringConditionsAlcoholService()
+    alcoholMonitoringConditionsService.orderRepo = repo
+  }
 
   private val mockStartDate: ZonedDateTime = ZonedDateTime.of(
     LocalDate.of(2025, 1, 1),
@@ -81,7 +84,7 @@ class MonitoringConditionsAlcoholServiceTest {
     @Test
     fun `gets the address ID from the order ID and address type`() {
       whenever(
-        orderRepo.findById(mockOrderId),
+        repo.findById(mockOrderId),
       ).thenReturn(
         Optional.of(
           Order(
@@ -105,22 +108,8 @@ class MonitoringConditionsAlcoholServiceTest {
         ),
       )
       whenever(
-        orderRepo.save(
-          Order(
-            id = mockOrderId,
-            versions = mutableListOf(
-              OrderVersion(
-                id = mockVersionId,
-                username = mockUsername,
-                status = OrderStatus.IN_PROGRESS,
-                type = RequestType.REQUEST,
-                orderId = mockOrderId,
-                monitoringConditionsAlcohol = mockAlcoholMonitoringConditions,
-                addresses = mutableListOf(mockAddress),
-                dataDictionaryVersion = mockDictionaryVersion,
-              ),
-            ),
-          ),
+        repo.save(
+          any<Order>(),
         ),
       ).thenReturn(
         Order(
@@ -174,7 +163,7 @@ class MonitoringConditionsAlcoholServiceTest {
         endDate = mockEndDate,
       )
       whenever(
-        orderRepo.findById(mockOrderId),
+        repo.findById(mockOrderId),
       ).thenReturn(
         Optional.of(
           Order(
@@ -199,22 +188,8 @@ class MonitoringConditionsAlcoholServiceTest {
         ),
       )
       whenever(
-        orderRepo.save(
-          Order(
-            id = mockOrderId,
-            versions = mutableListOf(
-              OrderVersion(
-                id = mockVersionId,
-                username = mockUsername,
-                status = OrderStatus.IN_PROGRESS,
-                type = RequestType.REQUEST,
-                orderId = mockOrderId,
-                monitoringConditionsAlcohol = mockAlcoholMonitoringConditions,
-                addresses = mutableListOf(mockAddress),
-                dataDictionaryVersion = mockDictionaryVersion,
-              ),
-            ),
-          ),
+        repo.save(
+          any<Order>(),
         ),
       ).thenReturn(
         Order(

@@ -27,6 +27,6 @@ class CurfewTimetableService : OrderSectionServiceBase() {
       },
     )
 
-    return orderRepo.save(order).curfewTimeTable
+    return updateLastUpdatedByAndSaveOrder(order).curfewTimeTable
   }
 }
