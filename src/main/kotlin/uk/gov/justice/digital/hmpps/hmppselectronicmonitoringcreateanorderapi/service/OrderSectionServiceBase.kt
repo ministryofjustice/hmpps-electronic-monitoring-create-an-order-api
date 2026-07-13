@@ -8,8 +8,10 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.co
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.data.ValidationErrors
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InterestedParties
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.Cohort
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisationDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Prison
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 import java.time.OffsetDateTime
 import java.util.*
@@ -19,6 +21,9 @@ abstract class OrderSectionServiceBase {
   @Autowired
   lateinit var orderRepo: OrderRepository
 
+  @Autowired
+  lateinit var userCohortService: UserCohortService
+
   internal fun findOrder(id: UUID, username: String): Order {
     val order = orderRepo.findById(id).orElseThrow {
       EntityNotFoundException(ValidationErrors.OrderSectionServiceBase.noEditableOrderExists(id))
@@ -26,6 +31,35 @@ abstract class OrderSectionServiceBase {
 
     if (order.username != username) {
       throw EntityNotFoundException(ValidationErrors.OrderSectionServiceBase.noEditableOrderExists(id))
+    }
+    return order
+  }
+
+  internal fun findCohortOrder(id: UUID, username: String): Order {
+    val order = orderRepo.findById(id).orElseThrow {
+      EntityNotFoundException(ValidationErrors.OrderSectionServiceBase.noEditableOrderExists(id))
+    }
+    if (order.username == username) {
+      return order
+    }
+
+    val authentication = SecurityContextHolder.getContext().authentication as AuthAwareAuthenticationToken
+    val userCohort = userCohortService.getUserCohort(authentication)
+    if (userCohort.cohort == Cohort.PRISON) {
+      val userPrisons = Prison.fromId(userCohort.activeCaseLoadId)
+
+      if (order.ownerCohort == null ||
+        userPrisons.all { it.name != order.ownerCohort }
+      ) {
+        // allow admin user to all draft orders
+        if (userCohort.activeCaseLoadId != "CADM_I") {
+          throw EntityNotFoundException(ValidationErrors.OrderSectionServiceBase.noEditableOrderExists(id))
+        }
+      }
+    } else {
+      if (order.ownerCohort != userCohort.cohort.name) {
+        throw EntityNotFoundException(ValidationErrors.OrderSectionServiceBase.noEditableOrderExists(id))
+      }
     }
     return order
   }

@@ -35,11 +35,7 @@ import java.util.*
 @EnableConfigurationProperties(
   FeatureFlags::class,
 )
-class OrderService(
-  val fmsService: FmsService,
-  private val featureFlags: FeatureFlags,
-  private val userCohortService: UserCohortService,
-) : OrderSectionServiceBase() {
+class OrderService(val fmsService: FmsService, private val featureFlags: FeatureFlags) : OrderSectionServiceBase() {
 
   fun createOrder(username: String, createRecord: CreateOrderDto): Order {
     val order = Order()

@@ -370,6 +370,28 @@ class AdditionalDocumentsControllerTest : UpdateOrderIntegrationTestBase() {
     }
 
     @Test
+    fun `it should return an error if the order was created by the same cohort`() {
+      val order = createOrder()
+
+      val result = webTestClient.get()
+        .uri("/api/orders/${order.id}/document-type/${DocumentType.PHOTO_ID}/raw")
+        .headers(setAuthorisation("AUTH_ADM"))
+        .exchange()
+        .expectStatus()
+        .isNotFound
+        .expectBodyList(ErrorResponse::class.java)
+        .returnResult()
+
+      Assertions.assertThat(result.responseBody!!).contains(
+        ErrorResponse(
+          status = NOT_FOUND,
+          developerMessage = "An editable order with ${order.id} does not exist",
+          userMessage = "Not Found",
+        ),
+      )
+    }
+
+    @Test
     fun `it should return the raw document from the document management api`() {
       val order = createOrder()
       val bodyBuilder = createMultiPartBodyBuilder(mockFile())

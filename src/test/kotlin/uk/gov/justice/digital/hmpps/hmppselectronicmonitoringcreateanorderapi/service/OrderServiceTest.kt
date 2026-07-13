@@ -82,7 +82,7 @@ class OrderServiceTest {
     userCohortService = mock()
     val featureFlags = FeatureFlags(ddV6CourtMappings = true, dataDictionaryVersion = DataDictionaryVersion.DDV4)
 
-    service = OrderService(fmsService, featureFlags, userCohortService)
+    service = OrderService(fmsService, featureFlags)
     service.orderRepo = repo
     authentication = mock(AuthAwareAuthenticationToken::class.java)
     whenever(authentication.name).thenReturn("mockUser")
@@ -91,6 +91,7 @@ class OrderServiceTest {
     context.authentication = authentication
     SecurityContextHolder.setContext(context)
     whenever(repo.save(any<Order>())).thenReturn(TestUtilities.createReadyToSubmitOrder())
+    service.userCohortService = userCohortService
   }
 
   @Nested
@@ -724,7 +725,8 @@ class OrderServiceTest {
     @BeforeEach
     fun setup() {
       val featureFlags = FeatureFlags(ddV6CourtMappings = true, dataDictionaryVersion = DataDictionaryVersion.DDV5)
-      service = OrderService(fmsService, featureFlags, userCohortService)
+      service = OrderService(fmsService, featureFlags)
+      service.userCohortService = userCohortService
       service.orderRepo = repo
       whenever(repo.findById(order.id)).thenReturn(Optional.of(order))
       whenever(repo.save(order)).thenReturn(order)
@@ -1211,8 +1213,9 @@ class OrderServiceTest {
       @BeforeEach
       fun setup() {
         val featureFlags = FeatureFlags(ddV6CourtMappings = true, dataDictionaryVersion = DataDictionaryVersion.DDV5)
-        service = OrderService(fmsService, featureFlags, userCohortService)
+        service = OrderService(fmsService, featureFlags)
         service.orderRepo = repo
+        service.userCohortService = userCohortService
         whenever(repo.findById(orderInPast.id)).thenReturn(Optional.of(orderInPast))
         whenever(repo.save(orderInPast)).thenReturn(orderInPast)
       }
