@@ -208,9 +208,12 @@ data class Order(
       return getCurrentVersion().type
     }
 
-  val username: String
+  var username: String
     get() {
       return getCurrentVersion().username
+    }
+    set(username) {
+      getCurrentVersion().username = username
     }
 
   val submittedBy: String?
@@ -282,6 +285,30 @@ data class Order(
     }
     set(tags) {
       getCurrentVersion().tags = tags
+    }
+
+  var lastUpdatedBy: String?
+    get() {
+      return getCurrentVersion().lastUpdatedBy
+    }
+    set(lastUpdatedBy) {
+      getCurrentVersion().lastUpdatedBy = lastUpdatedBy
+    }
+
+  var lastUpdatedDateTime: OffsetDateTime?
+    get() {
+      return getCurrentVersion().lastUpdatedDateTime
+    }
+    set(lastUpdatedDateTime) {
+      getCurrentVersion().lastUpdatedDateTime = lastUpdatedDateTime
+    }
+
+  var ownerCohort: String?
+    get() {
+      return getCurrentVersion().ownerCohort
+    }
+    set(ownerCohort) {
+      getCurrentVersion().ownerCohort = ownerCohort
     }
 
   fun getMonitoringStartDate(): ZonedDateTime? {

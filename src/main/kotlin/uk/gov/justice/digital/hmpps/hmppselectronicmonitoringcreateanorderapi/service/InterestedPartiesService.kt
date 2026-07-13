@@ -37,6 +37,6 @@ class InterestedPartiesService(private val addressService: AddressService) : Ord
 
     order.interestedParties = newInterestedParties
 
-    return orderRepo.save(order).interestedParties!!
+    return updateLastUpdatedByAndSaveOrder(order, interestedParties = newInterestedParties).interestedParties!!
   }
 }

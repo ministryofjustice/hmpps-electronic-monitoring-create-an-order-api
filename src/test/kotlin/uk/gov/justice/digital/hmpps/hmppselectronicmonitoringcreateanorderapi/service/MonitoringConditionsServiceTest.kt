@@ -34,10 +34,7 @@ import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.util.*
 
-class MonitoringConditionsServiceTest {
-
-  lateinit var repo: OrderRepository
-
+class MonitoringConditionsServiceTest : OrderSectionServiceTestBase() {
   lateinit var service: MonitoringConditionsService
 
   private val mockOrderId: UUID = UUID.randomUUID()

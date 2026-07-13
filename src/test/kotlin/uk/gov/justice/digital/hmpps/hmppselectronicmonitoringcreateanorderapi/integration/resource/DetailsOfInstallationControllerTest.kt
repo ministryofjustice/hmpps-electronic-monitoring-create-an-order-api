@@ -9,8 +9,8 @@ import org.springframework.web.reactive.function.BodyInserters
 import tools.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.UpdateOrderIntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.UriTestCase
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateDetailsOfInstallationDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidationError
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.UpdateDetailsOfInstallationDto
 
 class DetailsOfInstallationControllerTest : UpdateOrderIntegrationTestBase() {
 
@@ -39,6 +39,7 @@ class DetailsOfInstallationControllerTest : UpdateOrderIntegrationTestBase() {
           mockValidRequestBody(
             riskCategory = arrayOf("THREATS_OF_VIOLENCE", "SEXUAL_OFFENCES"),
             riskDetails = "some details",
+            genderRiskDetails = "some gender",
           ),
         ),
       )
@@ -51,6 +52,7 @@ class DetailsOfInstallationControllerTest : UpdateOrderIntegrationTestBase() {
     Assertions.assertThat(updatedOrder.detailsOfInstallation?.riskCategory)
       .isEqualTo(arrayOf("THREATS_OF_VIOLENCE", "SEXUAL_OFFENCES"))
     Assertions.assertThat(updatedOrder.detailsOfInstallation?.riskDetails).isEqualTo("some details")
+    Assertions.assertThat(updatedOrder.detailsOfInstallation?.genderRiskDetails).isEqualTo("some gender")
   }
 
   @Test
@@ -65,6 +67,7 @@ class DetailsOfInstallationControllerTest : UpdateOrderIntegrationTestBase() {
           mockValidRequestBody(
             riskCategory = arrayOf("some invalid category"),
             riskDetails = "",
+            genderRiskDetails = "",
           ),
         ),
       )
@@ -76,8 +79,17 @@ class DetailsOfInstallationControllerTest : UpdateOrderIntegrationTestBase() {
     )
   }
 
-  private fun mockValidRequestBody(riskCategory: Array<String>? = arrayOf(), riskDetails: String? = null): String {
-    val dto = UpdateDetailsOfInstallationDto(riskCategory = riskCategory, riskDetails = riskDetails)
+  private fun mockValidRequestBody(
+    riskCategory: Array<String>? = arrayOf(),
+    riskDetails: String? = null,
+    genderRiskDetails: String? = null,
+  ): String {
+    val dto =
+      UpdateDetailsOfInstallationDto(
+        riskCategory = riskCategory,
+        riskDetails = riskDetails,
+        genderRiskDetails = genderRiskDetails,
+      )
 
     return objectMapper.writeValueAsString(dto)
   }

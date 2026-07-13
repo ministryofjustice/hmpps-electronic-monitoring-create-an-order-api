@@ -15,7 +15,7 @@ class MappaService : OrderSectionServiceBase() {
     order.mappa =
       Mappa(versionId = order.versionId, level = dto.level, isMappa = order.mappa?.isMappa, category = dto.category)
 
-    return orderRepo.save(order).mappa!!
+    return updateLastUpdatedByAndSaveOrder(order).mappa!!
   }
 
   fun updateIsMappa(orderId: UUID, username: String, dto: UpdateIsMappaDto): Mappa {
@@ -32,6 +32,6 @@ class MappaService : OrderSectionServiceBase() {
       order.mappa?.isMappa = dto.isMappa
     }
 
-    return orderRepo.save(order).mappa!!
+    return updateLastUpdatedByAndSaveOrder(order).mappa!!
   }
 }

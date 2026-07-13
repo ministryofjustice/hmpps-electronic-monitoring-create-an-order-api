@@ -3,10 +3,12 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.i
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus.BAD_REQUEST
 import org.springframework.http.MediaType
 import org.springframework.web.reactive.function.BodyInserters
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.UpdateOrderIntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.UriTestCase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InterestedParties
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ProbationServiceRegion
@@ -14,7 +16,16 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 import java.util.*
 
-class ProbationDeliveryUnitControllerTest : IntegrationTestBase() {
+class ProbationDeliveryUnitControllerTest : UpdateOrderIntegrationTestBase() {
+  override val testUris: List<UriTestCase> = listOf(
+    UriTestCase(uri = "/api/orders/:orderId/probation-delivery-unit", createValidBody = {
+      """
+            {
+               "unit": "BURY_AND_ROCHDALE"
+            }
+      """.trimIndent()
+    }, httpMethod = HttpMethod.PUT),
+  )
 
   @BeforeEach
   fun setup() {
@@ -143,54 +154,6 @@ class ProbationDeliveryUnitControllerTest : IntegrationTestBase() {
         userMessage = "Select probation delivery unit within given probation region",
       ),
     )
-  }
-
-  @Test
-  fun `Probation Delivery Unit cannot be updated by a different user`() {
-    val order =
-      createOrderWithResponsibleOrganisation(
-        ResponsibleOrganisation.PROBATION,
-        ProbationServiceRegion.GREATER_MANCHESTER,
-      )
-
-    webTestClient.put()
-      .uri("/api/orders/${order.id}/probation-delivery-unit")
-      .contentType(MediaType.APPLICATION_JSON)
-      .body(
-        BodyInserters.fromValue(
-          """
-            {
-              "unit": "BURY_AND_ROCHDALE"
-            }
-          """.trimIndent(),
-        ),
-      )
-      .headers(setAuthorisation("AUTH_ADM_2"))
-      .exchange()
-      .expectStatus()
-      .isNotFound
-  }
-
-  @Test
-  fun `Probation Delivery Unit cannot be updated for a submitted order`() {
-    val order = createSubmittedOrder()
-
-    webTestClient.put()
-      .uri("/api/orders/${order.id}/probation-delivery-unit")
-      .contentType(MediaType.APPLICATION_JSON)
-      .body(
-        BodyInserters.fromValue(
-          """
-            {
-              "unit": "BURY_AND_ROCHDALE"
-            }
-          """.trimIndent(),
-        ),
-      )
-      .headers(setAuthorisation("AUTH_ADM"))
-      .exchange()
-      .expectStatus()
-      .isNotFound
   }
 
   private fun createOrderWithResponsibleOrganisation(

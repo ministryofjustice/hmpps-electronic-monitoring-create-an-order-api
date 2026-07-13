@@ -5,15 +5,27 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.http.MediaType
 import org.springframework.web.reactive.function.BodyInserters
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.UpdateOrderIntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.UriTestCase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidationError
 
-class ContactDetailsControllerTest : IntegrationTestBase() {
+class ContactDetailsControllerTest : UpdateOrderIntegrationTestBase() {
 
   @BeforeEach
   fun setup() {
     repo.deleteAll()
   }
+
+  override val testUris: List<UriTestCase> = listOf(
+    UriTestCase(uri = "/api/orders/:orderId/contact-details", createValidBody = {
+      """
+            {     
+              "phoneNumberAvailable": true,
+              "contactNumber": "01234567890"
+            }
+          """
+    }),
+  )
 
   @Test
   fun `Contact details cannot be updated without phone number available flag been set`() {
@@ -118,51 +130,5 @@ class ContactDetailsControllerTest : IntegrationTestBase() {
     Assertions.assertThat(result.responseBody!!).contains(
       ValidationError("contactNumber", "Phone number is in an incorrect format"),
     )
-  }
-
-  @Test
-  fun `Contact details cannot be updated by a different user`() {
-    val order = createOrder()
-
-    webTestClient.put()
-      .uri("/api/orders/${order.id}/contact-details")
-      .contentType(MediaType.APPLICATION_JSON)
-      .body(
-        BodyInserters.fromValue(
-          """
-            {
-            "phoneNumberAvailable": true,
-              "contactNumber": "01234567890"
-            }
-          """.trimIndent(),
-        ),
-      )
-      .headers(setAuthorisation("AUTH_ADM_2"))
-      .exchange()
-      .expectStatus()
-      .isNotFound
-  }
-
-  @Test
-  fun `Contact details cannot be updated for a submitted order`() {
-    val order = createSubmittedOrder()
-
-    webTestClient.put()
-      .uri("/api/orders/${order.id}/contact-details")
-      .contentType(MediaType.APPLICATION_JSON)
-      .body(
-        BodyInserters.fromValue(
-          """
-            {
-            "phoneNumberAvailable": true,
-              "contactNumber": "01234567890"
-            }
-          """.trimIndent(),
-        ),
-      )
-      .headers(setAuthorisation("AUTH_ADM"))
-      .exchange()
-      .expectStatus()
-      .isNotFound
   }
 }

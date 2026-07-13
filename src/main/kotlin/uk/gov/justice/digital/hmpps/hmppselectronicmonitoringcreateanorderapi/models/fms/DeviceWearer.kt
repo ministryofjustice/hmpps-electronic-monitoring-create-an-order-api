@@ -188,7 +188,7 @@ data class DeviceWearer(
         genderIdentity = getGender(order),
         disability = disabilities,
         phoneNumber = getPhoneNumber(order),
-        riskDetails = getRiskDetails(order, featureFlags),
+        riskDetails = getRiskDetails(order),
         riskCategory = getRiskCategories(order, featureFlags),
         mappa = order.mappa?.level?.value,
         mappaCaseType = order.mappa?.category?.value,
@@ -281,18 +281,28 @@ data class DeviceWearer(
     private fun getGender(order: Order): String =
       Gender.from(order.deviceWearer?.gender)?.value ?: order.deviceWearer?.gender ?: ""
 
-    private fun getRiskDetails(order: Order, featureFlags: FeatureFlags): String? =
-      if (DataDictionaryVersion.isVersionSameOrAbove(order.dataDictionaryVersion, DataDictionaryVersion.DDV6) &&
-        featureFlags.ddV6CourtMappings
+    private fun getRiskDetails(order: Order): String? =
+      if (order.dataDictionaryVersion.isLaterThanOrEqual(DataDictionaryVersion.DDV6)
       ) {
-        order.detailsOfInstallation?.riskDetails ?: order.installationAndRisk?.riskDetails
+        val genderRisk = order.detailsOfInstallation?.genderRiskDetails?.takeIf { it.isNotBlank() }
+        val riskDetails = order.detailsOfInstallation?.riskDetails ?: order.installationAndRisk?.riskDetails
+        genderRisk?.let { gender ->
+          "Risk to gender: $gender" +
+            (
+              riskDetails?.takeIf { details ->
+                details.isNotBlank()
+              }?.let { details -> " Additional risk details: $details" }
+                ?: ""
+              )
+        }
+          ?: riskDetails
       } else {
         order.installationAndRisk?.riskDetails
       }
 
     private fun getRiskCategories(order: Order, featureFlags: FeatureFlags): List<FmsRiskCategory> {
       val riskCategories =
-        if (DataDictionaryVersion.isVersionSameOrAbove(order.dataDictionaryVersion, DataDictionaryVersion.DDV6) &&
+        if (order.dataDictionaryVersion.isLaterThanOrEqual(DataDictionaryVersion.DDV6) &&
           featureFlags.ddV6CourtMappings
         ) {
           order.detailsOfInstallation?.riskCategory ?: order.installationAndRisk?.riskCategory

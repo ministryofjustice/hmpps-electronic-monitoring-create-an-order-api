@@ -5,7 +5,8 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.http.MediaType
 import org.springframework.web.reactive.function.BodyInserters
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.UpdateOrderIntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.UriTestCase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AlcoholMonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidationError
@@ -15,7 +16,7 @@ import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.util.*
 
-class MonitoringConditionsAlcoholControllerTest : IntegrationTestBase() {
+class MonitoringConditionsAlcoholControllerTest : UpdateOrderIntegrationTestBase() {
 
   private val mockStartDate: ZonedDateTime = ZonedDateTime.of(
     LocalDate.of(2025, 1, 1),
@@ -26,6 +27,11 @@ class MonitoringConditionsAlcoholControllerTest : IntegrationTestBase() {
     LocalDate.of(2030, 1, 1),
     LocalTime.NOON,
     ZoneId.of("UTC"),
+  )
+  override val testUris: List<UriTestCase> = listOf(
+    UriTestCase(uri = "/api/orders/:orderId/monitoring-conditions-alcohol", createValidBody = {
+      mockValidAlcoholMonitoringConditions
+    }),
   )
 
   private val mockValidAlcoholMonitoringConditions: String = """
@@ -51,47 +57,6 @@ class MonitoringConditionsAlcoholControllerTest : IntegrationTestBase() {
   @BeforeEach
   fun setup() {
     repo.deleteAll()
-  }
-
-  @Test
-  fun `Alcohol monitoring conditions cannot be updated by a different user`() {
-    val order = createOrder()
-
-    webTestClient.put()
-      .uri("/api/orders/${order.id}/monitoring-conditions-alcohol")
-      .contentType(MediaType.APPLICATION_JSON)
-      .body(
-        BodyInserters.fromValue(
-          """
-            {
-              "monitoringType": "ALCOHOL_ABSTINENCE",
-              "startDate": "$mockStartDate",
-              "endDate": "$mockEndDate",
-              "installationLocation": "PRIMARY",
-              "prisonName": null,
-              "probationOfficeName": null
-            }
-          """.trimIndent(),
-        ),
-      )
-      .headers(setAuthorisation("AUTH_ADM_2"))
-      .exchange()
-      .expectStatus()
-      .isNotFound
-  }
-
-  @Test
-  fun `Alcohol monitoring conditions for a non-existent order are not update-able`() {
-    webTestClient.put()
-      .uri("/api/orders/${UUID.randomUUID()}/monitoring-conditions-alcohol")
-      .contentType(MediaType.APPLICATION_JSON)
-      .body(
-        BodyInserters.fromValue(mockValidAlcoholMonitoringConditions),
-      )
-      .headers(setAuthorisation("AUTH_ADM"))
-      .exchange()
-      .expectStatus()
-      .isNotFound
   }
 
   @Test

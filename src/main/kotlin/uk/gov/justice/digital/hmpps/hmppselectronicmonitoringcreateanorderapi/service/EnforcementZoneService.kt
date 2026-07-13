@@ -43,7 +43,7 @@ class EnforcementZoneService(val webClient: DocumentApiClient) : OrderSectionSer
       ),
     )
 
-    orderRepo.save(order)
+    updateLastUpdatedByAndSaveOrder(order)
   }
 
   fun uploadEnforcementZoneAttachment(orderId: UUID, username: String, zoneId: Int, multipartFile: MultipartFile) {
@@ -71,6 +71,6 @@ class EnforcementZoneService(val webClient: DocumentApiClient) : OrderSectionSer
     zone.fileName = multipartFile.originalFilename
 
     order.enforcementZoneConditions.add(zone)
-    orderRepo.save(order)
+    updateLastUpdatedByAndSaveOrder(order)
   }
 }

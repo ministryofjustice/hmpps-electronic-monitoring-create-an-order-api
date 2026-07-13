@@ -236,6 +236,70 @@ class DeviceWearerTest : OrderTestBase() {
   }
 
   @Test
+  fun `It should merge genderRiskDetails and riskDetails when both are present`() {
+    val order = createOrder(
+      dataDictionaryVersion = DataDictionaryVersion.DDV6,
+      deviceWearer = createDeviceWearer(),
+    )
+
+    order.installationAndRisk = null
+
+    order.detailsOfInstallation =
+      DetailsOfInstallation(
+        versionId = order.getCurrentVersion().id,
+        riskDetails = "some risk details",
+        genderRiskDetails = "women",
+      )
+
+    val featureFlags = FeatureFlags(dataDictionaryVersion = DataDictionaryVersion.DDV6, ddV6CourtMappings = true)
+    val fmsDeviceWearer = FmsDeviceWearer.fromCemoOrder(order, featureFlags)
+
+    assertThat(
+      fmsDeviceWearer.riskDetails,
+    ).isEqualTo("Risk to gender: women Additional risk details: some risk details")
+  }
+
+  @Test
+  fun `It should only send genderRiskDetails when riskDetails is blank`() {
+    val order = createOrder(
+      dataDictionaryVersion = DataDictionaryVersion.DDV6,
+      deviceWearer = createDeviceWearer(),
+    )
+
+    order.detailsOfInstallation =
+      DetailsOfInstallation(
+        versionId = order.getCurrentVersion().id,
+        riskDetails = "",
+        genderRiskDetails = "women",
+      )
+
+    val featureFlags = FeatureFlags(dataDictionaryVersion = DataDictionaryVersion.DDV6, ddV6CourtMappings = true)
+    val fmsDeviceWearer = FmsDeviceWearer.fromCemoOrder(order, featureFlags)
+
+    assertThat(fmsDeviceWearer.riskDetails).isEqualTo("Risk to gender: women")
+  }
+
+  @Test
+  fun `It should only send riskDetails as is when genderRiskDetails is blank`() {
+    val order = createOrder(
+      dataDictionaryVersion = DataDictionaryVersion.DDV6,
+      deviceWearer = createDeviceWearer(),
+    )
+
+    order.detailsOfInstallation =
+      DetailsOfInstallation(
+        versionId = order.getCurrentVersion().id,
+        riskDetails = "some details",
+        genderRiskDetails = "",
+      )
+
+    val featureFlags = FeatureFlags(dataDictionaryVersion = DataDictionaryVersion.DDV6, ddV6CourtMappings = true)
+    val fmsDeviceWearer = FmsDeviceWearer.fromCemoOrder(order, featureFlags)
+
+    assertThat(fmsDeviceWearer.riskDetails).isEqualTo("some details")
+  }
+
+  @Test
   fun `It should map mappa category correctly for serco`() {
     val order = createOrder(
       dataDictionaryVersion = DataDictionaryVersion.DDV6,

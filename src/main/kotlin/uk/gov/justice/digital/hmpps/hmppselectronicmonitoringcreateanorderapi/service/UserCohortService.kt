@@ -27,7 +27,7 @@ class UserCohortService(private val webClient: ManageUserApi) {
     }
   }
 
-  fun matchesNofifyingOrg(cohort: Cohort, notifyingOrganisation: String?): Boolean {
+  fun matchesNotifyingOrg(cohort: Cohort, notifyingOrganisation: String?): Boolean {
     if (notifyingOrganisation.isNullOrEmpty()) return false
 
     val parsedNotifyingOrganisation = NotifyingOrganisationDDv5.from(notifyingOrganisation)

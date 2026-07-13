@@ -41,7 +41,7 @@ class AdditionalDocumentService(val webClient: DocumentApiClient) : OrderSection
     val doc = order.additionalDocuments.firstOrNull { it.fileType == documentType }
     if (doc != null) {
       order.additionalDocuments.remove(doc)
-      orderRepo.save(order)
+      updateLastUpdatedByAndSaveOrder(order)
       webClient.deleteDocument(doc.documentId.toString())
     }
   }
@@ -68,7 +68,7 @@ class AdditionalDocumentService(val webClient: DocumentApiClient) : OrderSection
 
     order.additionalDocuments.add(document)
 
-    orderRepo.save(order)
+    updateLastUpdatedByAndSaveOrder(order)
   }
 
   fun updateHavePhoto(orderId: UUID, username: String, updateRecord: UpdateHavePhotoDto): OrderParameters {
@@ -86,7 +86,7 @@ class AdditionalDocumentService(val webClient: DocumentApiClient) : OrderSection
       order.orderParameters?.havePhoto = updateRecord.havePhoto
     }
 
-    return orderRepo.save(order).orderParameters!!
+    return updateLastUpdatedByAndSaveOrder(order).orderParameters!!
   }
 
   fun updateFileRequired(orderId: UUID, username: String, updateRecord: UpdateFileRequiredDto): OrderParameters {
@@ -112,6 +112,6 @@ class AdditionalDocumentService(val webClient: DocumentApiClient) : OrderSection
       else -> throw IllegalArgumentException("Unsupported document type: ${updateRecord.fileType}")
     }
 
-    return orderRepo.save(order).orderParameters!!
+    return updateLastUpdatedByAndSaveOrder(order).orderParameters!!
   }
 }
