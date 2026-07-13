@@ -26,7 +26,7 @@ class AdditionalDocumentService(val webClient: DocumentApiClient) : OrderSection
     username: String,
     documentType: DocumentType,
   ): ResponseEntity<Flux<InputStreamResource>>? {
-    val order = this.findEditableOrder(orderId, username)
+    val order = this.findCohortOrder(orderId, username)
     val doc = order.additionalDocuments.firstOrNull { it.fileType == documentType }
 
     if (doc === null) {
