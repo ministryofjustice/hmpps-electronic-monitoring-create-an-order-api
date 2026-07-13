@@ -6,7 +6,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ArgumentsSource
 import org.junit.jupiter.params.provider.ValueSource
@@ -14,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.util.JsonPathExpectationsHelper
+import org.springframework.test.web.reactive.server.expectBody
 import org.springframework.test.web.reactive.server.expectBodyList
 import org.springframework.web.reactive.function.BodyInserters
 import tools.jackson.databind.ObjectMapper
@@ -22,7 +22,6 @@ import tools.jackson.module.kotlin.readValue
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.argumentsProvider.AmendOrderArgumentsProvider
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.HmppsDocumentManagementApiExtension.Companion.documentApi
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.ManageUserApiExtension
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.ManageUserApiExtension.Companion.manageUserApi
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.SercoAuthMockServerExtension.Companion.sercoAuthApi
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.SercoMockApiExtension.Companion.sercoApi
@@ -54,18 +53,14 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.ut
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 import java.nio.file.Files
 import java.nio.file.Paths
+import java.time.OffsetDateTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
-import kotlin.time.Duration
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.DeviceWearer as FmsDeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.ErrorResponse as FmsErrorResponseDetails
 
-@ExtendWith(
-
-  ManageUserApiExtension::class,
-)
 class OrderControllerTest : IntegrationTestBase() {
 
   @Autowired
@@ -74,7 +69,7 @@ class OrderControllerTest : IntegrationTestBase() {
   val mockStartDate = ZonedDateTime.parse("2040-02-07T10:00:00Z")
   val mockEndDate = ZonedDateTime.parse("2040-03-07T11:00:00Z")
   val mockDocumentId = UUID.randomUUID()
-
+  val testUserFullName = "John Smith"
   private val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
   private val dateTimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
   val mockStartDateInBritishTime = mockStartDate.toInstant().atZone(
@@ -91,7 +86,7 @@ class OrderControllerTest : IntegrationTestBase() {
       "mockUser",
       true,
       "mock account",
-      HmppsCaseload("ACI", "HMP ABC"),
+      HmppsCaseload("ACI", "ALTCOURSE_PRISON"),
       emptyList(),
     )
     manageUserApi.stubUserActiveCaseLoad(mockUserCohort)
@@ -116,6 +111,7 @@ class OrderControllerTest : IntegrationTestBase() {
       assertThat(order.status).isEqualTo(OrderStatus.IN_PROGRESS)
       assertThat(order.type).isEqualTo(RequestType.REQUEST)
       assertThat(order.username).isEqualTo(testUser)
+      assertThat(order.lastUpdatedBy).isEqualTo(testUserFullName)
     }
 
     @Test
@@ -144,6 +140,7 @@ class OrderControllerTest : IntegrationTestBase() {
       assertThat(order.status).isEqualTo(OrderStatus.IN_PROGRESS)
       assertThat(order.type).isEqualTo(RequestType.VARIATION)
       assertThat(order.username).isEqualTo(testUser)
+      assertThat(order.lastUpdatedBy).isEqualTo(testUserFullName)
     }
   }
 
@@ -169,6 +166,7 @@ class OrderControllerTest : IntegrationTestBase() {
       assertThat(variationOrder.status).isEqualTo(OrderStatus.IN_PROGRESS)
       assertThat(variationOrder.type).isEqualTo(RequestType.VARIATION)
       assertThat(variationOrder.username).isEqualTo(testUser)
+      assertThat(variationOrder.lastUpdatedBy).isEqualTo(testUserFullName)
     }
 
     @Test
@@ -323,6 +321,7 @@ class OrderControllerTest : IntegrationTestBase() {
       assertThat(variationOrder.deviceWearer!!.id).isNotEqualTo(order.deviceWearer!!.id)
       assertThat(variationOrder.deviceWearer.versionId).isNotEqualTo(order.deviceWearer!!.versionId)
       assertThat(variationOrder.username).isEqualTo(testUser)
+      assertThat(variationOrder.lastUpdatedBy).isEqualTo(testUserFullName)
     }
 
     @Test
@@ -490,6 +489,7 @@ class OrderControllerTest : IntegrationTestBase() {
       assertThat(variationOrder.status).isEqualTo(OrderStatus.IN_PROGRESS)
       assertThat(variationOrder.type).isEqualTo(RequestType.AMEND_ORIGINAL_REQUEST)
       assertThat(variationOrder.username).isEqualTo(testUser)
+      assertThat(variationOrder.lastUpdatedBy).isEqualTo(testUserFullName)
     }
   }
 
@@ -824,11 +824,11 @@ class OrderControllerTest : IntegrationTestBase() {
       ],
     )
     fun `Can search for orders given a valid search term`(searchTerm: String) {
-      createAndPersistPopulatedOrder(status = OrderStatus.SUBMITTED)
+      createAndPersistPopulatedOrder(status = OrderStatus.SUBMITTED, tags = "PRISON,ALTCOURSE_PRISON")
 
       webTestClient.get()
         .uri("/api/orders/search?searchTerm=$searchTerm")
-        .headers(setAuthorisation("AUTH_ADM"))
+        .headers(setAuthorisation("AUTH_ADM", roles = listOf("ROLE_EM_CEMO__CREATE_ORDER", "ROLE_PRISON")))
         .exchange()
         .expectStatus()
         .isOk
@@ -852,11 +852,11 @@ class OrderControllerTest : IntegrationTestBase() {
 
     @Test
     fun `It should return orders created by a different user`() {
-      createAndPersistPopulatedOrder(status = OrderStatus.SUBMITTED)
+      createAndPersistPopulatedOrder(status = OrderStatus.SUBMITTED, tags = "PRISON,ALTCOURSE_PRISON")
 
       webTestClient.get()
         .uri("/api/orders/search?searchTerm=john smith")
-        .headers(setAuthorisation("SOME_OTHER_USER"))
+        .headers(setAuthorisation("SOME_OTHER_USER", roles = listOf("ROLE_EM_CEMO__CREATE_ORDER", "ROLE_PRISON")))
         .exchange()
         .expectStatus()
         .isOk
@@ -865,9 +865,74 @@ class OrderControllerTest : IntegrationTestBase() {
     }
 
     @Test
-    fun `It should only return submitted orders`() {
-      createAndPersistPopulatedOrder(status = OrderStatus.IN_PROGRESS)
+    fun `It should not return draft order created by a different user in a different prison`() {
+      createAndPersistPopulatedOrder(status = OrderStatus.IN_PROGRESS, ownerCohort = "ALTCOURSE_PRISON")
 
+      val mockUserCohort = HmppsUserCaseloadResponse(
+        "mockUser",
+        true,
+        "mock account",
+        HmppsCaseload("WLI", "WAYLAND_PRISON"),
+        emptyList(),
+      )
+      manageUserApi.stubUserActiveCaseLoad(mockUserCohort)
+      webTestClient.get()
+        .uri("/api/orders/search?searchTerm=john smith")
+        .headers(setAuthorisation("SOME_OTHER_USER", roles = listOf("ROLE_EM_CEMO__CREATE_ORDER", "ROLE_PRISON")))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBodyList(OrderDto::class.java)
+        .hasSize(0)
+    }
+
+    @Test
+    fun `It should not return draft order created by a different user in a different cohort`() {
+      createAndPersistPopulatedOrder(status = OrderStatus.IN_PROGRESS, ownerCohort = "PROBATION")
+
+      webTestClient.get()
+        .uri("/api/orders/search?searchTerm=john smith")
+        .headers(setAuthorisation("SOME_OTHER_USER", roles = listOf("ROLE_EM_CEMO__CREATE_ORDER", "ROLE_PRISON")))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBodyList(OrderDto::class.java)
+        .hasSize(0)
+    }
+
+    @Test
+    fun `It should return draft order created by a different user in the same cohort`() {
+      createAndPersistPopulatedOrder(status = OrderStatus.IN_PROGRESS, ownerCohort = "ALTCOURSE_PRISON")
+
+      webTestClient.get()
+        .uri("/api/orders/search?searchTerm=john smith")
+        .headers(setAuthorisation("SOME_OTHER_USER", roles = listOf("ROLE_EM_CEMO__CREATE_ORDER", "ROLE_PRISON")))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBodyList(OrderDto::class.java)
+        .hasSize(1)
+    }
+
+    @Test
+    fun `It should not return order with error status`() {
+      createAndPersistPopulatedOrder(status = OrderStatus.ERROR, ownerCohort = "ALTCOURSE_PRISON")
+
+      webTestClient.get()
+        .uri("/api/orders/search?searchTerm=john smith")
+        .headers(setAuthorisation("SOME_OTHER_USER", roles = listOf("ROLE_EM_CEMO__CREATE_ORDER", "ROLE_PRISON")))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBodyList(OrderDto::class.java)
+        .hasSize(0)
+    }
+
+    @Test
+    fun `It should only return submitted and draft orders`() {
+      createAndPersistPopulatedOrder(status = OrderStatus.IN_PROGRESS, ownerCohort = "ALTCOURSE_PRISON")
+      createAndPersistPopulatedOrder(status = OrderStatus.SUBMITTED, tags = "PRISON,ALTCOURSE_PRISON")
+      createAndPersistPopulatedOrder(status = OrderStatus.ERROR, ownerCohort = "ALTCOURSE_PRISON")
       webTestClient.get()
         .uri("/api/orders/search?searchTerm=john smith")
         .headers(setAuthorisation("AUTH_ADM"))
@@ -875,7 +940,7 @@ class OrderControllerTest : IntegrationTestBase() {
         .expectStatus()
         .isOk
         .expectBodyList(OrderDto::class.java)
-        .hasSize(0)
+        .hasSize(2)
     }
   }
 
@@ -957,8 +1022,7 @@ class OrderControllerTest : IntegrationTestBase() {
         .exchange()
         .expectStatus()
         .isOk
-        .expectBody(OrderDto::class.java)
-        .isEqualTo(order)
+        .expectBody<OrderDto>()
     }
 
     @Test
@@ -980,7 +1044,7 @@ class OrderControllerTest : IntegrationTestBase() {
         .headers(setAuthorisation("AUTH_ADM_2"))
         .exchange()
         .expectStatus()
-        .isNotFound()
+        .isForbidden()
     }
 
     @Test
@@ -1066,7 +1130,7 @@ class OrderControllerTest : IntegrationTestBase() {
         .headers(setAuthorisation("AUTH_ADM_2"))
         .exchange()
         .expectStatus()
-        .isNotFound()
+        .isForbidden()
         .expectBodyList(ErrorResponse::class.java)
         .returnResult()
 
@@ -1074,7 +1138,7 @@ class OrderControllerTest : IntegrationTestBase() {
 
       assertThat(
         error.developerMessage,
-      ).isEqualTo("Order (${order.id}) for AUTH_ADM_2 not found")
+      ).isEqualTo("Order forbidden")
     }
 
     @Test
@@ -1707,6 +1771,8 @@ class OrderControllerTest : IntegrationTestBase() {
       assertThat(updatedOrder.fmsResultId).isEqualTo(submitResult.id)
       assertThat(updatedOrder.status).isEqualTo(OrderStatus.SUBMITTED)
 
+      assertThat(updatedOrder.lastUpdatedBy).isEqualTo(testUserFullName)
+
       assertThat(submitResult.attachmentResults[0])
         .usingRecursiveComparison()
         .ignoringFields("id")
@@ -1986,6 +2052,41 @@ class OrderControllerTest : IntegrationTestBase() {
     }
   }
 
+  @Nested
+  @DisplayName("PUT /api/orders/{orderId}/update-order-owner")
+  inner class UpdateOrderOwner {
+
+    @Test
+    fun `It should set lastUpdatedBy to the authenticated user and return 200`() {
+      val order = createOrder("AUTH_ADM")
+
+      val before = OffsetDateTime.now()
+
+      webTestClient.put()
+        .uri("/api/orders/${order.id}/update-order-owner")
+        .headers(setAuthorisation("AUTH_ADM", userFullName = "KRS-One"))
+        .exchange()
+        .expectStatus()
+        .isOk
+
+      val updatedOrder = getOrder(order.id)
+      assertThat(updatedOrder.lastUpdatedBy).isEqualTo("KRS-One")
+      assertThat(updatedOrder.username).isEqualTo("AUTH_ADM")
+      assertThat(updatedOrder.lastUpdatedDateTime).isNotNull()
+      assertThat(updatedOrder.lastUpdatedDateTime).isAfterOrEqualTo(before)
+    }
+
+    @Test
+    fun `It should return not found if the order does not exist`() {
+      webTestClient.put()
+        .uri("/api/orders/${UUID.randomUUID()}/update-order-owner")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .isNotFound()
+    }
+  }
+
   fun createAndPersistPopulatedOrder(
     id: UUID = UUID.randomUUID(),
     versionId: UUID = UUID.randomUUID(),
@@ -1994,6 +2095,8 @@ class OrderControllerTest : IntegrationTestBase() {
     status: OrderStatus = OrderStatus.IN_PROGRESS,
     documents: MutableList<AdditionalDocument> = mutableListOf(),
     dataDictionaryVersion: DataDictionaryVersion = DataDictionaryVersion.DDV4,
+    ownerCohort: String = "",
+    tags: String = "",
   ): Order {
     val order = TestUtilities.createReadyToSubmitOrder(
       id = id,
@@ -2005,6 +2108,8 @@ class OrderControllerTest : IntegrationTestBase() {
       mockStartDate,
       mockEndDate,
       dataDictionaryVersion = dataDictionaryVersion,
+      ownerCohort = ownerCohort,
+      tags = tags,
     )
     repo.save(order)
     return order

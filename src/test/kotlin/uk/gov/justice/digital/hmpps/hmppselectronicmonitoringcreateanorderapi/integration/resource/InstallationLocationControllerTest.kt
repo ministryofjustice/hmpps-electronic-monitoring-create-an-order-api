@@ -2,64 +2,31 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.i
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 import org.springframework.http.MediaType
 import org.springframework.web.reactive.function.BodyInserters
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.UpdateOrderIntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.UriTestCase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.InstallationLocationType
 import java.util.*
 
-class InstallationLocationControllerTest : IntegrationTestBase() {
+class InstallationLocationControllerTest : UpdateOrderIntegrationTestBase() {
+
+  override val testUris: List<UriTestCase> = listOf(
+    UriTestCase(uri = "/api/orders/:orderId/installation-location", createValidBody = {
+      """
+            {
+              "location": "INSTALLATION"
+            }
+      """.trimIndent()
+    }),
+  )
 
   @BeforeEach
   fun setup() {
     repo.deleteAll()
-  }
-
-  @Test
-  fun `Installation location cannot be updated by a different user`() {
-    val order = createOrder()
-    webTestClient.put()
-      .uri("/api/orders/${order.id}/installation-location")
-      .contentType(MediaType.APPLICATION_JSON)
-      .body(
-        BodyInserters.fromValue(
-          """
-            {
-              "location": "INSTALLATION"
-            }
-          """.trimIndent(),
-        ),
-      )
-      .headers(setAuthorisation("AUTH_ADM_2"))
-      .exchange()
-      .expectStatus()
-      .isNotFound
-  }
-
-  @Test
-  fun `Installation location cannot be updated for a submitted order`() {
-    val order = createSubmittedOrder()
-
-    webTestClient.put()
-      .uri("/api/orders/${order.id}/installation-location")
-      .contentType(MediaType.APPLICATION_JSON)
-      .body(
-        BodyInserters.fromValue(
-          """
-            {
-              "location": "INSTALLATION"
-            }
-          """.trimIndent(),
-        ),
-      )
-      .headers(setAuthorisation("AUTH_ADM"))
-      .exchange()
-      .expectStatus()
-      .isNotFound
   }
 
   @ParameterizedTest(name = "it should update Installation location - {0} -> {1}")

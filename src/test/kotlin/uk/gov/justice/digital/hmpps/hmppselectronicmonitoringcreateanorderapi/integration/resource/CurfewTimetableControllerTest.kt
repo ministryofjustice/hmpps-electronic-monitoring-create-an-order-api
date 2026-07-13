@@ -9,16 +9,16 @@ import org.springframework.http.MediaType
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.web.reactive.function.BodyInserters
 import tools.jackson.databind.ObjectMapper
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.UpdateOrderIntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.UriTestCase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateCurfewTimetableDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ListItemValidationError
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidationError
-import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 import java.time.DayOfWeek
 import java.util.UUID
 
-class CurfewTimetableControllerTest : IntegrationTestBase() {
+class CurfewTimetableControllerTest : UpdateOrderIntegrationTestBase() {
   @MockitoSpyBean
   lateinit var orderRepo: OrderRepository
 
@@ -31,58 +31,17 @@ class CurfewTimetableControllerTest : IntegrationTestBase() {
     const val ADDRESS_REQUIRED: String = "Select where the device wearer will be during curfew hours"
   }
 
+  override val testUris: List<UriTestCase> = listOf(
+    UriTestCase(uri = "/api/orders/:orderId/monitoring-conditions-curfew-timetable", createValidBody = {
+      mockTimetableRequestBody(UUID.randomUUID())
+    }),
+
+  )
+
   @BeforeEach
   fun setup() {
     Mockito.reset(orderRepo)
     orderRepo.deleteAll()
-  }
-
-  @Test
-  fun `Curfew timetable for an order created by a different user are not update-able`() {
-    val order = createOrder()
-
-    val result = webTestClient.put()
-      .uri("/api/orders/${order.id}/monitoring-conditions-curfew-timetable")
-      .contentType(MediaType.APPLICATION_JSON)
-      .body(
-        BodyInserters.fromValue(
-          mockTimetableRequestBody(order.id),
-        ),
-      )
-      .headers(setAuthorisation("AUTH_ADM_2"))
-      .exchange()
-      .expectStatus()
-      .isNotFound
-      .expectBodyList(ErrorResponse::class.java)
-      .returnResult()
-    val error = result.responseBody!!.first()
-    Assertions.assertThat(
-      error.developerMessage,
-    ).isEqualTo("An editable order with ${order.id} does not exist")
-  }
-
-  @Test
-  fun `Curfew timetable for an order already submitted are not update-able`() {
-    val order = createSubmittedOrder()
-
-    val result = webTestClient.put()
-      .uri("/api/orders/${order.id}/monitoring-conditions-curfew-timetable")
-      .contentType(MediaType.APPLICATION_JSON)
-      .body(
-        BodyInserters.fromValue(
-          mockTimetableRequestBody(order.id),
-        ),
-      )
-      .headers(setAuthorisation())
-      .exchange()
-      .expectStatus()
-      .isNotFound
-      .expectBodyList(ErrorResponse::class.java)
-      .returnResult()
-    val error = result.responseBody!!.first()
-    Assertions.assertThat(
-      error.developerMessage,
-    ).isEqualTo("An editable order with ${order.id} does not exist")
   }
 
   @Test

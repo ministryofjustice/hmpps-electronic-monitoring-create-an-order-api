@@ -15,4 +15,6 @@ data class VersionInformationDTO(
   val status: OrderStatus,
   val notifyingOrganisation: String?,
   val notifyingOrganisationName: String?,
+  val lastUpdatedDateTime: OffsetDateTime?,
+  val lastUpdatedBy: String?,
 )

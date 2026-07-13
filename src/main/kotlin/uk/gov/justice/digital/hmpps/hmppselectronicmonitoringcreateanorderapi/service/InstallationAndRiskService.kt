@@ -24,6 +24,6 @@ class InstallationAndRiskService : OrderSectionServiceBase() {
       mappaCaseType = updateRecord.mappaCaseType,
     )
 
-    return orderRepo.save(order).installationAndRisk!!
+    return updateLastUpdatedByAndSaveOrder(order).installationAndRisk!!
   }
 }

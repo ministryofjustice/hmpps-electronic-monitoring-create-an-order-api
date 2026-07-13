@@ -21,9 +21,7 @@ import java.util.*
 
 @ActiveProfiles("test")
 @JsonTest
-class InstallationAppointmentServiceTest {
-
-  lateinit var repo: OrderRepository
+class InstallationAppointmentServiceTest : OrderSectionServiceTestBase() {
 
   lateinit var service: InstallationAppointmentService
 

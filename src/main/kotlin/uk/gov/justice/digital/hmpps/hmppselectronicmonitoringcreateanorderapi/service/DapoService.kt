@@ -16,7 +16,7 @@ class DapoService : OrderSectionServiceBase() {
     val id = dto.id ?: UUID.randomUUID()
     order.dapoClauses.add(Dapo(id = id, versionId = order.versionId, clause = dto.clause, date = dto.date))
 
-    orderRepo.save(order)
+    updateLastUpdatedByAndSaveOrder(order)
 
     return order.dapoClauses.find { it.id == id }!!
   }
@@ -26,6 +26,6 @@ class DapoService : OrderSectionServiceBase() {
 
     order.dapoClauses.removeIf { it.id == dapoId }
 
-    orderRepo.save(order)
+    updateLastUpdatedByAndSaveOrder(order)
   }
 }

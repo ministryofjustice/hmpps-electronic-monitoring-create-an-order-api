@@ -22,6 +22,6 @@ class CurfewReleaseDateService : OrderSectionServiceBase() {
       startTime = updateRecord.startTime,
     )
 
-    return orderRepo.save(order).curfewReleaseDateConditions!!
+    return updateLastUpdatedByAndSaveOrder(order).curfewReleaseDateConditions!!
   }
 }

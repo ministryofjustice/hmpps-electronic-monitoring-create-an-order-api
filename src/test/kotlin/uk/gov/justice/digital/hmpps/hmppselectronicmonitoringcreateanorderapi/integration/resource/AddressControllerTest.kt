@@ -7,20 +7,37 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
 import org.springframework.http.MediaType
 import org.springframework.web.reactive.function.BodyInserters
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.UpdateOrderIntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.UriTestCase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Address
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DeviceWearerAddressUsage
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidationError
 import java.util.*
 
-class AddressControllerTest : IntegrationTestBase() {
+class AddressControllerTest : UpdateOrderIntegrationTestBase() {
 
   private val mockAddressLine1: String = "mockAddressLine1"
   private val mockAddressLine2: String = "mockAddressLine2"
   private val mockAddressLine3: String = "mockAddressLine3"
   private val mockAddressLine4: String = "mockAddressLine4"
   private val mockPostcode: String = "mockPostcode"
+
+  override val testUris: List<UriTestCase> = listOf(
+    UriTestCase(uri = "/api/orders/:orderId/address", createValidBody = {
+      """
+            {
+              "addressType": "PRIMARY",
+              "addressLine1": "$mockAddressLine1",
+              "addressLine2": "$mockAddressLine2",
+              "addressLine3": "$mockAddressLine3",
+              "addressLine4": "$mockAddressLine4",
+              "postcode": "$mockPostcode"
+            }
+      """.trimIndent()
+    }),
+
+  )
 
   private object ErrorMessages {
     const val ADDRESS_1_REQUIRED: String = "Enter address line 1, typically the building and street"
@@ -31,85 +48,6 @@ class AddressControllerTest : IntegrationTestBase() {
   @BeforeEach
   fun setup() {
     repo.deleteAll()
-  }
-
-  @Test
-  fun `Address details for an order created by a different user are not update-able`() {
-    val order = createOrder()
-
-    webTestClient.put()
-      .uri("/api/orders/${order.id}/address")
-      .contentType(MediaType.APPLICATION_JSON)
-      .body(
-        BodyInserters.fromValue(
-          """
-            {
-              "addressType": "PRIMARY",
-              "addressLine1": "$mockAddressLine1",
-              "addressLine2": "$mockAddressLine2",
-              "addressLine3": "$mockAddressLine3",
-              "addressLine4": "$mockAddressLine4",
-              "postcode": "$mockPostcode"
-            }
-          """.trimIndent(),
-        ),
-      )
-      .headers(setAuthorisation("AUTH_ADM_2"))
-      .exchange()
-      .expectStatus()
-      .isNotFound
-  }
-
-  @Test
-  fun `Address details for a non-existent order are not update-able`() {
-    webTestClient.put()
-      .uri("/api/orders/${UUID.randomUUID()}/address")
-      .contentType(MediaType.APPLICATION_JSON)
-      .body(
-        BodyInserters.fromValue(
-          """
-            {
-              "addressType": "PRIMARY",
-              "addressLine1": "$mockAddressLine1",
-              "addressLine2": "$mockAddressLine2",
-              "addressLine3": "$mockAddressLine3",
-              "addressLine4": "$mockAddressLine4",
-              "postcode": "$mockPostcode"
-            }
-          """.trimIndent(),
-        ),
-      )
-      .headers(setAuthorisation("AUTH_ADM"))
-      .exchange()
-      .expectStatus()
-      .isNotFound
-  }
-
-  @Test
-  fun `Address details for a submitted order are not update-able`() {
-    val order = createSubmittedOrder()
-
-    webTestClient.put()
-      .uri("/api/orders/${order.id}/address")
-      .contentType(MediaType.APPLICATION_JSON)
-      .body(
-        BodyInserters.fromValue(
-          """
-            {
-              "addressType": "PRIMARY",
-              "addressLine1": "$mockAddressLine1",
-              "addressLine2": "$mockAddressLine2",
-              "addressLine3": "$mockAddressLine3",
-              "addressLine4": "$mockAddressLine4",
-              "postcode": "$mockPostcode"
-            }
-          """.trimIndent(),
-        ),
-      )
-      .headers(setAuthorisation("AUTH_ADM"))
-      .exchange()
-      .expectStatus()
-      .isNotFound
   }
 
   @ParameterizedTest(name = "Address details can be updated for {0} address type")

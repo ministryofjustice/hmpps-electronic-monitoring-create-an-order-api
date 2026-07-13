@@ -4,7 +4,11 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.UserCohort
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Prison
 
-data class OrderSearchCriteria(val searchTerm: String = "", val tagFilter: TagFilter = TagFilter())
+data class OrderSearchCriteria(
+  val searchTerm: String = "",
+  val tagFilter: TagFilter = TagFilter(),
+  val ownerCohort: String? = null,
+)
 
 data class TagFilter(val tagGroups: List<List<String>> = emptyList(), val exclude: List<String> = emptyList()) {
   fun allOf(vararg tags: String): TagFilter = copy(tagGroups = tagGroups + listOf(tags.toList()))

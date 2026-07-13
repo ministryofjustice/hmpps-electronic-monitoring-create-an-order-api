@@ -7,12 +7,14 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
+import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus.BAD_REQUEST
 import org.springframework.http.MediaType
 import org.springframework.test.web.reactive.server.expectBody
 import org.springframework.test.web.reactive.server.expectBodyList
 import org.springframework.web.reactive.function.BodyInserters
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.UpdateOrderIntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.UriTestCase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.VariationDetails
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
@@ -22,7 +24,18 @@ import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 import java.time.ZonedDateTime
 import java.util.*
 
-class VariationControllerTest : IntegrationTestBase() {
+class VariationControllerTest : UpdateOrderIntegrationTestBase() {
+  override val testUris: List<UriTestCase> = listOf(
+    UriTestCase(uri = "/api/orders/:orderId/variation", createValidBody = {
+      """
+           {
+                "variationType": "CHANGE_TO_ADDRESS",
+                "variationDate": "2024-01-01T00:00:00.000Z",
+                "variationDetails": "Change to address"
+              }
+      """.trimIndent()
+    }, httpMethod = HttpMethod.PUT),
+  )
 
   @BeforeEach
   fun setup() {
@@ -30,78 +43,8 @@ class VariationControllerTest : IntegrationTestBase() {
   }
 
   @Nested
-  @DisplayName("POST /api/orders/{orderId}/variation")
+  @DisplayName("PUT /api/orders/{orderId}/variation")
   inner class PostVariation {
-
-    @Test
-    fun `it should not be possible to update the variation details if the variation is owned by another user`() {
-      val variation = createVariation()
-
-      webTestClient.put()
-        .uri("/api/orders/${variation.id}/variation")
-        .contentType(MediaType.APPLICATION_JSON)
-        .body(
-          BodyInserters.fromValue(
-            """
-              {
-                "variationType": "CHANGE_TO_ADDRESS",
-                "variationDate": "2024-01-01T00:00:00.000Z",
-                "variationDetails": "Change to address"
-              }
-            """.trimIndent(),
-          ),
-        )
-        .headers(setAuthorisation("AUTH_ADM_2"))
-        .exchange()
-        .expectStatus()
-        .isNotFound
-    }
-
-    @Test
-    fun `it should not be possible to update the variation details if the variation does not exist`() {
-      webTestClient.put()
-        .uri("/api/orders/${UUID.randomUUID()}/variation")
-        .contentType(MediaType.APPLICATION_JSON)
-        .body(
-          BodyInserters.fromValue(
-            """
-              {
-                "variationType": "CHANGE_TO_ADDRESS",
-                "variationDate": "2024-01-01T00:00:00.000Z",
-                "variationDetails": "Change to address"
-              }
-            """.trimIndent(),
-          ),
-        )
-        .headers(setAuthorisation("AUTH_ADM"))
-        .exchange()
-        .expectStatus()
-        .isNotFound
-    }
-
-    @Test
-    fun `it should not be possible to update the variation details if the variation has been submitted`() {
-      val variation = createSubmittedVariation()
-
-      webTestClient.put()
-        .uri("/api/orders/${variation.id}/variation")
-        .contentType(MediaType.APPLICATION_JSON)
-        .body(
-          BodyInserters.fromValue(
-            """
-              {
-                "variationType": "CHANGE_TO_ADDRESS",
-                "variationDate": "2024-01-01T00:00:00.000Z",
-                "variationDetails": "Change to address"                
-              }
-            """.trimIndent(),
-          ),
-        )
-        .headers(setAuthorisation("AUTH_ADM"))
-        .exchange()
-        .expectStatus()
-        .isNotFound
-    }
 
     @Test
     fun `it should not be possible to update the variation details with an invalid variationType`() {

@@ -4,14 +4,16 @@ import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.springframework.http.HttpMethod
 import org.springframework.http.MediaType
 import org.springframework.web.reactive.function.BodyInserters
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.UpdateOrderIntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.UriTestCase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ResponsibleAdult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidationError
 import java.util.*
 
-class ResponsibleAdultControllerTest : IntegrationTestBase() {
+class ResponsibleAdultControllerTest : UpdateOrderIntegrationTestBase() {
 
   private val mockFullName: String = "mockFullName"
   private val mockRelationship: String = "mockRelationship"
@@ -22,80 +24,21 @@ class ResponsibleAdultControllerTest : IntegrationTestBase() {
     const val RELATIONSHIP_REQUIRED: String = "Enter details of their relationship"
     const val RELATIONSHIP_DETAILS_REQUIRED: String = "Select their relationship to the device wearer"
   }
+  override val testUris: List<UriTestCase> = listOf(
+    UriTestCase(uri = "/api/orders/:orderId/device-wearer-responsible-adult", createValidBody = {
+      """
+            {
+              "fullName": "$mockFullName",
+              "relationship": "$mockRelationship",
+              "contactNumber": "$mockContactNumber"
+            }
+      """.trimIndent()
+    }, httpMethod = HttpMethod.PUT),
+  )
 
   @BeforeEach
   fun setup() {
     repo.deleteAll()
-  }
-
-  @Test
-  fun `ResponsibleAdult details for an order created by a different user are not update-able`() {
-    val order = createOrder()
-
-    webTestClient.put()
-      .uri("/api/orders/${order.id}/device-wearer-responsible-adult")
-      .contentType(MediaType.APPLICATION_JSON)
-      .body(
-        BodyInserters.fromValue(
-          """
-            {
-              "fullName": "$mockFullName",
-              "relationship": "$mockRelationship",
-              "contactNumber": "$mockContactNumber"
-            }
-          """.trimIndent(),
-        ),
-      )
-      .headers(setAuthorisation("AUTH_ADM_2"))
-      .exchange()
-      .expectStatus()
-      .isNotFound
-  }
-
-  @Test
-  fun `ResponsibleAdult details for an non-existent order are not update-able`() {
-    webTestClient.put()
-      .uri("/api/orders/${UUID.randomUUID()}/ResponsibleAdult")
-      .contentType(MediaType.APPLICATION_JSON)
-      .body(
-        BodyInserters.fromValue(
-          """
-            {
-              "fullName": "$mockFullName",
-              "relationship": "$mockRelationship",
-              "contactNumber": "$mockContactNumber"
-            }
-          """.trimIndent(),
-        ),
-      )
-      .headers(setAuthorisation("AUTH_ADM"))
-      .exchange()
-      .expectStatus()
-      .isNotFound
-  }
-
-  @Test
-  fun `ResponsibleAdult details for a submitted order are not update-able`() {
-    val order = createSubmittedOrder()
-
-    webTestClient.put()
-      .uri("/api/orders/${order.id}/device-wearer-responsible-adult")
-      .contentType(MediaType.APPLICATION_JSON)
-      .body(
-        BodyInserters.fromValue(
-          """
-            {
-              "fullName": "$mockFullName",
-              "relationship": "$mockRelationship",
-              "contactNumber": "$mockContactNumber"
-            }
-          """.trimIndent(),
-        ),
-      )
-      .headers(setAuthorisation("AUTH_ADM"))
-      .exchange()
-      .expectStatus()
-      .isNotFound
   }
 
   @Test
