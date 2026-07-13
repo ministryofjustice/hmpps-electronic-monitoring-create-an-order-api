@@ -145,7 +145,7 @@ class AdditionalDocumentServiceTest : OrderSectionServiceTestBase() {
     fun `it should return the object blob for submitted order`() {
       // Mock an order with a single document
       whenever(
-        orderRepo.findById(mockOrderId),
+        repo.findById(mockOrderId),
       ).thenReturn(
         Optional.of(
           Order(
