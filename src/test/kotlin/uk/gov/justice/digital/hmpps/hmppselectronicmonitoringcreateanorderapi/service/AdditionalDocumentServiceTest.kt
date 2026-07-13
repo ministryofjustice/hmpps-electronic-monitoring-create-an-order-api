@@ -15,6 +15,7 @@ import org.junit.jupiter.params.provider.MethodSource
 import org.mockito.Mockito
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
+import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
@@ -32,11 +33,14 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderParameters
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.Cohort
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.UserCohort
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateFileRequiredDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateHavePhotoDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DocumentType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Prison
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 import java.io.ByteArrayInputStream
@@ -48,7 +52,7 @@ import kotlin.collections.plus
 class AdditionalDocumentServiceTest : OrderSectionServiceTestBase() {
   private lateinit var service: AdditionalDocumentService
   private lateinit var client: DocumentApiClient
-
+  private lateinit var userCohortService: UserCohortService
   val username: String = "username"
   val mockOrderId = UUID.randomUUID()
   val mockVersionId = UUID.randomUUID()
@@ -65,6 +69,8 @@ class AdditionalDocumentServiceTest : OrderSectionServiceTestBase() {
     client = mock(DocumentApiClient::class.java)
     service = AdditionalDocumentService(client)
     service.orderRepo = repo
+    userCohortService = mock()
+    service.userCohortService = userCohortService
   }
 
   @Nested
@@ -161,6 +167,50 @@ class AdditionalDocumentServiceTest : OrderSectionServiceTestBase() {
                   doc,
                 ),
                 dataDictionaryVersion = mockDictionaryVersion,
+              ),
+            ),
+          ),
+        ),
+      )
+
+      // Mock the document api response
+      `when`(client.getDocument(mockOrderId.toString())).thenReturn(
+        ResponseEntity.ok().body(
+          Flux.just(InputStreamResource(ByteArrayInputStream("".toByteArray()))),
+        ),
+      )
+
+      // Get the document
+      val result = service.getDocument(mockOrderId, username, docType)
+
+      // Verify the document api was called
+      verify(client, times(1)).getDocument(doc.documentId.toString())
+    }
+
+    @Test
+    fun `it should return the object blob for draft order in the same cohort`() {
+      whenever(
+        userCohortService.getUserCohort(any()),
+      ).thenReturn(UserCohort(Cohort.PRISON, activeCaseLoadId = Prison.BEDFORD_PRISON.ids.first()))
+      // Mock an order with a single document
+      whenever(
+        repo.findById(mockOrderId),
+      ).thenReturn(
+        Optional.of(
+          Order(
+            id = mockOrderId,
+            versions = mutableListOf(
+              OrderVersion(
+                id = mockVersionId,
+                status = OrderStatus.IN_PROGRESS,
+                type = RequestType.REQUEST,
+                username = username + "Not",
+                orderId = mockOrderId,
+                additionalDocuments = mutableListOf(
+                  doc,
+                ),
+                dataDictionaryVersion = mockDictionaryVersion,
+                ownerCohort = Prison.BEDFORD_PRISON.name,
               ),
             ),
           ),
