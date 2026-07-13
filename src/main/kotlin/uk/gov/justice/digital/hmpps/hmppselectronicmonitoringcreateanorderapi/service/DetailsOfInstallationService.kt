@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.s
 
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DetailsOfInstallation
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateDetailsOfInstallationDto
 import java.util.UUID
 
 @Service
@@ -21,6 +22,6 @@ class DetailsOfInstallationService : OrderSectionServiceBase() {
         genderRiskDetails = dto.genderRiskDetails,
       )
 
-    return orderRepo.save(order).detailsOfInstallation!!
+    return updateLastUpdatedByAndSaveOrder(order).detailsOfInstallation!!
   }
 }

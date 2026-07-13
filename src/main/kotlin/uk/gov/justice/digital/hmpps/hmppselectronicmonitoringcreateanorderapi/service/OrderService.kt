@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.s
 
 import jakarta.persistence.EntityNotFoundException
 import org.springframework.boot.context.properties.EnableConfigurationProperties
+import org.springframework.security.access.AccessDeniedException
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.config.FeatureFlags
@@ -12,7 +13,8 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.MonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.OrderListCriteria
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.Cohort
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.UserCohort
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.OrderSearchCriteria
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.TagFilter
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.CreateOrderDto
@@ -20,10 +22,11 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.VersionInformationDTO
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisationDDv5
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderListView
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Prison
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.specification.OrderSearchSpecification
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.projections.OrderVersionListInformation
 import java.time.ZonedDateTime
 import java.util.*
@@ -32,12 +35,7 @@ import java.util.*
 @EnableConfigurationProperties(
   FeatureFlags::class,
 )
-class OrderService(
-  val repo: OrderRepository,
-  val fmsService: FmsService,
-  private val featureFlags: FeatureFlags,
-  private val userCohortService: UserCohortService,
-) {
+class OrderService(val fmsService: FmsService, private val featureFlags: FeatureFlags) : OrderSectionServiceBase() {
 
   fun createOrder(username: String, createRecord: CreateOrderDto): Order {
     val order = Order()
@@ -60,7 +58,7 @@ class OrderService(
       versionId = order.versions[0].id,
     )
 
-    repo.save(order)
+    updateLastUpdatedByAndSaveOrder(order)
     return order
   }
 
@@ -70,25 +68,41 @@ class OrderService(
     order.deleteCurrentVersion()
 
     if (order.versions.isEmpty()) {
-      repo.delete(order)
+      orderRepo.delete(order)
     } else {
-      repo.save(order)
+      orderRepo.save(order)
     }
   }
 
   fun getOrder(id: UUID, token: JwtAuthenticationToken): Order {
     val username = token.name
 
-    val order = repo.findById(id).orElseThrow {
+    val order = orderRepo.findById(id).orElseThrow {
       EntityNotFoundException("Order with id $id does not exist")
     }
 
+    val userCohort = userCohortService.getUserCohort(token)
+
     if (order.status != OrderStatus.SUBMITTED && order.username != username) {
-      throw EntityNotFoundException("Order ($id) for $username not found")
+      if (userCohort.cohort == Cohort.PRISON) {
+        val userPrisons = Prison.fromId(userCohort.activeCaseLoadId)
+
+        if (order.ownerCohort == null ||
+          userPrisons.all { it.name != order.ownerCohort }
+        ) {
+          // allow admin user to all draft orders
+          if (userCohort.activeCaseLoadId != "CADM_I") {
+            throw ForbiddenException("Order forbidden", errorCode = 40301)
+          }
+        }
+      } else {
+        if (order.ownerCohort != userCohort.cohort.name) {
+          throw ForbiddenException("Order forbidden", errorCode = 40301)
+        }
+      }
     }
 
     if (order.status == OrderStatus.SUBMITTED) {
-      val userCohort = userCohortService.getUserCohort(token)
       val filter = TagFilter.getTagFilterByUserCohort(userCohort)
       if (!filter.matchesTags(order.tags)) {
         throw ForbiddenException("Order forbidden", errorCode = 40301)
@@ -103,7 +117,7 @@ class OrderService(
     notifyingOrganisation: String?,
   ): Boolean {
     val userCohort = userCohortService.getUserCohort(token)
-    return userCohortService.matchesNofifyingOrg(userCohort.cohort, notifyingOrganisation)
+    return userCohortService.matchesNotifyingOrg(userCohort.cohort, notifyingOrganisation)
   }
 
   fun createVersion(orderId: UUID, token: JwtAuthenticationToken, versionType: RequestType): Order {
@@ -240,7 +254,7 @@ class OrderService(
       }
 
     order.versions.add(newOrderVersion)
-    return repo.save(order)
+    return updateLastUpdatedByAndSaveOrder(order)
   }
 
   fun submitOrder(id: UUID, token: JwtAuthenticationToken, fullName: String): Order {
@@ -265,21 +279,21 @@ class OrderService(
         order.fmsResultDate = submitResult.submissionDate
         if (!submitResult.partialSuccess) {
           order.status = OrderStatus.ERROR
-          repo.save(order)
+          updateLastUpdatedByAndSaveOrder(order)
           throw Exception(submitResult.error)
         } else if (!submitResult.attachmentSuccess) {
           order.status = OrderStatus.ERROR
-          repo.save(order)
+          updateLastUpdatedByAndSaveOrder(order)
           throw SubmitOrderException("Error submit attachments to Serco")
         } else {
           order.status = OrderStatus.SUBMITTED
           order.getCurrentVersion().submittedBy = fullName
           order.tags = getTags(order)
-          repo.save(order)
+          updateLastUpdatedByAndSaveOrder(order)
         }
       } catch (e: Exception) {
         order.status = OrderStatus.ERROR
-        repo.save(order)
+        updateLastUpdatedByAndSaveOrder(order)
         if (e is SubmitOrderException) {
           throw e
         }
@@ -315,29 +329,59 @@ class OrderService(
     }
   }
 
-  fun listOrders(searchCriteria: OrderListCriteria): List<OrderInformationDto> {
-    val orderListInformation = repo.findOrderInformation(
-      searchCriteria.username,
-    )
-    return orderListInformation.map {
-      it.toListInformationDto()
+  fun listOrders(
+    authentication: JwtAuthenticationToken,
+    view: OrderListView = OrderListView.MY_ORDERS,
+  ): List<OrderInformationDto> {
+    val username = authentication.name
+    val results = when (view) {
+      OrderListView.MY_ORDERS -> orderRepo.findMyOrders(username)
+      OrderListView.FAILED_ORDERS -> orderRepo.findFailedOrders(username)
+      OrderListView.PRISON_ORDERS -> {
+        val userCohort = userCohortService.getUserCohort(authentication)
+        if (userCohort.cohort != Cohort.PRISON || userCohort.activeCaseLoadId == "CADM_I") {
+          throw AccessDeniedException("Prison view is only available to prison users")
+        }
+        val caseLoadId = userCohort.activeCaseLoadId
+          ?: throw AccessDeniedException("Prison user has no active caseload")
+        val prisonNames = Prison.fromId(caseLoadId).map { it.name }
+        if (prisonNames.isEmpty()) {
+          emptyList()
+        } else {
+          orderRepo.findPrisonOrders(prisonNames)
+        }
+      }
     }
+
+    return results.map { it.toListInformationDto() }
   }
 
   fun searchOrders(searchTerm: String, authentication: JwtAuthenticationToken): List<Order> {
     val userCohort = userCohortService.getUserCohort(authentication)
 
     val filter = TagFilter.getTagFilterByUserCohort(userCohort)
+    val ownerCohort = getOwnerCohort(userCohort)
+    val searchCriteria = OrderSearchCriteria(searchTerm, filter, ownerCohort)
 
-    val searchCriteria = OrderSearchCriteria(searchTerm, filter)
-
-    return repo.findAll(
+    return orderRepo.findAll(
       OrderSearchSpecification(searchCriteria),
     )
   }
 
+  fun updateOrderOwner(orderId: UUID, token: JwtAuthenticationToken, newOwner: String): Order {
+    val order = getOrder(orderId, token)
+    order.username = newOwner
+    updateLastUpdatedByAndSaveOrder(order)
+    return order
+  }
+
+  private fun getOwnerCohort(cohort: UserCohort): String? = when (cohort.cohort) {
+    Cohort.PRISON -> Prison.fromId(cohort.activeCaseLoadId).firstOrNull()?.name
+    else -> cohort.cohort.name
+  }
+
   fun getVersionInformation(orderId: UUID): List<VersionInformationDTO> {
-    val order = repo.findById(orderId).orElseThrow {
+    val order = orderRepo.findById(orderId).orElseThrow {
       EntityNotFoundException("Order with id $orderId does not exist")
     }
 
@@ -354,6 +398,8 @@ class OrderService(
     firstName = this.getFirstName(),
     lastName = this.getLastName(),
     notifyingOrganisation = this.getNotifyingOrganisation(),
+    lastUpdatedBy = this.getLastUpdatedBy(),
+    lastUpdatedDateTime = this.getLastUpdatedDateTime(),
   )
 
   private fun OrderVersion.toDTO() = VersionInformationDTO(
@@ -366,10 +412,12 @@ class OrderService(
     status = this.status,
     notifyingOrganisation = this.interestedParties?.notifyingOrganisation,
     notifyingOrganisationName = this.interestedParties?.notifyingOrganisationName,
+    lastUpdatedDateTime = this.lastUpdatedDateTime,
+    lastUpdatedBy = this.lastUpdatedBy,
   )
 
   fun getSpecificVersion(orderId: UUID, versionId: UUID): Order {
-    val order = repo.findById(orderId).orElseThrow {
+    val order = orderRepo.findById(orderId).orElseThrow {
       EntityNotFoundException("Order with id $orderId does not exist")
     }
     val specificVersion = order.getSpecificVersion(versionId)

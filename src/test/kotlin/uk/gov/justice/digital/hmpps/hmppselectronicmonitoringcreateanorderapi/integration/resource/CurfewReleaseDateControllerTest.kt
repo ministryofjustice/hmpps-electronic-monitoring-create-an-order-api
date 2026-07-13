@@ -7,16 +7,16 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.web.reactive.function.BodyInserters
 import tools.jackson.databind.ObjectMapper
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.UpdateOrderIntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.UriTestCase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewReleaseDateConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateCurfewReleaseDateConditionsDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidationError
-import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 
-class CurfewReleaseDateControllerTest : IntegrationTestBase() {
+class CurfewReleaseDateControllerTest : UpdateOrderIntegrationTestBase() {
   @Autowired
   lateinit var objectMapper: ObjectMapper
 
@@ -27,58 +27,16 @@ class CurfewReleaseDateControllerTest : IntegrationTestBase() {
     const val START_TIME_REQUIRED: String = "Enter time curfew starts on day of release"
     const val END_TIME_REQUIRED: String = "Enter time curfew ends on day after release"
   }
+  override val testUris: List<UriTestCase> = listOf(
+    UriTestCase(uri = "/api/orders/:orderId/monitoring-conditions-curfew-release-date", createValidBody = {
+      mockValidRequestBody()
+    }),
+
+  )
 
   @BeforeEach
   fun setup() {
     repo.deleteAll()
-  }
-
-  @Test
-  fun `Curfew release date for an order created by a different user are not update-able`() {
-    val order = createOrder()
-
-    val result = webTestClient.put()
-      .uri("/api/orders/${order.id}/monitoring-conditions-curfew-release-date")
-      .contentType(MediaType.APPLICATION_JSON)
-      .body(
-        BodyInserters.fromValue(
-          mockValidRequestBody(),
-        ),
-      )
-      .headers(setAuthorisation("AUTH_ADM_2"))
-      .exchange()
-      .expectStatus()
-      .isNotFound
-      .expectBodyList(ErrorResponse::class.java)
-      .returnResult()
-    val error = result.responseBody!!.first()
-    Assertions.assertThat(
-      error.developerMessage,
-    ).isEqualTo("An editable order with ${order.id} does not exist")
-  }
-
-  @Test
-  fun `Curfew release date for an order already submitted are not update-able`() {
-    val order = createSubmittedOrder()
-
-    val result = webTestClient.put()
-      .uri("/api/orders/${order.id}/monitoring-conditions-curfew-release-date")
-      .contentType(MediaType.APPLICATION_JSON)
-      .body(
-        BodyInserters.fromValue(
-          mockValidRequestBody(),
-        ),
-      )
-      .headers(setAuthorisation())
-      .exchange()
-      .expectStatus()
-      .isNotFound
-      .expectBodyList(ErrorResponse::class.java)
-      .returnResult()
-    val error = result.responseBody!!.first()
-    Assertions.assertThat(
-      error.developerMessage,
-    ).isEqualTo("An editable order with ${order.id} does not exist")
   }
 
   @Test

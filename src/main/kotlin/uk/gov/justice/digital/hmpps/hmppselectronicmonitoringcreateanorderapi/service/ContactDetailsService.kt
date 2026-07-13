@@ -21,6 +21,6 @@ class ContactDetailsService : OrderSectionServiceBase() {
       phoneNumberAvailable = updateContactDetailsRecord.phoneNumberAvailable,
     )
 
-    return orderRepo.save(order).contactDetails!!
+    return updateLastUpdatedByAndSaveOrder(order).contactDetails!!
   }
 }

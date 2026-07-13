@@ -20,6 +20,6 @@ class InstallationAppointmentService : OrderSectionServiceBase() {
       appointmentDate = updateRecord.appointmentDate,
       appointmentTimeDetails = updateRecord.appointmentTimeDetails,
     )
-    return orderRepo.save(order).installationAppointment!!
+    return updateLastUpdatedByAndSaveOrder(order).installationAppointment!!
   }
 }
