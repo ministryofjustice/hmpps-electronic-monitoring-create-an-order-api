@@ -3,8 +3,12 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.m
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtensionContext
 import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.Arguments
+import org.junit.jupiter.params.provider.ArgumentsProvider
 import org.junit.jupiter.params.provider.ArgumentsSource
+import org.junit.jupiter.params.support.ParameterDeclarations
 import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.config.FeatureFlags
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.OrderTestBase
@@ -50,6 +54,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ResponsibleOrganisation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.SentenceType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YesNoUnknown
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ddv7.ProbationDeliveryUnitsDDv7
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.DapoClause
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.EnforceableCondition
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.MonitoringOrder
@@ -60,6 +65,7 @@ import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.UUID
+import java.util.stream.Stream
 
 @ActiveProfiles("test")
 class MonitoringOrderTest : OrderTestBase() {
@@ -1236,6 +1242,30 @@ class MonitoringOrderTest : OrderTestBase() {
       assertThat(fmsMonitoringOrder.roRegion).isEqualTo(mappedValue)
     }
 
+    @ParameterizedTest(name = "it should map DDv7 pdus - {0} -> {1}")
+    @ArgumentsSource(ProbationDeliveryUnitDDv7ArgumentsProvider::class)
+    fun `It should correctly map DDv7 saved probation delivery unit values`(
+      savedPduName: String,
+      expectedFmsValue: String,
+    ) {
+      val order = createOrder(
+        deviceWearer = createDeviceWearer(firstName = "First", middleName = null, lastName = "Last"),
+        probationDeliveryUnits = createProbationDeliveryUnit(savedPduName),
+        monitoringConditions = createMonitoringConditions(startDate = ZonedDateTime.now().minusDays(10)),
+        dataDictionaryVersion = DataDictionaryVersion.DDV7,
+        type = RequestType.REQUEST,
+      )
+
+      val result = MonitoringOrder.fromOrder(
+        order,
+        null,
+        FeatureFlags(dataDictionaryVersion = DataDictionaryVersion.DDV7, ddV6CourtMappings = true),
+        FmsOrderSource.CEMO,
+      )
+
+      assertThat(result.pduResponsible).isEqualTo(expectedFmsValue)
+    }
+
     @ParameterizedTest(name = "it should map notifying organisation - {0} -> {1}")
     @ArgumentsSource(NotifyingOrganisationArgumentsProvider::class)
     fun `It should correctly map notifying organisation to Serco`(savedValue: String, mappedValue: String) {
@@ -2175,4 +2205,11 @@ class MonitoringOrderTest : OrderTestBase() {
 
     assertThat(fmsMonitoringOrder.noName).isEqualTo(mappedValue)
   }
+}
+
+class ProbationDeliveryUnitDDv7ArgumentsProvider : ArgumentsProvider {
+  override fun provideArguments(
+    parameterDeclarations: ParameterDeclarations,
+    context: ExtensionContext,
+  ): Stream<out Arguments> = ProbationDeliveryUnitsDDv7.entries.stream().map { Arguments.of(it.name, it.value) }
 }

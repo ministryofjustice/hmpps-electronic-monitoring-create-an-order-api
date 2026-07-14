@@ -40,6 +40,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ddv6.PoliceAreasDDv6
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ddv6.ProbationDeliveryUnitsDDv6
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ddv6.YouthCustodyServiceRegionDDv6
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ddv7.ProbationDeliveryUnitsDDv7
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.formatters.PhoneNumberFormatter
 import java.time.DayOfWeek
 import java.time.LocalDateTime
@@ -755,6 +756,10 @@ data class MonitoringOrder(
     }
 
     private fun getProbationDeliveryUnit(order: Order): String {
+      if (order.dataDictionaryVersion == DataDictionaryVersion.DDV7) {
+        return ProbationDeliveryUnitsDDv7.from(order.probationDeliveryUnit?.unit)?.value ?: ""
+      }
+
       if (order.dataDictionaryVersion.isLaterThanOrEqual(DataDictionaryVersion.DDV6)) {
         return ProbationDeliveryUnitsDDv6.from(order.probationDeliveryUnit?.unit)?.value ?: ""
       }

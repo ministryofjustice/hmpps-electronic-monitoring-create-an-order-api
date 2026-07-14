@@ -9,6 +9,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ProbationDeliveryUnits
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ResponsibleOrganisation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ddv6.ProbationDeliveryUnitsDDv6
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ddv7.ProbationDeliveryUnitsDDv7
 import java.util.*
 
 @Service
@@ -32,7 +33,13 @@ class ProbationDeliveryUnitService : OrderSectionServiceBase() {
 
     if (unitInput != null) {
       val isValid =
-        if (order.dataDictionaryVersion.isLaterThanOrEqual(DataDictionaryVersion.DDV6)) {
+        if (order.dataDictionaryVersion == DataDictionaryVersion.DDV7) {
+          val unitEnum = ProbationDeliveryUnitsDDv7.from(unitInput)
+          unitEnum != null &&
+            ProbationDeliveryUnitsDDv7.PROBATION_REGION_DELIVERY_UNIT[responsibleOrganisationRegion]?.contains(
+              unitEnum,
+            ) == true
+        } else if (order.dataDictionaryVersion.isLaterThanOrEqual(DataDictionaryVersion.DDV6)) {
           val unitEnum = ProbationDeliveryUnitsDDv6.from(unitInput)
           unitEnum != null &&
             ProbationDeliveryUnitsDDv6.PROBATION_REGION_DELIVERY_UNIT[responsibleOrganisationRegion]?.contains(
