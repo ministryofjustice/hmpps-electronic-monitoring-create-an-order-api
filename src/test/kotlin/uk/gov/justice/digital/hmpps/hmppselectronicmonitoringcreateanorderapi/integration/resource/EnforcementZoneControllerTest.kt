@@ -16,6 +16,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.in
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.UriTestCase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.HmppsDocumentManagementApiExtension.Companion.documentApi
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.documentmanagement.DocumentUploadResponse
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.EnforcementZoneType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidationError
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 import java.time.LocalDate
@@ -274,6 +275,37 @@ class EnforcementZoneControllerTest : UpdateOrderIntegrationTestBase() {
     }
 
     @Test
+    fun `it should create restriction zone conditions`() {
+      val order = createOrder()
+
+      // Create first enforcement zone
+      webTestClient.put()
+        .uri("/api/orders/${order.id}/enforcementZone")
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(
+          BodyInserters.fromValue(
+            mockRequestBody(
+              zoneId = 0,
+              zoneType = EnforcementZoneType.RESTRICTION
+            ),
+          ),
+        )
+        .headers(setAuthorisation(mockUser))
+        .exchange()
+        .expectStatus()
+        .isOk
+
+
+      // Get updated order
+      val updatedOrder = getOrder(order.id)
+
+      // Verify order state matches expected state
+      Assertions.assertThat(updatedOrder.enforcementZoneConditions).hasSize(1)
+      Assertions.assertThat(updatedOrder.enforcementZoneConditions!![0].zoneType)
+        .isEqualTo(EnforcementZoneType.RESTRICTION)
+    }
+
+    @Test
     fun `it should replace the enforcement zone condition`() {
       val order = createOrder()
 
@@ -518,9 +550,10 @@ class EnforcementZoneControllerTest : UpdateOrderIntegrationTestBase() {
     description: String? = "MockDescription",
     duration: String? = "MockDuration",
     zoneId: Int? = 0,
+    zoneType: EnforcementZoneType? = EnforcementZoneType.EXCLUSION,
   ): String = """
       {
-        "zoneType": "EXCLUSION",
+        "zoneType": "$zoneType",
         "startDate": "$startDate",
         "endDate": "$endDate",
         "name": "$name",
