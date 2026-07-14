@@ -1252,6 +1252,7 @@ class MonitoringOrderTest : OrderTestBase() {
         deviceWearer = createDeviceWearer(firstName = "First", middleName = null, lastName = "Last"),
         probationDeliveryUnits = createProbationDeliveryUnit(savedPduName),
         monitoringConditions = createMonitoringConditions(startDate = ZonedDateTime.now().minusDays(10)),
+        interestedParties = createInterestedParty(responsibleOrganisation = "PROBATION"),
         dataDictionaryVersion = DataDictionaryVersion.DDV7,
         type = RequestType.REQUEST,
       )
