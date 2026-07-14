@@ -311,7 +311,7 @@ data class MonitoringOrder(
 
       val monitoringOrder = MonitoringOrder(
         deviceWearer = getDeviceWearerName(order.deviceWearer!!),
-        orderType = getOrderType(conditions.orderType!!),
+        orderType = getOrderType(order, conditions.orderType!!),
         orderRequestType = order.type.value,
         orderTypeDescription = conditions.orderTypeDescription?.value ?: "",
         orderStart = getBritishDateAndTime(monitoringStartDate),
@@ -837,9 +837,22 @@ data class MonitoringOrder(
       return if (conditions.dapolMissedInError == YesNoUnknown.YES) "true" else ""
     }
 
-    private fun getOrderType(orderType: OrderType): String = when (orderType) {
-      OrderType.CIVIL, OrderType.BAIL -> OrderType.PRE_TRIAL.value
-      else -> orderType.value
+    private fun getOrderType(order: Order, orderType: OrderType): String {
+      val notifyingOrg = order.interestedParties?.notifyingOrganisation
+
+      if (order.dataDictionaryVersion.isLaterThanOrEqual(DataDictionaryVersion.DDV7) &&
+        (
+          notifyingOrg == NotifyingOrganisationDDv5.CIVIL_COUNTY_COURT.name ||
+            notifyingOrg == NotifyingOrganisationDDv5.FAMILY_COURT.name
+          )
+      ) {
+        return OrderType.CIVIL.value
+      }
+
+      return when (orderType) {
+        OrderType.CIVIL, OrderType.BAIL -> OrderType.PRE_TRIAL.value
+        else -> orderType.value
+      }
     }
 
     private fun getDeviceWearerName(deviceWearer: DeviceWearer): String = with(deviceWearer) {
