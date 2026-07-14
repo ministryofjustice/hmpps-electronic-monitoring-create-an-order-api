@@ -286,7 +286,7 @@ class EnforcementZoneControllerTest : UpdateOrderIntegrationTestBase() {
           BodyInserters.fromValue(
             mockRequestBody(
               zoneId = 0,
-              zoneType = EnforcementZoneType.RESTRICTION
+              zoneType = EnforcementZoneType.RESTRICTION,
             ),
           ),
         )
@@ -294,7 +294,6 @@ class EnforcementZoneControllerTest : UpdateOrderIntegrationTestBase() {
         .exchange()
         .expectStatus()
         .isOk
-
 
       // Get updated order
       val updatedOrder = getOrder(order.id)
