@@ -3,4 +3,5 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.m
 enum class EnforcementZoneType {
   EXCLUSION,
   INCLUSION,
+  RESTRICTION,
 }
