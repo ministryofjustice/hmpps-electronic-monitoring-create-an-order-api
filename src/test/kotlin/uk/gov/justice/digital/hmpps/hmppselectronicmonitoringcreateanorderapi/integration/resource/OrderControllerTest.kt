@@ -911,7 +911,7 @@ class OrderControllerTest : IntegrationTestBase() {
         .exchange()
         .expectStatus()
         .isOk
-        .expectBodyList(OrderDto::class.java)
+        .expectBodyList(OrderSearchResultDto::class.java)
         .hasSize(1)
     }
 
@@ -925,7 +925,7 @@ class OrderControllerTest : IntegrationTestBase() {
         .exchange()
         .expectStatus()
         .isOk
-        .expectBodyList(OrderDto::class.java)
+        .expectBodyList(OrderSearchResultDto::class.java)
         .hasSize(0)
     }
 
@@ -940,7 +940,7 @@ class OrderControllerTest : IntegrationTestBase() {
         .exchange()
         .expectStatus()
         .isOk
-        .expectBodyList(OrderDto::class.java)
+        .expectBodyList(OrderSearchResultDto::class.java)
         .hasSize(2)
     }
   }
