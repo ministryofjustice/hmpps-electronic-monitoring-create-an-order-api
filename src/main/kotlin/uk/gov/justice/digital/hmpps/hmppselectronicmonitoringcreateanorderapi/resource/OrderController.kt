@@ -21,6 +21,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.CreateOrderDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderInformationDto
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderSearchResultDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateAmendOrderDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.VersionInformationDTO
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderListView
@@ -128,10 +129,10 @@ class OrderController(@Autowired val orderService: OrderService) {
   fun searchOrders(
     @RequestParam searchTerm: String = "",
     authentication: Authentication,
-  ): ResponseEntity<List<OrderDto>> {
+  ): ResponseEntity<List<OrderSearchResultDto>> {
     val orders = orderService.searchOrders(searchTerm, authentication as JwtAuthenticationToken)
 
-    return ResponseEntity(orders.map { convertToDto(it) }, HttpStatus.OK)
+    return ResponseEntity(orders, HttpStatus.OK)
   }
 
   @GetMapping("/orders/{orderId}/versions")

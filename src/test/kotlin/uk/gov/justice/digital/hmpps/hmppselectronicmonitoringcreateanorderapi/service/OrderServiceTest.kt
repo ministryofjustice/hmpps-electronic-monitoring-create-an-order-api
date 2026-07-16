@@ -40,6 +40,9 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.Cohort
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.UserCohort
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.CreateOrderDto
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderSearchResultDeviceWearerDto
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderSearchResultDto
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderSearchResultMonitoringConditionsDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DocumentType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
@@ -1428,6 +1431,28 @@ class OrderServiceTest {
       val result = service.getFmsMonitoringOrderPayload(mockOrder.id, mockOrder.versions.first().id)
 
       assertThat(result).isEqualTo("mockPayload")
+    }
+
+    @Test
+    fun `Should be able to search for orders`() {
+      val mockResult = OrderSearchResultDto(
+        id = UUID.randomUUID(),
+        status = OrderStatus.IN_PROGRESS,
+        type = RequestType.REQUEST,
+        deviceWearer = OrderSearchResultDeviceWearerDto(firstName = "Bob", lastName = "Smith"),
+        addresses = emptyList(),
+        monitoringConditions = OrderSearchResultMonitoringConditionsDto(),
+      )
+
+      val authentication = mock(JwtAuthenticationToken::class.java)
+      whenever(userCohortService.getUserCohort(authentication)).thenReturn(
+        UserCohort(Cohort.PRISON),
+      )
+      whenever(repo.searchOrders(any())).thenReturn(listOf(mockResult))
+
+      val result = service.searchOrders("Bob Smith", authentication)
+
+      assertThat(result).isEqualTo(listOf(mockResult))
     }
   }
 
