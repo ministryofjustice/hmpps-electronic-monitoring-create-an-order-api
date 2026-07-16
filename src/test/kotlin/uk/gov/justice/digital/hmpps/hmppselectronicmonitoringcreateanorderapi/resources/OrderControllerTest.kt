@@ -16,6 +16,9 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.CreateOrderDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderInformationDto
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderSearchResultDeviceWearerDto
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderSearchResultDto
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderSearchResultMonitoringConditionsDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderListView
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
@@ -204,118 +207,29 @@ class OrderControllerTest {
   fun `Search for orders given a full name`() {
     val orderId = UUID.randomUUID()
     val orderId2 = UUID.randomUUID()
-    val orderVersion = OrderVersion(
-      orderId = orderId,
-      username = "mockUser",
-      status = OrderStatus.SUBMITTED,
-      type = RequestType.REQUEST,
-      dataDictionaryVersion = mockDictionaryVersion,
-    )
-    val orderVersion2 = OrderVersion(
-      orderId = orderId2,
-      username = "mockUser",
-      status = OrderStatus.SUBMITTED,
-      type = RequestType.REQUEST,
-      dataDictionaryVersion = mockDictionaryVersion,
-    )
-    val orders: List<Order> = listOf(
-      Order(
+    val searchResults = listOf(
+      OrderSearchResultDto(
         id = orderId,
-        versions = mutableListOf(
-          orderVersion,
-        ),
+        status = OrderStatus.SUBMITTED,
+        type = RequestType.REQUEST,
+        deviceWearer = OrderSearchResultDeviceWearerDto(firstName = "Bob", lastName = "Smith"),
+        addresses = emptyList(),
+        monitoringConditions = OrderSearchResultMonitoringConditionsDto(),
       ),
-      Order(
+      OrderSearchResultDto(
         id = orderId2,
-        versions = mutableListOf(
-          orderVersion2,
-        ),
+        status = OrderStatus.SUBMITTED,
+        type = RequestType.REQUEST,
+        deviceWearer = OrderSearchResultDeviceWearerDto(firstName = "Bob", lastName = "Smith"),
+        addresses = emptyList(),
+        monitoringConditions = OrderSearchResultMonitoringConditionsDto(),
       ),
     )
 
-    `when`(orderService.searchOrders("Bob Smith", authentication)).thenReturn(orders)
-    `when`(authentication.name).thenReturn("mockUser")
+    `when`(orderService.searchOrders("Bob Smith", authentication)).thenReturn(searchResults)
 
     val result = controller.searchOrders("Bob Smith", authentication)
-    Assertions.assertThat(result.body).isEqualTo(
-      listOf(
-        OrderDto(
-          id = orderId,
-          additionalDocuments = mutableListOf(),
-          addresses = mutableListOf(),
-          contactDetails = null,
-          curfewConditions = null,
-          curfewReleaseDateConditions = null,
-          curfewTimeTable = mutableListOf(),
-          deviceWearer = null,
-          deviceWearerResponsibleAdult = null,
-          enforcementZoneConditions = mutableListOf(),
-          fmsResultId = null,
-          fmsResultDate = null,
-          installationAndRisk = null,
-          dapoClauses = mutableListOf(),
-          offences = mutableListOf(),
-          offenceAdditionalDetails = null,
-          interestedParties = null,
-          isValid = false,
-          mandatoryAttendanceConditions = mutableListOf(),
-          monitoringConditions = null,
-          monitoringConditionsAlcohol = null,
-          monitoringConditionsTrail = null,
-          status = OrderStatus.SUBMITTED,
-          type = RequestType.REQUEST,
-          username = "mockUser",
-          submittedBy = null,
-          variationDetails = null,
-          probationDeliveryUnit = null,
-          installationLocation = null,
-          installationAppointment = null,
-          mappa = null,
-          detailsOfInstallation = null,
-          dataDictionaryVersion = mockDictionaryVersion,
-          orderParameters = null,
-          versionId = orderVersion.id,
-          isOwner = true,
-        ),
-        OrderDto(
-          id = orderId2,
-          additionalDocuments = mutableListOf(),
-          addresses = mutableListOf(),
-          contactDetails = null,
-          curfewConditions = null,
-          curfewReleaseDateConditions = null,
-          curfewTimeTable = mutableListOf(),
-          deviceWearer = null,
-          deviceWearerResponsibleAdult = null,
-          enforcementZoneConditions = mutableListOf(),
-          fmsResultId = null,
-          fmsResultDate = null,
-          installationAndRisk = null,
-          dapoClauses = mutableListOf(),
-          offences = mutableListOf(),
-          offenceAdditionalDetails = null,
-          interestedParties = null,
-          isValid = false,
-          mandatoryAttendanceConditions = mutableListOf(),
-          monitoringConditions = null,
-          monitoringConditionsAlcohol = null,
-          monitoringConditionsTrail = null,
-          status = OrderStatus.SUBMITTED,
-          type = RequestType.REQUEST,
-          username = "mockUser",
-          submittedBy = null,
-          variationDetails = null,
-          probationDeliveryUnit = null,
-          installationLocation = null,
-          installationAppointment = null,
-          mappa = null,
-          detailsOfInstallation = null,
-          dataDictionaryVersion = mockDictionaryVersion,
-          orderParameters = null,
-          versionId = orderVersion2.id,
-          isOwner = true,
-        ),
-      ),
-    )
+
+    Assertions.assertThat(result.body).isEqualTo(searchResults)
   }
 }

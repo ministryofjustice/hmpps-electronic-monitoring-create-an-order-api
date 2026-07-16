@@ -19,6 +19,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.TagFilter
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.CreateOrderDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderInformationDto
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderSearchResultDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.VersionInformationDTO
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisationDDv5
@@ -26,7 +27,6 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Prison
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.specification.OrderSearchSpecification
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.projections.OrderVersionListInformation
 import java.time.ZonedDateTime
 import java.util.*
@@ -356,16 +356,14 @@ class OrderService(val fmsService: FmsService, private val featureFlags: Feature
     return results.map { it.toListInformationDto() }
   }
 
-  fun searchOrders(searchTerm: String, authentication: JwtAuthenticationToken): List<Order> {
+  fun searchOrders(searchTerm: String, authentication: JwtAuthenticationToken): List<OrderSearchResultDto> {
     val userCohort = userCohortService.getUserCohort(authentication)
 
     val filter = TagFilter.getTagFilterByUserCohort(userCohort)
     val ownerCohort = getOwnerCohort(userCohort)
     val searchCriteria = OrderSearchCriteria(searchTerm, filter, ownerCohort)
 
-    return orderRepo.findAll(
-      OrderSearchSpecification(searchCriteria),
-    )
+    return orderRepo.searchOrders(searchCriteria)
   }
 
   fun updateOrderOwner(orderId: UUID, token: JwtAuthenticationToken, newOwner: String): Order {
