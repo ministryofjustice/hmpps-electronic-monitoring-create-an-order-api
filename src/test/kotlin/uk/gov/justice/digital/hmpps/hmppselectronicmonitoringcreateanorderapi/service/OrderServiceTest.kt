@@ -12,7 +12,6 @@ import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
-import org.mockito.ArgumentMatchers
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.never
 import org.mockito.Mockito.reset
@@ -58,7 +57,6 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsMonitoringOrderSubmissionResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsSubmissionResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsSubmissionStrategyKind
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.specification.OrderSearchSpecification
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.projections.OrderVersionListInformation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.utilities.TestUtilities
@@ -675,17 +673,24 @@ class OrderServiceTest {
 
   @Test
   fun `Should be able to search for orders`() {
-    val mockOrder = TestUtilities.createReadyToSubmitOrder(startDate = mockStartDate, endDate = mockEndDate)
+    val mockResult = OrderSearchResultDto(
+      id = UUID.randomUUID(),
+      status = OrderStatus.IN_PROGRESS,
+      type = RequestType.REQUEST,
+      deviceWearer = OrderSearchResultDeviceWearerDto(firstName = "Bob", lastName = "Smith"),
+      addresses = emptyList(),
+      monitoringConditions = OrderSearchResultMonitoringConditionsDto(),
+    )
 
     val authentication = mock(JwtAuthenticationToken::class.java)
     whenever(userCohortService.getUserCohort(authentication)).thenReturn(
       UserCohort(Cohort.PRISON),
     )
-    whenever(repo.findAll(ArgumentMatchers.any(OrderSearchSpecification::class.java))).thenReturn(listOf(mockOrder))
+    whenever(repo.searchOrders(any())).thenReturn(listOf(mockResult))
 
     val result = service.searchOrders("Bob Smith", authentication)
 
-    assertThat(result).isEqualTo(listOf(mockOrder))
+    assertThat(result).isEqualTo(listOf(mockResult))
   }
 
   @Nested
