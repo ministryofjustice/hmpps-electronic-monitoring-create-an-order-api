@@ -589,6 +589,7 @@ class OrderServiceTest {
       override fun getNotifyingOrganisation() = mockOrder.interestedParties?.notifyingOrganisation
       override fun getLastUpdatedBy() = mockOrder.lastUpdatedBy
       override fun getLastUpdatedDateTime() = mockOrder.lastUpdatedDateTime
+      override fun getIsSentencingAct() = mockOrder.isSentencingAct
     }
 
     @Test

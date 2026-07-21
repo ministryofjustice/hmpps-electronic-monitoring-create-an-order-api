@@ -106,4 +106,5 @@ data class OrderDto(
   val lastUpdatedDateTime: OffsetDateTime? = null,
   val ownerCohort: String? = null,
   val isOwner: Boolean = false,
+  val isSentencingAct: Boolean? = null,
 )

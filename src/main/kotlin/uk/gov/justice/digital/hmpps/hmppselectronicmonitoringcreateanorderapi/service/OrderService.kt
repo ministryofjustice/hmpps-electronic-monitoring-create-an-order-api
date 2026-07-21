@@ -398,6 +398,7 @@ class OrderService(val fmsService: FmsService, private val featureFlags: Feature
     notifyingOrganisation = this.getNotifyingOrganisation(),
     lastUpdatedBy = this.getLastUpdatedBy(),
     lastUpdatedDateTime = this.getLastUpdatedDateTime(),
+    isSentencingAct = this.getIsSentencingAct(),
   )
 
   private fun OrderVersion.toDTO() = VersionInformationDTO(
@@ -412,6 +413,7 @@ class OrderService(val fmsService: FmsService, private val featureFlags: Feature
     notifyingOrganisationName = this.interestedParties?.notifyingOrganisationName,
     lastUpdatedDateTime = this.lastUpdatedDateTime,
     lastUpdatedBy = this.lastUpdatedBy,
+    isSentencingAct = this.isSentencingAct,
   )
 
   fun getSpecificVersion(orderId: UUID, versionId: UUID): Order {
@@ -438,5 +440,11 @@ class OrderService(val fmsService: FmsService, private val featureFlags: Feature
       throw BadRequestException("This order is not submitted")
     }
     return fmsService.getFmsMonitoringOrderSubmissionResultByOrderId(version.fmsResultId!!)
+  }
+
+  fun updateIsSentencingAct(orderId: UUID, isSentencingAct: Boolean, authentication: JwtAuthenticationToken) {
+    val order = getOrder(orderId, authentication)
+    order.isSentencingAct = isSentencingAct
+    updateLastUpdatedByAndSaveOrder(order)
   }
 }

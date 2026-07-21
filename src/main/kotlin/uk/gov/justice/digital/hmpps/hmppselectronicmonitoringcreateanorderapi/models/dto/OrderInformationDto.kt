@@ -15,4 +15,5 @@ data class OrderInformationDto(
   val notifyingOrganisation: String?,
   val lastUpdatedBy: String? = null,
   val lastUpdatedDateTime: OffsetDateTime? = null,
+  val isSentencingAct: Boolean? = null,
 )
