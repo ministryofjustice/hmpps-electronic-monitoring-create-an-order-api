@@ -143,6 +143,7 @@ class OrderService(val fmsService: FmsService, private val featureFlags: Feature
     )
       .apply {
         variationDetails = null
+        isSentencingAct = currentVersion.isSentencingAct
 
         orderParameters =
           currentVersion.orderParameters?.copy(versionId = this.id, id = UUID.randomUUID())

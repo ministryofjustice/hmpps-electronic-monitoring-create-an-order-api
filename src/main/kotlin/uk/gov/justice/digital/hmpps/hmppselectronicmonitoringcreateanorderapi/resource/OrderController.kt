@@ -178,12 +178,9 @@ class OrderController(@Autowired val orderService: OrderService) {
   @PutMapping("/orders/{orderId}/sentencing-act")
   fun setSentencingAct(
     @PathVariable orderId: UUID,
-    @RequestBody isSentencingAct: UpdateIsSentencingAct,
+    @RequestBody @Valid isSentencingAct: UpdateIsSentencingAct,
     authentication: Authentication,
-  ): ResponseEntity<String> {
-    if (isSentencingAct.isSentencingAct === null) {
-      return ResponseEntity(HttpStatus.NO_CONTENT)
-    }
+  ): ResponseEntity<Void> {
     orderService.updateIsSentencingAct(
       orderId,
       isSentencingAct.isSentencingAct!!,

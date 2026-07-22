@@ -1462,6 +1462,27 @@ class OrderServiceTest {
     }
   }
 
+  @Nested
+  @DisplayName("updateIsSentencingAct")
+  inner class PutIsSentencingAct {
+    @BeforeEach
+    fun setup() {
+      val mockUserCohort = UserCohort(Cohort.PRISON)
+      whenever(userCohortService.getUserCohort(authentication)).thenReturn(mockUserCohort)
+      whenever(userCohortService.matchesNotifyingOrg(mockUserCohort.cohort, "PRISON")).thenReturn(true)
+    }
+
+    @Test
+    fun `updateIsSentencingAct sets the flag on the current version and saves`() {
+      val order = TestUtilities.createReadyToSubmitOrder(isSentencingAct = true, id = UUID.randomUUID())
+      whenever(repo.findById(order.id)).thenReturn(Optional.of(order))
+      whenever(authentication.name).thenReturn(order.username)
+      service.updateIsSentencingAct(order.id, true, authentication)
+      assertThat(order.isSentencingAct).isTrue()
+      verify(repo).save(order)
+    }
+  }
+
   companion object {
     @JvmStatic
     fun tagScenarios() = listOf(

@@ -5,5 +5,5 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.da
 
 data class UpdateIsSentencingAct(
   @field:NotNull(message = ValidationErrors.IsSentencingAct.IS_SENTENCING_ACT_REQUIRED)
-  var isSentencingAct: Boolean? = false,
+  var isSentencingAct: Boolean? = null,
 )
