@@ -20,6 +20,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.TrailMonitoringConditions
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.VariationDetails
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.courthearing.JudicialResultsPrompt
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.courthearing.enums.BailOrderType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.courthearing.enums.CommunityOrderType
@@ -62,7 +63,7 @@ class HearingEventHandler(
     private const val BAIL_ELECTRONIC_MONITORING_FLAG = "86857bb0-aaa6-4a76-b226-812a9987fcb2"
 
     //endregion
-    fun isEnglandAdnWalesEMRequest(offence: Offence): Boolean = !offence.judicialResults.any { judicialResults ->
+    fun isEnglandAndWalesEMRequest(offence: Offence): Boolean = !offence.judicialResults.any { judicialResults ->
       // If it's a Scottish court case
       judicialResults.judicialResultTypeId == COS
     } &&
@@ -115,24 +116,13 @@ class HearingEventHandler(
     return result
   }
 
-  fun getOrdersFromHearing(hearing: Hearing): List<Order> {
-    // Get defendant that has taggable offences
-    val defendantOffences = hearing.prosecutionCases
-      .flatMap { it.defendants }
-      .filter { defendant -> defendant.offences.any { isEnglandAdnWalesEMRequest(it) } }
-      .groupBy { it }
-      .mapValues { (_, defendants) ->
-        defendants.flatMap { it.offences }.filter { isEnglandAdnWalesEMRequest(it) }.toMutableList()
-      }.toMap()
+  fun getOrdersFromHearing(hearing: Hearing): List<Order> = hearing.prosecutionCases.flatMap {
+    it.defendants
+  }.filter { defendant -> defendant.offences.any { isEnglandAndWalesEMRequest(it) } }
+    .map { defendant -> this.getOrderForDefendant(hearing, defendant) }
 
-    // map each defendant to Order
-    return defendantOffences.map { (defendant, offences) ->
-      getOrderForDefendant(hearing, defendant, offences)
-    }
-  }
-
-  private fun getOrderForDefendant(hearing: Hearing, defendant: Defendant, offences: List<Offence>): Order {
-    val judicialResults = offences.flatMap { it.judicialResults }.toList()
+  private fun getOrderForDefendant(hearing: Hearing, defendant: Defendant): Order {
+    val judicialResults = defendant.offences.flatMap { it.judicialResults }.toList()
 
     val prompts = judicialResults.flatMap { it.judicialResultPrompts }.toList()
     val dataDictionaryVersion = featureFlags.dataDictionaryVersion
@@ -141,7 +131,7 @@ class HearingEventHandler(
         OrderVersion(
           username = commentPlatformUsername,
           status = OrderStatus.IN_PROGRESS,
-          type = RequestType.REQUEST,
+          type = getOrderRequestType(judicialResults),
           orderId = UUID.randomUUID(),
           dataDictionaryVersion = dataDictionaryVersion,
         ),
@@ -200,6 +190,14 @@ class HearingEventHandler(
         contactNumber = contact?.mobile ?: contact?.home ?: contact?.work ?: "",
       )
     order.contactDetails = contactDetails
+
+    if (order.type == RequestType.VARIATION) {
+      order.variationDetails =
+        VariationDetails(
+          versionId = order.versionId,
+          variationDate = ZonedDateTime.of(orderedDate, LocalTime.MIDNIGHT, ZoneId.of("Europe/London")),
+        )
+    }
 
     return order
   }
@@ -511,6 +509,17 @@ class HearingEventHandler(
     zone.description = judicialResult.resultText
 
     return zone
+  }
+
+  private fun getOrderRequestType(results: List<JudicialResults>): RequestType {
+    val prompts = results.flatMap { it.judicialResultPrompts }.toList()
+
+    val isVariation = getPromptValue(
+      prompts,
+      "Notification of electronic monitoring order (bail)",
+    )?.contains("Additional notification of electronic monitoring. Date and case reference of original order") ?: false
+
+    return if (isVariation) RequestType.VARIATION else RequestType.REQUEST
   }
 
   private fun getOrderType(results: List<JudicialResults>): OrderType? {
