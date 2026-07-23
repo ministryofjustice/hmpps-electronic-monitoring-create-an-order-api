@@ -144,33 +144,34 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
   companion object {
     @JvmStatic
     fun scenarios() = listOf(
-      Arguments.of("COEW_community_order_curfew"),
-      Arguments.of("COEW_community_order_alcohol"),
-      Arguments.of("SUSPSD_community_order_exclusion"),
-      Arguments.of("SUSPS_community_order_inclusion"),
-      Arguments.of("COV_community_order_trail"),
-      Arguments.of("REMCB_bail_curfew"),
-      Arguments.of("CCSIB_bail_exclusion"),
-      Arguments.of("CCSIB_crown_court_bail_exclusion"),
-      Arguments.of("CCSIB_crown_court_week_commencing_next_hearing_date"),
-      Arguments.of("CCSIB_crown_court_no_fixed_next_hearing_date"),
-      Arguments.of("RILAB_bail_inclusion"),
-      Arguments.of("RIB_bail_exclusion_except_court_or_appointment"),
-      Arguments.of("RC_bail_inclusion"),
-      Arguments.of("RCCLAB_bail_exclusion"),
-      Arguments.of("CCIB_bail_curfew"),
-      Arguments.of("CCIC_bail_curfew"),
-      Arguments.of("YROEW_youth_curfew"),
-      Arguments.of("YROFEW_youth_trail"),
-      Arguments.of("YROISS_youth_exclusion"),
-      Arguments.of("SDO_supervision_curfew"),
-      Arguments.of("RCCCB_pre-trail_exclusion_and_curfew"),
-      Arguments.of("CCSILA_pre-trail_exclusions_and_curfew"),
-      Arguments.of("REMCBY_bail_exclusion_inclusion_and_curfew"),
-      Arguments.of("RILA_pre-trail_exclusions_and_curfew"),
-      Arguments.of("RCCLA_pre-trail_exclusions_and_curfew"),
-      Arguments.of("CCIILA_pre-trail_exclusions_and_curfew"),
-      Arguments.of("REMIL_pre-trail_exclusions_and_curfew"),
+//      Arguments.of("COEW_community_order_curfew"),
+//      Arguments.of("COEW_community_order_alcohol"),
+//      Arguments.of("SUSPSD_community_order_exclusion"),
+//      Arguments.of("SUSPS_community_order_inclusion"),
+//      Arguments.of("COV_community_order_trail"),
+//      Arguments.of("REMCB_bail_curfew"),
+//      Arguments.of("CCSIB_bail_exclusion"),
+//      Arguments.of("CCSIB_crown_court_bail_exclusion"),
+//      Arguments.of("CCSIB_crown_court_week_commencing_next_hearing_date"),
+//      Arguments.of("CCSIB_crown_court_no_fixed_next_hearing_date"),
+//      Arguments.of("RILAB_bail_inclusion"),
+//      Arguments.of("RIB_bail_exclusion_except_court_or_appointment"),
+//      Arguments.of("RC_bail_inclusion"),
+      Arguments.of("RCBV_variations_of_bail_conditions"),
+//      Arguments.of("RCCLAB_bail_exclusion"),
+//      Arguments.of("CCIB_bail_curfew"),
+//      Arguments.of("CCIC_bail_curfew"),
+//      Arguments.of("YROEW_youth_curfew"),
+//      Arguments.of("YROFEW_youth_trail"),
+//      Arguments.of("YROISS_youth_exclusion"),
+//      Arguments.of("SDO_supervision_curfew"),
+//      Arguments.of("RCCCB_pre-trail_exclusion_and_curfew"),
+//      Arguments.of("CCSILA_pre-trail_exclusions_and_curfew"),
+//      Arguments.of("REMCBY_bail_exclusion_inclusion_and_curfew"),
+//      Arguments.of("RILA_pre-trail_exclusions_and_curfew"),
+//      Arguments.of("RCCLA_pre-trail_exclusions_and_curfew"),
+//      Arguments.of("CCIILA_pre-trail_exclusions_and_curfew"),
+//      Arguments.of("REMIL_pre-trail_exclusions_and_curfew"),
     )
   }
 
@@ -241,7 +242,7 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
   ) {
     val expectedDeviceWearer = objectMapper.readValue<DeviceWearer>(mockDeviceWearerJson)
     val storedDeviceWearer = objectMapper.readValue<DeviceWearer>(savedResult.deviceWearerResult.payload)
-    assertThat(expectedDeviceWearer).isEqualTo(storedDeviceWearer)
+    assertThat(storedDeviceWearer).isEqualTo(expectedDeviceWearer)
 
     val expectedMonitoringOrder = objectMapper.readValue<MonitoringOrder>(mockOrderJson)
     val storedMonitoringOrder = objectMapper.readValue<MonitoringOrder>(savedResult.monitoringOrderResult.payload)

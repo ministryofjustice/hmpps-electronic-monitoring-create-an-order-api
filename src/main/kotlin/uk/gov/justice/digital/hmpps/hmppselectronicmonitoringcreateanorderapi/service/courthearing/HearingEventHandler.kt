@@ -99,6 +99,9 @@ class HearingEventHandler(
     // Remanded on conditional bail (RC)
     const val RC = "3a529001-2f43-45ba-a0a8-d3ced7e9e7ad"
 
+    // Variations of Bail Conditions
+    const val RCBV = "90d8268d-cc6a-4a09-bdb3-ddf8ea8ef2f9"
+
     // Remitted from the Crown Court to the Magistrates' Court in local authority accommodation with bail direction (RCCLAB)
     const val RCCLAB = "9fd1849f-f91f-4fa7-adfd-ef24f64654eb"
 
@@ -135,6 +138,7 @@ class HearingEventHandler(
       RILAB,
       RIB,
       RC,
+      RCBV,
       RCCLAB,
       CCIIB,
       CCIC,
