@@ -212,9 +212,4 @@ object ValidationErrors {
   object ContactDetails {
     const val PHONE_NUMBER_REQUIRED: String = "Select Yes if the device wearer has a contact telephone number"
   }
-
-  object IsSentencingAct {
-    const val IS_SENTENCING_ACT_REQUIRED: String =
-      "Select Yes if the device wearer being released on or after 2 September 2026"
-  }
 }

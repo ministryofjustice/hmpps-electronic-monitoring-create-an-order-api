@@ -1474,7 +1474,7 @@ class OrderServiceTest {
 
     @Test
     fun `updateIsSentencingAct sets the flag on the current version and saves`() {
-      val order = TestUtilities.createReadyToSubmitOrder(isSentencingAct = true, id = UUID.randomUUID())
+      val order = TestUtilities.createReadyToSubmitOrder(isSentencingAct = false, id = UUID.randomUUID())
       whenever(repo.findById(order.id)).thenReturn(Optional.of(order))
       whenever(authentication.name).thenReturn(order.username)
       service.updateIsSentencingAct(order.id, true, authentication)
