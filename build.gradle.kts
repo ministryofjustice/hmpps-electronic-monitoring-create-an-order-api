@@ -1,7 +1,7 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "11.0.0-beta2"
-  kotlin("plugin.spring") version "2.4.0"
-  kotlin("plugin.jpa") version "2.4.0"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "11.0.1"
+  kotlin("plugin.spring") version "2.4.10"
+  kotlin("plugin.jpa") version "2.4.10"
 }
 
 configurations {
@@ -14,10 +14,10 @@ repositories {
 
 dependencies {
   implementation("commons-io:commons-io:2.22.0")
-  implementation("com.googlecode.libphonenumber:libphonenumber:9.0.34")
-  implementation("org.apache.tika:tika-core:3.3.1")
-  implementation("org.apache.logging.log4j:log4j-api:2.26.0")
-  implementation("io.sentry:sentry-spring-boot-4:8.44.1")
+  implementation("com.googlecode.libphonenumber:libphonenumber:9.0.35")
+  implementation("org.apache.tika:tika-core:3.3.2")
+  implementation("org.apache.logging.log4j:log4j-api:2.26.1")
+  implementation("io.sentry:sentry-spring-boot-4:8.50.1")
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.3")
 
   // starters
@@ -28,7 +28,7 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
   implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-  implementation("io.awspring.cloud:spring-cloud-aws-starter-s3:4.0.2")
+  implementation("io.awspring.cloud:spring-cloud-aws-starter-s3:4.1.0")
   implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:7.4.0")
   implementation("org.springframework.boot:spring-boot-starter-webclient")
   implementation("org.springframework.boot:spring-boot-starter-flyway")
