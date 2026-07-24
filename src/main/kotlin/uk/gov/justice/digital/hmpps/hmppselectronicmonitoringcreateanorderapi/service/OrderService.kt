@@ -143,6 +143,7 @@ class OrderService(val fmsService: FmsService, private val featureFlags: Feature
     )
       .apply {
         variationDetails = null
+        isSentencingAct = currentVersion.isSentencingAct
 
         orderParameters =
           currentVersion.orderParameters?.copy(versionId = this.id, id = UUID.randomUUID())
@@ -438,5 +439,11 @@ class OrderService(val fmsService: FmsService, private val featureFlags: Feature
       throw BadRequestException("This order is not submitted")
     }
     return fmsService.getFmsMonitoringOrderSubmissionResultByOrderId(version.fmsResultId!!)
+  }
+
+  fun updateIsSentencingAct(orderId: UUID, isSentencingAct: Boolean, authentication: JwtAuthenticationToken) {
+    val order = getOrder(orderId, authentication)
+    order.isSentencingAct = isSentencingAct
+    updateLastUpdatedByAndSaveOrder(order)
   }
 }
