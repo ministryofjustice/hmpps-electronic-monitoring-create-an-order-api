@@ -69,6 +69,7 @@ class TestUtilities {
       offences: MutableList<Offence> = mutableListOf(),
       ownerCohort: String = "",
       tags: String = "",
+      isSentencingAct: Boolean? = false,
     ): Order {
       val order = Order(
         id = id,
@@ -327,7 +328,7 @@ class TestUtilities {
 
       order.installationAppointment = installationAppointment
       order.versions[0].status = status
-
+      order.isSentencingAct = isSentencingAct
       return order
     }
   }

@@ -2088,6 +2088,31 @@ class OrderControllerTest : IntegrationTestBase() {
     }
   }
 
+  @Nested
+  @DisplayName("PUT /api/orders/{orderId}/sentencing-act")
+  inner class UpdateSentencingAct {
+    @Test
+    fun `PUT sentencing-act persists flag`() {
+      val order = createOrder("AUTH_ADM")
+
+      webTestClient.put().uri("/api/orders/${order.id}/sentencing-act")
+        .headers(setAuthorisation("AUTH_ADM"))
+        .bodyValue(mapOf("isSentencingAct" to true))
+        .exchange()
+        .expectStatus().isOk
+    }
+
+    @Test
+    fun `PUT sentencing-act with null flag returns 400`() {
+      val order = createOrder("AUTH_ADM")
+      webTestClient.put().uri("/api/orders/${order.id}/sentencing-act")
+        .headers(setAuthorisation("AUTH_ADM"))
+        .bodyValue(mapOf<String, Boolean?>("isSentencingAct" to null))
+        .exchange()
+        .expectStatus().isBadRequest
+    }
+  }
+
   fun createAndPersistPopulatedOrder(
     id: UUID = UUID.randomUUID(),
     versionId: UUID = UUID.randomUUID(),

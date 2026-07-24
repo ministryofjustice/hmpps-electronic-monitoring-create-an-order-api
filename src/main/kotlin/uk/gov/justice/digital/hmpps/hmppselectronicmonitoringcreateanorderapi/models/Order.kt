@@ -311,6 +311,14 @@ data class Order(
       getCurrentVersion().ownerCohort = ownerCohort
     }
 
+  var isSentencingAct: Boolean?
+    get() {
+      return getCurrentVersion().isSentencingAct
+    }
+    set(isSentencingAct) {
+      getCurrentVersion().isSentencingAct = isSentencingAct
+    }
+
   fun getMonitoringStartDate(): ZonedDateTime? {
     var startDate = monitoringConditions?.startDate
 
