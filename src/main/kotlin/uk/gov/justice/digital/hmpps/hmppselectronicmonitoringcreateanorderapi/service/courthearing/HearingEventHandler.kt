@@ -20,11 +20,14 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.TrailMonitoringConditions
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.VariationDetails
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.courthearing.JudicialResultsPrompt
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.courthearing.enums.BailOrderType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.courthearing.enums.CommunityOrderType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.BailOrRemandToCareCondition
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.CommunityOrder
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.EnforcementZoneType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MonitoringConditionType
@@ -51,114 +54,16 @@ class HearingEventHandler(
 ) {
   private val commentPlatformUsername = "COMMENT_PLATFORM"
   private val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
-  private val dateTimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
 
   companion object {
-
-    //region Comment Platform UUIDs
-
-    // Community order England / Wales(COEW)
-    const val COEW = "418b3aa7-65ab-4a4a-bab9-2f96b698118c"
-
-    // Youth Rehabilitation Order England and Wales (YROEW)
-    const val YROEW = "73a4f6a2-b768-45de-beb7-3f4d2f933e11"
-
-    // Youth rehabilitation order with fostering England / Wales (YROFEW)
-    const val YROFEW = "ae8c21a9-cf2a-487b-8fae-58d50c7104f0"
-
-    // Youth rehabilitation order with intensive supervision and surveillance England / Wales (YROISS)
-    const val YROISS = "0b5ce679-b262-436d-8f94-aa78de85022a"
-
-    // Suspended sentence order - detention in a young offender institution (SUSPSD)
-    const val SUSPSD = "5679e5b7-0ca8-4d2a-ba80-7a50025fb589"
-
-    // Suspended sentence order - imprisonment (SUSPS)
-    const val SUSPS = "8b1cff00-a456-40da-9ce4-f11c20959084"
-
-    // Supervision default order(SDO)
-    const val SDO = "fd391847-f640-402e-a958-f33a014e6684"
-
     // Community order Scotland (COS)
     private const val COS = "ae617390-b41e-46ac-bd63-68a28512676a"
 
     // Bail Electronic Monitoring flag
     private const val BAIL_ELECTRONIC_MONITORING_FLAG = "86857bb0-aaa6-4a76-b226-812a9987fcb2"
 
-    // Adult remittal for sentence on conditional bail (REMCB)
-    const val REMCB = "f917ba0c-1faf-4945-83a8-50be9049f9b4"
-
-    // Committed to Crown Court for sentence - in custody with bail direction (CCSIB)
-    const val CCSIB = "35430208-3705-44ce-b5d5-153c0337f6ab"
-
-    // Remand in care of Local Authority with bail direction (RILAB)
-    const val RILAB = "f666fd58-36c5-493f-aa11-89714faee6e6"
-
-    // Remanded in custody with bail direction (RIB)
-    const val RIB = "e26940b7-2534-42f2-9c44-c70072bf6ad2"
-
-    // Remanded on conditional bail (RC)
-    const val RC = "3a529001-2f43-45ba-a0a8-d3ced7e9e7ad"
-
-    // Remitted from the Crown Court to the Magistrates' Court in local authority accommodation with bail direction (RCCLAB)
-    const val RCCLAB = "9fd1849f-f91f-4fa7-adfd-ef24f64654eb"
-
-    // Sent to Crown Court in custody for trial with bail direction (CCIIB)
-    const val CCIIB = "062373fb-ada8-49a1-b7de-659426ba6b88"
-
-    // Sent to Crown Court for trial on conditional bail (CCIC)
-    const val CCIC = "b318ca35-8b6a-41e5-a674-879ac9a05cc2"
-
-    // Remitted from the Crown Court to the Magistrates' Court on conditional bail (RCCCB)
-    const val RCCCB = "6266e4d8-a030-4ee7-be5c-9f5624f162e5"
-
-    // Committed to Crown Court for sentence in Local Authority Accommodation (CCSILA)
-    const val CCSILA = "61dc2dfb-df0a-4ea3-8821-4506cb51e7ec"
-
-    // Youth remittal conditional bail (REMCBY)
-    const val REMCBY = "0536dbd2-b922-4899-9bc9-cad08429a889"
-
-    // Remand In care of Local Authority (RILA)
-    const val RILA = "903b3e90-f185-40d3-92dd-6f81b73c4bb2"
-
-    // Remitted from the Crown Court to the Magistrates' Court in local authority accommodation (RCCLA)
-    const val RCCLA = "975f04f2-412b-40f4-8e9b-31edfefaea60"
-
-    // Sent to Crown Court for trial in Local Authority Accommodation (CCIILA)
-    const val CCIILA = "d4fa6715-b1b3-4145-bedc-061ccf33df50"
-
-    // Youth remittal In Local Authority accommodation (REMIL)
-    const val REMIL = "e85dc2ee-9b63-4dca-8dc0-7dedaa00f5bf"
-
-    val BAIL_OR_REMAND_TO_CARE_CONDITION_UUIDs = arrayOf(
-      REMCB,
-      CCSIB,
-      RILAB,
-      RIB,
-      RC,
-      RCCLAB,
-      CCIIB,
-      CCIC,
-      RCCCB,
-      CCSILA,
-      REMCBY,
-      RILA,
-      RCCLA,
-      CCIILA,
-      REMIL,
-    )
-
-    val COMMUNITY_ORDER_UUIDS = arrayOf(
-      COEW,
-      SUSPSD,
-      SUSPS,
-      YROEW,
-      YROFEW,
-      SDO,
-      YROISS,
-    )
-
     //endregion
-    fun isEnglandAdnWalesEMRequest(offence: Offence): Boolean = !offence.judicialResults.any { judicialResults ->
+    fun isEnglandAndWalesEMRequest(offence: Offence): Boolean = !offence.judicialResults.any { judicialResults ->
       // If it's a Scottish court case
       judicialResults.judicialResultTypeId == COS
     } &&
@@ -166,7 +71,7 @@ class HearingEventHandler(
         // If it's a known community order type
         CommunityOrderType.from(judicialResults.judicialResultTypeId) != null ||
           (
-            BAIL_OR_REMAND_TO_CARE_CONDITION_UUIDs.contains(judicialResults.judicialResultTypeId) &&
+            BailOrRemandToCareCondition.contains(judicialResults.judicialResultTypeId) &&
               judicialResults.judicialResultPrompts.any {
                 // If it's a known Bail/Remand in care case, or it has bail electronic monitoring flag
                 BailOrderType.from(it.judicialResultPromptTypeId) != null ||
@@ -211,24 +116,13 @@ class HearingEventHandler(
     return result
   }
 
-  fun getOrdersFromHearing(hearing: Hearing): List<Order> {
-    // Get defendant that has taggable offences
-    val defendantOffences = hearing.prosecutionCases
-      .flatMap { it.defendants }
-      .filter { defendant -> defendant.offences.any { isEnglandAdnWalesEMRequest(it) } }
-      .groupBy { it }
-      .mapValues { (_, defendants) ->
-        defendants.flatMap { it.offences }.filter { isEnglandAdnWalesEMRequest(it) }.toMutableList()
-      }.toMap()
+  fun getOrdersFromHearing(hearing: Hearing): List<Order> = hearing.prosecutionCases.flatMap {
+    it.defendants
+  }.filter { defendant -> defendant.offences.any { isEnglandAndWalesEMRequest(it) } }
+    .map { defendant -> this.getOrderForDefendant(hearing, defendant) }
 
-    // map each defendant to Order
-    return defendantOffences.map { (defendant, offences) ->
-      getOrderForDefendant(hearing, defendant, offences)
-    }
-  }
-
-  private fun getOrderForDefendant(hearing: Hearing, defendant: Defendant, offences: List<Offence>): Order {
-    val judicialResults = offences.flatMap { it.judicialResults }.toList()
+  private fun getOrderForDefendant(hearing: Hearing, defendant: Defendant): Order {
+    val judicialResults = defendant.offences.flatMap { it.judicialResults }.toList()
 
     val prompts = judicialResults.flatMap { it.judicialResultPrompts }.toList()
     val dataDictionaryVersion = featureFlags.dataDictionaryVersion
@@ -237,7 +131,7 @@ class HearingEventHandler(
         OrderVersion(
           username = commentPlatformUsername,
           status = OrderStatus.IN_PROGRESS,
-          type = RequestType.REQUEST,
+          type = getOrderRequestType(judicialResults),
           orderId = UUID.randomUUID(),
           dataDictionaryVersion = dataDictionaryVersion,
         ),
@@ -296,6 +190,14 @@ class HearingEventHandler(
         contactNumber = contact?.mobile ?: contact?.home ?: contact?.work ?: "",
       )
     order.contactDetails = contactDetails
+
+    if (order.type == RequestType.VARIATION) {
+      order.variationDetails =
+        VariationDetails(
+          versionId = order.versionId,
+          variationDate = ZonedDateTime.of(orderedDate, LocalTime.MIDNIGHT, ZoneId.of("Europe/London")),
+        )
+    }
 
     return order
   }
@@ -609,14 +511,25 @@ class HearingEventHandler(
     return zone
   }
 
+  private fun getOrderRequestType(results: List<JudicialResults>): RequestType {
+    val prompts = results.flatMap { it.judicialResultPrompts }.toList()
+
+    val isVariation = getPromptValue(
+      prompts,
+      "Notification of electronic monitoring order (bail)",
+    )?.contains("Additional notification of electronic monitoring. Date and case reference of original order") ?: false
+
+    return if (isVariation) RequestType.VARIATION else RequestType.REQUEST
+  }
+
   private fun getOrderType(results: List<JudicialResults>): OrderType? {
     if (results.any {
-        COMMUNITY_ORDER_UUIDS.contains(it.judicialResultTypeId)
+        CommunityOrder.contains(it.judicialResultTypeId)
       }
     ) {
       return OrderType.COMMUNITY
     } else if (results.any {
-        BAIL_OR_REMAND_TO_CARE_CONDITION_UUIDs.contains(it.judicialResultTypeId)
+        BailOrRemandToCareCondition.contains(it.judicialResultTypeId)
       }
     ) {
       return OrderType.PRE_TRIAL
@@ -625,9 +538,9 @@ class HearingEventHandler(
   }
 
   private fun getConditionType(results: List<JudicialResults>): MonitoringConditionType? {
-    if (results.any { COMMUNITY_ORDER_UUIDS.contains(it.judicialResultTypeId) }) {
+    if (results.any { CommunityOrder.contains(it.judicialResultTypeId) }) {
       return MonitoringConditionType.REQUIREMENT_OF_A_COMMUNITY_ORDER
-    } else if (results.any { BAIL_OR_REMAND_TO_CARE_CONDITION_UUIDs.contains(it.judicialResultTypeId) }) {
+    } else if (results.any { BailOrRemandToCareCondition.contains(it.judicialResultTypeId) }) {
       return MonitoringConditionType.BAIL_ORDER
     }
 
