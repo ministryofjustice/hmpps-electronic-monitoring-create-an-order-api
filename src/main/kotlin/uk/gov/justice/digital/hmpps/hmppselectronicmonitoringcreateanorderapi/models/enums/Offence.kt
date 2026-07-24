@@ -9,7 +9,7 @@ enum class Offence(val value: String) {
   CRIMINAL_DAMAGE_AND_ARSON("Criminal damage and arson"),
   DRUG_OFFENCES("Drug offences"),
   POSSESSION_OF_WEAPONS("Possession of weapons"),
-  FIREARMS_AND_BATTERY("Firearms and battery"),
+  FIREARMS_AND_BATTERY("Firearms and battery offences"),
   PUBLIC_ORDER_OFFENCES("Public order offences"),
   MISCELLANEOUS_CRIMES_AGAINST_SOCIETY("Miscellaneous crimes against society"),
   FRAUD_OFFENCES("Fraud Offences"),
