@@ -17,5 +17,4 @@ data class VersionInformationDTO(
   val notifyingOrganisationName: String?,
   val lastUpdatedDateTime: OffsetDateTime?,
   val lastUpdatedBy: String?,
-  val isSentencingAct: Boolean?,
 )

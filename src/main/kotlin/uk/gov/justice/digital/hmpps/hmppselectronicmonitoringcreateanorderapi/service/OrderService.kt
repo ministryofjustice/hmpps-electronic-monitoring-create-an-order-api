@@ -399,7 +399,6 @@ class OrderService(val fmsService: FmsService, private val featureFlags: Feature
     notifyingOrganisation = this.getNotifyingOrganisation(),
     lastUpdatedBy = this.getLastUpdatedBy(),
     lastUpdatedDateTime = this.getLastUpdatedDateTime(),
-    isSentencingAct = this.getIsSentencingAct(),
   )
 
   private fun OrderVersion.toDTO() = VersionInformationDTO(
@@ -414,7 +413,6 @@ class OrderService(val fmsService: FmsService, private val featureFlags: Feature
     notifyingOrganisationName = this.interestedParties?.notifyingOrganisationName,
     lastUpdatedDateTime = this.lastUpdatedDateTime,
     lastUpdatedBy = this.lastUpdatedBy,
-    isSentencingAct = this.isSentencingAct,
   )
 
   fun getSpecificVersion(orderId: UUID, versionId: UUID): Order {

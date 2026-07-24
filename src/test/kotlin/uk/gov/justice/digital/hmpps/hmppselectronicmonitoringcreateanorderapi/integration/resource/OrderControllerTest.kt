@@ -2101,6 +2101,16 @@ class OrderControllerTest : IntegrationTestBase() {
         .exchange()
         .expectStatus().isOk
     }
+
+    @Test
+    fun `PUT sentencing-act with null flag returns 400`() {
+      val order = createOrder("AUTH_ADM")
+      webTestClient.put().uri("/api/orders/${order.id}/sentencing-act")
+        .headers(setAuthorisation("AUTH_ADM"))
+        .bodyValue(mapOf<String, Boolean?>("isSentencingAct" to null))
+        .exchange()
+        .expectStatus().isBadRequest
+    }
   }
 
   fun createAndPersistPopulatedOrder(
