@@ -15,4 +15,5 @@ interface OrderVersionListInformation {
   fun getNotifyingOrganisation(): String?
   fun getLastUpdatedBy(): String?
   fun getLastUpdatedDateTime(): OffsetDateTime?
+  fun getIsSentencingAct(): Boolean?
 }

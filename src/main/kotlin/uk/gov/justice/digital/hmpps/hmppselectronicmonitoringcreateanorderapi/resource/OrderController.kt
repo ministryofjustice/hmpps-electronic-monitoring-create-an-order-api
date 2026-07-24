@@ -23,6 +23,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderInformationDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderSearchResultDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateAmendOrderDto
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateIsSentencingAct
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.VersionInformationDTO
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderListView
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
@@ -174,6 +175,22 @@ class OrderController(@Autowired val orderService: OrderService) {
     return ResponseEntity(monitoringOrderRequest, HttpStatus.OK)
   }
 
+  @PutMapping("/orders/{orderId}/sentencing-act")
+  fun setSentencingAct(
+    @PathVariable orderId: UUID,
+    @RequestBody isSentencingAct: UpdateIsSentencingAct,
+    authentication: Authentication,
+  ): ResponseEntity<Void> {
+    val value = isSentencingAct.isSentencingAct
+      ?: return ResponseEntity(HttpStatus.BAD_REQUEST)
+    orderService.updateIsSentencingAct(
+      orderId,
+      value,
+      authentication as JwtAuthenticationToken,
+    )
+    return ResponseEntity(HttpStatus.OK)
+  }
+
   private fun convertToDto(order: Order, authentication: JwtAuthenticationToken? = null): OrderDto {
     val isOwner = authentication == null || authentication.name == order.username
     val dto = OrderDto(
@@ -216,6 +233,7 @@ class OrderController(@Autowired val orderService: OrderService) {
       lastUpdatedDateTime = order.lastUpdatedDateTime,
       ownerCohort = order.ownerCohort,
       isOwner = isOwner,
+      isSentencingAct = order.isSentencingAct,
     )
 
     dto.monitoringConditions?.startDate = order.getMonitoringStartDate()

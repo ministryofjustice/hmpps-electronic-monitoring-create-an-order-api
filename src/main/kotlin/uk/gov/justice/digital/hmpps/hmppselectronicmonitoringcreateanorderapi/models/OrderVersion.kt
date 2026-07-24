@@ -153,6 +153,9 @@ data class OrderVersion(
   @Column(name = "OWNER_COHORT", nullable = true)
   var ownerCohort: String? = null,
 
+  @Column(name = "IS_SENTENCING_ACT", nullable = true)
+  var isSentencingAct: Boolean? = null,
+
   @Schema(hidden = true)
   @ManyToOne
   @JoinColumn(name = "ORDER_ID", updatable = false, insertable = false)
