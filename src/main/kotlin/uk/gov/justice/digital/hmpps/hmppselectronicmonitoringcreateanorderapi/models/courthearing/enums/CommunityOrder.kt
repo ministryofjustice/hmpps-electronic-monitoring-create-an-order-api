@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums
+package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.courthearing.enums
 
 enum class CommunityOrder(val id: String) {
   // Community order England / Wales(COEW)
@@ -24,6 +24,6 @@ enum class CommunityOrder(val id: String) {
   ;
 
   companion object {
-    fun contains(id: String?) = CommunityOrder.entries.any { it.id == id }
+    fun contains(id: String?) = entries.any { it.id == id }
   }
 }

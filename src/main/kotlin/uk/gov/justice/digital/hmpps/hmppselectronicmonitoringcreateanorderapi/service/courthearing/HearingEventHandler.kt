@@ -22,12 +22,13 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.TrailMonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.VariationDetails
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.courthearing.JudicialResultsPrompt
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.courthearing.enums.BailOrRemandToCareCondition
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.courthearing.enums.BailOrderType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.courthearing.enums.CommunityOrder
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.courthearing.enums.CommunityOrderType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.courthearing.enums.VariationOrders
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.BailOrRemandToCareCondition
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.CommunityOrder
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.EnforcementZoneType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MonitoringConditionType
@@ -512,14 +513,13 @@ class HearingEventHandler(
   }
 
   private fun getOrderRequestType(results: List<JudicialResults>): RequestType {
-    val prompts = results.flatMap { it.judicialResultPrompts }.toList()
-
-    val isVariation = getPromptValue(
-      prompts,
-      "Notification of electronic monitoring order (bail)",
-    )?.contains("Additional notification of electronic monitoring. Date and case reference of original order") ?: false
-
-    return if (isVariation) RequestType.VARIATION else RequestType.REQUEST
+    if (results.any { judicialResults ->
+        VariationOrders.contains(judicialResults.judicialResultTypeId)
+      }
+    ) {
+      return RequestType.VARIATION
+    }
+    return RequestType.REQUEST
   }
 
   private fun getOrderType(results: List<JudicialResults>): OrderType? {
@@ -572,7 +572,7 @@ class HearingEventHandler(
     versionId: UUID,
     responsibleOfficer: String,
     responsibleOrganisationRegion: String,
-    responsibleOrganisationId: String,
+    responsibleOrganisationEmail: String,
     notifyingOrganisation: String,
     notifyingOrganisationName: String,
   ): InterestedParties = InterestedParties(
@@ -582,7 +582,7 @@ class HearingEventHandler(
     notifyingOrganisationEmail = "",
     responsibleOrganisation = responsibleOfficer,
     responsibleOrganisationRegion = responsibleOrganisationRegion,
-    responsibleOrganisationEmail = responsibleOrganisationId,
+    responsibleOrganisationEmail = responsibleOrganisationEmail,
     responsibleOfficerName = "",
     responsibleOfficerPhoneNumber = null,
   )

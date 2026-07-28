@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums
+package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.courthearing.enums
 
 enum class BailOrRemandToCareCondition(val id: String) {
   // Adult remittal for sentence on conditional bail (REMCB)
@@ -51,6 +51,6 @@ enum class BailOrRemandToCareCondition(val id: String) {
   ;
 
   companion object {
-    fun contains(id: String?) = BailOrRemandToCareCondition.entries.any { it.id == id }
+    fun contains(id: String?) = entries.any { it.id == id }
   }
 }
