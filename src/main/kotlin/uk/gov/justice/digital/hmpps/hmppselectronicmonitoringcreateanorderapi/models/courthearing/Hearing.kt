@@ -22,7 +22,7 @@ data class Hearing(
   fun isHearingContainsEM(): Boolean = this.prosecutionCases.any { case ->
     case.defendants.any { defendant ->
       defendant.offences.any { offence ->
-        HearingEventHandler.isEnglandAdnWalesEMRequest(offence)
+        HearingEventHandler.isEnglandAndWalesEMRequest(offence)
       }
     }
   }
