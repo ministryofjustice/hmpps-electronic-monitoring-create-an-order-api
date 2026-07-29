@@ -48,6 +48,17 @@ class OrderSearchRepositoryImplTest : IntegrationTestBase() {
       startDate = ZonedDateTime.parse("2040-02-07T00:00:00Z"),
       endDate = ZonedDateTime.parse("2040-03-07T00:00:00Z"),
     )
+    // Extreme date
+    val extremeDate = TestUtilities.createReadyToSubmitOrder(
+      versionId = UUID.randomUUID(),
+      status = OrderStatus.SUBMITTED,
+      startDate = ZonedDateTime.parse("2000-02-07T00:00:00Z"),
+      endDate = ZonedDateTime.parse("2099-03-07T00:00:00Z"),
+    )
+
+    extremeDate.monitoringConditions!!.startDate = null
+    extremeDate.monitoringConditions!!.endDate = null
+    repo.save(extremeDate)
 
     order.monitoringConditions!!.startDate = null
     order.monitoringConditions!!.endDate = null
