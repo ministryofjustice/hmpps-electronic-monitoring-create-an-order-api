@@ -2,14 +2,14 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.m
 
 enum class Offence(val value: String) {
   VIOLENCE_AGAINST_THE_PERSON("Violence against the person"),
-  RACIAL_OFFENCES_AND_HATE_CRIMES("Racial offences and hate crimes"),
+  RACIAL_OFFENCES_AND_HATE_CRIMES("Racial Offences and Hate Crimes"),
   SEXUAL_OFFENCES("Sexual offences"),
   ROBBERY("Robbery"),
   THEFT_OFFENCES("Theft Offences"),
   CRIMINAL_DAMAGE_AND_ARSON("Criminal damage and arson"),
   DRUG_OFFENCES("Drug offences"),
   POSSESSION_OF_WEAPONS("Possession of weapons"),
-  FIREARMS_AND_BATTERY("Firearms and battery"),
+  FIREARMS_AND_BATTERY("Firearms and Battery Offences"),
   PUBLIC_ORDER_OFFENCES("Public order offences"),
   MISCELLANEOUS_CRIMES_AGAINST_SOCIETY("Miscellaneous crimes against society"),
   FRAUD_OFFENCES("Fraud Offences"),
