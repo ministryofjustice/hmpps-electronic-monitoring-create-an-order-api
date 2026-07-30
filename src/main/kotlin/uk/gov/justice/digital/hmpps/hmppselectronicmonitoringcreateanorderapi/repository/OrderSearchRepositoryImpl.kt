@@ -4,14 +4,21 @@ import jakarta.persistence.EntityManager
 import jakarta.persistence.PersistenceContext
 import jakarta.persistence.Tuple
 import jakarta.persistence.criteria.CriteriaBuilder
+import jakarta.persistence.criteria.CriteriaQuery
 import jakarta.persistence.criteria.Join
 import jakarta.persistence.criteria.JoinType
 import jakarta.persistence.criteria.Predicate
 import jakarta.persistence.criteria.Root
+import jakarta.persistence.criteria.Subquery
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Address
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AlcoholMonitoringConditions
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.EnforcementZoneConditions
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.MandatoryAttendanceConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.MonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.TrailMonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.OrderSearchCriteria
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderSearchResultAddressDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderSearchResultDeviceWearerDto
@@ -55,8 +62,8 @@ class OrderSearchRepositoryImpl(@PersistenceContext private val entityManager: E
         .alias("complianceAndEnforcementPersonReference"),
       deviceWearer.get<String>("courtCaseReferenceNumber").alias("courtCaseReferenceNumber"),
       primaryAddress.get<String>("addressLine3").alias("addressLine3"),
-      monitoringConditions.get<ZonedDateTime>("startDate").alias("startDate"),
-      monitoringConditions.get<ZonedDateTime>("endDate").alias("endDate"),
+      orderStartDate(cb, query, version, monitoringConditions).alias("startDate"),
+      orderEndDate(cb, query, version, monitoringConditions).alias("endDate"),
     )
 
     query.where(*buildPredicates(criteria, cb, query, version, deviceWearer).toTypedArray())
@@ -67,7 +74,7 @@ class OrderSearchRepositoryImpl(@PersistenceContext private val entityManager: E
   private fun buildPredicates(
     criteria: OrderSearchCriteria,
     cb: CriteriaBuilder,
-    query: jakarta.persistence.criteria.CriteriaQuery<Tuple>,
+    query: CriteriaQuery<Tuple>,
     version: Root<OrderVersion>,
     deviceWearer: Join<OrderVersion, DeviceWearer>,
   ): List<Predicate> {
@@ -172,4 +179,60 @@ class OrderSearchRepositoryImpl(@PersistenceContext private val entityManager: E
       endDate = get("endDate", ZonedDateTime::class.java),
     ),
   )
+
+  private val datedConditions = listOf(
+    CurfewConditions::class.java,
+    TrailMonitoringConditions::class.java,
+    AlcoholMonitoringConditions::class.java,
+    EnforcementZoneConditions::class.java,
+    MandatoryAttendanceConditions::class.java,
+  )
+
+  private fun orderStartDate(
+    cb: CriteriaBuilder,
+    query: CriteriaQuery<Tuple>,
+    version: Root<OrderVersion>,
+    monitoringConditions: Join<OrderVersion, MonitoringConditions>,
+  ) = cb.function(
+    "coalesce",
+    ZonedDateTime::class.java,
+    monitoringConditions.get<ZonedDateTime>("startDate"),
+    cb.function(
+      "least",
+      ZonedDateTime::class.java,
+      *datedConditions.map { aggregateDate(cb, query, version, it, "startDate", earliest = true) }.toTypedArray(),
+    ),
+  )
+
+  private fun orderEndDate(
+    cb: CriteriaBuilder,
+    query: CriteriaQuery<Tuple>,
+    version: Root<OrderVersion>,
+    monitoringConditions: Join<OrderVersion, MonitoringConditions>,
+  ) = cb.function(
+    "coalesce",
+    ZonedDateTime::class.java,
+    monitoringConditions.get<ZonedDateTime>("endDate"),
+    cb.function(
+      "greatest",
+      ZonedDateTime::class.java,
+      *datedConditions.map { aggregateDate(cb, query, version, it, "endDate", earliest = false) }.toTypedArray(),
+    ),
+  )
+
+  private fun <T> aggregateDate(
+    cb: CriteriaBuilder,
+    query: CriteriaQuery<Tuple>,
+    version: Root<OrderVersion>,
+    childClass: Class<T>,
+    dateField: String,
+    earliest: Boolean,
+  ): Subquery<ZonedDateTime> {
+    val sub = query.subquery(ZonedDateTime::class.java)
+    val child = sub.from(childClass)
+    val date = child.get<ZonedDateTime>(dateField)
+    sub.select(if (earliest) cb.least(date) else cb.greatest(date))
+    sub.where(cb.equal(child.get<OrderVersion>("version"), version))
+    return sub
+  }
 }
