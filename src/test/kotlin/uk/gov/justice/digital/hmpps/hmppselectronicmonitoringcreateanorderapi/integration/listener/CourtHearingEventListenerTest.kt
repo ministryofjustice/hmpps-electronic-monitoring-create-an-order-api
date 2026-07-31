@@ -175,6 +175,7 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
       Arguments.of("SUSPV_suspended_sentence_order_variation"),
       Arguments.of("YROV_youth_rehabilitation_order_varied"),
       Arguments.of("SUSPVD_suspended_sentence_order_varied_detention"),
+      Arguments.of("BAILREVC_bail_reviewed_conditions_varied_or_imposed"),
     )
   }
 

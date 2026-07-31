@@ -297,23 +297,8 @@ class HearingEventHandler(
           it.judicialResultTypeId == CommunityOrderType.SUPERVISION_CURFEW.uuid
       }
     ) {
-      monitoringConditions.curfew = true
-      val condition = CurfewConditions(versionId = order.getCurrentVersion().id)
-      val startTime = getPromptValue(prompts, "Start time of tagging") ?: "00:00"
-      condition.startDate = getPromptValue(prompts, "Start date of tagging")?.let {
-        val localDate = LocalDate.parse(it, formatter)
-        ZonedDateTime.of(localDate, LocalTime.parse(startTime), ZoneId.of("Europe/London"))
-      }
-      val endTime = getPromptValue(prompts, "End time of tagging") ?: "00:00"
-      condition.endDate = getPromptValue(prompts, "End date of tagging")?.let {
-        val localDate = LocalDate.parse(it, formatter)
-        ZonedDateTime.of(localDate, LocalTime.parse(endTime), ZoneId.of("Europe/London"))
-      }
-      val defendantRemainAt = getPromptValue(prompts, "Defendant to remain at") ?: ""
-      val detailsAndTiming = getPromptValue(prompts, "Details and timings") ?: ""
-      condition.curfewAdditionalDetails = "$defendantRemainAt $detailsAndTiming"
-      order.curfewConditions = condition
-      monitoringConditions.endDate = condition.endDate
+      order.curfewConditions = getCurfewConditions(order, prompts)
+      monitoringConditions.endDate = order.curfewConditions?.endDate
     }
 
     //region InterestedParties
@@ -328,7 +313,7 @@ class HearingEventHandler(
         ),
     )
 
-    var responsibleOrganisationRegion = getPromptValue(
+    val responsibleOrganisationRegion = getPromptValue(
       prompts,
       "Probation team to be notified organisation name",
     )
@@ -338,7 +323,7 @@ class HearingEventHandler(
       )
       ?: ""
 
-    var responsibleOrganisationEmail = getPromptValue(
+    val responsibleOrganisationEmail = getPromptValue(
       prompts,
       "Probation team to be notified email address 1",
     )
@@ -378,7 +363,7 @@ class HearingEventHandler(
         prompts.judicialResultPromptTypeId == BailOrderType.CURFEW.uuid ||
           BailOrderType.REMAND_TO_CARE_CURFEWS.contains(prompts.judicialResultPromptTypeId)
       }
-      monitoringConditions.curfew = true
+
       val condition = CurfewConditions(versionId = order.getCurrentVersion().id)
       condition.startDate = ZonedDateTime.of(it.orderedDate, LocalTime.MIDNIGHT, ZoneId.of("Europe/London"))
       condition.endDate = monitoringConditions.endDate
@@ -410,13 +395,18 @@ class HearingEventHandler(
 
     //region InterestedParties
 
-    var responsibleOrganisation = ""
+    var responsibleOrganisation = getResponsibleOrganisation(
+      getPromptValue(
+        prompts,
+        "Responsible officer for the order",
+      ),
+    )
     val responsibleOrganisationRegion = getPromptValue(
       prompts,
       "Probation / YOT to be notified organisation name",
     ) ?: ""
 
-    if (responsibleOrganisationRegion != "") {
+    if (responsibleOrganisation == "" && responsibleOrganisationRegion != "") {
       responsibleOrganisation = "Probation"
     }
 
@@ -437,6 +427,24 @@ class HearingEventHandler(
       hearing.courtCentre.name,
     )
     //endregion
+  }
+
+  private fun getCurfewConditions(order: Order, prompts: List<JudicialResultsPrompt>): CurfewConditions {
+    val condition = CurfewConditions(versionId = order.getCurrentVersion().id)
+    val startTime = getPromptValue(prompts, "Start time of tagging") ?: "00:00"
+    condition.startDate = getPromptValue(prompts, "Start date of tagging")?.let {
+      val localDate = LocalDate.parse(it, formatter)
+      ZonedDateTime.of(localDate, LocalTime.parse(startTime), ZoneId.of("Europe/London"))
+    }
+    val endTime = getPromptValue(prompts, "End time of tagging") ?: "00:00"
+    condition.endDate = getPromptValue(prompts, "End date of tagging")?.let {
+      val localDate = LocalDate.parse(it, formatter)
+      ZonedDateTime.of(localDate, LocalTime.parse(endTime), ZoneId.of("Europe/London"))
+    }
+    val defendantRemainAt = getPromptValue(prompts, "Defendant to remain at") ?: ""
+    val detailsAndTiming = getPromptValue(prompts, "Details and timings") ?: ""
+    condition.curfewAdditionalDetails = "$defendantRemainAt $detailsAndTiming"
+    return condition
   }
 
   private fun getNextCourtHearingDate(prompts: List<JudicialResultsPrompt>): ZonedDateTime? {

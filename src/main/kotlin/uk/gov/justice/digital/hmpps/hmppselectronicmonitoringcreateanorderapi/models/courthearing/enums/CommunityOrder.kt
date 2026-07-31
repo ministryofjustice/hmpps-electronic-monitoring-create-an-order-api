@@ -28,8 +28,8 @@ enum class CommunityOrder(val id: String) {
   // Youth rehabilitation order varied
   YROV("5cceca91-e6f2-471b-8919-8dfd3ad3c746"),
 
-  //Suspended sentence order varited - detention
-  SUSPVD("726c4beb-9ead-4b6b-bed9-b761b5b43553")
+  // Suspended sentence order varited - detention
+  SUSPVD("726c4beb-9ead-4b6b-bed9-b761b5b43553"),
   ;
 
   companion object {
