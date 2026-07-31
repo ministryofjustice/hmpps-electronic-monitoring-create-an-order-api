@@ -210,6 +210,7 @@ class HearingEventHandler(
     prompts: List<JudicialResultsPrompt>,
     hearing: Hearing,
   ) {
+    //region Alcohol
     if (judicialResults.any { it.judicialResultTypeId == CommunityOrderType.ALCOHOL_ABSTAIN_MONITORING.uuid }) {
       monitoringConditions.alcohol = true
       val alcoholConditions = AlcoholMonitoringConditions(
@@ -225,7 +226,9 @@ class HearingEventHandler(
       monitoringConditions.endDate = alcoholConditions.endDate
       order.monitoringConditionsAlcohol = alcoholConditions
     }
+    //endregion
 
+    //region Exclusion zone
     val exclusionZoneJudicialResult = judicialResults.firstOrNull {
       it.judicialResultTypeId == CommunityOrderType.EXCLUSION_ZONE.uuid ||
         it.judicialResultTypeId == CommunityOrderType.YOUTH_EXCLUSION.uuid
@@ -243,10 +246,45 @@ class HearingEventHandler(
       monitoringConditions.endDate = zone.endDate
       order.enforcementZoneConditions.add(zone)
     }
+    //endregion
+
+    //region Dapo Exclusion Zones
+    val prohibitionExclusionZone = judicialResults.firstOrNull {
+      it.judicialResultPrompts.any { prompt ->
+        prompt.judicialResultPromptTypeId ==
+          CommunityOrderType.PROHIBITION_EXCLUSION_ZONE.uuid
+      }
+    }
+    if (prohibitionExclusionZone != null) {
+      val prompt = prohibitionExclusionZone.judicialResultPrompts.first {
+        it.judicialResultPromptTypeId ==
+          CommunityOrderType.PROHIBITION_EXCLUSION_ZONE.uuid
+      }
+      val zone = getProhibitionEnforcementZone(prompt, EnforcementZoneType.EXCLUSION, order.getCurrentVersion().id)
+      order.enforcementZoneConditions.add(zone)
+    }
+
+    val prohibitionExclusionNotToLeave = judicialResults.firstOrNull {
+      it.judicialResultPrompts.any { prompt ->
+        prompt.judicialResultPromptTypeId ==
+          CommunityOrderType.PROHIBITION_EXCLUSION_NOT_TO_LEAVE.uuid
+      }
+    }
+    if (prohibitionExclusionNotToLeave != null) {
+      val prompt = prohibitionExclusionNotToLeave.judicialResultPrompts.first {
+        it.judicialResultPromptTypeId ==
+          CommunityOrderType.PROHIBITION_EXCLUSION_NOT_TO_LEAVE.uuid
+      }
+      val zone = getProhibitionEnforcementZone(prompt, EnforcementZoneType.EXCLUSION, order.getCurrentVersion().id)
+      order.enforcementZoneConditions.add(zone)
+    }
 
     val inclusionZoneJudicialResults = judicialResults.firstOrNull {
       it.judicialResultTypeId == CommunityOrderType.INCLUSION_ZONE.uuid
     }
+//endregion
+
+    //region Inclusion zone
     if (inclusionZoneJudicialResults != null) {
       monitoringConditions.exclusionZone = true
       val zone =
@@ -260,37 +298,21 @@ class HearingEventHandler(
       monitoringConditions.endDate = zone.endDate
       order.enforcementZoneConditions.add(zone)
     }
+//endregion
 
+    //region Trail
     if (judicialResults.any {
         it.judicialResultTypeId == CommunityOrderType.TRAIL_MONITORING.uuid ||
           it.judicialResultTypeId == CommunityOrderType.YOUTH_TRAIL.uuid
       }
     ) {
       monitoringConditions.trail = true
-      val trailCondition = TrailMonitoringConditions(versionId = order.getCurrentVersion().id)
-      val startTime = getPromptValue(prompts, "Start time of tagging") ?: "00:00"
-
-      val startDate = getPromptValue(
-        prompts,
-        "The defendant's whereabouts are to be electronically monitored. Start date",
-      )?.let {
-        val localDate = LocalDate.parse(it, formatter)
-        ZonedDateTime.of(localDate, LocalTime.parse(startTime), ZoneId.of("Europe/London"))
-      }
-
-      trailCondition.startDate = startDate
-      monitoringConditions.startDate = startDate
-      val endTime = getPromptValue(prompts, "End time of tagging") ?: "00:00"
-      val endDate =
-        getPromptValue(prompts, "End date of tagging")?.let {
-          val localDate = LocalDate.parse(it, formatter)
-          ZonedDateTime.of(localDate, LocalTime.parse(endTime), ZoneId.of("Europe/London"))
-        }
-      trailCondition.endDate = endDate
-      monitoringConditions.endDate = endDate
+      val trailCondition = getCommunityOrderTrailCondition(order, prompts)
       order.monitoringConditionsTrail = trailCondition
     }
+//endregion
 
+    //region Curfew
     if (judicialResults.any {
         it.judicialResultTypeId == CommunityOrderType.COMMUNITY_ORDER_CURFEW.uuid ||
           it.judicialResultTypeId == CommunityOrderType.YOUTH_CURFEW.uuid ||
@@ -300,8 +322,64 @@ class HearingEventHandler(
       order.curfewConditions = getCurfewConditions(order, prompts)
       monitoringConditions.endDate = order.curfewConditions?.endDate
     }
+//endregion
 
-    //region InterestedParties
+    //region Dapo Curfew
+    val dapoCurfew = judicialResults.firstOrNull {
+      it.judicialResultPrompts.any { prompt ->
+        prompt.judicialResultPromptTypeId ==
+          CommunityOrderType.DAPO_CURFEW.uuid
+      }
+    }
+    if (dapoCurfew != null) {
+      val prompt = dapoCurfew.judicialResultPrompts.first {
+        it.judicialResultPromptTypeId ==
+          CommunityOrderType.DAPO_CURFEW.uuid
+      }
+      order.curfewConditions = getDapoCurfewConditions(prompt, order.getCurrentVersion().id)
+    }
+//endregion
+
+    order.interestedParties = getCommunityConditionInterestedParities(
+      order,
+      prompts,
+      hearing,
+    )
+  }
+
+  private fun getCommunityOrderTrailCondition(
+    order: Order,
+    prompts: List<JudicialResultsPrompt>,
+  ): TrailMonitoringConditions {
+    val trailCondition = TrailMonitoringConditions(versionId = order.getCurrentVersion().id)
+    val startTime = getPromptValue(prompts, "Start time of tagging") ?: "00:00"
+
+    val startDate = getPromptValue(
+      prompts,
+      "The defendant's whereabouts are to be electronically monitored. Start date",
+    )?.let {
+      val localDate = LocalDate.parse(it, formatter)
+      ZonedDateTime.of(localDate, LocalTime.parse(startTime), ZoneId.of("Europe/London"))
+    }
+
+    trailCondition.startDate = startDate
+
+    val endTime = getPromptValue(prompts, "End time of tagging") ?: "00:00"
+    val endDate =
+      getPromptValue(prompts, "End date of tagging")?.let {
+        val localDate = LocalDate.parse(it, formatter)
+        ZonedDateTime.of(localDate, LocalTime.parse(endTime), ZoneId.of("Europe/London"))
+      }
+    trailCondition.endDate = endDate
+
+    return trailCondition
+  }
+
+  private fun getCommunityConditionInterestedParities(
+    order: Order,
+    prompts: List<JudicialResultsPrompt>,
+    hearing: Hearing,
+  ): InterestedParties {
     val responsibleOrganisation = getResponsibleOrganisation(
       getPromptValue(
         prompts,
@@ -333,7 +411,7 @@ class HearingEventHandler(
       )
       ?: ""
 
-    order.interestedParties = buildInterestedPartiesFromHearing(
+    return buildInterestedPartiesFromHearing(
       order.getCurrentVersion().id,
       responsibleOrganisation,
       responsibleOrganisationRegion,
@@ -342,7 +420,54 @@ class HearingEventHandler(
       hearing.courtCentre.name,
 
     )
-    //endregion
+  }
+
+  private fun getProhibitionEnforcementZone(
+    conditionPrompt: JudicialResultsPrompt,
+    zoneType: EnforcementZoneType,
+    versionId: UUID,
+  ): EnforcementZoneConditions {
+    val condition = EnforcementZoneConditions(versionId = versionId)
+    condition.zoneType = zoneType
+    val conditionDetail = conditionPrompt.value!!.split("\n").associate {
+      val parts = it.split(":", limit = 2)
+      parts[0] to parts[1]
+    }
+    condition.description = conditionPrompt.value
+
+    condition.startDate = ZonedDateTime.of(
+      LocalDate.parse(conditionDetail["Start date for tag"] ?: "", formatter),
+      LocalTime.parse(conditionDetail["Start time for tag"] ?: ""),
+      ZoneId.of("Europe/London"),
+    )
+
+    condition.endDate = ZonedDateTime.of(
+      LocalDate.parse(conditionDetail["End date for tag"] ?: "", formatter),
+      LocalTime.parse(conditionDetail["End time for tag"] ?: ""),
+      ZoneId.of("Europe/London"),
+    )
+    return condition
+  }
+
+  private fun getDapoCurfewConditions(conditionPrompt: JudicialResultsPrompt, versionId: UUID): CurfewConditions {
+    val condition = CurfewConditions(versionId = versionId)
+    condition.curfewAdditionalDetails = conditionPrompt.value
+    val conditionDetail = conditionPrompt.value!!.split("\n").associate {
+      val parts = it.split(":", limit = 2)
+      parts[0] to parts[1]
+    }
+    condition.startDate = ZonedDateTime.of(
+      LocalDate.parse(conditionDetail["Start date of tagging"] ?: "", formatter),
+      LocalTime.parse(conditionDetail["Start time of tagging"] ?: ""),
+      ZoneId.of("Europe/London"),
+    )
+
+    condition.endDate = ZonedDateTime.of(
+      LocalDate.parse(conditionDetail["End date of tagging"] ?: "", formatter),
+      LocalTime.parse(conditionDetail["End time of tagging"] ?: ""),
+      ZoneId.of("Europe/London"),
+    )
+    return condition
   }
 
   private fun loadBailOrderConditions(
@@ -461,7 +586,6 @@ class HearingEventHandler(
       val parts = it.split(":", limit = 2)
       parts[0] to parts[1]
     }
-    val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
     var localDate: LocalDate? = null
     if (nextHearingDetailsAsMap.containsKey(nextHearingDateKey)) {
       localDate = LocalDate.parse(nextHearingDetailsAsMap[nextHearingDateKey]!!, formatter)

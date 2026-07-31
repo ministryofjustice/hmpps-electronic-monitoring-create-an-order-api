@@ -30,6 +30,9 @@ enum class CommunityOrder(val id: String) {
 
   // Suspended sentence order varited - detention
   SUSPVD("726c4beb-9ead-4b6b-bed9-b761b5b43553"),
+
+  // DAPO
+  DAPO("db5e6d5a-337f-4a68-b060-35a644c913ef"),
   ;
 
   companion object {
