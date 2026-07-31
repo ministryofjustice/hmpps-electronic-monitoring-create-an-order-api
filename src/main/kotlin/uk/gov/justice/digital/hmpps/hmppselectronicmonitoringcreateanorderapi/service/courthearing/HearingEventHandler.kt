@@ -174,10 +174,10 @@ class HearingEventHandler(
           versionId = order.getCurrentVersion().id,
           addressType = AddressType.PRIMARY,
           addressLine1 = address.address1,
-          addressLine2 = address.address2 ?: "N/A",
-          addressLine3 = address.address3 ?: "N/A",
-          addressLine4 = address.address4 ?: "N/A",
-          postcode = address.postcode ?: "N/A",
+          addressLine2 = address.address2 ?: "",
+          addressLine3 = address.address3 ?: "",
+          addressLine4 = address.address4 ?: "",
+          postcode = address.postcode ?: "",
         ),
       )
     }
@@ -321,12 +321,18 @@ class HearingEventHandler(
       getPromptValue(
         prompts,
         "Responsible officer",
-      ),
+      )
+        ?: getPromptValue(
+          prompts,
+          "Responsible officer for the order",
+        ),
     )
+
     var responsibleOrganisationRegion = getPromptValue(
       prompts,
       "Probation team to be notified organisation name",
     ) ?: ""
+
     var responsibleOrganisationEmail = getPromptValue(
       prompts,
       "Probation team to be notified email address 1",
@@ -336,11 +342,11 @@ class HearingEventHandler(
       responsibleOrganisationRegion = getPromptValue(
         prompts,
         "Youth offending team to be notified organisation name",
-      ) ?: ""
+      ) ?: responsibleOrganisationRegion
       responsibleOrganisationEmail = getPromptValue(
         prompts,
         "Youth offending team to be notified email address 1",
-      ) ?: ""
+      ) ?: responsibleOrganisationEmail
     }
 
     order.interestedParties = buildInterestedPartiesFromHearing(
@@ -584,6 +590,6 @@ class HearingEventHandler(
     responsibleOrganisationRegion = responsibleOrganisationRegion,
     responsibleOrganisationEmail = responsibleOrganisationEmail,
     responsibleOfficerName = "",
-    responsibleOfficerPhoneNumber = null,
+    responsibleOfficerPhoneNumber = "",
   )
 }

@@ -172,6 +172,7 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
       Arguments.of("RCCLA_pre-trail_exclusions_and_curfew"),
       Arguments.of("CCIILA_pre-trail_exclusions_and_curfew"),
       Arguments.of("REMIL_pre-trail_exclusions_and_curfew"),
+      Arguments.of("SUSPV_suspended_sentence_order_variation"),
     )
   }
 
@@ -242,10 +243,12 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
   ) {
     val expectedDeviceWearer = objectMapper.readValue<DeviceWearer>(mockDeviceWearerJson)
     val storedDeviceWearer = objectMapper.readValue<DeviceWearer>(savedResult.deviceWearerResult.payload)
-    assertThat(storedDeviceWearer).isEqualTo(expectedDeviceWearer)
+    // assertThat(storedDeviceWearer).isEqualTo(expectedDeviceWearer)
 
     val expectedMonitoringOrder = objectMapper.readValue<MonitoringOrder>(mockOrderJson)
     val storedMonitoringOrder = objectMapper.readValue<MonitoringOrder>(savedResult.monitoringOrderResult.payload)
+
+    assertThat(storedDeviceWearer).isEqualTo(expectedDeviceWearer)
     assertThat(storedMonitoringOrder).isEqualTo(expectedMonitoringOrder)
     assertThat(savedResult.error).isEqualTo("")
     assertThat(savedResult.success).isTrue()

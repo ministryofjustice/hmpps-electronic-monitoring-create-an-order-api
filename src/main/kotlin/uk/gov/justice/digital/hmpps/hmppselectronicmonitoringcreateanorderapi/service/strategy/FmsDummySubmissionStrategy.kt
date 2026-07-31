@@ -13,8 +13,8 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 class FmsDummySubmissionStrategy(objectMapper: ObjectMapper, private val featureFlags: FeatureFlags) :
   FmsSubmissionStrategyBase(objectMapper, featureFlags) {
 
-  private fun createDeviceWearer(order: Order): FmsDeviceWearerSubmissionResult {
-    val deviceWearerResult = this.getDeviceWearer(order)
+  private fun createDeviceWearer(order: Order, orderSource: FmsOrderSource): FmsDeviceWearerSubmissionResult {
+    val deviceWearerResult = this.getDeviceWearer(order, orderSource)
 
     if (!deviceWearerResult.success) {
       return FmsDeviceWearerSubmissionResult(
@@ -70,7 +70,7 @@ class FmsDummySubmissionStrategy(objectMapper: ObjectMapper, private val feature
   }
 
   override fun submitOrder(order: Order, orderSource: FmsOrderSource): FmsSubmissionResult {
-    val createDeviceWearerResult = this.createDeviceWearer(order)
+    val createDeviceWearerResult = this.createDeviceWearer(order, orderSource)
     val deviceWearerId = createDeviceWearerResult.deviceWearerId
 
     if (createDeviceWearerResult.status == SubmissionStatus.FAILURE) {

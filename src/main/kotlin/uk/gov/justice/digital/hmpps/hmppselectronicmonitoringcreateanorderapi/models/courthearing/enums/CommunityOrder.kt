@@ -21,6 +21,9 @@ enum class CommunityOrder(val id: String) {
 
   // Supervision default order(SDO)
   SDO("fd391847-f640-402e-a958-f33a014e6684"),
+
+  // Suspended sentence order varied- imprisonment
+  SUSPV("280a5606-c70a-432f-bdfe-a9dfd49f18c5"),
   ;
 
   companion object {
