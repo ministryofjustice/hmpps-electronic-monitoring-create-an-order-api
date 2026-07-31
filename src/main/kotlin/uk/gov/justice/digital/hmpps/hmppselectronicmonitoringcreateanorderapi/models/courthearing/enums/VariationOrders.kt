@@ -7,6 +7,7 @@ class VariationOrders {
     val VARIATION_UUIDS = listOf(
       BailOrRemandToCareCondition.RCBV.id,
       CommunityOrder.SUSPV.id,
+      CommunityOrder.YROV.id,
     )
 
     fun contains(id: String?) = VARIATION_UUIDS.contains(id)

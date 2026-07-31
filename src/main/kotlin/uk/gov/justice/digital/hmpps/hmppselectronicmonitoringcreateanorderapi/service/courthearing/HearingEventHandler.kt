@@ -331,23 +331,22 @@ class HearingEventHandler(
     var responsibleOrganisationRegion = getPromptValue(
       prompts,
       "Probation team to be notified organisation name",
-    ) ?: ""
+    )
+      ?: getPromptValue(
+        prompts,
+        "Youth offending team to be notified organisation name",
+      )
+      ?: ""
 
     var responsibleOrganisationEmail = getPromptValue(
       prompts,
       "Probation team to be notified email address 1",
-    ) ?: ""
-
-    if (responsibleOrganisation == "YJS") {
-      responsibleOrganisationRegion = getPromptValue(
-        prompts,
-        "Youth offending team to be notified organisation name",
-      ) ?: responsibleOrganisationRegion
-      responsibleOrganisationEmail = getPromptValue(
+    )
+      ?: getPromptValue(
         prompts,
         "Youth offending team to be notified email address 1",
-      ) ?: responsibleOrganisationEmail
-    }
+      )
+      ?: ""
 
     order.interestedParties = buildInterestedPartiesFromHearing(
       order.getCurrentVersion().id,

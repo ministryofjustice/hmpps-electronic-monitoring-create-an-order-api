@@ -24,6 +24,9 @@ enum class CommunityOrder(val id: String) {
 
   // Suspended sentence order varied- imprisonment
   SUSPV("280a5606-c70a-432f-bdfe-a9dfd49f18c5"),
+
+  // Youth rehabilitation order varied
+  YROV("5cceca91-e6f2-471b-8919-8dfd3ad3c746"),
   ;
 
   companion object {

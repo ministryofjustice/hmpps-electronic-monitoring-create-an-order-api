@@ -173,6 +173,7 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
       Arguments.of("CCIILA_pre-trail_exclusions_and_curfew"),
       Arguments.of("REMIL_pre-trail_exclusions_and_curfew"),
       Arguments.of("SUSPV_suspended_sentence_order_variation"),
+      Arguments.of("YROV_youth_rehabilitation_order_varied"),
     )
   }
 
