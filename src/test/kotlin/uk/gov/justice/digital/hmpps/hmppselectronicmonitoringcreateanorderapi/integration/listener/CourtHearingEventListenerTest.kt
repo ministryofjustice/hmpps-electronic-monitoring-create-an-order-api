@@ -248,7 +248,6 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
   ) {
     val expectedDeviceWearer = objectMapper.readValue<DeviceWearer>(mockDeviceWearerJson)
     val storedDeviceWearer = objectMapper.readValue<DeviceWearer>(savedResult.deviceWearerResult.payload)
-    // assertThat(storedDeviceWearer).isEqualTo(expectedDeviceWearer)
 
     val expectedMonitoringOrder = objectMapper.readValue<MonitoringOrder>(mockOrderJson)
     val storedMonitoringOrder = objectMapper.readValue<MonitoringOrder>(savedResult.monitoringOrderResult.payload)
