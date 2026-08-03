@@ -33,6 +33,9 @@ enum class CommunityOrder(val id: String) {
 
   // DAPO
   DAPO("db5e6d5a-337f-4a68-b060-35a644c913ef"),
+
+  // DAPO variation
+  DAPOV("90f87813-e738-4c21-b122-5ebe93bb575f"),
   ;
 
   companion object {

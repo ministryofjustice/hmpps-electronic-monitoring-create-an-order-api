@@ -88,13 +88,13 @@
   "trail_monitoring": "No",
   "exclusion_zones": [
     {
-      "description": "Place / area:7 Hurricane Cl, Stafford ST16 1GZ\nExclusion and electronic monitoring period:1 Years\nStart date for tag:21/02/2025\nStart time for tag:10:00\nEnd date for tag:20/02/2026\nEnd time for tag:19:00",
+      "description": "Prohibition: Exclusion - Not to enter for a period with electronic monitoring Place / area:7 Hurricane Cl, Stafford ST16 1GZ\nExclusion and electronic monitoring period:1 Years\nStart date for tag:21/02/2025\nStart time for tag:10:00\nEnd date for tag:20/02/2026\nEnd time for tag:19:00",
       "duration": null,
       "start": "2025-02-21",
       "end": "2026-02-20"
     },
     {
-      "description": "Place / area:7 Hurricane Cl, Stafford ST16 1GZ\nExclusion and electronic monitoring period:6 Months\nStart date for tag:21/02/2025\nStart time for tag:10:00\nEnd date for tag:20/07/2025\nEnd time for tag:10:00",
+      "description": "Prohibition: Exclusion - Not to leave a place for a period with electronic monitoring Place / area:7 Hurricane Cl, Stafford ST16 1GZ\nExclusion and electronic monitoring period:6 Months\nStart date for tag:21/02/2025\nStart time for tag:10:00\nEnd date for tag:20/07/2025\nEnd time for tag:10:00",
       "duration": null,
       "start": "2025-02-21",
       "end": "2025-07-20"

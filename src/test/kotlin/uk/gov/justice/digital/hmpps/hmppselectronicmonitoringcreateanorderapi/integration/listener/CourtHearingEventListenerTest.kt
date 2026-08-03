@@ -177,6 +177,7 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
       Arguments.of("SUSPVD_suspended_sentence_order_varied_detention"),
       Arguments.of("BAILREVC_bail_reviewed_conditions_varied_or_imposed"),
       Arguments.of("DAPO_community_order"),
+      Arguments.of("DAPOV_community_order_variation"),
     )
   }
 

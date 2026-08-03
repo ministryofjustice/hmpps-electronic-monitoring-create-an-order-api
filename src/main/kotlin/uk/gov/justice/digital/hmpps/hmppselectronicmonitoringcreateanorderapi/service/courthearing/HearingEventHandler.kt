@@ -198,6 +198,15 @@ class HearingEventHandler(
           versionId = order.versionId,
           variationDate = ZonedDateTime.of(orderedDate, LocalTime.MIDNIGHT, ZoneId.of("Europe/London")),
         )
+      val originalOrderDate =
+        getPromptValue(prompts, "Date original order made") ?: getPromptValue(prompts, "Date the original order made")
+      if (originalOrderDate != null) {
+        order.monitoringConditions!!.startDate = ZonedDateTime.of(
+          LocalDate.parse(originalOrderDate, formatter),
+          LocalTime.MIDNIGHT,
+          ZoneId.of("Europe/London"),
+        )
+      }
     }
 
     return order
@@ -242,8 +251,6 @@ class HearingEventHandler(
           prompts,
           EnforcementZoneType.EXCLUSION,
         )
-      monitoringConditions.startDate = zone.startDate
-      monitoringConditions.endDate = zone.endDate
       order.enforcementZoneConditions.add(zone)
     }
     //endregion
@@ -294,8 +301,6 @@ class HearingEventHandler(
           prompts,
           EnforcementZoneType.INCLUSION,
         )
-      monitoringConditions.startDate = zone.startDate
-      monitoringConditions.endDate = zone.endDate
       order.enforcementZoneConditions.add(zone)
     }
 //endregion
@@ -433,7 +438,7 @@ class HearingEventHandler(
       val parts = it.split(":", limit = 2)
       parts[0] to parts[1]
     }
-    condition.description = conditionPrompt.value
+    condition.description = "${conditionPrompt.label} ${conditionPrompt.value}"
 
     condition.startDate = ZonedDateTime.of(
       LocalDate.parse(conditionDetail["Start date for tag"] ?: "", formatter),

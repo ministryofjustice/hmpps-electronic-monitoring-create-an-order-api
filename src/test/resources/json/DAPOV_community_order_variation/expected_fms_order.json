@@ -6,17 +6,17 @@
   "court": "",
   "court_order_email": "",
   "device_type": "",
-  "device_wearer": "Julio Schiller",
+  "device_wearer": "Tristan Beatty",
   "enforceable_condition": [
     {
       "condition": "Curfew with EM",
-      "start_date": "2024-11-10 10:00:00",
-      "end_date": "2025-11-10 10:22:00"
+      "start_date": "2025-02-21 10:00:00",
+      "end_date": "2025-07-22 10:00:00"
     },
     {
       "condition": "EM Exclusion / Inclusion Zone",
-      "start_date": "2024-11-10 10:00:00",
-      "end_date": "2025-11-10 10:00:00"
+      "start_date": "2025-02-21 10:00:00",
+      "end_date": "2026-02-20 08:00:00"
     }
   ],
   "exclusion_allday": "",
@@ -33,19 +33,19 @@
   "no_address_3": "",
   "no_address_4": "",
   "no_email": "",
-  "no_name": "Lavender Hill Magistrates' Court",
+  "no_name": "City of London Magistrates' Court",
   "no_phone_number": "",
   "offence": "",
   "offence_additional_details": "",
   "offence_date": "",
-  "order_end": "2025-11-10 10:22:00",
+  "order_end": "2026-02-20 08:00:00",
   "order_id": "{expectedOderId}",
   "order_request_type": "Variation",
-  "order_start": "2024-05-10 00:00:00",
+  "order_start": "2025-02-21 00:00:00",
   "order_type": "Community",
   "order_type_description": "",
   "order_type_detail": "",
-  "order_variation_date": "2024-10-04 00:00:00",
+  "order_variation_date": "2025-02-21 00:00:00",
   "order_variation_details": "",
   "order_variation_req_received_date": "",
   "order_variation_type": "",
@@ -56,15 +56,15 @@
   "responsible_officer_email": "",
   "responsible_officer_phone": "",
   "responsible_officer_name": "",
-  "responsible_organization": "Probation",
+  "responsible_organization": "",
   "ro_post_code": "",
   "ro_address_1": "",
   "ro_address_2": "",
   "ro_address_3": "",
   "ro_address_4": "",
-  "ro_email": "londonnps.court@justice.gov.uk",
+  "ro_email": "",
   "ro_phone": "",
-  "ro_region": "London Division NPS",
+  "ro_region": "",
   "sentence_date": "",
   "sentence_expiry": "",
   "sentence_type": "",
@@ -80,18 +80,24 @@
   "conditional_release_end_time": "",
   "reason_for_order_ending_early": "",
   "business_unit": "",
-  "service_end_date": "2025-11-10",
-  "curfew_description": "11 Copperfield Avenue\nSE13 7MJ Defendant must remain at above address for the specified period as explained in the court order.",
-  "curfew_start": "2024-11-10 10:00:00",
-  "curfew_end": "2025-11-10 10:22:00",
+  "service_end_date": "2026-02-20",
+  "curfew_description": "Curfew and Electronic Monitoring period:6 Months\nStart date of tagging:21/02/2025\nStart time of tagging:10:00\nEnd date of tagging:22/07/2025\nEnd time of tagging:10:00\nDefendant to remain at:Burbank Cottage, Within Ln, Hopton, Stafford ST18 0AY\nDetails and timings:mon- fri 7 AM to 7 PM\nAdditional information:Burbank Cottage, Within Ln, Hopton,",
+  "curfew_start": "2025-02-21 10:00:00",
+  "curfew_end": "2025-07-22 10:00:00",
   "curfew_duration": [],
   "trail_monitoring": "No",
   "exclusion_zones": [
     {
-      "description": "ERPEM - Exclusion not to enter for a period with electronic monitoring\nExclusion Requirement with Electronic Monitoring: Not to enter London Kensington. This exclusion with electronic monitoring lasts for 6 Months. Start date 10/11/2024. Start time 10:00. End date 10/11/2025. End time 10:00. ",
-      "duration": "6 Months",
-      "start": "2024-11-10",
-      "end": "2025-11-10"
+      "description": "Prohibition: Exclusion - Not to enter for a period with electronic monitoring Place / area:Hopton Hall, Lane, Hopton, Stafford ST18 0AZ\nExclusion and electronic monitoring period:6 Months\nStart date for tag:21/02/2025\nStart time for tag:10:00\nEnd date for tag:20/07/2025\nEnd time for tag:18:00\nAdditional information:Hopton Hall, Lane, Hopton,",
+      "duration": null,
+      "start": "2025-02-21",
+      "end": "2025-07-20"
+    },
+    {
+      "description": "Prohibition: Exclusion - Not to leave a place for a period with electronic monitoring Place / area:DAPO requirements cancelled\nExclusion and electronic monitoring period:1 Years\nStart date for tag:21/02/2025\nStart time for tag:10:00\nEnd date for tag:20/02/2026\nEnd time for tag:08:00\nAdditional information:DAPO requirements cancelled",
+      "duration": null,
+      "start": "2025-02-21",
+      "end": "2026-02-20"
     }
   ],
   "inclusion_zones": [],

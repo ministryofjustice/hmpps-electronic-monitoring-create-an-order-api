@@ -10,6 +10,7 @@ class VariationOrders {
       CommunityOrder.YROV.id,
       CommunityOrder.SUSPVD.id,
       BailOrRemandToCareCondition.BAILREVC.id,
+      CommunityOrder.DAPOV.id,
     )
 
     fun contains(id: String?) = VARIATION_UUIDS.contains(id)

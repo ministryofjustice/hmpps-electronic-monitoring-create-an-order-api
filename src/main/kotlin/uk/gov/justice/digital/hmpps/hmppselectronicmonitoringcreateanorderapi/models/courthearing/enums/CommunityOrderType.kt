@@ -16,6 +16,7 @@ enum class CommunityOrderType(val uuid: String) {
   PROHIBITION_EXCLUSION_NOT_TO_LEAVE("80473211-4680-4744-ab6a-49c9c87a59b9"),
   PROHIBITION_EXCLUSION_ZONE("5cc17256-632a-41ea-855a-622602e595b7"),
   DAPO("db5e6d5a-337f-4a68-b060-35a644c913ef"),
+  DAPOV("90f87813-e738-4c21-b122-5ebe93bb575f"),
   ;
 
   companion object {

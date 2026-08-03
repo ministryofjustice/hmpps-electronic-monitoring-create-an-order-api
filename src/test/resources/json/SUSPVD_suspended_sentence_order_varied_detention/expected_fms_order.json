@@ -36,7 +36,7 @@
   "order_end": "2025-11-10 10:00:00",
   "order_id": "{expectedOderId}",
   "order_request_type": "Variation",
-  "order_start": "2024-10-09 00:00:00",
+  "order_start": "2024-05-10 00:00:00",
   "order_type": "Community",
   "order_type_description": "",
   "order_type_detail": "",
