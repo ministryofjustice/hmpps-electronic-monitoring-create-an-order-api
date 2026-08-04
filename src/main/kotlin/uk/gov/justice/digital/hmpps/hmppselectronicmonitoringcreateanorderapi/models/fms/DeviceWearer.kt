@@ -5,6 +5,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.co
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Gender
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RiskCategory
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Sex
@@ -165,7 +166,7 @@ data class DeviceWearer(
 
   companion object {
     private val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-    fun fromCemoOrder(order: Order, featureFlags: FeatureFlags): DeviceWearer {
+    fun fromCemoOrder(order: Order, featureFlags: FeatureFlags, orderSource: FmsOrderSource): DeviceWearer {
       var adultChild = "adult"
       if (!order.deviceWearer?.adultAtTimeOfInstallation!!) {
         adultChild = "child"
@@ -224,9 +225,23 @@ data class DeviceWearer(
       if (order.deviceWearer?.noFixedAbode != null && !order.deviceWearer?.noFixedAbode!!) {
         val primaryAddress = order.addresses.find { address -> address.addressType == AddressType.PRIMARY }!!
         deviceWearer.address1 = primaryAddress.addressLine1
-        deviceWearer.address2 = if (primaryAddress.addressLine2 == "") "N/A" else primaryAddress.addressLine2
+        deviceWearer.address2 =
+          if (primaryAddress.addressLine2 == "" &&
+            orderSource == FmsOrderSource.CEMO
+          ) {
+            "N/A"
+          } else {
+            primaryAddress.addressLine2
+          }
         deviceWearer.address3 = primaryAddress.addressLine3
-        deviceWearer.address4 = if (primaryAddress.addressLine4 == "") "N/A" else primaryAddress.addressLine4
+        deviceWearer.address4 =
+          if (primaryAddress.addressLine4 == "" &&
+            orderSource == FmsOrderSource.CEMO
+          ) {
+            "N/A"
+          } else {
+            primaryAddress.addressLine4
+          }
         deviceWearer.addressPostCode = primaryAddress.postcode
       } else if (order.deviceWearer?.noFixedAbode == true) {
         deviceWearer.noFixedAddress = "true"

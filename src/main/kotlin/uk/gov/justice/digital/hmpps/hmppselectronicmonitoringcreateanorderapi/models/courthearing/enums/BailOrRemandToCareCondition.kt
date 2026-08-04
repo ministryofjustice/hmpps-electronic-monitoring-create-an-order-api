@@ -48,6 +48,9 @@ enum class BailOrRemandToCareCondition(val id: String) {
 
   // Youth remittal In Local Authority accommodation (REMIL)
   REMIL("e85dc2ee-9b63-4dca-8dc0-7dedaa00f5bf"),
+
+  // Bail reviewd- conditions varied or imposed
+  BAILREVC("52c3a7dc-3ec2-4d42-b808-24d69d645afe"),
   ;
 
   companion object {

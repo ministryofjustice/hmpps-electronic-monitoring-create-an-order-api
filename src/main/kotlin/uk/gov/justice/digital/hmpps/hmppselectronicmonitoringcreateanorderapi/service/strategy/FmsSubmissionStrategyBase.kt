@@ -13,10 +13,10 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 abstract class FmsSubmissionStrategyBase(val objectMapper: ObjectMapper, private val featureFlags: FeatureFlags) :
   FmsSubmissionStrategy {
 
-  protected fun getDeviceWearer(order: Order): Result<DeviceWearer> = try {
+  protected fun getDeviceWearer(order: Order, orderSource: FmsOrderSource): Result<DeviceWearer> = try {
     Result(
       success = true,
-      data = DeviceWearer.fromCemoOrder(order, featureFlags),
+      data = DeviceWearer.fromCemoOrder(order, featureFlags, orderSource),
     )
   } catch (e: Exception) {
     Result(

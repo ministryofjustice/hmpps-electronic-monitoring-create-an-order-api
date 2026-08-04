@@ -21,6 +21,21 @@ enum class CommunityOrder(val id: String) {
 
   // Supervision default order(SDO)
   SDO("fd391847-f640-402e-a958-f33a014e6684"),
+
+  // Suspended sentence order varied- imprisonment
+  SUSPV("280a5606-c70a-432f-bdfe-a9dfd49f18c5"),
+
+  // Youth rehabilitation order varied
+  YROV("5cceca91-e6f2-471b-8919-8dfd3ad3c746"),
+
+  // Suspended sentence order varited - detention
+  SUSPVD("726c4beb-9ead-4b6b-bed9-b761b5b43553"),
+
+  // DAPO
+  DAPO("db5e6d5a-337f-4a68-b060-35a644c913ef"),
+
+  // DAPO variation
+  DAPOV("90f87813-e738-4c21-b122-5ebe93bb575f"),
   ;
 
   companion object {

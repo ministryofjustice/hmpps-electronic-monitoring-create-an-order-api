@@ -107,8 +107,8 @@ class FmsVariationSubmissionStrategy(
     return documents.map { this.createAttachment(it, deviceWearerId) }
   }
 
-  private fun updateDeviceWearer(order: Order): FmsDeviceWearerSubmissionResult {
-    val deviceWearerResult = this.getDeviceWearer(order)
+  private fun updateDeviceWearer(order: Order, orderSource: FmsOrderSource): FmsDeviceWearerSubmissionResult {
+    val deviceWearerResult = this.getDeviceWearer(order, orderSource)
 
     if (!deviceWearerResult.success) {
       return FmsDeviceWearerSubmissionResult(
@@ -254,7 +254,7 @@ class FmsVariationSubmissionStrategy(
   }
 
   override fun submitOrder(order: Order, orderSource: FmsOrderSource): FmsSubmissionResult {
-    val createDeviceWearerResult = this.updateDeviceWearer(order)
+    val createDeviceWearerResult = this.updateDeviceWearer(order, orderSource)
     val deviceWearerId = createDeviceWearerResult.deviceWearerId
 
     if (createDeviceWearerResult.status === SubmissionStatus.FAILURE) {

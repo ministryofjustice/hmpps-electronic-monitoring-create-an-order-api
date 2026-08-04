@@ -380,19 +380,19 @@ data class MonitoringOrder(
         val startDateIsInPast =
           monitoringStartDate != null && (monitoringStartDate.toLocalDate() < ZonedDateTime.now().toLocalDate())
         val orderIsVariation = RequestType.VARIATION_TYPES.contains(order.type)
-        val variationInPast = startDateIsInPast && orderIsVariation
+        val cemoVariationInPast = startDateIsInPast && orderIsVariation && orderSource == FmsOrderSource.CEMO
 
         monitoringOrder.apply {
-          responsibleOfficerName = if (variationInPast) "" else parties.getResponsibleOfficerFullName()
-          responsibleOfficerPhone = if (variationInPast) "" else getResponsibleOfficerPhoneNumber(parties)
-          responsibleOfficerEmail = if (variationInPast) "" else parties.responsibleOfficerEmail ?: ""
-          responsibleOrganization = if (variationInPast) "" else getResponsibleOrganisation(parties)
-          roRegion = if (variationInPast) "" else getResponsibleOrganisationRegion(parties)
+          responsibleOfficerName = if (cemoVariationInPast) "" else parties.getResponsibleOfficerFullName()
+          responsibleOfficerPhone = if (cemoVariationInPast) "" else getResponsibleOfficerPhoneNumber(parties)
+          responsibleOfficerEmail = if (cemoVariationInPast) "" else parties.responsibleOfficerEmail ?: ""
+          responsibleOrganization = if (cemoVariationInPast) "" else getResponsibleOrganisation(parties)
+          roRegion = if (cemoVariationInPast) "" else getResponsibleOrganisationRegion(parties)
           if (responsibleOrganization == ResponsibleOrganisation.PROBATION.value
           ) {
-            pduResponsible = if (variationInPast) "" else getProbationDeliveryUnit(order)
+            pduResponsible = if (cemoVariationInPast) "" else getProbationDeliveryUnit(order)
           }
-          roEmail = if (variationInPast) "" else parties.responsibleOrganisationEmail
+          roEmail = if (cemoVariationInPast) "" else parties.responsibleOrganisationEmail
 
           notifyingOrganization = getNotifyingOrganisation(parties, order.dataDictionaryVersion)
           notifyingOfficerName =
@@ -409,14 +409,14 @@ data class MonitoringOrder(
 
             val isCourt = matchingEnum != null && NotifyingOrganisationDDv5.COURTS.contains(matchingEnum)
 
-            responsibleOfficerDetailsReceived = if (isCourt || variationInPast) {
+            responsibleOfficerDetailsReceived = if (isCourt || cemoVariationInPast) {
               "No"
             } else {
               "Yes"
             }
           }
 
-          if (variationInPast) {
+          if (cemoVariationInPast) {
             responsibleOfficerName = ""
             responsibleOfficerPhone = ""
             responsibleOfficerEmail = ""
