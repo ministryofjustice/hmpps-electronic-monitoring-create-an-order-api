@@ -204,6 +204,8 @@ data class MonitoringOrder(
   var exclusionZones: MutableList<Zone> = mutableListOf(),
   @JsonProperty("inclusion_zones")
   var inclusionZones: MutableList<Zone> = mutableListOf(),
+  @JsonProperty("restriction_zones")
+  var restrictionZones: MutableList<Zone> = mutableListOf(),
   @JsonProperty("abstinence")
   var abstinence: String? = "",
   @JsonProperty("schedule")
@@ -471,32 +473,45 @@ data class MonitoringOrder(
         val enforcementZoneEndDate =
           order.enforcementZoneConditions.mapNotNull { it.endDate }.maxOrNull() ?: defaultEndDate
 
-        monitoringOrder.enforceableCondition!!.add(
-          EnforceableCondition(
-            "EM Exclusion / Inclusion Zone",
-            startDate = getBritishDateAndTime(enforcementZoneStartDate),
-            endDate = getBritishDateAndTime(enforcementZoneEndDate) ?: "",
-          ),
-        )
+        if (order.enforcementZoneConditions.any {
+            it.zoneType in setOf(
+              EnforcementZoneType.INCLUSION,
+              EnforcementZoneType.EXCLUSION,
+            )
+          }
+        ) {
+          monitoringOrder.enforceableCondition?.add(
+            EnforceableCondition(
+              "EM Exclusion / Inclusion Zone",
+              startDate = getBritishDateAndTime(enforcementZoneStartDate),
+              endDate = getBritishDateAndTime(enforcementZoneEndDate) ?: "",
+            ),
+          )
+        }
+
+        if (order.enforcementZoneConditions.any { it.zoneType == EnforcementZoneType.RESTRICTION }) {
+          monitoringOrder.enforceableCondition?.add(
+            EnforceableCondition(
+              "Restriction Zone",
+              startDate = getBritishDateAndTime(enforcementZoneStartDate),
+              endDate = getBritishDateAndTime(enforcementZoneEndDate) ?: "",
+            ),
+          )
+        }
+
         order.enforcementZoneConditions.forEach {
-          if (it.zoneType == EnforcementZoneType.EXCLUSION) {
-            monitoringOrder.exclusionZones.add(
-              Zone(
-                description = it.description,
-                duration = it.duration,
-                start = getBritishDate(it.startDate),
-                end = getBritishDate(it.endDate ?: defaultEndDate) ?: "",
-              ),
-            )
-          } else if (it.zoneType == EnforcementZoneType.INCLUSION) {
-            monitoringOrder.inclusionZones.add(
-              Zone(
-                description = it.description,
-                duration = it.duration,
-                start = getBritishDate(it.startDate),
-                end = getBritishDate(it.endDate ?: defaultEndDate) ?: "",
-              ),
-            )
+          val zone = Zone(
+            description = it.description,
+            duration = it.duration,
+            start = getBritishDate(it.startDate),
+            end = getBritishDate(it.endDate ?: defaultEndDate) ?: "",
+          )
+
+          when (it.zoneType) {
+            EnforcementZoneType.EXCLUSION -> monitoringOrder.exclusionZones.add(zone)
+            EnforcementZoneType.INCLUSION -> monitoringOrder.inclusionZones.add(zone)
+            EnforcementZoneType.RESTRICTION -> monitoringOrder.restrictionZones.add(zone)
+            else -> {}
           }
         }
 

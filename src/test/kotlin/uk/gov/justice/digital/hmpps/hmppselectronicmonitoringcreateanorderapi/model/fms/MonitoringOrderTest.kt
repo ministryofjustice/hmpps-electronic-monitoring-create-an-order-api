@@ -303,6 +303,52 @@ class MonitoringOrderTest : OrderTestBase() {
       )
       assertThat(fmsMonitoringOrder.orderEnd).isEqualTo("")
     }
+
+    @Test
+    fun `It should map restriction zone`() {
+      val overallStartDate = ZonedDateTime.of(2026, 1, 1, 12, 0, 0, 0, ZoneId.of("UTC"))
+      val overallEndDate = ZonedDateTime.of(2026, 4, 1, 12, 0, 0, 0, ZoneId.of("UTC"))
+
+      val order = createOrder(
+        monitoringConditions = createMonitoringConditions(
+          startDate = overallStartDate,
+          endDate = overallEndDate,
+        ),
+        enforcementZoneConditions = listOf(
+          createEnforcementZoneCondition(
+            startDate = overallStartDate,
+            endDate = overallEndDate,
+            zoneType = EnforcementZoneType.RESTRICTION,
+            description = "where",
+            duration = "when",
+          ),
+        ),
+      )
+
+      val fmsMonitoringOrder = MonitoringOrder.fromOrder(
+        order,
+        caseId = "",
+        featureFlags = mockFeatureFlags,
+        FmsOrderSource.CEMO,
+      )
+
+      assertThat(fmsMonitoringOrder.enforceableCondition).contains(
+        EnforceableCondition(
+          condition = "Restriction Zone",
+          startDate = "2026-01-01 12:00:00",
+          endDate = "2026-04-01 13:00:00",
+        ),
+      )
+
+      assertThat(fmsMonitoringOrder.restrictionZones).contains(
+        Zone(
+          description = "where",
+          duration = "when",
+          start = "2026-01-01",
+          end = "2026-04-01",
+        ),
+      )
+    }
   }
 
   @Test
