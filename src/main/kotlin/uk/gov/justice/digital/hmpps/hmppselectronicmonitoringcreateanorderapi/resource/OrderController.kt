@@ -238,7 +238,7 @@ class OrderController(@Autowired val orderService: OrderService) {
       monitoringEndDate = order.getMonitoringEndDate(),
     )
     // Backwards compat
-    dto.monitoringConditions?.startDate = dto.monitoringEndDate
+    dto.monitoringConditions?.startDate = dto.monitoringStartDate
     dto.monitoringConditions?.endDate = dto.monitoringEndDate
 
     return dto
