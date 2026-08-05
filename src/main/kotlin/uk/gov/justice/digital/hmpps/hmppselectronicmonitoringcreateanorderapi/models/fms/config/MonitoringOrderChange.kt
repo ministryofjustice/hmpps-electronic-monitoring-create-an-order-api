@@ -139,7 +139,7 @@ enum class MonitoringOrderChange(
   // Addresses / IDs
   InstallationAddress(
     "Installation address has changed",
-    VariationType.CHANGE_TO_ADDRESS,
+    VariationType.OTHER,
   ),
   CourtCaseReferenceNumber(
     "Device wearer's court case reference number(s) have changed",
