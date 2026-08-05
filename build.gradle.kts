@@ -19,7 +19,6 @@ dependencies {
   implementation("org.apache.logging.log4j:log4j-api:2.26.1")
   implementation("io.sentry:sentry-spring-boot-4:8.51.0")
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.1.0")
-
   // starters
   implementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter:3.0.0")
   implementation("org.springframework.boot:spring-boot-starter-webflux")
@@ -28,7 +27,7 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
   implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-  implementation("io.awspring.cloud:spring-cloud-aws-starter-s3:4.1.0")
+  implementation("io.awspring.cloud:spring-cloud-aws-starter-s3:4.0.2")
   implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:7.4.0")
   implementation("org.springframework.boot:spring-boot-starter-webclient")
   implementation("org.springframework.boot:spring-boot-starter-flyway")
