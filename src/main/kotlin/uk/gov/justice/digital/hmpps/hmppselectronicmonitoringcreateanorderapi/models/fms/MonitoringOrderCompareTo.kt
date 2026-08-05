@@ -207,7 +207,7 @@ fun MonitoringOrder.compareTo(previous: MonitoringOrder): MonitoringOrderCompare
     )
   ) {
     result.addMessage(MonitoringOrderChange.InstallationAddress.message)
-    result.addOrderVariationType(VariationType.CHANGE_TO_ADDRESS)
+    result.addOrderVariationType(VariationType.OTHER)
   }
   compareField(
     MonitoringOrderChange.CourtCaseReferenceNumber,
