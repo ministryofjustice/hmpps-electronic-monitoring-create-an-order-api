@@ -5,6 +5,7 @@ import jakarta.persistence.PersistenceContext
 import jakarta.persistence.Tuple
 import jakarta.persistence.criteria.CriteriaBuilder
 import jakarta.persistence.criteria.CriteriaQuery
+import jakarta.persistence.criteria.Expression
 import jakarta.persistence.criteria.Join
 import jakarta.persistence.criteria.JoinType
 import jakarta.persistence.criteria.Predicate
@@ -193,9 +194,10 @@ class OrderSearchRepositoryImpl(@PersistenceContext private val entityManager: E
     query: CriteriaQuery<Tuple>,
     version: Root<OrderVersion>,
     monitoringConditions: Join<OrderVersion, MonitoringConditions>,
-  ) = cb.function(
+  ): Expression<ZonedDateTime> = cb.function(
     "coalesce",
     ZonedDateTime::class.java,
+    version.get<ZonedDateTime>("monitoringStartDate"),
     monitoringConditions.get<ZonedDateTime>("startDate"),
     cb.function(
       "least",
@@ -209,9 +211,10 @@ class OrderSearchRepositoryImpl(@PersistenceContext private val entityManager: E
     query: CriteriaQuery<Tuple>,
     version: Root<OrderVersion>,
     monitoringConditions: Join<OrderVersion, MonitoringConditions>,
-  ) = cb.function(
+  ): Expression<ZonedDateTime> = cb.function(
     "coalesce",
     ZonedDateTime::class.java,
+    version.get<ZonedDateTime>("monitoringEndDate"),
     monitoringConditions.get<ZonedDateTime>("endDate"),
     cb.function(
       "greatest",
