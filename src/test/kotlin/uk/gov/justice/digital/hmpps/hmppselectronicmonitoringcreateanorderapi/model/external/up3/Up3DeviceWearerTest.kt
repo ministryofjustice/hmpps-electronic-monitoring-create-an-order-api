@@ -27,6 +27,7 @@ class Up3DeviceWearerTest {
       deliusId = "delius",
       prisonNumber = "prisonNumber",
       homeOfficeCaseReferenceNumber = "hocrn",
+      cepr = "cepr",
       noFixedAddress = "false",
       address1 = "1 fake street",
       address2 = "",
@@ -92,6 +93,7 @@ class Up3DeviceWearerTest {
     assertThat(deviceWearer.nomisId).isEqualTo(up3DeviceWearer.nomisId)
     assertThat(deviceWearer.deliusId).isEqualTo(up3DeviceWearer.deliusId)
     assertThat(deviceWearer.prisonNumber).isEqualTo(up3DeviceWearer.prisonNumber)
+    assertThat(deviceWearer.complianceAndEnforcementPersonReference).isEqualTo(up3DeviceWearer.cepr)
     assertThat(
       deviceWearer.homeOfficeReferenceNumber,
     ).isEqualTo(up3DeviceWearer.homeOfficeCaseReferenceNumber)

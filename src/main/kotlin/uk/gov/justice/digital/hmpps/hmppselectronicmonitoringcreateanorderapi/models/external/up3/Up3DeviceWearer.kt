@@ -24,6 +24,7 @@ data class Up3DeviceWearer(
   var deliusId: String,
   var nomisId: String,
   var pncId: String,
+  var cepr: String,
   var noFixedAddress: String,
   var address1: String,
   var address2: String,
@@ -65,49 +66,68 @@ data class Up3DeviceWearer(
       nomisId = nomisId,
       deliusId = deliusId,
       prisonNumber = prisonNumber,
-      homeOfficeReferenceNumber = homeOfficeCaseReferenceNumber, // maybe map to ho case ref number
+      homeOfficeReferenceNumber = homeOfficeCaseReferenceNumber,
+      complianceAndEnforcementPersonReference = cepr,
     )
   }
 
   fun toAddress(versionId: UUID): Address? {
     if (noFixedAddress == "true") return null
 
-    return Address(
-      versionId = versionId,
-      addressType = AddressType.PRIMARY,
-      addressLine1 = address1,
-      addressLine2 = address2,
-      addressLine3 = address3,
-      addressLine4 = address4,
-      postcode = addressPostCode,
+    return buildAddress(
+      versionId,
+      address1,
+      address2,
+      address3,
+      address4,
+      addressPostCode,
+      AddressType.PRIMARY,
     )
   }
 
   fun toSecondaryAddress(versionId: UUID): Address? {
     if (secondaryAddress1.isBlank()) return null
 
-    return Address(
+    return buildAddress(
       versionId = versionId,
-      addressType = AddressType.SECONDARY,
-      addressLine1 = secondaryAddress1,
-      addressLine2 = secondaryAddress2,
-      addressLine3 = secondaryAddress3,
-      addressLine4 = secondaryAddress4,
-      postcode = secondaryAddressPostCode,
+      secondaryAddress1,
+      secondaryAddress2,
+      secondaryAddress3,
+      secondaryAddress4,
+      secondaryAddressPostCode,
+      AddressType.SECONDARY,
     )
   }
 
   fun toTertiaryAddress(versionId: UUID): Address? {
     if (tertiaryAddress1.isBlank()) return null
 
-    return Address(
+    return buildAddress(
       versionId = versionId,
-      addressType = AddressType.TERTIARY,
-      addressLine1 = tertiaryAddress1,
-      addressLine2 = tertiaryAddress2,
-      addressLine3 = tertiaryAddress3,
-      addressLine4 = tertiaryAddress4,
-      postcode = tertiaryAddressPostCode,
+      tertiaryAddress1,
+      tertiaryAddress2,
+      tertiaryAddress3,
+      tertiaryAddress4,
+      tertiaryAddressPostCode,
+      AddressType.TERTIARY,
     )
   }
+
+  private fun buildAddress(
+    versionId: UUID,
+    line1: String,
+    line2: String,
+    line3: String,
+    line4: String,
+    postcode: String,
+    type: AddressType,
+  ) = Address(
+    versionId = versionId,
+    addressLine1 = line1,
+    addressLine2 = line2,
+    addressLine3 = line3,
+    addressLine4 = line4,
+    postcode = postcode,
+    addressType = type,
+  )
 }
