@@ -73,11 +73,11 @@ enum class MonitoringOrderChange(
   ),
   TagAtSource(
     "Tag at source has changed",
-    VariationType.CHANGE_TO_DEVICE_TYPE,
+    VariationType.OTHER,
   ),
   TagAtSourceDetails(
     "Name of installation location has changed",
-    VariationType.CHANGE_TO_DEVICE_TYPE,
+    VariationType.OTHER,
   ),
   DateAndTimeInstallationWillTakePlace(
     "Installation date and time have changed",
