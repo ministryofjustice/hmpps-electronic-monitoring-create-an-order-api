@@ -83,7 +83,7 @@ class OrderSearchRepositoryImplTest : IntegrationTestBase() {
   fun `search returns the stored monitoring dates`() {
     val order = TestUtilities.createReadyToSubmitOrder(
       versionId = UUID.randomUUID(),
-      status = OrderStatus.SUBMITTED,
+      status = OrderStatus.IN_PROGRESS,
       startDate = ZonedDateTime.parse("2040-02-01T00:00:00Z"),
       endDate = ZonedDateTime.parse("2040-03-01T00:00:00Z"),
     )
@@ -93,7 +93,7 @@ class OrderSearchRepositoryImplTest : IntegrationTestBase() {
 
     val decoy = TestUtilities.createReadyToSubmitOrder(
       versionId = UUID.randomUUID(),
-      status = OrderStatus.SUBMITTED,
+      status = OrderStatus.IN_PROGRESS,
       startDate = ZonedDateTime.parse("2000-01-01T00:00:00Z"),
       endDate = ZonedDateTime.parse("2099-12-31T00:00:00Z"),
     )
