@@ -21,6 +21,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ResponsibleOrganisation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.VariationType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.utilities.TestUtilities
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.util.UUID
@@ -319,6 +320,49 @@ class OrderTest : OrderTestBase() {
     assertThat(result).isEqualTo(latestDate)
   }
 
+  private val baselineStart = ZonedDateTime.parse("2040-02-01T00:00:00Z")
+  private val baselineEnd = ZonedDateTime.parse("2040-03-01T00:00:00Z")
+  private val earliest = ZonedDateTime.parse("2040-01-05T00:00:00Z")
+  private val latest = ZonedDateTime.parse("2040-04-15T00:00:00Z")
+
+  @Test
+  fun `stores the earliest start and latest end across all monitoring types`() {
+    val order = order()
+    order.monitoringConditionsTrail!!.startDate = earliest
+    order.monitoringConditionsAlcohol!!.endDate = latest
+
+    order.recalculateMonitoringStartEndDate()
+
+    assertThat(order.getCurrentVersion().monitoringStartDate!!.toInstant()).isEqualTo(earliest.toInstant())
+    assertThat(order.getCurrentVersion().monitoringEndDate!!.toInstant()).isEqualTo(latest.toInstant())
+  }
+
+  @Test
+  fun `derives from the monitoring types only, ignoring the monitoring conditions dates`() {
+    val order = order()
+    order.monitoringConditions!!.startDate = ZonedDateTime.parse("2000-01-01T00:00Z")
+    order.monitoringConditions!!.endDate = ZonedDateTime.parse("2099-12-31T00:00Z")
+
+    order.recalculateMonitoringStartEndDate()
+    assertThat(order.getCurrentVersion().monitoringStartDate!!.toInstant()).isEqualTo(baselineStart.toInstant())
+    assertThat(order.getCurrentVersion().monitoringEndDate!!.toInstant()).isEqualTo(baselineEnd.toInstant())
+  }
+
+  @Test
+  fun `shrinks the date range window when the monitoring types are removed`() {
+    val order = order()
+    order.monitoringConditionsTrail!!.startDate = earliest
+    order.monitoringConditionsAlcohol!!.endDate = latest
+    order.recalculateMonitoringStartEndDate()
+
+    order.monitoringConditionsTrail = null
+    order.monitoringConditionsAlcohol = null
+    order.recalculateMonitoringStartEndDate()
+
+    assertThat(order.getCurrentVersion().monitoringStartDate).isEqualTo(baselineStart)
+    assertThat(order.getCurrentVersion().monitoringEndDate).isEqualTo(baselineEnd)
+  }
+
   @ParameterizedTest
   @MethodSource("variationRequestTypeProvider")
   fun `should return false if request type is a variation type but variation details is not set`(
@@ -374,6 +418,12 @@ class OrderTest : OrderTestBase() {
         documentId = UUID.randomUUID(),
       ),
     ),
+  )
+
+  private fun order() = TestUtilities.createReadyToSubmitOrder(
+    versionId = UUID.randomUUID(),
+    startDate = baselineStart,
+    endDate = baselineEnd,
   )
 
   companion object {
