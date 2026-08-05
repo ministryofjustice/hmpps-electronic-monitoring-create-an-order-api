@@ -111,7 +111,7 @@ class OrderSearchRepositoryImplTest : IntegrationTestBase() {
   fun `search falls back to the monitoring conditions dates for legacy orders`() {
     val order = TestUtilities.createReadyToSubmitOrder(
       versionId = UUID.randomUUID(),
-      status = OrderStatus.SUBMITTED,
+      status = OrderStatus.IN_PROGRESS,
       startDate = ZonedDateTime.parse("2040-02-01T00:00:00Z"),
       endDate = ZonedDateTime.parse("2040-03-01T00:00:00Z"),
     )
@@ -129,7 +129,7 @@ class OrderSearchRepositoryImplTest : IntegrationTestBase() {
   fun `search derives from the monitoring types when nothing is stored`() {
     val order = TestUtilities.createReadyToSubmitOrder(
       versionId = UUID.randomUUID(),
-      status = OrderStatus.SUBMITTED,
+      status = OrderStatus.IN_PROGRESS,
       startDate = ZonedDateTime.parse("2040-02-01T00:00:00Z"),
       endDate = ZonedDateTime.parse("2040-03-01T00:00:00Z"),
     )
@@ -144,5 +144,55 @@ class OrderSearchRepositoryImplTest : IntegrationTestBase() {
 
     assertThat(result.monitoringConditions.startDate!!.toInstant())
       .isEqualTo(ZonedDateTime.parse("2040-01-05T00:00:00Z").toInstant())
+  }
+
+  @Test
+  fun `recalculateMonitoringStartEndDate is inert when order status is not in progress`() {
+    val staticResultStartDate = ZonedDateTime.parse("2040-02-01T00:00:00Z")
+    val staticResultEndDate = ZonedDateTime.parse("2040-03-01T00:00:00Z")
+    val order = TestUtilities.createReadyToSubmitOrder(
+      versionId = UUID.randomUUID(),
+      status = OrderStatus.SUBMITTED,
+      startDate = staticResultStartDate,
+      endDate = staticResultEndDate,
+    )
+    order.monitoringConditionsTrail!!.startDate = ZonedDateTime.parse("2039-01-05T00:00:00Z")
+    order.monitoringConditionsAlcohol!!.endDate = ZonedDateTime.parse("2050-04-15T00:00:00Z")
+
+    order.recalculateMonitoringStartEndDate()
+
+    repo.save(order)
+
+    val result = repo.searchOrders(OrderSearchCriteria()).single { it.id == order.id }
+
+    assertThat(result.monitoringConditions.startDate!!.toInstant())
+      .isEqualTo(staticResultStartDate.toInstant())
+    assertThat(result.monitoringConditions.endDate!!.toInstant())
+      .isEqualTo(staticResultEndDate.toInstant())
+  }
+
+  @Test
+  fun `recalculateMonitoringStartEndDate updates when order status is in progress`() {
+    val overriderStartDate = ZonedDateTime.parse("2039-01-05T00:00:00Z")
+    val overriderEndDate = ZonedDateTime.parse("2050-04-15T00:00:00Z")
+    val order = TestUtilities.createReadyToSubmitOrder(
+      versionId = UUID.randomUUID(),
+      status = OrderStatus.IN_PROGRESS,
+      startDate = ZonedDateTime.parse("2040-02-01T00:00:00Z"),
+      endDate = ZonedDateTime.parse("2040-03-01T00:00:00Z"),
+    )
+    order.monitoringConditionsTrail!!.startDate = ZonedDateTime.parse("2039-01-05T00:00:00Z")
+    order.monitoringConditionsAlcohol!!.endDate = ZonedDateTime.parse("2050-04-15T00:00:00Z")
+
+    order.recalculateMonitoringStartEndDate()
+
+    repo.save(order)
+
+    val result = repo.searchOrders(OrderSearchCriteria()).single { it.id == order.id }
+
+    assertThat(result.monitoringConditions.startDate!!.toInstant())
+      .isEqualTo(overriderStartDate.toInstant())
+    assertThat(result.monitoringConditions.endDate!!.toInstant())
+      .isEqualTo(overriderEndDate.toInstant())
   }
 }

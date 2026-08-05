@@ -338,6 +338,7 @@ data class Order(
 
   fun recalculateMonitoringStartEndDate() {
     val version = getCurrentVersion()
+    if (version.status !== OrderStatus.IN_PROGRESS) return
     version.monitoringStartDate = monitoringConditionDates.mapNotNull { it.first }.minOrNull()
     version.monitoringEndDate = monitoringConditionDates.mapNotNull { it.second }.maxOrNull()
   }
