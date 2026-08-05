@@ -363,6 +363,40 @@ class OrderTest : OrderTestBase() {
     assertThat(order.getCurrentVersion().monitoringEndDate).isEqualTo(baselineEnd)
   }
 
+  @Test
+  fun `clears the date range window when no monitoring type has dates`() {
+    val order = order()
+    order.curfewConditions = null
+    order.monitoringConditionsTrail = null
+    order.monitoringConditionsAlcohol = null
+    order.enforcementZoneConditions.clear()
+    order.mandatoryAttendanceConditions.clear()
+
+    order.recalculateMonitoringStartEndDate()
+
+    assertThat(order.getCurrentVersion().monitoringStartDate).isNull()
+    assertThat(order.getCurrentVersion().monitoringEndDate).isNull()
+  }
+
+  @Test
+  fun `getMonitoringStartDate and getMonitoringEndDate gives stored date precedence`() {
+    val order = order()
+
+    val storedStartDate = ZonedDateTime.parse("2040-03-01T00:00:00Z")
+    val storedEndDate = ZonedDateTime.parse("2060-03-01T00:00:00Z")
+    order.getCurrentVersion().monitoringStartDate = storedStartDate
+    order.getCurrentVersion().monitoringEndDate = storedEndDate
+
+    order.monitoringConditions!!.startDate = ZonedDateTime.parse("2020-03-01T00:00:00Z")
+    order.monitoringConditionsTrail!!.startDate = ZonedDateTime.parse("2021-03-01T00:00:00Z")
+
+    order.monitoringConditions!!.endDate = ZonedDateTime.parse("2022-03-01T00:00:00Z")
+    order.monitoringConditionsTrail!!.endDate = ZonedDateTime.parse("2024-03-01T00:00:00Z")
+
+    assertThat(order.getMonitoringStartDate()!!.toInstant()).isEqualTo(storedStartDate.toInstant())
+    assertThat(order.getMonitoringEndDate()!!.toInstant()).isEqualTo(storedEndDate.toInstant())
+  }
+
   @ParameterizedTest
   @MethodSource("variationRequestTypeProvider")
   fun `should return false if request type is a variation type but variation details is not set`(
