@@ -234,10 +234,12 @@ class OrderController(@Autowired val orderService: OrderService) {
       ownerCohort = order.ownerCohort,
       isOwner = isOwner,
       isSentencingAct = order.isSentencingAct,
+      monitoringStartDate = order.getMonitoringStartDate(),
+      monitoringEndDate = order.getMonitoringEndDate(),
     )
-
-    dto.monitoringConditions?.startDate = order.getMonitoringStartDate()
-    dto.monitoringConditions?.endDate = order.getMonitoringEndDate()
+    // Backwards compat
+    dto.monitoringConditions?.startDate = dto.monitoringEndDate
+    dto.monitoringConditions?.endDate = dto.monitoringEndDate
 
     return dto
   }
