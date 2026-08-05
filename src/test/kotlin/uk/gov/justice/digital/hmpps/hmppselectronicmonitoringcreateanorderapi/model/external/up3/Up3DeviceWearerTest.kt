@@ -33,6 +33,16 @@ class Up3DeviceWearerTest {
       address3 = "town",
       address4 = "",
       addressPostCode = "AB1 2CD",
+      secondaryAddress1 = "",
+      secondaryAddress2 = "",
+      secondaryAddress3 = "",
+      secondaryAddress4 = "",
+      secondaryAddressPostCode = "",
+      tertiaryAddress1 = "",
+      tertiaryAddress2 = "",
+      tertiaryAddress3 = "",
+      tertiaryAddress4 = "",
+      tertiaryAddressPostCode = "",
     )
   val versionId: UUID = UUID.randomUUID()
 
@@ -102,5 +112,49 @@ class Up3DeviceWearerTest {
     val up3 = up3DeviceWearer.copy(noFixedAddress = "true")
 
     assertThat(up3.toAddress(versionId)).isNull()
+  }
+
+  @Test
+  fun `it should map a secondary to a cemo address`() {
+    val up3 = up3DeviceWearer.copy(
+      secondaryAddress1 = "2 fake street",
+      secondaryAddress2 = "",
+      secondaryAddress3 = "town",
+      secondaryAddress4 = "",
+      secondaryAddressPostCode = "AB2 3CD",
+    )
+    val address = up3.toSecondaryAddress(versionId)
+
+    assertThat(address).isNotNull
+    assertThat(address!!.addressType).isEqualTo(AddressType.SECONDARY)
+    assertThat(address.addressLine1).isEqualTo("2 fake street")
+    assertThat(address.postcode).isEqualTo("AB2 3CD")
+  }
+
+  @Test
+  fun `it should not build a secondary when empty`() {
+    assertThat(up3DeviceWearer.toSecondaryAddress(versionId)).isNull()
+  }
+
+  @Test
+  fun `it should map a tiertiary to a cemo address`() {
+    val up3 = up3DeviceWearer.copy(
+      tertiaryAddress1 = "3 fake street",
+      tertiaryAddress2 = "",
+      tertiaryAddress3 = "town",
+      tertiaryAddress4 = "",
+      tertiaryAddressPostCode = "AB3 4CD",
+    )
+    val address = up3.toTertiaryAddress(versionId)
+
+    assertThat(address).isNotNull
+    assertThat(address!!.addressType).isEqualTo(AddressType.TERTIARY)
+    assertThat(address.addressLine1).isEqualTo("3 fake street")
+    assertThat(address.postcode).isEqualTo("AB3 4CD")
+  }
+
+  @Test
+  fun `it should not build a tiertiary when empty`() {
+    assertThat(up3DeviceWearer.toTertiaryAddress(versionId)).isNull()
   }
 }

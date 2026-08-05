@@ -30,6 +30,16 @@ data class Up3DeviceWearer(
   var address3: String,
   var address4: String,
   var addressPostCode: String,
+  var secondaryAddress1: String,
+  var secondaryAddress2: String,
+  var secondaryAddress3: String,
+  var secondaryAddress4: String,
+  var secondaryAddressPostCode: String,
+  var tertiaryAddress1: String,
+  var tertiaryAddress2: String,
+  var tertiaryAddress3: String,
+  var tertiaryAddress4: String,
+  var tertiaryAddressPostCode: String,
 ) {
 
   companion object {
@@ -70,6 +80,34 @@ data class Up3DeviceWearer(
       addressLine3 = address3,
       addressLine4 = address4,
       postcode = addressPostCode,
+    )
+  }
+
+  fun toSecondaryAddress(versionId: UUID): Address? {
+    if (secondaryAddress1.isBlank()) return null
+
+    return Address(
+      versionId = versionId,
+      addressType = AddressType.SECONDARY,
+      addressLine1 = secondaryAddress1,
+      addressLine2 = secondaryAddress2,
+      addressLine3 = secondaryAddress3,
+      addressLine4 = secondaryAddress4,
+      postcode = secondaryAddressPostCode,
+    )
+  }
+
+  fun toTertiaryAddress(versionId: UUID): Address? {
+    if (tertiaryAddress1.isBlank()) return null
+
+    return Address(
+      versionId = versionId,
+      addressType = AddressType.TERTIARY,
+      addressLine1 = tertiaryAddress1,
+      addressLine2 = tertiaryAddress2,
+      addressLine3 = tertiaryAddress3,
+      addressLine4 = tertiaryAddress4,
+      postcode = tertiaryAddressPostCode,
     )
   }
 }
