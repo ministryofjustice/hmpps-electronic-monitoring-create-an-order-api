@@ -1,6 +1,8 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.up3
 
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Address
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -22,6 +24,12 @@ data class Up3DeviceWearer(
   var deliusId: String,
   var nomisId: String,
   var pncId: String,
+  var noFixedAddress: String,
+  var address1: String,
+  var address2: String,
+  var address3: String,
+  var address4: String,
+  var addressPostCode: String,
 ) {
 
   companion object {
@@ -47,7 +55,21 @@ data class Up3DeviceWearer(
       nomisId = nomisId,
       deliusId = deliusId,
       prisonNumber = prisonNumber,
-      complianceAndEnforcementPersonReference = homeOfficeCaseReferenceNumber, // maybe map to ho case ref number
+      homeOfficeReferenceNumber = homeOfficeCaseReferenceNumber, // maybe map to ho case ref number
+    )
+  }
+
+  fun toAddress(versionId: UUID): Address? {
+    if (noFixedAddress == "true") return null
+
+    return Address(
+      versionId = versionId,
+      addressType = AddressType.PRIMARY,
+      addressLine1 = address1,
+      addressLine2 = address2,
+      addressLine3 = address3,
+      addressLine4 = address4,
+      postcode = addressPostCode,
     )
   }
 }

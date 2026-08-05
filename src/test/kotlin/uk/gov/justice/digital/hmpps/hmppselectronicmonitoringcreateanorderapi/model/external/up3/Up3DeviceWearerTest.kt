@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.m
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.up3.Up3DeviceWearer
 import java.time.ZoneId
 import java.time.ZonedDateTime
@@ -26,6 +27,12 @@ class Up3DeviceWearerTest {
       deliusId = "delius",
       prisonNumber = "prisonNumber",
       homeOfficeCaseReferenceNumber = "hocrn",
+      noFixedAddress = "false",
+      address1 = "1 fake street",
+      address2 = "",
+      address3 = "town",
+      address4 = "",
+      addressPostCode = "AB1 2CD",
     )
   val versionId: UUID = UUID.randomUUID()
 
@@ -76,7 +83,24 @@ class Up3DeviceWearerTest {
     assertThat(deviceWearer.deliusId).isEqualTo(up3DeviceWearer.deliusId)
     assertThat(deviceWearer.prisonNumber).isEqualTo(up3DeviceWearer.prisonNumber)
     assertThat(
-      deviceWearer.complianceAndEnforcementPersonReference,
+      deviceWearer.homeOfficeReferenceNumber,
     ).isEqualTo(up3DeviceWearer.homeOfficeCaseReferenceNumber)
+  }
+
+  @Test
+  fun `it should map a fixed address to a cemo address`() {
+    val address = up3DeviceWearer.toAddress(versionId)
+
+    assertThat(address).isNotNull
+    assertThat(address!!.addressType).isEqualTo(AddressType.PRIMARY)
+    assertThat(address.addressLine1).isEqualTo("1 fake street")
+    assertThat(address.postcode).isEqualTo("AB1 2CD")
+  }
+
+  @Test
+  fun `it should not build an adress when no fixed address is true`() {
+    val up3 = up3DeviceWearer.copy(noFixedAddress = "true")
+
+    assertThat(up3.toAddress(versionId)).isNull()
   }
 }
