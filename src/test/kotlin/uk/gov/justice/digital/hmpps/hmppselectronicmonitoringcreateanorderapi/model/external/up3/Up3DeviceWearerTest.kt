@@ -15,7 +15,7 @@ class Up3DeviceWearerTest {
       firstName = "Bob",
       lastName = "Smith",
       alias = "Robert",
-      dateOfBirth = "2000-01-01 00:00:00",
+      dateOfBirth = "2000-07-01",
       sex = "Male",
       genderIdentity = "Male",
       language = "English",
@@ -39,7 +39,7 @@ class Up3DeviceWearerTest {
     val deviceWearer = up3DeviceWearer.toDeviceWearer(versionId)
     val expectedDOB = ZonedDateTime.of(
       2000,
-      1,
+      7,
       1,
       0,
       0,

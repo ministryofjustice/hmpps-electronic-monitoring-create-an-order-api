@@ -1,7 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.up3
 
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
-import java.time.LocalDateTime
+import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.UUID
@@ -18,10 +18,13 @@ data class Up3DeviceWearer(
   var genderIdentity: String,
   var sex: String,
 ) {
-  val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+  companion object {
+    private val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+    private val londonTimeZone: ZoneId = ZoneId.of("Europe/London")
+  }
 
   fun toDeviceWearer(versionId: UUID): DeviceWearer {
-    val parsedDob = LocalDateTime.parse(dateOfBirth, formatter).atZone(ZoneId.of("UTC"))
+    val parsedDob = LocalDate.parse(dateOfBirth, dateFormatter).atStartOfDay(londonTimeZone)
 
     return DeviceWearer(
       versionId = versionId,
