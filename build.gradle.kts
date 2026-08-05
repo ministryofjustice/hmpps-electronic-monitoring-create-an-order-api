@@ -38,7 +38,7 @@ dependencies {
   runtimeOnly("org.postgresql:postgresql:42.7.13")
 
   // test
-  testImplementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter-test:2.5.0")
+  testImplementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter-test:3.0.0")
   testImplementation("org.springframework.boot:spring-boot-webtestclient")
   testImplementation("org.wiremock:wiremock-standalone:3.13.2")
   testImplementation("com.h2database:h2:2.4.240")
