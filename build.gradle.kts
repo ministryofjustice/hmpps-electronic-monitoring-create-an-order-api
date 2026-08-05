@@ -1,7 +1,7 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "11.0.2"
-  kotlin("plugin.spring") version "2.4.0"
-  kotlin("plugin.jpa") version "2.4.0"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "11.0.3"
+  kotlin("plugin.spring") version "2.4.10"
+  kotlin("plugin.jpa") version "2.4.10"
 }
 
 configurations {
@@ -14,12 +14,11 @@ repositories {
 
 dependencies {
   implementation("commons-io:commons-io:2.22.0")
-  implementation("com.googlecode.libphonenumber:libphonenumber:9.0.34")
-  implementation("org.apache.tika:tika-core:3.3.1")
-  implementation("org.apache.logging.log4j:log4j-api:2.26.0")
-  implementation("io.sentry:sentry-spring-boot-4:8.44.1")
-  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.3")
-
+  implementation("com.googlecode.libphonenumber:libphonenumber:9.0.36")
+  implementation("org.apache.tika:tika-core:3.3.2")
+  implementation("org.apache.logging.log4j:log4j-api:2.26.1")
+  implementation("io.sentry:sentry-spring-boot-4:8.51.0")
+  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.1.0")
   // starters
   implementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter:3.0.0")
   implementation("org.springframework.boot:spring-boot-starter-webflux")
@@ -38,7 +37,7 @@ dependencies {
   runtimeOnly("org.postgresql:postgresql:42.7.13")
 
   // test
-  testImplementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter-test:2.5.0")
+  testImplementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter-test:3.0.0")
   testImplementation("org.springframework.boot:spring-boot-webtestclient")
   testImplementation("org.wiremock:wiremock-standalone:3.13.2")
   testImplementation("com.h2database:h2:2.4.240")
