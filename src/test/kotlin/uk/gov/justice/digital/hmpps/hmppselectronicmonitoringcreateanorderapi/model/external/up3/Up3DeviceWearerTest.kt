@@ -21,11 +21,16 @@ class Up3DeviceWearerTest {
       language = "English",
       interpreterRequired = "false",
       adultChild = "adult",
+      pncId = "pnc",
+      nomisId = "nomis",
+      deliusId = "delius",
+      prisonNumber = "prisonNumber",
+      homeOfficeCaseReferenceNumber = "hocrn",
     )
   val versionId: UUID = UUID.randomUUID()
 
   @Test
-  fun `it should map name fields onto CEMO device wearer`() {
+  fun `it should map name fields onto cemo device wearer`() {
     val deviceWearer = up3DeviceWearer.toDeviceWearer(versionId)
 
     assertThat(deviceWearer.versionId).isEqualTo(versionId)
@@ -35,7 +40,7 @@ class Up3DeviceWearerTest {
   }
 
   @Test
-  fun `it should map dob fields onto CEMO device wearer`() {
+  fun `it should map dob fields onto cemo device wearer`() {
     val deviceWearer = up3DeviceWearer.toDeviceWearer(versionId)
     val expectedDOB = ZonedDateTime.of(
       2000,
@@ -52,7 +57,7 @@ class Up3DeviceWearerTest {
   }
 
   @Test
-  fun `it should map dw characteristics to CEMO device wearer`() {
+  fun `it should map dw characteristics to cemo device wearer`() {
     val deviceWearer = up3DeviceWearer.toDeviceWearer(versionId)
 
     assertThat(deviceWearer.adultAtTimeOfInstallation).isEqualTo(true)
@@ -60,5 +65,18 @@ class Up3DeviceWearerTest {
     assertThat(deviceWearer.gender).isEqualTo(up3DeviceWearer.genderIdentity)
     assertThat(deviceWearer.language).isEqualTo(up3DeviceWearer.language)
     assertThat(deviceWearer.interpreterRequired).isEqualTo(false)
+  }
+
+  @Test
+  fun `should map ids to cemo device wearer`() {
+    val deviceWearer = up3DeviceWearer.toDeviceWearer(versionId)
+
+    assertThat(deviceWearer.pncId).isEqualTo(up3DeviceWearer.pncId)
+    assertThat(deviceWearer.nomisId).isEqualTo(up3DeviceWearer.nomisId)
+    assertThat(deviceWearer.deliusId).isEqualTo(up3DeviceWearer.deliusId)
+    assertThat(deviceWearer.prisonNumber).isEqualTo(up3DeviceWearer.prisonNumber)
+    assertThat(
+      deviceWearer.complianceAndEnforcementPersonReference,
+    ).isEqualTo(up3DeviceWearer.homeOfficeCaseReferenceNumber)
   }
 }

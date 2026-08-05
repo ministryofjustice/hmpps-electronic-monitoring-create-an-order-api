@@ -17,7 +17,13 @@ data class Up3DeviceWearer(
   var language: String,
   var genderIdentity: String,
   var sex: String,
+  var homeOfficeCaseReferenceNumber: String,
+  var prisonNumber: String,
+  var deliusId: String,
+  var nomisId: String,
+  var pncId: String,
 ) {
+
   companion object {
     private val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
     private val londonTimeZone: ZoneId = ZoneId.of("Europe/London")
@@ -37,6 +43,11 @@ data class Up3DeviceWearer(
       language = language,
       gender = genderIdentity,
       sex = sex,
+      pncId = pncId,
+      nomisId = nomisId,
+      deliusId = deliusId,
+      prisonNumber = prisonNumber,
+      complianceAndEnforcementPersonReference = homeOfficeCaseReferenceNumber, // maybe map to ho case ref number
     )
   }
 }
