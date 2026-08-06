@@ -3,6 +3,9 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.m
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MappaCategory
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MappaLevel
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YesNoUnknown
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.up3.Up3DeviceWearer
 import java.time.ZoneId
 import java.time.ZonedDateTime
@@ -44,6 +47,9 @@ class Up3DeviceWearerTest {
       tertiaryAddress3 = "",
       tertiaryAddress4 = "",
       tertiaryAddressPostCode = "",
+      mappa = "",
+      mappaCaseType = "",
+      mappaCategory = "",
     )
   val versionId: UUID = UUID.randomUUID()
 
@@ -158,5 +164,55 @@ class Up3DeviceWearerTest {
   @Test
   fun `it should not build a tiertiary when empty`() {
     assertThat(up3DeviceWearer.toTertiaryAddress(versionId)).isNull()
+  }
+
+  @Test
+  fun `it should map mappa level and category onto cemo mappa`() {
+    val up3 = up3DeviceWearer.copy(mappa = "MAPPA 2", mappaCategory = "Category 1")
+    val mappa = up3.toMappa(versionId)
+
+    assertThat(mappa.versionId).isEqualTo(versionId)
+    assertThat(mappa.level).isEqualTo(MappaLevel.MAPPA_TWO)
+    assertThat(mappa.category).isEqualTo(MappaCategory.CATEGORY_ONE)
+  }
+
+  @Test
+  fun `it should prefer mappa_category over mappa_case_type when both present`() {
+    val up3 = up3DeviceWearer.copy(mappaCaseType = "Category 3", mappaCategory = "Category 1")
+    val mappa = up3.toMappa(versionId)
+
+    assertThat(mappa.category).isEqualTo(MappaCategory.CATEGORY_ONE)
+  }
+
+  @Test
+  fun `it should fall back to mappa_case_type when mappa_category is blank`() {
+    val up3 = up3DeviceWearer.copy(mappaCaseType = "Category 3", mappaCategory = "")
+    val mappa = up3.toMappa(versionId)
+
+    assertThat(mappa.category).isEqualTo(MappaCategory.CATEGORY_THREE)
+  }
+
+  @Test
+  fun `it should leave level and category null and not throw when values are unmatched`() {
+    val up3 = up3DeviceWearer.copy(mappa = "not a real level", mappaCategory = "not a real category")
+    val mappa = up3.toMappa(versionId)
+
+    assertThat(mappa.level).isNull()
+    assertThat(mappa.category).isNull()
+  }
+
+  @Test
+  fun `it should mark isMappa as YES when level or category is present`() {
+    val up3 = up3DeviceWearer.copy(mappa = "MAPPA 1", mappaCategory = "")
+    val mappa = up3.toMappa(versionId)
+
+    assertThat(mappa.isMappa).isEqualTo(YesNoUnknown.YES)
+  }
+
+  @Test
+  fun `it should leave isMappa unset when neither level nor category is present`() {
+    val mappa = up3DeviceWearer.toMappa(versionId)
+
+    assertThat(mappa.isMappa).isNull()
   }
 }

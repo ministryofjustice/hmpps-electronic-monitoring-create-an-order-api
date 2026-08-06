@@ -1,8 +1,13 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.up3
 
+import org.slf4j.LoggerFactory
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Address
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Mappa
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MappaCategory
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MappaLevel
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YesNoUnknown
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -41,11 +46,15 @@ data class Up3DeviceWearer(
   var tertiaryAddress3: String,
   var tertiaryAddress4: String,
   var tertiaryAddressPostCode: String,
+  var mappa: String,
+  var mappaCaseType: String,
+  var mappaCategory: String,
 ) {
 
   companion object {
     private val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
     private val londonTimeZone: ZoneId = ZoneId.of("Europe/London")
+    private val log = LoggerFactory.getLogger(Up3DeviceWearer::class.java)
   }
 
   fun toDeviceWearer(versionId: UUID): DeviceWearer {
@@ -110,6 +119,26 @@ data class Up3DeviceWearer(
       tertiaryAddress4,
       tertiaryAddressPostCode,
       AddressType.TERTIARY,
+    )
+  }
+
+  fun toMappa(versionId: UUID): Mappa {
+    val level = MappaLevel.from(mappa)
+    if (mappa.isNotBlank() && level == null) {
+      log.error("Unmatched MAPPA level value: {}", mappa)
+    }
+
+    val categoryValue = mappaCategory.ifBlank { mappaCaseType }
+    val category = MappaCategory.from(categoryValue)
+    if (categoryValue.isNotBlank() && category == null) {
+      log.error("Unmatched MAPPA category value: {}", categoryValue)
+    }
+
+    return Mappa(
+      versionId = versionId,
+      level = level,
+      category = category,
+      isMappa = if (level != null || category != null) YesNoUnknown.YES else null,
     )
   }
 
