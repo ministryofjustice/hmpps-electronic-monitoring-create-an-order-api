@@ -5,6 +5,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationAndRisk
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Mappa
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ResponsibleAdult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MappaCategory
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MappaLevel
@@ -53,6 +54,9 @@ data class Up3DeviceWearer(
   var mappaCategory: String,
   var riskDetails: String,
   var riskCategories: List<Up3RiskCategory>,
+  var parent: String,
+  var guardian: String,
+  var parentPhoneNumber: String,
 ) {
 
   companion object {
@@ -159,6 +163,31 @@ data class Up3DeviceWearer(
       versionId = versionId,
       riskDetails = riskDetails,
       riskCategory = matchedCategories.takeIf { it.isNotEmpty() }?.toTypedArray(),
+    )
+  }
+
+  fun toResponsibleAdult(versionId: UUID): ResponsibleAdult? {
+    val fullName: String
+    val relationship: String
+    when {
+      parent.isNotBlank() -> {
+        fullName = parent
+        relationship = "Parent"
+      }
+
+      guardian.isNotBlank() -> {
+        fullName = guardian
+        relationship = "Guardian"
+      }
+
+      else -> return null
+    }
+
+    return ResponsibleAdult(
+      versionId = versionId,
+      fullName = fullName,
+      relationship = relationship,
+      contactNumber = parentPhoneNumber,
     )
   }
 

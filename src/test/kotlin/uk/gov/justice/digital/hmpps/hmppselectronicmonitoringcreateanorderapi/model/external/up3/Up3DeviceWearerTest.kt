@@ -54,6 +54,9 @@ class Up3DeviceWearerTest {
       mappaCategory = "",
       riskDetails = "",
       riskCategories = emptyList(),
+      parent = "",
+      guardian = "",
+      parentPhoneNumber = "",
     )
   val versionId: UUID = UUID.randomUUID()
 
@@ -263,5 +266,48 @@ class Up3DeviceWearerTest {
     val installationAndRisk = up3DeviceWearer.toInstallationAndRisk(versionId)
 
     assertThat(installationAndRisk.riskCategory).isNull()
+  }
+
+  @Test
+  fun `it should map parent onto cemo responsible adult as Parent`() {
+    val up3 = up3DeviceWearer.copy(parent = "Jane Smith")
+    val responsibleAdult = up3.toResponsibleAdult(versionId)
+
+    assertThat(responsibleAdult).isNotNull
+    assertThat(responsibleAdult!!.versionId).isEqualTo(versionId)
+    assertThat(responsibleAdult.fullName).isEqualTo("Jane Smith")
+    assertThat(responsibleAdult.relationship).isEqualTo("Parent")
+  }
+
+  @Test
+  fun `it should map guardian onto cemo responsible adult as Guardian when no parent`() {
+    val up3 = up3DeviceWearer.copy(guardian = "Jane Guardian")
+    val responsibleAdult = up3.toResponsibleAdult(versionId)
+
+    assertThat(responsibleAdult).isNotNull
+    assertThat(responsibleAdult!!.fullName).isEqualTo("Jane Guardian")
+    assertThat(responsibleAdult.relationship).isEqualTo("Guardian")
+  }
+
+  @Test
+  fun `it should prefer parent over guardian when both present`() {
+    val up3 = up3DeviceWearer.copy(parent = "Jane Smith", guardian = "Jane Guardian")
+    val responsibleAdult = up3.toResponsibleAdult(versionId)
+
+    assertThat(responsibleAdult!!.fullName).isEqualTo("Jane Smith")
+    assertThat(responsibleAdult.relationship).isEqualTo("Parent")
+  }
+
+  @Test
+  fun `it should map parent phone number onto cemo responsible adult contact number`() {
+    val up3 = up3DeviceWearer.copy(parent = "Jane Smith", parentPhoneNumber = "07000000000")
+    val responsibleAdult = up3.toResponsibleAdult(versionId)
+
+    assertThat(responsibleAdult!!.contactNumber).isEqualTo("07000000000")
+  }
+
+  @Test
+  fun `it should not build a responsible adult when neither parent nor guardian is present`() {
+    assertThat(up3DeviceWearer.toResponsibleAdult(versionId)).isNull()
   }
 }
