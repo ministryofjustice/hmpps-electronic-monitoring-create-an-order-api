@@ -5,8 +5,10 @@ import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MappaCategory
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MappaLevel
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RiskCategory
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YesNoUnknown
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.up3.Up3DeviceWearer
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.up3.Up3RiskCategory
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.util.UUID
@@ -50,6 +52,8 @@ class Up3DeviceWearerTest {
       mappa = "",
       mappaCaseType = "",
       mappaCategory = "",
+      riskDetails = "",
+      riskCategories = emptyList(),
     )
   val versionId: UUID = UUID.randomUUID()
 
@@ -214,5 +218,50 @@ class Up3DeviceWearerTest {
     val mappa = up3DeviceWearer.toMappa(versionId)
 
     assertThat(mappa.isMappa).isNull()
+  }
+
+  @Test
+  fun `it should map risk details onto cemo installation and risk`() {
+    val up3 = up3DeviceWearer.copy(riskDetails = "known to be aggressive")
+    val installationAndRisk = up3.toInstallationAndRisk(versionId)
+
+    assertThat(installationAndRisk.versionId).isEqualTo(versionId)
+    assertThat(installationAndRisk.riskDetails).isEqualTo("known to be aggressive")
+  }
+
+  @Test
+  fun `it should map risk categories onto cemo installation and risk`() {
+    val up3 = up3DeviceWearer.copy(
+      riskCategories = listOf(
+        Up3RiskCategory("Sexual Offences"),
+        Up3RiskCategory("Racial Abuse or Threats"),
+      ),
+    )
+    val installationAndRisk = up3.toInstallationAndRisk(versionId)
+
+    assertThat(installationAndRisk.riskCategory).containsExactlyInAnyOrder(
+      RiskCategory.SEXUAL_OFFENCES.name,
+      RiskCategory.RACIAL_ABUSE_OR_THREATS.name,
+    )
+  }
+
+  @Test
+  fun `it should drop unmatched risk categories and not throw`() {
+    val up3 = up3DeviceWearer.copy(
+      riskCategories = listOf(
+        Up3RiskCategory("Sexual Offences"),
+        Up3RiskCategory("not a real category"),
+      ),
+    )
+    val installationAndRisk = up3.toInstallationAndRisk(versionId)
+
+    assertThat(installationAndRisk.riskCategory).containsExactly(RiskCategory.SEXUAL_OFFENCES.name)
+  }
+
+  @Test
+  fun `it should leave risk category null when no risk categories present`() {
+    val installationAndRisk = up3DeviceWearer.toInstallationAndRisk(versionId)
+
+    assertThat(installationAndRisk.riskCategory).isNull()
   }
 }

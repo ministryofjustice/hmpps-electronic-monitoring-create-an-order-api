@@ -3,10 +3,12 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.m
 import org.slf4j.LoggerFactory
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Address
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationAndRisk
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Mappa
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MappaCategory
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MappaLevel
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RiskCategory
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YesNoUnknown
 import java.time.LocalDate
 import java.time.ZoneId
@@ -49,6 +51,8 @@ data class Up3DeviceWearer(
   var mappa: String,
   var mappaCaseType: String,
   var mappaCategory: String,
+  var riskDetails: String,
+  var riskCategories: List<Up3RiskCategory>,
 ) {
 
   companion object {
@@ -139,6 +143,22 @@ data class Up3DeviceWearer(
       level = level,
       category = category,
       isMappa = if (level != null || category != null) YesNoUnknown.YES else null,
+    )
+  }
+
+  fun toInstallationAndRisk(versionId: UUID): InstallationAndRisk {
+    val matchedCategories = riskCategories.mapNotNull { riskCategory ->
+      val match = RiskCategory.entries.firstOrNull { it.value == riskCategory.category }
+      if (match == null) {
+        log.error("Unmatched risk category value: {}", riskCategory.category)
+      }
+      match?.name
+    }
+
+    return InstallationAndRisk(
+      versionId = versionId,
+      riskDetails = riskDetails,
+      riskCategory = matchedCategories.takeIf { it.isNotEmpty() }?.toTypedArray(),
     )
   }
 
