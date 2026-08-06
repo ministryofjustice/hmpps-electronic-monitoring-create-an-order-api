@@ -7,6 +7,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Mappa
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ResponsibleAdult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Disability
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MappaCategory
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MappaLevel
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RiskCategory
@@ -57,6 +58,7 @@ data class Up3DeviceWearer(
   var parent: String,
   var guardian: String,
   var parentPhoneNumber: String,
+  var disabilities: List<Up3Disability>,
 ) {
 
   companion object {
@@ -85,6 +87,7 @@ data class Up3DeviceWearer(
       prisonNumber = prisonNumber,
       homeOfficeReferenceNumber = homeOfficeCaseReferenceNumber,
       complianceAndEnforcementPersonReference = cepr,
+      disabilities = disabilityList(),
     )
   }
 
@@ -189,6 +192,18 @@ data class Up3DeviceWearer(
       relationship = relationship,
       contactNumber = parentPhoneNumber,
     )
+  }
+
+  private fun disabilityList(): String? {
+    val matchedDisabilities = disabilities.mapNotNull { up3Disability ->
+      val match = Disability.from(up3Disability.disability)
+      if (match == null) {
+        log.error("Unmatched disability value: {}", up3Disability.disability)
+      }
+      match?.name
+    }
+
+    return matchedDisabilities.takeIf { it.isNotEmpty() }?.joinToString(",")
   }
 
   private fun buildAddress(

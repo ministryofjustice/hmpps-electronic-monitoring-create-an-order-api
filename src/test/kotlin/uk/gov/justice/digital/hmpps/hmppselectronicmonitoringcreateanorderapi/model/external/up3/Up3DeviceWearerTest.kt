@@ -8,6 +8,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RiskCategory
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YesNoUnknown
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.up3.Up3DeviceWearer
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.up3.Up3Disability
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.up3.Up3RiskCategory
 import java.time.ZoneId
 import java.time.ZonedDateTime
@@ -57,6 +58,7 @@ class Up3DeviceWearerTest {
       parent = "",
       guardian = "",
       parentPhoneNumber = "",
+      disabilities = emptyList(),
     )
   val versionId: UUID = UUID.randomUUID()
 
@@ -309,5 +311,32 @@ class Up3DeviceWearerTest {
   @Test
   fun `it should not build a responsible adult when neither parent nor guardian is present`() {
     assertThat(up3DeviceWearer.toResponsibleAdult(versionId)).isNull()
+  }
+
+  @Test
+  fun `it should map disabilities onto cemo device wearer as a joined enum-name string`() {
+    val up3 = up3DeviceWearer.copy(
+      disabilities = listOf(Up3Disability("Vision"), Up3Disability("Hearing")),
+    )
+    val deviceWearer = up3.toDeviceWearer(versionId)
+
+    assertThat(deviceWearer.disabilities).isEqualTo("VISION,HEARING")
+  }
+
+  @Test
+  fun `it should drop unmatched disabilities and not throw`() {
+    val up3 = up3DeviceWearer.copy(
+      disabilities = listOf(Up3Disability("Vision"), Up3Disability("not a real disability")),
+    )
+    val deviceWearer = up3.toDeviceWearer(versionId)
+
+    assertThat(deviceWearer.disabilities).isEqualTo("VISION")
+  }
+
+  @Test
+  fun `it should leave disabilities null when none are present`() {
+    val deviceWearer = up3DeviceWearer.toDeviceWearer(versionId)
+
+    assertThat(deviceWearer.disabilities).isNull()
   }
 }
