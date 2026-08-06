@@ -59,14 +59,8 @@ data class Up3MonitoringOrder(
     )
   }
 
-  fun toCurfewTimeTable(versionId: UUID): List<CurfewTimeTable> {
-    val result = mutableListOf<CurfewTimeTable>()
-
-    curfewDuration.forEach { curfew ->
-      result.addAll(curfew.toCurfewTimeTable(versionId))
-    }
-
-    return result.toList()
+  fun toCurfewTimeTable(versionId: UUID): List<CurfewTimeTable> = curfewDuration.flatMap {
+    it.toCurfewTimeTable(versionId)
   }
 
   fun toTrailMonitoringConditions(versionId: UUID): TrailMonitoringConditions {
@@ -79,16 +73,6 @@ data class Up3MonitoringOrder(
 
   fun toVariationDetails(versionId: UUID): VariationDetails {
     TODO("Not yet implemented")
-  }
-
-  private fun addressType(location: String): String? = when (location) {
-    "primary" -> "PRIMARY_ADDRESS"
-    "secondary" -> "SECONDARY_ADDRESS"
-    "tertiary" -> "TERTIARY_ADDRESS"
-    else -> {
-      log.error("Invalid location string: {}", location)
-      null
-    }
   }
 
   private fun parseDateTime(date: String): ZonedDateTime =

@@ -11,6 +11,7 @@ data class Up3CurfewDuration(var location: String, var allday: String, var sched
 
   fun toCurfewTimeTable(versionId: UUID): List<CurfewTimeTable> {
     val address = addressType(location) ?: return emptyList()
+
     return schedule.mapNotNull { it.getTimeTable(versionId, address) }
   }
 

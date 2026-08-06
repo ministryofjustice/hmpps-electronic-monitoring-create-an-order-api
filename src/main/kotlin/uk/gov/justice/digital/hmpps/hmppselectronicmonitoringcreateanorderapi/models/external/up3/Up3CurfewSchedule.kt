@@ -12,6 +12,7 @@ data class Up3CurfewSchedule(var day: String, var start: String, var end: String
 
   fun getTimeTable(versionId: UUID, address: String?): CurfewTimeTable? {
     val resolvedDay = dateOfWeek() ?: return null
+
     return CurfewTimeTable(
       versionId = versionId,
       dayOfWeek = resolvedDay,
