@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.up3
 
+import org.slf4j.LoggerFactory
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AlcoholMonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewReleaseDateConditions
@@ -32,6 +33,8 @@ data class Up3MonitoringOrder(
   companion object {
     private val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
     private val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+    private val londonTimeZone: ZoneId = ZoneId.of("Europe/London")
+    private val log = LoggerFactory.getLogger(Up3DeviceWearer::class.java)
   }
 
   fun toCurfewConditions(versionId: UUID): CurfewConditions? {
@@ -40,7 +43,7 @@ data class Up3MonitoringOrder(
     return CurfewConditions(
       versionId = versionId,
       startDate = parseDateTime(curfewStart),
-      endDate = parseDateTime(curfewEnd),
+      endDate = if (curfewEnd.isBlank()) null else parseDateTime(curfewEnd),
       curfewAdditionalDetails = curfewDescription,
     )
   }
@@ -61,7 +64,9 @@ data class Up3MonitoringOrder(
 
     curfewDuration.forEach { curfew ->
       curfew.schedule.forEach {
-        val timeTable = it.getTimeTable(versionId, addressType(curfew.location))
+        val addressType = addressType(curfew.location) ?: return@forEach
+
+        val timeTable = it.getTimeTable(versionId, addressType)
 
         if (timeTable != null) result.add(timeTable)
       }
@@ -86,12 +91,15 @@ data class Up3MonitoringOrder(
     "primary" -> "PRIMARY_ADDRESS"
     "secondary" -> "SECONDARY_ADDRESS"
     "tertiary" -> "TERTIARY_ADDRESS"
-    else -> null
+    else -> {
+      log.error("Invalid location string: {}", location)
+      null
+    }
   }
 
   private fun parseDateTime(date: String): ZonedDateTime =
-    LocalDateTime.parse(date, dateTimeFormatter).atZone(ZoneId.of("Europe/London"))
+    LocalDateTime.parse(date, dateTimeFormatter).atZone(londonTimeZone)
 
   private fun parseDate(date: String): ZonedDateTime =
-    LocalDate.parse(date, dateFormatter).atStartOfDay().atZone(ZoneId.of("Europe/London"))
+    LocalDate.parse(date, dateFormatter).atStartOfDay().atZone(londonTimeZone)
 }

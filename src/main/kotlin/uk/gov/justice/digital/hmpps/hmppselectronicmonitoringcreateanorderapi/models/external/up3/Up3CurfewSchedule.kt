@@ -6,10 +6,10 @@ import java.util.UUID
 
 data class Up3CurfewSchedule(var day: String, var start: String, var end: String) {
   fun getTimeTable(versionId: UUID, address: String?): CurfewTimeTable? {
-    val day = dateOfWeek(day) ?: return null
+    val resolvedDay = dateOfWeek(day) ?: return null
     return CurfewTimeTable(
       versionId = versionId,
-      dayOfWeek = day,
+      dayOfWeek = resolvedDay,
       startTime = start,
       endTime = end,
       curfewAddress = address,
