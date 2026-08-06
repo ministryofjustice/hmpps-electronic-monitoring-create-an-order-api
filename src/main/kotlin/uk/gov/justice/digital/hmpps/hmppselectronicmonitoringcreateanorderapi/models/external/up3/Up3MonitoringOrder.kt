@@ -34,7 +34,7 @@ data class Up3MonitoringOrder(
     private val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
     private val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
     private val londonTimeZone: ZoneId = ZoneId.of("Europe/London")
-    private val log = LoggerFactory.getLogger(Up3DeviceWearer::class.java)
+    private val log = LoggerFactory.getLogger(Up3MonitoringOrder::class.java)
   }
 
   fun toCurfewConditions(versionId: UUID): CurfewConditions? {
@@ -59,20 +59,14 @@ data class Up3MonitoringOrder(
     )
   }
 
-  fun toCurfewTimeTable(versionId: UUID): MutableList<CurfewTimeTable> {
+  fun toCurfewTimeTable(versionId: UUID): List<CurfewTimeTable> {
     val result = mutableListOf<CurfewTimeTable>()
 
     curfewDuration.forEach { curfew ->
-      curfew.schedule.forEach {
-        val addressType = addressType(curfew.location) ?: return@forEach
-
-        val timeTable = it.getTimeTable(versionId, addressType)
-
-        if (timeTable != null) result.add(timeTable)
-      }
+      result.addAll(curfew.toCurfewTimeTable(versionId))
     }
 
-    return result
+    return result.toList()
   }
 
   fun toTrailMonitoringConditions(versionId: UUID): TrailMonitoringConditions {

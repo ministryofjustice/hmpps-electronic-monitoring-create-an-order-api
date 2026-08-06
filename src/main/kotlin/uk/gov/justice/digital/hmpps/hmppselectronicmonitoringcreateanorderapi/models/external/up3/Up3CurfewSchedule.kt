@@ -1,12 +1,17 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.up3
 
+import org.slf4j.LoggerFactory
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewTimeTable
 import java.time.DayOfWeek
 import java.util.UUID
 
 data class Up3CurfewSchedule(var day: String, var start: String, var end: String) {
+  companion object {
+    private val log = LoggerFactory.getLogger(Up3CurfewSchedule::class.java)
+  }
+
   fun getTimeTable(versionId: UUID, address: String?): CurfewTimeTable? {
-    val resolvedDay = dateOfWeek(day) ?: return null
+    val resolvedDay = dateOfWeek() ?: return null
     return CurfewTimeTable(
       versionId = versionId,
       dayOfWeek = resolvedDay,
@@ -16,7 +21,7 @@ data class Up3CurfewSchedule(var day: String, var start: String, var end: String
     )
   }
 
-  private fun dateOfWeek(day: String): DayOfWeek? = when (day) {
+  private fun dateOfWeek(): DayOfWeek? = when (day) {
     "Mo" -> DayOfWeek.MONDAY
     "Tu" -> DayOfWeek.TUESDAY
     "Wed" -> DayOfWeek.WEDNESDAY
@@ -24,6 +29,9 @@ data class Up3CurfewSchedule(var day: String, var start: String, var end: String
     "Fr" -> DayOfWeek.FRIDAY
     "Sa" -> DayOfWeek.SATURDAY
     "Su" -> DayOfWeek.SUNDAY
-    else -> null
+    else -> {
+      log.error("Invalid day of the week: {}", day)
+      null
+    }
   }
 }
