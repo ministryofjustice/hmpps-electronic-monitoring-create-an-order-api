@@ -1,0 +1,3 @@
+package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.up3
+
+data class Up3EnforceableCondition(var condition: String, var startDate: String, var endDate: String)
