@@ -148,7 +148,7 @@ data class Up3DeviceWearer(
 
   fun toInstallationAndRisk(versionId: UUID): InstallationAndRisk {
     val matchedCategories = riskCategories.mapNotNull { riskCategory ->
-      val match = RiskCategory.entries.firstOrNull { it.value == riskCategory.category }
+      val match = RiskCategory.from(riskCategory.category)
       if (match == null) {
         log.error("Unmatched risk category value: {}", riskCategory.category)
       }
