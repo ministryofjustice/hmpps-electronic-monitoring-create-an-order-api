@@ -4,4 +4,11 @@ enum class MappaLevel(val value: String) {
   MAPPA_ONE("MAPPA 1"),
   MAPPA_TWO("MAPPA 2"),
   MAPPA_THREE("MAPPA 3"),
+  ;
+
+  companion object {
+    fun from(value: String?): MappaLevel? = MappaLevel.entries.firstOrNull {
+      it.value == value
+    }
+  }
 }

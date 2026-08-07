@@ -12,4 +12,9 @@ enum class Pilot(val value: String) {
   GPS_ACQUISITIVE_CRIME_HOME_DETENTION_CURFEW("GPS Acquisitive Crime Home Detention Curfew"),
   GPS_ACQUISITIVE_CRIME_PAROLE("GPS Acquisitive Crime Parole"),
   UNKNOWN(""),
+  ;
+
+  companion object {
+    fun from(value: String?): Pilot? = Pilot.entries.firstOrNull { !value.isNullOrBlank() && it.value == value }
+  }
 }

@@ -60,5 +60,9 @@ enum class PoliceAreasDDv6(val value: String) {
     fun from(value: String?): PoliceAreasDDv6? = entries.firstOrNull {
       it.name == value
     }
+
+    fun fromValue(value: String?): PoliceAreasDDv6? = entries.firstOrNull {
+      it.value == value
+    }
   }
 }

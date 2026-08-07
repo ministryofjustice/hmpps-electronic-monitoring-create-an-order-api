@@ -25,8 +25,13 @@ enum class NotifyingOrganisationDDv5(val value: String) {
         FAMILY_COURT,
         YOUTH_COURT,
       )
+
     fun from(value: String?): NotifyingOrganisationDDv5? = NotifyingOrganisationDDv5.entries.firstOrNull {
       it.name == value
+    }
+
+    fun fromValue(value: String?): NotifyingOrganisationDDv5? = NotifyingOrganisationDDv5.entries.firstOrNull {
+      it.value == value
     }
 
     fun isCourt(value: String): Boolean = COURTS.any { it.name == value }

@@ -14,5 +14,9 @@ enum class NotifyingOrganisation(val value: String) {
     fun from(value: String?): NotifyingOrganisation? = NotifyingOrganisation.entries.firstOrNull {
       it.name == value
     }
+
+    fun fromValue(value: String?): NotifyingOrganisation? = NotifyingOrganisation.entries.firstOrNull {
+      it.value == value
+    }
   }
 }

@@ -23,5 +23,7 @@ enum class Disability(val value: String) {
       .mapNotNull { disabilityName ->
         entries.find { it.name == disabilityName }?.value
       }
+
+    fun from(value: String?): Disability? = entries.firstOrNull { it.value == value }
   }
 }
