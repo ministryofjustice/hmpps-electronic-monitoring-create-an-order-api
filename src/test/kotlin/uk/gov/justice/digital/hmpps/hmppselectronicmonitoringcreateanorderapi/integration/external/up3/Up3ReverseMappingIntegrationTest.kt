@@ -6,14 +6,17 @@ import tools.jackson.module.kotlin.jacksonObjectMapper
 import tools.jackson.module.kotlin.readValue
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Disability
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MappaCategory
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MappaLevel
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MonitoringConditionType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisationDDv5
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderTypeDescription
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Pilot
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ResponsibleOrganisation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RiskCategory
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YesNoUnknown
@@ -214,5 +217,61 @@ class Up3ReverseMappingIntegrationTest {
     val appointment = order.toInstallationAppointment(versionId)
     assertThat(appointment!!.placeName).isEqualTo("HMP Example")
     assertThat(appointment.appointmentDate).isEqualTo(ZonedDateTime.of(2000, 7, 1, 8, 0, 0, 0, london))
+  }
+
+  @Test
+  fun `it should map the full response onto an order version with every child entity wired`() {
+    val orderId = UUID.randomUUID()
+
+    val orderVersion = response.toOrderVersion(
+      orderId = orderId,
+      username = "a-probation-user",
+      status = OrderStatus.IN_PROGRESS,
+      type = RequestType.VARIATION,
+      dataDictionaryVersion = DataDictionaryVersion.DDV7,
+    )
+
+    assertThat(orderVersion.orderId).isEqualTo(orderId)
+    assertThat(orderVersion.username).isEqualTo("a-probation-user")
+    assertThat(orderVersion.status).isEqualTo(OrderStatus.IN_PROGRESS)
+    assertThat(orderVersion.type).isEqualTo(RequestType.VARIATION)
+    assertThat(orderVersion.dataDictionaryVersion).isEqualTo(DataDictionaryVersion.DDV7)
+
+    assertThat(orderVersion.deviceWearer!!.versionId).isEqualTo(orderVersion.id)
+    assertThat(orderVersion.deviceWearer!!.firstName).isEqualTo("Bob")
+    assertThat(orderVersion.deviceWearer!!.courtCaseReferenceNumber).isEqualTo("CCRN123")
+
+    assertThat(orderVersion.deviceWearerResponsibleAdult!!.fullName).isEqualTo("Jane Smith")
+
+    assertThat(orderVersion.addresses).hasSize(2)
+    assertThat(orderVersion.addresses.map { it.addressType }).containsExactlyInAnyOrder(
+      AddressType.PRIMARY,
+      AddressType.SECONDARY,
+    )
+
+    assertThat(orderVersion.mappa!!.level).isEqualTo(MappaLevel.MAPPA_TWO)
+
+    assertThat(orderVersion.installationAndRisk!!.riskDetails).isEqualTo("known to be aggressive")
+    assertThat(orderVersion.installationAndRisk!!.riskCategory).containsExactlyInAnyOrder(
+      RiskCategory.SEXUAL_OFFENCES.name,
+      RiskCategory.RACIAL_ABUSE_OR_THREATS.name,
+    )
+    assertThat(orderVersion.installationAndRisk!!.offence).isEqualTo("ROBBERY")
+
+    assertThat(orderVersion.interestedParties!!.responsibleOrganisation)
+      .isEqualTo(ResponsibleOrganisation.PROBATION.name)
+    assertThat(orderVersion.probationDeliveryUnit).isNotNull()
+    assertThat(orderVersion.monitoringConditions!!.conditionType).isEqualTo(MonitoringConditionType.BAIL_ORDER)
+    assertThat(orderVersion.monitoringConditionsTrail!!.deviceType?.name).isEqualTo("FITTED")
+    assertThat(orderVersion.monitoringConditionsAlcohol!!.monitoringType)
+      .isEqualTo(AlcoholMonitoringType.ALCOHOL_ABSTINENCE)
+    assertThat(orderVersion.offences).hasSize(1)
+    assertThat(orderVersion.dapoClauses).hasSize(1)
+    assertThat(orderVersion.enforcementZoneConditions).hasSize(2)
+    assertThat(orderVersion.curfewConditions!!.curfewAdditionalDetails).isEqualTo("wears a tag")
+    assertThat(orderVersion.curfewReleaseDateConditions!!.startTime).isEqualTo("08:00")
+    assertThat(orderVersion.curfewTimeTable).hasSize(2)
+    assertThat(orderVersion.variationDetails!!.variationDetails).isEqualTo("changed curfew hours")
+    assertThat(orderVersion.installationAppointment!!.placeName).isEqualTo("HMP Example")
   }
 }
