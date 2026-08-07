@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.up3
 
+import com.fasterxml.jackson.annotation.JsonProperty
 import org.slf4j.LoggerFactory
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AlcoholMonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewConditions
@@ -43,47 +44,82 @@ import kotlin.collections.mapNotNull
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Offence as OffenceType
 
 data class Up3MonitoringOrder(
+  @JsonProperty("order_id")
   var orderId: String,
+  @JsonProperty("order_request_type")
   var orderRequestType: String,
+  @JsonProperty("order_type")
   var orderType: String,
+  @JsonProperty("magistrate_court_case_reference_number")
   var magistrateCourtCaseReferenceNumber: String,
+  @JsonProperty("condition_type")
   var conditionType: String,
+  @JsonProperty("order_type_description")
   var orderTypeDescription: String,
+  @JsonProperty("sentence_type")
   var sentenceType: String,
   var pilot: String,
   var issp: String,
   var hdc: String,
+  @JsonProperty("released_under_prarr")
   var releasedUnderPrarr: String,
+  @JsonProperty("dapol_missed_in_error")
   var dapolMissedInError: String,
   var offence: String,
   var offences: List<Up3Offence>,
+  @JsonProperty("ac_eligible_offences")
   var acEligibleOffences: List<Up3Offence>,
+  @JsonProperty("responsible_organization")
   var responsibleOrganisation: String,
+  @JsonProperty("responsible_officer_name")
   var responsibleOfficerName: String,
+  @JsonProperty("responsible_officer_email")
   var responsibleOfficerEmail: String,
+  @JsonProperty("responsible_officer_phone")
   var responsibleOfficerPhone: String,
+  @JsonProperty("ro_email")
   var roEmail: String,
+  @JsonProperty("ro_region")
   var roRegion: String,
+  @JsonProperty("notifying_organization")
   var notifyingOrganisation: String,
+  @JsonProperty("no_name")
   var noName: String,
+  @JsonProperty("no_email")
   var noEmail: String,
+  @JsonProperty("pdu_responsible")
   var pduResponsible: String,
+  @JsonProperty("dapo_order_clause_numbers")
   var dapoOrderClauseNumbers: List<Up3Dapo>,
+  @JsonProperty("date_and_time_installation_will_take_place")
   var dateAndTimeInstallationWillTakePlace: String,
+  @JsonProperty("tag_at_source_details")
   var tagAtSourceDetails: String,
+  @JsonProperty("curfew_start")
   var curfewStart: String,
+  @JsonProperty("curfew_end")
   var curfewEnd: String,
+  @JsonProperty("curfew_description")
   var curfewDescription: String,
+  @JsonProperty("conditional_release_date")
   var conditionalReleaseDate: String,
+  @JsonProperty("conditional_release_start_time")
   var conditionalReleaseStartTime: String,
+  @JsonProperty("conditional_release_end_time")
   var conditionalReleaseEndTime: String,
+  @JsonProperty("curfew_duration")
   var curfewDuration: List<Up3CurfewDuration>,
+  @JsonProperty("enforceable_condition")
   var enforceableCondition: List<Up3EnforceableCondition>,
-  var abstinence: String,
-  var orderVariationDate: String,
-  var orderVariationDetails: String,
+  @JsonProperty("exclusion_zones")
   var exclusionZones: List<Up3Zone>,
+  @JsonProperty("inclusion_zones")
   var inclusionZones: List<Up3Zone>,
+  var abstinence: String,
+  @JsonProperty("order_variation_date")
+  var orderVariationDate: String,
+  @JsonProperty("order_variation_details")
+  var orderVariationDetails: String,
 ) {
   companion object {
     private val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")

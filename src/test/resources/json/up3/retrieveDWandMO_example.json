@@ -1,0 +1,161 @@
+{
+  "case_id": "16542c2e83714b10b2409870ceaad324",
+  "device_wearer": {
+    "title": "",
+    "first_name": "Bob",
+    "middle_name": "Middleton",
+    "last_name": "Smith",
+    "alias": "Robert",
+    "date_of_birth": "2000-07-01",
+    "sex": "Male",
+    "gender_identity": "Male",
+    "language": "English",
+    "interpreter_required": "false",
+    "adult_child": "adult",
+    "pnc_id": "pnc123",
+    "nomis_id": "nomis123",
+    "delius_id": "delius123",
+    "prison_number": "prison123",
+    "home_office_case_reference_number": "hocrn123",
+    "cepr": "cepr123",
+    "no_fixed_address": "false",
+    "address_1": "1 Fake Street",
+    "address_2": "",
+    "address_3": "Faketown",
+    "address_4": "",
+    "address_post_code": "AB1 2CD",
+    "secondary_address_1": "2 Fake Street",
+    "secondary_address_2": "",
+    "secondary_address_3": "Faketown",
+    "secondary_address_4": "",
+    "secondary_address_post_code": "AB2 3CD",
+    "tertiary_address_1": "",
+    "tertiary_address_2": "",
+    "tertiary_address_3": "",
+    "tertiary_address_4": "",
+    "tertiary_address_post_code": "",
+    "mappa": "MAPPA 2",
+    "mappa_case_type": "",
+    "mappa_category": "Category 1",
+    "risk_details": "known to be aggressive",
+    "risk_categories": [
+      {
+        "category": "Sexual Offences"
+      },
+      {
+        "category": "Racial Abuse or Threats"
+      }
+    ],
+    "parent": "Jane Smith",
+    "guardian": "",
+    "parent_phone_number": "07000000000",
+    "disability": [
+      {
+        "disability": "Vision"
+      },
+      {
+        "disability": "Hearing"
+      }
+    ]
+  },
+  "monitoring_order": {
+    "order_id": "b6e8c6c2-4f1a-4b5b-9f3e-1a2b3c4d5e6f",
+    "order_request_type": "New Order",
+    "order_type": "Pre-Trial",
+    "magistrate_court_case_reference_number": "CCRN123",
+    "condition_type": "Bail Order",
+    "order_type_description": "DAPO",
+    "sentence_type": "",
+    "pilot": "Domestic Abuse Protection Order (DAPO)",
+    "issp": "Yes",
+    "hdc": "No",
+    "released_under_prarr": "true",
+    "dapol_missed_in_error": "true",
+    "offence": "Robbery",
+    "offences": [
+      {
+        "offence": "Robbery",
+        "offence_date": "2000-07-01"
+      }
+    ],
+    "ac_eligible_offences": [
+      {
+        "offence": "Robbery",
+        "offence_date": ""
+      }
+    ],
+    "responsible_organization": "Probation",
+    "responsible_officer_name": "Jane Smith",
+    "responsible_officer_email": "jane@example.com",
+    "responsible_officer_phone": "+441234567890",
+    "ro_email": "ro@example.com",
+    "ro_region": "London",
+    "notifying_organization": "Prison",
+    "no_name": "HMP Example",
+    "no_email": "no@example.com",
+    "pdu_responsible": "Salford and Trafford",
+    "dapo_order_clause_numbers": [
+      {
+        "dapo_order_clause_number": "Clause 1",
+        "date": "2000-07-01"
+      }
+    ],
+    "date_and_time_installation_will_take_place": "2000-07-01 08:00:00",
+    "tag_at_source_details": "HMP Example",
+    "curfew_start": "2000-07-01 08:00:00",
+    "curfew_end": "2001-07-01 08:00:00",
+    "curfew_description": "wears a tag",
+    "conditional_release_date": "2000-07-01",
+    "conditional_release_start_time": "08:00",
+    "conditional_release_end_time": "09:00",
+    "curfew_duration": [
+      {
+        "location": "primary",
+        "allday": "",
+        "schedule": [
+          {
+            "day": "Mo",
+            "start": "08:00",
+            "end": "09:00"
+          },
+          {
+            "day": "Wed",
+            "start": "10:00",
+            "end": "11:00"
+          }
+        ]
+      }
+    ],
+    "enforceable_condition": [
+      {
+        "condition": "Location Monitoring (Fitted Device)",
+        "start_date": "2000-07-01 08:00:00",
+        "end_date": "2001-07-01 08:00:00"
+      },
+      {
+        "condition": "AML",
+        "start_date": "2000-07-01 08:00:00",
+        "end_date": "2001-07-01 08:00:00"
+      }
+    ],
+    "exclusion_zones": [
+      {
+        "description": "no go area",
+        "duration": "2 weeks",
+        "start": "2000-07-01",
+        "end": "2001-07-01"
+      }
+    ],
+    "inclusion_zones": [
+      {
+        "description": "must stay here",
+        "duration": "1 week",
+        "start": "2000-07-01",
+        "end": "2001-07-01"
+      }
+    ],
+    "abstinence": "Yes",
+    "order_variation_date": "2000-07-01 08:00:00",
+    "order_variation_details": "changed curfew hours"
+  }
+}

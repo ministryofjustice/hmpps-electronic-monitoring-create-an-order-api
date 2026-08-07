@@ -20,6 +20,7 @@ class Up3DeviceWearerTest {
     Up3DeviceWearer(
       title = "",
       firstName = "Bob",
+      middleName = "Middleton",
       lastName = "Smith",
       alias = "Robert",
       dateOfBirth = "2000-07-01",
@@ -68,6 +69,7 @@ class Up3DeviceWearerTest {
 
     assertThat(deviceWearer.versionId).isEqualTo(versionId)
     assertThat(deviceWearer.firstName).isEqualTo(up3DeviceWearer.firstName)
+    assertThat(deviceWearer.middleName).isEqualTo(up3DeviceWearer.middleName)
     assertThat(deviceWearer.lastName).isEqualTo(up3DeviceWearer.lastName)
     assertThat(deviceWearer.alias).isEqualTo(up3DeviceWearer.alias)
   }
