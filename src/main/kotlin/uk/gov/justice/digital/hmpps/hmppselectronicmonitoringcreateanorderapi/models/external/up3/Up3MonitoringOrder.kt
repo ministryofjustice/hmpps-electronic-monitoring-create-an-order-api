@@ -1,14 +1,15 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.up3
 
-import org.slf4j.LoggerFactory
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AlcoholMonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewReleaseDateConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewTimeTable
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.EnforcementZoneConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.TrailMonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.VariationDetails
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DeviceType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.EnforcementZoneType
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -31,12 +32,13 @@ data class Up3MonitoringOrder(
   var abstinence: String,
   var orderVariationDate: String,
   var orderVariationDetails: String,
+  var exclusionZones: List<Up3Zone>,
+  var inclusionZones: List<Up3Zone>,
 ) {
   companion object {
     private val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
     private val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
     private val londonTimeZone: ZoneId = ZoneId.of("Europe/London")
-    private val log = LoggerFactory.getLogger(Up3MonitoringOrder::class.java)
   }
 
   fun toCurfewConditions(versionId: UUID): CurfewConditions? {
@@ -92,6 +94,13 @@ data class Up3MonitoringOrder(
     )
   }
 
+  fun toEnforcementZoneConditions(versionId: UUID): List<EnforcementZoneConditions> {
+    val eZones = exclusionZones.map { it.toZoneConditions(versionId, EnforcementZoneType.EXCLUSION) }
+    val iZones = inclusionZones.map { it.toZoneConditions(versionId, EnforcementZoneType.INCLUSION) }
+
+    return eZones + iZones
+  }
+
   fun toVariationDetails(versionId: UUID): VariationDetails? {
     if (orderVariationDate.isBlank()) return null
 
@@ -111,11 +120,10 @@ data class Up3MonitoringOrder(
   private fun parseDateTimeOrNull(date: String): ZonedDateTime? = if (date.isNotBlank()) parseDateTime(date) else null
 
   private fun getTrailFromEnforceableCondition(): Up3EnforceableCondition? = enforceableCondition.find {
-    it.condition == "Location Monitoring (using Non-Fitted Device)" ||
-      it.condition == "Location Monitoring (Fitted Device)"
+    it.isTrail()
   }
 
   private fun getAlcoholEnforceableCondition(): Up3EnforceableCondition? = enforceableCondition.find {
-    it.condition == "AAMR" || it.condition == "AML"
+    it.isAlcohol()
   }
 }

@@ -4,10 +4,12 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DeviceType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.EnforcementZoneType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.up3.Up3CurfewDuration
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.up3.Up3CurfewSchedule
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.up3.Up3EnforceableCondition
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.up3.Up3MonitoringOrder
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.up3.Up3Zone
 import java.time.DayOfWeek
 import java.time.ZoneId
 import java.time.ZonedDateTime
@@ -31,6 +33,8 @@ class Up3MonitoringOrderTest {
       abstinence = "",
       orderVariationDate = "",
       orderVariationDetails = "",
+      exclusionZones = emptyList(),
+      inclusionZones = emptyList(),
     )
   val versionId: UUID = UUID.randomUUID()
 
@@ -226,6 +230,71 @@ class Up3MonitoringOrderTest {
   @Test
   fun `it should not build alcohol monitoring conditions when no matching condition is present`() {
     assertThat(up3MonitoringOrder.toAlcoholMonitoringConditions(versionId)).isNull()
+  }
+
+  @Test
+  fun `it should map exclusion zones with zoneType EXCLUSION`() {
+    val up3 = up3MonitoringOrder.copy(
+      exclusionZones = listOf(
+        Up3Zone(description = "no go area", duration = "2 weeks", start = "2000-07-01", end = "2001-07-01"),
+      ),
+    )
+    val rows = up3.toEnforcementZoneConditions(versionId)
+
+    assertThat(rows).hasSize(1)
+    assertThat(rows[0].versionId).isEqualTo(versionId)
+    assertThat(rows[0].zoneType).isEqualTo(EnforcementZoneType.EXCLUSION)
+    assertThat(rows[0].description).isEqualTo("no go area")
+    assertThat(rows[0].duration).isEqualTo("2 weeks")
+    assertThat(rows[0].startDate).isEqualTo(
+      ZonedDateTime.of(2000, 7, 1, 0, 0, 0, 0, ZoneId.of("Europe/London")),
+    )
+    assertThat(rows[0].endDate).isEqualTo(
+      ZonedDateTime.of(2001, 7, 1, 0, 0, 0, 0, ZoneId.of("Europe/London")),
+    )
+  }
+
+  @Test
+  fun `it should map inclusion zones with zoneType INCLUSION`() {
+    val up3 = up3MonitoringOrder.copy(
+      inclusionZones = listOf(
+        Up3Zone(description = "must stay here", duration = "1 week", start = "2000-07-01", end = "2001-07-01"),
+      ),
+    )
+    val rows = up3.toEnforcementZoneConditions(versionId)
+
+    assertThat(rows).hasSize(1)
+    assertThat(rows[0].zoneType).isEqualTo(EnforcementZoneType.INCLUSION)
+    assertThat(rows[0].description).isEqualTo("must stay here")
+    assertThat(rows[0].duration).isEqualTo("1 week")
+  }
+
+  @Test
+  fun `it should map exclusion and inclusion zones together, exclusion rows first`() {
+    val up3 = up3MonitoringOrder.copy(
+      exclusionZones = listOf(Up3Zone("exclusion 1", "", "2000-07-01", "")),
+      inclusionZones = listOf(Up3Zone("inclusion 1", "", "2000-07-01", "")),
+    )
+    val rows = up3.toEnforcementZoneConditions(versionId)
+
+    assertThat(rows).hasSize(2)
+    assertThat(rows[0].zoneType).isEqualTo(EnforcementZoneType.EXCLUSION)
+    assertThat(rows[1].zoneType).isEqualTo(EnforcementZoneType.INCLUSION)
+  }
+
+  @Test
+  fun `it should leave end date null when zone end is blank`() {
+    val up3 = up3MonitoringOrder.copy(
+      exclusionZones = listOf(Up3Zone("no go area", "", "2000-07-01", "")),
+    )
+    val rows = up3.toEnforcementZoneConditions(versionId)
+
+    assertThat(rows[0].endDate).isNull()
+  }
+
+  @Test
+  fun `it should return no enforcement zone rows when no zones are present`() {
+    assertThat(up3MonitoringOrder.toEnforcementZoneConditions(versionId)).isEmpty()
   }
 
   @Test
