@@ -82,7 +82,7 @@ data class Up3MonitoringOrder(
     val alcohol = getAlcoholEnforcableCondition() ?: return null
 
     val alcoholType: AlcoholMonitoringType =
-      if (alcohol.condition == "AAMR") AlcoholMonitoringType.ALCOHOL_LEVEL else AlcoholMonitoringType.ALCOHOL_ABSTINENCE
+      if (abstinence == "Yes") AlcoholMonitoringType.ALCOHOL_ABSTINENCE else AlcoholMonitoringType.ALCOHOL_LEVEL
 
     return AlcoholMonitoringConditions(
       versionId = versionId,
