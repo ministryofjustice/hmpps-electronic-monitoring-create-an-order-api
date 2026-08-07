@@ -7,6 +7,8 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewTimeTable
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.TrailMonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.VariationDetails
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DeviceType
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -63,16 +65,41 @@ data class Up3MonitoringOrder(
     it.toCurfewTimeTable(versionId)
   }
 
-  fun toTrailMonitoringConditions(versionId: UUID): TrailMonitoringConditions {
-    TODO("Not yet implemented")
+  fun toTrailMonitoringConditions(versionId: UUID): TrailMonitoringConditions? {
+    val trail = getTrailFromEnforcableCondition() ?: return null
+
+    val deviceType = if (trail.condition.contains("Non-Fitted")) DeviceType.NON_FITTED else DeviceType.FITTED
+
+    return TrailMonitoringConditions(
+      versionId = versionId,
+      deviceType = deviceType,
+      startDate = parseDateTime(trail.startDate),
+      endDate = if (trail.endDate.isNotBlank()) parseDateTime(trail.endDate) else null,
+    )
   }
 
-  fun toAlcoholMonitoringConditions(versionId: UUID): AlcoholMonitoringConditions {
-    TODO("Not yet implemented")
+  fun toAlcoholMonitoringConditions(versionId: UUID): AlcoholMonitoringConditions? {
+    val alcohol = getAlcoholEnforcableCondition() ?: return null
+
+    val alcoholType: AlcoholMonitoringType =
+      if (alcohol.condition == "AAMR") AlcoholMonitoringType.ALCOHOL_LEVEL else AlcoholMonitoringType.ALCOHOL_ABSTINENCE
+
+    return AlcoholMonitoringConditions(
+      versionId = versionId,
+      monitoringType = alcoholType,
+      startDate = parseDateTime(alcohol.startDate),
+      endDate = if (alcohol.endDate.isNotBlank()) parseDateTime(alcohol.endDate) else null,
+    )
   }
 
-  fun toVariationDetails(versionId: UUID): VariationDetails {
-    TODO("Not yet implemented")
+  fun toVariationDetails(versionId: UUID): VariationDetails? {
+    if (orderVariationDate.isBlank()) return null
+
+    return VariationDetails(
+      versionId = versionId,
+      variationDate = parseDateTime(orderVariationDate),
+      variationDetails = orderVariationDetails,
+    )
   }
 
   private fun parseDateTime(date: String): ZonedDateTime =
@@ -80,4 +107,12 @@ data class Up3MonitoringOrder(
 
   private fun parseDate(date: String): ZonedDateTime =
     LocalDate.parse(date, dateFormatter).atStartOfDay().atZone(londonTimeZone)
+
+  private fun getTrailFromEnforcableCondition(): Up3EnforceableCondition? = enforceableCondition.find {
+    it.condition.contains("Location Monitoring")
+  }
+
+  private fun getAlcoholEnforcableCondition(): Up3EnforceableCondition? = enforceableCondition.find {
+    it.condition == "AAMR" || it.condition == "AML"
+  }
 }
