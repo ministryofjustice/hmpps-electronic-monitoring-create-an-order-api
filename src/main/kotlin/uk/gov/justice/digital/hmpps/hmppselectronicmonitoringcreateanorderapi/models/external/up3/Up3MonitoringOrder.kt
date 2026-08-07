@@ -95,10 +95,11 @@ data class Up3MonitoringOrder(
   }
 
   fun toEnforcementZoneConditions(versionId: UUID): List<EnforcementZoneConditions> {
-    val eZones = exclusionZones.map { it.toZoneConditions(versionId, EnforcementZoneType.EXCLUSION) }
-    val iZones = inclusionZones.map { it.toZoneConditions(versionId, EnforcementZoneType.INCLUSION) }
+    val zones =
+      exclusionZones.map { it to EnforcementZoneType.EXCLUSION } +
+        inclusionZones.map { it to EnforcementZoneType.INCLUSION }
 
-    return eZones + iZones
+    return zones.mapIndexed { zoneId, (zone, type) -> zone.toZoneConditions(versionId, type, zoneId) }
   }
 
   fun toVariationDetails(versionId: UUID): VariationDetails? {

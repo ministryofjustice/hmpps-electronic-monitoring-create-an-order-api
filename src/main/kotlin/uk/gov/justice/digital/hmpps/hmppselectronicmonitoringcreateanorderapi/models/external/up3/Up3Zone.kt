@@ -15,7 +15,7 @@ data class Up3Zone(var description: String, var duration: String, var start: Str
     private val londonTimeZone: ZoneId = ZoneId.of("Europe/London")
   }
 
-  fun toZoneConditions(versionId: UUID, type: EnforcementZoneType): EnforcementZoneConditions =
+  fun toZoneConditions(versionId: UUID, type: EnforcementZoneType, id: Int): EnforcementZoneConditions =
     EnforcementZoneConditions(
       versionId = versionId,
       zoneType = type,
@@ -23,6 +23,7 @@ data class Up3Zone(var description: String, var duration: String, var start: Str
       duration = duration,
       startDate = parseDate(start),
       endDate = parseDateOrNull(end),
+      zoneId = id,
     )
 
   private fun parseDate(date: String): ZonedDateTime =

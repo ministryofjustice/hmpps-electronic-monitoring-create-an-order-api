@@ -244,6 +244,7 @@ class Up3MonitoringOrderTest {
     assertThat(rows).hasSize(1)
     assertThat(rows[0].versionId).isEqualTo(versionId)
     assertThat(rows[0].zoneType).isEqualTo(EnforcementZoneType.EXCLUSION)
+    assertThat(rows[0].zoneId).isEqualTo(0)
     assertThat(rows[0].description).isEqualTo("no go area")
     assertThat(rows[0].duration).isEqualTo("2 weeks")
     assertThat(rows[0].startDate).isEqualTo(
@@ -280,6 +281,23 @@ class Up3MonitoringOrderTest {
     assertThat(rows).hasSize(2)
     assertThat(rows[0].zoneType).isEqualTo(EnforcementZoneType.EXCLUSION)
     assertThat(rows[1].zoneType).isEqualTo(EnforcementZoneType.INCLUSION)
+  }
+
+  @Test
+  fun `it should assign a contiguous 0-based zoneId across exclusion and inclusion zones`() {
+    val up3 = up3MonitoringOrder.copy(
+      exclusionZones = listOf(
+        Up3Zone("exclusion 1", "", "2000-07-01", ""),
+        Up3Zone("exclusion 2", "", "2000-07-01", ""),
+      ),
+      inclusionZones = listOf(Up3Zone("inclusion 1", "", "2000-07-01", "")),
+    )
+    val rows = up3.toEnforcementZoneConditions(versionId)
+
+    assertThat(rows).hasSize(3)
+    assertThat(rows[0].zoneId).isEqualTo(0)
+    assertThat(rows[1].zoneId).isEqualTo(1)
+    assertThat(rows[2].zoneId).isEqualTo(2)
   }
 
   @Test
