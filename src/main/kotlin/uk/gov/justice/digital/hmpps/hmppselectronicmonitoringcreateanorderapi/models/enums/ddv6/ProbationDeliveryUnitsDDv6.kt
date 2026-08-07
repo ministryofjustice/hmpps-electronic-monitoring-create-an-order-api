@@ -123,6 +123,10 @@ enum class ProbationDeliveryUnitsDDv6(val value: String) {
       it.name == value
     }
 
+    fun fromValue(value: String?): ProbationDeliveryUnitsDDv6? = ProbationDeliveryUnitsDDv6.entries.firstOrNull {
+      it.value == value
+    }
+
     val PROBATION_REGION_DELIVERY_UNIT = mapOf(
       // EAST_MIDLANDS
       ProbationServiceRegion.EAST_MIDLANDS.name to listOf(

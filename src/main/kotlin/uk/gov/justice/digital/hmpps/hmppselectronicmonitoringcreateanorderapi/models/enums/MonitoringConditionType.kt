@@ -7,4 +7,11 @@ enum class MonitoringConditionType(val value: String) {
     "Post-Sentence Supervision Requirement following on from an Adult Custody order",
   ),
   BAIL_ORDER("Bail Order"),
+  ;
+
+  companion object {
+    fun from(value: String?): MonitoringConditionType? = MonitoringConditionType.entries.firstOrNull {
+      it.value == value
+    }
+  }
 }

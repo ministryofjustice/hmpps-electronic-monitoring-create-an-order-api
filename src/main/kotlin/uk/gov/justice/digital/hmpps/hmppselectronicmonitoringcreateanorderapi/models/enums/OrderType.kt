@@ -8,4 +8,9 @@ enum class OrderType(val value: String) {
   PRE_TRIAL("Pre-Trial"),
   SPECIAL("Special"),
   BAIL("Bail"),
+  ;
+
+  companion object {
+    fun from(value: String?): OrderType? = OrderType.entries.firstOrNull { it.value == value }
+  }
 }
