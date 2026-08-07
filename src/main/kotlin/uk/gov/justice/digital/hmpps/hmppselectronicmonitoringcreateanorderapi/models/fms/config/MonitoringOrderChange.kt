@@ -73,11 +73,11 @@ enum class MonitoringOrderChange(
   ),
   TagAtSource(
     "Tag at source has changed",
-    VariationType.CHANGE_TO_DEVICE_TYPE,
+    VariationType.OTHER,
   ),
   TagAtSourceDetails(
     "Name of installation location has changed",
-    VariationType.CHANGE_TO_DEVICE_TYPE,
+    VariationType.OTHER,
   ),
   DateAndTimeInstallationWillTakePlace(
     "Installation date and time have changed",
@@ -139,7 +139,7 @@ enum class MonitoringOrderChange(
   // Addresses / IDs
   InstallationAddress(
     "Installation address has changed",
-    VariationType.CHANGE_TO_ADDRESS,
+    VariationType.OTHER,
   ),
   CourtCaseReferenceNumber(
     "Device wearer's court case reference number(s) have changed",
