@@ -45,7 +45,7 @@ data class Up3MonitoringOrder(
     return CurfewConditions(
       versionId = versionId,
       startDate = parseDateTime(curfewStart),
-      endDate = if (curfewEnd.isBlank()) null else parseDateTime(curfewEnd),
+      endDate = parseDateTimeOrNull(curfewEnd),
       curfewAdditionalDetails = curfewDescription,
     )
   }
@@ -66,7 +66,7 @@ data class Up3MonitoringOrder(
   }
 
   fun toTrailMonitoringConditions(versionId: UUID): TrailMonitoringConditions? {
-    val trail = getTrailFromEnforcableCondition() ?: return null
+    val trail = getTrailFromEnforceableCondition() ?: return null
 
     val deviceType = if (trail.condition.contains("Non-Fitted")) DeviceType.NON_FITTED else DeviceType.FITTED
 
@@ -74,12 +74,12 @@ data class Up3MonitoringOrder(
       versionId = versionId,
       deviceType = deviceType,
       startDate = parseDateTime(trail.startDate),
-      endDate = if (trail.endDate.isNotBlank()) parseDateTime(trail.endDate) else null,
+      endDate = parseDateTimeOrNull(trail.endDate),
     )
   }
 
   fun toAlcoholMonitoringConditions(versionId: UUID): AlcoholMonitoringConditions? {
-    val alcohol = getAlcoholEnforcableCondition() ?: return null
+    val alcohol = getAlcoholEnforceableCondition() ?: return null
 
     val alcoholType: AlcoholMonitoringType =
       if (abstinence == "Yes") AlcoholMonitoringType.ALCOHOL_ABSTINENCE else AlcoholMonitoringType.ALCOHOL_LEVEL
@@ -88,7 +88,7 @@ data class Up3MonitoringOrder(
       versionId = versionId,
       monitoringType = alcoholType,
       startDate = parseDateTime(alcohol.startDate),
-      endDate = if (alcohol.endDate.isNotBlank()) parseDateTime(alcohol.endDate) else null,
+      endDate = parseDateTimeOrNull(alcohol.endDate),
     )
   }
 
@@ -108,11 +108,14 @@ data class Up3MonitoringOrder(
   private fun parseDate(date: String): ZonedDateTime =
     LocalDate.parse(date, dateFormatter).atStartOfDay().atZone(londonTimeZone)
 
-  private fun getTrailFromEnforcableCondition(): Up3EnforceableCondition? = enforceableCondition.find {
-    it.condition.contains("Location Monitoring")
+  private fun parseDateTimeOrNull(date: String): ZonedDateTime? = if (date.isNotBlank()) parseDateTime(date) else null
+
+  private fun getTrailFromEnforceableCondition(): Up3EnforceableCondition? = enforceableCondition.find {
+    it.condition == "Location Monitoring (using Non-Fitted Device)" ||
+      it.condition == "Location Monitoring (Fitted Device)"
   }
 
-  private fun getAlcoholEnforcableCondition(): Up3EnforceableCondition? = enforceableCondition.find {
+  private fun getAlcoholEnforceableCondition(): Up3EnforceableCondition? = enforceableCondition.find {
     it.condition == "AAMR" || it.condition == "AML"
   }
 }
