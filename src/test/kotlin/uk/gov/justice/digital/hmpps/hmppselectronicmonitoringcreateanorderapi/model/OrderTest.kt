@@ -8,7 +8,9 @@ import org.junit.jupiter.params.provider.MethodSource
 import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AdditionalDocument
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewConditions
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.EnforcementZoneConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationLocation
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.MandatoryAttendanceConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderParameters
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.TrailMonitoringConditions
@@ -333,8 +335,8 @@ class OrderTest : OrderTestBase() {
 
     order.recalculateMonitoringStartEndDate()
 
-    assertThat(order.getCurrentVersion().monitoringStartDate!!.toInstant()).isEqualTo(earliest.toInstant())
-    assertThat(order.getCurrentVersion().monitoringEndDate!!.toInstant()).isEqualTo(latest.toInstant())
+    assertThat(order.getCurrentVersion().monitoringConditions!!.startDate!!.toInstant()).isEqualTo(earliest.toInstant())
+    assertThat(order.getCurrentVersion().monitoringConditions!!.endDate!!.toInstant()).isEqualTo(latest.toInstant())
   }
 
   @Test
@@ -344,8 +346,12 @@ class OrderTest : OrderTestBase() {
     order.monitoringConditions!!.endDate = ZonedDateTime.parse("2099-12-31T00:00Z")
 
     order.recalculateMonitoringStartEndDate()
-    assertThat(order.getCurrentVersion().monitoringStartDate!!.toInstant()).isEqualTo(baselineStart.toInstant())
-    assertThat(order.getCurrentVersion().monitoringEndDate!!.toInstant()).isEqualTo(baselineEnd.toInstant())
+    assertThat(
+      order.getCurrentVersion().monitoringConditions!!.startDate!!.toInstant(),
+    ).isEqualTo(baselineStart.toInstant())
+    assertThat(
+      order.getCurrentVersion().monitoringConditions!!.endDate!!.toInstant(),
+    ).isEqualTo(baselineEnd.toInstant())
   }
 
   @Test
@@ -359,8 +365,8 @@ class OrderTest : OrderTestBase() {
     order.monitoringConditionsAlcohol = null
     order.recalculateMonitoringStartEndDate()
 
-    assertThat(order.getCurrentVersion().monitoringStartDate).isEqualTo(baselineStart)
-    assertThat(order.getCurrentVersion().monitoringEndDate).isEqualTo(baselineEnd)
+    assertThat(order.getCurrentVersion().monitoringConditions!!.startDate).isEqualTo(baselineStart)
+    assertThat(order.getCurrentVersion().monitoringConditions!!.endDate).isEqualTo(baselineEnd)
   }
 
   @Test
@@ -374,27 +380,39 @@ class OrderTest : OrderTestBase() {
 
     order.recalculateMonitoringStartEndDate()
 
-    assertThat(order.getCurrentVersion().monitoringStartDate).isNull()
-    assertThat(order.getCurrentVersion().monitoringEndDate).isNull()
+    assertThat(order.getCurrentVersion().monitoringConditions!!.startDate).isNull()
+    assertThat(order.getCurrentVersion().monitoringConditions!!.endDate).isNull()
   }
 
   @Test
-  fun `getMonitoringStartDate and getMonitoringEndDate gives stored date precedence`() {
+  fun `when many populated monitoring conditions takes correct start and last`() {
     val order = order()
+    val vId = UUID.randomUUID()
 
-    val storedStartDate = ZonedDateTime.parse("2040-03-01T00:00:00Z")
+    val storedStartDate = ZonedDateTime.parse("2019-03-01T00:00:00Z")
     val storedEndDate = ZonedDateTime.parse("2060-03-01T00:00:00Z")
-    order.getCurrentVersion().monitoringStartDate = storedStartDate
-    order.getCurrentVersion().monitoringEndDate = storedEndDate
+    order.monitoringConditions!!.startDate = storedStartDate
+    order.monitoringConditions!!.endDate = storedEndDate
 
-    order.monitoringConditions!!.startDate = ZonedDateTime.parse("2020-03-01T00:00:00Z")
     order.monitoringConditionsTrail!!.startDate = ZonedDateTime.parse("2021-03-01T00:00:00Z")
+    order.curfewConditions!!.startDate = ZonedDateTime.parse("2020-03-01T00:00:00Z")
 
-    order.monitoringConditions!!.endDate = ZonedDateTime.parse("2022-03-01T00:00:00Z")
+    order.enforcementZoneConditions.add(
+      EnforcementZoneConditions(startDate = storedStartDate, endDate = storedEndDate, versionId = vId),
+    )
+    order.mandatoryAttendanceConditions.add(
+      MandatoryAttendanceConditions(startDate = storedStartDate, endDate = storedEndDate, versionId = vId),
+    )
+
     order.monitoringConditionsTrail!!.endDate = ZonedDateTime.parse("2024-03-01T00:00:00Z")
+    order.curfewConditions!!.endDate = ZonedDateTime.parse("2021-03-01T00:00:00Z")
 
-    assertThat(order.getMonitoringStartDate()!!.toInstant()).isEqualTo(storedStartDate.toInstant())
-    assertThat(order.getMonitoringEndDate()!!.toInstant()).isEqualTo(storedEndDate.toInstant())
+    assertThat(
+      order.getCurrentVersion().monitoringConditions!!.startDate!!.toInstant(),
+    ).isEqualTo(storedStartDate.toInstant())
+    assertThat(
+      order.getCurrentVersion().monitoringConditions!!.endDate!!.toInstant(),
+    ).isEqualTo(storedEndDate.toInstant())
   }
 
   @ParameterizedTest

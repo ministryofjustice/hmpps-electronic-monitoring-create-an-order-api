@@ -197,7 +197,6 @@ class OrderSearchRepositoryImpl(@PersistenceContext private val entityManager: E
   ): Expression<ZonedDateTime> = cb.function(
     "coalesce",
     ZonedDateTime::class.java,
-    version.get<ZonedDateTime>("monitoringStartDate"),
     monitoringConditions.get<ZonedDateTime>("startDate"),
     cb.function(
       "least",
@@ -214,7 +213,6 @@ class OrderSearchRepositoryImpl(@PersistenceContext private val entityManager: E
   ): Expression<ZonedDateTime> = cb.function(
     "coalesce",
     ZonedDateTime::class.java,
-    version.get<ZonedDateTime>("monitoringEndDate"),
     monitoringConditions.get<ZonedDateTime>("endDate"),
     cb.function(
       "greatest",

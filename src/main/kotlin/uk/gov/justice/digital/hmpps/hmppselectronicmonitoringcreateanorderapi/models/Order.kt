@@ -319,12 +319,10 @@ data class Order(
       getCurrentVersion().isSentencingAct = isSentencingAct
     }
 
-  fun getMonitoringStartDate(): ZonedDateTime? = getCurrentVersion().monitoringStartDate
-    ?: monitoringConditions?.startDate
+  fun getMonitoringStartDate(): ZonedDateTime? = getCurrentVersion().monitoringConditions?.startDate
     ?: monitoringConditionDates.mapNotNull { it.first }.minOrNull()
 
-  fun getMonitoringEndDate(): ZonedDateTime? = getCurrentVersion().monitoringEndDate
-    ?: monitoringConditions?.endDate
+  fun getMonitoringEndDate(): ZonedDateTime? = getCurrentVersion().monitoringConditions?.endDate
     ?: monitoringConditionDates.mapNotNull { it.second }.maxOrNull()
 
   private val monitoringConditionDates: Sequence<Pair<ZonedDateTime?, ZonedDateTime?>>
@@ -339,7 +337,7 @@ data class Order(
   fun recalculateMonitoringStartEndDate() {
     val version = getCurrentVersion()
     if (version.status !== OrderStatus.IN_PROGRESS) return
-    version.monitoringStartDate = monitoringConditionDates.mapNotNull { it.first }.minOrNull()
-    version.monitoringEndDate = monitoringConditionDates.mapNotNull { it.second }.maxOrNull()
+    version.monitoringConditions?.startDate = monitoringConditionDates.mapNotNull { it.first }.minOrNull()
+    version.monitoringConditions?.endDate = monitoringConditionDates.mapNotNull { it.second }.maxOrNull()
   }
 }

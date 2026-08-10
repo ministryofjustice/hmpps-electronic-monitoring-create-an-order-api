@@ -29,7 +29,6 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import java.time.OffsetDateTime
-import java.time.ZonedDateTime
 import java.util.*
 
 data class OrderDto(
@@ -108,6 +107,4 @@ data class OrderDto(
   val ownerCohort: String? = null,
   val isOwner: Boolean = false,
   val isSentencingAct: Boolean? = null,
-  val monitoringStartDate: ZonedDateTime? = null,
-  val monitoringEndDate: ZonedDateTime? = null,
 )

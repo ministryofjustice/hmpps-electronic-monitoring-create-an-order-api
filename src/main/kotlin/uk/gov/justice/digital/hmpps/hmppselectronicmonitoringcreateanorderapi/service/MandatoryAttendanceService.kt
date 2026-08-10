@@ -39,6 +39,7 @@ class MandatoryAttendanceService : OrderSectionServiceBase() {
     }
 
     val saved = this.updateLastUpdatedByAndSaveOrder(order)
+    order.recalculateMonitoringStartEndDate()
 
     return saved.mandatoryAttendanceConditions.find { x -> x.id == conditions.id }!!
   }
