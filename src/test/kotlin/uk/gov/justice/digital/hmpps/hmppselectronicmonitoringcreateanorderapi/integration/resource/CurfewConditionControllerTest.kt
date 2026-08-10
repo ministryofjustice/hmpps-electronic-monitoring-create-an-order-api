@@ -362,6 +362,31 @@ class CurfewConditionControllerTest : UpdateOrderIntegrationTestBase() {
       .expectBody().jsonPath("$.developerMessage").isEqualTo("Curfew conditions for ${order.id} not found")
   }
 
+  @Test
+  fun `update curfew conditions trigger recalc monitoring dates`() {
+    val order = storedOrderWithNoMonitoringConditionDateWindow()
+    val earlierDate = ZonedDateTime.parse("2000-01-01T00:00:00Z")
+
+    webTestClient.put()
+      .uri("/api/orders/${order.id}/monitoring-conditions-curfew-conditions")
+      .contentType(MediaType.APPLICATION_JSON)
+      .body(
+        BodyInserters.fromValue(
+          mockValidRequestBody(order.id, startDate = earlierDate),
+        ),
+      )
+      .headers(setAuthorisation())
+      .exchange()
+      .expectStatus()
+      .isOk
+
+    // Get updated order
+    val updatedOrder = getOrder(order.id)
+
+    Assertions.assertThat(updatedOrder.curfewConditions?.startDate).isEqualTo(earlierDate)
+    Assertions.assertThat(updatedOrder.monitoringConditions?.startDate).isEqualTo(earlierDate)
+  }
+
   fun addCurfewDataToOrder(orderId: UUID) {
     webTestClient.put()
       .uri("/api/orders/$orderId/monitoring-conditions-curfew-conditions")

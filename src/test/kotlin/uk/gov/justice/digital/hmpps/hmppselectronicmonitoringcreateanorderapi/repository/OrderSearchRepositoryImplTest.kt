@@ -108,24 +108,6 @@ class OrderSearchRepositoryImplTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `search falls back to the monitoring conditions dates for legacy orders`() {
-    val order = TestUtilities.createReadyToSubmitOrder(
-      versionId = UUID.randomUUID(),
-      status = OrderStatus.IN_PROGRESS,
-      startDate = ZonedDateTime.parse("2040-02-01T00:00:00Z"),
-      endDate = ZonedDateTime.parse("2040-03-01T00:00:00Z"),
-    )
-    order.getCurrentVersion().monitoringStartDate = null
-    order.getCurrentVersion().monitoringEndDate = null
-    repo.save(order)
-
-    val result = repo.searchOrders(OrderSearchCriteria()).single { it.id == order.id }
-
-    assertThat(result.monitoringConditions.startDate!!.toInstant())
-      .isEqualTo(ZonedDateTime.parse("2040-02-01T00:00:00Z").toInstant())
-  }
-
-  @Test
   fun `search derives from the monitoring types when nothing is stored`() {
     val order = TestUtilities.createReadyToSubmitOrder(
       versionId = UUID.randomUUID(),
@@ -133,8 +115,8 @@ class OrderSearchRepositoryImplTest : IntegrationTestBase() {
       startDate = ZonedDateTime.parse("2040-02-01T00:00:00Z"),
       endDate = ZonedDateTime.parse("2040-03-01T00:00:00Z"),
     )
-    order.getCurrentVersion().monitoringStartDate = null
-    order.getCurrentVersion().monitoringEndDate = null
+    order.getCurrentVersion().monitoringConditions!!.startDate = null
+    order.getCurrentVersion().monitoringConditions!!.endDate = null
     order.monitoringConditions!!.startDate = null
     order.monitoringConditions!!.endDate = null
     order.monitoringConditionsTrail!!.startDate = ZonedDateTime.parse("2040-01-05T00:00:00Z")

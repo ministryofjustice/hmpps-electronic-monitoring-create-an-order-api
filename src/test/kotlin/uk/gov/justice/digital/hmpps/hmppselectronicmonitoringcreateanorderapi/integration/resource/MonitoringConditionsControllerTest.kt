@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.resource
 
 import org.assertj.core.api.Assertions
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.http.HttpMethod
@@ -9,6 +10,8 @@ import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.UpdateOrderIntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.UriTestCase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Address
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AlcoholMonitoringConditions
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationAppointment
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationLocation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.MonitoringConditions
@@ -419,5 +422,108 @@ class MonitoringConditionsControllerTest : UpdateOrderIntegrationTestBase() {
       },
     )
       .isNull()
+  }
+
+  @Test
+  fun `removing a monitoring type that is earliest causes recalc to adjust`() {
+    val originalDate = ZonedDateTime.parse("2025-01-01T00:00:00Z")
+    val originalDateWide = ZonedDateTime.parse("2028-01-01T00:00:00Z")
+    val order = createStoredOrder()
+    order.monitoringConditionsTrail = TrailMonitoringConditions(
+      versionId = order.versions.first().id,
+      id = trailId,
+      startDate = originalDate,
+    )
+    order.monitoringConditionsAlcohol = AlcoholMonitoringConditions(
+      versionId = order.versions.first().id,
+      startDate = originalDate,
+    )
+    order.curfewConditions = CurfewConditions(
+      versionId = order.versions.first().id,
+      startDate = originalDateWide,
+    )
+    order.monitoringConditions = MonitoringConditions(
+      versionId = order.versions.first().id,
+      trail = true,
+      curfew = true,
+      alcohol = true,
+      startDate = originalDate,
+    )
+    repo.save(order)
+
+    val earlierDate = ZonedDateTime.parse("2000-01-01T00:00:00Z")
+
+    // setting monitoring trail earlier, then deleting to see if we recalc monitoring conditions
+    order.monitoringConditionsTrail!!.startDate = earlierDate
+    order.monitoringConditions!!.startDate = earlierDate
+    repo.save(order)
+
+    webTestClient.delete()
+      .uri("/api/orders/${order.id}/monitoring-conditions/monitoring-type/${order.monitoringConditionsTrail!!.id}")
+      .headers(setAuthorisation("AUTH_ADM", roles = listOf("ROLE_EM_CEMO__CREATE_ORDER")))
+      .exchange()
+      .expectStatus()
+      .isNoContent
+
+    val updatedOrder = getOrder(order.id)
+    assertThat(updatedOrder.monitoringConditions!!.startDate!!.toInstant()).isEqualTo(originalDate.toInstant())
+  }
+
+  @Test
+  fun `Adding a monitoring type that is later causes recalc to adjust`() {
+    val originalDate = ZonedDateTime.parse("2024-01-01T00:00:00Z")
+    val laterDate = ZonedDateTime.parse("2028-01-01T00:00:00Z")
+    val startDate = ZonedDateTime.parse("2023-01-01T00:00:00Z")
+
+    val order = createStoredOrder()
+    order.monitoringConditionsTrail = TrailMonitoringConditions(
+      versionId = order.versions.first().id,
+      id = trailId,
+      endDate = originalDate,
+    )
+    order.curfewConditions = CurfewConditions(
+      versionId = order.versions.first().id,
+      endDate = originalDate,
+    )
+    order.monitoringConditions = MonitoringConditions(
+      versionId = order.versions.first().id,
+      trail = true,
+      curfew = true,
+      endDate = originalDate,
+    )
+    repo.save(order)
+
+    order.monitoringConditionsAlcohol = AlcoholMonitoringConditions(
+      versionId = order.versions.first().id,
+      endDate = laterDate,
+    )
+    repo.save(order)
+
+    webTestClient.put()
+      .uri("/api/orders/${order.id}/monitoring-conditions")
+      .contentType(MediaType.APPLICATION_JSON)
+      .body(
+        BodyInserters.fromValue(
+          """
+          {
+            "orderType": "$mockOrderType",
+            "orderTypeDescription": "$mockOrderTypeDescription",
+            "conditionType": "$mockConditionType",
+            "curfew": "true",
+            "trail": "true",
+            "alcohol": "true",
+            "startDate": "$startDate",
+            "endDate": "$originalDate"
+          }
+          """.trimIndent(),
+        ),
+      )
+      .headers(setAuthorisation("AUTH_ADM", roles = listOf("ROLE_EM_CEMO__CREATE_ORDER")))
+      .exchange()
+      .expectStatus()
+      .isOk
+
+    val updatedOrder = getOrder(order.id)
+    assertThat(updatedOrder.monitoringConditions!!.endDate!!.toInstant()).isEqualTo(laterDate.toInstant())
   }
 }

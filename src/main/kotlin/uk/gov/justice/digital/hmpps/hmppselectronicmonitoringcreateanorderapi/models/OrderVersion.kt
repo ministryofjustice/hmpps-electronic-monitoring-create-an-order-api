@@ -21,7 +21,6 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import java.time.OffsetDateTime
-import java.time.ZonedDateTime
 import java.util.UUID
 
 @Entity
@@ -156,12 +155,6 @@ data class OrderVersion(
 
   @Column(name = "IS_SENTENCING_ACT", nullable = true)
   var isSentencingAct: Boolean? = null,
-
-  @Column(name = "MONITORING_START_DATE", nullable = true)
-  var monitoringStartDate: ZonedDateTime? = null,
-
-  @Column(name = "MONITORING_END_DATE", nullable = true)
-  var monitoringEndDate: ZonedDateTime? = null,
 
   @Schema(hidden = true)
   @ManyToOne

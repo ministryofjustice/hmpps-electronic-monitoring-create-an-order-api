@@ -21,6 +21,7 @@ class MonitoringConditionsTrailService : OrderSectionServiceBase() {
       deviceType = updateRecord.deviceType,
     )
 
+    order.recalculateMonitoringStartEndDate()
     return updateLastUpdatedByAndSaveOrder(order).monitoringConditionsTrail!!
   }
 }
