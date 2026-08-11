@@ -10,8 +10,8 @@ enum class OrderTypeDescription(val value: String?) {
   ;
 
   companion object {
-    fun from(value: String?): OrderTypeDescription? = OrderTypeDescription.entries.firstOrNull {
+    fun from(value: String?): OrderTypeDescription = OrderTypeDescription.entries.firstOrNull {
       !value.isNullOrBlank() && it.value == value
-    }
+    } ?: UNKNOWN
   }
 }

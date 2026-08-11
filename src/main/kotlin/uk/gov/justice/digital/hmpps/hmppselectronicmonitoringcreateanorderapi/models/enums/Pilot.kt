@@ -15,6 +15,7 @@ enum class Pilot(val value: String) {
   ;
 
   companion object {
-    fun from(value: String?): Pilot? = Pilot.entries.firstOrNull { !value.isNullOrBlank() && it.value == value }
+    fun from(value: String?): Pilot =
+      Pilot.entries.firstOrNull { !value.isNullOrBlank() && it.value == value } ?: UNKNOWN
   }
 }
