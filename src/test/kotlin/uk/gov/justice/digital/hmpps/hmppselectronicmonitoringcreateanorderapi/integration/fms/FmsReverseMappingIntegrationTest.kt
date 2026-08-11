@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.external.up3
+package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.fms
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -20,7 +20,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ResponsibleOrganisation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RiskCategory
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YesNoUnknown
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.up3.Up3RetrieveDWandMO
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsRetrieveDWandMO
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.time.DayOfWeek
@@ -28,13 +28,13 @@ import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.util.UUID
 
-class Up3ReverseMappingIntegrationTest {
+class FmsReverseMappingIntegrationTest {
 
   private val objectMapper = jacksonObjectMapper()
   private val versionId: UUID = UUID.randomUUID()
   private val london: ZoneId = ZoneId.of("Europe/London")
 
-  private val response: Up3RetrieveDWandMO = objectMapper.readValue(
+  private val response: FmsRetrieveDWandMO = objectMapper.readValue(
     Files.readString(Paths.get("src/test/resources/json/up3/retrieveDWandMO_example.json")),
   )
 

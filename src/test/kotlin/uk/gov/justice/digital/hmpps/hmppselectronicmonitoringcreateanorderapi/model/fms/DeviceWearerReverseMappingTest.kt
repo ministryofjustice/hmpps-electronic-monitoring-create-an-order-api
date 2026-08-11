@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.external.up3
+package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.fms
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -7,17 +7,17 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MappaLevel
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RiskCategory
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YesNoUnknown
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.up3.Up3DeviceWearer
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.up3.Up3Disability
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.up3.Up3RiskCategory
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.DeviceWearer
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.Disability
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsRiskCategory
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.util.UUID
 
-class Up3DeviceWearerTest {
+class DeviceWearerReverseMappingTest {
 
-  val up3DeviceWearer =
-    Up3DeviceWearer(
+  val deviceWearerDto =
+    DeviceWearer(
       title = "",
       firstName = "Bob",
       middleName = "Middleton",
@@ -33,8 +33,8 @@ class Up3DeviceWearerTest {
       nomisId = "nomis",
       deliusId = "delius",
       prisonNumber = "prisonNumber",
-      homeOfficeCaseReferenceNumber = "hocrn",
-      cepr = "cepr",
+      homeOfficeReferenceNumber = "hocrn",
+      complianceAndEnforcementPersonReference = "cepr",
       noFixedAddress = "false",
       address1 = "1 fake street",
       address2 = "",
@@ -55,28 +55,28 @@ class Up3DeviceWearerTest {
       mappaCaseType = "",
       mappaCategory = "",
       riskDetails = "",
-      riskCategories = emptyList(),
+      riskCategory = emptyList(),
       parent = "",
       guardian = "",
       parentPhoneNumber = "",
-      disabilities = emptyList(),
+      disability = emptyList(),
     )
   val versionId: UUID = UUID.randomUUID()
 
   @Test
   fun `it should map name fields onto cemo device wearer`() {
-    val deviceWearer = up3DeviceWearer.toDeviceWearer(versionId)
+    val deviceWearer = deviceWearerDto.toDeviceWearer(versionId)
 
     assertThat(deviceWearer.versionId).isEqualTo(versionId)
-    assertThat(deviceWearer.firstName).isEqualTo(up3DeviceWearer.firstName)
-    assertThat(deviceWearer.middleName).isEqualTo(up3DeviceWearer.middleName)
-    assertThat(deviceWearer.lastName).isEqualTo(up3DeviceWearer.lastName)
-    assertThat(deviceWearer.alias).isEqualTo(up3DeviceWearer.alias)
+    assertThat(deviceWearer.firstName).isEqualTo(deviceWearerDto.firstName)
+    assertThat(deviceWearer.middleName).isEqualTo(deviceWearerDto.middleName)
+    assertThat(deviceWearer.lastName).isEqualTo(deviceWearerDto.lastName)
+    assertThat(deviceWearer.alias).isEqualTo(deviceWearerDto.alias)
   }
 
   @Test
   fun `it should map dob fields onto cemo device wearer`() {
-    val deviceWearer = up3DeviceWearer.toDeviceWearer(versionId)
+    val deviceWearer = deviceWearerDto.toDeviceWearer(versionId)
     val expectedDOB = ZonedDateTime.of(
       2000,
       7,
@@ -93,32 +93,33 @@ class Up3DeviceWearerTest {
 
   @Test
   fun `it should map dw characteristics to cemo device wearer`() {
-    val deviceWearer = up3DeviceWearer.toDeviceWearer(versionId)
+    val deviceWearer = deviceWearerDto.toDeviceWearer(versionId)
 
     assertThat(deviceWearer.adultAtTimeOfInstallation).isEqualTo(true)
-    assertThat(deviceWearer.sex).isEqualTo(up3DeviceWearer.sex)
-    assertThat(deviceWearer.gender).isEqualTo(up3DeviceWearer.genderIdentity)
-    assertThat(deviceWearer.language).isEqualTo(up3DeviceWearer.language)
+    assertThat(deviceWearer.sex).isEqualTo(deviceWearerDto.sex)
+    assertThat(deviceWearer.gender).isEqualTo(deviceWearerDto.genderIdentity)
+    assertThat(deviceWearer.language).isEqualTo(deviceWearerDto.language)
     assertThat(deviceWearer.interpreterRequired).isEqualTo(false)
   }
 
   @Test
   fun `should map ids to cemo device wearer`() {
-    val deviceWearer = up3DeviceWearer.toDeviceWearer(versionId)
+    val deviceWearer = deviceWearerDto.toDeviceWearer(versionId)
 
-    assertThat(deviceWearer.pncId).isEqualTo(up3DeviceWearer.pncId)
-    assertThat(deviceWearer.nomisId).isEqualTo(up3DeviceWearer.nomisId)
-    assertThat(deviceWearer.deliusId).isEqualTo(up3DeviceWearer.deliusId)
-    assertThat(deviceWearer.prisonNumber).isEqualTo(up3DeviceWearer.prisonNumber)
-    assertThat(deviceWearer.complianceAndEnforcementPersonReference).isEqualTo(up3DeviceWearer.cepr)
+    assertThat(deviceWearer.pncId).isEqualTo(deviceWearerDto.pncId)
+    assertThat(deviceWearer.nomisId).isEqualTo(deviceWearerDto.nomisId)
+    assertThat(deviceWearer.deliusId).isEqualTo(deviceWearerDto.deliusId)
+    assertThat(deviceWearer.prisonNumber).isEqualTo(deviceWearerDto.prisonNumber)
+    assertThat(deviceWearer.complianceAndEnforcementPersonReference)
+      .isEqualTo(deviceWearerDto.complianceAndEnforcementPersonReference)
     assertThat(
       deviceWearer.homeOfficeReferenceNumber,
-    ).isEqualTo(up3DeviceWearer.homeOfficeCaseReferenceNumber)
+    ).isEqualTo(deviceWearerDto.homeOfficeReferenceNumber)
   }
 
   @Test
   fun `it should map a fixed address to a cemo address`() {
-    val address = up3DeviceWearer.toAddress(versionId)
+    val address = deviceWearerDto.toAddress(versionId)
 
     assertThat(address).isNotNull
     assertThat(address!!.addressType).isEqualTo(AddressType.PRIMARY)
@@ -128,21 +129,21 @@ class Up3DeviceWearerTest {
 
   @Test
   fun `it should not build an adress when no fixed address is true`() {
-    val up3 = up3DeviceWearer.copy(noFixedAddress = "true")
+    val dto = deviceWearerDto.copy(noFixedAddress = "true")
 
-    assertThat(up3.toAddress(versionId)).isNull()
+    assertThat(dto.toAddress(versionId)).isNull()
   }
 
   @Test
   fun `it should map a secondary to a cemo address`() {
-    val up3 = up3DeviceWearer.copy(
+    val dto = deviceWearerDto.copy(
       secondaryAddress1 = "2 fake street",
       secondaryAddress2 = "",
       secondaryAddress3 = "town",
       secondaryAddress4 = "",
       secondaryAddressPostCode = "AB2 3CD",
     )
-    val address = up3.toSecondaryAddress(versionId)
+    val address = dto.toSecondaryAddress(versionId)
 
     assertThat(address).isNotNull
     assertThat(address!!.addressType).isEqualTo(AddressType.SECONDARY)
@@ -152,19 +153,19 @@ class Up3DeviceWearerTest {
 
   @Test
   fun `it should not build a secondary when empty`() {
-    assertThat(up3DeviceWearer.toSecondaryAddress(versionId)).isNull()
+    assertThat(deviceWearerDto.toSecondaryAddress(versionId)).isNull()
   }
 
   @Test
   fun `it should map a tiertiary to a cemo address`() {
-    val up3 = up3DeviceWearer.copy(
+    val dto = deviceWearerDto.copy(
       tertiaryAddress1 = "3 fake street",
       tertiaryAddress2 = "",
       tertiaryAddress3 = "town",
       tertiaryAddress4 = "",
       tertiaryAddressPostCode = "AB3 4CD",
     )
-    val address = up3.toTertiaryAddress(versionId)
+    val address = dto.toTertiaryAddress(versionId)
 
     assertThat(address).isNotNull
     assertThat(address!!.addressType).isEqualTo(AddressType.TERTIARY)
@@ -174,13 +175,13 @@ class Up3DeviceWearerTest {
 
   @Test
   fun `it should not build a tiertiary when empty`() {
-    assertThat(up3DeviceWearer.toTertiaryAddress(versionId)).isNull()
+    assertThat(deviceWearerDto.toTertiaryAddress(versionId)).isNull()
   }
 
   @Test
   fun `it should map mappa level and category onto cemo mappa`() {
-    val up3 = up3DeviceWearer.copy(mappa = "MAPPA 2", mappaCategory = "Category 1")
-    val mappa = up3.toMappa(versionId)
+    val dto = deviceWearerDto.copy(mappa = "MAPPA 2", mappaCategory = "Category 1")
+    val mappa = dto.toMappa(versionId)
 
     assertThat(mappa.versionId).isEqualTo(versionId)
     assertThat(mappa.level).isEqualTo(MappaLevel.MAPPA_TWO)
@@ -189,24 +190,24 @@ class Up3DeviceWearerTest {
 
   @Test
   fun `it should prefer mappa_category over mappa_case_type when both present`() {
-    val up3 = up3DeviceWearer.copy(mappaCaseType = "Category 3", mappaCategory = "Category 1")
-    val mappa = up3.toMappa(versionId)
+    val dto = deviceWearerDto.copy(mappaCaseType = "Category 3", mappaCategory = "Category 1")
+    val mappa = dto.toMappa(versionId)
 
     assertThat(mappa.category).isEqualTo(MappaCategory.CATEGORY_ONE)
   }
 
   @Test
   fun `it should fall back to mappa_case_type when mappa_category is blank`() {
-    val up3 = up3DeviceWearer.copy(mappaCaseType = "Category 3", mappaCategory = "")
-    val mappa = up3.toMappa(versionId)
+    val dto = deviceWearerDto.copy(mappaCaseType = "Category 3", mappaCategory = "")
+    val mappa = dto.toMappa(versionId)
 
     assertThat(mappa.category).isEqualTo(MappaCategory.CATEGORY_THREE)
   }
 
   @Test
   fun `it should leave level and category null and not throw when values are unmatched`() {
-    val up3 = up3DeviceWearer.copy(mappa = "not a real level", mappaCategory = "not a real category")
-    val mappa = up3.toMappa(versionId)
+    val dto = deviceWearerDto.copy(mappa = "not a real level", mappaCategory = "not a real category")
+    val mappa = dto.toMappa(versionId)
 
     assertThat(mappa.level).isNull()
     assertThat(mappa.category).isNull()
@@ -214,23 +215,23 @@ class Up3DeviceWearerTest {
 
   @Test
   fun `it should mark isMappa as YES when level or category is present`() {
-    val up3 = up3DeviceWearer.copy(mappa = "MAPPA 1", mappaCategory = "")
-    val mappa = up3.toMappa(versionId)
+    val dto = deviceWearerDto.copy(mappa = "MAPPA 1", mappaCategory = "")
+    val mappa = dto.toMappa(versionId)
 
     assertThat(mappa.isMappa).isEqualTo(YesNoUnknown.YES)
   }
 
   @Test
   fun `it should leave isMappa unset when neither level nor category is present`() {
-    val mappa = up3DeviceWearer.toMappa(versionId)
+    val mappa = deviceWearerDto.toMappa(versionId)
 
     assertThat(mappa.isMappa).isNull()
   }
 
   @Test
   fun `it should map risk details onto cemo installation and risk`() {
-    val up3 = up3DeviceWearer.copy(riskDetails = "known to be aggressive")
-    val installationAndRisk = up3.toInstallationAndRisk(versionId)
+    val dto = deviceWearerDto.copy(riskDetails = "known to be aggressive")
+    val installationAndRisk = dto.toInstallationAndRisk(versionId)
 
     assertThat(installationAndRisk.versionId).isEqualTo(versionId)
     assertThat(installationAndRisk.riskDetails).isEqualTo("known to be aggressive")
@@ -238,13 +239,13 @@ class Up3DeviceWearerTest {
 
   @Test
   fun `it should map risk categories onto cemo installation and risk`() {
-    val up3 = up3DeviceWearer.copy(
-      riskCategories = listOf(
-        Up3RiskCategory("Sexual Offences"),
-        Up3RiskCategory("Racial Abuse or Threats"),
+    val dto = deviceWearerDto.copy(
+      riskCategory = listOf(
+        FmsRiskCategory("Sexual Offences"),
+        FmsRiskCategory("Racial Abuse or Threats"),
       ),
     )
-    val installationAndRisk = up3.toInstallationAndRisk(versionId)
+    val installationAndRisk = dto.toInstallationAndRisk(versionId)
 
     assertThat(installationAndRisk.riskCategory).containsExactlyInAnyOrder(
       RiskCategory.SEXUAL_OFFENCES.name,
@@ -254,28 +255,28 @@ class Up3DeviceWearerTest {
 
   @Test
   fun `it should drop unmatched risk categories and not throw`() {
-    val up3 = up3DeviceWearer.copy(
-      riskCategories = listOf(
-        Up3RiskCategory("Sexual Offences"),
-        Up3RiskCategory("not a real category"),
+    val dto = deviceWearerDto.copy(
+      riskCategory = listOf(
+        FmsRiskCategory("Sexual Offences"),
+        FmsRiskCategory("not a real category"),
       ),
     )
-    val installationAndRisk = up3.toInstallationAndRisk(versionId)
+    val installationAndRisk = dto.toInstallationAndRisk(versionId)
 
     assertThat(installationAndRisk.riskCategory).containsExactly(RiskCategory.SEXUAL_OFFENCES.name)
   }
 
   @Test
   fun `it should leave risk category null when no risk categories present`() {
-    val installationAndRisk = up3DeviceWearer.toInstallationAndRisk(versionId)
+    val installationAndRisk = deviceWearerDto.toInstallationAndRisk(versionId)
 
     assertThat(installationAndRisk.riskCategory).isNull()
   }
 
   @Test
   fun `it should map parent onto cemo responsible adult as Parent`() {
-    val up3 = up3DeviceWearer.copy(parent = "Jane Smith")
-    val responsibleAdult = up3.toResponsibleAdult(versionId)
+    val dto = deviceWearerDto.copy(parent = "Jane Smith")
+    val responsibleAdult = dto.toResponsibleAdult(versionId)
 
     assertThat(responsibleAdult).isNotNull
     assertThat(responsibleAdult!!.versionId).isEqualTo(versionId)
@@ -285,8 +286,8 @@ class Up3DeviceWearerTest {
 
   @Test
   fun `it should map guardian onto cemo responsible adult as Guardian when no parent`() {
-    val up3 = up3DeviceWearer.copy(guardian = "Jane Guardian")
-    val responsibleAdult = up3.toResponsibleAdult(versionId)
+    val dto = deviceWearerDto.copy(guardian = "Jane Guardian")
+    val responsibleAdult = dto.toResponsibleAdult(versionId)
 
     assertThat(responsibleAdult).isNotNull
     assertThat(responsibleAdult!!.fullName).isEqualTo("Jane Guardian")
@@ -295,8 +296,8 @@ class Up3DeviceWearerTest {
 
   @Test
   fun `it should prefer parent over guardian when both present`() {
-    val up3 = up3DeviceWearer.copy(parent = "Jane Smith", guardian = "Jane Guardian")
-    val responsibleAdult = up3.toResponsibleAdult(versionId)
+    val dto = deviceWearerDto.copy(parent = "Jane Smith", guardian = "Jane Guardian")
+    val responsibleAdult = dto.toResponsibleAdult(versionId)
 
     assertThat(responsibleAdult!!.fullName).isEqualTo("Jane Smith")
     assertThat(responsibleAdult.relationship).isEqualTo("Parent")
@@ -304,40 +305,40 @@ class Up3DeviceWearerTest {
 
   @Test
   fun `it should map parent phone number onto cemo responsible adult contact number`() {
-    val up3 = up3DeviceWearer.copy(parent = "Jane Smith", parentPhoneNumber = "07000000000")
-    val responsibleAdult = up3.toResponsibleAdult(versionId)
+    val dto = deviceWearerDto.copy(parent = "Jane Smith", parentPhoneNumber = "07000000000")
+    val responsibleAdult = dto.toResponsibleAdult(versionId)
 
     assertThat(responsibleAdult!!.contactNumber).isEqualTo("07000000000")
   }
 
   @Test
   fun `it should not build a responsible adult when neither parent nor guardian is present`() {
-    assertThat(up3DeviceWearer.toResponsibleAdult(versionId)).isNull()
+    assertThat(deviceWearerDto.toResponsibleAdult(versionId)).isNull()
   }
 
   @Test
   fun `it should map disabilities onto cemo device wearer as a joined enum-name string`() {
-    val up3 = up3DeviceWearer.copy(
-      disabilities = listOf(Up3Disability("Vision"), Up3Disability("Hearing")),
+    val dto = deviceWearerDto.copy(
+      disability = listOf(Disability("Vision"), Disability("Hearing")),
     )
-    val deviceWearer = up3.toDeviceWearer(versionId)
+    val deviceWearer = dto.toDeviceWearer(versionId)
 
     assertThat(deviceWearer.disabilities).isEqualTo("VISION,HEARING")
   }
 
   @Test
   fun `it should drop unmatched disabilities and not throw`() {
-    val up3 = up3DeviceWearer.copy(
-      disabilities = listOf(Up3Disability("Vision"), Up3Disability("not a real disability")),
+    val dto = deviceWearerDto.copy(
+      disability = listOf(Disability("Vision"), Disability("not a real disability")),
     )
-    val deviceWearer = up3.toDeviceWearer(versionId)
+    val deviceWearer = dto.toDeviceWearer(versionId)
 
     assertThat(deviceWearer.disabilities).isEqualTo("VISION")
   }
 
   @Test
   fun `it should leave disabilities null when none are present`() {
-    val deviceWearer = up3DeviceWearer.toDeviceWearer(versionId)
+    val deviceWearer = deviceWearerDto.toDeviceWearer(versionId)
 
     assertThat(deviceWearer.disabilities).isNull()
   }

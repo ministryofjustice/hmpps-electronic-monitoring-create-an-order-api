@@ -1,18 +1,22 @@
-package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.up3
+package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms
 
 import org.slf4j.LoggerFactory
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewTimeTable
 import java.util.UUID
 
-data class Up3CurfewDuration(var location: String, var allday: String, var schedule: List<Up3CurfewSchedule>) {
+data class CurfewSchedule(
+  val location: String? = "",
+  val allday: String? = "",
+  val schedule: MutableList<Schedule>? = mutableListOf(),
+) {
   companion object {
-    private val log = LoggerFactory.getLogger(Up3CurfewDuration::class.java)
+    private val log = LoggerFactory.getLogger(CurfewSchedule::class.java)
   }
 
   fun toCurfewTimeTable(versionId: UUID): List<CurfewTimeTable> {
-    val address = addressType(location) ?: return emptyList()
+    val address = addressType(location ?: "") ?: return emptyList()
 
-    return schedule.mapNotNull { it.getTimeTable(versionId, address) }
+    return schedule.orEmpty().mapNotNull { it.getTimeTable(versionId, address) }
   }
 
   private fun addressType(location: String): String? = when (location) {

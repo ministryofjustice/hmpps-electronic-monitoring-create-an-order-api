@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.up3
+package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
@@ -7,13 +7,13 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import java.util.UUID
 
-data class Up3RetrieveDWandMO(
+data class FmsRetrieveDWandMO(
   @JsonProperty("case_id")
   val caseId: String,
   @JsonProperty("device_wearer")
-  val deviceWearer: Up3DeviceWearer,
+  val deviceWearer: DeviceWearer,
   @JsonProperty("monitoring_order")
-  val monitoringOrder: Up3MonitoringOrder,
+  val monitoringOrder: MonitoringOrder,
 ) {
   fun toOrderVersion(
     orderId: UUID,

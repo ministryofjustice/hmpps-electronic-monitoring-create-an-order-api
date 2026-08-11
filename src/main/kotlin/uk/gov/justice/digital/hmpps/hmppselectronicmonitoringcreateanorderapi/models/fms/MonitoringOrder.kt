@@ -1,12 +1,24 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import org.slf4j.LoggerFactory
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.config.FeatureFlags
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Address
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AlcoholMonitoringConditions
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewConditions
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewReleaseDateConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewTimeTable
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Dapo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.EnforcementZoneConditions
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationAndRisk
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationAppointment
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InterestedParties
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.MonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ProbationDeliveryUnit
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.TrailMonitoringConditions
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.VariationDetails
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.CivilCountyCourtDDv5
@@ -21,10 +33,12 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MagistrateCourt
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MagistrateCourtDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MilitaryCourtDDv5
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MonitoringConditionType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisationDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Offence
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderTypeDescription
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Pilot
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.PoliceAreas
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Prison
@@ -41,11 +55,11 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ddv6.ProbationDeliveryUnitsDDv6
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ddv6.YouthCustodyServiceRegionDDv6
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.formatters.PhoneNumberFormatter
-import java.time.DayOfWeek
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
-import java.time.format.DateTimeFormatter
+import java.util.UUID
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Offence as OffenceEntity
 
 data class MonitoringOrder(
   @JsonProperty("case_id")
@@ -243,7 +257,7 @@ data class MonitoringOrder(
   @JsonProperty("dapol_missed_in_error")
   var dapolMissedInError: String? = "",
   @JsonProperty("ac_eligible_offences")
-  var acEligibleOffences: MutableList<AcEligibleOffence>? = mutableListOf(),
+  var acEligibleOffences: MutableList<OffenceData>? = mutableListOf(),
   @JsonProperty("install_at_source_pilot")
   var installAtSourcePilot: String? = "",
   @JsonProperty("dapo_order_clause_numbers")
@@ -253,14 +267,11 @@ data class MonitoringOrder(
 ) {
 
   companion object {
-    private val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-    private val dateTimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
-    private val londonTimeZone = ZoneId.of("Europe/London")
-    private fun getBritishDateAndTime(dateTime: ZonedDateTime?): String? =
-      dateTime?.toInstant()?.atZone(londonTimeZone)?.format(dateTimeFormatter)
+    private val log = LoggerFactory.getLogger(MonitoringOrder::class.java)
 
-    private fun getBritishDate(dateTime: ZonedDateTime?): String? =
-      dateTime?.toInstant()?.atZone(londonTimeZone)?.format(dateFormatter)
+    private fun getBritishDateAndTime(dateTime: ZonedDateTime?): String? = FmsDates.getBritishDateAndTime(dateTime)
+
+    private fun getBritishDate(dateTime: ZonedDateTime?): String? = FmsDates.getBritishDate(dateTime)
 
     fun fromOrder(
       order: Order,
@@ -333,7 +344,7 @@ data class MonitoringOrder(
         if (featureFlags.ddV6CourtMappings) {
           conditions.offenceType?.takeIf { it.isNotBlank() }?.let {
             monitoringOrder.acEligibleOffences = mutableListOf(
-              AcEligibleOffence(
+              OffenceData(
                 offence = it,
                 offenceDate = "",
               ),
@@ -616,7 +627,7 @@ data class MonitoringOrder(
       }
 
       if (RequestType.VARIATION_TYPES.contains(order.type)) {
-        monitoringOrder.orderVariationDate = order.variationDetails!!.variationDate.format(dateTimeFormatter)
+        monitoringOrder.orderVariationDate = order.variationDetails!!.variationDate.format(FmsDates.dateTimeFormatter)
         monitoringOrder.orderVariationDetails = order.variationDetails!!.variationDetails
       }
 
@@ -876,60 +887,224 @@ data class MonitoringOrder(
         .joinToString(" ")
     }
   }
-}
 
-data class EnforceableCondition(
-  val condition: String? = "",
-  @JsonProperty("start_date")
-  val startDate: String? = "",
-  @JsonProperty("end_date")
-  val endDate: String? = null,
-)
+  fun toCurfewConditions(versionId: UUID): CurfewConditions? {
+    if (curfewStart.isNullOrBlank()) return null
 
-data class CurfewSchedule(
-  val location: String? = "",
-  val allday: String? = "",
-  val schedule: MutableList<Schedule>? = mutableListOf(),
-)
+    return CurfewConditions(
+      versionId = versionId,
+      startDate = FmsDates.parseDateTime(curfewStart ?: ""),
+      endDate = FmsDates.parseDateTimeOrNull(curfewEnd ?: ""),
+      curfewAdditionalDetails = curfewDescription,
+    )
+  }
 
-data class Zone(
-  val description: String? = "",
-  val duration: String? = "",
-  val start: String? = "",
-  val end: String? = "",
-)
+  fun toCurfewReleaseDateConditions(versionId: UUID): CurfewReleaseDateConditions? {
+    if (conditionalReleaseDate.isNullOrBlank()) return null
 
-data class Schedule(val day: String? = "", val start: String? = "", val end: String? = "") {
-  companion object {
-    private fun getShortDayString(dayOfWeek: DayOfWeek): String = when (dayOfWeek) {
-      DayOfWeek.MONDAY -> "Mo"
-      DayOfWeek.TUESDAY -> "Tu"
-      DayOfWeek.WEDNESDAY -> "Wed"
-      DayOfWeek.THURSDAY -> "Th"
-      DayOfWeek.FRIDAY -> "Fr"
-      DayOfWeek.SATURDAY -> "Sa"
-      DayOfWeek.SUNDAY -> "Su"
+    return CurfewReleaseDateConditions(
+      versionId = versionId,
+      releaseDate = FmsDates.parseDate(conditionalReleaseDate ?: ""),
+      startTime = conditionalReleaseStartTime,
+      endTime = conditionalReleaseEndTime,
+    )
+  }
+
+  fun toCurfewTimeTable(versionId: UUID): List<CurfewTimeTable> = curfewDuration.orEmpty().flatMap {
+    it.toCurfewTimeTable(versionId)
+  }
+
+  fun toTrailMonitoringConditions(versionId: UUID): TrailMonitoringConditions? {
+    val trail = getTrailFromEnforceableCondition() ?: return null
+
+    val deviceType = if (trail.condition?.contains("Non-Fitted") == true) DeviceType.NON_FITTED else DeviceType.FITTED
+
+    return TrailMonitoringConditions(
+      versionId = versionId,
+      deviceType = deviceType,
+      startDate = FmsDates.parseDateTime(trail.startDate ?: ""),
+      endDate = FmsDates.parseDateTimeOrNull(trail.endDate ?: ""),
+    )
+  }
+
+  fun toAlcoholMonitoringConditions(versionId: UUID): AlcoholMonitoringConditions? {
+    val alcohol = getAlcoholEnforceableCondition() ?: return null
+
+    val alcoholType: AlcoholMonitoringType =
+      if (abstinence == "Yes") AlcoholMonitoringType.ALCOHOL_ABSTINENCE else AlcoholMonitoringType.ALCOHOL_LEVEL
+
+    return AlcoholMonitoringConditions(
+      versionId = versionId,
+      monitoringType = alcoholType,
+      startDate = FmsDates.parseDateTime(alcohol.startDate ?: ""),
+      endDate = FmsDates.parseDateTimeOrNull(alcohol.endDate ?: ""),
+    )
+  }
+
+  fun toEnforcementZoneConditions(versionId: UUID): List<EnforcementZoneConditions> {
+    val zones =
+      exclusionZones.map { it to EnforcementZoneType.EXCLUSION } +
+        inclusionZones.map { it to EnforcementZoneType.INCLUSION }
+
+    return zones.mapIndexed { zoneId, (zone, type) -> zone.toZoneConditions(versionId, type, zoneId) }
+  }
+
+  fun toVariationDetails(versionId: UUID): VariationDetails? {
+    if (orderVariationDate.isNullOrBlank()) return null
+
+    return VariationDetails(
+      versionId = versionId,
+      variationDate = FmsDates.parseDateTime(orderVariationDate ?: ""),
+      variationDetails = orderVariationDetails ?: "",
+    )
+  }
+
+  fun toOrderId(): UUID = UUID.fromString(orderId)
+
+  fun toOrderVersionType(): RequestType? {
+    val matched = RequestType.from(orderRequestType)
+    if (matched == null) {
+      log.error("Unmatched order request type: {}", orderRequestType)
+    }
+    return matched
+  }
+
+  fun toCourtCaseReferenceNumber(): String? = magistrateCourtCaseReferenceNumber?.ifBlank { null }
+
+  fun toProbationDeliveryUnit(versionId: UUID): ProbationDeliveryUnit? {
+    if (pduResponsible.isNullOrBlank()) return null
+
+    val matched = ProbationDeliveryUnitsDDv6.fromValue(pduResponsible)?.name
+      ?: ProbationDeliveryUnits.fromValue(pduResponsible)?.name
+    if (matched == null) {
+      log.error("Unmatched probation delivery unit: {}", pduResponsible)
     }
 
-    fun fromCurfewTimeTable(curfewTimeTable: CurfewTimeTable): Schedule =
-      Schedule(getShortDayString(curfewTimeTable.dayOfWeek), curfewTimeTable.startTime, curfewTimeTable.endTime)
+    return ProbationDeliveryUnit(versionId = versionId, unit = matched)
+  }
+
+  fun toInstallationAndRisk(versionId: UUID): InstallationAndRisk? {
+    if (offence.isNullOrBlank()) return null
+
+    val matched = Offence.fromValue(offence)
+    if (matched == null) {
+      log.error("Unmatched offence value: {}", offence)
+    }
+
+    return InstallationAndRisk(versionId = versionId, offence = matched?.name)
+  }
+
+  fun toOffences(versionId: UUID): List<OffenceEntity> = offences.orEmpty().mapNotNull { offenceData ->
+    val matched = Offence.fromValue(offenceData.offence)
+    if (matched == null) {
+      log.error("Unmatched offence value: {}", offenceData.offence)
+      return@mapNotNull null
+    }
+    OffenceEntity(
+      versionId = versionId,
+      offenceType = matched.name,
+      offenceDate = FmsDates.parseDateOrNull(offenceData.offenceDate ?: ""),
+    )
+  }
+
+  fun toOffenceType(): String? = acEligibleOffences?.firstOrNull()?.offence?.ifBlank { null }
+
+  fun toMonitoringConditions(versionId: UUID): MonitoringConditions = MonitoringConditions(
+    versionId = versionId,
+    conditionType = matchOrLog("condition type", conditionType) { MonitoringConditionType.from(it) },
+    orderType = matchOrLog("order type", orderType) { OrderType.from(it) },
+    orderTypeDescription = matchOrLog("order type description", orderTypeDescription) { OrderTypeDescription.from(it) },
+    pilot = matchOrLog("pilot", pilot) { Pilot.from(it) },
+    issp = yesNo(issp),
+    hdc = yesNo(hdc),
+    prarr = trueFalseToYesNo(releasedUnderPrarr),
+    dapolMissedInError = if (dapolMissedInError == "true") YesNoUnknown.YES else null,
+    offenceType = toOffenceType(),
+  )
+
+  fun toInterestedParties(versionId: UUID): InterestedParties {
+    val matchedNotifyingOrg = NotifyingOrganisationDDv5.fromValue(notifyingOrganization)
+      ?: NotifyingOrganisation.fromValue(notifyingOrganization)
+    if (!notifyingOrganization.isNullOrBlank() && matchedNotifyingOrg == null) {
+      log.error("Unmatched notifying organisation: {}", notifyingOrganization)
+    }
+
+    val region = if (matchedNotifyingOrg == NotifyingOrganisationDDv5.HOME_OFFICE) "UKBA" else matchRegion(roRegion)
+
+    return InterestedParties(
+      versionId = versionId,
+      responsibleOrganisation = matchOrLog("responsible organisation", responsibleOrganization) {
+        ResponsibleOrganisation.fromValue(it)
+      }?.name,
+      responsibleOfficerName = responsibleOfficerName?.ifBlank { null },
+      responsibleOfficerEmail = responsibleOfficerEmail?.ifBlank { null },
+      responsibleOfficerPhoneNumber = responsibleOfficerPhone?.ifBlank { null },
+      responsibleOrganisationEmail = roEmail?.ifBlank { null },
+      responsibleOrganisationRegion = region,
+      notifyingOrganisation = matchedNotifyingOrg?.name,
+      notifyingOrganisationName = noName?.ifBlank { null },
+      notifyingOrganisationEmail = noEmail?.ifBlank { null },
+    )
+  }
+
+  fun toDapo(versionId: UUID): List<Dapo> = dapoOrderClauseNumbers.orEmpty().map {
+    Dapo(
+      versionId = versionId,
+      clause = it.dapoOrderClauseNumber?.ifBlank { null },
+      date = FmsDates.parseDateOrNull(it.date ?: ""),
+    )
+  }
+
+  fun toInstallationAppointment(versionId: UUID): InstallationAppointment? {
+    if (dateAndTimeInstallationWillTakePlace.isNullOrBlank() && tagAtSourceDetails.isNullOrBlank()) return null
+
+    return InstallationAppointment(
+      versionId = versionId,
+      placeName = tagAtSourceDetails?.ifBlank { null },
+      appointmentDate = FmsDates.parseDateTimeOrNull(dateAndTimeInstallationWillTakePlace ?: ""),
+    )
+  }
+
+  private fun <T> matchOrLog(fieldDescription: String, value: String?, matcher: (String) -> T?): T? {
+    if (value.isNullOrBlank()) return null
+
+    val matched = matcher(value)
+    if (matched == null) {
+      log.error("Unmatched {} value: {}", fieldDescription, value)
+    }
+    return matched
+  }
+
+  private fun yesNo(value: String?): YesNoUnknown? = when (value) {
+    "Yes" -> YesNoUnknown.YES
+    "No" -> YesNoUnknown.NO
+    else -> null
+  }
+
+  private fun trueFalseToYesNo(value: String?): YesNoUnknown? = when (value) {
+    "true" -> YesNoUnknown.YES
+    "false" -> YesNoUnknown.NO
+    else -> null
+  }
+
+  private fun matchRegion(value: String?): String? {
+    if (value.isNullOrBlank()) return null
+
+    val matched = ProbationServiceRegion.fromValue(value)?.name
+      ?: YouthJusticeServiceRegions.fromValue(value)?.name
+      ?: PoliceAreasDDv6.fromValue(value)?.name
+      ?: PoliceAreas.fromValue(value)?.name
+    if (matched == null) {
+      log.error("Unmatched responsible organisation region: {}", value)
+    }
+    return matched
+  }
+
+  private fun getTrailFromEnforceableCondition(): EnforceableCondition? = enforceableCondition.orEmpty().find {
+    it.isTrail()
+  }
+
+  private fun getAlcoholEnforceableCondition(): EnforceableCondition? = enforceableCondition.orEmpty().find {
+    it.isAlcohol()
   }
 }
-
-data class AcEligibleOffence(
-  val offence: String? = "",
-  @JsonProperty("offence_date")
-  val offenceDate: String? = "",
-)
-
-data class DapoClause(
-  @JsonProperty("dapo_order_clause_number")
-  val dapoOrderClauseNumber: String? = "",
-  val date: String? = "",
-)
-
-data class OffenceData(
-  val offence: String? = "",
-  @JsonProperty("offence_date")
-  val offenceDate: String? = "",
-)

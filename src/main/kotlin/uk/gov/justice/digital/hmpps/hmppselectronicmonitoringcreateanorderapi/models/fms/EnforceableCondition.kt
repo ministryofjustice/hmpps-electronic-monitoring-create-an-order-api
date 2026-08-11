@@ -1,13 +1,13 @@
-package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.up3
+package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms
 
 import com.fasterxml.jackson.annotation.JsonProperty
 
-data class Up3EnforceableCondition(
-  var condition: String,
+data class EnforceableCondition(
+  val condition: String? = "",
   @JsonProperty("start_date")
-  var startDate: String,
+  val startDate: String? = "",
   @JsonProperty("end_date")
-  var endDate: String,
+  val endDate: String? = null,
 ) {
   fun isTrail(): Boolean = condition == "Location Monitoring (using Non-Fitted Device)" ||
     condition == "Location Monitoring (Fitted Device)"

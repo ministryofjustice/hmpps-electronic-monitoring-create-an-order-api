@@ -6,7 +6,6 @@ import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.ArgumentsProvider
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.VariationType
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.AcEligibleOffence
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.DapoClause
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.MonitoringOrder
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.OffenceData
@@ -269,7 +268,7 @@ class MonitoringOrderFieldChangeArgumentsProvider : ArgumentsProvider {
       "acEligibleOffences",
       {
         it.acEligibleOffences = mutableListOf(
-          AcEligibleOffence("Theft", "2025-01-01"),
+          OffenceData("Theft", "2025-01-01"),
         )
       },
       "Acquisitive crime offence has changed",
@@ -524,7 +523,7 @@ class MonitoringOrderOVTTypeArgumentsProvider : ArgumentsProvider {
 
       MonitoringOrderChange.AcEligibleOffences ->
         order.acEligibleOffences =
-          (order.acEligibleOffences?.plus(AcEligibleOffence())) as MutableList<AcEligibleOffence>?
+          (order.acEligibleOffences?.plus(OffenceData())) as MutableList<OffenceData>?
 
       MonitoringOrderChange.DapoOrderClauseNumbers ->
         order.dapoOrderClauseNumbers = (order.dapoOrderClauseNumbers?.plus(DapoClause())) as MutableList<DapoClause>?
