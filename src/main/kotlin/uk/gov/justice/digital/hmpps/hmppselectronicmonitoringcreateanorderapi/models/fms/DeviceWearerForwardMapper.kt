@@ -1,0 +1,190 @@
+package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms
+
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.config.FeatureFlags
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Gender
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RiskCategory
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Sex
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.formatters.PhoneNumberFormatter
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Disability as DisabilityEnum
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.Disability as FmsDisability
+
+fun DeviceWearer.Companion.fromCemoOrder(
+  order: Order,
+  featureFlags: FeatureFlags,
+  orderSource: FmsOrderSource,
+): DeviceWearer {
+  var adultChild = "adult"
+  if (!order.deviceWearer?.adultAtTimeOfInstallation!!) {
+    adultChild = "child"
+  }
+
+  var disabilities = emptyList<FmsDisability>()
+  if (!order.deviceWearer?.disabilities.isNullOrBlank()) {
+    disabilities = DisabilityEnum.getValuesFromEnumString(order.deviceWearer!!.disabilities!!)
+      .map { disability -> FmsDisability(disability) }
+  }
+
+  val deviceWearer = DeviceWearer(
+    firstName = order.deviceWearer?.firstName,
+    middleName = order.deviceWearer?.middleName ?: "",
+    lastName = order.deviceWearer?.lastName,
+    alias = order.deviceWearer?.alias,
+    dateOfBirth = order.deviceWearer?.dateOfBirth?.format(FmsDates.dateFormatter) ?: "",
+    adultChild = adultChild,
+    sex = getSex(order),
+    genderIdentity = getGender(order),
+    disability = disabilities,
+    phoneNumber = getPhoneNumber(order),
+    riskDetails = getRiskDetails(order),
+    riskCategory = getRiskCategories(order, featureFlags),
+    mappa = order.mappa?.level?.value,
+    mappaCaseType = order.mappa?.category?.value,
+    responsibleAdultRequired = (order.deviceWearerResponsibleAdult != null).toString(),
+    parent = order.deviceWearerResponsibleAdult?.fullName ?: "",
+    parentPhoneNumber = getParentPhoneNumber(order),
+    interpreterRequired = order.deviceWearer?.interpreterRequired?.toString(),
+    language = order.deviceWearer?.language,
+    nomisId = order.deviceWearer?.nomisId,
+    pncId = order.deviceWearer?.pncId,
+    deliusId = order.deviceWearer?.deliusId,
+    prisonNumber = order.deviceWearer?.prisonNumber,
+    homeOfficeReferenceNumber = "",
+  )
+
+  if (featureFlags.ddV6CourtMappings) {
+    deviceWearer.mappaCaseType = null
+    deviceWearer.mappaCategory = order.mappa?.category?.value
+  }
+
+  if (featureFlags.ddV6CourtMappings) {
+    deviceWearer.complianceAndEnforcementPersonReference =
+      order.deviceWearer?.complianceAndEnforcementPersonReference ?: ""
+  } else {
+    deviceWearer.homeOfficeReferenceNumber =
+      if (!order.deviceWearer?.complianceAndEnforcementPersonReference.isNullOrBlank()) {
+        order.deviceWearer?.complianceAndEnforcementPersonReference
+      } else {
+        order.deviceWearer?.homeOfficeReferenceNumber
+      }
+  }
+
+  if (order.deviceWearer?.noFixedAbode != null && !order.deviceWearer?.noFixedAbode!!) {
+    val primaryAddress = order.addresses.find { address -> address.addressType == AddressType.PRIMARY }!!
+    deviceWearer.address1 = primaryAddress.addressLine1
+    deviceWearer.address2 =
+      if (primaryAddress.addressLine2 == "" &&
+        orderSource == FmsOrderSource.CEMO
+      ) {
+        "N/A"
+      } else {
+        primaryAddress.addressLine2
+      }
+    deviceWearer.address3 = primaryAddress.addressLine3
+    deviceWearer.address4 =
+      if (primaryAddress.addressLine4 == "" &&
+        orderSource == FmsOrderSource.CEMO
+      ) {
+        "N/A"
+      } else {
+        primaryAddress.addressLine4
+      }
+    deviceWearer.addressPostCode = primaryAddress.postcode
+  } else if (order.deviceWearer?.noFixedAbode == true) {
+    deviceWearer.noFixedAddress = "true"
+  }
+
+  order.addresses.firstOrNull { it.addressType == AddressType.SECONDARY }?.let {
+    deviceWearer.secondaryAddress1 = it.addressLine1
+    deviceWearer.secondaryAddress2 = if (it.addressLine2 == "") "N/A" else it.addressLine2
+    deviceWearer.secondaryAddress3 = it.addressLine3
+    deviceWearer.secondaryAddress4 = if (it.addressLine4 == "") "N/A" else it.addressLine4
+    deviceWearer.secondaryAddressPostCode = it.postcode
+  }
+
+  order.addresses.firstOrNull { it.addressType == AddressType.TERTIARY }?.let {
+    deviceWearer.tertiaryAddress1 = it.addressLine1
+    deviceWearer.tertiaryAddress2 = if (it.addressLine2 == "") "N/A" else it.addressLine2
+    deviceWearer.tertiaryAddress3 = it.addressLine3
+    deviceWearer.tertiaryAddress4 = if (it.addressLine4 == "") "N/A" else it.addressLine4
+    deviceWearer.tertiaryAddressPostCode = it.postcode
+  }
+
+  return deviceWearer
+}
+
+private fun getPhoneNumber(order: Order): String? {
+  if (order.contactDetails?.contactNumber == null) {
+    return null
+  }
+  return PhoneNumberFormatter.formatAsInternationalDirectDialingNumber(order.contactDetails!!.contactNumber!!)
+}
+
+private fun getParentPhoneNumber(order: Order): String? {
+  if (order.deviceWearerResponsibleAdult?.contactNumber == null) {
+    return null
+  }
+
+  return PhoneNumberFormatter.formatAsInternationalDirectDialingNumber(
+    order.deviceWearerResponsibleAdult!!.contactNumber!!,
+  )
+}
+
+private fun getSex(order: Order): String {
+  val sex = Sex.from(order.deviceWearer?.sex)
+
+  if (sex == Sex.UNKNOWN) {
+    return Sex.PREFER_NOT_TO_SAY.value
+  }
+
+  return sex?.value ?: order.deviceWearer?.sex ?: ""
+}
+
+private fun getGender(order: Order): String =
+  Gender.from(order.deviceWearer?.gender)?.value ?: order.deviceWearer?.gender ?: ""
+
+private fun getRiskDetails(order: Order): String? =
+  if (order.dataDictionaryVersion.isLaterThanOrEqual(DataDictionaryVersion.DDV6)
+  ) {
+    val genderRisk = order.detailsOfInstallation?.genderRiskDetails?.takeIf { it.isNotBlank() }
+    val riskDetails = order.detailsOfInstallation?.riskDetails ?: order.installationAndRisk?.riskDetails
+    genderRisk?.let { gender ->
+      "Risk to gender: $gender" +
+        (
+          riskDetails?.takeIf { details ->
+            details.isNotBlank()
+          }?.let { details -> " Additional risk details: $details" }
+            ?: ""
+          )
+    }
+      ?: riskDetails
+  } else {
+    order.installationAndRisk?.riskDetails
+  }
+
+private fun getRiskCategories(order: Order, featureFlags: FeatureFlags): List<FmsRiskCategory> {
+  val riskCategories =
+    if (order.dataDictionaryVersion.isLaterThanOrEqual(DataDictionaryVersion.DDV6) &&
+      featureFlags.ddV6CourtMappings
+    ) {
+      order.detailsOfInstallation?.riskCategory ?: order.installationAndRisk?.riskCategory
+    } else {
+      order.installationAndRisk?.riskCategory
+    }
+
+  if (riskCategories?.any() == true) {
+    return riskCategories
+      .filter {
+        RiskCategory.entries.any { riskCategory ->
+          riskCategory != RiskCategory.NO_RISK &&
+            riskCategory.name == it
+        }
+      }
+      .map { FmsRiskCategory(RiskCategory.entries.first { riskCategory -> riskCategory.name == it }.value) }
+      .toList()
+  }
+  return emptyList()
+}
