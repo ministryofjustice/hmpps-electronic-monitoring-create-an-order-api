@@ -12,7 +12,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Disability as DisabilityEnum
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.Disability as FmsDisability
 
-fun DeviceWearer.Companion.fromCemoOrder(
+fun DeviceWearer.Companion.fromOrder(
   order: Order,
   featureFlags: FeatureFlags,
   orderSource: FmsOrderSource,
