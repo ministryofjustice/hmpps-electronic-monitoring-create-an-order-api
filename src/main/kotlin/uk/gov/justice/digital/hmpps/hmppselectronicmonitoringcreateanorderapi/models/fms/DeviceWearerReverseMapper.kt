@@ -39,6 +39,7 @@ fun DeviceWearer.toDeviceWearer(versionId: UUID): CemoDeviceWearer {
     homeOfficeReferenceNumber = homeOfficeReferenceNumber,
     complianceAndEnforcementPersonReference = complianceAndEnforcementPersonReference,
     disabilities = disabilityList(),
+    noFixedAbode = noFixedAddress == "true",
   )
 }
 
