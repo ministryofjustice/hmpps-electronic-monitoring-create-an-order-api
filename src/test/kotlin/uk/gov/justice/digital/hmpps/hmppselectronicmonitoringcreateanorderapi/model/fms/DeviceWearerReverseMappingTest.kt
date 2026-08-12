@@ -103,7 +103,7 @@ class DeviceWearerReverseMappingTest {
 
     assertThat(deviceWearer.adultAtTimeOfInstallation).isEqualTo(true)
     assertThat(deviceWearer.sex).isEqualTo("MALE")
-    assertThat(deviceWearer.gender).isEqualTo(deviceWearerDto.genderIdentity)
+    assertThat(deviceWearer.gender).isEqualTo("MALE")
     assertThat(deviceWearer.language).isEqualTo(deviceWearerDto.language)
     assertThat(deviceWearer.interpreterRequired).isEqualTo(false)
   }

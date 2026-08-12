@@ -42,6 +42,8 @@ data class FmsRetrieveDWandMO(
       deviceWearer.toTertiaryAddress(versionId),
     ).toMutableList()
 
+    version.contactDetails = deviceWearer.toContactDetails(versionId)
+
     version.installationAndRisk = deviceWearer.toInstallationAndRisk(versionId)
 
     version.interestedParties = monitoringOrder.toInterestedParties(versionId)
@@ -57,6 +59,9 @@ data class FmsRetrieveDWandMO(
     version.curfewTimeTable = monitoringOrder.toCurfewTimeTable(versionId).toMutableList()
     version.variationDetails = monitoringOrder.toVariationDetails(versionId)
     version.installationAppointment = monitoringOrder.toInstallationAppointment(versionId)
+
+    version.monitoringConditions?.startDate = version.getMonitoringStartDate()
+    version.monitoringConditions?.endDate = version.getMonitoringEndDate()
 
     return version
   }

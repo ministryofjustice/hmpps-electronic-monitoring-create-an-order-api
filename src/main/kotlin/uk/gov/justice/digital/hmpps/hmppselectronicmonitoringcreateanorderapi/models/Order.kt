@@ -319,45 +319,7 @@ data class Order(
       getCurrentVersion().isSentencingAct = isSentencingAct
     }
 
-  fun getMonitoringStartDate(): ZonedDateTime? {
-    var startDate = monitoringConditions?.startDate
+  fun getMonitoringStartDate(): ZonedDateTime? = getCurrentVersion().getMonitoringStartDate()
 
-    if (startDate == null) {
-      val allConditions = sequence {
-        yieldAll(enforcementZoneConditions)
-        yieldAll(mandatoryAttendanceConditions)
-        listOfNotNull(
-          curfewConditions,
-          monitoringConditionsTrail,
-          monitoringConditionsAlcohol,
-        ).forEach {
-          yield(it)
-        }
-      }
-      startDate = allConditions.mapNotNull { it.startDate }.minOrNull()
-    }
-
-    return startDate
-  }
-
-  fun getMonitoringEndDate(): ZonedDateTime? {
-    var endDate = monitoringConditions?.endDate
-
-    if (endDate == null) {
-      val allConditions = sequence {
-        yieldAll(enforcementZoneConditions)
-        yieldAll(mandatoryAttendanceConditions)
-        listOfNotNull(
-          curfewConditions,
-          monitoringConditionsTrail,
-          monitoringConditionsAlcohol,
-        ).forEach {
-          yield(it)
-        }
-      }
-      endDate = allConditions.mapNotNull { it.endDate }.maxOrNull()
-    }
-
-    return endDate
-  }
+  fun getMonitoringEndDate(): ZonedDateTime? = getCurrentVersion().getMonitoringEndDate()
 }

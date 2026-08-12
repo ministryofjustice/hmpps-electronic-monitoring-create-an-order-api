@@ -21,6 +21,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import java.time.OffsetDateTime
+import java.time.ZonedDateTime
 import java.util.UUID
 
 @Entity
@@ -229,4 +230,46 @@ data class OrderVersion(
         interestedParties?.isValid == true &&
         requiredDocuments
       )
+
+  fun getMonitoringStartDate(): ZonedDateTime? {
+    var startDate = monitoringConditions?.startDate
+
+    if (startDate == null) {
+      val allConditions = sequence {
+        yieldAll(enforcementZoneConditions)
+        yieldAll(mandatoryAttendanceConditions)
+        listOfNotNull(
+          curfewConditions,
+          monitoringConditionsTrail,
+          monitoringConditionsAlcohol,
+        ).forEach {
+          yield(it)
+        }
+      }
+      startDate = allConditions.mapNotNull { it.startDate }.minOrNull()
+    }
+
+    return startDate
+  }
+
+  fun getMonitoringEndDate(): ZonedDateTime? {
+    var endDate = monitoringConditions?.endDate
+
+    if (endDate == null) {
+      val allConditions = sequence {
+        yieldAll(enforcementZoneConditions)
+        yieldAll(mandatoryAttendanceConditions)
+        listOfNotNull(
+          curfewConditions,
+          monitoringConditionsTrail,
+          monitoringConditionsAlcohol,
+        ).forEach {
+          yield(it)
+        }
+      }
+      endDate = allConditions.mapNotNull { it.endDate }.maxOrNull()
+    }
+
+    return endDate
+  }
 }

@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.m
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DeviceType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.EnforcementZoneType
@@ -32,6 +33,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.toCurfewTimeTable
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.toDapo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.toEnforcementZoneConditions
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.toInstallationAddress
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.toInstallationAppointment
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.toInterestedParties
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.toMonitoringConditions
@@ -85,6 +87,11 @@ class MonitoringOrderReverseMappingTest {
       pduResponsible = "",
       dateAndTimeInstallationWillTakePlace = "",
       tagAtSourceDetails = "",
+      installationAddress1 = "",
+      installationAddress2 = "",
+      installationAddress3 = "",
+      installationAddress4 = "",
+      installationAddressPostcode = "",
     )
   val versionId: UUID = UUID.randomUUID()
 
@@ -659,5 +666,22 @@ class MonitoringOrderReverseMappingTest {
   @Test
   fun `it should not build installation appointment when both date and place name are blank`() {
     assertThat(monitoringOrderDto.toInstallationAppointment(versionId)).isNull()
+  }
+
+  @Test
+  fun `it should map an installation to installation address`() {
+    val dto = monitoringOrderDto.copy(
+      installationAddress1 = "2 fake street",
+      installationAddress2 = "",
+      installationAddress3 = "town",
+      installationAddress4 = "",
+      installationAddressPostcode = "AB2 3CD",
+    )
+    val installationAddress = dto.toInstallationAddress(versionId)
+
+    assertThat(installationAddress).isNotNull
+    assertThat(installationAddress!!.addressType).isEqualTo(AddressType.INSTALLATION)
+    assertThat(installationAddress.addressLine1).isEqualTo("2 fake street")
+    assertThat(installationAddress.postcode).isEqualTo("AB2 3CD")
   }
 }

@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms
 
 import org.slf4j.LoggerFactory
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Address
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AlcoholMonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewReleaseDateConditions
@@ -13,6 +14,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ProbationDeliveryUnit
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.TrailMonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.VariationDetails
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DeviceType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.EnforcementZoneType
@@ -200,6 +202,20 @@ fun MonitoringOrder.toInstallationAppointment(versionId: UUID): InstallationAppo
     versionId = versionId,
     placeName = tagAtSourceDetails?.ifBlank { null },
     appointmentDate = FmsDates.parseDateTimeOrNull(dateAndTimeInstallationWillTakePlace ?: ""),
+  )
+}
+
+fun MonitoringOrder.toInstallationAddress(versionId: UUID): Address? {
+  if (installationAddress1.isNullOrBlank()) return null
+
+  return Address(
+    versionId = versionId,
+    addressType = AddressType.INSTALLATION,
+    addressLine1 = installationAddress1 ?: "",
+    addressLine2 = installationAddress2 ?: "",
+    addressLine3 = installationAddress3 ?: "",
+    addressLine4 = installationAddress4 ?: "",
+    postcode = installationAddressPostcode ?: "",
   )
 }
 

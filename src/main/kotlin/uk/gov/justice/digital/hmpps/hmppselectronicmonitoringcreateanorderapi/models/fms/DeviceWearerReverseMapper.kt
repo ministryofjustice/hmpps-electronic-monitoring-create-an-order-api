@@ -7,6 +7,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Mappa
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ResponsibleAdult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Gender
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MappaCategory
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MappaLevel
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RiskCategory
@@ -32,7 +33,7 @@ fun DeviceWearer.toDeviceWearer(versionId: UUID): CemoDeviceWearer {
     adultAtTimeOfInstallation = adultChild == "adult",
     interpreterRequired = interpreterRequired == "true",
     language = language,
-    gender = genderIdentity,
+    gender = Gender.nameFromValue(genderIdentity),
     sex = Sex.nameFromValue(sex),
     pncId = pncId,
     nomisId = nomisId,

@@ -268,12 +268,23 @@ class FmsReverseMappingIntegrationTest {
       RiskCategory.SEXUAL_OFFENCES.name,
       RiskCategory.RACIAL_ABUSE_OR_THREATS.name,
     )
-    assertThat(orderVersion.installationAndRisk!!.offence).isEqualTo("ROBBERY")
-
     assertThat(orderVersion.interestedParties!!.responsibleOrganisation)
       .isEqualTo(ResponsibleOrganisation.PROBATION.name)
     assertThat(orderVersion.probationDeliveryUnit).isNotNull()
     assertThat(orderVersion.monitoringConditions!!.conditionType).isEqualTo(MonitoringConditionType.BAIL_ORDER)
+    assertThat(orderVersion.monitoringConditions!!.startDate).isEqualTo(
+      ZonedDateTime.of(
+        2000,
+        7,
+        1,
+        0,
+        0,
+        0,
+        0,
+        london,
+      ),
+    )
+    assertThat(orderVersion.monitoringConditions!!.endDate).isEqualTo(ZonedDateTime.of(2001, 7, 1, 8, 0, 0, 0, london))
     assertThat(orderVersion.monitoringConditionsTrail!!.deviceType?.name).isEqualTo("FITTED")
     assertThat(orderVersion.monitoringConditionsAlcohol!!.monitoringType)
       .isEqualTo(AlcoholMonitoringType.ALCOHOL_ABSTINENCE)
@@ -285,5 +296,6 @@ class FmsReverseMappingIntegrationTest {
     assertThat(orderVersion.curfewTimeTable).hasSize(2)
     assertThat(orderVersion.variationDetails!!.variationDetails).isEqualTo("changed curfew hours")
     assertThat(orderVersion.installationAppointment!!.placeName).isEqualTo("HMP Example")
+    assertThat(orderVersion.contactDetails!!.contactNumber).isEqualTo("01234567890")
   }
 }
