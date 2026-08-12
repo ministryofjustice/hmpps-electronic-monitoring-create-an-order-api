@@ -493,7 +493,7 @@ class MonitoringOrderReverseMappingTest {
   }
 
   @Test
-  fun `it should leave offence type null when there are no ac eligible offences`() {
+  fun `it should return null when there are no ac eligible offences`() {
     assertThat(monitoringOrderDto.toOffenceType()).isNull()
   }
 

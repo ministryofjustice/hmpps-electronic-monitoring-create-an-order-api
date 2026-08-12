@@ -29,6 +29,8 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DocumentType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.EnforcementZoneType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.InstallationLocationType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MappaCategory
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MappaLevel
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MonitoringConditionType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderType
@@ -170,13 +172,13 @@ class TestUtilities {
         offence = "FRAUD_OFFENCES",
         riskDetails = "Danger",
         riskCategory = arrayOf("SEXUAL_OFFENCES", "RISK_TO_GENDER"),
-        mappaLevel = "MAPPA 1",
-        mappaCaseType = "Category 1",
       )
 
       order.mappa = Mappa(
         versionId = versionId,
         isMappa = YesNoUnknown.UNKNOWN,
+        level = MappaLevel.MAPPA_ONE,
+        category = MappaCategory.CATEGORY_ONE,
       )
 
       order.contactDetails = ContactDetails(

@@ -147,11 +147,7 @@ fun MonitoringOrder.toOffences(versionId: UUID): List<OffenceEntity> = offences.
   )
 }
 
-fun MonitoringOrder.toOffenceType(): String? {
-  if (offence == "") return ""
-
-  return acEligibleOffences?.firstOrNull()?.offence?.ifBlank { null }
-}
+fun MonitoringOrder.toOffenceType(): String? = acEligibleOffences?.firstOrNull()?.offence
 
 fun MonitoringOrder.toMonitoringConditions(versionId: UUID): MonitoringConditions = MonitoringConditions(
   versionId = versionId,
