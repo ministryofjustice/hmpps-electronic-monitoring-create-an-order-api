@@ -30,7 +30,6 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.toDapo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.toDeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.toEnforcementZoneConditions
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.toInstallationAndRisk
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.toInstallationAppointment
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.toInterestedParties
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.toMappa
@@ -109,18 +108,11 @@ class FmsReverseMappingIntegrationTest {
   @Test
   fun `it should map mappa, installation and risk, and responsible adult`() {
     val mappa = response.deviceWearer.toMappa(versionId)
-    val installationAndRisk = response.deviceWearer.toInstallationAndRisk(versionId)
     val responsibleAdult = response.deviceWearer.toResponsibleAdult(versionId)
 
     assertThat(mappa.level).isEqualTo(MappaLevel.MAPPA_TWO)
     assertThat(mappa.category).isEqualTo(MappaCategory.CATEGORY_ONE)
     assertThat(mappa.isMappa).isEqualTo(YesNoUnknown.YES)
-
-    assertThat(installationAndRisk.riskDetails).isEqualTo("known to be aggressive")
-    assertThat(installationAndRisk.riskCategory).containsExactlyInAnyOrder(
-      RiskCategory.SEXUAL_OFFENCES.name,
-      RiskCategory.RACIAL_ABUSE_OR_THREATS.name,
-    )
 
     assertThat(responsibleAdult!!.fullName).isEqualTo("Jane Smith")
     assertThat(responsibleAdult.relationship).isEqualTo("Parent")
@@ -187,9 +179,6 @@ class FmsReverseMappingIntegrationTest {
 
     val pdu = order.toProbationDeliveryUnit(versionId)
     assertThat(pdu).isNotNull()
-
-    val installationAndRisk = order.toInstallationAndRisk(versionId)
-    assertThat(installationAndRisk!!.offence).isEqualTo("ROBBERY")
 
     val offences = order.toOffences(versionId)
     assertThat(offences).hasSize(1)

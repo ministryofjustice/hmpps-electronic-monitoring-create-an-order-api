@@ -32,7 +32,6 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.toCurfewTimeTable
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.toDapo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.toEnforcementZoneConditions
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.toInstallationAndRisk
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.toInstallationAppointment
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.toInterestedParties
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.toMonitoringConditions
@@ -451,21 +450,6 @@ class MonitoringOrderReverseMappingTest {
 
     assertThat(pdu).isNotNull
     assertThat(pdu!!.unit).isNull()
-  }
-
-  @Test
-  fun `it should map offence onto installation and risk`() {
-    val dto = monitoringOrderDto.copy(offence = "Robbery")
-    val installationAndRisk = dto.toInstallationAndRisk(versionId)
-
-    assertThat(installationAndRisk).isNotNull
-    assertThat(installationAndRisk!!.versionId).isEqualTo(versionId)
-    assertThat(installationAndRisk.offence).isEqualTo(Offence.ROBBERY.name)
-  }
-
-  @Test
-  fun `it should not build installation and risk when offence is blank`() {
-    assertThat(monitoringOrderDto.toInstallationAndRisk(versionId)).isNull()
   }
 
   @Test

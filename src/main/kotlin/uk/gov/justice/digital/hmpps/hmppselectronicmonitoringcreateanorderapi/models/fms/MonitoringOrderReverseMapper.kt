@@ -7,7 +7,6 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewTimeTable
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Dapo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.EnforcementZoneConditions
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationAndRisk
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationAppointment
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InterestedParties
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.MonitoringConditions
@@ -131,17 +130,6 @@ fun MonitoringOrder.toProbationDeliveryUnit(versionId: UUID): ProbationDeliveryU
   }
 
   return ProbationDeliveryUnit(versionId = versionId, unit = matched)
-}
-
-fun MonitoringOrder.toInstallationAndRisk(versionId: UUID): InstallationAndRisk? {
-  if (offence.isNullOrBlank()) return null
-
-  val matched = Offence.fromValue(offence)
-  if (matched == null) {
-    log.error("Unmatched offence value: {}", offence)
-  }
-
-  return InstallationAndRisk(versionId = versionId, offence = matched?.name)
 }
 
 fun MonitoringOrder.toOffences(versionId: UUID): List<OffenceEntity> = offences.orEmpty().mapNotNull { offenceData ->

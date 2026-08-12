@@ -42,10 +42,7 @@ data class FmsRetrieveDWandMO(
       deviceWearer.toTertiaryAddress(versionId),
     ).toMutableList()
 
-    // Do we need to put offence on installation and risk? Maybe for old DD versions?
-    version.installationAndRisk = deviceWearer.toInstallationAndRisk(versionId).apply {
-      offence = monitoringOrder.toInstallationAndRisk(versionId)?.offence
-    }
+    version.installationAndRisk = deviceWearer.toInstallationAndRisk(versionId)
 
     version.interestedParties = monitoringOrder.toInterestedParties(versionId)
     version.probationDeliveryUnit = monitoringOrder.toProbationDeliveryUnit(versionId)
