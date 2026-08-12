@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.m
 
 import org.slf4j.LoggerFactory
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Address
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ContactDetails
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationAndRisk
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Mappa
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ResponsibleAdult
@@ -9,6 +10,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MappaCategory
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MappaLevel
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RiskCategory
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Sex
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YesNoUnknown
 import java.time.LocalDate
 import java.util.UUID
@@ -31,7 +33,7 @@ fun DeviceWearer.toDeviceWearer(versionId: UUID): CemoDeviceWearer {
     interpreterRequired = interpreterRequired == "true",
     language = language,
     gender = genderIdentity,
-    sex = sex,
+    sex = Sex.nameFromValue(sex),
     pncId = pncId,
     nomisId = nomisId,
     deliusId = deliusId,
@@ -101,7 +103,7 @@ fun DeviceWearer.toMappa(versionId: UUID): Mappa {
     versionId = versionId,
     level = level,
     category = category,
-    isMappa = if (level != null || category != null) YesNoUnknown.YES else null,
+    isMappa = if (level != null || category != null) YesNoUnknown.YES else YesNoUnknown.UNKNOWN,
   )
 }
 
@@ -144,6 +146,12 @@ fun DeviceWearer.toResponsibleAdult(versionId: UUID): ResponsibleAdult? {
     relationship = relationship,
     contactNumber = parentPhoneNumber,
   )
+}
+
+fun DeviceWearer.toContactDetails(versionId: UUID): ContactDetails {
+  if (phoneNumber.isNullOrBlank()) return ContactDetails(versionId = versionId, phoneNumberAvailable = false)
+
+  return ContactDetails(versionId = versionId, phoneNumberAvailable = true, contactNumber = phoneNumber)
 }
 
 private fun DeviceWearer.disabilityList(): String? {

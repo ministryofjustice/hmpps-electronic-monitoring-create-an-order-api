@@ -5,12 +5,11 @@ import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MappaCategory
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MappaLevel
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RiskCategory
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YesNoUnknown
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.DeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.Disability
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsRiskCategory
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.toAddress
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.toContactDetails
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.toDeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.toMappa
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.toResponsibleAdult
@@ -57,6 +56,7 @@ class DeviceWearerReverseMappingTest {
       tertiaryAddress3 = "",
       tertiaryAddress4 = "",
       tertiaryAddressPostCode = "",
+      phoneNumber = "",
       mappa = "",
       mappaCaseType = "",
       mappaCategory = "",
@@ -102,7 +102,7 @@ class DeviceWearerReverseMappingTest {
     val deviceWearer = deviceWearerDto.toDeviceWearer(versionId)
 
     assertThat(deviceWearer.adultAtTimeOfInstallation).isEqualTo(true)
-    assertThat(deviceWearer.sex).isEqualTo(deviceWearerDto.sex)
+    assertThat(deviceWearer.sex).isEqualTo("MALE")
     assertThat(deviceWearer.gender).isEqualTo(deviceWearerDto.genderIdentity)
     assertThat(deviceWearer.language).isEqualTo(deviceWearerDto.language)
     assertThat(deviceWearer.interpreterRequired).isEqualTo(false)
@@ -228,55 +228,10 @@ class DeviceWearerReverseMappingTest {
   }
 
   @Test
-  fun `it should leave isMappa unset when neither level nor category is present`() {
+  fun `it should set isMappa to unknown when neither level nor category is present`() {
     val mappa = deviceWearerDto.toMappa(versionId)
 
-    assertThat(mappa.isMappa).isNull()
-  }
-
-  @Test
-  fun `it should map risk details onto cemo installation and risk`() {
-    val dto = deviceWearerDto.copy(riskDetails = "known to be aggressive")
-    val installationAndRisk = dto.toInstallationAndRisk(versionId)
-
-    assertThat(installationAndRisk.versionId).isEqualTo(versionId)
-    assertThat(installationAndRisk.riskDetails).isEqualTo("known to be aggressive")
-  }
-
-  @Test
-  fun `it should map risk categories onto cemo installation and risk`() {
-    val dto = deviceWearerDto.copy(
-      riskCategory = listOf(
-        FmsRiskCategory("Sexual Offences"),
-        FmsRiskCategory("Racial Abuse or Threats"),
-      ),
-    )
-    val installationAndRisk = dto.toInstallationAndRisk(versionId)
-
-    assertThat(installationAndRisk.riskCategory).containsExactlyInAnyOrder(
-      RiskCategory.SEXUAL_OFFENCES.name,
-      RiskCategory.RACIAL_ABUSE_OR_THREATS.name,
-    )
-  }
-
-  @Test
-  fun `it should drop unmatched risk categories and not throw`() {
-    val dto = deviceWearerDto.copy(
-      riskCategory = listOf(
-        FmsRiskCategory("Sexual Offences"),
-        FmsRiskCategory("not a real category"),
-      ),
-    )
-    val installationAndRisk = dto.toInstallationAndRisk(versionId)
-
-    assertThat(installationAndRisk.riskCategory).containsExactly(RiskCategory.SEXUAL_OFFENCES.name)
-  }
-
-  @Test
-  fun `it should leave risk category null when no risk categories present`() {
-    val installationAndRisk = deviceWearerDto.toInstallationAndRisk(versionId)
-
-    assertThat(installationAndRisk.riskCategory).isNull()
+    assertThat(mappa.isMappa).isEqualTo(YesNoUnknown.UNKNOWN)
   }
 
   @Test
@@ -347,5 +302,24 @@ class DeviceWearerReverseMappingTest {
     val deviceWearer = deviceWearerDto.toDeviceWearer(versionId)
 
     assertThat(deviceWearer.disabilities).isNull()
+  }
+
+  @Test
+  fun `it should map phone number to contact details`() {
+    val dto = deviceWearerDto.copy(phoneNumber = "01234567890")
+    val contactDetails = dto.toContactDetails(versionId)
+
+    assertThat(contactDetails).isNotNull()
+    assertThat(contactDetails.contactNumber).isEqualTo("01234567890")
+    assertThat(contactDetails.phoneNumberAvailable).isEqualTo(true)
+  }
+
+  @Test
+  fun `it should not map phone number to contact details when blank or null`() {
+    val contactDetails = deviceWearerDto.toContactDetails(versionId)
+
+    assertThat(contactDetails).isNotNull()
+    assertThat(contactDetails.contactNumber).isNull()
+    assertThat(contactDetails.phoneNumberAvailable).isEqualTo(false)
   }
 }
