@@ -19,5 +19,9 @@ enum class ProbationServiceRegion(val value: String) {
     fun from(value: String?): ProbationServiceRegion? = ProbationServiceRegion.entries.firstOrNull {
       it.name == value
     }
+
+    fun fromValue(value: String?): ProbationServiceRegion? = ProbationServiceRegion.entries.firstOrNull {
+      it.value == value
+    }
   }
 }

@@ -27,6 +27,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsSubmissionResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsSubmissionStrategyKind
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.MonitoringOrder
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.fromOrder
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.FmsSubmissionResultRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.utilities.TestUtilities
 import java.util.UUID
@@ -113,7 +114,7 @@ class FmsVariationSubmissionStrategyTest {
         orderSource = FmsOrderSource.CEMO,
         deviceWearerResult = FmsDeviceWearerSubmissionResult(
           payload = objectMapper.writeValueAsString(
-            DeviceWearer.fromCemoOrder(order, mockFeatureFlags, FmsOrderSource.CEMO),
+            DeviceWearer.fromOrder(order, mockFeatureFlags, FmsOrderSource.CEMO),
           ),
           deviceWearerId = "1",
         ),
@@ -169,7 +170,7 @@ class FmsVariationSubmissionStrategyTest {
         orderSource = FmsOrderSource.CEMO,
         deviceWearerResult = FmsDeviceWearerSubmissionResult(
           payload = objectMapper.writeValueAsString(
-            DeviceWearer.fromCemoOrder(order, mockFeatureFlags, FmsOrderSource.CEMO),
+            DeviceWearer.fromOrder(order, mockFeatureFlags, FmsOrderSource.CEMO),
           ),
           deviceWearerId = "1",
         ),

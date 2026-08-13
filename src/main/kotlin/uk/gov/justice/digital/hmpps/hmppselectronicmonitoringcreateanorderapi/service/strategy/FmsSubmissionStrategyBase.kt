@@ -9,6 +9,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.DeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.DeviceWearerViews
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.MonitoringOrder
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.fromOrder
 
 abstract class FmsSubmissionStrategyBase(val objectMapper: ObjectMapper, private val featureFlags: FeatureFlags) :
   FmsSubmissionStrategy {
@@ -16,7 +17,7 @@ abstract class FmsSubmissionStrategyBase(val objectMapper: ObjectMapper, private
   protected fun getDeviceWearer(order: Order, orderSource: FmsOrderSource): Result<DeviceWearer> = try {
     Result(
       success = true,
-      data = DeviceWearer.fromCemoOrder(order, featureFlags, orderSource),
+      data = DeviceWearer.fromOrder(order, featureFlags, orderSource),
     )
   } catch (e: Exception) {
     Result(

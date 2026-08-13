@@ -172,12 +172,11 @@ class TestUtilities {
         offence = "FRAUD_OFFENCES",
         riskDetails = "Danger",
         riskCategory = arrayOf("SEXUAL_OFFENCES", "RISK_TO_GENDER"),
-        mappaLevel = "MAAPA 1",
-        mappaCaseType = "CPPC (Critical Public Protection Case)",
       )
 
       order.mappa = Mappa(
         versionId = versionId,
+        isMappa = YesNoUnknown.UNKNOWN,
         level = MappaLevel.MAPPA_ONE,
         category = MappaCategory.CATEGORY_ONE,
       )

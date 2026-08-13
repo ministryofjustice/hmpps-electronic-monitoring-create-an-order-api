@@ -23,5 +23,13 @@ enum class Offence(val value: String) {
     fun from(value: String?): Offence? = Offence.entries.firstOrNull {
       it.name == value
     }
+
+    fun fromValue(value: String?): Offence? {
+      if (value.isNullOrBlank()) return NO_OFFENCE_COMMITTED
+
+      return Offence.entries.firstOrNull {
+        it.value == value
+      }
+    }
   }
 }
