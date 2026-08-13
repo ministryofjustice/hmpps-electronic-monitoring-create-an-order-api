@@ -255,10 +255,12 @@ class FmsVariationSubmissionStrategy(
   }
 
   private fun getOriginalNewOrderCaseId(order: Order): String? = order.versions
-    .filter { it.fmsResultId != null && it.status == OrderStatus.SUBMITTED }
+    // assuming upstream generate a new sys_id for variation of rejection
+    .filter { it.fmsResultId != null && it.status == OrderStatus.SUBMITTED && it.type != RequestType.REJECTED }
     .sortedBy { it.versionId }.map { repo.getReferenceById(it.fmsResultId!!) }
     .firstOrNull { it.strategy == FmsSubmissionStrategyKind.ORDER }
     ?.deviceWearerResult
+    // caseId
     ?.deviceWearerId
     ?.takeIf { it.isNotBlank() }
 

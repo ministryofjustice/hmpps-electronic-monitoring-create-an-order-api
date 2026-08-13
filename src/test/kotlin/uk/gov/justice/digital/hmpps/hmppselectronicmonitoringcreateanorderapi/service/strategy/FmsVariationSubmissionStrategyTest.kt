@@ -337,7 +337,7 @@ class FmsVariationSubmissionStrategyTest {
     nextVariation.enforcementZoneConditions.clear()
     order.versions.add(nextVariation.getCurrentVersion())
 
-    whenever(mockClient.getState("variation-case-id")).thenReturn(CaseState.OPEN)
+    whenever(mockClient.getState("device-wearer-id")).thenReturn(CaseState.OPEN)
 
     val result = strategy.submitOrder(order, FmsOrderSource.CEMO)
 
