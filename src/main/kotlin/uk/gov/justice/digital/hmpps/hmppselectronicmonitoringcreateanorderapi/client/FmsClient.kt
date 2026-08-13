@@ -186,4 +186,28 @@ class FmsClient(@Value("\${services.serco.url}") url: String, private val fmsAut
       }
       .block()!!
   }
+
+  fun getLastestOrderDetails(caseId: String): FmsResponse {
+    val token = fmsAuthClient.getClientToken()
+
+    return webClient.get().uri("/monitoring_order/retrieveDWandMO?u_case_id=$caseId")
+      .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+      .exchangeToMono { response ->
+        when {
+          response.statusCode().isError -> {
+            response.bodyToMono<FmsErrorResponse>().flatMap { error ->
+              Mono.error(
+                CreateSercoEntityException(
+                  "Error getting latest order details for : $caseId with error: ${error.error?.detail}",
+                ),
+              )
+            }
+          }
+          else -> {
+            response.bodyToMono<FmsResponse>()
+          }
+        }
+      }
+      .block()!!
+  }
 }
