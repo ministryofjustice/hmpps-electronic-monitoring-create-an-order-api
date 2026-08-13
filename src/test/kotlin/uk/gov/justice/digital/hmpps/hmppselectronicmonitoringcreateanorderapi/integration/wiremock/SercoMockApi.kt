@@ -46,15 +46,13 @@ class SercoMockApiServer : WireMockServer(WIREMOCK_PORT) {
   }
 
   private val objectMapper: ObjectMapper = ObjectMapper()
-  fun stubCreateDeviceWearer(status: HttpStatus, result: FmsResponse, errorResponse: FmsErrorResponse? = null) {
-    val body: String
-    if (errorResponse != null) {
-      body = objectMapper.writeValueAsString(errorResponse)
-    } else {
-      body = objectMapper.writeValueAsString(result)
-    }
+
+  private fun responseBody(result: Any, errorResponse: FmsErrorResponse?): String =
+    objectMapper.writeValueAsString(errorResponse ?: result)
+
+  private fun stubPostResponse(path: String, status: HttpStatus, body: String) {
     stubFor(
-      post(urlPathTemplate("/x_seem_cemo/device_wearer/createDW"))
+      post(urlPathTemplate(path))
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")
@@ -66,74 +64,56 @@ class SercoMockApiServer : WireMockServer(WIREMOCK_PORT) {
     )
   }
 
-  fun stubCreateMonitoringOrder(status: HttpStatus, result: FmsResponse, errorResponse: FmsErrorResponse? = null) {
-    val body: String
-    if (errorResponse != null) {
-      body = objectMapper.writeValueAsString(errorResponse)
-    } else {
-      body = objectMapper.writeValueAsString(result)
-    }
-    stubFor(
-      post(urlPathTemplate("/x_seem_cemo/monitoring_order/createMO"))
-        .willReturn(
-          aResponse()
-            .withHeader("Content-Type", "application/json")
-            .withBody(
-              body,
-            )
-            .withStatus(status.value()),
-        ),
-    )
+  fun stubCreateDeviceWearer(status: HttpStatus, result: FmsResponse, errorResponse: FmsErrorResponse? = null) {
+    stubPostResponse("/x_seem_cemo/device_wearer/createDW", status, responseBody(result, errorResponse))
   }
 
   fun stubUpdateDeviceWearer(status: HttpStatus, result: FmsResponse, errorResponse: FmsErrorResponse? = null) {
-    val body: String
-    if (errorResponse != null) {
-      body = objectMapper.writeValueAsString(errorResponse)
-    } else {
-      body = objectMapper.writeValueAsString(result)
-    }
-    stubFor(
-      post(urlPathTemplate("/x_seem_cemo/device_wearer/updateDW"))
-        .willReturn(
-          aResponse()
-            .withHeader("Content-Type", "application/json")
-            .withBody(
-              body,
-            )
-            .withStatus(status.value()),
-        ),
-    )
+    stubPostResponse("/x_seem_cemo/device_wearer/updateDW", status, responseBody(result, errorResponse))
+  }
+
+  fun stubCreateMonitoringOrder(status: HttpStatus, result: FmsResponse, errorResponse: FmsErrorResponse? = null) {
+    stubPostResponse("/x_seem_cemo/monitoring_order/createMO", status, responseBody(result, errorResponse))
   }
 
   fun stubUpdateMonitoringOrder(status: HttpStatus, result: FmsResponse, errorResponse: FmsErrorResponse? = null) {
-    val body: String
-    if (errorResponse != null) {
-      body = objectMapper.writeValueAsString(errorResponse)
-    } else {
-      body = objectMapper.writeValueAsString(result)
-    }
-    stubFor(
-      post(urlPathTemplate("/x_seem_cemo/monitoring_order/updateMO"))
-        .willReturn(
-          aResponse()
-            .withHeader("Content-Type", "application/json")
-            .withBody(
-              body,
-            )
-            .withStatus(status.value()),
-        ),
-    )
+    stubPostResponse("/x_seem_cemo/monitoring_order/updateMO", status, responseBody(result, errorResponse))
+  }
+
+  fun stubCreateCommonPlatformDeviceWearer(
+    status: HttpStatus,
+    result: FmsResponse,
+    errorResponse: FmsErrorResponse? = null,
+  ) {
+    stubPostResponse("/x_seem_cemo/device_wearer/createCPDW", status, responseBody(result, errorResponse))
+  }
+
+  fun stubCreateCommonPlatformMonitoringOrder(
+    status: HttpStatus,
+    result: FmsResponse,
+    errorResponse: FmsErrorResponse? = null,
+  ) {
+    stubPostResponse("/x_seem_cemo/monitoring_order/createCPMO", status, responseBody(result, errorResponse))
+  }
+
+  fun stubUpdateCommonPlatformDeviceWearer(
+    status: HttpStatus,
+    result: FmsResponse,
+    errorResponse: FmsErrorResponse? = null,
+  ) {
+    stubPostResponse("/x_seem_cemo/device_wearer/updateCPDW", status, responseBody(result, errorResponse))
+  }
+
+  fun stubUpdateCommonPlatformMonitoringOrder(
+    status: HttpStatus,
+    result: FmsResponse,
+    errorResponse: FmsErrorResponse? = null,
+  ) {
+    stubPostResponse("/x_seem_cemo/monitoring_order/updateCPMO", status, responseBody(result, errorResponse))
   }
 
   fun stubSubmitAttachment(status: HttpStatus, result: FmsAttachmentResponse, errorResponse: FmsErrorResponse? = null) {
-    val body: String
-
-    if (errorResponse != null) {
-      body = objectMapper.writeValueAsString(errorResponse)
-    } else {
-      body = objectMapper.writeValueAsString(result)
-    }
+    val body = responseBody(result, errorResponse)
 
     stubFor(
       post(urlPathTemplate("/now/v1/attachment_csm/file"))
@@ -157,11 +137,7 @@ class SercoMockApiServer : WireMockServer(WIREMOCK_PORT) {
     result: FmsStateResponse,
     errorResponse: FmsErrorResponse? = null,
   ) {
-    val body = if (errorResponse != null) {
-      objectMapper.writeValueAsString(errorResponse)
-    } else {
-      objectMapper.writeValueAsString(result)
-    }
+    val body = responseBody(result, errorResponse)
     stubFor(
       get(urlEqualTo("/now/table/x_serg2_ems_csm_case/$caseId?sysparm_fields=state"))
         .willReturn(

@@ -18,6 +18,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.in
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.SercoAuthMockServerExtension.Companion.sercoAuthApi
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.SercoMockApiExtension.Companion.sercoApi
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.CaseState
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.DeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.ErrorResponse
@@ -25,6 +26,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsAttachmentResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsErrorResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsResponse
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.MonitoringOrder
 import java.io.ByteArrayInputStream
 import java.util.*
@@ -56,7 +58,7 @@ class FmsClientTest : IntegrationTestBase() {
 
       // When
       val exception = assertThrows<CreateSercoEntityException> {
-        fmsClient.createDeviceWearer(mockDeviceWearerPayload(), orderId)
+        fmsClient.createDeviceWearer(mockDeviceWearerPayload(), orderId, FmsOrderSource.CEMO)
       }
 
       // Then
@@ -80,13 +82,27 @@ class FmsClientTest : IntegrationTestBase() {
 
       // When
       val exception = assertThrows<CreateSercoEntityException> {
-        fmsClient.createDeviceWearer(mockDeviceWearerPayload(), orderId)
+        fmsClient.createDeviceWearer(mockDeviceWearerPayload(), orderId, FmsOrderSource.CEMO)
       }
 
       // Then
       assertThat(
         exception.message,
       ).isEqualTo("Error creating FMS Device Wearer for order: $orderId with error: Error detail")
+    }
+
+    @Test
+    fun `it should call the common platform endpoint when orderSource is COMMON_PLATFORM`() {
+      val orderId = UUID.randomUUID()
+      sercoAuthApi.stubGrantToken()
+      sercoApi.stubCreateCommonPlatformDeviceWearer(
+        status = HttpStatus.OK,
+        result = FmsResponse(result = listOf(FmsResult(message = "mock response", id = "1")), status = "200"),
+      )
+
+      val result = fmsClient.createDeviceWearer(mockDeviceWearerPayload(), orderId, FmsOrderSource.COMMON_PLATFORM)
+
+      assertThat(result.result.first().id).isEqualTo("1")
     }
   }
 
@@ -108,7 +124,7 @@ class FmsClientTest : IntegrationTestBase() {
 
       // When
       val exception = assertThrows<CreateSercoEntityException> {
-        fmsClient.createMonitoringOrder(mockMonitoringOrderPayload(), orderId)
+        fmsClient.createMonitoringOrder(mockMonitoringOrderPayload(), orderId, FmsOrderSource.CEMO)
       }
 
       // Then
@@ -132,13 +148,31 @@ class FmsClientTest : IntegrationTestBase() {
 
       // When
       val exception = assertThrows<CreateSercoEntityException> {
-        fmsClient.createMonitoringOrder(mockMonitoringOrderPayload(), orderId)
+        fmsClient.createMonitoringOrder(mockMonitoringOrderPayload(), orderId, FmsOrderSource.CEMO)
       }
 
       // Then
       assertThat(
         exception.message,
       ).isEqualTo("Error creating FMS Monitoring Order for order: $orderId with error: Error detail")
+    }
+
+    @Test
+    fun `it should call the common platform endpoint when orderSource is COMMON_PLATFORM`() {
+      val orderId = UUID.randomUUID()
+      sercoAuthApi.stubGrantToken()
+      sercoApi.stubCreateCommonPlatformMonitoringOrder(
+        status = HttpStatus.OK,
+        result = FmsResponse(result = listOf(FmsResult(message = "mock response", id = "1")), status = "200"),
+      )
+
+      val result = fmsClient.createMonitoringOrder(
+        mockMonitoringOrderPayload(),
+        orderId,
+        FmsOrderSource.COMMON_PLATFORM,
+      )
+
+      assertThat(result.result.first().id).isEqualTo("1")
     }
   }
 
@@ -160,7 +194,7 @@ class FmsClientTest : IntegrationTestBase() {
 
       // When
       val exception = assertThrows<CreateSercoEntityException> {
-        fmsClient.updateDeviceWearer(mockDeviceWearerPayload(), orderId)
+        fmsClient.updateDeviceWearer(mockDeviceWearerPayload(), orderId, FmsOrderSource.CEMO)
       }
 
       // Then
@@ -184,13 +218,27 @@ class FmsClientTest : IntegrationTestBase() {
 
       // When
       val exception = assertThrows<CreateSercoEntityException> {
-        fmsClient.updateDeviceWearer(mockDeviceWearerPayload(), orderId)
+        fmsClient.updateDeviceWearer(mockDeviceWearerPayload(), orderId, FmsOrderSource.CEMO)
       }
 
       // Then
       assertThat(
         exception.message,
       ).isEqualTo("Error updating FMS Device Wearer for order: $orderId with error: Error detail")
+    }
+
+    @Test
+    fun `it should call the common platform endpoint when orderSource is COMMON_PLATFORM`() {
+      val orderId = UUID.randomUUID()
+      sercoAuthApi.stubGrantToken()
+      sercoApi.stubUpdateCommonPlatformDeviceWearer(
+        status = HttpStatus.OK,
+        result = FmsResponse(result = listOf(FmsResult(message = "mock response", id = "1")), status = "200"),
+      )
+
+      val result = fmsClient.updateDeviceWearer(mockDeviceWearerPayload(), orderId, FmsOrderSource.COMMON_PLATFORM)
+
+      assertThat(result.result.first().id).isEqualTo("1")
     }
   }
 
@@ -212,7 +260,7 @@ class FmsClientTest : IntegrationTestBase() {
 
       // When
       val exception = assertThrows<CreateSercoEntityException> {
-        fmsClient.updateMonitoringOrder(mockMonitoringOrderPayload(), orderId)
+        fmsClient.updateMonitoringOrder(mockMonitoringOrderPayload(), orderId, FmsOrderSource.CEMO)
       }
 
       // Then
@@ -236,13 +284,31 @@ class FmsClientTest : IntegrationTestBase() {
 
       // When
       val exception = assertThrows<CreateSercoEntityException> {
-        fmsClient.updateMonitoringOrder(mockMonitoringOrderPayload(), orderId)
+        fmsClient.updateMonitoringOrder(mockMonitoringOrderPayload(), orderId, FmsOrderSource.CEMO)
       }
 
       // Then
       assertThat(
         exception.message,
       ).isEqualTo("Error updating FMS Monitoring Order for order: $orderId with error: Error detail")
+    }
+
+    @Test
+    fun `it should call the common platform endpoint when orderSource is COMMON_PLATFORM`() {
+      val orderId = UUID.randomUUID()
+      sercoAuthApi.stubGrantToken()
+      sercoApi.stubUpdateCommonPlatformMonitoringOrder(
+        status = HttpStatus.OK,
+        result = FmsResponse(result = listOf(FmsResult(message = "mock response", id = "1")), status = "200"),
+      )
+
+      val result = fmsClient.updateMonitoringOrder(
+        mockMonitoringOrderPayload(),
+        orderId,
+        FmsOrderSource.COMMON_PLATFORM,
+      )
+
+      assertThat(result.result.first().id).isEqualTo("1")
     }
   }
 
