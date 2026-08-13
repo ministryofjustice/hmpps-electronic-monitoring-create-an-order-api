@@ -80,7 +80,6 @@ abstract class OrderSectionServiceBase {
     if (interestedParties != null) {
       order.ownerCohort = getOwnerCohort(interestedParties)
     }
-
     return orderRepo.save(order)
   }
 

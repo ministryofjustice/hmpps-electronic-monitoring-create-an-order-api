@@ -42,7 +42,7 @@ class EnforcementZoneService(val webClient: DocumentApiClient) : OrderSectionSer
         zoneType = updateRecord.zoneType,
       ),
     )
-
+    order.recalculateMonitoringStartEndDate()
     updateLastUpdatedByAndSaveOrder(order)
   }
 

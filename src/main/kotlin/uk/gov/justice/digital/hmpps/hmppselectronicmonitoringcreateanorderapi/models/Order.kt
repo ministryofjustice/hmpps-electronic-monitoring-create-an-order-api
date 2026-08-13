@@ -322,4 +322,26 @@ data class Order(
   fun getMonitoringStartDate(): ZonedDateTime? = getCurrentVersion().getMonitoringStartDate()
 
   fun getMonitoringEndDate(): ZonedDateTime? = getCurrentVersion().getMonitoringEndDate()
+  
+  fun getMonitoringStartDate(): ZonedDateTime? = getCurrentVersion().monitoringConditions?.startDate
+    ?: monitoringConditionDates.mapNotNull { it.first }.minOrNull()
+
+  fun getMonitoringEndDate(): ZonedDateTime? = getCurrentVersion().monitoringConditions?.endDate
+    ?: monitoringConditionDates.mapNotNull { it.second }.maxOrNull()
+
+  private val monitoringConditionDates: Sequence<Pair<ZonedDateTime?, ZonedDateTime?>>
+    get() = sequence {
+      enforcementZoneConditions.forEach { yield(it.startDate to it.endDate) }
+      mandatoryAttendanceConditions.forEach { yield(it.startDate to it.endDate) }
+      curfewConditions?.let { yield(it.startDate to it.endDate) }
+      monitoringConditionsTrail?.let { yield(it.startDate to it.endDate) }
+      monitoringConditionsAlcohol?.let { yield(it.startDate to it.endDate) }
+    }
+
+  fun recalculateMonitoringStartEndDate() {
+    val version = getCurrentVersion()
+    if (version.status !== OrderStatus.IN_PROGRESS) return
+    version.monitoringConditions?.startDate = monitoringConditionDates.mapNotNull { it.first }.minOrNull()
+    version.monitoringConditions?.endDate = monitoringConditionDates.mapNotNull { it.second }.maxOrNull()
+  }
 }

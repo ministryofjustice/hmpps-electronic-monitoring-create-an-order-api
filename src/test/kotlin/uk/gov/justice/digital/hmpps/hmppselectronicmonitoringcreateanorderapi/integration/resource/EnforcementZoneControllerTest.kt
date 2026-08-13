@@ -4,6 +4,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.deleteRequestedFor
 import com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor
 import com.github.tomakehurst.wiremock.client.WireMock.urlMatching
 import org.assertj.core.api.Assertions
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
@@ -15,6 +16,7 @@ import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.UpdateOrderIntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.UriTestCase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.HmppsDocumentManagementApiExtension.Companion.documentApi
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.MonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.documentmanagement.DocumentUploadResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.EnforcementZoneType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidationError
@@ -539,6 +541,44 @@ class EnforcementZoneControllerTest : UpdateOrderIntegrationTestBase() {
 
       // Verify 1 document was deleted from the document api
       documentApi.verify(1, deleteRequestedFor(urlMatching("/documents/(.*)")))
+    }
+
+    @Test
+    fun `Enforcement zone monitoring details can store monitoring start date`() {
+      val order = storedOrderWithNoMonitoringConditionDateWindow()
+      val earlierDate = ZonedDateTime.parse("2000-01-01T00:00:00Z")
+      val laterDate = ZonedDateTime.parse("2030-01-01T00:00:00Z")
+
+      order.monitoringConditions = MonitoringConditions(
+        versionId = order.versions.first().id,
+      )
+      repo.save(order)
+
+      webTestClient.put()
+        .uri("/api/orders/${order.id}/enforcementZone")
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(
+          BodyInserters.fromValue(
+            mockRequestBody(
+              duration = "ExistingDuration",
+              description = "ExistingDescription",
+              startDate = earlierDate,
+              endDate = laterDate,
+            ),
+          ),
+        )
+        .headers(setAuthorisation(mockUser))
+        .exchange()
+        .expectStatus()
+        .isOk
+
+      val updatedOrder = getOrder(order.id)
+      assertThat(
+        updatedOrder.enforcementZoneConditions!!.first().startDate!!.toInstant(),
+      ).isEqualTo(earlierDate.toInstant())
+      assertThat(updatedOrder.enforcementZoneConditions.first().endDate!!.toInstant()).isEqualTo(laterDate.toInstant())
+      assertThat(updatedOrder.monitoringConditions!!.startDate!!.toInstant()).isEqualTo(earlierDate.toInstant())
+      assertThat(updatedOrder.monitoringConditions.endDate!!.toInstant()).isEqualTo(laterDate.toInstant())
     }
   }
 
