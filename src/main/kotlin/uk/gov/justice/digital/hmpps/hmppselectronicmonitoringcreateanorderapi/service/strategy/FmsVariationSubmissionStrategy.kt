@@ -118,6 +118,7 @@ class FmsVariationSubmissionStrategy(
     }
 
     val deviceWearer = deviceWearerResult.data!!
+    deviceWearer.newOrderCaseId = getOriginalNewOrderCaseId(order) ?: ""
     val serialiseResult = this.serialiseDeviceWearer(deviceWearer)
 
     if (!serialiseResult.success) {
@@ -252,6 +253,14 @@ class FmsVariationSubmissionStrategy(
       }
     return null
   }
+
+  private fun getOriginalNewOrderCaseId(order: Order): String? = order.versions
+    .filter { it.fmsResultId != null && it.status == OrderStatus.SUBMITTED }
+    .sortedBy { it.versionId }.map { repo.getReferenceById(it.fmsResultId!!) }
+    .firstOrNull { it.strategy == FmsSubmissionStrategyKind.ORDER }
+    ?.deviceWearerResult
+    ?.deviceWearerId
+    ?.takeIf { it.isNotBlank() }
 
   override fun submitOrder(order: Order, orderSource: FmsOrderSource): FmsSubmissionResult {
     val createDeviceWearerResult = this.updateDeviceWearer(order, orderSource)

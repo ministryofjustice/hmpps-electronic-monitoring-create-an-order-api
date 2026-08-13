@@ -7,11 +7,13 @@ import org.mockito.Mockito.mock
 import org.mockito.kotlin.any
 import org.mockito.kotlin.whenever
 import org.springframework.test.context.ActiveProfiles
+import tools.jackson.databind.MapperFeature
 import tools.jackson.databind.ObjectMapper
-import tools.jackson.module.kotlin.jacksonObjectMapper
+import tools.jackson.databind.json.JsonMapper
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.DocumentApiClient
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.FmsClient
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.config.FeatureFlags
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.CaseState
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
@@ -51,7 +53,9 @@ class FmsVariationSubmissionStrategyTest {
   fun setUp() {
     mockClient = mock(FmsClient::class.java)
     mockDocumentApiClient = mock(DocumentApiClient::class.java)
-    objectMapper = jacksonObjectMapper()
+    objectMapper = JsonMapper.builder()
+      .configure(MapperFeature.DEFAULT_VIEW_INCLUSION, true)
+      .build()
     repo = mock(FmsSubmissionResultRepository::class.java)
 
     whenever(mockClient.updateDeviceWearer(any(), any())).thenReturn(
@@ -227,4 +231,136 @@ class FmsVariationSubmissionStrategyTest {
     assertThat(result.monitoringOrderResult.payload).contains("CEMO determined changes:")
     assertThat(result.monitoringOrderResult.payload).contains("Device wearer's name has changed")
   }
+
+  @Test
+  fun `Should send the original new order case id on a variation`() {
+    val originalResultId = UUID.randomUUID()
+    val order = TestUtilities.createReadyToSubmitOrder(
+      mockOrderId,
+      mockOrderVersionId,
+      requestType = RequestType.REQUEST,
+      status = OrderStatus.SUBMITTED,
+      fmsResultId = originalResultId,
+    )
+
+    whenever(repo.getReferenceById(originalResultId))
+      .thenReturn(submissionResult(originalResultId, order, FmsSubmissionStrategyKind.ORDER, "original-case-id"))
+
+    val variation = TestUtilities.createReadyToSubmitOrder(
+      mockOrderId,
+      mockOrderVersionId,
+      requestType = RequestType.VARIATION,
+      versionNumber = 1,
+    )
+    variation.additionalDocuments.clear()
+    variation.enforcementZoneConditions.clear()
+    order.versions.add(variation.getCurrentVersion())
+
+    whenever(mockClient.getState("original-case-id")).thenReturn(CaseState.OPEN)
+
+    val result = strategy.submitOrder(order, FmsOrderSource.CEMO)
+
+    assertThat(result.success).isTrue
+    assertThat(result.deviceWearerResult.payload).contains("\"new_order_case_id\":\"original-case-id\"")
+  }
+
+  @Test
+  fun `Should send the original new order case id on a second variation`() {
+    val originalResultId = UUID.randomUUID()
+    val order = TestUtilities.createReadyToSubmitOrder(
+      mockOrderId,
+      mockOrderVersionId,
+      requestType = RequestType.REQUEST,
+      status = OrderStatus.SUBMITTED,
+      fmsResultId = originalResultId,
+    )
+
+    whenever(repo.getReferenceById(originalResultId))
+      .thenReturn(submissionResult(originalResultId, order, FmsSubmissionStrategyKind.ORDER, "original-case-id"))
+
+    val firstVariationResultId = UUID.randomUUID()
+    val firstVariation = TestUtilities.createReadyToSubmitOrder(
+      mockOrderId,
+      mockOrderVersionId,
+      requestType = RequestType.VARIATION,
+      status = OrderStatus.SUBMITTED,
+      fmsResultId = firstVariationResultId,
+      versionNumber = 1,
+    )
+    order.versions.add(firstVariation.getCurrentVersion())
+
+    whenever(repo.getReferenceById(firstVariationResultId)).thenReturn(
+      submissionResult(firstVariationResultId, order, FmsSubmissionStrategyKind.VARIATION, "first-variation-case-id"),
+    )
+
+    val secondVariation = TestUtilities.createReadyToSubmitOrder(
+      mockOrderId,
+      mockOrderVersionId,
+      requestType = RequestType.VARIATION,
+      versionNumber = 2,
+    )
+    secondVariation.additionalDocuments.clear()
+    secondVariation.enforcementZoneConditions.clear()
+    order.versions.add(secondVariation.getCurrentVersion())
+
+    whenever(mockClient.getState("original-case-id")).thenReturn(CaseState.OPEN)
+    whenever(mockClient.getState("first-variation-case-id")).thenReturn(CaseState.OPEN)
+
+    val result = strategy.submitOrder(order, FmsOrderSource.CEMO)
+
+    assertThat(result.success).isTrue
+    assertThat(result.deviceWearerResult.payload).contains("\"new_order_case_id\":\"original-case-id\"")
+    assertThat(result.deviceWearerResult.payload).doesNotContain("first-variation-case-id")
+  }
+
+  @Test
+  fun `Should blank new order case id when there is no original new order submission`() {
+    val variationResultId = UUID.randomUUID()
+    val order = TestUtilities.createReadyToSubmitOrder(
+      mockOrderId,
+      mockOrderVersionId,
+      requestType = RequestType.VARIATION,
+      status = OrderStatus.SUBMITTED,
+      fmsResultId = variationResultId,
+    )
+
+    whenever(repo.getReferenceById(variationResultId))
+      .thenReturn(submissionResult(variationResultId, order, FmsSubmissionStrategyKind.VARIATION, "device-wearer-id"))
+
+    val nextVariation = TestUtilities.createReadyToSubmitOrder(
+      mockOrderId,
+      mockOrderVersionId,
+      requestType = RequestType.VARIATION,
+      versionNumber = 1,
+    )
+    nextVariation.additionalDocuments.clear()
+    nextVariation.enforcementZoneConditions.clear()
+    order.versions.add(nextVariation.getCurrentVersion())
+
+    whenever(mockClient.getState("variation-case-id")).thenReturn(CaseState.OPEN)
+
+    val result = strategy.submitOrder(order, FmsOrderSource.CEMO)
+
+    assertThat(result.success).isTrue
+    assertThat(result.deviceWearerResult.payload).contains("\"new_order_case_id\":\"\"")
+  }
+
+  private fun submissionResult(id: UUID, order: Order, kind: FmsSubmissionStrategyKind, deviceWearerId: String) =
+    FmsSubmissionResult(
+      id = id,
+      orderId = mockOrderId,
+      strategy = kind,
+      orderSource = FmsOrderSource.CEMO,
+      deviceWearerResult = FmsDeviceWearerSubmissionResult(
+        payload = objectMapper.writeValueAsString(
+          DeviceWearer.fromCemoOrder(order, mockFeatureFlags, FmsOrderSource.CEMO),
+        ),
+        deviceWearerId = deviceWearerId,
+      ),
+      monitoringOrderResult = FmsMonitoringOrderSubmissionResult(
+        payload = objectMapper.writeValueAsString(
+          MonitoringOrder.fromOrder(order, deviceWearerId, mockFeatureFlags, FmsOrderSource.CEMO),
+        ),
+      ),
+    )
 }

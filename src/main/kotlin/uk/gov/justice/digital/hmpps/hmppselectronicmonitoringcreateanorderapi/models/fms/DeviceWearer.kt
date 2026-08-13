@@ -162,6 +162,9 @@ data class DeviceWearer(
   var interpreterRequired: String? = "",
 
   var language: String? = "",
+
+  @JsonProperty("new_order_case_id")
+  var newOrderCaseId: String? = "",
 ) {
 
   companion object {
@@ -203,6 +206,7 @@ data class DeviceWearer(
         deliusId = order.deviceWearer?.deliusId,
         prisonNumber = order.deviceWearer?.prisonNumber,
         homeOfficeReferenceNumber = "",
+        newOrderCaseId = "",
       )
 
       if (featureFlags.ddV6CourtMappings) {
