@@ -231,45 +231,24 @@ data class OrderVersion(
         requiredDocuments
       )
 
-  fun getMonitoringStartDate(): ZonedDateTime? {
-    var startDate = monitoringConditions?.startDate
+  fun getMonitoringStartDate(): ZonedDateTime? = monitoringConditions?.startDate
+    ?: monitoringConditionDates.mapNotNull { it.first }.minOrNull()
 
-    if (startDate == null) {
-      val allConditions = sequence {
-        yieldAll(enforcementZoneConditions)
-        yieldAll(mandatoryAttendanceConditions)
-        listOfNotNull(
-          curfewConditions,
-          monitoringConditionsTrail,
-          monitoringConditionsAlcohol,
-        ).forEach {
-          yield(it)
-        }
-      }
-      startDate = allConditions.mapNotNull { it.startDate }.minOrNull()
+  fun getMonitoringEndDate(): ZonedDateTime? = monitoringConditions?.endDate
+    ?: monitoringConditionDates.mapNotNull { it.second }.maxOrNull()
+
+  private val monitoringConditionDates: Sequence<Pair<ZonedDateTime?, ZonedDateTime?>>
+    get() = sequence {
+      enforcementZoneConditions.forEach { yield(it.startDate to it.endDate) }
+      mandatoryAttendanceConditions.forEach { yield(it.startDate to it.endDate) }
+      curfewConditions?.let { yield(it.startDate to it.endDate) }
+      monitoringConditionsTrail?.let { yield(it.startDate to it.endDate) }
+      monitoringConditionsAlcohol?.let { yield(it.startDate to it.endDate) }
     }
 
-    return startDate
-  }
-
-  fun getMonitoringEndDate(): ZonedDateTime? {
-    var endDate = monitoringConditions?.endDate
-
-    if (endDate == null) {
-      val allConditions = sequence {
-        yieldAll(enforcementZoneConditions)
-        yieldAll(mandatoryAttendanceConditions)
-        listOfNotNull(
-          curfewConditions,
-          monitoringConditionsTrail,
-          monitoringConditionsAlcohol,
-        ).forEach {
-          yield(it)
-        }
-      }
-      endDate = allConditions.mapNotNull { it.endDate }.maxOrNull()
-    }
-
-    return endDate
+  fun recalculateMonitoringStartEndDate() {
+    if (status !== OrderStatus.IN_PROGRESS) return
+    monitoringConditions?.startDate = monitoringConditionDates.mapNotNull { it.first }.minOrNull()
+    monitoringConditions?.endDate = monitoringConditionDates.mapNotNull { it.second }.maxOrNull()
   }
 }
