@@ -24,7 +24,7 @@ class CurfewConditionService : OrderSectionServiceBase() {
       startDate = updateRecord.startDate,
       curfewAdditionalDetails = order.curfewConditions?.curfewAdditionalDetails,
     )
-
+    order.recalculateMonitoringStartEndDate()
     return updateLastUpdatedByAndSaveOrder(order).curfewConditions!!
   }
 

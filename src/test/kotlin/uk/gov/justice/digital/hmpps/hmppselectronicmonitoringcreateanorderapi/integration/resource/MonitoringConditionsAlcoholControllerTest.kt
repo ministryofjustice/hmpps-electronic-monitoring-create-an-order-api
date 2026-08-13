@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.resource
 
 import org.assertj.core.api.Assertions
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.http.MediaType
@@ -14,7 +15,6 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
-import java.util.*
 
 class MonitoringConditionsAlcoholControllerTest : UpdateOrderIntegrationTestBase() {
 
@@ -262,5 +262,23 @@ class MonitoringConditionsAlcoholControllerTest : UpdateOrderIntegrationTestBase
     Assertions.assertThat(result.responseBody!!).contains(
       ValidationError("endDate", ErrorMessages.END_DATE_MUST_BE_AFTER_START_DATE),
     )
+  }
+
+  @Test
+  fun `Alcohol monitoring conditions updates monitoring condition dates`() {
+    val order = storedOrderWithNoMonitoringConditionDateWindow()
+
+    webTestClient.put()
+      .uri("/api/orders/${order.id}/monitoring-conditions-alcohol")
+      .contentType(MediaType.APPLICATION_JSON)
+      .body(
+        BodyInserters.fromValue(mockValidAlcoholMonitoringConditions),
+      )
+      .headers(setAuthorisation("AUTH_ADM"))
+      .exchange()
+      .expectStatus()
+      .isOk
+
+    assertThat(storedMonitoringOrderStartDate(order.id)!!.toInstant()).isEqualTo(mockStartDate.toInstant())
   }
 }

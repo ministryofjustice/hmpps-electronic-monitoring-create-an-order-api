@@ -255,6 +255,7 @@ class OrderService(val fmsService: FmsService, private val featureFlags: Feature
       }
 
     order.versions.add(newOrderVersion)
+    order.recalculateMonitoringStartEndDate()
     return updateLastUpdatedByAndSaveOrder(order)
   }
 
