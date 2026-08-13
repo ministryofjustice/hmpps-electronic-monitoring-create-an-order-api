@@ -492,7 +492,7 @@ data class MonitoringOrder(
         if (order.enforcementZoneConditions.any { it.zoneType == EnforcementZoneType.RESTRICTION }) {
           monitoringOrder.enforceableCondition?.add(
             EnforceableCondition(
-              "Restriction Zone",
+              "Restriction Zones",
               startDate = getBritishDateAndTime(enforcementZoneStartDate),
               endDate = getBritishDateAndTime(enforcementZoneEndDate) ?: "",
             ),
