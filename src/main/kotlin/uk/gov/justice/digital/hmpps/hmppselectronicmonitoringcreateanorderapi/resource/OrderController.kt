@@ -235,7 +235,6 @@ class OrderController(@Autowired val orderService: OrderService) {
       isOwner = isOwner,
       isSentencingAct = order.isSentencingAct,
     )
-
     dto.monitoringConditions?.startDate = order.getMonitoringStartDate()
     dto.monitoringConditions?.endDate = order.getMonitoringEndDate()
 

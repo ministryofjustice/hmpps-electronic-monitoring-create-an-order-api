@@ -18,4 +18,9 @@ enum class RiskCategory(val value: String) {
   HOMOPHOBIC_VIEWS("Evidence known to the Device Wearer having homophobic views"),
   UNDER_18("Under 18 living at property"),
   NO_RISK("No risk"),
+  ;
+
+  companion object {
+    fun from(value: String?): RiskCategory? = RiskCategory.entries.firstOrNull { it.value == value }
+  }
 }

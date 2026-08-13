@@ -55,6 +55,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.MonitoringOrder
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.OffenceData
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.Zone
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.fromOrder
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
@@ -305,7 +306,7 @@ class MonitoringOrderTest : OrderTestBase() {
     }
 
     @Test
-    fun `It should map restriction zone`() {
+    fun `It should map restriction zones`() {
       val overallStartDate = ZonedDateTime.of(2026, 1, 1, 12, 0, 0, 0, ZoneId.of("UTC"))
       val overallEndDate = ZonedDateTime.of(2026, 4, 1, 12, 0, 0, 0, ZoneId.of("UTC"))
 
@@ -334,7 +335,7 @@ class MonitoringOrderTest : OrderTestBase() {
 
       assertThat(fmsMonitoringOrder.enforceableCondition).contains(
         EnforceableCondition(
-          condition = "Restriction Zone",
+          condition = "Restriction Zones",
           startDate = "2026-01-01 12:00:00",
           endDate = "2026-04-01 13:00:00",
         ),

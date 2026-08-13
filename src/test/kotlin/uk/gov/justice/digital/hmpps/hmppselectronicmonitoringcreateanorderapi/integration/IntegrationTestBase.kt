@@ -19,6 +19,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.in
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.ManageUserApiExtension
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.SercoAuthMockServerExtension
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.SercoMockApiExtension
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.MonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderDto
@@ -27,6 +28,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.utilities.JwtAuthorisationHelperWithUserFullName
+import java.time.ZonedDateTime
 import java.util.*
 import kotlin.collections.listOf
 
@@ -212,4 +214,17 @@ abstract class IntegrationTestBase {
     .expectBody(OrderDto::class.java)
     .returnResult()
     .responseBody!!
+
+  fun storedOrderWithNoMonitoringConditionDateWindow(
+    startDate: ZonedDateTime? = ZonedDateTime.now(),
+    endDate: ZonedDateTime? = null,
+  ): Order {
+    val order = createStoredOrder()
+    order.monitoringConditions = MonitoringConditions(id = order.id, versionId = order.versionId)
+    order.monitoringConditions!!.startDate = startDate
+    order.monitoringConditions!!.endDate = endDate
+    return repo.save(order)
+  }
+  fun storedMonitoringOrderStartDate(orderId: UUID): ZonedDateTime? =
+    repo.findById(orderId).orElseThrow().monitoringConditions!!.startDate
 }

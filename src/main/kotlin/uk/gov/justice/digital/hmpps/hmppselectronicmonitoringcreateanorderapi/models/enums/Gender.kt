@@ -12,5 +12,9 @@ enum class Gender(val value: String) {
     fun from(value: String?): Gender? = Gender.entries.firstOrNull {
       it.name == value
     }
+
+    fun nameFromValue(value: String?): String? = Gender.entries.firstOrNull {
+      it.value == value
+    }?.name
   }
 }

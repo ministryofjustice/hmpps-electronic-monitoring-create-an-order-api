@@ -27,5 +27,13 @@ enum class PoliceAreas(val value: String) {
     fun from(value: String?): PoliceAreas? = PoliceAreas.entries.firstOrNull {
       it.name == value
     }
+
+    fun fromValue(value: String?): PoliceAreas? {
+      if (value.isNullOrBlank()) return DIFFERENT_POLICE_AREA
+
+      return PoliceAreas.entries.firstOrNull {
+        it.value == value
+      }
+    }
   }
 }

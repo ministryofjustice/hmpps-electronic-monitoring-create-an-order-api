@@ -48,6 +48,7 @@ class MonitoringConditionsService(@Value("\${toggle.tag-at-source.enabled}") pri
     )
 
     clearDeselectedConditionDetails(order)
+    order.recalculateMonitoringStartEndDate()
 
     return updateLastUpdatedByAndSaveOrder(order).monitoringConditions!!
   }
@@ -143,7 +144,7 @@ class MonitoringConditionsService(@Value("\${toggle.tag-at-source.enabled}") pri
         }
       }
     }
-
+    order.recalculateMonitoringStartEndDate()
     updateLastUpdatedByAndSaveOrder(order)
   }
 

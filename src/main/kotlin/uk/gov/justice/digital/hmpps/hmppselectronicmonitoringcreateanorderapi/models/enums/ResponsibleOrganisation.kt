@@ -13,5 +13,9 @@ enum class ResponsibleOrganisation(val value: String) {
     fun from(value: String?): ResponsibleOrganisation? = ResponsibleOrganisation.entries.firstOrNull {
       it.toString() == value
     }
+
+    fun fromValue(value: String?): ResponsibleOrganisation? = ResponsibleOrganisation.entries.firstOrNull {
+      it.value == value
+    }
   }
 }

@@ -15,5 +15,9 @@ enum class YouthJusticeServiceRegions(val value: String) {
     fun from(value: String?): YouthJusticeServiceRegions? = YouthJusticeServiceRegions.entries.firstOrNull {
       it.name == value
     }
+
+    fun fromValue(value: String?): YouthJusticeServiceRegions? = YouthJusticeServiceRegions.entries.firstOrNull {
+      it.value == value
+    }
   }
 }

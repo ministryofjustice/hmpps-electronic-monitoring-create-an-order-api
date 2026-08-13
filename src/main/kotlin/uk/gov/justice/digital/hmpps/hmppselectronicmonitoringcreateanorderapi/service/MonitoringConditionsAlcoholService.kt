@@ -26,7 +26,7 @@ class MonitoringConditionsAlcoholService : OrderSectionServiceBase() {
     }
 
     order.monitoringConditionsAlcohol = alcoholMonitoringConditions
-
+    order.recalculateMonitoringStartEndDate()
     return updateLastUpdatedByAndSaveOrder(order).monitoringConditionsAlcohol!!
   }
 }

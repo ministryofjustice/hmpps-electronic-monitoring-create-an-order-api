@@ -17,7 +17,6 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
-import java.util.*
 
 class MonitoringConditionsTrailControllerTest(@Autowired private val objectMapper: ObjectMapper) :
   UpdateOrderIntegrationTestBase() {
@@ -179,6 +178,32 @@ class MonitoringConditionsTrailControllerTest(@Autowired private val objectMappe
     Assertions.assertThat(result.responseBody!!).contains(
       ValidationError("endDate", ErrorMessages.END_DATE_MUST_BE_AFTER_START_DATE),
     )
+  }
+
+  @Test
+  fun `update monitoring trail conditions sets monitoring date start`() {
+    val order = storedOrderWithNoMonitoringConditionDateWindow()
+    val earlierDate = ZonedDateTime.parse("2000-01-01T00:00:00Z")
+
+    webTestClient.put()
+      .uri("/api/orders/${order.id}/monitoring-conditions-trail")
+      .contentType(MediaType.APPLICATION_JSON)
+      .body(
+        BodyInserters.fromValue(
+          """
+            {
+              "startDate": "$earlierDate",
+              "endDate": "$mockEndDate"
+            }
+          """.trimIndent(),
+        ),
+      )
+      .headers(setAuthorisation("AUTH_ADM"))
+      .exchange()
+      .expectStatus()
+      .isOk
+
+    Assertions.assertThat(storedMonitoringOrderStartDate(order.id)).isEqualTo(earlierDate)
   }
 
   private fun mockValidRequestBody(
