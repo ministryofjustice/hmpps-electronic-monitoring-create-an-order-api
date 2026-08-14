@@ -265,6 +265,16 @@ class MonitoringOrderFieldChangeArgumentsProvider : ArgumentsProvider {
     ),
 
     MonitoringOrderFieldCase(
+      "restrictionZones",
+      {
+        it.restrictionZones = mutableListOf(
+          Zone("Zone1", "1h", "10:00", "11:00"),
+        )
+      },
+      "One or more of the restriction zones has changed",
+    ),
+
+    MonitoringOrderFieldCase(
       "acEligibleOffences",
       {
         it.acEligibleOffences = mutableListOf(
@@ -520,6 +530,9 @@ class MonitoringOrderOVTTypeArgumentsProvider : ArgumentsProvider {
 
       MonitoringOrderChange.ExclusionZones ->
         order.exclusionZones = (order.exclusionZones + Zone()) as MutableList<Zone>
+
+      MonitoringOrderChange.RestrictionZones ->
+        order.restrictionZones = (order.restrictionZones + Zone()) as MutableList<Zone>
 
       MonitoringOrderChange.AcEligibleOffences ->
         order.acEligibleOffences =
