@@ -12,6 +12,7 @@ import org.springframework.web.reactive.function.client.bodyToMono
 import reactor.core.publisher.Mono
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.CreateSercoEntityException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.CaseState
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsAttachmentResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsErrorResponse
@@ -22,12 +23,15 @@ import java.util.*
 class FmsClient(@Value("\${services.serco.url}") url: String, private val fmsAuthClient: FmsAuthClient) {
   private val webClient: WebClient = WebClient.builder().baseUrl(url).build()
 
-  fun createDeviceWearer(deviceWearerPayload: String, orderId: UUID): FmsResponse {
+  private fun resolvePath(orderSource: FmsOrderSource, cemoPath: String, commonPlatformPath: String): String =
+    if (orderSource == FmsOrderSource.CEMO) cemoPath else commonPlatformPath
+
+  private fun postFmsRequest(path: String, payload: String, orderId: UUID, errorContext: String): FmsResponse {
     val token = fmsAuthClient.getClientToken()
-    val result = webClient.post().uri("/x_seem_cemo/device_wearer/createDW")
+    return webClient.post().uri(path)
       .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
       .contentType(MediaType.APPLICATION_JSON)
-      .bodyValue(deviceWearerPayload)
+      .bodyValue(payload)
       .retrieve()
       .onStatus(
         { t -> t.isError },
@@ -35,7 +39,7 @@ class FmsClient(@Value("\${services.serco.url}") url: String, private val fmsAut
           it.bodyToMono(FmsErrorResponse::class.java).flatMap { error ->
             Mono.error(
               CreateSercoEntityException(
-                "Error creating FMS Device Wearer for order: $orderId with error: ${error?.error?.detail}",
+                "Error $errorContext for order: $orderId with error: ${error?.error?.detail}",
               ),
             )
           }
@@ -44,82 +48,66 @@ class FmsClient(@Value("\${services.serco.url}") url: String, private val fmsAut
       .bodyToMono(FmsResponse::class.java)
       .onErrorResume(WebClientResponseException::class.java) { Mono.empty() }
       .block()!!
-    return result
   }
 
-  fun createMonitoringOrder(orderPayload: String, orderId: UUID): FmsResponse {
-    val token = fmsAuthClient.getClientToken()
-    val result = webClient.post().uri("/x_seem_cemo/monitoring_order/createMO")
-      .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
-      .contentType(MediaType.APPLICATION_JSON)
-      .bodyValue(orderPayload)
-      .retrieve()
-      .onStatus(
-        { t -> t.isError },
-        {
-          it.bodyToMono(FmsErrorResponse::class.java).flatMap { error ->
-            Mono.error(
-              CreateSercoEntityException(
-                "Error creating FMS Monitoring Order for order: $orderId with error: ${error?.error?.detail}",
-              ),
-            )
-          }
-        },
-      )
-      .bodyToMono(FmsResponse::class.java)
-      .onErrorResume(WebClientResponseException::class.java) { Mono.empty() }
-      .block()!!
-    return result
+  fun createDeviceWearer(deviceWearerPayload: String, orderId: UUID, orderSource: FmsOrderSource): FmsResponse {
+    val path = resolvePath(
+      orderSource,
+      cemoPath = "/x_seem_cemo/device_wearer/createDW",
+      commonPlatformPath = "/x_seem_cemo/device_wearer/createCPDW",
+    )
+
+    return postFmsRequest(
+      path,
+      deviceWearerPayload,
+      orderId,
+      "creating FMS Device Wearer",
+    )
   }
 
-  fun updateDeviceWearer(deviceWearerPayload: String, orderId: UUID): FmsResponse {
-    val token = fmsAuthClient.getClientToken()
-    val result = webClient.post().uri("/x_seem_cemo/device_wearer/updateDW")
-      .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
-      .contentType(MediaType.APPLICATION_JSON)
-      .bodyValue(deviceWearerPayload)
-      .retrieve()
-      .onStatus(
-        { t -> t.isError },
-        {
-          it.bodyToMono(FmsErrorResponse::class.java).flatMap { error ->
-            Mono.error(
-              CreateSercoEntityException(
-                "Error updating FMS Device Wearer for order: $orderId with error: ${error?.error?.detail}",
-              ),
-            )
-          }
-        },
-      )
-      .bodyToMono(FmsResponse::class.java)
-      .onErrorResume(WebClientResponseException::class.java) { Mono.empty() }
-      .block()!!
-    return result
+  fun createMonitoringOrder(orderPayload: String, orderId: UUID, orderSource: FmsOrderSource): FmsResponse {
+    val path = resolvePath(
+      orderSource,
+      cemoPath = "/x_seem_cemo/monitoring_order/createMO",
+      commonPlatformPath = "/x_seem_cemo/monitoring_order/createCPMO",
+    )
+
+    return postFmsRequest(
+      path,
+      orderPayload,
+      orderId,
+      errorContext = "creating FMS Monitoring Order",
+    )
   }
 
-  fun updateMonitoringOrder(orderPayload: String, orderId: UUID): FmsResponse {
-    val token = fmsAuthClient.getClientToken()
-    val result = webClient.post().uri("/x_seem_cemo/monitoring_order/updateMO")
-      .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
-      .contentType(MediaType.APPLICATION_JSON)
-      .bodyValue(orderPayload)
-      .retrieve()
-      .onStatus(
-        { t -> t.isError },
-        {
-          it.bodyToMono(FmsErrorResponse::class.java).flatMap { error ->
-            Mono.error(
-              CreateSercoEntityException(
-                "Error updating FMS Monitoring Order for order: $orderId with error: ${error?.error?.detail}",
-              ),
-            )
-          }
-        },
-      )
-      .bodyToMono(FmsResponse::class.java)
-      .onErrorResume(WebClientResponseException::class.java) { Mono.empty() }
-      .block()!!
-    return result
+  fun updateDeviceWearer(deviceWearerPayload: String, orderId: UUID, orderSource: FmsOrderSource): FmsResponse {
+    val path = resolvePath(
+      orderSource,
+      cemoPath = "/x_seem_cemo/device_wearer/updateDW",
+      commonPlatformPath = "/x_seem_cemo/device_wearer/updateCPDW",
+    )
+
+    return postFmsRequest(
+      path,
+      deviceWearerPayload,
+      orderId,
+      errorContext = "updating FMS Device Wearer",
+    )
+  }
+
+  fun updateMonitoringOrder(orderPayload: String, orderId: UUID, orderSource: FmsOrderSource): FmsResponse {
+    val path = resolvePath(
+      orderSource,
+      cemoPath = "/x_seem_cemo/monitoring_order/updateMO",
+      commonPlatformPath = "/x_seem_cemo/monitoring_order/updateCPMO",
+    )
+
+    return postFmsRequest(
+      path,
+      orderPayload,
+      orderId,
+      errorContext = "updating FMS Monitoring Order",
+    )
   }
 
   fun createAttachment(
@@ -176,6 +164,7 @@ class FmsClient(@Value("\${services.serco.url}") url: String, private val fmsAut
           response.statusCode().isError -> {
             Mono.just(CaseState.UNKNOWN)
           }
+
           else -> {
             response.bodyToMono<FmsStateResponse>()
               .map { res ->

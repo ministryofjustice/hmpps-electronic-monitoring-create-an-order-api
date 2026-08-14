@@ -25,10 +25,14 @@ class FmsOrderSubmissionStrategy(
   private val featureFlags: FeatureFlags,
 ) : FmsSubmissionStrategyBase(objectMapper, featureFlags) {
 
-  private fun submitCreateDeviceWearerRequest(deviceWearerPayload: String, orderId: UUID): Result<String> = try {
+  private fun submitCreateDeviceWearerRequest(
+    deviceWearerPayload: String,
+    orderId: UUID,
+    orderSource: FmsOrderSource,
+  ): Result<String> = try {
     Result(
       success = true,
-      data = fmsClient.createDeviceWearer(deviceWearerPayload, orderId).result.first().id,
+      data = fmsClient.createDeviceWearer(deviceWearerPayload, orderId, orderSource).result.first().id,
     )
   } catch (e: Exception) {
     Result(
@@ -37,10 +41,14 @@ class FmsOrderSubmissionStrategy(
     )
   }
 
-  private fun submitCreateMonitoringOrderRequest(monitoringOrderPayload: String, orderId: UUID): Result<String> = try {
+  private fun submitCreateMonitoringOrderRequest(
+    monitoringOrderPayload: String,
+    orderId: UUID,
+    orderSource: FmsOrderSource,
+  ): Result<String> = try {
     Result(
       success = true,
-      data = fmsClient.createMonitoringOrder(monitoringOrderPayload, orderId).result.first().id,
+      data = fmsClient.createMonitoringOrder(monitoringOrderPayload, orderId, orderSource).result.first().id,
     )
   } catch (e: Exception) {
     Result(
@@ -125,7 +133,7 @@ class FmsOrderSubmissionStrategy(
       )
     }
 
-    val submissionResult = this.submitCreateDeviceWearerRequest(serialiseResult.data!!, order.id)
+    val submissionResult = this.submitCreateDeviceWearerRequest(serialiseResult.data!!, order.id, orderSource)
 
     if (!submissionResult.success) {
       return FmsDeviceWearerSubmissionResult(
@@ -166,7 +174,11 @@ class FmsOrderSubmissionStrategy(
       )
     }
 
-    val submissionResult = this.submitCreateMonitoringOrderRequest(serialiseResult.data!!, order.id)
+    val submissionResult = this.submitCreateMonitoringOrderRequest(
+      serialiseResult.data!!,
+      order.id,
+      orderSource,
+    )
 
     if (!submissionResult.success) {
       return FmsMonitoringOrderSubmissionResult(
