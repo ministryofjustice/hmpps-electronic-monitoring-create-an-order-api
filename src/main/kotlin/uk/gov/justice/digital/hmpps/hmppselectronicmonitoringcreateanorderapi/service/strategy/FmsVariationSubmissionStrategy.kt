@@ -262,7 +262,7 @@ class FmsVariationSubmissionStrategy(
     return null
   }
 
-  private fun getOriginalNewOrderCaseId(order: Order): String? = order.versions
+  fun getOriginalNewOrderCaseId(order: Order): String? = order.versions
     .filter {
       it.fmsResultId != null &&
         it.status == OrderStatus.SUBMITTED &&

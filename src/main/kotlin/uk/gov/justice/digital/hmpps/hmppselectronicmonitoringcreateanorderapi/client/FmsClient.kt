@@ -17,6 +17,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsAttachmentResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsErrorResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsResponse
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsRetrieveDWandMO
 import java.util.*
 
 @Service
@@ -36,7 +37,7 @@ class FmsClient(@Value("\${services.serco.url}") url: String, private val fmsAut
       .onStatus(
         { t -> t.isError },
         {
-          it.bodyToMono(FmsErrorResponse::class.java).flatMap { error ->
+          it.bodyToMono<FmsErrorResponse>().flatMap { error ->
             Mono.error(
               CreateSercoEntityException(
                 "Error $errorContext for order: $orderId with error: ${error?.error?.detail}",
@@ -148,7 +149,7 @@ class FmsClient(@Value("\${services.serco.url}") url: String, private val fmsAut
           }
         },
       )
-      .bodyToMono(FmsAttachmentResponse::class.java)
+      .bodyToMono<FmsAttachmentResponse>()
       .onErrorResume(WebClientResponseException::class.java) { Mono.empty() }
       .block()!!
     return result
@@ -176,7 +177,7 @@ class FmsClient(@Value("\${services.serco.url}") url: String, private val fmsAut
       .block()!!
   }
 
-  fun getLastestOrderDetails(caseId: String): FmsResponse {
+  fun getLastestOrderDetails(caseId: String): FmsRetrieveDWandMO {
     val token = fmsAuthClient.getClientToken()
 
     return webClient.get().uri("/monitoring_order/retrieveDWandMO?u_case_id=$caseId")
@@ -185,6 +186,7 @@ class FmsClient(@Value("\${services.serco.url}") url: String, private val fmsAut
         when {
           response.statusCode().isError -> {
             response.bodyToMono<FmsErrorResponse>().flatMap { error ->
+              // TODO: handle different error codes
               Mono.error(
                 CreateSercoEntityException(
                   "Error getting latest order details for : $caseId with error: ${error.error?.detail}",
@@ -193,7 +195,7 @@ class FmsClient(@Value("\${services.serco.url}") url: String, private val fmsAut
             }
           }
           else -> {
-            response.bodyToMono<FmsResponse>()
+            response.bodyToMono<FmsRetrieveDWandMO>()
           }
         }
       }

@@ -9,7 +9,9 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.cl
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.FmsClient
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.config.FeatureFlags
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsSubmissionResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.FmsSubmissionResultRepository
@@ -33,33 +35,48 @@ class FmsService(
   @param:Value("\${toggle.common-platform.fms-integration.enabled:false}") val cpFmsIntegrationEnabled: Boolean,
   private val featureFlags: FeatureFlags,
 ) {
+  private val orderSubmissionStrategy = FmsOrderSubmissionStrategy(
+    this.objectMapper,
+    this.fmsClient,
+    this.documentApiClient,
+    featureFlags,
+  )
+
+  private val variationSubmissionStrategy = FmsVariationSubmissionStrategy(
+    this.objectMapper,
+    this.fmsClient,
+    this.documentApiClient,
+    featureFlags,
+    repo,
+  )
+
+  fun getLatestOrderVersion(order: Order): OrderVersion? {
+    val caseId = variationSubmissionStrategy.getOriginalNewOrderCaseId(order)
+    if (caseId != null) {
+      // TODO handle error response codd
+      val lastFmsDetail = fmsClient.getLastestOrderDetails(caseId)
+      return lastFmsDetail.toOrderVersion(
+        order.id,
+        order.username,
+        OrderStatus.IN_PROGRESS,
+        type = order.type,
+        dataDictionaryVersion = order.dataDictionaryVersion,
+      )
+    }
+    return null
+  }
+
   private fun getSubmissionStrategy(order: Order, orderSource: FmsOrderSource): FmsSubmissionStrategy {
     if (orderSource === FmsOrderSource.COMMON_PLATFORM && cpFmsIntegrationEnabled) {
-      return FmsOrderSubmissionStrategy(
-        this.objectMapper,
-        this.fmsClient,
-        this.documentApiClient,
-        featureFlags,
-      )
+      return orderSubmissionStrategy
     }
 
     if (orderSource === FmsOrderSource.CEMO && cemoFmsIntegrationEnabled) {
       if (RequestType.VARIATION_TYPES.contains(order.type)) {
-        return FmsVariationSubmissionStrategy(
-          this.objectMapper,
-          this.fmsClient,
-          this.documentApiClient,
-          featureFlags,
-          repo,
-        )
+        return variationSubmissionStrategy
       }
 
-      return FmsOrderSubmissionStrategy(
-        this.objectMapper,
-        this.fmsClient,
-        this.documentApiClient,
-        featureFlags,
-      )
+      return orderSubmissionStrategy
     }
 
     return FmsDummySubmissionStrategy(this.objectMapper, featureFlags)
