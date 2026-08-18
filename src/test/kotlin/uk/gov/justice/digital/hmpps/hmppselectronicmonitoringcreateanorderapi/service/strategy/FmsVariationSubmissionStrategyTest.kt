@@ -59,7 +59,7 @@ class FmsVariationSubmissionStrategyTest {
       .build()
     repo = mock(FmsSubmissionResultRepository::class.java)
 
-    whenever(mockClient.updateDeviceWearer(any(), any())).thenReturn(
+    whenever(mockClient.updateDeviceWearer(any(), any(), any())).thenReturn(
       FmsResponse(
         result = listOf(
           FmsResult(message = "mock response", id = "3"),
@@ -67,7 +67,7 @@ class FmsVariationSubmissionStrategyTest {
         status = "200",
       ),
     )
-    whenever(mockClient.updateMonitoringOrder(any(), any())).thenReturn(
+    whenever(mockClient.updateMonitoringOrder(any(), any(), any())).thenReturn(
       FmsResponse(
         result = listOf(
           FmsResult(message = "mock response", id = "1"),

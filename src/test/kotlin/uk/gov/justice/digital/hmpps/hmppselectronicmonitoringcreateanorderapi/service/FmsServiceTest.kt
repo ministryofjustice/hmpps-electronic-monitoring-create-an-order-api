@@ -139,8 +139,16 @@ class FmsServiceTest {
     val mockOrder = TestUtilities.createReadyToSubmitOrder()
 
     val mockFmsResponse = FmsResponse(result = listOf(FmsResult(id = mockOrder.id.toString())))
-    whenever(mockClient.createDeviceWearer(any(), eq(mockOrder.id))).thenReturn(mockFmsResponse)
-    whenever(mockClient.createMonitoringOrder(any(), eq(mockOrder.id))).thenReturn(mockFmsResponse)
+    whenever(
+      mockClient.createDeviceWearer(
+        any(),
+        eq(mockOrder.id),
+        eq(FmsOrderSource.CEMO),
+      ),
+    ).thenReturn(mockFmsResponse)
+    whenever(mockClient.createMonitoringOrder(any(), eq(mockOrder.id), eq(FmsOrderSource.CEMO))).thenReturn(
+      mockFmsResponse,
+    )
 
     service = FmsService(
       mockClient,
@@ -161,7 +169,7 @@ class FmsServiceTest {
     val payloadCaptor = argumentCaptor<String>()
     val orderIdCaptor = argumentCaptor<UUID>()
 
-    verify(mockClient).createDeviceWearer(payloadCaptor.capture(), orderIdCaptor.capture())
+    verify(mockClient).createDeviceWearer(payloadCaptor.capture(), orderIdCaptor.capture(), eq(FmsOrderSource.CEMO))
 
     assertThat(orderIdCaptor.firstValue).isEqualTo(mockOrder.id)
 

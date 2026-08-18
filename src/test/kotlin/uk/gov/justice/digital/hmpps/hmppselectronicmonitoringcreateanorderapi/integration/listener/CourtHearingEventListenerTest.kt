@@ -126,11 +126,11 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
   fun `Will process a valid payload with em details`() {
     val rootFilePath = "src/test/resources/json/SUSPS_community_order_inclusion"
     val rawMessage = generateRawHearingEventMessage("$rootFilePath/cp_payload.json")
-    sercoApi.stubCreateDeviceWearer(
+    sercoApi.stubCreateCommonPlatformDeviceWearer(
       HttpStatus.OK,
       FmsResponse(result = listOf(FmsResult(message = "", id = "MockDeviceWearerId"))),
     )
-    sercoApi.stubCreateMonitoringOrder(
+    sercoApi.stubCreateCommonPlatformMonitoringOrder(
       HttpStatus.OK,
       FmsResponse(result = listOf(FmsResult(message = "", id = "MockMonitoringOrderId"))),
     )
@@ -138,8 +138,6 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
     await().until { getNumberOfMessagesCurrentlyOnEventQueue() == 0 }
     assertThat(fmsSubmissionRepo.count().toInt()).isNotEqualTo(0)
   }
-
-  fun String.removeWhitespaceAndNewlines(): String = this.replace("(\"[^\"]*\")|\\s".toRegex(), "\$1")
 
   companion object {
     @JvmStatic
@@ -210,11 +208,11 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
       rawMessage = generateRawHearingEventMessage("$rootFilePath/cp_payload.json")
     }
 
-    sercoApi.stubCreateDeviceWearer(
+    sercoApi.stubCreateCommonPlatformDeviceWearer(
       HttpStatus.OK,
       FmsResponse(result = listOf(FmsResult(message = "", id = "MockDeviceWearerId"))),
     )
-    sercoApi.stubCreateMonitoringOrder(
+    sercoApi.stubCreateCommonPlatformMonitoringOrder(
       HttpStatus.OK,
       FmsResponse(result = listOf(FmsResult(message = "", id = "MockMonitoringOrderId"))),
     )
