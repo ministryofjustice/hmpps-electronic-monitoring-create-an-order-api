@@ -151,6 +151,10 @@ enum class MonitoringOrderChange(
     "One or more of the exclusion zones has changed",
     VariationType.CHANGE_TO_ENFORCEABLE_CONDITION,
   ),
+  RestrictionZones(
+    "One or more of the restriction zones has changed",
+    VariationType.CHANGE_TO_ENFORCEABLE_CONDITION,
+  ),
   AcEligibleOffences(
     "Acquisitive crime offence has changed",
     VariationType.CHANGE_TO_PERSONAL_DETAILS,

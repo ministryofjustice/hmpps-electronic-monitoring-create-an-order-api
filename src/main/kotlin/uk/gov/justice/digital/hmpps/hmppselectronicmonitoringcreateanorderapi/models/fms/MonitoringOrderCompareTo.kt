@@ -221,6 +221,7 @@ fun MonitoringOrder.compareTo(previous: MonitoringOrder): MonitoringOrderCompare
   )
 
   compareList(MonitoringOrderChange.ExclusionZones, exclusionZones, previous.exclusionZones)
+  compareList(MonitoringOrderChange.RestrictionZones, restrictionZones, previous.restrictionZones)
   compareList(MonitoringOrderChange.AcEligibleOffences, acEligibleOffences, previous.acEligibleOffences)
   compareList(MonitoringOrderChange.DapoOrderClauseNumbers, dapoOrderClauseNumbers, previous.dapoOrderClauseNumbers)
   compareList(MonitoringOrderChange.Offences, offences, previous.offences)
