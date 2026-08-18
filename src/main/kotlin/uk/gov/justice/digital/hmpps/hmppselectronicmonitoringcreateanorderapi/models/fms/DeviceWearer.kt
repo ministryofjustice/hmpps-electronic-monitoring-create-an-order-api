@@ -150,6 +150,9 @@ data class DeviceWearer(
   var interpreterRequired: String? = "",
 
   var language: String? = "",
+
+  @JsonProperty("new_order_case_id")
+  var newOrderCaseId: String? = "",
 ) {
   companion object
 }
