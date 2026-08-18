@@ -3,10 +3,17 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.i
 import FmsState
 import FmsStateResponse
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.mockito.Mockito
+import org.mockito.internal.verification.Times
+import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
+import org.mockito.kotlin.verify
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.io.InputStreamResource
 import org.springframework.http.HttpStatus
@@ -27,7 +34,9 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsErrorResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsResult
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsRetrieveDWandMO
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.MonitoringOrder
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.EventService
 import java.io.ByteArrayInputStream
 import java.util.*
 
@@ -39,6 +48,14 @@ class FmsClientTest : IntegrationTestBase() {
 
   @Autowired
   lateinit var objectMapper: ObjectMapper
+
+  lateinit var eventService: EventService
+
+  @BeforeEach
+  fun setup() {
+    eventService = Mockito.mock(EventService::class.java)
+    fmsClient.eventService = eventService
+  }
 
   @Nested
   @DisplayName("POST /api/x_seem_cemo/device_wearer/createDW")
@@ -431,6 +448,163 @@ class FmsClientTest : IntegrationTestBase() {
       assertThat(
         result,
       ).isEqualTo(CaseState.NEW)
+    }
+  }
+
+  @Nested
+  @DisplayName("GET /monitoring_order/retrieveDWandMO?u_case_id")
+  inner class RetrieveDWandMO {
+    @Test
+    fun `should return order details when response is successful`() {
+      val expected = FmsRetrieveDWandMO(
+        caseId = "CASE123",
+        deviceWearer = DeviceWearer(),
+        monitoringOrder = MonitoringOrder(),
+      )
+
+      sercoAuthApi.stubGrantToken()
+      sercoApi.stubGetDWandMo(
+        "CASE123",
+        status = HttpStatus.OK,
+        result = expected,
+      )
+
+      val result = fmsClient.getLastestOrderDetails("CASE123")
+      assertThat(result).isEqualTo(expected)
+      verify(eventService, Times(0)).recordEvent(any(), any(), any())
+    }
+
+    @Test
+    fun `should throw exception and record event for 400 response`() {
+      val caseId = "CASE123"
+      val expected = FmsRetrieveDWandMO(
+        caseId = caseId,
+        deviceWearer = DeviceWearer(),
+        monitoringOrder = MonitoringOrder(),
+      )
+      val errorResponse = """
+          {
+            "result": {
+              "error": "u_case_id query parameter is required"
+            }
+          }
+      """.trimIndent()
+      sercoAuthApi.stubGrantToken()
+      sercoApi.stubGetDWandMo(
+        caseId,
+        status = HttpStatus.BAD_REQUEST,
+        result = expected,
+        errorResponse = errorResponse,
+      )
+
+
+      assertThatThrownBy {
+        fmsClient.getLastestOrderDetails(caseId)
+      }
+        .isInstanceOf(CreateSercoEntityException::class.java)
+        .hasMessageContaining("Invalid request")
+
+
+      verify(eventService).recordEvent(
+        eq("Failed to retrieve latest order from FMS: $caseId"),
+        eq(
+          mapOf(
+            "error" to errorResponse,
+            "caseId" to caseId,
+          ),
+        ),
+        any()
+      )
+    }
+
+    @Test
+    fun `should throw exception and record event for 404 response`() {
+      val caseId = "CASE123"
+      val expected = FmsRetrieveDWandMO(
+        caseId = caseId,
+        deviceWearer = DeviceWearer(),
+        monitoringOrder = MonitoringOrder(),
+      )
+      val errorResponse = """
+          {
+          "error": {        
+            "message": "Service Error",        
+            "detail": "Unable to locate this case in ServiceNow"        
+          },        
+          "status": "failure"        
+        }
+      """.trimIndent()
+      sercoAuthApi.stubGrantToken()
+      sercoApi.stubGetDWandMo(
+        caseId,
+        status = HttpStatus.NOT_FOUND,
+        result = expected,
+        errorResponse = errorResponse,
+      )
+
+
+      assertThatThrownBy {
+        fmsClient.getLastestOrderDetails(caseId)
+      }
+        .isInstanceOf(CreateSercoEntityException::class.java)
+        .hasMessageContaining("Case not found")
+
+
+      verify(eventService).recordEvent(
+        eq("Order details not found from FMS: $caseId"),
+        eq(
+          mapOf(
+            "error" to errorResponse,
+            "caseId" to caseId,
+          ),
+        ),
+        any()
+      )
+    }
+
+    @Test
+    fun `should throw exception and record event for 500 response`() {
+      val caseId = "CASE123"
+      val expected = FmsRetrieveDWandMO(
+        caseId = caseId,
+        deviceWearer = DeviceWearer(),
+        monitoringOrder = MonitoringOrder(),
+      )
+      val errorResponse = """
+          {
+          "error": {        
+            "message": "Service Error",        
+            "detail": "Unkown error"        
+          },        
+          "status": "failure"        
+        }
+      """.trimIndent()
+      sercoAuthApi.stubGrantToken()
+      sercoApi.stubGetDWandMo(
+        caseId,
+        status = HttpStatus.INTERNAL_SERVER_ERROR,
+        result = expected,
+        errorResponse = errorResponse,
+      )
+
+
+      assertThatThrownBy {
+        fmsClient.getLastestOrderDetails(caseId)
+      }
+        .isInstanceOf(CreateSercoEntityException::class.java)
+        .hasMessageContaining("FMS returned 500")
+
+
+      verify(eventService).recordEvent(
+        eq("Unknow error occurred retrieving latest order from FMS: $caseId"),
+        eq(
+          mapOf(
+            "error" to errorResponse,
+            "caseId" to caseId,
+          ),
+        ),
+        any()
+      )
     }
   }
 
