@@ -28,4 +28,3 @@ echo "SERCO_URL=$(jq -r '.data.SERCO_URL' <<< "${SECRETS}" | base64 -d)" >> .env
 # Feature Flags
 echo "CP_PROCESSING_ENABLED=false" >> .env
 echo "CP_FMS_INTEGRATION_ENABLED=false" >> .env
-echo "CEMO_FMS_INTEGRATION_ENABLED=true" >> .env

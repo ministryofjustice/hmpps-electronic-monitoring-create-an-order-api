@@ -60,7 +60,7 @@ class FmsServiceTest {
     repo = mock(FmsSubmissionResultRepository::class.java)
     env = mock(Environment::class.java)
     service =
-      FmsService(mockClient, mockDocumentApiClient, objectMapper, repo, true, true, mockFeatureFlags)
+      FmsService(mockClient, mockDocumentApiClient, objectMapper, repo, true, mockFeatureFlags)
   }
 
   @Test
@@ -155,7 +155,6 @@ class FmsServiceTest {
       mockDocumentApiClient,
       objectMapper,
       repo,
-      true,
       true,
       FeatureFlags(
         dataDictionaryVersion = DataDictionaryVersion.DDV6,
