@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client
 
 import FmsStateResponse
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.core.io.InputStreamResource
 import org.springframework.http.HttpHeaders
@@ -19,14 +18,11 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsErrorResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsRetrieveDWandMO
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.EventService
 import java.util.*
 
 @Service
 class FmsClient(@Value("\${services.serco.url}") url: String, private val fmsAuthClient: FmsAuthClient) {
 
-  @Autowired
-  lateinit var eventService: EventService
   private val webClient: WebClient = WebClient.builder().baseUrl(url).build()
 
   private fun resolvePath(orderSource: FmsOrderSource, cemoPath: String, commonPlatformPath: String): String =
@@ -192,13 +188,7 @@ class FmsClient(@Value("\${services.serco.url}") url: String, private val fmsAut
           400 -> {
             response.bodyToMono<String>()
               .flatMap { error ->
-                eventService.recordEvent(
-                  "Failed to retrieve latest order from FMS: $caseId",
-                  mapOf(
-                    "error" to error,
-                    "caseId" to caseId,
-                  ),
-                )
+
                 Mono.error(
                   CreateSercoEntityException(
                     "Invalid request for caseId=$caseId: $error",
@@ -209,13 +199,7 @@ class FmsClient(@Value("\${services.serco.url}") url: String, private val fmsAut
           404 -> {
             response.bodyToMono<String>()
               .flatMap { error ->
-                eventService.recordEvent(
-                  "Order details not found from FMS: $caseId",
-                  mapOf(
-                    "error" to error,
-                    "caseId" to caseId,
-                  ),
-                )
+
                 Mono.error(
                   CreateSercoEntityException(
                     "Case not found for caseId=$caseId: $error",
@@ -227,13 +211,7 @@ class FmsClient(@Value("\${services.serco.url}") url: String, private val fmsAut
             response.bodyToMono<String>()
               .defaultIfEmpty("Internal Server Error")
               .flatMap { errorBody ->
-                eventService.recordEvent(
-                  "Unknow error occurred retrieving latest order from FMS: $caseId",
-                  mapOf(
-                    "error" to errorBody,
-                    "caseId" to caseId,
-                  ),
-                )
+
                 Mono.error(
                   CreateSercoEntityException(
                     "FMS returned 500 for caseId=$caseId. Response: $errorBody",

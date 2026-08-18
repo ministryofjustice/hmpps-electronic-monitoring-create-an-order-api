@@ -4,16 +4,10 @@ import FmsState
 import FmsStateResponse
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.mockito.Mockito
-import org.mockito.internal.verification.Times
-import org.mockito.kotlin.any
-import org.mockito.kotlin.eq
-import org.mockito.kotlin.verify
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.io.InputStreamResource
 import org.springframework.http.HttpStatus
@@ -36,7 +30,6 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsRetrieveDWandMO
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.MonitoringOrder
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.EventService
 import java.io.ByteArrayInputStream
 import java.util.*
 
@@ -48,14 +41,6 @@ class FmsClientTest : IntegrationTestBase() {
 
   @Autowired
   lateinit var objectMapper: ObjectMapper
-
-  lateinit var eventService: EventService
-
-  @BeforeEach
-  fun setup() {
-    eventService = Mockito.mock(EventService::class.java)
-    fmsClient.eventService = eventService
-  }
 
   @Nested
   @DisplayName("POST /api/x_seem_cemo/device_wearer/createDW")
@@ -471,7 +456,6 @@ class FmsClientTest : IntegrationTestBase() {
 
       val result = fmsClient.getLastestOrderDetails("CASE123")
       assertThat(result).isEqualTo(expected)
-      verify(eventService, Times(0)).recordEvent(any(), any(), any())
     }
 
     @Test
@@ -497,24 +481,11 @@ class FmsClientTest : IntegrationTestBase() {
         errorResponse = errorResponse,
       )
 
-
       assertThatThrownBy {
         fmsClient.getLastestOrderDetails(caseId)
       }
         .isInstanceOf(CreateSercoEntityException::class.java)
         .hasMessageContaining("Invalid request")
-
-
-      verify(eventService).recordEvent(
-        eq("Failed to retrieve latest order from FMS: $caseId"),
-        eq(
-          mapOf(
-            "error" to errorResponse,
-            "caseId" to caseId,
-          ),
-        ),
-        any()
-      )
     }
 
     @Test
@@ -542,24 +513,11 @@ class FmsClientTest : IntegrationTestBase() {
         errorResponse = errorResponse,
       )
 
-
       assertThatThrownBy {
         fmsClient.getLastestOrderDetails(caseId)
       }
         .isInstanceOf(CreateSercoEntityException::class.java)
         .hasMessageContaining("Case not found")
-
-
-      verify(eventService).recordEvent(
-        eq("Order details not found from FMS: $caseId"),
-        eq(
-          mapOf(
-            "error" to errorResponse,
-            "caseId" to caseId,
-          ),
-        ),
-        any()
-      )
     }
 
     @Test
@@ -587,24 +545,11 @@ class FmsClientTest : IntegrationTestBase() {
         errorResponse = errorResponse,
       )
 
-
       assertThatThrownBy {
         fmsClient.getLastestOrderDetails(caseId)
       }
         .isInstanceOf(CreateSercoEntityException::class.java)
         .hasMessageContaining("FMS returned 500")
-
-
-      verify(eventService).recordEvent(
-        eq("Unknow error occurred retrieving latest order from FMS: $caseId"),
-        eq(
-          mapOf(
-            "error" to errorResponse,
-            "caseId" to caseId,
-          ),
-        ),
-        any()
-      )
     }
   }
 

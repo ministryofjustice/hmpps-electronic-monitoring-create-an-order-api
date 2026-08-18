@@ -8,6 +8,7 @@ import tools.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.DocumentApiClient
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.FmsClient
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.config.FeatureFlags
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.CreateSercoEntityException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
@@ -34,7 +35,9 @@ class FmsService(
   @param:Value("\${toggle.cemo.fms-integration.enabled:false}") val cemoFmsIntegrationEnabled: Boolean,
   @param:Value("\${toggle.common-platform.fms-integration.enabled:false}") val cpFmsIntegrationEnabled: Boolean,
   private val featureFlags: FeatureFlags,
+  val eventService: EventService,
 ) {
+
   private val orderSubmissionStrategy = FmsOrderSubmissionStrategy(
     this.objectMapper,
     this.fmsClient,
@@ -52,16 +55,26 @@ class FmsService(
 
   fun getLatestOrderVersion(order: Order): OrderVersion? {
     val caseId = variationSubmissionStrategy.getOriginalNewOrderCaseId(order)
-    if (caseId != null) {
-      // TODO handle error response codd
-      val lastFmsDetail = fmsClient.getLastestOrderDetails(caseId)
-      return lastFmsDetail.toOrderVersion(
-        order.id,
-        order.username,
-        OrderStatus.IN_PROGRESS,
-        type = order.type,
-        dataDictionaryVersion = order.dataDictionaryVersion,
-      )
+    if (!caseId.isNullOrBlank()) {
+      try {
+        val lastFmsDetail = fmsClient.getLastestOrderDetails(caseId)
+        return lastFmsDetail.toOrderVersion(
+          order.id,
+          order.username,
+          OrderStatus.IN_PROGRESS,
+          type = order.type,
+          dataDictionaryVersion = order.dataDictionaryVersion,
+        )
+      } catch (ex: CreateSercoEntityException) {
+        val errorMessage = ex.message ?: ""
+        eventService.recordEvent(
+          "Failed to retrieve latest order from FMS: $caseId",
+          mapOf(
+            "error" to errorMessage,
+            "caseId" to caseId,
+          ),
+        )
+      }
     }
     return null
   }
