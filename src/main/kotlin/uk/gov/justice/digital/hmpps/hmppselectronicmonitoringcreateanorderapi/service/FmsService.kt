@@ -62,7 +62,7 @@ class FmsService(
       try {
         val lastFmsDetail = fmsClient.getLastestOrderDetails(caseId)
 
-        val result =  lastFmsDetail.toOrderVersion(
+        val result = lastFmsDetail.toOrderVersion(
           order.id,
           order.username,
           OrderStatus.IN_PROGRESS,
@@ -74,7 +74,7 @@ class FmsService(
           caseId = lastFmsDetail.caseId,
           deviceWearerAsJson = objectMapper.writeValueAsString(lastFmsDetail.deviceWearer),
           monitoringOrderAsJson = objectMapper.writeValueAsString(lastFmsDetail.monitoringOrder),
-          )
+        )
 
         fmsOrderDetailsRepository.save(orderDetails)
         return result

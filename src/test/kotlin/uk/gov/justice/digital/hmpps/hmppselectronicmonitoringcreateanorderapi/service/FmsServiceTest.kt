@@ -85,7 +85,7 @@ class FmsServiceTest {
         true,
         mockFeatureFlags,
         eventService,
-        fmsOrderDetailsRepository
+        fmsOrderDetailsRepository,
       )
   }
 
@@ -153,7 +153,7 @@ class FmsServiceTest {
         deviceWearerPayloadVersion = DeviceWearerPayloadVersion.Dev,
       ),
       eventService,
-      fmsOrderDetailsRepository
+      fmsOrderDetailsRepository,
     )
 
     service.submitOrder(mockOrder, FmsOrderSource.CEMO)
@@ -221,17 +221,21 @@ class FmsServiceTest {
         monitoringOrder = MonitoringOrder(),
       )
       whenever(mockClient.getLastestOrderDetails(mockCaseId)).thenReturn(
-        mockFmsDetails
+        mockFmsDetails,
       )
       val result = service.getLatestOrderVersion(mockOrder)
       assertThat(result?.deviceWearer?.firstName).isEqualTo("John")
       assertThat(result?.deviceWearer?.lastName).isEqualTo("Smith")
       verify(eventService, never()).recordEvent(any(), any(), any())
-      verify(fmsOrderDetailsRepository).save(eq(FmsOrderDetails(
-        mockCaseId,
-        objectMapper.writeValueAsString(mockFmsDetails.deviceWearer),
-        objectMapper.writeValueAsString(mockFmsDetails.monitoringOrder),
-      )))
+      verify(fmsOrderDetailsRepository).save(
+        eq(
+          FmsOrderDetails(
+            mockCaseId,
+            objectMapper.writeValueAsString(mockFmsDetails.deviceWearer),
+            objectMapper.writeValueAsString(mockFmsDetails.monitoringOrder),
+          ),
+        ),
+      )
     }
 
     @Test
@@ -252,7 +256,7 @@ class FmsServiceTest {
       )
       whenever(repo.getReferenceById(mockFmsResultId)).thenReturn(mockFmsResponse)
       whenever(mockClient.getLastestOrderDetails(mockCaseId)).thenThrow(CreateSercoEntityException(errorMessage))
-     service.getLatestOrderVersion(mockOrder)
+      service.getLatestOrderVersion(mockOrder)
       verify(fmsOrderDetailsRepository, never()).save(any())
       verify(eventService).recordEvent(
         eq("Failed to retrieve latest order from FMS: $mockCaseId"),

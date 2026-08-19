@@ -5,4 +5,3 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import java.util.*
 
 interface FmsSubmissionResultRepository : JpaRepository<FmsSubmissionResult, UUID>
-
