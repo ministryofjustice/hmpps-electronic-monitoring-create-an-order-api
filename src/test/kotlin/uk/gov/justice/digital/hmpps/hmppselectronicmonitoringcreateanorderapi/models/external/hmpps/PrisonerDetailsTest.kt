@@ -22,11 +22,12 @@ class PrisonerDetailsTest {
         prisonNumbers = listOf("A1234BC"),
         pncs = listOf("2000/1234567A"),
       ),
+      aliases = listOf(Alias(firstName = "Wendy", middleNames = "Scoop", lastName = "Dizzy")),
+      addresses = listOf(Address(noFixedAbode = false), Address(noFixedAbode = true)),
     )
     val versionId = UUID.randomUUID()
 
     val result: DeviceWearer = details.toDeviceWearer(versionId)
-
     assertThat(result.versionId).isEqualTo(versionId)
     assertThat(result.firstName).isEqualTo("Bob")
     assertThat(result.middleName).isEqualTo("Middle")
@@ -41,5 +42,12 @@ class PrisonerDetailsTest {
       ),
     )
     assertThat(result.sex).isEqualTo("MALE")
+    assertThat(result.alias).isEqualTo("Wendy Scoop Dizzy")
+    assertThat(result.noFixedAbode).isEqualTo(true)
+
+    /*
+    address:
+    map addresses
+     */
   }
 }

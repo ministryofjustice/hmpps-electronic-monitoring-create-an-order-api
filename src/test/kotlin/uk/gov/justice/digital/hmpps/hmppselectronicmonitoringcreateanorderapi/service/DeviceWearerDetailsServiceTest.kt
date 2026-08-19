@@ -1,35 +1,42 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service
 
+import jakarta.persistence.EntityNotFoundException
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.PrisonerDetailsApi
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.hmpps.PrisonerDetails
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
+import java.util.Optional
+import java.util.UUID
+
+val baseDetails = PrisonerDetails(
+  firstName = null,
+  middleNames = null,
+  lastName = null,
+  dateOfBirth = null,
+  sex = null,
+  identifiers = null,
+  aliases = emptyList(),
+  addresses = emptyList(),
+)
 
 class DeviceWearerDetailsServiceTest {
-  val baseDetails = PrisonerDetails(
-    firstName = null,
-    middleNames = null,
-    lastName = null,
-    dateOfBirth = null,
-    sex = null,
-    identifiers = null,
-  )
 
   class TestClient : PrisonerDetailsApi {
-    var prisonDetailsResponse = PrisonerDetails(
-      firstName = null,
-      middleNames = null,
-      lastName = null,
-      dateOfBirth = null,
-      sex = null,
-      identifiers = null,
-    )
+    var prisonDetailsResponse = baseDetails.copy()
 
     fun setMockResponse(value: PrisonerDetails) {
       prisonDetailsResponse = value
@@ -93,13 +100,54 @@ class DeviceWearerDetailsServiceTest {
   @Nested
   @DisplayName("Store details")
   inner class StoreDetails {
+    private val mockOrderRepo: OrderRepository = mock()
+    private lateinit var service: DeviceWearerDetailsService
+
+    private lateinit var mockOrder: Order
+    private val mockOrderId: UUID = UUID.randomUUID()
+    private val mockVersionId: UUID = UUID.randomUUID()
+    private val mockUsername: String = "mockUsername"
+
+    @BeforeEach
+    fun setup() {
+      service = DeviceWearerDetailsService(client)
+      service.orderRepo = mockOrderRepo
+
+      mockOrder = Order(
+        id = mockOrderId,
+        versions = mutableListOf(
+          OrderVersion(
+            id = mockVersionId,
+            orderId = UUID.randomUUID(),
+            username = mockUsername,
+            status = OrderStatus.IN_PROGRESS,
+            type = RequestType.REQUEST,
+            dataDictionaryVersion = DataDictionaryVersion.DDV6,
+          ),
+        ),
+      )
+
+      whenever(mockOrderRepo.findById(mockOrderId)).thenReturn(Optional.of(mockOrder))
+      whenever(mockOrderRepo.save(mockOrder)).thenReturn(mockOrder)
+    }
+
     @Test
-    fun `returns success message`() {
-      val service = DeviceWearerDetailsService(client)
+    fun `returns success message when stored`() {
+      val response = service.storeDetails("1234", mockOrderId, mockUsername)
 
-      val response = service.storeDetails("1234")
-
+      assertThat(response.error).isNull()
       assertThat(response.success).isEqualTo(true)
+    }
+
+    @Test
+    fun `returns failure when storage failed`() {
+      whenever(mockOrderRepo.findById(mockOrderId)).thenThrow(EntityNotFoundException("Not found"))
+
+      val response = service.storeDetails("1234", mockOrderId, mockUsername)
+
+      assertThat(response.success).isEqualTo(false)
+      assertThat(response.error).isNotNull
+      assertThat(response.error?.message).isEqualTo("Not found")
     }
   }
 }

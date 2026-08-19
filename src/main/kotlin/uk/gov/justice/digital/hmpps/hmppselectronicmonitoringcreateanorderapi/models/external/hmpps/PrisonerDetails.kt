@@ -14,6 +14,8 @@ data class PrisonerDetails(
   val dateOfBirth: String?,
   val sex: CodeDescription?,
   val identifiers: Identifiers?,
+  val aliases: List<Alias>?,
+  val addresses: List<Address>?,
 ) {
 
   val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
@@ -28,6 +30,8 @@ data class PrisonerDetails(
     pncId = identifiers?.pncs?.first(),
     dateOfBirth = parsedDateOfBirth(),
     sex = sex?.toSex(),
+    alias = aliases?.firstOrNull()?.getAlias(),
+    noFixedAbode = addresses?.any { it.noFixedAbode ?: false },
   )
 
   fun parsedDateOfBirth(): ZonedDateTime? = parseDateOrNull(dateOfBirth ?: "")
@@ -52,3 +56,9 @@ data class Identifiers(
   val prisonNumbers: List<String> = emptyList(),
   val pncs: List<String> = emptyList(),
 )
+
+data class Alias(val firstName: String?, val lastName: String?, val middleNames: String?) {
+  fun getAlias(): String = "$firstName $middleNames $lastName"
+}
+
+data class Address(val noFixedAbode: Boolean?)
