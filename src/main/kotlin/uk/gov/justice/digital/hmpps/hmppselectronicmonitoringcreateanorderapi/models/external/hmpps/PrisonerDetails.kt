@@ -26,9 +26,11 @@ data class PrisonerDetails(
     prisonNumber = identifiers?.prisonNumbers?.first(),
     courtCaseReferenceNumber = identifiers?.crns?.first(),
     pncId = identifiers?.pncs?.first(),
-    dateOfBirth = parseDateOrNull(dateOfBirth ?: ""),
+    dateOfBirth = parsedDateOfBirth(),
     sex = sex?.toSex(),
   )
+
+  fun parsedDateOfBirth(): ZonedDateTime? = parseDateOrNull(dateOfBirth ?: "")
 
   fun parseDate(date: String): ZonedDateTime =
     LocalDate.parse(date, dateFormatter).atStartOfDay().atZone(londonTimeZone)
