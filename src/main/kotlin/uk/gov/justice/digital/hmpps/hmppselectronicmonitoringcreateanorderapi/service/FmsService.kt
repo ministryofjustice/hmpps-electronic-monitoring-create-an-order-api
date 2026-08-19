@@ -61,7 +61,7 @@ class FmsService(
     val caseId = variationSubmissionStrategy.getOriginalNewOrderCaseId(order)
     if (!caseId.isNullOrBlank()) {
       try {
-        val lastFmsDetail = fmsClient.getLastestOrderDetails(caseId)
+        val lastFmsDetail = fmsClient.getLatestOrderDetails(caseId)
 
         val result = lastFmsDetail.toOrderVersion(
           order.id,

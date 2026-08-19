@@ -454,7 +454,7 @@ class FmsClientTest : IntegrationTestBase() {
         result = expected,
       )
 
-      val result = fmsClient.getLastestOrderDetails("CASE123")
+      val result = fmsClient.getLatestOrderDetails("CASE123")
       assertThat(result).isEqualTo(expected)
     }
 
@@ -482,7 +482,7 @@ class FmsClientTest : IntegrationTestBase() {
       )
 
       assertThatThrownBy {
-        fmsClient.getLastestOrderDetails(caseId)
+        fmsClient.getLatestOrderDetails(caseId)
       }
         .isInstanceOf(CreateSercoEntityException::class.java)
         .hasMessageContaining("Invalid request")
@@ -514,7 +514,7 @@ class FmsClientTest : IntegrationTestBase() {
       )
 
       assertThatThrownBy {
-        fmsClient.getLastestOrderDetails(caseId)
+        fmsClient.getLatestOrderDetails(caseId)
       }
         .isInstanceOf(CreateSercoEntityException::class.java)
         .hasMessageContaining("Case not found")
@@ -546,7 +546,7 @@ class FmsClientTest : IntegrationTestBase() {
       )
 
       assertThatThrownBy {
-        fmsClient.getLastestOrderDetails(caseId)
+        fmsClient.getLatestOrderDetails(caseId)
       }
         .isInstanceOf(CreateSercoEntityException::class.java)
         .hasMessageContaining("FMS returned 500")

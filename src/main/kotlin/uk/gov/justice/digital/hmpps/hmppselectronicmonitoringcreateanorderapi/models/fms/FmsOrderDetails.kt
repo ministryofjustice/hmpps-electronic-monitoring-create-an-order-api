@@ -11,8 +11,8 @@ data class FmsOrderDetails(
   @Id
   @Column(name = "CASE_ID", nullable = false, unique = true)
   val caseId: String,
-  @Column(name = "DEVICE_WEARER_AS_JSON", nullable = false, columnDefinition = "varchar(409600)")
+  @Column(name = "DEVICE_WEARER_AS_JSON", nullable = false, columnDefinition = "jsonb")
   val deviceWearerAsJson: String,
-  @Column(name = "MONITORING_ORDER_AS_JSON", nullable = false, columnDefinition = "varchar(409600)")
+  @Column(name = "MONITORING_ORDER_AS_JSON", nullable = false, columnDefinition = "jsonb")
   val monitoringOrderAsJson: String,
 )

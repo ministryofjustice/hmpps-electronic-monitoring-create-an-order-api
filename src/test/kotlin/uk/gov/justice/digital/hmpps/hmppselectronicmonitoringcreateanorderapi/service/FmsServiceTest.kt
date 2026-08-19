@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service
 
 import DeviceWearerPayloadVersion
-import org.apache.commons.lang3.Validate.isTrue
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
@@ -220,7 +219,7 @@ class FmsServiceTest {
         deviceWearer = DeviceWearer(firstName = "John", lastName = "Smith", dateOfBirth = "1991-01-01"),
         monitoringOrder = MonitoringOrder(),
       )
-      whenever(mockClient.getLastestOrderDetails(mockCaseId)).thenReturn(
+      whenever(mockClient.getLatestOrderDetails(mockCaseId)).thenReturn(
         mockFmsDetails,
       )
       val result = service.getLatestOrderVersion(mockOrder)
@@ -255,7 +254,7 @@ class FmsServiceTest {
         monitoringOrderResult = FmsMonitoringOrderSubmissionResult(),
       )
       whenever(repo.getReferenceById(mockFmsResultId)).thenReturn(mockFmsResponse)
-      whenever(mockClient.getLastestOrderDetails(mockCaseId)).thenThrow(CreateSercoEntityException(errorMessage))
+      whenever(mockClient.getLatestOrderDetails(mockCaseId)).thenThrow(CreateSercoEntityException(errorMessage))
       service.getLatestOrderVersion(mockOrder)
       verify(fmsOrderDetailsRepository, never()).save(any())
       verify(eventService).recordEvent(

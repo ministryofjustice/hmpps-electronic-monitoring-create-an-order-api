@@ -245,7 +245,7 @@ class FmsVariationSubmissionStrategyTest {
   }
 
   @Test
-  fun `Should get lastest fms order details and generate CEMO determined changes`() {
+  fun `Should get latest fms order details and generate CEMO determined changes`() {
     val mockSubmissionResultId = UUID.randomUUID()
     val order = TestUtilities.createReadyToSubmitOrder(
       mockOrderId,
