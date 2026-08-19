@@ -54,6 +54,7 @@ class FmsService(
     this.documentApiClient,
     featureFlags,
     repo,
+    fmsOrderDetailsRepository,
   )
 
   fun getLatestOrderVersion(order: Order): OrderVersion? {
