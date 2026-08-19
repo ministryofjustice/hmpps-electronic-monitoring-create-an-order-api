@@ -14,7 +14,9 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsOrderDetails
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsSubmissionResult
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.FmsOrderDetailsRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.FmsSubmissionResultRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.strategy.FmsDummySubmissionStrategy
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.strategy.FmsOrderSubmissionStrategy
@@ -36,6 +38,7 @@ class FmsService(
   @param:Value("\${toggle.common-platform.fms-integration.enabled:false}") val cpFmsIntegrationEnabled: Boolean,
   private val featureFlags: FeatureFlags,
   val eventService: EventService,
+  val fmsOrderDetailsRepository: FmsOrderDetailsRepository,
 ) {
 
   private val orderSubmissionStrategy = FmsOrderSubmissionStrategy(
@@ -58,13 +61,23 @@ class FmsService(
     if (!caseId.isNullOrBlank()) {
       try {
         val lastFmsDetail = fmsClient.getLastestOrderDetails(caseId)
-        return lastFmsDetail.toOrderVersion(
+
+        val result =  lastFmsDetail.toOrderVersion(
           order.id,
           order.username,
           OrderStatus.IN_PROGRESS,
           type = order.type,
           dataDictionaryVersion = order.dataDictionaryVersion,
         )
+
+        val orderDetails = FmsOrderDetails(
+          caseId = lastFmsDetail.caseId,
+          deviceWearerAsJson = objectMapper.writeValueAsString(lastFmsDetail.deviceWearer),
+          monitoringOrderAsJson = objectMapper.writeValueAsString(lastFmsDetail.monitoringOrder),
+          )
+
+        fmsOrderDetailsRepository.save(orderDetails)
+        return result
       } catch (ex: CreateSercoEntityException) {
         val errorMessage = ex.message ?: ""
         eventService.recordEvent(

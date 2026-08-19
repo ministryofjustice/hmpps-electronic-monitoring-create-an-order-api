@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service
 
 import DeviceWearerPayloadVersion
+import org.apache.commons.lang3.Validate.isTrue
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
@@ -30,12 +31,14 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.DeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsDeviceWearerSubmissionResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsMonitoringOrderSubmissionResult
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsOrderDetails
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsRetrieveDWandMO
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsSubmissionResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsSubmissionStrategyKind
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.MonitoringOrder
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.FmsOrderDetailsRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.FmsSubmissionResultRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.utilities.TestUtilities
 import java.time.OffsetDateTime
@@ -52,6 +55,7 @@ class FmsServiceTest {
   private lateinit var objectMapper: ObjectMapper
   private lateinit var repo: FmsSubmissionResultRepository
   private lateinit var eventService: EventService
+  private lateinit var fmsOrderDetailsRepository: FmsOrderDetailsRepository
   private val mockFeatureFlags =
     FeatureFlags(
       dataDictionaryVersion = DataDictionaryVersion.DDV6,
@@ -70,6 +74,7 @@ class FmsServiceTest {
     repo = mock(FmsSubmissionResultRepository::class.java)
     env = mock(Environment::class.java)
     eventService = mock(EventService::class.java)
+    fmsOrderDetailsRepository = mock(FmsOrderDetailsRepository::class.java)
     service =
       FmsService(
         mockClient,
@@ -80,6 +85,7 @@ class FmsServiceTest {
         true,
         mockFeatureFlags,
         eventService,
+        fmsOrderDetailsRepository
       )
   }
 
@@ -147,6 +153,7 @@ class FmsServiceTest {
         deviceWearerPayloadVersion = DeviceWearerPayloadVersion.Dev,
       ),
       eventService,
+      fmsOrderDetailsRepository
     )
 
     service.submitOrder(mockOrder, FmsOrderSource.CEMO)
@@ -189,6 +196,7 @@ class FmsServiceTest {
       assertThat(result).isNull()
       verifyNoInteractions(mockClient)
       verify(eventService, never()).recordEvent(any(), any(), any())
+      verify(fmsOrderDetailsRepository, never()).save(any())
     }
 
     @Test
@@ -207,17 +215,23 @@ class FmsServiceTest {
         monitoringOrderResult = FmsMonitoringOrderSubmissionResult(),
       )
       whenever(repo.getReferenceById(mockFmsResultId)).thenReturn(mockFmsResponse)
+      val mockFmsDetails = FmsRetrieveDWandMO(
+        caseId = mockCaseId,
+        deviceWearer = DeviceWearer(firstName = "John", lastName = "Smith", dateOfBirth = "1991-01-01"),
+        monitoringOrder = MonitoringOrder(),
+      )
       whenever(mockClient.getLastestOrderDetails(mockCaseId)).thenReturn(
-        FmsRetrieveDWandMO(
-          caseId = "CASE123",
-          deviceWearer = DeviceWearer(firstName = "John", lastName = "Smith", dateOfBirth = "1991-01-01"),
-          monitoringOrder = MonitoringOrder(),
-        ),
+        mockFmsDetails
       )
       val result = service.getLatestOrderVersion(mockOrder)
       assertThat(result?.deviceWearer?.firstName).isEqualTo("John")
       assertThat(result?.deviceWearer?.lastName).isEqualTo("Smith")
       verify(eventService, never()).recordEvent(any(), any(), any())
+      verify(fmsOrderDetailsRepository).save(eq(FmsOrderDetails(
+        mockCaseId,
+        objectMapper.writeValueAsString(mockFmsDetails.deviceWearer),
+        objectMapper.writeValueAsString(mockFmsDetails.monitoringOrder),
+      )))
     }
 
     @Test
@@ -238,7 +252,8 @@ class FmsServiceTest {
       )
       whenever(repo.getReferenceById(mockFmsResultId)).thenReturn(mockFmsResponse)
       whenever(mockClient.getLastestOrderDetails(mockCaseId)).thenThrow(CreateSercoEntityException(errorMessage))
-      val result = service.getLatestOrderVersion(mockOrder)
+     service.getLatestOrderVersion(mockOrder)
+      verify(fmsOrderDetailsRepository, never()).save(any())
       verify(eventService).recordEvent(
         eq("Failed to retrieve latest order from FMS: $mockCaseId"),
         eq(
