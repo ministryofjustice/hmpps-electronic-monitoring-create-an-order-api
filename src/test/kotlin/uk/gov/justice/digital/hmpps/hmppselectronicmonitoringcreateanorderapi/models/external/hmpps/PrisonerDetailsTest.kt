@@ -93,4 +93,33 @@ class PrisonerDetailsTest {
     assertThat(address?.addressLine3).isEqualTo("London")
     assertThat(address?.addressLine4).isEqualTo("County")
   }
+
+  @Test
+  fun `maps to secondary address`() {
+    val addressDetails = details.copy(
+      addresses = listOf(
+        Address(
+          noFixedAbode = false,
+          postcode = "AB12CD",
+          status = CodeDescription(code = "S", description = ""),
+          buildingNumber = "10",
+          buildingName = null,
+          subBuildingName = "",
+          postTown = "LONDON",
+          county = "COUNTY",
+          thoroughfareName = "DOWNING STREET",
+        ),
+      ),
+    )
+
+    val address = addressDetails.toSecondaryAddress(versionId)
+
+    assertThat(address).isNotNull
+    assertThat(address?.postcode).isEqualTo("AB12CD")
+    assertThat(address?.addressType).isEqualTo(AddressType.SECONDARY)
+    assertThat(address?.addressLine1).isEqualTo("10 Downing Street")
+    assertThat(address?.addressLine2).isEqualTo("")
+    assertThat(address?.addressLine3).isEqualTo("London")
+    assertThat(address?.addressLine4).isEqualTo("County")
+  }
 }

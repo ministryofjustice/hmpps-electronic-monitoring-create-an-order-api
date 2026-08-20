@@ -42,6 +42,12 @@ data class PrisonerDetails(
     return primaryAddress.toCemoAddress(versionId)
   }
 
+  fun toSecondaryAddress(versionId: UUID): CemoAddress? {
+    val secondaryAddress = addresses?.firstOrNull { it.isSecondaryAddress() } ?: return null
+
+    return secondaryAddress.toCemoAddress(versionId)
+  }
+
   fun parsedDateOfBirth(): ZonedDateTime? = parseDateOrNull(dateOfBirth ?: "")
 
   fun parseDate(date: String): ZonedDateTime =
@@ -91,8 +97,10 @@ data class Address(
     addressLine3 = postTown?.toTitleCase() ?: "",
     addressLine4 = county?.toTitleCase() ?: "",
     postcode = postcode ?: "",
-    addressType = AddressType.PRIMARY,
+    addressType = addressType(),
   )
+
+  private fun addressType(): AddressType = if (isPrimaryAddress()) AddressType.PRIMARY else AddressType.SECONDARY
 
   private fun addressLineOne(): String {
     val buildingId = buildingNumber.takeIf { !it.isNullOrEmpty() } ?: buildingName.takeIf { !it.isNullOrEmpty() } ?: ""
