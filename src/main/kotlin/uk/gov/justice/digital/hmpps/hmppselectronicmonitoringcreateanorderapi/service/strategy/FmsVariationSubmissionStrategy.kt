@@ -128,7 +128,9 @@ class FmsVariationSubmissionStrategy(
     }
 
     val deviceWearer = deviceWearerResult.data!!
-    deviceWearer.newOrderCaseId = getOriginalNewOrderCaseId(order) ?: ""
+    if (featureFlags.getApiEnabled) {
+      deviceWearer.newOrderCaseId = getOriginalNewOrderCaseId(order) ?: ""
+    }
     val serialiseResult = this.serialiseDeviceWearer(deviceWearer)
 
     if (!serialiseResult.success) {

@@ -1763,6 +1763,7 @@ class OrderControllerTest : IntegrationTestBase() {
 
       val expectedDeviceWearer = objectMapper.readValue<FmsDeviceWearer>(rawExpectedDWJson)
       val storedDeviceWearer = objectMapper.readValue<FmsDeviceWearer>(submitResult!!.deviceWearerResult.payload)
+      expectedDeviceWearer.newOrderCaseId = ""
       assertThat(storedDeviceWearer).isEqualTo(expectedDeviceWearer)
 
       val expectedMonitoringOrder = objectMapper.readValue<MonitoringOrder>(expectedOrderJson)
