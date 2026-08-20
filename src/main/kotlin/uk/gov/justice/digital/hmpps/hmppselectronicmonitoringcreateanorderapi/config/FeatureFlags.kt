@@ -12,4 +12,5 @@ class FeatureFlags(
   @param:Value(
     $$"${device-wearer-payload-version}",
   ) val deviceWearerPayloadVersion: DeviceWearerPayloadVersion = DeviceWearerPayloadVersion.Prod,
+  @param:Value($$"${get-api-enabled:false}") val getApiEnabled: Boolean = false,
 )

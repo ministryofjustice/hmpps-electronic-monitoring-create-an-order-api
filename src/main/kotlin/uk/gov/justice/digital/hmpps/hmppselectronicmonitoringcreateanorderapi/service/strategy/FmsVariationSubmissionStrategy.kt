@@ -22,6 +22,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsSubmissionStrategyKind
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.MonitoringOrder
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.compareTo
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.FmsOrderDetailsRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.FmsSubmissionResultRepository
 import java.util.*
 
@@ -31,6 +32,7 @@ class FmsVariationSubmissionStrategy(
   val documentApiClient: DocumentApiClient,
   private val featureFlags: FeatureFlags,
   val repo: FmsSubmissionResultRepository,
+  private val fmsOrderDetailsRepository: FmsOrderDetailsRepository,
 ) : FmsSubmissionStrategyBase(objectMapper, featureFlags) {
 
   private fun submitUpdateDeviceWearerRequest(
@@ -218,13 +220,27 @@ class FmsVariationSubmissionStrategy(
       return OrderChanges(details, VariationType.OTHER)
     }
 
+    val latestFmsOrderDetails =
+      if (featureFlags.getApiEnabled) {
+        fmsOrderDetailsRepository.findById(
+          lastSuccessfulSubmitResult.deviceWearerResult.deviceWearerId,
+        ).orElse(null)
+      } else {
+        null
+      }
+
+    val deviceWearerJson =
+      latestFmsOrderDetails?.deviceWearerAsJson ?: lastSuccessfulSubmitResult.deviceWearerResult.payload
+    val monitoringOrderJson =
+      latestFmsOrderDetails?.monitoringOrderAsJson ?: lastSuccessfulSubmitResult.monitoringOrderResult.payload
+
     val currentDeviceWearer = objectMapper.readValue(submitDeviceWearerResult.payload, DeviceWearer::class.java)
     val lastDeviceWearer = objectMapper.readValue(
-      lastSuccessfulSubmitResult.deviceWearerResult.payload,
+      deviceWearerJson,
       DeviceWearer::class.java,
     )
     val lastMonitoringOrder = objectMapper.readValue(
-      lastSuccessfulSubmitResult.monitoringOrderResult.payload,
+      monitoringOrderJson,
       MonitoringOrder::class.java,
     )
 
@@ -262,7 +278,7 @@ class FmsVariationSubmissionStrategy(
     return null
   }
 
-  private fun getOriginalNewOrderCaseId(order: Order): String? = order.versions
+  fun getOriginalNewOrderCaseId(order: Order): String? = order.versions
     .filter {
       it.fmsResultId != null &&
         it.status == OrderStatus.SUBMITTED &&

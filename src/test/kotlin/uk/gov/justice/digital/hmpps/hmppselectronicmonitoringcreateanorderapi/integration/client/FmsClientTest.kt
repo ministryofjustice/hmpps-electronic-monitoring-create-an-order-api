@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.i
 import FmsState
 import FmsStateResponse
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -27,6 +28,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsErrorResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsResult
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsRetrieveDWandMO
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.MonitoringOrder
 import java.io.ByteArrayInputStream
 import java.util.*
@@ -431,6 +433,123 @@ class FmsClientTest : IntegrationTestBase() {
       assertThat(
         result,
       ).isEqualTo(CaseState.NEW)
+    }
+  }
+
+  @Nested
+  @DisplayName("GET /monitoring_order/retrieveDWandMO?u_case_id")
+  inner class RetrieveDWandMO {
+    @Test
+    fun `should return order details when response is successful`() {
+      val expected = FmsRetrieveDWandMO(
+        caseId = "CASE123",
+        deviceWearer = DeviceWearer(),
+        monitoringOrder = MonitoringOrder(),
+      )
+
+      sercoAuthApi.stubGrantToken()
+      sercoApi.stubGetDWandMo(
+        "CASE123",
+        status = HttpStatus.OK,
+        result = expected,
+      )
+
+      val result = fmsClient.getLatestOrderDetails("CASE123")
+      assertThat(result).isEqualTo(expected)
+    }
+
+    @Test
+    fun `should throw exception and record event for 400 response`() {
+      val caseId = "CASE123"
+      val expected = FmsRetrieveDWandMO(
+        caseId = caseId,
+        deviceWearer = DeviceWearer(),
+        monitoringOrder = MonitoringOrder(),
+      )
+      val errorResponse = """
+          {
+            "result": {
+              "error": "u_case_id query parameter is required"
+            }
+          }
+      """.trimIndent()
+      sercoAuthApi.stubGrantToken()
+      sercoApi.stubGetDWandMo(
+        caseId,
+        status = HttpStatus.BAD_REQUEST,
+        result = expected,
+        errorResponse = errorResponse,
+      )
+
+      assertThatThrownBy {
+        fmsClient.getLatestOrderDetails(caseId)
+      }
+        .isInstanceOf(CreateSercoEntityException::class.java)
+        .hasMessageContaining("Invalid request")
+    }
+
+    @Test
+    fun `should throw exception and record event for 404 response`() {
+      val caseId = "CASE123"
+      val expected = FmsRetrieveDWandMO(
+        caseId = caseId,
+        deviceWearer = DeviceWearer(),
+        monitoringOrder = MonitoringOrder(),
+      )
+      val errorResponse = """
+          {
+          "error": {        
+            "message": "Service Error",        
+            "detail": "Unable to locate this case in ServiceNow"        
+          },        
+          "status": "failure"        
+        }
+      """.trimIndent()
+      sercoAuthApi.stubGrantToken()
+      sercoApi.stubGetDWandMo(
+        caseId,
+        status = HttpStatus.NOT_FOUND,
+        result = expected,
+        errorResponse = errorResponse,
+      )
+
+      assertThatThrownBy {
+        fmsClient.getLatestOrderDetails(caseId)
+      }
+        .isInstanceOf(CreateSercoEntityException::class.java)
+        .hasMessageContaining("Case not found")
+    }
+
+    @Test
+    fun `should throw exception and record event for 500 response`() {
+      val caseId = "CASE123"
+      val expected = FmsRetrieveDWandMO(
+        caseId = caseId,
+        deviceWearer = DeviceWearer(),
+        monitoringOrder = MonitoringOrder(),
+      )
+      val errorResponse = """
+          {
+          "error": {        
+            "message": "Service Error",        
+            "detail": "Unkown error"        
+          },        
+          "status": "failure"        
+        }
+      """.trimIndent()
+      sercoAuthApi.stubGrantToken()
+      sercoApi.stubGetDWandMo(
+        caseId,
+        status = HttpStatus.INTERNAL_SERVER_ERROR,
+        result = expected,
+        errorResponse = errorResponse,
+      )
+
+      assertThatThrownBy {
+        fmsClient.getLatestOrderDetails(caseId)
+      }
+        .isInstanceOf(CreateSercoEntityException::class.java)
+        .hasMessageContaining("FMS returned 500")
     }
   }
 
