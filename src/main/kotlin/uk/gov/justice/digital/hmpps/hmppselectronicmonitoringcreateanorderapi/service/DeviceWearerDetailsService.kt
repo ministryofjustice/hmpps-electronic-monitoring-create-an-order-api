@@ -3,7 +3,7 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.s
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.PrisonerDetailsApi
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Result
-import java.time.ZonedDateTime
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.GetPrisonDetailsResponse
 import java.util.UUID
 
 @Service
@@ -28,10 +28,10 @@ class DeviceWearerDetailsService(private val webClient: PrisonerDetailsApi) : Or
     }
   }
 
-  fun getDetailsOverview(prisonNumber: String): GetDetailsResponse {
+  fun getDetailsOverview(prisonNumber: String): GetPrisonDetailsResponse {
     val details = webClient.getPrisonerDetails(prisonNumber)
 
-    return GetDetailsResponse(
+    return GetPrisonDetailsResponse(
       firstName = details.firstName,
       lastName = details.lastName,
       dateOfBirth = details.parsedDateOfBirth(),
@@ -39,10 +39,3 @@ class DeviceWearerDetailsService(private val webClient: PrisonerDetailsApi) : Or
     )
   }
 }
-
-data class GetDetailsResponse(
-  val firstName: String?,
-  val lastName: String?,
-  val dateOfBirth: ZonedDateTime?,
-  val prisonNumber: String,
-)
