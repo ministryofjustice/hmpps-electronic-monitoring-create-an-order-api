@@ -18,6 +18,7 @@ class DeviceWearerDetailsService(private val webClient: PrisonerDetailsApi) : Or
       val addresses =
         listOfNotNull(details.toPrimaryAddress(order.versionId), details.toSecondaryAddress(order.versionId))
       order.addresses.addAll(addresses)
+      order.contactDetails = details.toContactDetails(order.versionId)
 
       orderRepo.save(order)
 

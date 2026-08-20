@@ -84,6 +84,15 @@ data class DeviceWearer(
   @Column(name = "NO_FIXED_ABODE", nullable = true)
   var noFixedAbode: Boolean? = null,
 
+  @Column(name = "RELIGION", nullable = true)
+  var religion: String? = null,
+
+  @Column(name = "NATIONALITY", nullable = true)
+  var nationality: String? = null,
+
+  @Column(name = "ETHNICITY", nullable = true)
+  var ethnicity: String? = null,
+
   @Schema(hidden = true)
   @OneToOne
   @JoinColumn(name = "VERSION_ID", updatable = false, insertable = false)

@@ -4,6 +4,12 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.corePersonRecord.Address
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.corePersonRecord.Alias
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.corePersonRecord.CodeDescription
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.corePersonRecord.Contact
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.corePersonRecord.Identifiers
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.corePersonRecord.PrisonerDetails
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
@@ -20,6 +26,7 @@ class PrisonerDetailsTest {
     postTown = null,
     county = null,
     thoroughfareName = null,
+    contacts = emptyList(),
   )
   val details = PrisonerDetails(
     firstName = "Bob",
@@ -31,9 +38,13 @@ class PrisonerDetailsTest {
       crns = listOf("B123435"),
       prisonNumbers = listOf("A1234BC"),
       pncs = listOf("2000/1234567A"),
+      nationalInsuranceNumbers = listOf("QQ123456B"),
     ),
     aliases = listOf(Alias(firstName = "Wendy", middleNames = "Scoop", lastName = "Dizzy")),
     addresses = listOf(basicAddress.copy(noFixedAbode = false), basicAddress.copy(noFixedAbode = true)),
+    religion = CodeDescription(code = "CHRS", description = "Christianity"),
+    ethnicity = CodeDescription(code = "B9", description = "Black/Black British : Any other backgr'nd"),
+    nationalities = listOf(CodeDescription(code = "GB", description = "GB")),
   )
   val versionId: UUID = UUID.randomUUID()
 
@@ -56,6 +67,9 @@ class PrisonerDetailsTest {
     assertThat(result.sex).isEqualTo("MALE")
     assertThat(result.alias).isEqualTo("Wendy Scoop Dizzy")
     assertThat(result.noFixedAbode).isEqualTo(true)
+    assertThat(result.religion).isEqualTo("Christianity")
+    assertThat(result.ethnicity).isEqualTo("Black/Black British : Any other backgr'nd")
+    assertThat(result.nationality).isEqualTo("GB")
   }
 
   @Test
@@ -72,6 +86,7 @@ class PrisonerDetailsTest {
           postTown = "LONDON",
           county = "COUNTY",
           thoroughfareName = "DOWNING STREET",
+          contacts = emptyList(),
         ),
       ),
     )
@@ -101,6 +116,7 @@ class PrisonerDetailsTest {
           postTown = "LONDON",
           county = "COUNTY",
           thoroughfareName = "DOWNING STREET",
+          contacts = emptyList(),
         ),
       ),
     )
@@ -114,5 +130,26 @@ class PrisonerDetailsTest {
     assertThat(address?.addressLine2).isEqualTo("")
     assertThat(address?.addressLine3).isEqualTo("London")
     assertThat(address?.addressLine4).isEqualTo("County")
+  }
+
+  @Test
+  fun `maps to contact details`() {
+    val contactDetails = details.copy(
+      addresses = listOf(
+        basicAddress.copy(
+          contacts = listOf(
+            Contact(
+              type = CodeDescription(code = "HOME", description = "Home"),
+              value = "01234567890",
+            ),
+          ),
+        ),
+      ),
+    )
+
+    val result = contactDetails.toContactDetails(versionId)
+
+    assertThat(result?.contactNumber).isEqualTo("01234567890")
+    assertThat(result?.phoneNumberAvailable).isEqualTo(true)
   }
 }
