@@ -58,36 +58,38 @@ class FmsService(
   )
 
   fun getLatestOrderVersion(order: Order): OrderVersion? {
-    val caseId = variationSubmissionStrategy.getOriginalNewOrderCaseId(order)
-    if (!caseId.isNullOrBlank()) {
-      try {
-        val lastFmsDetail = fmsClient.getLatestOrderDetails(caseId)
+    if (featureFlags.getApiEnabled) {
+      val caseId = variationSubmissionStrategy.getOriginalNewOrderCaseId(order)
+      if (!caseId.isNullOrBlank()) {
+        try {
+          val lastFmsDetail = fmsClient.getLatestOrderDetails(caseId)
 
-        val result = lastFmsDetail.toOrderVersion(
-          order.id,
-          order.username,
-          OrderStatus.IN_PROGRESS,
-          type = order.type,
-          dataDictionaryVersion = order.dataDictionaryVersion,
-        )
+          val result = lastFmsDetail.toOrderVersion(
+            order.id,
+            order.username,
+            OrderStatus.IN_PROGRESS,
+            type = order.type,
+            dataDictionaryVersion = order.dataDictionaryVersion,
+          )
 
-        val orderDetails = FmsOrderDetails(
-          caseId = lastFmsDetail.caseId,
-          deviceWearerAsJson = objectMapper.writeValueAsString(lastFmsDetail.deviceWearer),
-          monitoringOrderAsJson = objectMapper.writeValueAsString(lastFmsDetail.monitoringOrder),
-        )
+          val orderDetails = FmsOrderDetails(
+            caseId = lastFmsDetail.caseId,
+            deviceWearerAsJson = objectMapper.writeValueAsString(lastFmsDetail.deviceWearer),
+            monitoringOrderAsJson = objectMapper.writeValueAsString(lastFmsDetail.monitoringOrder),
+          )
 
-        fmsOrderDetailsRepository.save(orderDetails)
-        return result
-      } catch (ex: CreateSercoEntityException) {
-        val errorMessage = ex.message ?: ""
-        eventService.recordEvent(
-          "Failed to retrieve latest order from FMS: $caseId",
-          mapOf(
-            "error" to errorMessage,
-            "caseId" to caseId,
-          ),
-        )
+          fmsOrderDetailsRepository.save(orderDetails)
+          return result
+        } catch (ex: CreateSercoEntityException) {
+          val errorMessage = ex.message ?: ""
+          eventService.recordEvent(
+            "Failed to retrieve latest order from FMS: $caseId",
+            mapOf(
+              "error" to errorMessage,
+              "caseId" to caseId,
+            ),
+          )
+        }
       }
     }
     return null

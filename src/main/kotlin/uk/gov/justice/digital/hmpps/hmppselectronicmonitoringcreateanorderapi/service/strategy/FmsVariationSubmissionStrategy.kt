@@ -220,9 +220,14 @@ class FmsVariationSubmissionStrategy(
       return OrderChanges(details, VariationType.OTHER)
     }
 
-    val latestFmsOrderDetails = fmsOrderDetailsRepository.findById(
-      lastSuccessfulSubmitResult.deviceWearerResult.deviceWearerId,
-    ).orElse(null)
+    val latestFmsOrderDetails =
+      if (featureFlags.getApiEnabled) {
+        fmsOrderDetailsRepository.findById(
+          lastSuccessfulSubmitResult.deviceWearerResult.deviceWearerId,
+        ).orElse(null)
+      } else {
+        null
+      }
 
     val deviceWearerJson =
       latestFmsOrderDetails?.deviceWearerAsJson ?: lastSuccessfulSubmitResult.deviceWearerResult.payload

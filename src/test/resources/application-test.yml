@@ -57,6 +57,7 @@ settings:
   ddv6-court-mappings: true
 
 
+
 DOCUMENT_MANAGEMENT_URL: http://localhost:8092/
 MANAGE_USER_URL: http://localhost:8095/
 CLIENT_ID: mockClient
@@ -67,3 +68,4 @@ SERCO_CLIENT_SECRET: clientSecret
 SERCO_USERNAME: username
 SERCO_PASSWORD: password
 SERCO_URL: http://localhost:8094/
+GET_API_ENABLED: true

@@ -60,6 +60,7 @@ class FmsServiceTest {
       dataDictionaryVersion = DataDictionaryVersion.DDV6,
       ddV6CourtMappings = false,
       deviceWearerPayloadVersion = DeviceWearerPayloadVersion.Prod,
+      getApiEnabled = true,
     )
   private lateinit var env: Environment
 
@@ -150,6 +151,7 @@ class FmsServiceTest {
         dataDictionaryVersion = DataDictionaryVersion.DDV6,
         ddV6CourtMappings = false,
         deviceWearerPayloadVersion = DeviceWearerPayloadVersion.Dev,
+        getApiEnabled = true,
       ),
       eventService,
       fmsOrderDetailsRepository,
@@ -235,6 +237,53 @@ class FmsServiceTest {
           ),
         ),
       )
+    }
+
+    @Test
+    fun `should return null if get api enabled is false`() {
+      service = FmsService(
+        mockClient,
+        mockDocumentApiClient,
+        objectMapper,
+        repo,
+        true,
+        true,
+        FeatureFlags(
+          dataDictionaryVersion = DataDictionaryVersion.DDV6,
+          ddV6CourtMappings = false,
+          deviceWearerPayloadVersion = DeviceWearerPayloadVersion.Dev,
+          getApiEnabled = false,
+        ),
+        eventService,
+        fmsOrderDetailsRepository,
+      )
+
+      val mockOrder = TestUtilities.createReadyToSubmitOrder(status = OrderStatus.SUBMITTED)
+      val mockCaseId = "MockCaseId"
+      val mockFmsResultId = UUID.randomUUID()
+      mockOrder.fmsResultId = mockFmsResultId
+      val mockFmsResponse = FmsSubmissionResult(
+        id = mockFmsResultId,
+        orderId = mockOrder.id,
+        submissionDate = OffsetDateTime.now(),
+        strategy = FmsSubmissionStrategyKind.ORDER,
+        orderSource = FmsOrderSource.CEMO,
+        deviceWearerResult = FmsDeviceWearerSubmissionResult(deviceWearerId = mockCaseId),
+        monitoringOrderResult = FmsMonitoringOrderSubmissionResult(),
+      )
+      whenever(repo.getReferenceById(mockFmsResultId)).thenReturn(mockFmsResponse)
+      val mockFmsDetails = FmsRetrieveDWandMO(
+        caseId = mockCaseId,
+        deviceWearer = DeviceWearer(firstName = "John", lastName = "Smith", dateOfBirth = "1991-01-01"),
+        monitoringOrder = MonitoringOrder(),
+      )
+      whenever(mockClient.getLatestOrderDetails(mockCaseId)).thenReturn(
+        mockFmsDetails,
+      )
+      val result = service.getLatestOrderVersion(mockOrder)
+      assertThat(result).isNull()
+      verify(eventService, never()).recordEvent(any(), any(), any())
+      verify(fmsOrderDetailsRepository, never()).save(any())
     }
 
     @Test

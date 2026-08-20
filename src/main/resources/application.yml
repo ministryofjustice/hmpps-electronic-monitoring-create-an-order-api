@@ -78,6 +78,7 @@ settings:
   data-dictionary-version: DDV4
   ddv6-court-mappings: ${DDV6_COURT_MAPPINGS:false}
   device-wearer-payload-version: Prod
+  get-api-enabled: ${GET_API_ENABLED:false}
 
 management:
   endpoints:

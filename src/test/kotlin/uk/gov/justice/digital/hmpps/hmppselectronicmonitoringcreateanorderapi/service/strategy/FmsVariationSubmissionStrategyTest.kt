@@ -4,7 +4,9 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
+import org.mockito.Mockito.never
 import org.mockito.kotlin.any
+import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.test.context.ActiveProfiles
 import tools.jackson.databind.MapperFeature
@@ -50,6 +52,7 @@ class FmsVariationSubmissionStrategyTest {
       dataDictionaryVersion = DataDictionaryVersion.DDV6,
       ddV6CourtMappings = false,
       deviceWearerPayloadVersion = DeviceWearerPayloadVersion.Prod,
+      getApiEnabled = true,
     )
   private val mockOrderId = UUID.randomUUID()
   private val mockOrderVersionId = UUID.randomUUID()
@@ -112,6 +115,20 @@ class FmsVariationSubmissionStrategyTest {
 
   @Test
   fun `Should find last submitted version and generate CEMO determined changes`() {
+    strategy =
+      FmsVariationSubmissionStrategy(
+        objectMapper,
+        mockClient,
+        mockDocumentApiClient,
+        FeatureFlags(
+          dataDictionaryVersion = DataDictionaryVersion.DDV6,
+          ddV6CourtMappings = false,
+          deviceWearerPayloadVersion = DeviceWearerPayloadVersion.Prod,
+          getApiEnabled = false,
+        ),
+        repo,
+        fmsOrderDetailsRepository,
+      )
     val mockSubmissionResultId = UUID.randomUUID()
     val order = TestUtilities.createReadyToSubmitOrder(
       mockOrderId,
@@ -165,6 +182,7 @@ class FmsVariationSubmissionStrategyTest {
     assertThat(result.monitoringOrderResult.payload).contains("Change to address")
     assertThat(result.monitoringOrderResult.payload).contains("CEMO determined changes:")
     assertThat(result.monitoringOrderResult.payload).contains("Device wearer's name has changed")
+    verify(fmsOrderDetailsRepository, never()).findById(any())
   }
 
   @Test
