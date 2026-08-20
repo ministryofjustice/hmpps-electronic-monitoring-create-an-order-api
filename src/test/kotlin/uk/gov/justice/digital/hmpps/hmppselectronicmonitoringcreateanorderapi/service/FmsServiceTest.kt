@@ -82,7 +82,6 @@ class FmsServiceTest {
         objectMapper,
         repo,
         true,
-        true,
         mockFeatureFlags,
         eventService,
         fmsOrderDetailsRepository,
@@ -145,7 +144,6 @@ class FmsServiceTest {
       mockDocumentApiClient,
       objectMapper,
       repo,
-      true,
       true,
       FeatureFlags(
         dataDictionaryVersion = DataDictionaryVersion.DDV6,
@@ -246,7 +244,6 @@ class FmsServiceTest {
         mockDocumentApiClient,
         objectMapper,
         repo,
-        true,
         true,
         FeatureFlags(
           dataDictionaryVersion = DataDictionaryVersion.DDV6,
