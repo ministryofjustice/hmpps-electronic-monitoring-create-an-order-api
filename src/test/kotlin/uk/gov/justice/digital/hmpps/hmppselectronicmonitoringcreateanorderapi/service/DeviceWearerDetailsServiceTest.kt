@@ -11,9 +11,12 @@ import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.PrisonerDetailsApi
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.hmpps.Address
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.hmpps.CodeDescription
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.hmpps.PrisonerDetails
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 import java.time.LocalDateTime
@@ -148,6 +151,55 @@ class DeviceWearerDetailsServiceTest {
       assertThat(response.success).isEqualTo(false)
       assertThat(response.error).isNotNull
       assertThat(response.error?.message).isEqualTo("Not found")
+    }
+
+    @Test
+    fun `adds device wearer details`() {
+      client.setMockResponse(baseDetails.copy(firstName = "John", lastName = "Deer"))
+
+      service.storeDetails("1234", mockOrderId, mockUsername)
+
+      assertThat(mockOrder.deviceWearer?.firstName).isEqualTo("John")
+      assertThat(mockOrder.deviceWearer?.lastName).isEqualTo("Deer")
+    }
+
+    @Test
+    fun `adds addresses`() {
+      client.setMockResponse(
+        baseDetails.copy(
+          addresses = listOf(
+            Address(
+              noFixedAbode = false,
+              postcode = "AB12CD",
+              status = CodeDescription(code = "M", description = ""),
+              buildingNumber = "10",
+              buildingName = null,
+              subBuildingName = "",
+              postTown = "LONDON",
+              county = "COUNTY",
+              thoroughfareName = "DOWNING STREET",
+            ),
+            Address(
+              noFixedAbode = false,
+              postcode = "AB12CD",
+              status = CodeDescription(code = "S", description = ""),
+              buildingNumber = "10",
+              buildingName = null,
+              subBuildingName = "",
+              postTown = "LONDON",
+              county = "COUNTY",
+              thoroughfareName = "DOWNING STREET",
+            ),
+          ),
+        ),
+      )
+
+      service.storeDetails("1234", mockOrderId, mockUsername)
+
+      assertThat(mockOrder.addresses).isNotEmpty
+      assertThat(mockOrder.addresses.size).isEqualTo(2)
+      assertThat(mockOrder.addresses.any { it.addressType == AddressType.PRIMARY }).isTrue
+      assertThat(mockOrder.addresses.any { it.addressType == AddressType.SECONDARY }).isTrue
     }
   }
 }

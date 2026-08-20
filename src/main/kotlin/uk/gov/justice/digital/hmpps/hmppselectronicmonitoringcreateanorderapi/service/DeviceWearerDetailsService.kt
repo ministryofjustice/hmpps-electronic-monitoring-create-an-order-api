@@ -15,6 +15,10 @@ class DeviceWearerDetailsService(private val webClient: PrisonerDetailsApi) : Or
       val details = webClient.getPrisonerDetails(prisonNumber)
 
       order.deviceWearer = details.toDeviceWearer(order.versionId)
+      val addresses =
+        listOfNotNull(details.toPrimaryAddress(order.versionId), details.toSecondaryAddress(order.versionId))
+      order.addresses.addAll(addresses)
+
       orderRepo.save(order)
 
       return Result(success = true)
