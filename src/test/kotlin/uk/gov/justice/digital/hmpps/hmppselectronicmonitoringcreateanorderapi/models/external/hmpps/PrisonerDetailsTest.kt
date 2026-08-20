@@ -58,13 +58,6 @@ class PrisonerDetailsTest {
     assertThat(result.noFixedAbode).isEqualTo(true)
   }
 
-  /*
-  address:
-  map addresses
-  primary = main
-  secondary = secondary
-   */
-
   @Test
   fun `maps to primary address`() {
     val addressDetails = details.copy(
