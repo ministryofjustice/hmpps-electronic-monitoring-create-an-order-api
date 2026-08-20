@@ -1,11 +1,13 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.hmpps
 
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsDates.londonTimeZone
 import java.time.LocalDate
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.UUID
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Address as CemoAddress
 
 data class PrisonerDetails(
   val firstName: String?,
@@ -34,6 +36,12 @@ data class PrisonerDetails(
     noFixedAbode = addresses?.any { it.noFixedAbode ?: false },
   )
 
+  fun toPrimaryAddress(versionId: UUID): CemoAddress? {
+    val primaryAddress = addresses?.firstOrNull { it.isPrimaryAddress() } ?: return null
+
+    return primaryAddress.toCemoAddress(versionId)
+  }
+
   fun parsedDateOfBirth(): ZonedDateTime? = parseDateOrNull(dateOfBirth ?: "")
 
   fun parseDate(date: String): ZonedDateTime =
@@ -61,4 +69,42 @@ data class Alias(val firstName: String?, val lastName: String?, val middleNames:
   fun getAlias(): String = "$firstName $middleNames $lastName"
 }
 
-data class Address(val noFixedAbode: Boolean?)
+data class Address(
+  val noFixedAbode: Boolean?,
+  val postcode: String?,
+  val status: CodeDescription?,
+  val buildingNumber: String?,
+  val buildingName: String?,
+  val subBuildingName: String?,
+  val postTown: String?,
+  val county: String?,
+  val thoroughfareName: String?,
+) {
+  fun isPrimaryAddress(): Boolean = this.status?.code == "M"
+
+  fun isSecondaryAddress(): Boolean = this.status?.code == "S"
+
+  fun toCemoAddress(versionId: UUID): CemoAddress = CemoAddress(
+    versionId = versionId,
+    addressLine1 = addressLineOne(),
+    addressLine2 = "",
+    addressLine3 = postTown?.toTitleCase() ?: "",
+    addressLine4 = county?.toTitleCase() ?: "",
+    postcode = postcode ?: "",
+    addressType = AddressType.PRIMARY,
+  )
+
+  private fun addressLineOne(): String {
+    val buildingId = buildingNumber.takeIf { !it.isNullOrEmpty() } ?: buildingName.takeIf { !it.isNullOrEmpty() } ?: ""
+
+    if (thoroughfareName.isNullOrEmpty()) {
+      return buildingId
+    }
+
+    return "$buildingId $thoroughfareName".toTitleCase()
+  }
+
+  private fun String.toTitleCase(): String = lowercase().split(" ").joinToString(" ") {
+    it.replaceFirstChar { char -> char.uppercaseChar() }
+  }
+}
