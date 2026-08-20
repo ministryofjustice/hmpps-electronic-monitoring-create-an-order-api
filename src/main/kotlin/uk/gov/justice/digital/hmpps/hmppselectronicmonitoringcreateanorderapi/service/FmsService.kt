@@ -34,7 +34,6 @@ class FmsService(
   val documentApiClient: DocumentApiClient,
   val objectMapper: ObjectMapper,
   val repo: FmsSubmissionResultRepository,
-  @param:Value("\${toggle.cemo.fms-integration.enabled:false}") val cemoFmsIntegrationEnabled: Boolean,
   @param:Value("\${toggle.common-platform.fms-integration.enabled:false}") val cpFmsIntegrationEnabled: Boolean,
   private val featureFlags: FeatureFlags,
   val eventService: EventService,
@@ -100,7 +99,7 @@ class FmsService(
       return orderSubmissionStrategy
     }
 
-    if (orderSource === FmsOrderSource.CEMO && cemoFmsIntegrationEnabled) {
+    if (orderSource === FmsOrderSource.CEMO) {
       if (RequestType.VARIATION_TYPES.contains(order.type)) {
         return variationSubmissionStrategy
       }
