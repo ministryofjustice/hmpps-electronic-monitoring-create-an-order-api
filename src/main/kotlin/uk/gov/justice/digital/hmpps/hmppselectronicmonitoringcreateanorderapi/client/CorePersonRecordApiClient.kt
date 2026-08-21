@@ -21,34 +21,34 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 class CorePersonRecordApiClient : PrisonerDetailsApi {
 
   companion object {
-    val PLACEHOLDER_VERSION_ID: UUID = UUID(0, 0)
     private val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
   }
 
-  override fun getPrisonerDetails(prisonNumber: String): PrisonerRecord {
+  override fun getPrisonerDetails(prisonNumber: String, versionId: UUID): PrisonerRecord {
     val details = fetchPrisonerDetails(prisonNumber)
 
-    return mapToPrisonerRecord(details)
+    return mapToPrisonerRecord(details, versionId)
   }
 
   private fun fetchPrisonerDetails(prisonNumber: String): PrisonerDetails {
     TODO("Not yet implemented")
   }
 
-  internal fun mapToPrisonerRecord(details: PrisonerDetails): PrisonerRecord = PrisonerRecord(
-    deviceWearer = toDeviceWearer(details),
-    contactDetails = toContactDetails(details),
-    addresses = listOfNotNull(toPrimaryAddress(details), toSecondaryAddress(details)),
+  internal fun mapToPrisonerRecord(details: PrisonerDetails, versionId: UUID): PrisonerRecord = PrisonerRecord(
+    deviceWearer = toDeviceWearer(details, versionId),
+    contactDetails = toContactDetails(details, versionId),
+    addresses = listOfNotNull(toPrimaryAddress(details, versionId), toSecondaryAddress(details, versionId)),
   )
 
-  private fun toDeviceWearer(details: PrisonerDetails): DeviceWearer = DeviceWearer(
-    versionId = PLACEHOLDER_VERSION_ID,
+  private fun toDeviceWearer(details: PrisonerDetails, versionId: UUID): DeviceWearer = DeviceWearer(
+    versionId = versionId,
     firstName = details.firstName,
     middleName = details.middleNames,
     lastName = details.lastName,
-    prisonNumber = details.identifiers?.prisonNumbers?.first(),
-    courtCaseReferenceNumber = details.identifiers?.crns?.first(),
-    pncId = details.identifiers?.pncs?.first(),
+    prisonNumber = details.identifiers?.prisonNumbers?.firstOrNull(),
+    courtCaseReferenceNumber = details.identifiers?.crns?.firstOrNull(),
+    pncId = details.identifiers?.pncs?.firstOrNull(),
+    nationalInsuranceNumber = details.identifiers?.nationalInsuranceNumbers?.firstOrNull(),
     dateOfBirth = parsedDateOfBirth(details.dateOfBirth),
     sex = toSex(details.sex),
     alias = details.aliases?.firstOrNull()?.let(::toAlias),
@@ -58,31 +58,31 @@ class CorePersonRecordApiClient : PrisonerDetailsApi {
     ethnicity = details.ethnicity?.description,
   )
 
-  private fun toPrimaryAddress(details: PrisonerDetails): CemoAddress? {
+  private fun toPrimaryAddress(details: PrisonerDetails, versionId: UUID): CemoAddress? {
     val primaryAddress = details.addresses?.firstOrNull { isPrimaryAddress(it) } ?: return null
 
-    return toCemoAddress(primaryAddress)
+    return toCemoAddress(primaryAddress, versionId)
   }
 
-  private fun toSecondaryAddress(details: PrisonerDetails): CemoAddress? {
+  private fun toSecondaryAddress(details: PrisonerDetails, versionId: UUID): CemoAddress? {
     val secondaryAddress = details.addresses?.firstOrNull { isSecondaryAddress(it) } ?: return null
 
-    return toCemoAddress(secondaryAddress)
+    return toCemoAddress(secondaryAddress, versionId)
   }
 
-  private fun toContactDetails(details: PrisonerDetails): ContactDetails? {
+  private fun toContactDetails(details: PrisonerDetails, versionId: UUID): ContactDetails? {
     val contacts = details.addresses?.flatMap { it.contacts } ?: return null
     val matchingContact = contacts.firstOrNull { isMobile(it) } ?: contacts.firstOrNull { isHome(it) } ?: return null
 
     return ContactDetails(
-      versionId = PLACEHOLDER_VERSION_ID,
+      versionId = versionId,
       contactNumber = matchingContact.value,
       phoneNumberAvailable = true,
     )
   }
 
-  private fun toCemoAddress(address: Address): CemoAddress = CemoAddress(
-    versionId = PLACEHOLDER_VERSION_ID,
+  private fun toCemoAddress(address: Address, versionId: UUID): CemoAddress = CemoAddress(
+    versionId = versionId,
     addressLine1 = addressLineOne(address),
     addressLine2 = "",
     addressLine3 = address.postTown?.toTitleCase() ?: "",

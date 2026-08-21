@@ -37,12 +37,16 @@ class DeviceWearerDetailsServiceTest {
 
   class TestClient : PrisonerDetailsApi {
     var prisonDetailsResponse = baseDetails.copy()
+    var lastRequestedVersionId: UUID? = null
 
     fun setMockResponse(value: PrisonerRecord) {
       prisonDetailsResponse = value
     }
 
-    override fun getPrisonerDetails(prisonNumber: String): PrisonerRecord = prisonDetailsResponse
+    override fun getPrisonerDetails(prisonNumber: String, versionId: UUID): PrisonerRecord {
+      lastRequestedVersionId = versionId
+      return prisonDetailsResponse
+    }
   }
 
   var client: TestClient = TestClient()
@@ -160,6 +164,13 @@ class DeviceWearerDetailsServiceTest {
 
       assertThat(response.error).isNull()
       assertThat(response.success).isEqualTo(true)
+    }
+
+    @Test
+    fun `requests prisoner details using the order's versionId`() {
+      service.storeDetails("1234", mockOrderId, mockUsername)
+
+      assertThat(client.lastRequestedVersionId).isEqualTo(mockVersionId)
     }
 
     @Test

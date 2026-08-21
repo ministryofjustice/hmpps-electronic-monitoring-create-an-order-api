@@ -12,9 +12,11 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
+import java.util.UUID
 
 class CorePersonRecordApiClientTest {
   val client = CorePersonRecordApiClient()
+  val versionId: UUID = UUID.randomUUID()
 
   val basicAddress = Address(
     noFixedAbode = null,
@@ -49,15 +51,16 @@ class CorePersonRecordApiClientTest {
 
   @Test
   fun `maps to device wearer`() {
-    val result = client.mapToPrisonerRecord(details).deviceWearer
+    val result = client.mapToPrisonerRecord(details, versionId).deviceWearer
 
-    assertThat(result?.versionId).isEqualTo(CorePersonRecordApiClient.PLACEHOLDER_VERSION_ID)
+    assertThat(result?.versionId).isEqualTo(versionId)
     assertThat(result?.firstName).isEqualTo("Bob")
     assertThat(result?.middleName).isEqualTo("Middle")
     assertThat(result?.lastName).isEqualTo("Builder")
     assertThat(result?.prisonNumber).isEqualTo("A1234BC")
     assertThat(result?.courtCaseReferenceNumber).isEqualTo("B123435")
     assertThat(result?.pncId).isEqualTo("2000/1234567A")
+    assertThat(result?.nationalInsuranceNumber).isEqualTo("QQ123456B")
     assertThat(result?.dateOfBirth).isEqualTo(
       ZonedDateTime.of(
         LocalDateTime.of(1990, 8, 21, 0, 0),
@@ -70,6 +73,25 @@ class CorePersonRecordApiClientTest {
     assertThat(result?.religion).isEqualTo("Christianity")
     assertThat(result?.ethnicity).isEqualTo("Black/Black British : Any other backgr'nd")
     assertThat(result?.nationality).isEqualTo("GB")
+  }
+
+  @Test
+  fun `maps device wearer without throwing when identifiers are missing`() {
+    val detailsWithNoIdentifiers = details.copy(
+      identifiers = Identifiers(
+        crns = emptyList(),
+        prisonNumbers = emptyList(),
+        pncs = emptyList(),
+        nationalInsuranceNumbers = emptyList(),
+      ),
+    )
+
+    val result = client.mapToPrisonerRecord(detailsWithNoIdentifiers, versionId).deviceWearer
+
+    assertThat(result?.prisonNumber).isNull()
+    assertThat(result?.courtCaseReferenceNumber).isNull()
+    assertThat(result?.pncId).isNull()
+    assertThat(result?.nationalInsuranceNumber).isNull()
   }
 
   @Test
@@ -91,7 +113,7 @@ class CorePersonRecordApiClientTest {
       ),
     )
 
-    val address = client.mapToPrisonerRecord(addressDetails).addresses.firstOrNull {
+    val address = client.mapToPrisonerRecord(addressDetails, versionId).addresses.firstOrNull {
       it.addressType ==
         AddressType.PRIMARY
     }
@@ -124,7 +146,7 @@ class CorePersonRecordApiClientTest {
       ),
     )
 
-    val address = client.mapToPrisonerRecord(addressDetails).addresses.firstOrNull {
+    val address = client.mapToPrisonerRecord(addressDetails, versionId).addresses.firstOrNull {
       it.addressType ==
         AddressType.SECONDARY
     }
@@ -153,7 +175,7 @@ class CorePersonRecordApiClientTest {
       ),
     )
 
-    val result = client.mapToPrisonerRecord(contactDetails).contactDetails
+    val result = client.mapToPrisonerRecord(contactDetails, versionId).contactDetails
 
     assertThat(result?.contactNumber).isEqualTo("01234567890")
     assertThat(result?.phoneNumberAvailable).isEqualTo(true)

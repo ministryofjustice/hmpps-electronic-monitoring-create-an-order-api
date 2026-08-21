@@ -12,11 +12,11 @@ class DeviceWearerDetailsService(private val webClient: PrisonerDetailsApi) : Or
   fun storeDetails(prisonNumber: String, orderId: UUID, username: String): Result<Unit> {
     try {
       val order = this.findEditableOrder(orderId, username)
-      val record = webClient.getPrisonerDetails(prisonNumber)
+      val record = webClient.getPrisonerDetails(prisonNumber, order.versionId)
 
-      order.deviceWearer = record.deviceWearer?.copy(versionId = order.versionId)
-      order.addresses.addAll(record.addresses.map { it.copy(versionId = order.versionId) })
-      order.contactDetails = record.contactDetails?.copy(versionId = order.versionId)
+      order.deviceWearer = record.deviceWearer
+      order.addresses.addAll(record.addresses)
+      order.contactDetails = record.contactDetails
 
       orderRepo.save(order)
 
@@ -27,7 +27,7 @@ class DeviceWearerDetailsService(private val webClient: PrisonerDetailsApi) : Or
   }
 
   fun getDetailsOverview(prisonNumber: String): GetPrisonDetailsResponse {
-    val details = webClient.getPrisonerDetails(prisonNumber)
+    val details = webClient.getPrisonerDetails(prisonNumber, UUID.randomUUID())
 
     return GetPrisonDetailsResponse(
       firstName = details.deviceWearer?.firstName,
