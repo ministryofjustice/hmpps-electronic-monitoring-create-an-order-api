@@ -14,9 +14,9 @@ class DeviceWearerDetailsService(private val webClient: PrisonerDetailsApi) : Or
       val order = this.findEditableOrder(orderId, username)
       val record = webClient.getPrisonerDetails(prisonNumber)
 
-      order.deviceWearer = record.deviceWearer
-      order.addresses.addAll(record.addresses)
-      order.contactDetails = record.contactDetails
+      order.deviceWearer = record.deviceWearer?.copy(versionId = order.versionId)
+      order.addresses.addAll(record.addresses.map { it.copy(versionId = order.versionId) })
+      order.contactDetails = record.contactDetails?.copy(versionId = order.versionId)
 
       orderRepo.save(order)
 

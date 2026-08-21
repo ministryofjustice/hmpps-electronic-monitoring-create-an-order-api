@@ -1,8 +1,7 @@
-package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.hmpps
+package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.corePersonRecord.Address
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.corePersonRecord.Alias
@@ -13,9 +12,10 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
-import java.util.UUID
 
-class PrisonerDetailsTest {
+class CorePersonRecordApiClientTest {
+  val client = CorePersonRecordApiClient()
+
   val basicAddress = Address(
     noFixedAbode = null,
     postcode = null,
@@ -46,30 +46,30 @@ class PrisonerDetailsTest {
     ethnicity = CodeDescription(code = "B9", description = "Black/Black British : Any other backgr'nd"),
     nationalities = listOf(CodeDescription(code = "GB", description = "GB")),
   )
-  val versionId: UUID = UUID.randomUUID()
 
   @Test
   fun `maps to device wearer`() {
-    val result: DeviceWearer = details.toDeviceWearer(versionId)
-    assertThat(result.versionId).isEqualTo(versionId)
-    assertThat(result.firstName).isEqualTo("Bob")
-    assertThat(result.middleName).isEqualTo("Middle")
-    assertThat(result.lastName).isEqualTo("Builder")
-    assertThat(result.prisonNumber).isEqualTo("A1234BC")
-    assertThat(result.courtCaseReferenceNumber).isEqualTo("B123435")
-    assertThat(result.pncId).isEqualTo("2000/1234567A")
-    assertThat(result.dateOfBirth).isEqualTo(
+    val result = client.mapToPrisonerRecord(details).deviceWearer
+
+    assertThat(result?.versionId).isEqualTo(CorePersonRecordApiClient.PLACEHOLDER_VERSION_ID)
+    assertThat(result?.firstName).isEqualTo("Bob")
+    assertThat(result?.middleName).isEqualTo("Middle")
+    assertThat(result?.lastName).isEqualTo("Builder")
+    assertThat(result?.prisonNumber).isEqualTo("A1234BC")
+    assertThat(result?.courtCaseReferenceNumber).isEqualTo("B123435")
+    assertThat(result?.pncId).isEqualTo("2000/1234567A")
+    assertThat(result?.dateOfBirth).isEqualTo(
       ZonedDateTime.of(
         LocalDateTime.of(1990, 8, 21, 0, 0),
         ZoneId.of("Europe/London"),
       ),
     )
-    assertThat(result.sex).isEqualTo("MALE")
-    assertThat(result.alias).isEqualTo("Wendy Scoop Dizzy")
-    assertThat(result.noFixedAbode).isEqualTo(true)
-    assertThat(result.religion).isEqualTo("Christianity")
-    assertThat(result.ethnicity).isEqualTo("Black/Black British : Any other backgr'nd")
-    assertThat(result.nationality).isEqualTo("GB")
+    assertThat(result?.sex).isEqualTo("MALE")
+    assertThat(result?.alias).isEqualTo("Wendy Scoop Dizzy")
+    assertThat(result?.noFixedAbode).isEqualTo(true)
+    assertThat(result?.religion).isEqualTo("Christianity")
+    assertThat(result?.ethnicity).isEqualTo("Black/Black British : Any other backgr'nd")
+    assertThat(result?.nationality).isEqualTo("GB")
   }
 
   @Test
@@ -91,7 +91,10 @@ class PrisonerDetailsTest {
       ),
     )
 
-    val address = addressDetails.toPrimaryAddress(versionId)
+    val address = client.mapToPrisonerRecord(addressDetails).addresses.firstOrNull {
+      it.addressType ==
+        AddressType.PRIMARY
+    }
 
     assertThat(address).isNotNull
     assertThat(address?.postcode).isEqualTo("AB12CD")
@@ -121,7 +124,10 @@ class PrisonerDetailsTest {
       ),
     )
 
-    val address = addressDetails.toSecondaryAddress(versionId)
+    val address = client.mapToPrisonerRecord(addressDetails).addresses.firstOrNull {
+      it.addressType ==
+        AddressType.SECONDARY
+    }
 
     assertThat(address).isNotNull
     assertThat(address?.postcode).isEqualTo("AB12CD")
@@ -147,7 +153,7 @@ class PrisonerDetailsTest {
       ),
     )
 
-    val result = contactDetails.toContactDetails(versionId)
+    val result = client.mapToPrisonerRecord(contactDetails).contactDetails
 
     assertThat(result?.contactNumber).isEqualTo("01234567890")
     assertThat(result?.phoneNumberAvailable).isEqualTo(true)
