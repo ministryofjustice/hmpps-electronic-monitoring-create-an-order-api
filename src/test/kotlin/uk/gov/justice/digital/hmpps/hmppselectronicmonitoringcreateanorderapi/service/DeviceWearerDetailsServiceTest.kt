@@ -6,20 +6,19 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.mockito.kotlin.description
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.PrisonerDetailsApi
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Address
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ContactDetails
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.PrisonerRecord
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.corePersonRecord.Address
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.corePersonRecord.CodeDescription
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.corePersonRecord.Contact
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.corePersonRecord.PrisonerDetails
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -27,18 +26,11 @@ import java.time.ZonedDateTime
 import java.util.Optional
 import java.util.UUID
 
-val baseDetails = PrisonerDetails(
-  firstName = null,
-  middleNames = null,
-  lastName = null,
-  dateOfBirth = null,
-  sex = null,
-  identifiers = null,
-  aliases = emptyList(),
+val mockVersionId = UUID.randomUUID()
+val baseDetails = PrisonerRecord(
+  deviceWearer = null,
+  contactDetails = null,
   addresses = emptyList(),
-  religion = null,
-  ethnicity = null,
-  nationalities = emptyList(),
 )
 
 class DeviceWearerDetailsServiceTest {
@@ -46,11 +38,11 @@ class DeviceWearerDetailsServiceTest {
   class TestClient : PrisonerDetailsApi {
     var prisonDetailsResponse = baseDetails.copy()
 
-    fun setMockResponse(value: PrisonerDetails) {
+    fun setMockResponse(value: PrisonerRecord) {
       prisonDetailsResponse = value
     }
 
-    override fun getPrisonerDetails(prisonNumber: String): PrisonerDetails = prisonDetailsResponse
+    override fun getPrisonerDetails(prisonNumber: String): PrisonerRecord = prisonDetailsResponse
   }
 
   var client: TestClient = TestClient()
@@ -65,7 +57,14 @@ class DeviceWearerDetailsServiceTest {
   inner class GetDetails {
     @Test
     fun `returns bob as first name when set to bob`() {
-      client.setMockResponse(baseDetails.copy(firstName = "Bob"))
+      client.setMockResponse(
+        baseDetails.copy(
+          deviceWearer = DeviceWearer(
+            versionId = mockVersionId,
+            firstName = "Bob",
+          ),
+        ),
+      )
 
       val service = DeviceWearerDetailsService(client)
 
@@ -76,7 +75,14 @@ class DeviceWearerDetailsServiceTest {
 
     @Test
     fun `returns cat as first name when set to cat`() {
-      client.setMockResponse(baseDetails.copy(firstName = "Cat"))
+      client.setMockResponse(
+        baseDetails.copy(
+          deviceWearer = DeviceWearer(
+            versionId = mockVersionId,
+            firstName = "Cat",
+          ),
+        ),
+      )
 
       val service = DeviceWearerDetailsService(client)
 
@@ -87,7 +93,16 @@ class DeviceWearerDetailsServiceTest {
 
     @Test
     fun `returns basic prison details`() {
-      client.setMockResponse(baseDetails.copy(firstName = "Bob", lastName = "Builder", dateOfBirth = "1990-08-21"))
+      client.setMockResponse(
+        baseDetails.copy(
+          deviceWearer = DeviceWearer(
+            versionId = mockVersionId,
+            firstName = "Bob",
+            lastName = "Builder",
+            dateOfBirth = ZonedDateTime.of(LocalDateTime.of(1990, 8, 21, 0, 0), ZoneId.of("Europe/London")),
+          ),
+        ),
+      )
 
       val service = DeviceWearerDetailsService(client)
 
@@ -160,7 +175,15 @@ class DeviceWearerDetailsServiceTest {
 
     @Test
     fun `adds device wearer details`() {
-      client.setMockResponse(baseDetails.copy(firstName = "John", lastName = "Deer"))
+      client.setMockResponse(
+        baseDetails.copy(
+          deviceWearer = DeviceWearer(
+            versionId = mockVersionId,
+            firstName = "John",
+            lastName = "Deer",
+          ),
+        ),
+      )
 
       service.storeDetails("1234", mockOrderId, mockUsername)
 
@@ -172,24 +195,10 @@ class DeviceWearerDetailsServiceTest {
     fun `adds contact details`() {
       client.setMockResponse(
         baseDetails.copy(
-          addresses = listOf(
-            Address(
-              noFixedAbode = false,
-              postcode = "AB12CD",
-              status = CodeDescription(code = "M", description = ""),
-              buildingNumber = "10",
-              buildingName = null,
-              subBuildingName = "",
-              postTown = "LONDON",
-              county = "COUNTY",
-              thoroughfareName = "DOWNING STREET",
-              contacts = listOf(
-                Contact(
-                  type = CodeDescription(code = "HOME", description = "Home"),
-                  value = "01234567890",
-                ),
-              ),
-            ),
+          contactDetails = ContactDetails(
+            versionId = mockVersionId,
+            phoneNumberAvailable = true,
+            contactNumber = "01234567890",
           ),
         ),
       )
@@ -206,28 +215,22 @@ class DeviceWearerDetailsServiceTest {
         baseDetails.copy(
           addresses = listOf(
             Address(
-              noFixedAbode = false,
+              versionId = mockVersionId,
               postcode = "AB12CD",
-              status = CodeDescription(code = "M", description = ""),
-              buildingNumber = "10",
-              buildingName = null,
-              subBuildingName = "",
-              postTown = "LONDON",
-              county = "COUNTY",
-              thoroughfareName = "DOWNING STREET",
-              contacts = emptyList(),
+              addressType = AddressType.PRIMARY,
+              addressLine1 = "line one",
+              addressLine2 = "line two",
+              addressLine3 = "line three",
+              addressLine4 = "line four",
             ),
             Address(
-              noFixedAbode = false,
-              postcode = "AB12CD",
-              status = CodeDescription(code = "S", description = ""),
-              buildingNumber = "10",
-              buildingName = null,
-              subBuildingName = "",
-              postTown = "LONDON",
-              county = "COUNTY",
-              thoroughfareName = "DOWNING STREET",
-              contacts = emptyList(),
+              versionId = mockVersionId,
+              postcode = "AB34CD",
+              addressType = AddressType.SECONDARY,
+              addressLine1 = "line one",
+              addressLine2 = "line two",
+              addressLine3 = "line three",
+              addressLine4 = "line four",
             ),
           ),
         ),

@@ -12,13 +12,11 @@ class DeviceWearerDetailsService(private val webClient: PrisonerDetailsApi) : Or
   fun storeDetails(prisonNumber: String, orderId: UUID, username: String): Result<Unit> {
     try {
       val order = this.findEditableOrder(orderId, username)
-      val details = webClient.getPrisonerDetails(prisonNumber)
+      val record = webClient.getPrisonerDetails(prisonNumber)
 
-      order.deviceWearer = details.toDeviceWearer(order.versionId)
-      val addresses =
-        listOfNotNull(details.toPrimaryAddress(order.versionId), details.toSecondaryAddress(order.versionId))
-      order.addresses.addAll(addresses)
-      order.contactDetails = details.toContactDetails(order.versionId)
+      order.deviceWearer = record.deviceWearer
+      order.addresses.addAll(record.addresses)
+      order.contactDetails = record.contactDetails
 
       orderRepo.save(order)
 
@@ -32,9 +30,9 @@ class DeviceWearerDetailsService(private val webClient: PrisonerDetailsApi) : Or
     val details = webClient.getPrisonerDetails(prisonNumber)
 
     return GetPrisonDetailsResponse(
-      firstName = details.firstName,
-      lastName = details.lastName,
-      dateOfBirth = details.parsedDateOfBirth(),
+      firstName = details.deviceWearer?.firstName,
+      lastName = details.deviceWearer?.lastName,
+      dateOfBirth = details.deviceWearer?.dateOfBirth,
       prisonNumber = prisonNumber,
     )
   }
