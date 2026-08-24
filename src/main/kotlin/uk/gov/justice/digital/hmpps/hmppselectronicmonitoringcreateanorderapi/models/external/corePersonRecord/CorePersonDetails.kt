@@ -1,6 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.corePersonRecord
 
-data class PrisonerDetails(
+data class CorePersonDetails(
   val firstName: String?,
   val middleNames: String?,
   val lastName: String?,

@@ -9,8 +9,8 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.corePersonRecord.Alias
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.corePersonRecord.CodeDescription
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.corePersonRecord.Contact
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.corePersonRecord.CorePersonDetails
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.corePersonRecord.Identifiers
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.corePersonRecord.PrisonerDetails
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
@@ -32,7 +32,7 @@ class CorePersonRecordApiClientTest {
     thoroughfareName = null,
     contacts = emptyList(),
   )
-  val details = PrisonerDetails(
+  val details = CorePersonDetails(
     firstName = "Bob",
     middleNames = "Middle",
     lastName = "Builder",
@@ -53,7 +53,7 @@ class CorePersonRecordApiClientTest {
 
   @Test
   fun `maps to device wearer`() {
-    val result = client.mapToPrisonerRecord(details, versionId).deviceWearer
+    val result = client.mapToCorePersonRecord(details, versionId).deviceWearer
 
     assertThat(result?.versionId).isEqualTo(versionId)
     assertThat(result?.firstName).isEqualTo("Bob")
@@ -88,7 +88,7 @@ class CorePersonRecordApiClientTest {
       ),
     )
 
-    val result = client.mapToPrisonerRecord(detailsWithNoIdentifiers, versionId).deviceWearer
+    val result = client.mapToCorePersonRecord(detailsWithNoIdentifiers, versionId).deviceWearer
 
     assertThat(result?.prisonNumber).isNull()
     assertThat(result?.courtCaseReferenceNumber).isNull()
@@ -115,7 +115,7 @@ class CorePersonRecordApiClientTest {
       ),
     )
 
-    val address = client.mapToPrisonerRecord(addressDetails, versionId).addresses.firstOrNull {
+    val address = client.mapToCorePersonRecord(addressDetails, versionId).addresses.firstOrNull {
       it.addressType ==
         AddressType.PRIMARY
     }
@@ -148,7 +148,7 @@ class CorePersonRecordApiClientTest {
       ),
     )
 
-    val address = client.mapToPrisonerRecord(addressDetails, versionId).addresses.firstOrNull {
+    val address = client.mapToCorePersonRecord(addressDetails, versionId).addresses.firstOrNull {
       it.addressType ==
         AddressType.SECONDARY
     }
@@ -177,7 +177,7 @@ class CorePersonRecordApiClientTest {
       ),
     )
 
-    val result = client.mapToPrisonerRecord(contactDetails, versionId).contactDetails
+    val result = client.mapToCorePersonRecord(contactDetails, versionId).contactDetails
 
     assertThat(result?.contactNumber).isEqualTo("01234567890")
     assertThat(result?.phoneNumberAvailable).isEqualTo(true)

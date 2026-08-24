@@ -2,9 +2,9 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.m
 
 import java.time.ZonedDateTime
 
-data class GetPrisonDetailsResponse(
+data class GetCorePersonDetailsResponse(
   val firstName: String?,
   val lastName: String?,
   val dateOfBirth: ZonedDateTime?,
-  val prisonNumber: String,
+  val organisationSearchId: String,
 )

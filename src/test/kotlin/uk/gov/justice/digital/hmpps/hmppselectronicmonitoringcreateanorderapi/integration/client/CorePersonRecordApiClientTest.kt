@@ -26,15 +26,33 @@ class CorePersonRecordApiClientTest : IntegrationTestBase() {
     this::class.java.getResource("/fixtures/corePersonRecord/prisonerDetails.json")!!.readText()
 
   @Nested
-  @DisplayName("GET /person/prison/{prisonNumber}")
-  inner class GetPrisonerDetails {
+  @DisplayName("GET person details")
+  inner class GetPersonDetails {
     @Test
     fun `it calls the get by prison number endpoint`() {
       corePersonRecordApi.stubGetPrisonerDetails("A1234BC", prisonerDetailsJson)
 
-      corePersonRecordApiClient.getPrisonerDetails("A1234BC", UUID.randomUUID())
+      corePersonRecordApiClient.getPersonByPrisonNumber("A1234BC", UUID.randomUUID())
 
       corePersonRecordApi.verify(1, getRequestedFor(urlPathEqualTo("/person/prison/A1234BC")))
+    }
+
+    @Test
+    fun `it calls the get by probation crn endpoint`() {
+      corePersonRecordApi.stubGetProbationDetails("X12345", prisonerDetailsJson)
+
+      corePersonRecordApiClient.getPersonByCrn("X12345", UUID.randomUUID())
+
+      corePersonRecordApi.verify(1, getRequestedFor(urlPathEqualTo("/person/probation/X12345")))
+    }
+
+    @Test
+    fun `it calls the get by court defendant id endpoint`() {
+      corePersonRecordApi.stubGetCourtDetails("defendant-id", prisonerDetailsJson)
+
+      corePersonRecordApiClient.getPersonByDefendantId("defendant-id", UUID.randomUUID())
+
+      corePersonRecordApi.verify(1, getRequestedFor(urlPathEqualTo("/person/commonplatform/defendant-id")))
     }
 
     @Test
@@ -42,7 +60,7 @@ class CorePersonRecordApiClientTest : IntegrationTestBase() {
       val versionId = UUID.randomUUID()
       corePersonRecordApi.stubGetPrisonerDetails("A1234BC", prisonerDetailsJson)
 
-      val result = corePersonRecordApiClient.getPrisonerDetails("A1234BC", versionId)
+      val result = corePersonRecordApiClient.getPersonByPrisonNumber("A1234BC", versionId)
 
       val deviceWearer = result.deviceWearer
       assertThat(deviceWearer?.versionId).isEqualTo(versionId)
@@ -63,7 +81,7 @@ class CorePersonRecordApiClientTest : IntegrationTestBase() {
       val versionId = UUID.randomUUID()
       corePersonRecordApi.stubGetPrisonerDetails("A1234BC", prisonerDetailsJson)
 
-      val result = corePersonRecordApiClient.getPrisonerDetails("A1234BC", versionId)
+      val result = corePersonRecordApiClient.getPersonByPrisonNumber("A1234BC", versionId)
 
       val primaryAddress = result.addresses.firstOrNull { it.addressType == AddressType.PRIMARY }
       assertThat(primaryAddress?.addressLine1).isEqualTo("10 Downing Street")
@@ -76,7 +94,7 @@ class CorePersonRecordApiClientTest : IntegrationTestBase() {
       corePersonRecordApi.stubGetPrisonerDetailsNotFound("A1234BC")
 
       assertThatThrownBy {
-        corePersonRecordApiClient.getPrisonerDetails("A1234BC", UUID.randomUUID())
+        corePersonRecordApiClient.getPersonByPrisonNumber("A1234BC", UUID.randomUUID())
       }.isInstanceOf(WebClientResponseException::class.java)
     }
   }
