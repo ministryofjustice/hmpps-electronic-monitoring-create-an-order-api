@@ -2,6 +2,8 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.c
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.mock
+import org.springframework.web.reactive.function.client.WebClient
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.corePersonRecord.Address
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.corePersonRecord.Alias
@@ -15,7 +17,7 @@ import java.time.ZonedDateTime
 import java.util.UUID
 
 class CorePersonRecordApiClientTest {
-  val client = CorePersonRecordApiClient()
+  val client = CorePersonRecordApiClient(mock<WebClient>())
   val versionId: UUID = UUID.randomUUID()
 
   val basicAddress = Address(

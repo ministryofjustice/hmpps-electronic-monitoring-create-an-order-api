@@ -42,6 +42,11 @@ spring:
             client-id: ${CLIENT_ID}
             client-secret: ${CLIENT_SECRET}
             authorization-grant-type: client_credentials
+          core-person-record-api:
+            provider: hmpps-auth
+            client-id: ${CORE_PERSON_RECORD_CLIENT_ID}
+            client-secret: ${CORE_PERSON_RECORD_CLIENT_SECRET}
+            authorization-grant-type: client_credentials
   cloud:
     aws:
       region:
@@ -101,6 +106,8 @@ services:
     url: ${DOCUMENT_MANAGEMENT_URL}
   manage-user:
     url: ${MANAGE_USER_URL}
+  core-person-record:
+    url: ${CORE_PERSON_RECORD_URL}
   serco:
     auth-url: ${SERCO_AUTH_URL}
     client-id: ${SERCO_CLIENT_ID}

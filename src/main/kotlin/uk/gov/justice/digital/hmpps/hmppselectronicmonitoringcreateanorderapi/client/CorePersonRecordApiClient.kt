@@ -1,6 +1,8 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client
 
 import org.springframework.stereotype.Component
+import org.springframework.web.reactive.function.client.WebClient
+import org.springframework.web.reactive.function.client.bodyToMono
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ContactDetails
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.PrisonerRecord
@@ -18,7 +20,7 @@ import java.util.UUID
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Address as CemoAddress
 
 @Component
-class CorePersonRecordApiClient : PrisonerDetailsApi {
+class CorePersonRecordApiClient(private val corePersonRecordApiWebClient: WebClient) : PrisonerDetailsApi {
 
   companion object {
     private val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
@@ -30,9 +32,12 @@ class CorePersonRecordApiClient : PrisonerDetailsApi {
     return mapToPrisonerRecord(details, versionId)
   }
 
-  private fun fetchPrisonerDetails(prisonNumber: String): PrisonerDetails {
-    TODO("Not yet implemented")
-  }
+  private fun fetchPrisonerDetails(prisonNumber: String): PrisonerDetails = corePersonRecordApiWebClient
+    .get()
+    .uri("/person/prison/{prisonNumber}", prisonNumber)
+    .retrieve()
+    .bodyToMono<PrisonerDetails>()
+    .block()!!
 
   internal fun mapToPrisonerRecord(details: PrisonerDetails, versionId: UUID): PrisonerRecord = PrisonerRecord(
     deviceWearer = toDeviceWearer(details, versionId),
