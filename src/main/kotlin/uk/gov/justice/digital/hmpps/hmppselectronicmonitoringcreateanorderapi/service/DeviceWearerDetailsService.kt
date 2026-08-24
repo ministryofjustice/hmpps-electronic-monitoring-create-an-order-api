@@ -84,8 +84,6 @@ class DeviceWearerDetailsService(private val webClient: CorePersonRecordApi) : O
       webClient.getPersonByPrisonNumber(organisationSearchId, versionId)
     notifyingOrganisation == NotifyingOrganisationDDv5.PROBATION.name ->
       webClient.getPersonByCrn(organisationSearchId, versionId)
-    notifyingOrganisation != null && NotifyingOrganisationDDv5.isCourt(notifyingOrganisation) ->
-      webClient.getPersonByDefendantId(organisationSearchId, versionId)
     else -> throw BadRequestException(
       "Notifying organisation $notifyingOrganisation is unsupported for Core Person Record lookup",
     )

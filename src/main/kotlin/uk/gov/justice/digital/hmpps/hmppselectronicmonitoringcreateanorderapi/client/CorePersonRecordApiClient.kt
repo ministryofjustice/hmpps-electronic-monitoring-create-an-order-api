@@ -38,12 +38,6 @@ class CorePersonRecordApiClient(private val corePersonRecordApiWebClient: WebCli
     return mapToCorePersonRecord(details, versionId)
   }
 
-  override fun getPersonByDefendantId(defendantId: String, versionId: UUID): CorePersonRecord {
-    val details = fetchCorePersonDetails("/person/commonplatform/{identifier}", defendantId)
-
-    return mapToCorePersonRecord(details, versionId)
-  }
-
   private fun fetchCorePersonDetails(path: String, identifier: String): CorePersonDetails = corePersonRecordApiWebClient
     .get()
     .uri(path, identifier)

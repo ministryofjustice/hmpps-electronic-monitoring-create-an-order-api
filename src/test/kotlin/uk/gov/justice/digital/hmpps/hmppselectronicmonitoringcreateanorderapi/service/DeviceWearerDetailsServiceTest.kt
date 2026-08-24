@@ -28,9 +28,6 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
-import java.time.LocalDateTime
-import java.time.ZoneId
-import java.time.ZonedDateTime
 import java.util.Optional
 import java.util.UUID
 
@@ -66,14 +63,6 @@ class DeviceWearerDetailsServiceTest {
       lastRequestedVersionId = versionId
       lastRequestedIdentifier = crn
       lastRoute = "probation"
-      errorToThrow?.let { throw it }
-      return prisonDetailsResponse
-    }
-
-    override fun getPersonByDefendantId(defendantId: String, versionId: UUID): CorePersonRecord {
-      lastRequestedVersionId = versionId
-      lastRequestedIdentifier = defendantId
-      lastRoute = "court"
       errorToThrow?.let { throw it }
       return prisonDetailsResponse
     }
@@ -126,35 +115,6 @@ class DeviceWearerDetailsServiceTest {
 
       assertThat(res.firstName).isEqualTo("Cat")
       assertThat(client.lastRoute).isEqualTo("probation")
-    }
-
-    @Test
-    fun `returns basic prison details`() {
-      client.setMockResponse(
-        baseDetails.copy(
-          deviceWearer = DeviceWearer(
-            versionId = mockVersionId,
-            firstName = "Bob",
-            lastName = "Builder",
-            dateOfBirth = ZonedDateTime.of(LocalDateTime.of(1990, 8, 21, 0, 0), ZoneId.of("Europe/London")),
-          ),
-        ),
-      )
-
-      val service = DeviceWearerDetailsService(client)
-
-      val res = service.getDetailsOverview("1234", NotifyingOrganisationDDv5.MAGISTRATES_COURT.name)
-
-      assertThat(res.firstName).isEqualTo("Bob")
-      assertThat(res.lastName).isEqualTo("Builder")
-      assertThat(res.dateOfBirth).isEqualTo(
-        ZonedDateTime.of(
-          LocalDateTime.of(1990, 8, 21, 0, 0),
-          ZoneId.of("Europe/London"),
-        ),
-      )
-      assertThat(res.firstName).isEqualTo("Bob")
-      assertThat(client.lastRoute).isEqualTo("court")
     }
   }
 
@@ -317,13 +277,12 @@ class DeviceWearerDetailsServiceTest {
     }
 
     @Test
-    fun `routes court lookups to common platform endpoint`() {
+    fun `rejects court lookups without a defendant id`() {
       mockOrder.interestedParties!!.notifyingOrganisation = NotifyingOrganisationDDv5.CROWN_COURT.name
 
-      service.storeDetails("defendant-id", mockOrderId, mockUsername)
-
-      assertThat(client.lastRoute).isEqualTo("court")
-      assertThat(client.lastRequestedIdentifier).isEqualTo("defendant-id")
+      assertThatThrownBy {
+        service.storeDetails("value", mockOrderId, mockUsername)
+      }.hasMessageContaining("unsupported")
     }
 
     @Test

@@ -47,15 +47,6 @@ class CorePersonRecordApiClientTest : IntegrationTestBase() {
     }
 
     @Test
-    fun `it calls the get by court defendant id endpoint`() {
-      corePersonRecordApi.stubGetCourtDetails("defendant-id", prisonerDetailsJson)
-
-      corePersonRecordApiClient.getPersonByDefendantId("defendant-id", UUID.randomUUID())
-
-      corePersonRecordApi.verify(1, getRequestedFor(urlPathEqualTo("/person/commonplatform/defendant-id")))
-    }
-
-    @Test
     fun `it deserialises and maps the response to a device wearer`() {
       val versionId = UUID.randomUUID()
       corePersonRecordApi.stubGetPrisonerDetails("A1234BC", prisonerDetailsJson)

@@ -71,18 +71,6 @@ class CorePersonRecordApiMockServer : WireMockServer(WIREMOCK_PORT) {
     )
   }
 
-  fun stubGetCourtDetails(defendantId: String, responseBody: String) {
-    stubFor(
-      get(urlPathTemplate("/person/commonplatform/{defendantId}"))
-        .willReturn(
-          aResponse()
-            .withHeader("Content-Type", "application/json")
-            .withBody(responseBody)
-            .withStatus(200),
-        ),
-    )
-  }
-
   fun stubHealthPing(status: Int) {
     stubFor(
       get("/health/ping").willReturn(
