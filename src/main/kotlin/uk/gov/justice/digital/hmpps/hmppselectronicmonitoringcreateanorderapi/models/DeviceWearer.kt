@@ -29,6 +29,9 @@ data class DeviceWearer(
   @Column(name = "PNC_ID", nullable = true)
   var pncId: String? = null,
 
+  @Column(name = "NATIONAL_INSURANCE_NUMBER", nullable = true)
+  var nationalInsuranceNumber: String? = null,
+
   @Column(name = "DELIUS_ID", nullable = true)
   var deliusId: String? = null,
 
@@ -83,6 +86,15 @@ data class DeviceWearer(
 
   @Column(name = "NO_FIXED_ABODE", nullable = true)
   var noFixedAbode: Boolean? = null,
+
+  @Column(name = "RELIGION", nullable = true)
+  var religion: String? = null,
+
+  @Column(name = "NATIONALITY", nullable = true)
+  var nationality: String? = null,
+
+  @Column(name = "ETHNICITY", nullable = true)
+  var ethnicity: String? = null,
 
   @Schema(hidden = true)
   @OneToOne
