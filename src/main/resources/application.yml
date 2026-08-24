@@ -44,8 +44,8 @@ spring:
             authorization-grant-type: client_credentials
           core-person-record-api:
             provider: hmpps-auth
-            client-id: ${CORE_PERSON_RECORD_CLIENT_ID}
-            client-secret: ${CORE_PERSON_RECORD_CLIENT_SECRET}
+            client-id: ${CLIENT_ID}
+            client-secret: ${CLIENT_SECRET}
             authorization-grant-type: client_credentials
   cloud:
     aws:
