@@ -8,7 +8,6 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.cl
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.BadRequestException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.CorePersonRecordAuthorisationException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.CorePersonRecordDependencyException
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Result
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.GetCorePersonDetailsResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisationDDv5
 import java.util.UUID
@@ -16,10 +15,10 @@ import java.util.UUID
 @Service
 class DeviceWearerDetailsService(private val webClient: CorePersonRecordApi) : OrderSectionServiceBase() {
 
-  fun storeDetails(organisationSearchId: String, orderId: UUID, username: String): Result<Unit> {
+  fun storeDetails(organisationSearchId: String, orderId: UUID, username: String) {
     val normalisedOrganisationSearchId = normaliseOrganisationSearchId(organisationSearchId)
 
-    return try {
+    try {
       val order = this.findEditableOrder(orderId, username)
       val notifyingOrganisation = order.interestedParties?.notifyingOrganisation
       val record = fetchPersonRecord(notifyingOrganisation, normalisedOrganisationSearchId, order.versionId)
@@ -28,48 +27,35 @@ class DeviceWearerDetailsService(private val webClient: CorePersonRecordApi) : O
       order.contactDetails = record.contactDetails
 
       orderRepo.save(order)
-      Result(success = true)
-    } catch (error: EntityNotFoundException) {
-      Result(success = false, error = error)
     } catch (error: WebClientResponseException.NotFound) {
-      Result(
-        success = false,
-        error = EntityNotFoundException(
-          "No wearer details were found for id $normalisedOrganisationSearchId",
-        ),
+      throw EntityNotFoundException(
+        "No wearer details were found for id $normalisedOrganisationSearchId",
       )
     } catch (error: WebClientResponseException.Forbidden) {
-      Result(
-        success = false,
-        error = CorePersonRecordAuthorisationException(
-          "Core Person Record authorisation failed for id $normalisedOrganisationSearchId",
-          error,
-        ),
+      throw CorePersonRecordAuthorisationException(
+        "Core Person Record authorisation failed for id $normalisedOrganisationSearchId",
+        error,
       )
     } catch (error: WebClientResponseException) {
-      Result(
-        success = false,
-        error = CorePersonRecordDependencyException(
-          "Core Person Record lookup failed for id $normalisedOrganisationSearchId",
-          error.statusCode,
-          error,
-        ),
+      throw CorePersonRecordDependencyException(
+        "Core Person Record lookup failed for id $normalisedOrganisationSearchId",
+        error.statusCode,
+        error,
       )
     } catch (error: WebClientRequestException) {
-      Result(
-        success = false,
-        error = CorePersonRecordDependencyException(
-          "Core Person Record is unavailable for id $normalisedOrganisationSearchId",
-          null,
-          error,
-        ),
+      throw CorePersonRecordDependencyException(
+        "Core Person Record is unavailable for id $normalisedOrganisationSearchId",
+        null,
+        error,
       )
     }
   }
 
-  fun getDetailsOverview(organisationSearchId: String, notifyingOrganisation: String?): GetCorePersonDetailsResponse {
+  fun getDetailsOverview(organisationSearchId: String, orderId: UUID, username: String): GetCorePersonDetailsResponse {
     val normalisedOrganisationSearchId = normaliseOrganisationSearchId(organisationSearchId)
-    val details = fetchPersonRecord(notifyingOrganisation, normalisedOrganisationSearchId, UUID.randomUUID())
+    val order = this.findEditableOrder(orderId, username)
+    val notifyingOrganisation = order.interestedParties?.notifyingOrganisation
+    val details = fetchPersonRecord(notifyingOrganisation, normalisedOrganisationSearchId, order.versionId)
 
     return GetCorePersonDetailsResponse(
       firstName = details.deviceWearer?.firstName,
