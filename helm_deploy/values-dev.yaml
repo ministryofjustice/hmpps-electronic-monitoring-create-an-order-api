@@ -18,6 +18,7 @@ generic-service:
     DDV6_COURT_MAPPINGS: true
     TAG_AT_SOURCE_ENABLED: true
     MANAGE_USER_URL: "https://manage-users-api-dev.hmpps.service.justice.gov.uk/"
+    CORE_PERSON_RECORD_URL: "https://hmpps-person-record-dev.hmpps.service.justice.gov.uk/"
 
 
 # CloudPlatform AlertManager receiver to route prometheus alerts to slack

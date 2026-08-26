@@ -4,10 +4,12 @@ import jakarta.persistence.EntityNotFoundException
 import jakarta.validation.ConstraintViolationException
 import jakarta.validation.ValidationException
 import org.slf4j.LoggerFactory
+import org.springframework.http.HttpStatus.BAD_GATEWAY
 import org.springframework.http.HttpStatus.BAD_REQUEST
 import org.springframework.http.HttpStatus.FORBIDDEN
 import org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR
 import org.springframework.http.HttpStatus.NOT_FOUND
+import org.springframework.http.HttpStatus.SERVICE_UNAVAILABLE
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.AccessDeniedException
 import org.springframework.transaction.TransactionSystemException
@@ -19,6 +21,8 @@ import org.springframework.web.method.annotation.HandlerMethodValidationExceptio
 import org.springframework.web.multipart.MaxUploadSizeExceededException
 import org.springframework.web.servlet.resource.NoResourceFoundException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.BadRequestException
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.CorePersonRecordAuthorisationException
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.CorePersonRecordDependencyException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.DocumentApiBadRequestException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.ForbiddenException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.FormValidationException
@@ -161,6 +165,35 @@ class HmppsElectronicMonitoringCreateAnOrderApiExceptionHandler {
         developerMessage = e.message,
       ),
     ).also { log.error("Unexpected exception", e) }
+
+  @ExceptionHandler(CorePersonRecordAuthorisationException::class)
+  fun handleCorePersonRecordAuthorisationException(
+    e: CorePersonRecordAuthorisationException,
+  ): ResponseEntity<ErrorResponse> = ResponseEntity
+    .status(BAD_GATEWAY)
+    .body(
+      ErrorResponse(
+        status = BAD_GATEWAY,
+        userMessage = "Core Person Record authorisation failure",
+        developerMessage = e.message,
+        errorCode = "CORE_PERSON_RECORD_AUTH_FAILURE",
+      ),
+    ).also { log.error("Core Person Record authorisation exception", e) }
+
+  @ExceptionHandler(CorePersonRecordDependencyException::class)
+  fun handleCorePersonRecordDependencyException(e: CorePersonRecordDependencyException): ResponseEntity<ErrorResponse> {
+    val status = if (e.upstreamStatusCode == null) SERVICE_UNAVAILABLE else BAD_GATEWAY
+    return ResponseEntity
+      .status(status)
+      .body(
+        ErrorResponse(
+          status = status,
+          userMessage = "Core Person Record dependency failure",
+          developerMessage = e.message,
+          errorCode = "CORE_PERSON_RECORD_DEPENDENCY_FAILURE",
+        ),
+      ).also { log.error("Core Person Record dependency exception", e) }
+  }
 
   @ExceptionHandler(SercoConnectionException::class)
   fun handleSercoAuthenticationException(e: Exception): ResponseEntity<ErrorResponse> = ResponseEntity
