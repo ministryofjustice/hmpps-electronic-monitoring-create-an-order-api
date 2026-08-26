@@ -62,7 +62,8 @@ class CorePersonRecordApiClient(private val corePersonRecordApiWebClient: WebCli
                   it.statusCode.isSameCodeAs(HttpStatus.TOO_MANY_REQUESTS) ||
                   it.statusCode.isSameCodeAs(HttpStatus.REQUEST_TIMEOUT)
                 )
-          },
+          }
+          .onRetryExhaustedThrow { _, retrySignal -> retrySignal.failure() },
       )
       .block()!!
   } catch (error: WebClientResponseException.NotFound) {
