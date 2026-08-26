@@ -71,6 +71,14 @@ toggle:
   tag-at-source:
     enabled: ${TAG_AT_SOURCE_ENABLED:false}
 
+common-platform:
+  dead-letter-retry:
+    enabled: ${CP_DLQ_RETRY_ENABLED:false}
+    max-retries: ${CP_DLQ_MAX_RETRIES:3}
+    batch-size: ${CP_DLQ_RETRY_BATCH_SIZE:10}
+    poll-interval: ${CP_DLQ_RETRY_POLL_INTERVAL:60000}
+    exhausted-visibility-timeout-seconds: ${CP_DLQ_EXHAUSTED_VISIBILITY_TIMEOUT_SECONDS:43200}
+
 settings:
   data-dictionary-version: DDV4
   ddv6-court-mappings: ${DDV6_COURT_MAPPINGS:false}

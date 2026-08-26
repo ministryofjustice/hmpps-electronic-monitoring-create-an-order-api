@@ -1,7 +1,9 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.listener
 
 import io.awspring.cloud.sqs.annotation.SqsListener
+import io.awspring.cloud.sqs.listener.SqsHeaders.SQS_SOURCE_DATA_HEADER
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression
+import org.springframework.messaging.Message
 import org.springframework.stereotype.Service
 import tools.jackson.databind.ObjectMapper
 import tools.jackson.module.kotlin.readValue
@@ -14,6 +16,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.se
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
+import software.amazon.awssdk.services.sqs.model.Message as SqsMessage
 
 @Service
 @ConditionalOnExpression("\${toggle.common-platform.processing.enabled:false}")
@@ -29,7 +32,17 @@ class CourtHearingEventListener(
   private val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy hh:mm:ss")
 
   @SqsListener("courthearingeventqueue", factory = "hmppsQueueContainerFactoryProxy")
-  fun onDomainEvent(rawMessage: String) {
+  fun onDomainEvent(message: Message<String>) {
+    val sourceMessage = message.headers[SQS_SOURCE_DATA_HEADER] as? SqsMessage
+    val retryAttempts = sourceMessage?.messageAttributes()?.get("RetryAttempts")?.stringValue()?.toIntOrNull()
+      ?: message.headers["RetryAttempts"]?.toString()?.toIntOrNull()
+      ?: 0
+    processDomainEvent(message.payload, retryAttempts)
+  }
+
+  fun onDomainEvent(rawMessage: String) = processDomainEvent(rawMessage, 0)
+
+  private fun processDomainEvent(rawMessage: String, retryAttempts: Int) {
     val startTimeInMs = System.currentTimeMillis()
     val startDateTime = ZonedDateTime.now(ZoneId.of("GMT"))
     try {
@@ -48,7 +61,7 @@ class CourtHearingEventListener(
       if (courtHearing.hearing.isHearingContainsEM()) {
         val handlingErrors = eventHandler.handleHearingEvent(courtHearing)
         if (handlingErrors.any()) {
-          deadLetterQueueService.sentEvent(rawMessage, handlingErrors.joinToString(","))
+          deadLetterQueueService.sentEvent(rawMessage, handlingErrors.joinToString(","), retryAttempts)
         }
       } else {
         val containsEmLabel = rawMessage.contains("Notification of electronic monitoring order")
@@ -61,10 +74,8 @@ class CourtHearingEventListener(
           System.currentTimeMillis() - startTimeInMs,
         )
       }
-    } catch (e: Exception) {
-      deadLetterQueueService.sentEvent(rawMessage, "Malformed event received. Could not parse JSON")
-      // TODO Handle messages in dead letter queue
-      val error = e.message ?: ""
+    } catch (_: Exception) {
+      deadLetterQueueService.sentEvent(rawMessage, "Failed event received", retryAttempts)
       eventService.recordEvent(
         "Common_Platform_Exception",
         mapOf("Start Date And Time" to startDateTime.format(formatter)),
