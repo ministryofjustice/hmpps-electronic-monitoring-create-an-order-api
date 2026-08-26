@@ -16,6 +16,7 @@ class WebClientConfiguration(
   @Value("\${api.timeout:1s}") val timeout: Duration,
   @Value("\${services.document.url}") val hmppsDocumentManagementApiUrl: String,
   @Value("\${services.manage-user.url}") val manageUserApiUrl: String,
+  @Value("\${services.core-person-record.url}") val corePersonRecordApiUrl: String,
 ) {
 
   @Bean
@@ -37,4 +38,15 @@ class WebClientConfiguration(
   fun manageUserApiWebClient(builder: WebClient.Builder): WebClient = WebClient.builder().baseUrl(
     manageUserApiUrl,
   ).build()
+
+  @Bean
+  fun corePersonRecordApiWebClient(
+    authorizedClientManager: OAuth2AuthorizedClientManager,
+    builder: WebClient.Builder,
+  ): WebClient = builder.authorisedWebClient(
+    authorizedClientManager,
+    registrationId = "core-person-record-api",
+    url = corePersonRecordApiUrl,
+    timeout,
+  )
 }

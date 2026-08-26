@@ -1,15 +1,17 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client
 
 import org.springframework.stereotype.Component
+import org.springframework.web.reactive.function.client.WebClient
+import org.springframework.web.reactive.function.client.bodyToMono
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ContactDetails
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CorePersonRecord
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.PrisonerRecord
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.corePersonRecord.Address
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.corePersonRecord.Alias
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.corePersonRecord.CodeDescription
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.corePersonRecord.Contact
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.corePersonRecord.PrisonerDetails
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.corePersonRecord.CorePersonDetails
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsDates.londonTimeZone
 import java.time.LocalDate
 import java.time.ZonedDateTime
@@ -18,29 +20,38 @@ import java.util.UUID
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Address as CemoAddress
 
 @Component
-class CorePersonRecordApiClient : PrisonerDetailsApi {
+class CorePersonRecordApiClient(private val corePersonRecordApiWebClient: WebClient) : CorePersonRecordApi {
 
   companion object {
     private val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
   }
 
-  override fun getPrisonerDetails(prisonNumber: String, versionId: UUID): PrisonerRecord {
-    val details = fetchPrisonerDetails(prisonNumber)
+  override fun getPersonByPrisonNumber(prisonNumber: String, versionId: UUID): CorePersonRecord {
+    val details = fetchCorePersonDetails("/person/prison/{identifier}", prisonNumber)
 
-    return mapToPrisonerRecord(details, versionId)
+    return mapToCorePersonRecord(details, versionId)
   }
 
-  private fun fetchPrisonerDetails(prisonNumber: String): PrisonerDetails {
-    TODO("Not yet implemented")
+  override fun getPersonByCrn(crn: String, versionId: UUID): CorePersonRecord {
+    val details = fetchCorePersonDetails("/person/probation/{identifier}", crn)
+
+    return mapToCorePersonRecord(details, versionId)
   }
 
-  internal fun mapToPrisonerRecord(details: PrisonerDetails, versionId: UUID): PrisonerRecord = PrisonerRecord(
+  private fun fetchCorePersonDetails(path: String, identifier: String): CorePersonDetails = corePersonRecordApiWebClient
+    .get()
+    .uri(path, identifier)
+    .retrieve()
+    .bodyToMono<CorePersonDetails>()
+    .block()!!
+
+  internal fun mapToCorePersonRecord(details: CorePersonDetails, versionId: UUID): CorePersonRecord = CorePersonRecord(
     deviceWearer = toDeviceWearer(details, versionId),
     contactDetails = toContactDetails(details, versionId),
     addresses = listOfNotNull(toPrimaryAddress(details, versionId), toSecondaryAddress(details, versionId)),
   )
 
-  private fun toDeviceWearer(details: PrisonerDetails, versionId: UUID): DeviceWearer = DeviceWearer(
+  private fun toDeviceWearer(details: CorePersonDetails, versionId: UUID): DeviceWearer = DeviceWearer(
     versionId = versionId,
     firstName = details.firstName,
     middleName = details.middleNames,
@@ -58,19 +69,19 @@ class CorePersonRecordApiClient : PrisonerDetailsApi {
     ethnicity = details.ethnicity?.description,
   )
 
-  private fun toPrimaryAddress(details: PrisonerDetails, versionId: UUID): CemoAddress? {
+  private fun toPrimaryAddress(details: CorePersonDetails, versionId: UUID): CemoAddress? {
     val primaryAddress = details.addresses?.firstOrNull { isPrimaryAddress(it) } ?: return null
 
     return toCemoAddress(primaryAddress, versionId)
   }
 
-  private fun toSecondaryAddress(details: PrisonerDetails, versionId: UUID): CemoAddress? {
+  private fun toSecondaryAddress(details: CorePersonDetails, versionId: UUID): CemoAddress? {
     val secondaryAddress = details.addresses?.firstOrNull { isSecondaryAddress(it) } ?: return null
 
     return toCemoAddress(secondaryAddress, versionId)
   }
 
-  private fun toContactDetails(details: PrisonerDetails, versionId: UUID): ContactDetails? {
+  private fun toContactDetails(details: CorePersonDetails, versionId: UUID): ContactDetails? {
     val contacts = details.addresses?.flatMap { it.contacts } ?: return null
     val matchingContact = contacts.firstOrNull { isMobile(it) } ?: contacts.firstOrNull { isHome(it) } ?: return null
 
