@@ -17,10 +17,12 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsAttachmentResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsErrorResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsResponse
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsRetrieveDWandMO
 import java.util.*
 
 @Service
 class FmsClient(@Value("\${services.serco.url}") url: String, private val fmsAuthClient: FmsAuthClient) {
+
   private val webClient: WebClient = WebClient.builder().baseUrl(url).build()
 
   private fun resolvePath(orderSource: FmsOrderSource, cemoPath: String, commonPlatformPath: String): String =
@@ -36,7 +38,7 @@ class FmsClient(@Value("\${services.serco.url}") url: String, private val fmsAut
       .onStatus(
         { t -> t.isError },
         {
-          it.bodyToMono(FmsErrorResponse::class.java).flatMap { error ->
+          it.bodyToMono<FmsErrorResponse>().flatMap { error ->
             Mono.error(
               CreateSercoEntityException(
                 "Error $errorContext for order: $orderId with error: ${error?.error?.detail}",
@@ -148,7 +150,7 @@ class FmsClient(@Value("\${services.serco.url}") url: String, private val fmsAut
           }
         },
       )
-      .bodyToMono(FmsAttachmentResponse::class.java)
+      .bodyToMono<FmsAttachmentResponse>()
       .onErrorResume(WebClientResponseException::class.java) { Mono.empty() }
       .block()!!
     return result
@@ -170,6 +172,54 @@ class FmsClient(@Value("\${services.serco.url}") url: String, private val fmsAut
               .map { res ->
                 CaseState.fromStateString(res.result?.state)
               }
+          }
+        }
+      }
+      .block()!!
+  }
+
+  fun getLatestOrderDetails(caseId: String): FmsRetrieveDWandMO {
+    val token = fmsAuthClient.getClientToken()
+    return webClient.get()
+      .uri("/monitoring_order/retrieveDWandMO?u_case_id=$caseId")
+      .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+      .exchangeToMono { response ->
+        when (response.statusCode().value()) {
+          400 -> {
+            response.bodyToMono<String>()
+              .defaultIfEmpty("Invalid request for caseId=$caseId")
+              .flatMap { error ->
+                Mono.error(
+                  CreateSercoEntityException(
+                    "Invalid request for caseId=$caseId: $error",
+                  ),
+                )
+              }
+          }
+          404 -> {
+            response.bodyToMono<String>()
+              .defaultIfEmpty("Case not found for caseId=$caseId")
+              .flatMap { error ->
+                Mono.error(
+                  CreateSercoEntityException(
+                    "Case not found for caseId=$caseId: $error",
+                  ),
+                )
+              }
+          }
+          500 -> {
+            response.bodyToMono<String>()
+              .defaultIfEmpty("Internal Server Error")
+              .flatMap { errorBody ->
+                Mono.error(
+                  CreateSercoEntityException(
+                    "FMS returned 500 for caseId=$caseId. Response: $errorBody",
+                  ),
+                )
+              }
+          }
+          else -> {
+            response.bodyToMono<FmsRetrieveDWandMO>()
           }
         }
       }

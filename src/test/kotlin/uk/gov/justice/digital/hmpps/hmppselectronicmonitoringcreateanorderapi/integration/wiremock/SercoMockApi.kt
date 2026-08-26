@@ -17,6 +17,7 @@ import tools.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsAttachmentResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsErrorResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsResponse
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsRetrieveDWandMO
 
 class SercoMockApiExtension :
   BeforeAllCallback,
@@ -140,6 +141,21 @@ class SercoMockApiServer : WireMockServer(WIREMOCK_PORT) {
     val body = responseBody(result, errorResponse)
     stubFor(
       get(urlEqualTo("/now/table/x_serg2_ems_csm_case/$caseId?sysparm_fields=state"))
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withBody(
+              body,
+            )
+            .withStatus(status.value()),
+        ),
+    )
+  }
+
+  fun stubGetDWandMo(caseId: String, status: HttpStatus, result: FmsRetrieveDWandMO, errorResponse: String? = null) {
+    val body = errorResponse ?: responseBody(result, null)
+    stubFor(
+      get(urlEqualTo("/monitoring_order/retrieveDWandMO?u_case_id=$caseId"))
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")

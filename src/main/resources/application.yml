@@ -42,6 +42,11 @@ spring:
             client-id: ${CLIENT_ID}
             client-secret: ${CLIENT_SECRET}
             authorization-grant-type: client_credentials
+          core-person-record-api:
+            provider: hmpps-auth
+            client-id: ${CLIENT_ID}
+            client-secret: ${CLIENT_SECRET}
+            authorization-grant-type: client_credentials
   cloud:
     aws:
       region:
@@ -73,6 +78,7 @@ settings:
   data-dictionary-version: DDV4
   ddv6-court-mappings: ${DDV6_COURT_MAPPINGS:false}
   device-wearer-payload-version: Prod
+  get-api-enabled: ${GET_API_ENABLED:false}
 
 management:
   endpoints:
@@ -98,6 +104,8 @@ services:
     url: ${DOCUMENT_MANAGEMENT_URL}
   manage-user:
     url: ${MANAGE_USER_URL}
+  core-person-record:
+    url: ${CORE_PERSON_RECORD_URL}
   serco:
     auth-url: ${SERCO_AUTH_URL}
     client-id: ${SERCO_CLIENT_ID}

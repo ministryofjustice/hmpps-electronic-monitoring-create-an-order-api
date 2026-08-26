@@ -31,6 +31,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.co
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.BadRequestException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.ForbiddenException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AdditionalDocument
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationAppointment
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationLocation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InterestedParties
@@ -1189,7 +1190,7 @@ class OrderServiceTest {
     }
 
     @Nested
-    @DisplayName("Create Version as Variation")
+    @DisplayName("Create Version as Variation with same cohort")
     inner class CreateVersionAsVariationSameCohort {
       @BeforeEach
       fun setup() {
@@ -1281,6 +1282,48 @@ class OrderServiceTest {
           verify(repo, times(1)).save(capture())
           assertThat(firstValue.id).isEqualTo(order.id)
           assertThat(firstValue.versions.first().type).isEqualTo(RequestType.REJECTED)
+        }
+      }
+    }
+
+    @Nested
+    @DisplayName("Create version from fms latest order version")
+    inner class CreateVersionFromFms {
+      @BeforeEach
+      fun setup() {
+        val mockVersionId = UUID.randomUUID()
+        val mockVersion = OrderVersion(
+          id = mockVersionId,
+          versionId = 0,
+          status = OrderStatus.SUBMITTED,
+          type = RequestType.REQUEST,
+          orderId = order.id,
+          deviceWearer = DeviceWearer(versionId = mockVersionId, firstName = "FMS", lastName = "User"),
+          dataDictionaryVersion = DataDictionaryVersion.DDV6,
+          username = "fms-user",
+        )
+        whenever(repo.findById(order.id)).thenReturn(Optional.of(order))
+        whenever(repo.save(order)).thenReturn(order)
+        val mockUserCohort = UserCohort(Cohort.PRISON)
+        whenever(userCohortService.getUserCohort(authentication)).thenReturn(mockUserCohort)
+        whenever(userCohortService.matchesNotifyingOrg(mockUserCohort.cohort, "PRISON")).thenReturn(true)
+        whenever(fmsService.getLatestOrderVersion(order)).thenReturn(mockVersion)
+      }
+
+      @Test
+      fun `It should create an new order version from fms version`() {
+        service.createVersion(order.id, authentication, RequestType.VARIATION)
+        argumentCaptor<Order>().apply {
+          verify(repo, times(1)).save(capture())
+          assertThat(firstValue.id).isEqualTo(order.id)
+          assertThat(firstValue.versions.count()).isEqualTo(2)
+          assertThat(firstValue.versions.last().id).isNotEqualTo(originalVersionId)
+          assertThat(firstValue.versions.last().status).isEqualTo(OrderStatus.IN_PROGRESS)
+          assertThat(firstValue.versions.last().type).isEqualTo(RequestType.VARIATION)
+          assertThat(firstValue.versions.last().username).isEqualTo("mockUser")
+          assertThat(firstValue.versions.last().deviceWearer?.firstName).isEqualTo("FMS")
+          assertThat(firstValue.versions.last().deviceWearer?.lastName).isEqualTo("User")
+          assertThat(firstValue.versions.last().versionId).isEqualTo(1)
         }
       }
     }

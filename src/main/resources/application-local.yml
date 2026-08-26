@@ -38,6 +38,9 @@ services:
   manage-user:
     url: http://localhost:9091/manage-user/
 #    url: https://manage-users-dev.hmpps.service.justice.gov.uk/
+  core-person-record:
+    url: http://localhost:8082/
+#    url: https://hmpps-person-record-dev.hmpps.service.justice.gov.uk/
 CLIENT_ID: hmpps-electronic-monitoring-create-an-order-api
 CLIENT_SECRET: clientsecret
 

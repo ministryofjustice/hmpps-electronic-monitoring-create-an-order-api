@@ -12,8 +12,9 @@ generic-service:
     CP_PROCESSING_ENABLED: false
     CP_FMS_INTEGRATION_ENABLED: false
     DDV6_COURT_MAPPINGS: true
-    SETTINGS_DATA_DICTIONARY_VERSION: DDV6
+    SETTINGS_DATA_DICTIONARY_VERSION: DDV7
     MANAGE_USER_URL: "https://manage-users-api.hmpps.service.justice.gov.uk/"
+    CORE_PERSON_RECORD_URL: "https://hmpps-person-record.hmpps.service.justice.gov.uk/"
 
 
 # CloudPlatform AlertManager receiver to route prometheus alerts to slack

@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms
 
+import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
 
 data class DeviceWearer(
@@ -151,8 +152,9 @@ data class DeviceWearer(
 
   var language: String? = "",
 
+  @JsonInclude(JsonInclude.Include.NON_NULL)
   @JsonProperty("new_order_case_id")
-  var newOrderCaseId: String? = "",
+  var newOrderCaseId: String? = null,
 ) {
   companion object
 }
