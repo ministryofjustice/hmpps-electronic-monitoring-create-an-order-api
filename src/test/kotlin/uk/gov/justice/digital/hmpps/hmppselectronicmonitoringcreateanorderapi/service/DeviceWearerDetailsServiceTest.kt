@@ -10,12 +10,10 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
-import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
-import org.springframework.web.reactive.function.client.WebClientResponseException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.CorePersonRecordApi
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.CorePersonRecordAuthorisationException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.CorePersonRecordDependencyException
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.CorePersonRecordNotFoundException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Address
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ContactDetails
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CorePersonRecord
@@ -335,44 +333,19 @@ class DeviceWearerDetailsServiceTest {
     @Test
     fun `throws not found when core person record has no match`() {
       mockOrder.interestedParties!!.notifyingOrganisation = NotifyingOrganisationDDv5.PRISON.name
-      client.errorToThrow = WebClientResponseException.create(
-        404,
-        "Not Found",
-        HttpHeaders.EMPTY,
-        ByteArray(0),
-        null,
-      )
+      client.errorToThrow = CorePersonRecordNotFoundException("No Core Person Record was found for id A1234BC")
 
       assertThatThrownBy {
         service.storeDetails("A1234BC", mockOrderId, mockUsername)
-      }.isInstanceOf(EntityNotFoundException::class.java)
+      }.isInstanceOf(CorePersonRecordNotFoundException::class.java)
     }
 
     @Test
-    fun `throws auth dependency failure when core person record returns forbidden`() {
+    fun `propagates dependency failures raised by the core person record gateway`() {
       mockOrder.interestedParties!!.notifyingOrganisation = NotifyingOrganisationDDv5.PRISON.name
-      client.errorToThrow = WebClientResponseException.create(
-        403,
-        "Forbidden",
-        HttpHeaders.EMPTY,
-        ByteArray(0),
-        null,
-      )
-
-      assertThatThrownBy {
-        service.storeDetails("A1234BC", mockOrderId, mockUsername)
-      }.isInstanceOf(CorePersonRecordAuthorisationException::class.java)
-    }
-
-    @Test
-    fun `throws dependency failure when core person record returns server error`() {
-      mockOrder.interestedParties!!.notifyingOrganisation = NotifyingOrganisationDDv5.PRISON.name
-      client.errorToThrow = WebClientResponseException.create(
-        500,
-        "Server Error",
-        HttpHeaders.EMPTY,
-        ByteArray(0),
-        null,
+      client.errorToThrow = CorePersonRecordDependencyException(
+        "Core Person Record lookup failed for id A1234BC",
+        HttpStatus.INTERNAL_SERVER_ERROR,
       )
 
       assertThatThrownBy {

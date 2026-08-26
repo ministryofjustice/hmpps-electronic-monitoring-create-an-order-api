@@ -4,6 +4,7 @@ import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.urlPathTemplate
+import com.github.tomakehurst.wiremock.http.Fault
 import org.junit.jupiter.api.extension.AfterAllCallback
 import org.junit.jupiter.api.extension.BeforeAllCallback
 import org.junit.jupiter.api.extension.BeforeEachCallback
@@ -56,6 +57,35 @@ class CorePersonRecordApiMockServer : WireMockServer(WIREMOCK_PORT) {
             .withHeader("Content-Type", "application/json")
             .withStatus(404),
         ),
+    )
+  }
+
+  fun stubGetPrisonerDetailsForbidden(prisonNumber: String) {
+    stubFor(
+      get(urlPathTemplate("/person/prison/{prisonNumber}"))
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withStatus(403),
+        ),
+    )
+  }
+
+  fun stubGetPrisonerDetailsServerError(prisonNumber: String) {
+    stubFor(
+      get(urlPathTemplate("/person/prison/{prisonNumber}"))
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withStatus(500),
+        ),
+    )
+  }
+
+  fun stubGetPrisonerDetailsConnectionReset(prisonNumber: String) {
+    stubFor(
+      get(urlPathTemplate("/person/prison/{prisonNumber}"))
+        .willReturn(aResponse().withFault(Fault.CONNECTION_RESET_BY_PEER)),
     )
   }
 

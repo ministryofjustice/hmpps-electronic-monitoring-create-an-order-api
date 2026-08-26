@@ -8,9 +8,12 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.http.HttpStatus
 import org.springframework.test.context.ActiveProfiles
-import org.springframework.web.reactive.function.client.WebClientResponseException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.CorePersonRecordApiClient
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.CorePersonRecordAuthorisationException
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.CorePersonRecordDependencyException
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.CorePersonRecordNotFoundException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.CorePersonRecordApiExtension.Companion.corePersonRecordApi
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
@@ -81,12 +84,45 @@ class CorePersonRecordApiClientTest : IntegrationTestBase() {
     }
 
     @Test
-    fun `it propagates an error when the prisoner is not found`() {
+    fun `it translates a not found response into a not found exception`() {
       corePersonRecordApi.stubGetPrisonerDetailsNotFound("A1234BC")
 
       assertThatThrownBy {
         corePersonRecordApiClient.getPersonByPrisonNumber("A1234BC", UUID.randomUUID())
-      }.isInstanceOf(WebClientResponseException::class.java)
+      }.isInstanceOf(CorePersonRecordNotFoundException::class.java)
+    }
+
+    @Test
+    fun `it translates a forbidden response into an authorisation exception`() {
+      corePersonRecordApi.stubGetPrisonerDetailsForbidden("A1234BC")
+
+      assertThatThrownBy {
+        corePersonRecordApiClient.getPersonByPrisonNumber("A1234BC", UUID.randomUUID())
+      }.isInstanceOf(CorePersonRecordAuthorisationException::class.java)
+    }
+
+    @Test
+    fun `it translates a server error response into a dependency exception with the upstream status`() {
+      corePersonRecordApi.stubGetPrisonerDetailsServerError("A1234BC")
+
+      assertThatThrownBy {
+        corePersonRecordApiClient.getPersonByPrisonNumber("A1234BC", UUID.randomUUID())
+      }.isInstanceOf(CorePersonRecordDependencyException::class.java)
+        .matches {
+          (it as CorePersonRecordDependencyException).upstreamStatusCode == HttpStatus.INTERNAL_SERVER_ERROR
+        }
+    }
+
+    @Test
+    fun `it translates a connection failure into a dependency exception with no upstream status`() {
+      corePersonRecordApi.stubGetPrisonerDetailsConnectionReset("A1234BC")
+
+      assertThatThrownBy {
+        corePersonRecordApiClient.getPersonByPrisonNumber("A1234BC", UUID.randomUUID())
+      }.isInstanceOf(CorePersonRecordDependencyException::class.java)
+        .matches {
+          (it as CorePersonRecordDependencyException).upstreamStatusCode == null
+        }
     }
   }
 }

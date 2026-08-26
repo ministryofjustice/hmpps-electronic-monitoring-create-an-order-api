@@ -23,6 +23,7 @@ import org.springframework.web.servlet.resource.NoResourceFoundException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.BadRequestException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.CorePersonRecordAuthorisationException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.CorePersonRecordDependencyException
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.CorePersonRecordNotFoundException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.DocumentApiBadRequestException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.ForbiddenException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.FormValidationException
@@ -165,6 +166,18 @@ class HmppsElectronicMonitoringCreateAnOrderApiExceptionHandler {
         developerMessage = e.message,
       ),
     ).also { log.error("Unexpected exception", e) }
+
+  @ExceptionHandler(CorePersonRecordNotFoundException::class)
+  fun handleCorePersonRecordNotFoundException(e: CorePersonRecordNotFoundException): ResponseEntity<ErrorResponse> =
+    ResponseEntity
+      .status(NOT_FOUND)
+      .body(
+        ErrorResponse(
+          status = NOT_FOUND,
+          userMessage = "Not Found",
+          developerMessage = e.message,
+        ),
+      ).also { log.info("Core Person Record not found exception: {}", e.message) }
 
   @ExceptionHandler(CorePersonRecordAuthorisationException::class)
   fun handleCorePersonRecordAuthorisationException(

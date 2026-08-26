@@ -2,7 +2,12 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.c
 
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
+import org.springframework.web.reactive.function.client.WebClientRequestException
+import org.springframework.web.reactive.function.client.WebClientResponseException
 import org.springframework.web.reactive.function.client.bodyToMono
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.CorePersonRecordAuthorisationException
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.CorePersonRecordDependencyException
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.CorePersonRecordNotFoundException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ContactDetails
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CorePersonRecord
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
@@ -38,12 +43,36 @@ class CorePersonRecordApiClient(private val corePersonRecordApiWebClient: WebCli
     return mapToCorePersonRecord(details, versionId)
   }
 
-  private fun fetchCorePersonDetails(path: String, identifier: String): CorePersonDetails = corePersonRecordApiWebClient
-    .get()
-    .uri(path, identifier)
-    .retrieve()
-    .bodyToMono<CorePersonDetails>()
-    .block()!!
+  private fun fetchCorePersonDetails(path: String, identifier: String): CorePersonDetails = try {
+    corePersonRecordApiWebClient
+      .get()
+      .uri(path, identifier)
+      .retrieve()
+      .bodyToMono<CorePersonDetails>()
+      .block()!!
+  } catch (error: WebClientResponseException.NotFound) {
+    throw CorePersonRecordNotFoundException(
+      "No Core Person Record was found for id $identifier",
+      error,
+    )
+  } catch (error: WebClientResponseException.Forbidden) {
+    throw CorePersonRecordAuthorisationException(
+      "Core Person Record authorisation failed for id $identifier",
+      error,
+    )
+  } catch (error: WebClientResponseException) {
+    throw CorePersonRecordDependencyException(
+      "Core Person Record lookup failed for id $identifier",
+      error.statusCode,
+      error,
+    )
+  } catch (error: WebClientRequestException) {
+    throw CorePersonRecordDependencyException(
+      "Core Person Record is unavailable for id $identifier",
+      null,
+      error,
+    )
+  }
 
   internal fun mapToCorePersonRecord(details: CorePersonDetails, versionId: UUID): CorePersonRecord = CorePersonRecord(
     deviceWearer = toDeviceWearer(details, versionId),
