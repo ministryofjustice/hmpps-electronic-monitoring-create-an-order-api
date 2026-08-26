@@ -1,10 +1,12 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client
 
+import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.WebClientRequestException
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import org.springframework.web.reactive.function.client.bodyToMono
+import reactor.util.retry.Retry
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.CorePersonRecordAuthorisationException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.CorePersonRecordDependencyException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.CorePersonRecordNotFoundException
@@ -18,6 +20,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.corePersonRecord.Contact
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.corePersonRecord.CorePersonDetails
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsDates.londonTimeZone
+import java.time.Duration
 import java.time.LocalDate
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
@@ -49,6 +52,18 @@ class CorePersonRecordApiClient(private val corePersonRecordApiWebClient: WebCli
       .uri(path, identifier)
       .retrieve()
       .bodyToMono<CorePersonDetails>()
+      .retryWhen(
+        Retry.fixedDelay(1, Duration.ofMillis(2000))
+          // Only retry on 5xx/429/408 status error, do not retry for bad request
+          .filter {
+            it is WebClientResponseException &&
+              (
+                it.statusCode.is5xxServerError ||
+                  it.statusCode.isSameCodeAs(HttpStatus.TOO_MANY_REQUESTS) ||
+                  it.statusCode.isSameCodeAs(HttpStatus.REQUEST_TIMEOUT)
+                )
+          },
+      )
       .block()!!
   } catch (error: WebClientResponseException.NotFound) {
     throw CorePersonRecordNotFoundException(
