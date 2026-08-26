@@ -16,7 +16,6 @@ generic-service:
     CP_FMS_INTEGRATION_ENABLED: false
     SETTINGS_DATA_DICTIONARY_VERSION: DDV7
     DDV6_COURT_MAPPINGS: true
-    TAG_AT_SOURCE_ENABLED: true
     MANAGE_USER_URL: "https://manage-users-api-dev.hmpps.service.justice.gov.uk/"
 
 
