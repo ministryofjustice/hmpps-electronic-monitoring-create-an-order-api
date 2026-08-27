@@ -1,8 +1,15 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client
 
+import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
+import org.springframework.web.reactive.function.client.WebClientRequestException
+import org.springframework.web.reactive.function.client.WebClientResponseException
 import org.springframework.web.reactive.function.client.bodyToMono
+import reactor.util.retry.Retry
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.CorePersonRecordAuthorisationException
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.CorePersonRecordDependencyException
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.CorePersonRecordNotFoundException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ContactDetails
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CorePersonRecord
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
@@ -13,6 +20,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.corePersonRecord.Contact
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.corePersonRecord.CorePersonDetails
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsDates.londonTimeZone
+import java.time.Duration
 import java.time.LocalDate
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
@@ -38,12 +46,49 @@ class CorePersonRecordApiClient(private val corePersonRecordApiWebClient: WebCli
     return mapToCorePersonRecord(details, versionId)
   }
 
-  private fun fetchCorePersonDetails(path: String, identifier: String): CorePersonDetails = corePersonRecordApiWebClient
-    .get()
-    .uri(path, identifier)
-    .retrieve()
-    .bodyToMono<CorePersonDetails>()
-    .block()!!
+  private fun fetchCorePersonDetails(path: String, identifier: String): CorePersonDetails = try {
+    corePersonRecordApiWebClient
+      .get()
+      .uri(path, identifier)
+      .retrieve()
+      .bodyToMono<CorePersonDetails>()
+      .retryWhen(
+        Retry.fixedDelay(1, Duration.ofMillis(2000))
+          // Only retry on 5xx/429/408 status error, do not retry for bad request
+          .filter {
+            it is WebClientResponseException &&
+              (
+                it.statusCode.is5xxServerError ||
+                  it.statusCode.isSameCodeAs(HttpStatus.TOO_MANY_REQUESTS) ||
+                  it.statusCode.isSameCodeAs(HttpStatus.REQUEST_TIMEOUT)
+                )
+          }
+          .onRetryExhaustedThrow { _, retrySignal -> retrySignal.failure() },
+      )
+      .block()!!
+  } catch (error: WebClientResponseException.NotFound) {
+    throw CorePersonRecordNotFoundException(
+      "No Core Person Record was found for id $identifier",
+      error,
+    )
+  } catch (error: WebClientResponseException.Forbidden) {
+    throw CorePersonRecordAuthorisationException(
+      "Core Person Record authorisation failed for id $identifier",
+      error,
+    )
+  } catch (error: WebClientResponseException) {
+    throw CorePersonRecordDependencyException(
+      "Core Person Record lookup failed for id $identifier",
+      error.statusCode,
+      error,
+    )
+  } catch (error: WebClientRequestException) {
+    throw CorePersonRecordDependencyException(
+      "Core Person Record is unavailable for id $identifier",
+      null,
+      error,
+    )
+  }
 
   internal fun mapToCorePersonRecord(details: CorePersonDetails, versionId: UUID): CorePersonRecord = CorePersonRecord(
     deviceWearer = toDeviceWearer(details, versionId),
