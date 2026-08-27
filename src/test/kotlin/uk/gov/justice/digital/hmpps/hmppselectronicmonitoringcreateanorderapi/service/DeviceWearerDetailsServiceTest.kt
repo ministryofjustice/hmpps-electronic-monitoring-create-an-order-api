@@ -8,10 +8,13 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.EnumSource
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import org.springframework.http.HttpStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.CorePersonRecordApi
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.BadRequestException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.CorePersonRecordDependencyException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.CorePersonRecordNotFoundException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Address
@@ -321,13 +324,21 @@ class DeviceWearerDetailsServiceTest {
       }.hasMessageContaining("unsupported")
     }
 
-    @Test
-    fun `throws bad request when notifying organisation is unsupported`() {
-      mockOrder.interestedParties!!.notifyingOrganisation = NotifyingOrganisationDDv5.HOME_OFFICE.name
+    @ParameterizedTest
+    @EnumSource(
+      value = NotifyingOrganisationDDv5::class,
+      names = ["PRISON", "YOUTH_CUSTODY_SERVICE", "PROBATION"],
+      mode = EnumSource.Mode.EXCLUDE,
+    )
+    fun `throws bad request when notifying organisation is unsupported`(
+      notifyingOrganisation: NotifyingOrganisationDDv5,
+    ) {
+      mockOrder.interestedParties!!.notifyingOrganisation = notifyingOrganisation.name
 
       assertThatThrownBy {
         service.storeDetails("value", mockOrderId, mockUsername)
-      }.hasMessageContaining("unsupported")
+      }.isInstanceOf(BadRequestException::class.java)
+        .hasMessageContaining("unsupported")
     }
 
     @Test

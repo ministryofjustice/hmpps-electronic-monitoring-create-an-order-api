@@ -38,7 +38,8 @@ class DeviceWearerDetailsService(private val webClient: CorePersonRecordApi) : O
   }
 
   private fun fetchPersonRecord(notifyingOrganisation: String?, organisationSearchId: String, versionId: UUID) = when {
-    notifyingOrganisation == NotifyingOrganisationDDv5.PRISON.name ->
+    notifyingOrganisation == NotifyingOrganisationDDv5.PRISON.name ||
+      notifyingOrganisation == NotifyingOrganisationDDv5.YOUTH_CUSTODY_SERVICE.name ->
       webClient.getPersonByPrisonNumber(organisationSearchId, versionId)
     notifyingOrganisation == NotifyingOrganisationDDv5.PROBATION.name ->
       webClient.getPersonByCrn(organisationSearchId, versionId)
