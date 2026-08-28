@@ -37,6 +37,7 @@ class DeviceWearerDetailsService(private val webClient: CorePersonRecordApi) : O
       lastName = details.deviceWearer?.lastName,
       dateOfBirth = details.deviceWearer?.dateOfBirth,
       organisationSearchId = normalisedOrganisationSearchId,
+      addresses = details.addresses,
     )
   }
 
