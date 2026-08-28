@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Address
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateAddressDto
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressSource
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import java.util.UUID
 
@@ -24,6 +25,7 @@ class AddressService : OrderSectionServiceBase() {
       existingAddress.addressLine3 = updateRecord.addressLine3
       existingAddress.addressLine4 = updateRecord.addressLine4
       existingAddress.postcode = updateRecord.postcode
+      existingAddress.addressSource = AddressSource.CEMO
     } else {
       newAddress = Address(
         versionId = order.getCurrentVersion().id,
@@ -33,6 +35,7 @@ class AddressService : OrderSectionServiceBase() {
         addressLine3 = updateRecord.addressLine3,
         addressLine4 = updateRecord.addressLine4,
         postcode = updateRecord.postcode,
+        addressSource = AddressSource.CEMO,
       )
       order.addresses.add(newAddress)
     }

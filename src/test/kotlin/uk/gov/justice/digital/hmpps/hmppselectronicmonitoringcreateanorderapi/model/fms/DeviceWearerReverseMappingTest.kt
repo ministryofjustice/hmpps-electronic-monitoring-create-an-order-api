@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.m
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressSource
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MappaCategory
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MappaLevel
@@ -129,6 +130,7 @@ class DeviceWearerReverseMappingTest {
 
     assertThat(address).isNotNull
     assertThat(address!!.addressType).isEqualTo(AddressType.PRIMARY)
+    assertThat(address.addressSource).isEqualTo(AddressSource.CEMO)
     assertThat(address.addressLine1).isEqualTo("1 fake street")
     assertThat(address.postcode).isEqualTo("AB1 2CD")
   }

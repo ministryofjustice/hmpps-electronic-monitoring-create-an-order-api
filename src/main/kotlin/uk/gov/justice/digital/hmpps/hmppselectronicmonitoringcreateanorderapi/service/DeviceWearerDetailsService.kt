@@ -4,7 +4,9 @@ import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.CorePersonRecordApi
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.BadRequestException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.GetCorePersonDetailsResponse
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressSource
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisationDDv5
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.setAddressSource
 import java.util.UUID
 
 @Service
@@ -16,6 +18,7 @@ class DeviceWearerDetailsService(private val webClient: CorePersonRecordApi) : O
     val order = this.findEditableOrder(orderId, username)
     val notifyingOrganisation = order.interestedParties?.notifyingOrganisation
     val record = fetchPersonRecord(notifyingOrganisation, normalisedOrganisationSearchId, order.versionId)
+      .setAddressSource(AddressSource.COMMON_PLATFORM)
     order.deviceWearer = record.deviceWearer
     order.addresses.addAll(record.addresses)
     order.contactDetails = record.contactDetails
