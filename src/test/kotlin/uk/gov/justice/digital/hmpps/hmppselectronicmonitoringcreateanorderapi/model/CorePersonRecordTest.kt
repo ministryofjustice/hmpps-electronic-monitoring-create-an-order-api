@@ -18,10 +18,10 @@ class CorePersonRecordTest {
     )
     val record = CorePersonRecord(deviceWearer = null, contactDetails = null, addresses = addresses)
 
-    val updatedRecord = record.setAddressSource(AddressSource.COMMON_PLATFORM)
+    val updatedRecord = record.setAddressSource(AddressSource.CORE_PERSON_RECORD)
 
     assertThat(updatedRecord.addresses).allSatisfy {
-      assertThat(it.addressSource).isEqualTo(AddressSource.COMMON_PLATFORM)
+      assertThat(it.addressSource).isEqualTo(AddressSource.CORE_PERSON_RECORD)
     }
     assertThat(updatedRecord.addresses).extracting<UUID> { it.id }.containsExactlyElementsOf(addresses.map { it.id })
     assertThat(record.addresses.map { it.addressSource }).containsExactly(AddressSource.CEMO, null)
@@ -31,7 +31,7 @@ class CorePersonRecordTest {
   fun `keeps addresses empty when the record has no addresses`() {
     val record = CorePersonRecord(deviceWearer = null, contactDetails = null, addresses = emptyList())
 
-    val updatedRecord = record.setAddressSource(AddressSource.COMMON_PLATFORM)
+    val updatedRecord = record.setAddressSource(AddressSource.CORE_PERSON_RECORD)
 
     assertThat(updatedRecord.addresses).isEmpty()
   }

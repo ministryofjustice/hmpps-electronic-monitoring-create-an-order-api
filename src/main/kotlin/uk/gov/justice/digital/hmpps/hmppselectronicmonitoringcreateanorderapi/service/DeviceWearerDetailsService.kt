@@ -18,7 +18,7 @@ class DeviceWearerDetailsService(private val webClient: CorePersonRecordApi) : O
     val order = this.findEditableOrder(orderId, username)
     val notifyingOrganisation = order.interestedParties?.notifyingOrganisation
     val record = fetchPersonRecord(notifyingOrganisation, normalisedOrganisationSearchId, order.versionId)
-      .setAddressSource(AddressSource.COMMON_PLATFORM)
+      .setAddressSource(AddressSource.CORE_PERSON_RECORD)
     order.deviceWearer = record.deviceWearer
     order.addresses.addAll(record.addresses)
     order.contactDetails = record.contactDetails

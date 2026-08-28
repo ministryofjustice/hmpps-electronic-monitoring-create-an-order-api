@@ -3,4 +3,5 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.m
 enum class AddressSource {
   CEMO,
   COMMON_PLATFORM,
+  CORE_PERSON_RECORD,
 }

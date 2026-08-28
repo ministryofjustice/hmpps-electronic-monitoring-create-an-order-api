@@ -295,7 +295,7 @@ class DeviceWearerDetailsServiceTest {
       assertThat(mockOrder.addresses.any { it.addressType == AddressType.PRIMARY }).isTrue
       assertThat(mockOrder.addresses.any { it.addressType == AddressType.SECONDARY }).isTrue
       assertThat(mockOrder.addresses).allSatisfy {
-        assertThat(it.addressSource).isEqualTo(AddressSource.COMMON_PLATFORM)
+        assertThat(it.addressSource).isEqualTo(AddressSource.CORE_PERSON_RECORD)
       }
     }
 
