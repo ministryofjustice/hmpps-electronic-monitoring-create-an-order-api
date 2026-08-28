@@ -35,7 +35,8 @@ class AddressService : OrderSectionServiceBase() {
         addressLine3 = updateRecord.addressLine3,
         addressLine4 = updateRecord.addressLine4,
         postcode = updateRecord.postcode,
-        addressSource = updateRecord.addressSource ?: AddressSource.CEMO,
+        // existing addresses are from user inputted/from CEMO?
+        addressSource = AddressSource.CEMO,
       )
       order.addresses.add(newAddress)
     }
