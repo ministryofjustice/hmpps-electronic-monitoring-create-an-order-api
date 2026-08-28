@@ -60,6 +60,7 @@ class CorePersonRecordApiClientTest {
     assertThat(result?.middleName).isEqualTo("Middle")
     assertThat(result?.lastName).isEqualTo("Builder")
     assertThat(result?.nomisId).isEqualTo("A1234BC")
+    assertThat(result?.deliusId).isEqualTo("B123435")
     assertThat(result?.courtCaseReferenceNumber).isEqualTo("B123435")
     assertThat(result?.pncId).isEqualTo("2000/1234567A")
     assertThat(result?.nationalInsuranceNumber).isEqualTo("QQ123456B")
