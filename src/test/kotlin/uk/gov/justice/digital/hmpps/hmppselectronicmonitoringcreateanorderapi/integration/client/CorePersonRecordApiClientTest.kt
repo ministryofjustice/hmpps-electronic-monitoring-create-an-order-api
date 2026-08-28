@@ -60,7 +60,7 @@ class CorePersonRecordApiClientTest : IntegrationTestBase() {
       assertThat(deviceWearer?.versionId).isEqualTo(versionId)
       assertThat(deviceWearer?.firstName).isEqualTo("Bob")
       assertThat(deviceWearer?.lastName).isEqualTo("Builder")
-      assertThat(deviceWearer?.prisonNumber).isEqualTo("A1234BC")
+      assertThat(deviceWearer?.nomisId).isEqualTo("A1234BC")
       assertThat(deviceWearer?.courtCaseReferenceNumber).isEqualTo("B123435")
       assertThat(deviceWearer?.pncId).isEqualTo("2000/1234567A")
       assertThat(deviceWearer?.nationalInsuranceNumber).isEqualTo("QQ123456B")
