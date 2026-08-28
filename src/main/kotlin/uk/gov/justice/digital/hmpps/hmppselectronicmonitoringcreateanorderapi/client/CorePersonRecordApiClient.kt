@@ -109,6 +109,7 @@ class CorePersonRecordApiClient(private val corePersonRecordApiWebClient: WebCli
     middleName = details.middleNames,
     lastName = details.lastName,
     nomisId = details.identifiers?.prisonNumbers?.firstOrNull(),
+    deliusId = details.identifiers?.crns?.firstOrNull(),
     courtCaseReferenceNumber = details.identifiers?.crns?.firstOrNull(),
     pncId = details.identifiers?.pncs?.firstOrNull(),
     nationalInsuranceNumber = details.identifiers?.nationalInsuranceNumbers?.firstOrNull(),
