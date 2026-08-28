@@ -27,11 +27,13 @@ import software.amazon.awssdk.services.sqs.model.SendMessageResponse
 import tools.jackson.databind.ObjectMapper
 import tools.jackson.module.kotlin.jacksonObjectMapper
 import tools.jackson.module.kotlin.readValue
+import uk.gov.justice.digital.hmpps.courthearingeventreceiver.model.HearingEvent
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.utilities.S3Uploader
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.SercoAuthMockServerExtension.Companion.sercoAuthApi
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.SercoMockApiExtension.Companion.sercoApi
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.listener.CourtHearingEventListener
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressSource
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.DeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsResult
@@ -198,6 +200,19 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
     s3Uploader.uploadObject(rawMessage, "f8331621-365a-4eab-97fd-c086cf7d6a22")
     val rootFilePath = "src/test/resources/json/LargeMessage_CCIB_bail_curfew"
     runPayloadTest(rootFilePath, true)
+  }
+
+  @Test
+  fun `Will mark addresses imported from Common Platform`() {
+    val rawEvent = Files.readString(Paths.get("src/test/resources/json/CCIB_bail_curfew/cp_payload.json"))
+    val event = objectMapper.readValue<HearingEvent>(rawEvent)
+
+    val orders = eventHandler.getOrdersFromHearing(event.hearing)
+
+    assertThat(orders).isNotEmpty
+    assertThat(orders.flatMap { it.addresses }).isNotEmpty.allSatisfy {
+      assertThat(it.addressSource).isEqualTo(AddressSource.COMMON_PLATFORM)
+    }
   }
 
   fun runPayloadTest(rootFilePath: String, isLargeMessage: Boolean = false, numberOfDefendant: Int = 1) {
