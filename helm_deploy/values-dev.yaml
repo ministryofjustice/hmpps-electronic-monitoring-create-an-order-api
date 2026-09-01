@@ -13,7 +13,7 @@ generic-service:
     HMPPS_AUTH_URL: "https://sign-in-dev.hmpps.service.justice.gov.uk/auth"
     DOCUMENT_MANAGEMENT_URL: "https://document-api-dev.hmpps.service.justice.gov.uk/"
     CP_PROCESSING_ENABLED: true
-    CP_FMS_INTEGRATION_ENABLED: false
+    CP_FMS_INTEGRATION_ENABLED: true
     SETTINGS_DATA_DICTIONARY_VERSION: DDV7
     DDV6_COURT_MAPPINGS: true
     TAG_AT_SOURCE_ENABLED: true
