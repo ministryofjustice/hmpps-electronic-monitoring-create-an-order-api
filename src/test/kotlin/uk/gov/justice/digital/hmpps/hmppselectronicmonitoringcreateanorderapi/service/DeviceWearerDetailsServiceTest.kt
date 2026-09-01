@@ -2,19 +2,21 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.s
 
 import jakarta.persistence.EntityNotFoundException
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatCode
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.EnumSource
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
-import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
-import org.springframework.web.reactive.function.client.WebClientResponseException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.CorePersonRecordApi
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.CorePersonRecordAuthorisationException
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.BadRequestException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.CorePersonRecordDependencyException
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.CorePersonRecordNotFoundException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Address
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ContactDetails
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CorePersonRecord
@@ -78,8 +80,40 @@ class DeviceWearerDetailsServiceTest {
   @Nested
   @DisplayName("Get details")
   inner class GetDetails {
+    private val mockOrderRepo: OrderRepository = mock()
+    private lateinit var service: DeviceWearerDetailsService
+
+    private lateinit var mockOrder: Order
+    private val mockOrderId: UUID = UUID.randomUUID()
+    private val mockVersionId: UUID = UUID.randomUUID()
+    private val mockUsername: String = "mockUsername"
+
+    @BeforeEach
+    fun setup() {
+      service = DeviceWearerDetailsService(client)
+      service.orderRepo = mockOrderRepo
+
+      mockOrder = Order(
+        id = mockOrderId,
+        versions = mutableListOf(
+          OrderVersion(
+            id = mockVersionId,
+            orderId = UUID.randomUUID(),
+            username = mockUsername,
+            status = OrderStatus.IN_PROGRESS,
+            type = RequestType.REQUEST,
+            dataDictionaryVersion = DataDictionaryVersion.DDV6,
+          ),
+        ),
+      )
+      mockOrder.interestedParties = InterestedParties(versionId = mockVersionId)
+
+      whenever(mockOrderRepo.findById(mockOrderId)).thenReturn(Optional.of(mockOrder))
+    }
+
     @Test
     fun `returns bob as first name when set to bob`() {
+      mockOrder.interestedParties!!.notifyingOrganisation = NotifyingOrganisationDDv5.PRISON.name
       client.setMockResponse(
         baseDetails.copy(
           deviceWearer = DeviceWearer(
@@ -89,9 +123,7 @@ class DeviceWearerDetailsServiceTest {
         ),
       )
 
-      val service = DeviceWearerDetailsService(client)
-
-      val res = service.getDetailsOverview("1234", NotifyingOrganisationDDv5.PRISON.name)
+      val res = service.getDetailsOverview("1234", mockOrderId, mockUsername)
 
       assertThat(res.firstName).isEqualTo("Bob")
       assertThat(res.organisationSearchId).isEqualTo("1234")
@@ -100,6 +132,7 @@ class DeviceWearerDetailsServiceTest {
 
     @Test
     fun `returns cat as first name when set to cat`() {
+      mockOrder.interestedParties!!.notifyingOrganisation = NotifyingOrganisationDDv5.PROBATION.name
       client.setMockResponse(
         baseDetails.copy(
           deviceWearer = DeviceWearer(
@@ -109,12 +142,19 @@ class DeviceWearerDetailsServiceTest {
         ),
       )
 
-      val service = DeviceWearerDetailsService(client)
-
-      val res = service.getDetailsOverview("1234", NotifyingOrganisationDDv5.PROBATION.name)
+      val res = service.getDetailsOverview("1234", mockOrderId, mockUsername)
 
       assertThat(res.firstName).isEqualTo("Cat")
       assertThat(client.lastRoute).isEqualTo("probation")
+    }
+
+    @Test
+    fun `throws when order does not exist for username`() {
+      mockOrder.interestedParties!!.notifyingOrganisation = NotifyingOrganisationDDv5.PRISON.name
+
+      assertThatThrownBy {
+        service.getDetailsOverview("1234", mockOrderId, "someone-else")
+      }.isInstanceOf(EntityNotFoundException::class.java)
     }
   }
 
@@ -154,12 +194,12 @@ class DeviceWearerDetailsServiceTest {
     }
 
     @Test
-    fun `returns success message when stored`() {
+    fun `does not throw when stored successfully`() {
       mockOrder.interestedParties!!.notifyingOrganisation = NotifyingOrganisationDDv5.PRISON.name
-      val response = service.storeDetails("1234", mockOrderId, mockUsername)
 
-      assertThat(response.error).isNull()
-      assertThat(response.success).isEqualTo(true)
+      assertThatCode {
+        service.storeDetails("1234", mockOrderId, mockUsername)
+      }.doesNotThrowAnyException()
     }
 
     @Test
@@ -171,15 +211,14 @@ class DeviceWearerDetailsServiceTest {
     }
 
     @Test
-    fun `returns failure when storage failed`() {
+    fun `throws when storage failed`() {
       mockOrder.interestedParties!!.notifyingOrganisation = NotifyingOrganisationDDv5.PRISON.name
       whenever(mockOrderRepo.findById(mockOrderId)).thenThrow(EntityNotFoundException("Not found"))
 
-      val response = service.storeDetails("1234", mockOrderId, mockUsername)
-
-      assertThat(response.success).isEqualTo(false)
-      assertThat(response.error).isNotNull
-      assertThat(response.error?.message).isEqualTo("Not found")
+      assertThatThrownBy {
+        service.storeDetails("1234", mockOrderId, mockUsername)
+      }.isInstanceOf(EntityNotFoundException::class.java)
+        .hasMessage("Not found")
     }
 
     @Test
@@ -285,66 +324,47 @@ class DeviceWearerDetailsServiceTest {
       }.hasMessageContaining("unsupported")
     }
 
-    @Test
-    fun `throws bad request when notifying organisation is unsupported`() {
-      mockOrder.interestedParties!!.notifyingOrganisation = NotifyingOrganisationDDv5.HOME_OFFICE.name
+    @ParameterizedTest
+    @EnumSource(
+      value = NotifyingOrganisationDDv5::class,
+      names = ["PRISON", "YOUTH_CUSTODY_SERVICE", "PROBATION"],
+      mode = EnumSource.Mode.EXCLUDE,
+    )
+    fun `throws bad request when notifying organisation is unsupported`(
+      notifyingOrganisation: NotifyingOrganisationDDv5,
+    ) {
+      mockOrder.interestedParties!!.notifyingOrganisation = notifyingOrganisation.name
 
       assertThatThrownBy {
         service.storeDetails("value", mockOrderId, mockUsername)
-      }.hasMessageContaining("unsupported")
+      }.isInstanceOf(BadRequestException::class.java)
+        .hasMessageContaining("unsupported")
     }
 
     @Test
-    fun `returns not found when core person record has no match`() {
+    fun `throws not found when core person record has no match`() {
       mockOrder.interestedParties!!.notifyingOrganisation = NotifyingOrganisationDDv5.PRISON.name
-      client.errorToThrow = WebClientResponseException.create(
-        404,
-        "Not Found",
-        HttpHeaders.EMPTY,
-        ByteArray(0),
-        null,
-      )
+      client.errorToThrow = CorePersonRecordNotFoundException("No Core Person Record was found for id A1234BC")
 
-      val response = service.storeDetails("A1234BC", mockOrderId, mockUsername)
-
-      assertThat(response.success).isFalse
-      assertThat(response.error).isInstanceOf(EntityNotFoundException::class.java)
+      assertThatThrownBy {
+        service.storeDetails("A1234BC", mockOrderId, mockUsername)
+      }.isInstanceOf(CorePersonRecordNotFoundException::class.java)
     }
 
     @Test
-    fun `returns auth dependency failure when core person record returns forbidden`() {
+    fun `propagates dependency failures raised by the core person record gateway`() {
       mockOrder.interestedParties!!.notifyingOrganisation = NotifyingOrganisationDDv5.PRISON.name
-      client.errorToThrow = WebClientResponseException.create(
-        403,
-        "Forbidden",
-        HttpHeaders.EMPTY,
-        ByteArray(0),
-        null,
+      client.errorToThrow = CorePersonRecordDependencyException(
+        "Core Person Record lookup failed for id A1234BC",
+        HttpStatus.INTERNAL_SERVER_ERROR,
       )
 
-      val response = service.storeDetails("A1234BC", mockOrderId, mockUsername)
-
-      assertThat(response.success).isFalse
-      assertThat(response.error).isInstanceOf(CorePersonRecordAuthorisationException::class.java)
-    }
-
-    @Test
-    fun `returns dependency failure when core person record returns server error`() {
-      mockOrder.interestedParties!!.notifyingOrganisation = NotifyingOrganisationDDv5.PRISON.name
-      client.errorToThrow = WebClientResponseException.create(
-        500,
-        "Server Error",
-        HttpHeaders.EMPTY,
-        ByteArray(0),
-        null,
-      )
-
-      val response = service.storeDetails("A1234BC", mockOrderId, mockUsername)
-
-      assertThat(response.success).isFalse
-      assertThat(response.error).isInstanceOf(CorePersonRecordDependencyException::class.java)
-      assertThat((response.error as CorePersonRecordDependencyException).upstreamStatusCode)
-        .isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR)
+      assertThatThrownBy {
+        service.storeDetails("A1234BC", mockOrderId, mockUsername)
+      }.isInstanceOf(CorePersonRecordDependencyException::class.java)
+        .matches {
+          (it as CorePersonRecordDependencyException).upstreamStatusCode == HttpStatus.INTERNAL_SERVER_ERROR
+        }
     }
   }
 }
