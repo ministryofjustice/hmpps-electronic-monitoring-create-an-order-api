@@ -139,21 +139,6 @@ class HearingEventHandler(
       ),
     )
 
-    val monitoringConditions = MonitoringConditions(versionId = order.getCurrentVersion().id)
-    val orderedDate = judicialResults.first().orderedDate
-    monitoringConditions.startDate = ZonedDateTime.of(orderedDate, LocalTime.MIDNIGHT, ZoneId.of("Europe/London"))
-
-    monitoringConditions.conditionType = getConditionType(judicialResults)
-    monitoringConditions.orderType = getOrderType(judicialResults)
-
-    if (monitoringConditions.conditionType == MonitoringConditionType.REQUIREMENT_OF_A_COMMUNITY_ORDER) {
-      loadCommunityOrderConditions(judicialResults, order, monitoringConditions, prompts, hearing)
-    } else if (monitoringConditions.conditionType == MonitoringConditionType.BAIL_ORDER) {
-      loadBailOrderConditions(judicialResults, order, monitoringConditions, prompts, hearing)
-    }
-
-    order.monitoringConditions = monitoringConditions
-
     val person = defendant.personDefendant?.personDetails
     val deviceWearer = DeviceWearer(versionId = order.getCurrentVersion().id)
 
@@ -191,6 +176,21 @@ class HearingEventHandler(
         contactNumber = contact?.mobile ?: contact?.home ?: contact?.work ?: "",
       )
     order.contactDetails = contactDetails
+
+    val monitoringConditions = MonitoringConditions(versionId = order.getCurrentVersion().id)
+    val orderedDate = judicialResults.first().orderedDate
+    monitoringConditions.startDate = ZonedDateTime.of(orderedDate, LocalTime.MIDNIGHT, ZoneId.of("Europe/London"))
+
+    monitoringConditions.conditionType = getConditionType(judicialResults)
+    monitoringConditions.orderType = getOrderType(judicialResults)
+
+    if (monitoringConditions.conditionType == MonitoringConditionType.REQUIREMENT_OF_A_COMMUNITY_ORDER) {
+      loadCommunityOrderConditions(judicialResults, order, monitoringConditions, prompts, hearing)
+    } else if (monitoringConditions.conditionType == MonitoringConditionType.BAIL_ORDER) {
+      loadBailOrderConditions(judicialResults, order, monitoringConditions, prompts, hearing)
+    }
+
+    order.monitoringConditions = monitoringConditions
 
     if (order.type == RequestType.VARIATION) {
       order.variationDetails =
@@ -572,6 +572,14 @@ class HearingEventHandler(
       ZonedDateTime.of(localDate, LocalTime.parse(endTime), ZoneId.of("Europe/London"))
     }
     val defendantRemainAt = getPromptValue(prompts, "Defendant to remain at") ?: ""
+    if (defendantRemainAt.isNotEmpty() && order.addresses.any { it.addressType == AddressType.PRIMARY }) {
+      val primaryAddress = order.addresses.first { it.addressType == AddressType.PRIMARY }
+      primaryAddress.addressLine1 = defendantRemainAt
+      primaryAddress.addressLine2 = ""
+      primaryAddress.addressLine3 = ""
+      primaryAddress.addressLine4 = ""
+      primaryAddress.postcode = ""
+    }
     val detailsAndTiming = getPromptValue(prompts, "Details and timings") ?: ""
     condition.curfewAdditionalDetails = "$defendantRemainAt $detailsAndTiming"
     return condition

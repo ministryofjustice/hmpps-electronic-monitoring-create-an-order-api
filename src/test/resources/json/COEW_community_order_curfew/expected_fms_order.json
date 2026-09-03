@@ -6,7 +6,7 @@
   "court": "",
   "court_order_email": "",
   "device_type": "",
-  "device_wearer": "Person Mock",
+  "device_wearer": "CP008 COEW_CURFEW",
   "enforceable_condition": [
     {
       "condition": "Curfew with EM",
@@ -72,7 +72,7 @@
   "reason_for_order_ending_early": "",
   "business_unit": "",
   "service_end_date": "2025-04-06",
-  "curfew_description": "Home address at  Between the hours of 7pm and 7am daily.",
+  "curfew_description": "Home address at 69 Winston Road, Staindrop, Darlington, Durham, DL2 3NR Between the hours of 7pm and 7am daily.",
   "curfew_start": "2024-12-07 19:00:00",
   "curfew_end": "2025-04-06 07:00:00",
   "curfew_duration": [],

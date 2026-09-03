@@ -6,7 +6,7 @@
   "court": "",
   "court_order_email": "",
   "device_type": "",
-  "device_wearer": "Person Mock",
+  "device_wearer": "CP005 CCSIB_CROWN_COURT_BAIL",
   "enforceable_condition": [
     {
       "condition": "EM Exclusion / Inclusion Zone",
