@@ -103,6 +103,7 @@ fun MonitoringOrder.Companion.fromOrder(
     orderTypeDescription = conditions.orderTypeDescription?.value ?: "",
     orderStart = getBritishDateAndTime(monitoringStartDate),
     orderEnd = getBritishDateAndTime(monitoringEndDate) ?: "",
+    interimCourtDate = getBritishDateAndTime(conditions.nextCourtHearingDate) ?: "",
     serviceEndDate = getBritishDate(monitoringEndDate) ?: "",
     caseId = caseId,
     conditionType = conditions.conditionType!!.value,

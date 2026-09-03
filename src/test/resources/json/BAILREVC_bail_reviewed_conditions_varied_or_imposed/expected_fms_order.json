@@ -11,11 +11,11 @@
     {
       "condition": "EM Exclusion / Inclusion Zone",
       "start_date": "2024-10-25 00:00:00",
-      "end_date": "2024-10-31 10:00:00"
+      "end_date": ""
     }
   ],
   "exclusion_allday": "",
-  "interim_court_date": "",
+  "interim_court_date": "2024-10-31 10:00:00",
   "issuing_organisation": "",
   "media_interest": "",
   "new_order_received": "",
@@ -33,7 +33,7 @@
   "offence": "",
   "offence_additional_details": "",
   "offence_date": "",
-  "order_end": "2024-10-31 10:00:00",
+  "order_end": "",
   "order_id": "{expectedOderId}",
   "order_request_type": "Variation",
   "order_start": "2024-10-25 00:00:00",
@@ -75,7 +75,7 @@
   "conditional_release_end_time": "",
   "reason_for_order_ending_early": "",
   "business_unit": "",
-  "service_end_date": "2024-10-31",
+  "service_end_date": "",
   "curfew_description": "",
   "curfew_start": "",
   "curfew_end": "",
@@ -86,13 +86,13 @@
       "description": "Exclusion - not go within a radius unless accompanied by a police officer Within:5 miles radius of\nOf:Croydon",
       "duration": null,
       "start": "2024-10-25",
-      "end": "2024-10-31"
+      "end": ""
     },
     {
       "description": "Exclusion - the exclusion condition to be electronically monitored with a GPS tag Additional information:The defendant's whereabouts to be monitored using a GPS tag.",
       "duration": null,
       "start": "2024-10-25",
-      "end": "2024-10-31"
+      "end": ""
     }
   ],
   "inclusion_zones": [],

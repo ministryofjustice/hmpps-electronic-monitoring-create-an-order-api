@@ -482,7 +482,7 @@ class HearingEventHandler(
     prompts: List<JudicialResultsPrompt>,
     hearing: Hearing,
   ) {
-    monitoringConditions.endDate = getNextCourtHearingDate(prompts)
+    monitoringConditions.nextCourtHearingDate = getNextCourtHearingDate(prompts)
     judicialResults.firstOrNull {
       it.judicialResultPrompts.any { prompts ->
         prompts.judicialResultPromptTypeId == BailOrderType.CURFEW.uuid ||
