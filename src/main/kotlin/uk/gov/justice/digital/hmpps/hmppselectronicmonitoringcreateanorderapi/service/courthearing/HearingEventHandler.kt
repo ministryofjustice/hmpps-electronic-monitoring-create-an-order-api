@@ -154,7 +154,7 @@ class HearingEventHandler(
     deviceWearer.lastName = person?.lastName
     deviceWearer.sex = getSex(person?.gender)
     deviceWearer.adultAtTimeOfInstallation = !(defendant.isYouth ?: false)
-
+    deviceWearer.courtCaseReferenceNumber = hearing.prosecutionCases.first().prosecutionCaseIdentifier.caseURN
     val address = person?.address
     if (address != null) {
       deviceWearer.noFixedAbode = false
