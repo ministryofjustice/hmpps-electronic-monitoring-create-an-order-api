@@ -114,10 +114,10 @@ fun MonitoringOrder.Companion.fromOrder(
     additionalInformation = order.monitoringOrderAddtionalInfo,
   )
 
-  if (order.interestedParties?.notifyingOrganisation == NotifyingOrganisationDDv5.MAGISTRATES_COURT.value) {
-    monitoringOrder.magistrateCourtCaseReferenceNumber = order.deviceWearer?.courtCaseReferenceNumber ?: ""
-  } else if (order.interestedParties?.notifyingOrganisation == NotifyingOrganisationDDv5.CROWN_COURT.value) {
+  if (order.interestedParties?.notifyingOrganisation == NotifyingOrganisationDDv5.CROWN_COURT.value) {
     monitoringOrder.crownCourtCaseReferenceNumber = order.deviceWearer?.courtCaseReferenceNumber ?: ""
+  } else {
+    monitoringOrder.magistrateCourtCaseReferenceNumber = order.deviceWearer?.courtCaseReferenceNumber ?: ""
   }
   if (order.dataDictionaryVersion.isLaterThanOrEqual(DataDictionaryVersion.DDV6)) {
     monitoringOrder.subcategory = subcategory
