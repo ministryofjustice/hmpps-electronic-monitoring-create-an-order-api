@@ -14,7 +14,6 @@ generic-service:
     SENTRY_ENVIRONMENT: preprod
     CP_PROCESSING_ENABLED: true
     CP_FMS_INTEGRATION_ENABLED: false
-    TAG_AT_SOURCE_ENABLED: false
     SETTINGS_DATA_DICTIONARY_VERSION: DDV5
     MANAGE_USER_URL: "https://manage-users-api-preprod.hmpps.service.justice.gov.uk/"
     CORE_PERSON_RECORD_URL: "https://hmpps-person-record-preprod.hmpps.service.justice.gov.uk/"
