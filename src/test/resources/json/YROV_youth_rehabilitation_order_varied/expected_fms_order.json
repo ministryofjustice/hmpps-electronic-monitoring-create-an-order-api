@@ -28,7 +28,7 @@
   "no_address_3": "",
   "no_address_4": "",
   "no_email": "",
-  "no_name": "Lavender Hill Magistrates' Court",
+  "no_name": "Lavender Hill Magistrates Court",
   "no_phone_number": "",
   "offence": "",
   "offence_additional_details": "",
@@ -94,7 +94,7 @@
   "installation_address_4": "",
   "installation_address_post_code": "",
   "crown_court_case_reference_number": "",
-  "magistrate_court_case_reference_number": "",
+  "magistrate_court_case_reference_number": "RQ264419846",
   "issp": "No",
   "hdc": "No",
   "order_status": "Not Started",
@@ -104,5 +104,6 @@
   "ac_eligible_offences": [],
   "install_at_source_pilot": "",
   "dapo_order_clause_numbers": [],
-  "offences": []
+  "offences": [],
+  "additional_information" : "Offences - TH68013A Attempt theft of motor vehicle\nJudicial Result - \nYROV - Youth Rehabilitation Order varied\nOrder made on 12/02/2024 by Lavender Hill Magistrates' Court varied. The end date of the order has not been changed and the requirements must be complied with by 25/05/2025. The new and varied youth requirements are shown below. The responsible officer nominated is: an officer of a provider of probation services. The supervising court is Banbury Magistrates' Court.\nJudicial Result - \nYRC1 - Youth rehabilitation requirement: Curfew with electronic monitoring\nYouth rehabilitation requirement: Curfew Requirement with Electronic Monitoring. Be under a curfew for 6 Months with electronic monitoring. Start date 18/10/2024. Start time 10:00. End date 18/05/2025. End time 10:00. Defendant to remain at 15 Wildflower lane,\nWestham. Curfew details: Defendant will be tagged and monitored as per above.\n"
 }

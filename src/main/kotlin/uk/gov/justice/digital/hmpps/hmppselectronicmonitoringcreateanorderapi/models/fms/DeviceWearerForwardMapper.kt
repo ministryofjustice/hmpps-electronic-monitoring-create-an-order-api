@@ -53,6 +53,7 @@ fun DeviceWearer.Companion.fromOrder(
     deliusId = order.deviceWearer?.deliusId,
     prisonNumber = order.deviceWearer?.prisonNumber,
     homeOfficeReferenceNumber = "",
+    additionalInformation = order.deviceWearerAdditionalInfo,
   )
 
   if (featureFlags.ddV6CourtMappings) {

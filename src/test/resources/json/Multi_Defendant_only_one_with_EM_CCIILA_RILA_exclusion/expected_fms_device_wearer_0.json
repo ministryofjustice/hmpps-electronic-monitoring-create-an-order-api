@@ -41,5 +41,6 @@
   "delius_id": null,
   "prison_number": null,
   "interpreter_required": null,
-  "language": null
+  "language": null,
+  "additional_information" : "Notification of electronic monitoring order (bail) - \nElectronic monitoring contractor organisation name:Electronic Monitoring Contractor\nElectronic monitoring contractor email address 1:a@b.co.uk\nElectronic monitoring contractor email address 2:LPadmin2@ems.co.uk\nFirst notification of electronic monitoring:Yes\nDefendant's mobile number:05795681259\nWas an interpreter used?:No\nLanguage:English\nDoes the offender have any special needs?:Yes\nSpecial needs:Further requirements\nThis curfew shall apply upon release from custody:No\nDevice Wearer Primary Address - \n10 Downing Street, Downing Street, Westminster, Greater London, NW1 5BR\n"
 }

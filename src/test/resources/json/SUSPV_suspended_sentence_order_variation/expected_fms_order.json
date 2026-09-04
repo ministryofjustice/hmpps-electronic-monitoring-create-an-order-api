@@ -33,7 +33,7 @@
   "no_address_3": "",
   "no_address_4": "",
   "no_email": "",
-  "no_name": "Lavender Hill Magistrates' Court",
+  "no_name": "Lavender Hill Magistrates Court",
   "no_phone_number": "",
   "offence": "",
   "offence_additional_details": "",
@@ -106,7 +106,7 @@
   "installation_address_4": "",
   "installation_address_post_code": "",
   "crown_court_case_reference_number": "",
-  "magistrate_court_case_reference_number": "",
+  "magistrate_court_case_reference_number": "28DI5632127",
   "issp": "No",
   "hdc": "No",
   "order_status": "Not Started",
@@ -116,5 +116,6 @@
   "ac_eligible_offences": [],
   "install_at_source_pilot": "",
   "dapo_order_clause_numbers": [],
-  "offences": []
+  "offences": [],
+  "additional_information" : "Offences - CA03012 Possess / control TV set with intent another use install without a licence\nJudicial Result - \nSUSPV - Suspended sentence order varied - imprisonment\nSuspended sentence imposed by Aberdeen JP Court on 10/05/2024 varied. Suspended sentence order now as follows: Committed to prison for a term of 2 Years suspended for 1 Years. The defendant must now comply with the following requirements within the supervision period of 2 Years: The new and amended requirements are shown below.\nJudicial Result - \nCURE - Curfew with electronic monitoring\nCurfew Requirement with Electronic Monitoring: Be under a curfew for 6 Months with electronic monitoring. Start date 10/11/2024. Start time 10:00. End date 10/11/2025. End time 10:22. Defendant to remain at 11 Copperfield Avenue\nSE13 7MJ. Curfew details: Defendant must remain at above address for the specified period as explained in the court order.. \nJudicial Result - \nERPEM - Exclusion not to enter for a period with electronic monitoring\nExclusion Requirement with Electronic Monitoring: Not to enter London Kensington. This exclusion with electronic monitoring lasts for 6 Months. Start date 10/11/2024. Start time 10:00. End date 10/11/2025. End time 10:00. \n"
 }

@@ -28,7 +28,7 @@
   "no_address_3": "",
   "no_address_4": "",
   "no_email": "",
-  "no_name": "Lavender Hill Magistrates' Court",
+  "no_name": "Lavender Hill Magistrates Court",
   "no_phone_number": "",
   "offence": "",
   "offence_date": "",
@@ -90,8 +90,9 @@
   "installation_address_4": "",
   "installation_address_post_code": "",
   "crown_court_case_reference_number": "",
-  "magistrate_court_case_reference_number": "",
+  "magistrate_court_case_reference_number": "RQ241755095",
   "issp": "No",
   "hdc": "No",
-  "order_status": "Not Started"
+  "order_status": "Not Started",
+  "additional_information" : "Offences - TH68013A Attempt theft of motor vehicle\nJudicial Result - \nYROFEW - Youth rehabilitation order with fostering England / Wales\nYouth rehabilitation order with fostering made. The defendant must comply with the requirements (shown below) by 10/11/2025. Live for 6 Months with a Brighton and Hove City Council foster parent.\nJudicial Result - \nYREMW1 - Youth rehabilitation requirement: Electronic monitoring whereabouts\nYouth rehabilitation requirement: The defendant's whereabouts are to be electronically monitored. Start date: 15/11/2024. Start time: 10:00. End date: 15/05/2025. End time: 10:00. Defendant will be tagged and monitored as per above.\nLocal Authority - \nBrighton and Hove City Council\n"
 }

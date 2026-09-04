@@ -284,7 +284,7 @@
                         "promptReference": "curfewAddressDetailsAndTimings",
                         "promptSequence": 600,
                         "type": "TXT",
-                        "value": "Home address at "
+                        "value": "Home address at 69 Winston Road, Staindrop, Darlington, Durham, DL2 3NR"
                       },
                       {
                         "courtExtract": "Y",
@@ -425,10 +425,10 @@
                   "selfDefinedEthnicityDescription": "British",
                   "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
                 },
-                "firstName": "Person",
+                "firstName": "CP008",
                 "gender": "MALE",
                 "hearingLanguageNeeds": "ENGLISH",
-                "lastName": "Mock",
+                "lastName": "COEW_CURFEW",
                 "occupation": "Accountant",
                 "occupationCode": "2201",
                 "title": "MR"

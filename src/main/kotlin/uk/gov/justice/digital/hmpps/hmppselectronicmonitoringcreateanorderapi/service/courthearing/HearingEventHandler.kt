@@ -29,8 +29,10 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.courthearing.enums.VariationOrders
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.CrownCourtDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.EnforcementZoneType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MagistrateCourtDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MonitoringConditionType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderType
@@ -62,6 +64,9 @@ class HearingEventHandler(
 
     // Bail Electronic Monitoring flag
     private const val BAIL_ELECTRONIC_MONITORING_FLAG = "86857bb0-aaa6-4a76-b226-812a9987fcb2"
+
+    // Notification of electronic monitoring order
+    private const val COMMUNITY_NOTIFICATION_OF_EM_ORDER = "dada120c-160a-49a9-b040-e8b6b7128d67"
 
     //endregion
     fun isEnglandAndWalesEMRequest(offence: Offence): Boolean = !offence.judicialResults.any { judicialResults ->
@@ -138,22 +143,6 @@ class HearingEventHandler(
         ),
       ),
     )
-
-    val monitoringConditions = MonitoringConditions(versionId = order.getCurrentVersion().id)
-    val orderedDate = judicialResults.first().orderedDate
-    monitoringConditions.startDate = ZonedDateTime.of(orderedDate, LocalTime.MIDNIGHT, ZoneId.of("Europe/London"))
-
-    monitoringConditions.conditionType = getConditionType(judicialResults)
-    monitoringConditions.orderType = getOrderType(judicialResults)
-
-    if (monitoringConditions.conditionType == MonitoringConditionType.REQUIREMENT_OF_A_COMMUNITY_ORDER) {
-      loadCommunityOrderConditions(judicialResults, order, monitoringConditions, prompts, hearing)
-    } else if (monitoringConditions.conditionType == MonitoringConditionType.BAIL_ORDER) {
-      loadBailOrderConditions(judicialResults, order, monitoringConditions, prompts, hearing)
-    }
-
-    order.monitoringConditions = monitoringConditions
-
     val person = defendant.personDefendant?.personDetails
     val deviceWearer = DeviceWearer(versionId = order.getCurrentVersion().id)
 
@@ -165,7 +154,7 @@ class HearingEventHandler(
     deviceWearer.lastName = person?.lastName
     deviceWearer.sex = getSex(person?.gender)
     deviceWearer.adultAtTimeOfInstallation = !(defendant.isYouth ?: false)
-
+    deviceWearer.courtCaseReferenceNumber = hearing.prosecutionCases.first().prosecutionCaseIdentifier.caseURN
     val address = person?.address
     if (address != null) {
       deviceWearer.noFixedAbode = false
@@ -192,6 +181,21 @@ class HearingEventHandler(
       )
     order.contactDetails = contactDetails
 
+    val monitoringConditions = MonitoringConditions(versionId = order.getCurrentVersion().id)
+    val orderedDate = judicialResults.first().orderedDate
+    monitoringConditions.startDate = ZonedDateTime.of(orderedDate, LocalTime.MIDNIGHT, ZoneId.of("Europe/London"))
+
+    monitoringConditions.conditionType = getConditionType(judicialResults)
+    monitoringConditions.orderType = getOrderType(judicialResults)
+
+    if (monitoringConditions.conditionType == MonitoringConditionType.REQUIREMENT_OF_A_COMMUNITY_ORDER) {
+      loadCommunityOrderConditions(judicialResults, order, monitoringConditions, prompts, hearing)
+    } else if (monitoringConditions.conditionType == MonitoringConditionType.BAIL_ORDER) {
+      loadBailOrderConditions(judicialResults, order, monitoringConditions, prompts, hearing)
+    }
+
+    order.monitoringConditions = monitoringConditions
+
     if (order.type == RequestType.VARIATION) {
       order.variationDetails =
         VariationDetails(
@@ -209,6 +213,15 @@ class HearingEventHandler(
       }
     }
 
+    order.deviceWearerAdditionalInfo =
+      getDeviceWearerAdditionalInfo(
+        prompts,
+        order.addresses.firstOrNull {
+          it.addressType ==
+            AddressType.PRIMARY
+        },
+      )
+    order.monitoringOrderAddtionalInfo = getMonitoringOrderAdditionalInfo(prompts, defendant)
     return order
   }
 
@@ -482,7 +495,7 @@ class HearingEventHandler(
     prompts: List<JudicialResultsPrompt>,
     hearing: Hearing,
   ) {
-    monitoringConditions.endDate = getNextCourtHearingDate(prompts)
+    monitoringConditions.nextCourtHearingDate = getNextCourtHearingDate(prompts)
     judicialResults.firstOrNull {
       it.judicialResultPrompts.any { prompts ->
         prompts.judicialResultPromptTypeId == BailOrderType.CURFEW.uuid ||
@@ -572,6 +585,14 @@ class HearingEventHandler(
       ZonedDateTime.of(localDate, LocalTime.parse(endTime), ZoneId.of("Europe/London"))
     }
     val defendantRemainAt = getPromptValue(prompts, "Defendant to remain at") ?: ""
+    if (defendantRemainAt.isNotEmpty() && order.addresses.any { it.addressType == AddressType.PRIMARY }) {
+      val primaryAddress = order.addresses.first { it.addressType == AddressType.PRIMARY }
+      primaryAddress.addressLine1 = defendantRemainAt
+      primaryAddress.addressLine2 = ""
+      primaryAddress.addressLine3 = ""
+      primaryAddress.addressLine4 = ""
+      primaryAddress.postcode = ""
+    }
     val detailsAndTiming = getPromptValue(prompts, "Details and timings") ?: ""
     condition.curfewAdditionalDetails = "$defendantRemainAt $detailsAndTiming"
     return condition
@@ -717,15 +738,82 @@ class HearingEventHandler(
     responsibleOrganisationEmail: String,
     notifyingOrganisation: String,
     notifyingOrganisationName: String,
-  ): InterestedParties = InterestedParties(
-    versionId = versionId,
-    notifyingOrganisation = notifyingOrganisation,
-    notifyingOrganisationName = notifyingOrganisationName,
-    notifyingOrganisationEmail = "",
-    responsibleOrganisation = responsibleOfficer,
-    responsibleOrganisationRegion = responsibleOrganisationRegion,
-    responsibleOrganisationEmail = responsibleOrganisationEmail,
-    responsibleOfficerName = "",
-    responsibleOfficerPhoneNumber = "",
-  )
+  ): InterestedParties {
+    val magistrateCourtDDName = MagistrateCourtDDv5.entries.firstOrNull {
+      it.value.replace("'", "") ==
+        notifyingOrganisationName.replace("'", "")
+    }
+    val crownCourtDDName = CrownCourtDDv5.entries.firstOrNull {
+      it.value.replace("'", "") ==
+        notifyingOrganisationName.replace("'", "")
+    }
+    val noName = magistrateCourtDDName?.value ?: crownCourtDDName?.value ?: notifyingOrganisationName
+    return InterestedParties(
+      versionId = versionId,
+      notifyingOrganisation = notifyingOrganisation,
+      notifyingOrganisationName = noName,
+      notifyingOrganisationEmail = "",
+      responsibleOrganisation = responsibleOfficer,
+      responsibleOrganisationRegion = responsibleOrganisationRegion,
+      responsibleOrganisationEmail = responsibleOrganisationEmail,
+      responsibleOfficerName = "",
+      responsibleOfficerPhoneNumber = "",
+    )
+  }
+
+  private fun getDeviceWearerAdditionalInfo(prompts: List<JudicialResultsPrompt>, primaryAddress: Address?): String {
+    val additionalInfo = StringBuilder()
+
+    prompts.filter {
+      it.judicialResultPromptTypeId == COMMUNITY_NOTIFICATION_OF_EM_ORDER ||
+        it.judicialResultPromptTypeId == BAIL_ELECTRONIC_MONITORING_FLAG
+    }.forEach { prompt ->
+      additionalInfo.appendLine("${prompt.label} - \n${prompt.value}")
+    }
+
+    if (primaryAddress != null) {
+      val address = listOf(
+        primaryAddress.addressLine1,
+        primaryAddress.addressLine2,
+        primaryAddress.addressLine3,
+        primaryAddress.addressLine4,
+        primaryAddress.postcode,
+      )
+        .filterNot { it.isBlank() }
+        .joinToString(", ")
+
+      additionalInfo.appendLine(
+        "Device Wearer Primary Address - \n$address",
+      )
+    }
+    return additionalInfo.toString()
+  }
+
+  private fun getMonitoringOrderAdditionalInfo(prompts: List<JudicialResultsPrompt>, defendant: Defendant): String {
+    val additionalInfo = StringBuilder()
+    if (defendant.offences.isNotEmpty()) {
+      additionalInfo.appendLine(
+        "Offences - " + defendant.offences.joinToString("\n") { "${it.offenceCode} ${it.offenceTitle}" },
+      )
+
+      (defendant.offences).forEach { offence ->
+        offence.judicialResults.forEach { judicialResult ->
+          additionalInfo.appendLine("Judicial Result - \n${judicialResult.resultText}")
+        }
+      }
+    }
+    prompts.filter {
+      it.label == "Local Authority"
+    }.forEach { prompt ->
+      additionalInfo.appendLine("${prompt.label} - \n${prompt.value}")
+    }
+    prompts.filter {
+      it.label == "Next hearing in magistrates' court" ||
+        it.label == "Next hearing in Crown Court"
+    }.forEach { prompt ->
+      additionalInfo.appendLine("${prompt.label} - \n${prompt.value}")
+    }
+
+    return additionalInfo.toString()
+  }
 }

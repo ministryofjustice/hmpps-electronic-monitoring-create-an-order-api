@@ -41,5 +41,6 @@
   "delius_id": null,
   "prison_number": null,
   "interpreter_required": null,
-  "language": null
+  "language": null,
+  "additional_information" : "Notification of electronic monitoring order (requirement) - \nElectronic monitoring contractor organisation name:Electronic Monitoring Contractor\nElectronic monitoring contractor email address 1:a@b.co.uk\nVariation of electronic monitoring. Date and case reference of original order:Case URN 28DI7224793 date of order 17/10/2024\nAre there any additional requirements as well?:No\nWas an interpreter used?:No\nDoes the offender have any special needs?:No\nDevice Wearer Primary Address - \n21, Test Road, London, SW11 3TQ\n"
 }

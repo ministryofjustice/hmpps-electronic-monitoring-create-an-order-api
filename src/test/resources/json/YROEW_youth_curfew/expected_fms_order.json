@@ -6,7 +6,7 @@
   "court": "",
   "court_order_email": "",
   "device_type": "",
-  "device_wearer": "Person Mock",
+  "device_wearer": "CP011 YROEW",
   "enforceable_condition": [
     {
       "condition": "Curfew with EM",
@@ -28,7 +28,7 @@
   "no_address_3": "",
   "no_address_4": "",
   "no_email": "",
-  "no_name": "Lavender Hill Magistrates' Court",
+  "no_name": "Lavender Hill Magistrates Court",
   "no_phone_number": "",
   "offence": "",
   "offence_date": "",
@@ -90,8 +90,9 @@
   "installation_address_4": "",
   "installation_address_post_code": "",
   "crown_court_case_reference_number": "",
-  "magistrate_court_case_reference_number": "",
+  "magistrate_court_case_reference_number": "RQ263642465",
   "issp": "No",
   "hdc": "No",
-  "order_status": "Not Started"
+  "order_status": "Not Started",
+  "additional_information" : "Offences - TH68013A Attempt theft of motor vehicle\nJudicial Result - \nYROEW - Youth Rehabilitation Order England and Wales\nYouth rehabilitation order made. The defendant must comply with the requirements (shown below) by 25/12/2025.\nJudicial Result - \nYRC1 - Youth rehabilitation requirement: Curfew with electronic monitoring\nYouth rehabilitation requirement: Curfew Requirement with Electronic Monitoring. Be under a curfew for 6 Months with electronic monitoring. Start date 10/11/2024. Start time 10:00. End date 10/11/2025. End time 10:00. Defendant to remain at 11 Mayfair\nLondon. Curfew details: Defendant will be tagged and monitored as per above.\n"
 }

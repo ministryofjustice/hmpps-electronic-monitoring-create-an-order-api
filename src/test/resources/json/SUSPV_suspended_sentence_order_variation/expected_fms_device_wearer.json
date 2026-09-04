@@ -9,11 +9,11 @@
   "sex": "male",
   "gender_identity": "",
   "disability": [],
-  "address_1": "21",
-  "address_2": "Furnburry Park Road",
-  "address_3": "London",
+  "address_1": "11 Copperfield Avenue\nSE13 7MJ",
+  "address_2": "",
+  "address_3": "",
   "address_4": "",
-  "address_post_code": "SW11 3TQ",
+  "address_post_code": "",
   "no_fixed_address": "false",
   "secondary_address_1": "",
   "secondary_address_2": "",
@@ -50,5 +50,6 @@
   "home_office_case_reference_number": "",
   "cepr": "",
   "interpreter_required": null,
-  "language": null
+  "language": null,
+  "additional_information" : "Notification of electronic monitoring order (requirement) - \nElectronic monitoring contractor organisation name:Electronic Monitoring Contractor\nElectronic monitoring contractor email address 1:LPadmin@ems.co.uk\nContinuation of electronic monitoring:Yes\nAre there any additional requirements as well?:No\nWas an interpreter used?:Yes\nDoes the offender have any special needs?:Yes\nDevice Wearer Primary Address - \n11 Copperfield Avenue\nSE13 7MJ\n"
 }

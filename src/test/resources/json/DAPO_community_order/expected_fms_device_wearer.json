@@ -1,8 +1,8 @@
 {
   "title": "",
-  "first_name": "Drew",
+  "first_name": "CP009",
   "middle_name": "",
-  "last_name": "Conn",
+  "last_name": "DAPO",
   "alias": null,
   "date_of_birth": "1987-02-21",
   "adult_child": "adult",
@@ -50,5 +50,6 @@
   "home_office_case_reference_number": "",
   "cepr": "",
   "interpreter_required": null,
-  "language": null
+  "language": null,
+  "additional_information" : "Notification of electronic monitoring order (requirement) - \nElectronic monitoring contractor organisation name:Electronic Monitoring Contractor\nElectronic monitoring contractor email address 1:LPadmin@ems.co.uk\nFirst notification of electronic monitoring:Yes\nAre there any additional requirements as well?:No\nDefendant's mobile number:07647899349\nWas an interpreter used?:No\nLanguage:English\nDoes the offender have any special needs?:No\nDevice Wearer Primary Address - \n25 Park Avenue, Park Avenue, Birmingham, West Midlands, B1 1AA\n"
 }

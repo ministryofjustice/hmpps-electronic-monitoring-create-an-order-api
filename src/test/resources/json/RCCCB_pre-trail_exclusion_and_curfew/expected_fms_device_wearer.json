@@ -1,8 +1,8 @@
 {
   "title": "",
-  "first_name": "Person",
+  "first_name": "CP012",
   "middle_name": "",
-  "last_name": "Mock",
+  "last_name": "RCCCB",
   "alias": null,
   "date_of_birth": "1999-01-22",
   "adult_child": "adult",
@@ -41,5 +41,6 @@
   "delius_id": null,
   "prison_number": null,
   "interpreter_required": null,
-  "language": null
+  "language": null,
+  "additional_information" : "Notification of electronic monitoring order (bail) - \nElectronic monitoring contractor organisation name:Electronic Monitoring Contractor\nElectronic monitoring contractor email address 1:a@b.co.uk\nFirst notification of electronic monitoring:Yes\nDefendant's mobile number:07491779149\nWas an interpreter used?:No\nLanguage:English\nDoes the offender have any special needs?:No\nSpecial needs:Additional reasons\nThis curfew shall apply upon release from custody:Yes\nDevice Wearer Primary Address - \n1 High Street, High Street, Cambridge, Cambridgeshire, NW1 5BR\n"
 }

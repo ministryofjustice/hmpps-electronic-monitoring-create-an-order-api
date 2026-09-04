@@ -6,16 +6,16 @@
   "court": "",
   "court_order_email": "",
   "device_type": "",
-  "device_wearer": "JoUser2G91Rb BOT2G91Rb",
+  "device_wearer": "CP010 BAIL_RC",
   "enforceable_condition": [
     {
       "condition": "EM Exclusion / Inclusion Zone",
       "start_date": "2024-10-25 00:00:00",
-      "end_date": "2024-10-31 14:00:00"
+      "end_date": ""
     }
   ],
   "exclusion_allday": "",
-  "interim_court_date": "",
+  "interim_court_date": "2024-10-31 14:00:00",
   "issuing_organisation": "",
   "media_interest": "",
   "new_order_received": "",
@@ -28,11 +28,11 @@
   "no_address_3": "",
   "no_address_4": "",
   "no_email": "",
-  "no_name": "Lavender Hill Magistrates' Court",
+  "no_name": "Lavender Hill Magistrates Court",
   "no_phone_number": "",
   "offence": "",
   "offence_date": "",
-  "order_end": "2024-10-31 14:00:00",
+  "order_end": "",
   "order_id": "{expectedOderId}",
   "order_request_type": "New Order",
   "order_start": "2024-10-25 00:00:00",
@@ -71,7 +71,7 @@
   "conditional_release_date": "",
   "reason_for_order_ending_early": "",
   "business_unit": "",
-  "service_end_date": "2024-10-31",
+  "service_end_date": "",
   "curfew_description": "",
   "curfew_start": "",
   "curfew_end": "",
@@ -83,7 +83,7 @@
       "description": "Exclusion - not to leave Place or area:Home at Mitcham avenue",
       "duration": null,
       "start": "2024-10-25",
-      "end": "2024-10-31"
+      "end": ""
     }
   ],
   "abstinence": "",
@@ -97,8 +97,9 @@
   "installation_address_4": "",
   "installation_address_post_code": "",
   "crown_court_case_reference_number": "",
-  "magistrate_court_case_reference_number": "",
+  "magistrate_court_case_reference_number": "RA264232814",
   "issp": "No",
   "hdc": "No",
-  "order_status": "Not Started"
+  "order_status": "Not Started",
+  "additional_information" : "Offences - CA03012 Possess / control TV set with intent another use install without a licence\nJudicial Result - \nRC - Remanded on conditional bail\nRemanded on conditional bail until hearing on 31/10/2024 at 14:00 in Courtroom 02, Lavender Hill Magistrates' Court. Conditions: Exclusion - not to leave Home at Mitcham avenue, Curfew condition is to be electronically monitored. Reasons: Having tested positive for heroin, cocaine or crack cocaine. Defendant to attend the next hearing\nNext hearing in magistrates' court - \nDate of hearing:31/10/2024\nTime of hearing:14:00\nCourthouse organisation name:Lavender Hill Magistrates' Court\nCourthouse address line 1:176A Lavender Hill\nCourthouse address line 2:London\nCourthouse post code:SW11 1JU\nCourtroom:Courtroom 02\nHearing type:Review\nEstimated duration:10 MINUTES\nBooking reference:7f2a1bf8-83f5-48b9-a69d-91db3c2a946f\n"
 }

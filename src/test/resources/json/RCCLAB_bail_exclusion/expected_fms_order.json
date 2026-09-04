@@ -6,16 +6,16 @@
   "court": "",
   "court_order_email": "",
   "device_type": "",
-  "device_wearer": "Person Mock",
+  "device_wearer": "CP014 RCCLAB",
   "enforceable_condition": [
     {
       "condition": "EM Exclusion / Inclusion Zone",
       "start_date": "2024-10-25 00:00:00",
-      "end_date": "2024-10-31 10:00:00"
+      "end_date": ""
     }
   ],
   "exclusion_allday": "",
-  "interim_court_date": "",
+  "interim_court_date": "2024-10-31 10:00:00",
   "issuing_organisation": "",
   "media_interest": "",
   "new_order_received": "",
@@ -28,11 +28,11 @@
   "no_address_3": "",
   "no_address_4": "",
   "no_email": "",
-  "no_name": "Lavender Hill Magistrates' Court",
+  "no_name": "Lavender Hill Magistrates Court",
   "no_phone_number": "",
   "offence": "",
   "offence_date": "",
-  "order_end": "2024-10-31 10:00:00",
+  "order_end": "",
   "order_id": "{expectedOderId}",
   "order_request_type": "New Order",
   "order_start": "2024-10-25 00:00:00",
@@ -71,7 +71,7 @@
   "conditional_release_date": "",
   "reason_for_order_ending_early": "",
   "business_unit": "",
-  "service_end_date": "2024-10-31",
+  "service_end_date": "",
   "curfew_description": "",
   "curfew_start": "",
   "curfew_end": "",
@@ -82,7 +82,7 @@
       "description": "Exclusion - not go within a radius unless accompanied by a police officer Within:5 miles radius\nOf:Mitcham",
       "duration": null,
       "start": "2024-10-25",
-      "end": "2024-10-31"
+      "end": ""
     }
   ],
   "inclusion_zones": [],
@@ -97,8 +97,9 @@
   "installation_address_4": "",
   "installation_address_post_code": "",
   "crown_court_case_reference_number": "",
-  "magistrate_court_case_reference_number": "",
+  "magistrate_court_case_reference_number": "RQ567052618",
   "issp": "No",
   "hdc": "No",
-  "order_status": "Not Started"
+  "order_status": "Not Started",
+  "additional_information" : "Offences - TH68001 Theft from the person of another\nJudicial Result - \nRCCLAB - Remitted from the Crown Court to the Magistrates' Court in local authority accommodation with bail direction\nRemitted for Sentence (adults) (S.25A Sentencing Act 2020). Offence Type: Either Way. In accommodation provided by the local authority for Bridgend Borough Council until hearing on 31/10/2024 at 10:00 in Courtroom 02, Lavender Hill Magistrates' Court. Basis: Remanded for psychiatric report by one medical practitioner. Directed to be bailed to 15/10/2024 at 10:00 upon satisfying the following conditions: Passport - give to the court any passport held and subject to the following conditions: Residence - live and sleep each night at 111 Centrillion point, Exclusion - not go within 5 miles radius of Mitcham unless accompanied by a police officer.\nLocal Authority - \nBridgend Borough Council\nNext hearing in magistrates' court - \nDate of hearing:31/10/2024\nTime of hearing:10:00\nCourthouse organisation name:Lavender Hill Magistrates' Court\nCourthouse address line 1:176A Lavender Hill\nCourthouse address line 2:London\nCourthouse post code:SW11 1JU\nCourtroom:Courtroom 02\nHearing type:Mention\nEstimated duration:10 MINUTES\nBooking reference:ed6c1522-8742-4f45-8baa-680de52bbd03\n"
 }

@@ -28,7 +28,7 @@
   "no_address_3": "",
   "no_address_4": "",
   "no_email": "",
-  "no_name": "Lavender Hill Magistrates' Court",
+  "no_name": "Lavender Hill Magistrates Court",
   "no_phone_number": "",
   "offence": "",
   "offence_date": "",
@@ -90,8 +90,9 @@
   "installation_address_4": "",
   "installation_address_post_code": "",
   "crown_court_case_reference_number": "",
-  "magistrate_court_case_reference_number": "",
+  "magistrate_court_case_reference_number": "RQ619310467",
   "issp": "No",
   "hdc": "No",
-  "order_status": "Not Started"
+  "order_status": "Not Started",
+  "additional_information" : "Offences - TH68013A Attempt theft of motor vehicle\nJudicial Result - \nSDO - Supervision Default Order\nSupervision default order made. The defendant must comply with the requirements (shown below) before the end of the supervision period on 25/05/2025. Supervising court Banbury Magistrates' Court. Supervising officer for the sentence an officer of a provider of probation services.\nJudicial Result - \nCURFEM - Supervision default order requirement: Curfew requirement with electronic monitoring\nSupervision default order requirement: Curfew requirement with electronic monitoring. Be under a curfew for 6 Months with electronic monitoring. Start date 25/10/2024. Start time 10:00. End date 25/05/2025. End time 10:00. Curfew details: The defendant will be tagged and monitored as per above details.\n"
 }

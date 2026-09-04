@@ -11,16 +11,16 @@
     {
       "condition": "Curfew with EM",
       "start_date": "2025-01-15 00:00:00",
-      "end_date": "2025-01-15 10:00:00"
+      "end_date": ""
     },
     {
       "condition": "EM Exclusion / Inclusion Zone",
       "start_date": "2025-01-15 00:00:00",
-      "end_date": "2025-01-15 10:00:00"
+      "end_date": ""
     }
   ],
   "exclusion_allday": "",
-  "interim_court_date": "",
+  "interim_court_date": "2025-01-15 10:00:00",
   "issuing_organisation": "",
   "media_interest": "",
   "new_order_received": "",
@@ -33,11 +33,11 @@
   "no_address_3": "",
   "no_address_4": "",
   "no_email": "",
-  "no_name": "Birmingham Magistrates' Court",
+  "no_name": "Birmingham Magistrates Court",
   "no_phone_number": "",
   "offence": "",
   "offence_date": "",
-  "order_end": "2025-01-15 10:00:00",
+  "order_end": "",
   "order_id": "{expectedOderId}",
   "order_request_type": "New Order",
   "order_start": "2025-01-15 00:00:00",
@@ -76,10 +76,10 @@
   "conditional_release_date": null,
   "reason_for_order_ending_early": "",
   "business_unit": "",
-  "service_end_date": "2025-01-15",
+  "service_end_date": "",
   "curfew_description": "Between:18:00\nAnd:09:00\nFrequency of curfew:1",
   "curfew_start": "2025-01-15 00:00:00",
-  "curfew_end": "2025-01-15 10:00:00",
+  "curfew_end": "",
   "curfew_duration": [],
   "trail_monitoring": "No",
   "exclusion_zones": [
@@ -87,19 +87,19 @@
       "description": "Must not enter Place or area:trafalgaur square",
       "duration": null,
       "start": "2025-01-15",
-      "end": "2025-01-15"
+      "end": ""
     },
     {
       "description": "Must not enter the place or area specified other than to attend court or for a pre-arranged appointment with your solicitor Place or area:buckingham palace",
       "duration": null,
       "start": "2025-01-15",
-      "end": "2025-01-15"
+      "end": ""
     },
     {
       "description": "Must not go within A radius of:2\nIn respect of this place:whitehouse",
       "duration": null,
       "start": "2025-01-15",
-      "end": "2025-01-15"
+      "end": ""
     }
   ],
   "inclusion_zones": [],
@@ -114,8 +114,9 @@
   "installation_address_4": "",
   "installation_address_post_code": "",
   "crown_court_case_reference_number": "",
-  "magistrate_court_case_reference_number": "",
+  "magistrate_court_case_reference_number": "RQ370014166",
   "issp": "No",
   "hdc": "No",
-  "order_status": "Not Started"
+  "order_status": "Not Started",
+  "additional_information" : "Offences - CD98526 Complaint for an individual support order\nJudicial Result - \nRILA - Remand In care of Local Authority\nRemand In care of Local Authority until hearing on 15/01/2025 at 10:00 in Courtroom 01, City of London Magistrates' Court in accommodation provided by the local authority for Birmingham City Council. Basis: Further remanded in absence due to illness or accident. Bail exceptions: To prevent interference with witnesses or otherwise obstruct the course of justice, whether in relation to the defendant or any other person. Reasons for applying: Failed to surrender, Offended on bail. Conditions imposed on the defendant: The curfew condition will be electronically monitored. The electronic monitoring service will see that the curfew is complied with. You will wear a personal identification device at all times during the terms of this condition. You must not remove or tamper with the monitoring equipment in any way. You must allow access for the monitoring staff to complete the induction process and follow any reasonable instructions they give you., Must: submit passport, Must not enter trafalgaur square, Must not enter buckingham palace except to attend court or pre-arranged appointment with solicitor, Must not go within 2 of whitehouse, Must stay indoors at home address (or at any other address allowed by the court) between 18:00 and 09:00 1, Must live, and sleep each night, at 101,\nwhitehouse\nMK8 2AE. Reasons for Conditions: To make sure that the defendant goes to court for the next hearing.\nLocal Authority - \nBirmingham City Council\nNext hearing in magistrates' court - \nDate of hearing:15/01/2025\nTime of hearing:10:00\nCourthouse organisation name:City of London Magistrates' Court\nCourthouse address line 1:1 Queen Victoria Street\nCourthouse address line 2:London\nCourthouse post code:EC4N 4XY\nCourtroom:Courtroom 01\nHearing type:Bail Variation Application\nEstimated duration:3 HOURS\nBooking reference:b6bfdd73-2524-4340-95c6-3bbb3d15b627\n"
 }

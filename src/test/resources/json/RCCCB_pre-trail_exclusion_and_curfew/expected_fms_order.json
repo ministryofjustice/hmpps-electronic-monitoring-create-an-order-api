@@ -6,21 +6,21 @@
   "court": "",
   "court_order_email": "",
   "device_type": "",
-  "device_wearer": "Person Mock",
+  "device_wearer": "CP012 RCCCB",
   "enforceable_condition": [
     {
       "condition": "Curfew with EM",
       "start_date": "2025-01-22 00:00:00",
-      "end_date": "2025-01-22 10:00:00"
+      "end_date": ""
     },
     {
       "condition": "EM Exclusion / Inclusion Zone",
       "start_date": "2025-01-22 00:00:00",
-      "end_date": "2025-01-22 10:00:00"
+      "end_date": ""
     }
   ],
   "exclusion_allday": "",
-  "interim_court_date": "",
+  "interim_court_date": "2025-01-22 10:00:00",
   "issuing_organisation": "",
   "media_interest": "",
   "new_order_received": "",
@@ -33,11 +33,11 @@
   "no_address_3": "",
   "no_address_4": "",
   "no_email": "",
-  "no_name": "Birmingham Magistrates' Court",
+  "no_name": "Birmingham Magistrates Court",
   "no_phone_number": "",
   "offence": "",
   "offence_date": "",
-  "order_end": "2025-01-22 10:00:00",
+  "order_end": "",
   "order_id": "{expectedOderId}",
   "order_request_type": "New Order",
   "order_start": "2025-01-22 00:00:00",
@@ -76,10 +76,10 @@
   "conditional_release_date": null,
   "reason_for_order_ending_early": "",
   "business_unit": "",
-  "service_end_date": "2025-01-22",
+  "service_end_date": "",
   "curfew_description": "Between:18:00\nAnd:09:00\nFrequency:2\nAlternative curfew address:local temples",
   "curfew_start": "2025-01-22 00:00:00",
-  "curfew_end": "2025-01-22 10:00:00",
+  "curfew_end": "",
   "curfew_duration": [],
   "trail_monitoring": "No",
   "exclusion_zones": [
@@ -87,25 +87,25 @@
       "description": "Exclusion - not to enter a place Place or area:Weston Rd, Stafford ST18 0WL\nAdditional information:Exclusion - not to enter a place",
       "duration": null,
       "start": "2025-01-22",
-      "end": "2025-01-22"
+      "end": ""
     },
     {
       "description": "Exclusion - not to enter a place except to attend court or pre-arranged appointment with solicitor Place or area:Exclusion - not to enter a place except to attend court or pre-arranged appointment with solicitor",
       "duration": null,
       "start": "2025-01-22",
-      "end": "2025-01-22"
+      "end": ""
     },
     {
       "description": "Exclusion - not go within a radius Within:2miles\nOf:stafford\nAdditional information:Additional information",
       "duration": null,
       "start": "2025-01-22",
-      "end": "2025-01-22"
+      "end": ""
     },
     {
       "description": "Exclusion - the exclusion condition to be electronically monitored with a GPS tag Additional information:Additional information",
       "duration": null,
       "start": "2025-01-22",
-      "end": "2025-01-22"
+      "end": ""
     }
   ],
   "inclusion_zones": [
@@ -113,13 +113,13 @@
       "description": "Exclusion - not to go more than a specified radius from a specified place Radius:2miles\nPlace or area:Exclusion - not to go more than a specified radius from a specified place\nAdditional information:Exclusion - not to go more than a specified radius from a specified place",
       "duration": null,
       "start": "2025-01-22",
-      "end": "2025-01-22"
+      "end": ""
     },
     {
       "description": "Exclusion - not to leave Place or area:Weston Rd, Stafford ST18 0WL\nAdditional information:Weston Rd, Stafford ST18 0WL",
       "duration": null,
       "start": "2025-01-22",
-      "end": "2025-01-22"
+      "end": ""
     }
   ],
   "abstinence": "",
@@ -133,8 +133,9 @@
   "installation_address_4": "",
   "installation_address_post_code": "",
   "crown_court_case_reference_number": "",
-  "magistrate_court_case_reference_number": "",
+  "magistrate_court_case_reference_number": "RQ370016544",
   "issp": "No",
   "hdc": "No",
-  "order_status": "Not Started"
+  "order_status": "Not Started",
+  "additional_information" : "Offences - CD98526 Complaint for an individual support order\nJudicial Result - \nRCCCB - Remitted from the Crown Court to the Magistrates' Court on conditional bail\nRemitted for Sentence (adults) (S.25A Sentencing Act 2020). Offence Type: Summary. Remanded on conditional bail until hearing on 22/01/2025 at 10:00 in Courtroom 01, Cambridge Magistrates' Court. Adjournment reason: To consider if there are special reasons for not ordering an endorsement or disqualification. Conditions: Curfew condition is to be electronically monitored, Exclusion - the exclusion condition to be electronically monitored with a GPS tag. Additional information , Curfew - curfew between 18:00 and 09:00 2. Alternative curfew address: local temples., Residence - live and sleep each night at Weston Rd, Stafford ST18 0WL, Exclusion - not go within 2miles of stafford. Additional information, Exclusion - not to enter Weston Rd, Stafford ST18 0WL. Exclusion - not to enter a place, Exclusion: not to enter Exclusion - not to enter a place except to attend court or pre-arranged appointment with solicitor except to attend court or pre-arranged appointment with solicitor, Exclusion - not to go more than 2miles from Exclusion - not to go more than a specified radius from a specified place. Additional Information: Exclusion - not to go more than a specified radius from a specified place, Exclusion - not to leave Weston Rd, Stafford ST18 0WL. Weston Rd, Stafford ST18 0WL, Other - Weston Rd, Stafford ST18 0WL, Residence - live, and sleep each night, at the residence bail hostel or at any other place where you may be told to go by james watt. Reasons: To ensure appearance, Additional reasons. Defendant to attend the next hearing\nNext hearing in magistrates' court - \nDate of hearing:22/01/2025\nTime of hearing:10:00\nCourthouse organisation name:Cambridge Magistrates' Court\nCourthouse address line 1:12 St Andrews Street\nCourthouse address line 2:Cambridge\nCourthouse address line 3:Cambridgeshire\nCourthouse post code:CB2 3AX\nCourtroom:Courtroom 01\nHearing type:Bail Variation Application\nEstimated duration:3 HOURS\nBooking reference:3699c22b-ba25-46fe-a1b1-61e7af786325\n"
 }

@@ -41,5 +41,6 @@
   "delius_id": null,
   "prison_number": null,
   "interpreter_required": null,
-  "language": null
+  "language": null,
+  "additional_information" : "Notification of electronic monitoring order (bail) - \nElectronic monitoring contractor organisation name:Electronic Monitoring Contractor\nElectronic monitoring contractor email address 1:a@b.co.uk\nElectronic monitoring contractor email address 2:LPadmin2@ems.co.uk\nAdditional notification of electronic monitoring. Date and case reference of original order:31/01/2025 12321421421\nDefendant's mobile number:09331417129\nWas an interpreter used?:No\nLanguage:English\nDoes the offender have any special needs?:No\nSpecial needs:48 London Wall, City of London, London EC2M 5QB\nThis curfew shall apply upon release from custody:Yes\nDevice Wearer Primary Address - \nNo fixed abode\n"
 }

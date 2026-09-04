@@ -28,7 +28,7 @@
   "no_address_3": "",
   "no_address_4": "",
   "no_email": "",
-  "no_name": "Lavender Hill Magistrates' Court",
+  "no_name": "Lavender Hill Magistrates Court",
   "no_phone_number": "",
   "offence": "",
   "offence_date": "",
@@ -97,8 +97,9 @@
   "installation_address_4": "",
   "installation_address_post_code": "",
   "crown_court_case_reference_number": "",
-  "magistrate_court_case_reference_number": "",
+  "magistrate_court_case_reference_number": "RQ6192295",
   "issp": "No",
   "hdc": "No",
-  "order_status": "Not Started"
+  "order_status": "Not Started",
+  "additional_information" : "Offences - TH68013A Attempt theft of motor vehicle\nJudicial Result - \nYROISS - Youth rehabilitation order with intensive supervision and surveillance England / Wales\nYouth rehabilitation order with intensive supervision and surveillance made. The defendant must comply with the requirements (shown below) by 25/11/2025.\nJudicial Result - \nYREX3 - Youth rehabilitation requirement: Exclusion not to enter for a period with electronic monitoring\nYouth rehabilitation requirement: Exclusion with Electronic Monitoring. Not to enter 11 Copperfield Avenue,\nMitcham. This exclusion with electronic monitoring lasts for 6 Months. Start date 10/11/2024. Start time 10:00. End date 10/05/2025. End time 10:00. \n"
 }

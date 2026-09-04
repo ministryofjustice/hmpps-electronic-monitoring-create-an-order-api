@@ -155,6 +155,10 @@ data class DeviceWearer(
   @JsonInclude(JsonInclude.Include.NON_NULL)
   @JsonProperty("new_order_case_id")
   var newOrderCaseId: String? = null,
+
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  @JsonProperty("additional_information")
+  var additionalInformation: String? = "",
 ) {
   companion object
 }

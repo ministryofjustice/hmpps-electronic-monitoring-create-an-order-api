@@ -11,16 +11,16 @@
     {
       "condition": "Curfew with EM",
       "start_date": "2025-01-22 00:00:00",
-      "end_date": "2025-01-22 10:00:00"
+      "end_date": ""
     },
     {
       "condition": "EM Exclusion / Inclusion Zone",
       "start_date": "2025-01-22 00:00:00",
-      "end_date": "2025-01-22 10:00:00"
+      "end_date": ""
     }
   ],
   "exclusion_allday": "",
-  "interim_court_date": "",
+  "interim_court_date": "2025-01-22 10:00:00",
   "issuing_organisation": "",
   "media_interest": "",
   "new_order_received": "",
@@ -33,11 +33,11 @@
   "no_address_3": "",
   "no_address_4": "",
   "no_email": "",
-  "no_name": "Birmingham Magistrates' Court",
+  "no_name": "Birmingham Magistrates Court",
   "no_phone_number": "",
   "offence": "",
   "offence_date": "",
-  "order_end": "2025-01-22 10:00:00",
+  "order_end": "",
   "order_id": "{expectedOderId}",
   "order_request_type": "Variation",
   "order_start": "2025-01-22 00:00:00",
@@ -76,10 +76,10 @@
   "conditional_release_date": null,
   "reason_for_order_ending_early": "",
   "business_unit": "",
-  "service_end_date": "2025-01-22",
+  "service_end_date": "",
   "curfew_description": "Between:18:00\nAnd:08:00\nFrequency:2\nAlternative curfew address:RAB AUTO SERVICES GARAGE, Sandon Rd, Hopton, Stafford ST18 9TH\nAdditional information:RAB AUTO SERVICES GARAGE, Sandon Rd, Hopton, Stafford ST18 9TH",
   "curfew_start": "2025-01-22 00:00:00",
-  "curfew_end": "2025-01-22 10:00:00",
+  "curfew_end": "",
   "curfew_duration": [],
   "trail_monitoring": "No",
   "exclusion_zones": [
@@ -87,19 +87,19 @@
       "description": "Exclusion - not to enter a place except to attend court or pre-arranged appointment with solicitor Place or area:RAB AUTO SERVICES GARAGE, Sandon Rd, Hopton, Stafford ST18 9TH",
       "duration": null,
       "start": "2025-01-22",
-      "end": "2025-01-22"
+      "end": ""
     },
     {
       "description": "Exclusion - not go within a radius Within:5miles\nOf:Exclusion - not go within a radius\nAdditional information:Exclusion - not go within a radius",
       "duration": null,
       "start": "2025-01-22",
-      "end": "2025-01-22"
+      "end": ""
     },
     {
       "description": "Exclusion - the exclusion condition to be electronically monitored with a GPS tag Additional information:Exclusion - the exclusion condition to be electronically monitored with a GPS tag",
       "duration": null,
       "start": "2025-01-22",
-      "end": "2025-01-22"
+      "end": ""
     }
   ],
   "inclusion_zones": [
@@ -107,7 +107,7 @@
       "description": "Exclusion - not to leave Place or area:Old Rd, Stone ST15 8UT",
       "duration": null,
       "start": "2025-01-22",
-      "end": "2025-01-22"
+      "end": ""
     }
   ],
   "abstinence": "",
@@ -121,8 +121,9 @@
   "installation_address_4": "",
   "installation_address_post_code": "",
   "crown_court_case_reference_number": "",
-  "magistrate_court_case_reference_number": "",
+  "magistrate_court_case_reference_number": "RQ370088228",
   "issp": "No",
   "hdc": "No",
-  "order_status": "Not Started"
+  "order_status": "Not Started",
+  "additional_information" : "Offences - CD98526 Complaint for an individual support order\nJudicial Result - \nRCBV - Variation of bail conditions\nBail granted on 15/01/2025 by miltonkeynes police station varied. Remanded on conditional bail until hearing on 22/01/2025 at 10:00 in Courtroom 01, Birmingham Magistrates' Court. Bail granted conditionally pending appeal to the Crown Court. Conditions: Curfew condition is to be electronically monitored, Exclusion - the exclusion condition to be electronically monitored with a GPS tag. Exclusion - the exclusion condition to be electronically monitored with a GPS tag , Curfew - curfew between 18:00 and 08:00 2. Alternative curfew address: RAB AUTO SERVICES GARAGE, Sandon Rd, Hopton, Stafford ST18 9TH. RAB AUTO SERVICES GARAGE, Sandon Rd, Hopton, Stafford ST18 9TH, Exclusion - not go within 5miles of Exclusion - not go within a radius. Exclusion - not go within a radius, Exclusion: not to enter RAB AUTO SERVICES GARAGE, Sandon Rd, Hopton, Stafford ST18 9TH except to attend court or pre-arranged appointment with solicitor, Residence - live and sleep each night at Tollgate Park, Paton Dr, Stafford ST16 3EF, Residence BASS - take part in additional mandatory support sessions (more than the minimum of one session per week), Residence BASS - live and sleep each night at Tollgate Park, Paton Dr, Stafford ST16 3EF and comply with the conditions of BASS, Exclusion - not to leave Old Rd, Stone ST15 8UT. Reasons: For the defendant's own protection, RAB AUTO SERVICES GARAGE, Sandon Rd, Hopton, Stafford ST18 9TH. Defendant to attend the next hearing\nNext hearing in magistrates' court - \nDate of hearing:22/01/2025\nTime of hearing:10:00\nCourthouse organisation name:Birmingham Magistrates' Court\nCourthouse address line 1:Victoria Law Courts\nCourthouse address line 2:Corporation Street\nCourthouse address line 3:Birmingham\nCourthouse post code:B4 6QA\nCourtroom:Courtroom 01\nHearing type:Trial\nEstimated duration:20 MINUTES\nBooking reference:148c4ccb-f9e2-472e-b248-7387c8e66ff2\n"
 }

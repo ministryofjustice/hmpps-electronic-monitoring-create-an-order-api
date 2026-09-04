@@ -28,7 +28,7 @@
   "no_address_3": "",
   "no_address_4": "",
   "no_email": "",
-  "no_name": "Lavender Hill Magistrates' Court",
+  "no_name": "Lavender Hill Magistrates Court",
   "no_phone_number": "",
   "offence": "",
   "offence_date": "",
@@ -97,8 +97,9 @@
   "installation_address_4": "",
   "installation_address_post_code": "",
   "crown_court_case_reference_number": "",
-  "magistrate_court_case_reference_number": "",
+  "magistrate_court_case_reference_number": "RQ594784296",
   "issp": "No",
   "hdc": "No",
-  "order_status": "Not Started"
+  "order_status": "Not Started",
+  "additional_information" : "Offences - TH68013A Attempt theft of motor vehicle\nJudicial Result - \nSUSPSD - Suspended sentence order - detention in a young offender institution\nCommitted to detention for 2 Years suspended for 2 Years. Reason: failure to comply with a pre-sentence drug testing order. The defendant must comply with the requirements within the supervision period.  In the event of activation of sentence: 15 bail remand days to count. Total custodial period 2 Years. Supervision period: 2 Years.\nJudicial Result - \nERPEM - Exclusion not to enter for a period with electronic monitoring\nExclusion Requirement with Electronic Monitoring: Not to enter 11 Mayfair\nLONDON. This exclusion with electronic monitoring lasts for 6 Months. Start date 10/11/2024. Start time 10:00. End date 10/11/2025. End time 10:00. \n"
 }

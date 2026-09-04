@@ -9,11 +9,11 @@
   "sex": "male",
   "gender_identity": "",
   "disability": [],
-  "address_1": "221B Baker Street",
-  "address_2": "Baker Street",
-  "address_3": "Marylebone",
-  "address_4": "Greater London",
-  "address_post_code": "YO43 3DE",
+  "address_1": "11 Mayfair\nCroydon",
+  "address_2": "",
+  "address_3": "",
+  "address_4": "",
+  "address_post_code": "",
   "no_fixed_address": "false",
   "secondary_address_1": "",
   "secondary_address_2": "",
@@ -50,5 +50,6 @@
   "home_office_case_reference_number": "",
   "cepr": "",
   "interpreter_required": null,
-  "language": null
+  "language": null,
+  "additional_information" : "Notification of electronic monitoring order (requirement) - \nElectronic monitoring contractor organisation name:Electronic Monitoring Contractor\nElectronic monitoring contractor email address 1:LPadmin@ems.co.uk\nContinuation of electronic monitoring:Yes\nAre there any additional requirements as well?:No\nDefendant's mobile number:06664972829\nWas an interpreter used?:Yes\nLanguage:Arabic\nDoes the offender have any special needs?:No\nSpecial needs:wheelchair\nDevice Wearer Primary Address - \n11 Mayfair\nCroydon\n"
 }
