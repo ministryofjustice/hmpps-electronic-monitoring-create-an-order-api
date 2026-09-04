@@ -157,10 +157,10 @@ data class OrderVersion(
   @Column(name = "IS_SENTENCING_ACT", nullable = true)
   var isSentencingAct: Boolean? = null,
 
-  @Schema(hidden = true)
+  @Transient
   var deviceWearerAdditionalInfo: String? = null,
 
-  @Schema(hidden = true)
+  @Transient
   var monitoringOrderAddtionalInfo: String? = null,
 
   @Schema(hidden = true)
