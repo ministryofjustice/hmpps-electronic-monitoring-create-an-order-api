@@ -90,19 +90,26 @@ class CorePersonRecordApiClient(private val corePersonRecordApiWebClient: WebCli
     )
   }
 
-  internal fun mapToCorePersonRecord(details: CorePersonDetails, versionId: UUID): CorePersonRecord = CorePersonRecord(
-    deviceWearer = toDeviceWearer(details, versionId),
-    contactDetails = toContactDetails(details, versionId),
-    addresses = listOfNotNull(toPrimaryAddress(details, versionId), toSecondaryAddress(details, versionId)),
-  )
+  internal fun mapToCorePersonRecord(details: CorePersonDetails, versionId: UUID): CorePersonRecord {
+    val record = CorePersonRecord(
+      deviceWearer = toDeviceWearer(details, versionId),
+      contactDetails = toContactDetails(details, versionId),
+      addresses = listOfNotNull(toPrimaryAddress(details, versionId), toSecondaryAddress(details, versionId)),
+
+    )
+    if (!record.addresses.any()) {
+      record.deviceWearer!!.noFixedAbode = null
+    }
+    return record
+  }
 
   private fun toDeviceWearer(details: CorePersonDetails, versionId: UUID): DeviceWearer = DeviceWearer(
     versionId = versionId,
     firstName = details.firstName,
     middleName = details.middleNames,
     lastName = details.lastName,
-    prisonNumber = details.identifiers?.prisonNumbers?.firstOrNull(),
-    courtCaseReferenceNumber = details.identifiers?.crns?.firstOrNull(),
+    nomisId = details.identifiers?.prisonNumbers?.firstOrNull(),
+    deliusId = details.identifiers?.crns?.firstOrNull(),
     pncId = details.identifiers?.pncs?.firstOrNull(),
     nationalInsuranceNumber = details.identifiers?.nationalInsuranceNumbers?.firstOrNull(),
     dateOfBirth = parsedDateOfBirth(details.dateOfBirth),
@@ -147,7 +154,7 @@ class CorePersonRecordApiClient(private val corePersonRecordApiWebClient: WebCli
     addressType = if (isPrimaryAddress(address)) AddressType.PRIMARY else AddressType.SECONDARY,
   )
 
-  private fun isPrimaryAddress(address: Address): Boolean = address.status?.code == "M"
+  private fun isPrimaryAddress(address: Address): Boolean = address.status?.code?.uppercase() == "M"
 
   private fun isSecondaryAddress(address: Address): Boolean = address.status?.code == "S"
 
@@ -162,7 +169,8 @@ class CorePersonRecordApiClient(private val corePersonRecordApiWebClient: WebCli
     else -> "UNKNOWN"
   }
 
-  private fun toAlias(alias: Alias): String = "${alias.firstName} ${alias.middleNames} ${alias.lastName}"
+  private fun toAlias(alias: Alias): String = listOfNotNull(alias.firstName, alias.middleNames, alias.lastName)
+    .joinToString(" ")
 
   private fun addressLineOne(address: Address): String {
     val buildingId = address.buildingNumber.takeIf { !it.isNullOrEmpty() }
