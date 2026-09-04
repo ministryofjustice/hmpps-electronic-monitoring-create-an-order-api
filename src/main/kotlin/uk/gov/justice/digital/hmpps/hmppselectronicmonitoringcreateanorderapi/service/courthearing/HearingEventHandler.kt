@@ -29,8 +29,10 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.courthearing.enums.VariationOrders
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.CrownCourtDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.EnforcementZoneType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MagistrateCourtDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MonitoringConditionType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderType
@@ -736,17 +738,28 @@ class HearingEventHandler(
     responsibleOrganisationEmail: String,
     notifyingOrganisation: String,
     notifyingOrganisationName: String,
-  ): InterestedParties = InterestedParties(
-    versionId = versionId,
-    notifyingOrganisation = notifyingOrganisation,
-    notifyingOrganisationName = notifyingOrganisationName,
-    notifyingOrganisationEmail = "",
-    responsibleOrganisation = responsibleOfficer,
-    responsibleOrganisationRegion = responsibleOrganisationRegion,
-    responsibleOrganisationEmail = responsibleOrganisationEmail,
-    responsibleOfficerName = "",
-    responsibleOfficerPhoneNumber = "",
-  )
+  ): InterestedParties {
+    val magistrateCourtDDName = MagistrateCourtDDv5.entries.firstOrNull {
+      it.value.replace("'", "") ==
+        notifyingOrganisationName.replace("'", "")
+    }
+    val crownCourtDDName = CrownCourtDDv5.entries.firstOrNull {
+      it.value.replace("'", "") ==
+        notifyingOrganisationName.replace("'", "")
+    }
+    val noName = magistrateCourtDDName?.value ?: crownCourtDDName?.value ?: notifyingOrganisationName
+    return InterestedParties(
+      versionId = versionId,
+      notifyingOrganisation = notifyingOrganisation,
+      notifyingOrganisationName = noName,
+      notifyingOrganisationEmail = "",
+      responsibleOrganisation = responsibleOfficer,
+      responsibleOrganisationRegion = responsibleOrganisationRegion,
+      responsibleOrganisationEmail = responsibleOrganisationEmail,
+      responsibleOfficerName = "",
+      responsibleOfficerPhoneNumber = "",
+    )
+  }
 
   private fun getDeviceWearerAdditionalInfo(prompts: List<JudicialResultsPrompt>, primaryAddress: Address?): String {
     val additionalInfo = StringBuilder()
