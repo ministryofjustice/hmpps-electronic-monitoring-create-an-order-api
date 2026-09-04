@@ -41,5 +41,6 @@
   "delius_id": null,
   "prison_number": null,
   "interpreter_required": null,
-  "language": null
+  "language": null,
+  "additional_information" : "Device Wearer Primary Address - \n80 Queen's Road, Queen's Road, Brighton, East Sussex, NW1 5BR\n"
 }

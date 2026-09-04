@@ -63,6 +63,9 @@ class HearingEventHandler(
     // Bail Electronic Monitoring flag
     private const val BAIL_ELECTRONIC_MONITORING_FLAG = "86857bb0-aaa6-4a76-b226-812a9987fcb2"
 
+    // Notification of electronic monitoring order
+    private const val COMMUNITY_NOTIFICATION_OF_EM_ORDER = "dada120c-160a-49a9-b040-e8b6b7128d67"
+
     //endregion
     fun isEnglandAndWalesEMRequest(offence: Offence): Boolean = !offence.judicialResults.any { judicialResults ->
       // If it's a Scottish court case
@@ -138,7 +141,6 @@ class HearingEventHandler(
         ),
       ),
     )
-
     val person = defendant.personDefendant?.personDetails
     val deviceWearer = DeviceWearer(versionId = order.getCurrentVersion().id)
 
@@ -209,6 +211,15 @@ class HearingEventHandler(
       }
     }
 
+    order.deviceWearerAdditionalInfo =
+      getDeviceWearerAdditionalInfo(
+        prompts,
+        order.addresses.firstOrNull {
+          it.addressType ==
+            AddressType.PRIMARY
+        },
+      )
+    order.monitoringOrderAddtionalInfo = getMonitoringOrderAdditionalInfo(prompts, defendant)
     return order
   }
 
@@ -736,4 +747,60 @@ class HearingEventHandler(
     responsibleOfficerName = "",
     responsibleOfficerPhoneNumber = "",
   )
+
+  private fun getDeviceWearerAdditionalInfo(prompts: List<JudicialResultsPrompt>, primaryAddress: Address?): String {
+    val additionalInfo = StringBuilder()
+
+    prompts.filter {
+      it.judicialResultPromptTypeId == COMMUNITY_NOTIFICATION_OF_EM_ORDER ||
+        it.judicialResultPromptTypeId == BAIL_ELECTRONIC_MONITORING_FLAG
+    }.forEach { prompt ->
+      additionalInfo.appendLine("${prompt.label} - \n${prompt.value}")
+    }
+
+    if (primaryAddress != null) {
+      val address = listOf(
+        primaryAddress.addressLine1,
+        primaryAddress.addressLine2,
+        primaryAddress.addressLine3,
+        primaryAddress.addressLine4,
+        primaryAddress.postcode,
+      )
+        .filterNot { it.isBlank() }
+        .joinToString(", ")
+
+      additionalInfo.appendLine(
+        "Device Wearer Primary Address - \n$address",
+      )
+    }
+    return additionalInfo.toString()
+  }
+
+  private fun getMonitoringOrderAdditionalInfo(prompts: List<JudicialResultsPrompt>, defendant: Defendant): String {
+    val additionalInfo = StringBuilder()
+    if (defendant.offences.isNotEmpty()) {
+      additionalInfo.appendLine(
+        "Offences - " + defendant.offences.joinToString("\n") { "${it.offenceCode} ${it.offenceTitle}" },
+      )
+
+      (defendant.offences).forEach { offence ->
+        offence.judicialResults.forEach { judicialResult ->
+          additionalInfo.appendLine("Judicial Result - \n${judicialResult.resultText}")
+        }
+      }
+    }
+    prompts.filter {
+      it.label == "Local Authority"
+    }.forEach { prompt ->
+      additionalInfo.appendLine("${prompt.label} - \n${prompt.value}")
+    }
+    prompts.filter {
+      it.label == "Next hearing in magistrates' court" ||
+        it.label == "Next hearing in Crown Court"
+    }.forEach { prompt ->
+      additionalInfo.appendLine("${prompt.label} - \n${prompt.value}")
+    }
+
+    return additionalInfo.toString()
+  }
 }

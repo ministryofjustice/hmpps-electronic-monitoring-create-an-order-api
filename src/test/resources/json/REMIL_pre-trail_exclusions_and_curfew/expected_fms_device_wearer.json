@@ -41,5 +41,6 @@
   "delius_id": null,
   "prison_number": null,
   "interpreter_required": null,
-  "language": null
+  "language": null,
+  "additional_information" : "Notification of electronic monitoring order (bail) - \nElectronic monitoring contractor organisation name:Electronic Monitoring Contractor\nElectronic monitoring contractor email address 1:a@b.co.uk\nContinuation of electronic monitoring:Yes\nDefendant's mobile number:07658913989\nWas an interpreter used?:No\nLanguage:English\nDoes the offender have any special needs?:No\nSpecial needs:arrange witness room\nThis curfew shall apply upon release from custody:Yes\nDevice Wearer Primary Address - \n50 Main Street, Main Street, Liverpool, Merseyside, NW1 5BR\n"
 }

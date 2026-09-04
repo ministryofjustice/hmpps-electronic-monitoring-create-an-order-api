@@ -158,6 +158,12 @@ data class OrderVersion(
   var isSentencingAct: Boolean? = null,
 
   @Schema(hidden = true)
+  var deviceWearerAdditionalInfo: String? = null,
+
+  @Schema(hidden = true)
+  var monitoringOrderAddtionalInfo: String? = null,
+
+  @Schema(hidden = true)
   @ManyToOne
   @JoinColumn(name = "ORDER_ID", updatable = false, insertable = false)
   private val order: Order? = null,

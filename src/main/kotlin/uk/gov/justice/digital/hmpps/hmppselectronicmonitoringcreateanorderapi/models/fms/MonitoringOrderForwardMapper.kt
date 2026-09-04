@@ -112,6 +112,7 @@ fun MonitoringOrder.Companion.fromOrder(
     offenceAdditionalDetails = getOffenceAdditionalDetails(order, featureFlags),
     pilot = conditions.pilot?.value ?: "",
     magistrateCourtCaseReferenceNumber = order.deviceWearer?.courtCaseReferenceNumber ?: "",
+    additionalInformation = order.monitoringOrderAddtionalInfo ?: "",
   )
   if (order.dataDictionaryVersion.isLaterThanOrEqual(DataDictionaryVersion.DDV6)) {
     monitoringOrder.subcategory = subcategory

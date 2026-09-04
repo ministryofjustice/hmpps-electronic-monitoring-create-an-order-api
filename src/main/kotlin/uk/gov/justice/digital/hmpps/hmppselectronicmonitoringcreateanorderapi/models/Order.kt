@@ -319,6 +319,21 @@ data class Order(
       getCurrentVersion().isSentencingAct = isSentencingAct
     }
 
+  var deviceWearerAdditionalInfo: String?
+    get() {
+      return getCurrentVersion().deviceWearerAdditionalInfo
+    }
+    set(ownerCohort) {
+      getCurrentVersion().deviceWearerAdditionalInfo = ownerCohort
+    }
+
+  var monitoringOrderAddtionalInfo: String?
+    get() {
+      return getCurrentVersion().monitoringOrderAddtionalInfo
+    }
+    set(ownerCohort) {
+      getCurrentVersion().monitoringOrderAddtionalInfo = ownerCohort
+    }
   fun getMonitoringStartDate(): ZonedDateTime? = getCurrentVersion().getMonitoringStartDate()
 
   fun getMonitoringEndDate(): ZonedDateTime? = getCurrentVersion().getMonitoringEndDate()
