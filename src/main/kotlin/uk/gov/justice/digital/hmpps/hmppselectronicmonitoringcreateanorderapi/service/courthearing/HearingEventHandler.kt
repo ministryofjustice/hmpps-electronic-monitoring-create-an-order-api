@@ -65,6 +65,9 @@ class HearingEventHandler(
     // Bail Electronic Monitoring flag
     private const val BAIL_ELECTRONIC_MONITORING_FLAG = "86857bb0-aaa6-4a76-b226-812a9987fcb2"
 
+    // End Bail Electronic Monitoring flag
+    private const val END_BAIL_ELECTRONIC_MONITORING_FLAG = "adbdbb76-8ff7-4a22-881f-6b95adbf915b"
+
     // Notification of electronic monitoring order
     private const val COMMUNITY_NOTIFICATION_OF_EM_ORDER = "dada120c-160a-49a9-b040-e8b6b7128d67"
 
@@ -76,6 +79,7 @@ class HearingEventHandler(
       offence.judicialResults.any { judicialResults ->
         // If it's a known community order type
         CommunityOrderType.from(judicialResults.judicialResultTypeId) != null ||
+          judicialResults.judicialResultTypeId == END_BAIL_ELECTRONIC_MONITORING_FLAG ||
           (
             BailOrRemandToCareCondition.contains(judicialResults.judicialResultTypeId) &&
               judicialResults.judicialResultPrompts.any {
@@ -599,14 +603,16 @@ class HearingEventHandler(
   }
 
   private fun getNextCourtHearingDate(prompts: List<JudicialResultsPrompt>): ZonedDateTime? {
-    var nextHearingDetails = ""
-    var nextHearingDateKey = ""
+    var nextHearingDetails: String
+    var nextHearingDateKey: String
     if (prompts.any { it.label == "Next hearing in magistrates' court" }) {
       nextHearingDetails = getPromptValue(prompts, "Next hearing in magistrates' court") ?: ""
       nextHearingDateKey = "Date of hearing"
     } else if (prompts.any { it.label == "Next hearing in Crown Court" }) {
       nextHearingDetails = getPromptValue(prompts, "Next hearing in Crown Court") ?: ""
       nextHearingDateKey = "Fixed Date"
+    } else {
+      return null
     }
     val nextHearingDetailsAsMap = nextHearingDetails.split("\n").associate {
       val parts = it.split(":", limit = 2)
@@ -676,6 +682,12 @@ class HearingEventHandler(
   }
 
   private fun getOrderRequestType(results: List<JudicialResults>): RequestType {
+    if (results.any { judicialResults ->
+        judicialResults.judicialResultTypeId == END_BAIL_ELECTRONIC_MONITORING_FLAG
+      }
+    ) {
+      return RequestType.CEASE
+    }
     if (results.any { judicialResults ->
         VariationOrders.contains(judicialResults.judicialResultTypeId)
       }
