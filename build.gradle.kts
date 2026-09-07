@@ -15,7 +15,7 @@ repositories {
 dependencies {
   implementation("commons-io:commons-io:2.22.0")
   implementation("com.googlecode.libphonenumber:libphonenumber:9.0.36")
-  implementation("org.apache.tika:tika-core:3.3.2")
+  implementation("org.apache.tika:tika-core:4.0.0")
   implementation("org.apache.logging.log4j:log4j-api:2.26.1")
   implementation("io.sentry:sentry-spring-boot-4:8.51.0")
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.1.0")
