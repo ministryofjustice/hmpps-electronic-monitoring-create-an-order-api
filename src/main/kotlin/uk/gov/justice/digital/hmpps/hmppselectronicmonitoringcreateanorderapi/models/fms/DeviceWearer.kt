@@ -150,6 +150,18 @@ data class DeviceWearer(
   @JsonProperty("interpreter_required")
   var interpreterRequired: String? = "",
 
+  @JsonProperty("national_insurance_number")
+  var nationalInsuranceNumber: String? = "",
+
+  @JsonProperty("religion")
+  var religion: String? = "",
+
+  @JsonProperty("nationality")
+  var nationality: String? = "",
+
+  @JsonProperty("ethnicity")
+  var ethnicity: String? = "",
+
   var language: String? = "",
 
   @JsonInclude(JsonInclude.Include.NON_NULL)
