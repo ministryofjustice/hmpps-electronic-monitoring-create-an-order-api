@@ -144,7 +144,10 @@ class HearingEventHandler(
       ),
     )
     val person = defendant.personDefendant?.personDetails
-    val deviceWearer = DeviceWearer(versionId = order.getCurrentVersion().id)
+    val deviceWearer = DeviceWearer(
+      versionId = order.getCurrentVersion().id,
+      defendantId = defendant.id,
+    )
 
     if (person?.dateOfBirth != null) {
       deviceWearer.dateOfBirth = ZonedDateTime.of(person.dateOfBirth, LocalTime.MIDNIGHT, ZoneId.of("Europe/London"))
