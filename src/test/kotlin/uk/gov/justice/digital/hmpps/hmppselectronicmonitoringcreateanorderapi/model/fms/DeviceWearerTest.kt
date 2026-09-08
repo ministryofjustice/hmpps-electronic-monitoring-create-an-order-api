@@ -333,6 +333,17 @@ class DeviceWearerTest : OrderTestBase() {
     assertThat(result.lastName).isEqualTo("Last")
   }
 
+  @Test
+  fun `It should map defendant id`() {
+    val order = createOrder(
+      deviceWearer = createDeviceWearer(defendantId = "defendant-id"),
+    )
+
+    val result = FmsDeviceWearer.fromOrder(order, featureFlags, dataSource)
+
+    assertThat(result.defendantId).isEqualTo("defendant-id")
+  }
+
   companion object {
     @JvmStatic
     fun sexValues() = listOf(

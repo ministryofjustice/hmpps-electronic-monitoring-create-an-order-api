@@ -29,6 +29,9 @@ data class DeviceWearer(
   @Column(name = "PNC_ID", nullable = true)
   var pncId: String? = null,
 
+  @Column(name = "DEFENDANT_ID", nullable = true)
+  var defendantId: String? = null,
+
   @Column(name = "NATIONAL_INSURANCE_NUMBER", nullable = true)
   var nationalInsuranceNumber: String? = null,
 

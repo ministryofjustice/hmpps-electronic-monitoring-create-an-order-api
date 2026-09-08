@@ -132,6 +132,9 @@ data class DeviceWearer(
   @JsonProperty("pnc_id")
   var pncId: String? = "",
 
+  @JsonProperty("defendant_id")
+  var defendantId: String? = "",
+
   @JsonProperty("nomis_id")
   var nomisId: String? = "",
 

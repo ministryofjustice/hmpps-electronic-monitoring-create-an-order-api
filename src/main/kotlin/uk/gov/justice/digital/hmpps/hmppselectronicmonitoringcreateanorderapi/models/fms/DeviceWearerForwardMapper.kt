@@ -50,6 +50,7 @@ fun DeviceWearer.Companion.fromOrder(
     language = order.deviceWearer?.language,
     nomisId = order.deviceWearer?.nomisId,
     pncId = order.deviceWearer?.pncId,
+    defendantId = order.deviceWearer?.defendantId,
     deliusId = order.deviceWearer?.deliusId,
     prisonNumber = order.deviceWearer?.prisonNumber,
     homeOfficeReferenceNumber = "",
