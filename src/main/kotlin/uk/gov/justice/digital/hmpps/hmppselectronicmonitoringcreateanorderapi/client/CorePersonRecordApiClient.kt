@@ -105,9 +105,9 @@ class CorePersonRecordApiClient(private val corePersonRecordApiWebClient: WebCli
 
   private fun toDeviceWearer(details: CorePersonDetails, versionId: UUID): DeviceWearer = DeviceWearer(
     versionId = versionId,
-    firstName = details.firstName,
-    middleName = details.middleNames,
-    lastName = details.lastName,
+    firstName = details.firstName?.toTitleCase(),
+    middleName = details.middleNames?.toTitleCase(),
+    lastName = details.lastName?.toTitleCase(),
     nomisId = details.identifiers?.prisonNumbers?.firstOrNull(),
     deliusId = details.identifiers?.crns?.firstOrNull(),
     pncId = details.identifiers?.pncs?.firstOrNull(),
@@ -170,7 +170,7 @@ class CorePersonRecordApiClient(private val corePersonRecordApiWebClient: WebCli
   }
 
   private fun toAlias(alias: Alias): String = listOfNotNull(alias.firstName, alias.middleNames, alias.lastName)
-    .joinToString(" ")
+    .joinToString(" ").toTitleCase()
 
   private fun addressLineOne(address: Address): String {
     val buildingId = address.buildingNumber.takeIf { !it.isNullOrEmpty() }

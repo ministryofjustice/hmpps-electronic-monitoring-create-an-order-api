@@ -93,6 +93,58 @@ class DeviceWearerServiceTest : OrderSectionServiceTestBase() {
   }
 
   @Test
+  fun `Should update existing device wearer instead of replacing it`() {
+    val existingDeviceWearer = DeviceWearer(
+      versionId = mockVersionId,
+      firstName = "existingFirstName",
+      lastName = "existingLastName",
+      noFixedAbode = true,
+      nomisId = "A1234BC",
+      otherDisability = "existingOtherDisability",
+      religion = "existingReligion",
+    )
+    val existingDeviceWearerId = existingDeviceWearer.id
+    mockOrder.deviceWearer = existingDeviceWearer
+
+    whenever(orderRepo.findById(mockOrderId)).thenReturn(Optional.of(mockOrder))
+    whenever(orderRepo.save(mockOrder)).thenReturn(mockOrder)
+
+    val mockUpdateRecord = UpdateDeviceWearerDto(
+      firstName = "updatedFirstName",
+      middleName = "updatedMiddleName",
+      lastName = "updatedLastName",
+      alias = "updatedAlias",
+      adultAtTimeOfInstallation = false,
+      sex = "FEMALE",
+      gender = "FEMALE",
+      dateOfBirth = ZonedDateTime.of(1990, 2, 2, 1, 1, 1, 1, ZoneId.of("UTC")),
+      disabilities = "OTHER",
+      otherDisability = "updatedOtherDisability",
+      interpreterRequired = false,
+      language = null,
+    )
+
+    service.updateDeviceWearer(mockOrderId, mockUsername, mockUpdateRecord)
+
+    assertThat(mockOrder.deviceWearer?.id).isEqualTo(existingDeviceWearerId)
+    assertThat(mockOrder.deviceWearer?.firstName).isEqualTo(mockUpdateRecord.firstName)
+    assertThat(mockOrder.deviceWearer?.middleName).isEqualTo(mockUpdateRecord.middleName)
+    assertThat(mockOrder.deviceWearer?.lastName).isEqualTo(mockUpdateRecord.lastName)
+    assertThat(mockOrder.deviceWearer?.alias).isEqualTo(mockUpdateRecord.alias)
+    assertThat(mockOrder.deviceWearer?.adultAtTimeOfInstallation).isEqualTo(mockUpdateRecord.adultAtTimeOfInstallation)
+    assertThat(mockOrder.deviceWearer?.sex).isEqualTo(mockUpdateRecord.sex)
+    assertThat(mockOrder.deviceWearer?.gender).isEqualTo(mockUpdateRecord.gender)
+    assertThat(mockOrder.deviceWearer?.dateOfBirth).isEqualTo(mockUpdateRecord.dateOfBirth)
+    assertThat(mockOrder.deviceWearer?.disabilities).isEqualTo(mockUpdateRecord.disabilities)
+    assertThat(mockOrder.deviceWearer?.otherDisability).isEqualTo(mockUpdateRecord.otherDisability)
+    assertThat(mockOrder.deviceWearer?.interpreterRequired).isEqualTo(mockUpdateRecord.interpreterRequired)
+    assertThat(mockOrder.deviceWearer?.language).isEqualTo(mockUpdateRecord.language)
+    assertThat(mockOrder.deviceWearer?.noFixedAbode).isTrue
+    assertThat(mockOrder.deviceWearer?.nomisId).isEqualTo("A1234BC")
+    assertThat(mockOrder.deviceWearer?.religion).isEqualTo("existingReligion")
+  }
+
+  @Test
   fun `Should clear responsible adult when update record adultAtTimeOfInstallation is true`() {
     whenever(orderRepo.findById(mockOrderId)).thenReturn(Optional.of(mockOrder))
     whenever(orderRepo.save(mockOrder)).thenReturn(mockOrder)
