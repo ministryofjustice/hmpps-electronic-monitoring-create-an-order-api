@@ -10,6 +10,7 @@ import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
 import jakarta.persistence.UniqueConstraint
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressSource
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DeviceWearerAddressUsage
 import java.util.*
@@ -51,6 +52,10 @@ data class Address(
 
   @Column(name = "POSTCODE", nullable = false)
   var postcode: String,
+
+  @Enumerated(EnumType.STRING)
+  @Column(name = "ADDRESS_SOURCE", nullable = true)
+  var addressSource: AddressSource? = null,
 
   @Schema(hidden = true)
   @ManyToOne(optional = true)

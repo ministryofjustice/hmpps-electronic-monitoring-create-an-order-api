@@ -6,13 +6,13 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.mockito.kotlin.any
-import org.mockito.kotlin.times
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Address
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AlcoholMonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateAddressDto
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressSource
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
@@ -77,6 +77,7 @@ class AddressServiceTest : OrderSectionServiceTestBase() {
     addressLine3 = "",
     addressLine4 = "",
     postcode = "updatedMockPostcode",
+    addressSource = AddressSource.CEMO,
   )
 
   private val orderWithExistingPrimaryAddressAndRelation = Order(
@@ -193,6 +194,17 @@ class AddressServiceTest : OrderSectionServiceTestBase() {
         addedPrimaryAddress.addressLine1,
       ).isEqualTo(updatedMockAddress.addressLine1)
       Assertions.assertThat(addedPrimaryAddress.postcode).isEqualTo(updatedMockAddress.postcode)
+      Assertions.assertThat(addedPrimaryAddress.addressSource).isEqualTo(AddressSource.CEMO)
+    }
+
+    @Test
+    fun `sets the source to CEMO when updating an existing address`() {
+      mockAddress.addressSource = AddressSource.COMMON_PLATFORM
+      whenever(repo.findById(mockOrderId)).thenReturn(Optional.of(orderWithExistingPrimaryAddressAndRelation))
+
+      val updatedAddress = addressService.updateAddress(mockOrderId, mockUsername, mockAddressUpdateRecord)
+
+      Assertions.assertThat(updatedAddress.addressSource).isEqualTo(AddressSource.CEMO)
     }
 
     @Test
