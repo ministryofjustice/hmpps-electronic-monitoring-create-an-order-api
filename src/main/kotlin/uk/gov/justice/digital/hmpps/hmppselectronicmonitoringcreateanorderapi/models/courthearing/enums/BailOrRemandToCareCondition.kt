@@ -52,7 +52,7 @@ enum class BailOrRemandToCareCondition(val id: String) {
   // Bail reviewd- conditions varied or imposed
   BAILREVC("52c3a7dc-3ec2-4d42-b808-24d69d645afe"),
 
-  // End bail
+  // Electronic monitoring end
   EMON("adbdbb76-8ff7-4a22-881f-6b95adbf915b"),
   ;
 
