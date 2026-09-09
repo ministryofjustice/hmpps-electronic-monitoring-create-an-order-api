@@ -33,9 +33,9 @@ class CorePersonRecordApiClientTest {
     contacts = emptyList(),
   )
   val details = CorePersonDetails(
-    firstName = "Bob",
-    middleNames = "Middle",
-    lastName = "Builder",
+    firstName = "BOB",
+    middleNames = "MIDDLE",
+    lastName = "BUILDER",
     dateOfBirth = "1990-08-21",
     sex = CodeDescription(code = "M", description = "Male"),
     identifiers = Identifiers(
