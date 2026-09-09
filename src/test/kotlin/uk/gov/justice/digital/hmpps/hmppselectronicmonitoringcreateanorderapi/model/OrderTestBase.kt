@@ -161,6 +161,10 @@ abstract class OrderTestBase {
     complianceAndEnforcementPersonReference: String? = "complianceAndEnforcementPersonReference",
     courtCaseReferenceNumber: String = "courtCaseReferenceNumber",
     noFixedAbode: Boolean = false,
+    nationalInsuranceNumber: String? = "nationalInsuranceNumber",
+    religion: String? = "Christianity",
+    nationality: String? = "British",
+    ethnicity: String? = "White",
     riskCategory: String = "",
   ): DeviceWearer = DeviceWearer(
     versionId = UUID.randomUUID(),
@@ -184,6 +188,10 @@ abstract class OrderTestBase {
     complianceAndEnforcementPersonReference = complianceAndEnforcementPersonReference,
     courtCaseReferenceNumber = courtCaseReferenceNumber,
     noFixedAbode = noFixedAbode,
+    nationalInsuranceNumber = nationalInsuranceNumber,
+    religion = religion,
+    nationality = nationality,
+    ethnicity = ethnicity,
   )
 
   protected fun createAddress(

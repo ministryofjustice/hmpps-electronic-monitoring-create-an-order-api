@@ -214,6 +214,25 @@ class DeviceWearerTest : OrderTestBase() {
   }
 
   @Test
+  fun `It should map personal identity fields to Serco`() {
+    val order = createOrder(
+      deviceWearer = createDeviceWearer(
+        nationalInsuranceNumber = "AB123456C",
+        religion = "Christianity",
+        nationality = "British",
+        ethnicity = "White",
+      ),
+    )
+
+    val fmsDeviceWearer = FmsDeviceWearer.fromOrder(order, featureFlags, dataSource)
+
+    assertThat(fmsDeviceWearer.nationalInsuranceNumber).isEqualTo("AB123456C")
+    assertThat(fmsDeviceWearer.religion).isEqualTo("Christianity")
+    assertThat(fmsDeviceWearer.nationality).isEqualTo("British")
+    assertThat(fmsDeviceWearer.ethnicity).isEqualTo("White")
+  }
+
+  @Test
   fun `It should map risk data from detailsOfInstallation`() {
     val order = createOrder(
       dataDictionaryVersion = DataDictionaryVersion.DDV6,
