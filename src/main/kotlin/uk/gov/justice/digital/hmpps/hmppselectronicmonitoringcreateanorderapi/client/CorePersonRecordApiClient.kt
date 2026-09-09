@@ -170,7 +170,7 @@ class CorePersonRecordApiClient(private val corePersonRecordApiWebClient: WebCli
   }
 
   private fun toAlias(alias: Alias): String = listOfNotNull(alias.firstName, alias.middleNames, alias.lastName)
-    .joinToString(" ")
+    .joinToString(" ").toTitleCase()
 
   private fun addressLineOne(address: Address): String {
     val buildingId = address.buildingNumber.takeIf { !it.isNullOrEmpty() }
