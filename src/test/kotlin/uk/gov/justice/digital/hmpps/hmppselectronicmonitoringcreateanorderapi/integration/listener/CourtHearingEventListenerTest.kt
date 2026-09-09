@@ -176,6 +176,7 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
       Arguments.of("YROFEW_youth_trail"),
       Arguments.of("YROISS_youth_exclusion"),
       Arguments.of("YROV_youth_rehabilitation_order_varied"),
+      Arguments.of("EMON_ending_bail"),
     )
   }
 

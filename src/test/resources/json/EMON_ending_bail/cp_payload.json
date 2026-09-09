@@ -1,0 +1,266 @@
+{
+  "hearing": {
+    "courtCentre": {
+      "address": {
+        "address1": "176A Lavender Hill",
+        "address2": "London",
+        "address3": "",
+        "address4": "",
+        "address5": "",
+        "postcode": "SW11 1JU"
+      },
+      "code": "B01LY00",
+      "courtHearingLocation": "B01LY01",
+      "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+      "lja": {
+        "ljaCode": "2577",
+        "ljaName": "South West London Magistrates' Court"
+      },
+      "name": "Lavender Hill Magistrates' Court",
+      "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+      "roomName": "Courtroom 01"
+    },
+    "defendantAttendance": [
+      {
+        "attendanceDays": [
+          {
+            "attendanceType": "IN_PERSON",
+            "day": "2026-08-25"
+          }
+        ],
+        "defendantId": "b3ee0d95-1995-4b4a-894e-5b090772b0c1"
+      }
+    ],
+    "hasSharedResults": true,
+    "hearingDays": [
+      {
+        "courtCentreId": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+        "courtRoomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+        "hasSharedResults": true,
+        "isCancelled": false,
+        "listedDurationMinutes": 20,
+        "listingSequence": 0,
+        "sittingDay": "2026-08-25T10:30:00.000Z"
+      }
+    ],
+    "hearingLanguage": "ENGLISH",
+    "id": "e13ad5e0-f1ac-4506-9dfc-4f17c3a68eb4",
+    "isGroupProceedings": false,
+    "jurisdictionType": "MAGISTRATES",
+    "prosecutionCases": [
+      {
+        "caseStatus": "ACTIVE",
+        "cpsOrganisation": "A30AB00",
+        "defendants": [
+          {
+            "courtProceedingsInitiated": "2026-08-25T07:26:28.030Z",
+            "id": "b3ee0d95-1995-4b4a-894e-5b090772b0c1",
+            "isYouth": false,
+            "masterDefendantId": "b3ee0d95-1995-4b4a-894e-5b090772b0c1",
+            "offences": [
+              {
+                "arrestDate": "2022-12-14",
+                "chargeDate": "2022-12-15",
+                "count": 0,
+                "endorsableFlag": false,
+                "id": "c47cf8d2-7e66-4c40-913b-97d24ab417cd",
+                "isDisposed": false,
+                "judicialResults": [
+                  {
+                    "alwaysPublished": false,
+                    "canBeSubjectOfBreach": false,
+                    "canBeSubjectOfVariation": false,
+                    "canExtendActiveOrder": false,
+                    "category": "ANCILLARY",
+                    "committedToCC": false,
+                    "courtClerk": {
+                      "firstName": "Erica",
+                      "lastName": "Wilson",
+                      "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                    },
+                    "d20": false,
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": false,
+                    "isConvictedResult": false,
+                    "isDeleted": false,
+                    "isFinancialResult": false,
+                    "isNewAmendment": true,
+                    "isUnscheduled": false,
+                    "judicialResultId": "158e9972-d11c-40fc-96b0-6eae00437217",
+                    "judicialResultPrompts": [
+                      {
+                        "courtExtract": "N",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "92566757-ef79-4804-bced-c63ebb0937e7",
+                        "label": "Electronic monitoring contractor organisation name",
+                        "promptReference": "electronicmonitoringcontractorOrganisationName",
+                        "promptSequence": 100,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [],
+                        "value": "Electronic Monitoring Contractor",
+                        "welshValue": "Electronic Monitoring Contractor"
+                      },
+                      {
+                        "courtExtract": "N",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "92566757-ef79-4804-bced-c63ebb0937e7",
+                        "label": "Electronic monitoring contractor email address 1",
+                        "promptReference": "electronicmonitoringcontractorEmailAddress1",
+                        "promptSequence": 100,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [],
+                        "value": "LPadmin@ems.co.uk",
+                        "welshValue": "LPadmin@ems.co.uk"
+                      },
+                      {
+                        "courtExtract": "N",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "6bc0a7e8-ecd6-4607-896c-e8e8e88bd616",
+                        "label": "Electronic monitoring type",
+                        "promptReference": "electronicMonitoringType",
+                        "promptSequence": 300,
+                        "type": "FIXL",
+                        "usergroups": [],
+                        "value": "community requirements",
+                        "welshValue": "community requirements"
+                      },
+                      {
+                        "courtExtract": "N",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "7946cf86-d0f6-4611-815f-fc4d6fc05e34",
+                        "label": "Date last electronic monitoring order made",
+                        "promptReference": "dateLastElectronicMonitoringOrderMade",
+                        "promptSequence": 400,
+                        "type": "DATE",
+                        "usergroups": [],
+                        "value": "25/08/2026",
+                        "welshValue": "25/08/2026"
+                      },
+                      {
+                        "courtExtract": "N",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "fef836f8-cae7-410f-b006-989d884a8d14",
+                        "label": "Name of court that imposed electronic monitoring",
+                        "promptReference": "nameOfCourtThatImposedElectronicMonitoring",
+                        "promptSequence": 500,
+                        "type": "FIXL",
+                        "usergroups": [],
+                        "value": "Aberdeen JP Court",
+                        "welshValue": "Aberdeen JP Court"
+                      }
+                    ],
+                    "judicialResultTypeId": "adbdbb76-8ff7-4a22-881f-6b95adbf915b",
+                    "label": "Electronic Monitoring End - notify contractor",
+                    "lastSharedDateTime": "2026-08-25",
+                    "level": "O",
+                    "lifeDuration": false,
+                    "orderedDate": "2026-08-25",
+                    "orderedHearingId": "e13ad5e0-f1ac-4506-9dfc-4f17c3a68eb4",
+                    "postHearingCustodyStatus": "A",
+                    "preserveActiveOrder": false,
+                    "publishedAsAPrompt": false,
+                    "publishedForNows": false,
+                    "rank": 160300,
+                    "resultDefinitionGroup": "ELMONEND",
+                    "resultText": "EMONE - Electronic Monitoring End - notify contractor",
+                    "rollUpPrompts": true,
+                    "rootJudicialResultId": "158e9972-d11c-40fc-96b0-6eae00437217",
+                    "rootJudicialResultTypeId": "adbdbb76-8ff7-4a22-881f-6b95adbf915b",
+                    "sentToCC": false,
+                    "terminatesOffenceProceedings": false,
+                    "urgent": false,
+                    "usergroups": []
+                  }
+                ],
+                "listingNumber": 1,
+                "maxPenalty": "S:L3",
+                "modeOfTrial": "Summary",
+                "offenceCode": "CA03012",
+                "offenceDateCode": 1,
+                "offenceDefinitionId": "6588ffee-89ec-36a2-ab90-a54177cbda97",
+                "offenceLegislation": "Contrary to section 363(3)(b) and (4) of the Communications Act 2003.",
+                "offenceLegislationWelsh": "Yn groes i adran 363(3)(b) a (4) Deddf Cyfathrebu 2003.",
+                "offenceTitle": "Possess / control TV set with intent another use install without a licence",
+                "offenceTitleWelsh": "Meddu ar/mewn rheolaeth set deledu gan fwriadu i unigolyn arall ei ddefnyddio/osod heb drwydded",
+                "orderIndex": 1,
+                "startDate": "2022-12-12",
+                "wording": "Ignacio Fay have set up a TV cable without a valid license."
+              }
+            ],
+            "personDefendant": {
+              "arrestSummonsNumber": "DEF014813265",
+              "bailConditions": "",
+              "bailStatus": {
+                "code": "A",
+                "description": "Not applicable",
+                "id": "86009c70-759d-3308-8de4-194886ff9a77"
+              },
+              "personDetails": {
+                "address": {
+                  "address1": "21",
+                  "address2": "Furnburry Park Road",
+                  "address3": "London",
+                  "postcode": "SW11 3TQ"
+                },
+                "contact": {
+                  "home": "015325443756"
+                },
+                "dateOfBirth": "2001-02-18",
+                "documentationLanguageNeeds": "ENGLISH",
+                "ethnicity": {
+                  "observedEthnicityCode": "1",
+                  "observedEthnicityDescription": "White",
+                  "observedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+                  "selfDefinedEthnicityCode": "W1",
+                  "selfDefinedEthnicityDescription": "British",
+                  "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+                },
+                "firstName": "Ignacio",
+                "gender": "MALE",
+                "hearingLanguageNeeds": "ENGLISH",
+                "lastName": "Fay",
+                "occupation": "Accountant",
+                "occupationCode": "2201",
+                "title": "MR"
+              },
+              "policeBailConditions": "Proin tincidunt tincidunt ligula, non egestas ante iaculis vitae. Suspendisse at diam vestibulum velit rutrum euismod. Pellentesque nec auctor orci. Duis ut dui euismod, elementum elit vitae, dictum mauris. Mauris efficitur erat eros, vel blandit lectus sodales at. Aliquam erat volutpat. Fusce non convallis enim. Curabitur sed lectus elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur urna ligula, tristique interdum facilisis laoreet, varius id sem. Donec nec vehicula sapien, vestibulum tempor eros. Vestibulum et consequat augue. Praesent accumsan odio nisl, efficitur ultricies neque porttitor eu. Donec mollis sodales orci a tincidunt. Suspendisse congue ipsum sit amet quam elementum, quis aliquet nisl viverra.Mauris efficitur at lectus eget varius. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Aliquam non dapibus erat. Integer ipsum purus, semper vel elit accumsan, laoreet accumsan dolor. Fusce sed erat ut nunc auctor sagittis a non dui. Donec dolor ante, mattis in rhoncus non, dapibus vitae dui. Integer ac bibendum nunc. Phasellus nulla massa, laoreet et velit id, iaculis efficitur massa. Maecenas posuere sollicitudin laoreet. Proin eleifend volutpat elementum. Suspendisse et mi nec neque euismod viverra ac placerat ligula. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Sed vitae laoreet enim. Maecenas accumsan neque vel facilisis ullamcorper. Vestibulum quis dictum ante. Cras dapibus arcu ut purus scelerisque sollicitudin.Nunc tincidunt eros eget convallis aliquet. Aenean egestas posuere aliquet. Proin massa urna, fringilla non interdum quis, interdum eget mi. Sed posuere ac sapien hendrerit venenatis. Cras dapibus diam a consequat ullamcorper. Nunc nec nisl ac odio eleifend sagittis. Donec sed massa enim. Vivamus aliquam venenatis rhoncus. Etiam feugiat tellus sapien, convallis efficitur urna ultricies sit amet. Nulla dapibus tincidunt purus, at eleifend felis aliquet sed. Etiam at dolor eu nisl volutpat blandit.Nunc diam urna, viverra nec commodo non, convallis at risus. Vivamus rhoncus vehicula arcu nec mattis. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Phasellus fe END",
+              "policeBailStatus": {
+                "code": "C",
+                "description": "Custody",
+                "id": "12e69486-4d01-3403-a50a-7419ca040635"
+              }
+            },
+            "prosecutionAuthorityReference": "DEF014813265",
+            "prosecutionCaseId": "3d300263-4c7c-4908-aba9-a4ce3b3a3c7c"
+          }
+        ],
+        "id": "3d300263-4c7c-4908-aba9-a4ce3b3a3c7c",
+        "initiationCode": "C",
+        "originatingOrganisation": "GAEAA01",
+        "prosecutionCaseIdentifier": {
+          "address": {
+            "address1": "PO BOX 88",
+            "address2": "Bond Street",
+            "address3": "Bristol",
+            "postcode": "BB3 1YX"
+          },
+          "contact": {
+            "primaryEmail": "court.results@tvl.cjsm.net"
+          },
+          "majorCreditorCode": "TVL3",
+          "prosecutionAuthorityCode": "TVL",
+          "prosecutionAuthorityId": "6b7b9adc-ccee-4b13-b2c7-499c28e98962",
+          "prosecutionAuthorityName": "TV Licensing",
+          "prosecutionAuthorityOUCode": "GAEAA01",
+          "caseURN": "28DI4813265"
+        }
+      }
+    ],
+    "type": {
+      "description": "First hearing",
+      "id": "4a0e892d-c0c5-3c51-95b8-704d8c781776"
+    }
+  },
+  "hearingDay": "2026-08-25"
+}

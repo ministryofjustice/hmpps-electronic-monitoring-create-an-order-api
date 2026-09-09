@@ -11,6 +11,7 @@ enum class RequestType(val value: String) {
   REINSTALL_DEVICE("Variation"),
   REVOCATION("Variation"),
   END_MONITORING("Variation"),
+  CEASE("Cease"),
   ;
 
   companion object {
