@@ -730,6 +730,65 @@ class MonitoringOrderTest : OrderTestBase() {
         ),
       )
     }
+
+    @Test
+    fun `default offence to violence against the person when notifyingOrganisation is court, offence blank`() {
+      val order = createOrder(
+        type = RequestType.REQUEST,
+        dataDictionaryVersion = DataDictionaryVersion.DDV6,
+        interestedParties = createInterestedParty(
+          notifyingOrganisation = NotifyingOrganisationDDv5.FAMILY_COURT.name,
+          notifyingOrganisationName = FamilyCourtDDv5.DONCASTER_FAMILY_COURT.name,
+        ),
+        offences = mutableListOf(
+          Offence(
+            versionId = UUID.randomUUID(),
+            offenceType = "",
+            offenceDate = null,
+          ),
+        ),
+      )
+
+      val featureFlags = FeatureFlags(ddV6CourtMappings = true, dataDictionaryVersion = DataDictionaryVersion.DDV6)
+      val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, featureFlags, FmsOrderSource.CEMO)
+
+      assertThat(fmsMonitoringOrder.offences).contains(
+        OffenceData(
+          offence = uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums
+            .Offence.VIOLENCE_AGAINST_THE_PERSON.value,
+          offenceDate = null,
+        ),
+      )
+    }
+
+    @Test
+    fun `default offence to violence against the person when notifyingOrganisation is court`() {
+      val order = createOrder(
+        type = RequestType.REQUEST,
+        dataDictionaryVersion = DataDictionaryVersion.DDV6,
+        interestedParties = createInterestedParty(
+          notifyingOrganisation = NotifyingOrganisationDDv5.CROWN_COURT.name,
+        ),
+        offences = mutableListOf(
+          Offence(
+            versionId = UUID.randomUUID(),
+            offenceType = null,
+            offenceDate = null,
+          ),
+        ),
+      )
+
+      val featureFlags = FeatureFlags(ddV6CourtMappings = true, dataDictionaryVersion = DataDictionaryVersion.DDV6)
+      val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, featureFlags, FmsOrderSource.CEMO)
+
+      assertThat(fmsMonitoringOrder.offences).contains(
+        OffenceData(
+          offence = uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums
+            .Offence.VIOLENCE_AGAINST_THE_PERSON.value,
+          offenceDate = null,
+        ),
+      )
+    }
   }
 
   @Test
