@@ -64,5 +64,9 @@
   "home_office_case_reference_number": "",
   "cepr": "complianceAndEnforcementPersonReference",
   "interpreter_required": "true",
+  "national_insurance_number":"",
+  "religion":"",
+  "nationality":"",
+  "ethnicity":"",
   "language": "British Sign"
 }
