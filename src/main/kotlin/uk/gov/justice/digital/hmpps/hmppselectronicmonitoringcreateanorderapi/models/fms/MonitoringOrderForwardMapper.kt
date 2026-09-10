@@ -493,7 +493,7 @@ private fun getNotifyingOrganisation(
       else -> NotifyingOrganisationDDv5.from(notifyingOrganisation)?.value
     }
 
-  return resolvedNotifyingOrganisation ?: notifyingOrganisation ?: "N/A"
+  return resolvedNotifyingOrganisation ?: notifyingOrganisation ?: ""
 }
 
 private fun getNotifyingOrganisationName(

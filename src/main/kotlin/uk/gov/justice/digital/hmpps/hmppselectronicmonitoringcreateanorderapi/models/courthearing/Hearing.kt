@@ -12,7 +12,7 @@ data class Hearing(
 
   val type: HearingType,
 
-  val jurisdictionType: JurisdictionType,
+  val jurisdictionType: JurisdictionType?,
 
   val hearingDays: List<HearingDay> = emptyList(),
 

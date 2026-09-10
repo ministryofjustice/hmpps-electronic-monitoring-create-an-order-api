@@ -17,9 +17,14 @@ fun DeviceWearer.Companion.fromOrder(
   featureFlags: FeatureFlags,
   orderSource: FmsOrderSource,
 ): DeviceWearer {
-  var adultChild = "adult"
-  if (!order.deviceWearer?.adultAtTimeOfInstallation!!) {
-    adultChild = "child"
+  val adultAtTimeOfInstallation = order.deviceWearer?.adultAtTimeOfInstallation
+  var adultChild = ""
+  if (adultAtTimeOfInstallation != null) {
+    adultChild = if (!adultAtTimeOfInstallation) {
+      "child"
+    } else {
+      "adult"
+    }
   }
 
   var disabilities = emptyList<FmsDisability>()
