@@ -57,7 +57,7 @@ class MonitoringConditionsServiceTest : OrderSectionServiceTestBase() {
   @BeforeEach
   fun setup() {
     repo = mock(OrderRepository::class.java)
-    service = MonitoringConditionsService(tagAtSourceEnabled = false)
+    service = MonitoringConditionsService()
     service.orderRepo = repo
   }
 
@@ -110,42 +110,7 @@ class MonitoringConditionsServiceTest : OrderSectionServiceTestBase() {
   }
 
   @Test
-  fun `Should clear tag at source details if tag at source is not available`() {
-    mockVersion.installationLocation =
-      InstallationLocation(versionId = mockVersion.id, location = InstallationLocationType.PRISON)
-    mockVersion.installationAppointment = InstallationAppointment(
-      versionId = mockVersion.id,
-      placeName = "MockPlace",
-      appointmentDate = ZonedDateTime.now(ZoneId.of("UTC")).plusMonths(2),
-    )
-    mockVersion.monitoringConditionsAlcohol = AlcoholMonitoringConditions(versionId = mockVersion.id)
-    mockVersion.addresses = mutableListOf(
-      Address(
-        versionId = mockVersion.id,
-        addressType = AddressType.INSTALLATION,
-        addressLine1 = "Mock place",
-        addressLine2 = "",
-        addressLine3 = "Mock Town",
-        postcode = "Mock postcode",
-      ),
-    )
-    whenever(repo.findById(mockOrderId)).thenReturn(Optional.of(mockOrder))
-    whenever(repo.save(mockOrder)).thenReturn(mockOrder)
-
-    service.updateMonitoringConditions(mockOrderId, mockUsername, UpdateMonitoringConditionsDto(alcohol = false))
-
-    assertThat(mockOrder.monitoringConditions).isNotNull
-    assertThat(mockOrder.installationLocation).isNull()
-    assertThat(mockOrder.installationAppointment).isNull()
-    assertThat(mockOrder.monitoringConditionsAlcohol).isNull()
-    assertThat(mockOrder.addresses.firstOrNull { it.addressType == AddressType.INSTALLATION }).isNull()
-  }
-
-  @Test
-  fun `When Tag at Source is ENABLED, should populate tag at source details for non-alcohol order`() {
-    service = MonitoringConditionsService(tagAtSourceEnabled = true)
-    service.orderRepo = repo
-
+  fun `Should retain tag at source details for non-alcohol order`() {
     mockVersion.installationLocation =
       InstallationLocation(versionId = mockVersion.id, location = InstallationLocationType.PRISON)
     mockVersion.installationAppointment = InstallationAppointment(

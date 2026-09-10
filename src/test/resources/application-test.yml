@@ -34,7 +34,6 @@ services:
 
 CP_PROCESSING_ENABLED: true
 CP_FMS_INTEGRATION_ENABLED: true
-TAG_AT_SOURCE_ENABLED: false
 
 hmpps.sqs:
   provider: localstack
