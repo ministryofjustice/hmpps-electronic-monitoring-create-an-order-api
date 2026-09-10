@@ -15,29 +15,38 @@ class DeviceWearerService : OrderSectionServiceBase() {
     // Verify the order belongs to the user and is in draft state
     val order = this.findEditableOrder(orderId, username)
 
-    order.deviceWearer = DeviceWearer(
-      versionId = order.getCurrentVersion().id,
-      firstName = updateRecord.firstName?.trim(),
-      middleName = updateRecord.middleName?.trim(),
-      lastName = updateRecord.lastName?.trim(),
-      alias = updateRecord.alias,
-      adultAtTimeOfInstallation = updateRecord.adultAtTimeOfInstallation,
-      sex = updateRecord.sex.toString(),
-      gender = updateRecord.gender,
-      dateOfBirth = updateRecord.dateOfBirth,
-      disabilities = updateRecord.disabilities,
-      otherDisability = updateRecord.otherDisability,
-      language = updateRecord.language,
-      interpreterRequired = updateRecord.interpreterRequired,
-      noFixedAbode = order.deviceWearer?.noFixedAbode,
-      nomisId = order.deviceWearer?.nomisId,
-      deliusId = order.deviceWearer?.deliusId,
-      pncId = order.deviceWearer?.pncId,
-      prisonNumber = order.deviceWearer?.prisonNumber,
-      homeOfficeReferenceNumber = order.deviceWearer?.homeOfficeReferenceNumber,
-      complianceAndEnforcementPersonReference = order.deviceWearer?.complianceAndEnforcementPersonReference,
-      courtCaseReferenceNumber = order.deviceWearer?.courtCaseReferenceNumber,
-    )
+    val existingDeviceWearer = order.deviceWearer
+    if (existingDeviceWearer != null) {
+      existingDeviceWearer.firstName = updateRecord.firstName?.trim()
+      existingDeviceWearer.middleName = updateRecord.middleName?.trim()
+      existingDeviceWearer.lastName = updateRecord.lastName?.trim()
+      existingDeviceWearer.alias = updateRecord.alias
+      existingDeviceWearer.adultAtTimeOfInstallation = updateRecord.adultAtTimeOfInstallation
+      existingDeviceWearer.sex = updateRecord.sex.toString()
+      existingDeviceWearer.gender = updateRecord.gender
+      existingDeviceWearer.dateOfBirth = updateRecord.dateOfBirth
+      existingDeviceWearer.disabilities = updateRecord.disabilities
+      existingDeviceWearer.otherDisability = updateRecord.otherDisability
+      existingDeviceWearer.language = updateRecord.language
+      existingDeviceWearer.interpreterRequired = updateRecord.interpreterRequired
+    } else {
+      order.deviceWearer = DeviceWearer(
+        versionId = order.getCurrentVersion().id,
+        firstName = updateRecord.firstName?.trim(),
+        middleName = updateRecord.middleName?.trim(),
+        lastName = updateRecord.lastName?.trim(),
+        alias = updateRecord.alias,
+        adultAtTimeOfInstallation = updateRecord.adultAtTimeOfInstallation,
+        sex = updateRecord.sex.toString(),
+        gender = updateRecord.gender,
+        dateOfBirth = updateRecord.dateOfBirth,
+        disabilities = updateRecord.disabilities,
+        otherDisability = updateRecord.otherDisability,
+        language = updateRecord.language,
+        interpreterRequired = updateRecord.interpreterRequired,
+
+      )
+    }
 
     // Clear responsible adult when device wearer is adult
     if (updateRecord.adultAtTimeOfInstallation == true) {

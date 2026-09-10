@@ -33,9 +33,9 @@ class CorePersonRecordApiClientTest {
     contacts = emptyList(),
   )
   val details = CorePersonDetails(
-    firstName = "Bob",
-    middleNames = "Middle",
-    lastName = "Builder",
+    firstName = "BOB",
+    middleNames = "MIDDLE",
+    lastName = "BUILDER",
     dateOfBirth = "1990-08-21",
     sex = CodeDescription(code = "M", description = "Male"),
     identifiers = Identifiers(
@@ -44,7 +44,7 @@ class CorePersonRecordApiClientTest {
       pncs = listOf("2000/1234567A"),
       nationalInsuranceNumbers = listOf("QQ123456B"),
     ),
-    aliases = listOf(Alias(firstName = "Wendy", middleNames = "Scoop", lastName = "Dizzy")),
+    aliases = listOf(Alias(firstName = "WENDY", middleNames = "SCOOP", lastName = "DIZZY")),
     addresses = listOf(basicAddress.copy(noFixedAbode = false), basicAddress.copy(noFixedAbode = true)),
     religion = CodeDescription(code = "CHRS", description = "Christianity"),
     ethnicity = CodeDescription(code = "B9", description = "Black/Black British : Any other backgr'nd"),
