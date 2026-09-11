@@ -656,7 +656,7 @@ private fun isCourtNotifyingOrganisation(interestedParties: InterestedParties?):
   val matchingEnum = NotifyingOrganisationDDv5.from(orgValue)
     ?: NotifyingOrganisationDDv5.entries.find { it.value == orgValue }
 
-  return matchingEnum != null && NotifyingOrganisationDDv5.COURTS.contains(matchingEnum)
+  return matchingEnum == NotifyingOrganisationDDv5.CIVIL_COUNTY_COURT
 }
 
 private fun getOrderType(order: Order, orderType: OrderType): String {
