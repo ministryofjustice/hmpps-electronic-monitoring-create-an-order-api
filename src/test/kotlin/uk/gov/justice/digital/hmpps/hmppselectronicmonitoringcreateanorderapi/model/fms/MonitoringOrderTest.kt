@@ -737,8 +737,8 @@ class MonitoringOrderTest : OrderTestBase() {
         type = RequestType.REQUEST,
         dataDictionaryVersion = DataDictionaryVersion.DDV6,
         interestedParties = createInterestedParty(
-          notifyingOrganisation = NotifyingOrganisationDDv5.FAMILY_COURT.name,
-          notifyingOrganisationName = FamilyCourtDDv5.DONCASTER_FAMILY_COURT.name,
+          notifyingOrganisation = NotifyingOrganisationDDv5.MILITARY_COURT.name,
+          notifyingOrganisationName = NotifyingOrganisationDDv5.MILITARY_COURT.name,
         ),
         offences = mutableListOf(
           Offence(
