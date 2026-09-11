@@ -142,7 +142,8 @@ fun MonitoringOrder.Companion.fromOrder(
   if (order.dataDictionaryVersion.isLaterThanOrEqual(DataDictionaryVersion.DDV6) &&
     featureFlags.ddV6CourtMappings
   ) {
-    val isCourtNotifyingOrganisation = isCourtNotifyingOrganisation(order.interestedParties)
+    val isCivilCountyCourtNotifyingOrganisation =
+      isCivilCountyCourtNotifyingOrganisation(order.interestedParties)
 
     monitoringOrder.dapoOrderClauseNumbers?.addAll(
       order.dapoClauses.map {
@@ -155,19 +156,21 @@ fun MonitoringOrder.Companion.fromOrder(
 
     monitoringOrder.offences?.addAll(
       order.offences.map {
-        // default to Violence if notifOrg is court, offence null
-        val mappedOffence = Offence.from(it.offenceType)?.value ?: it.offenceType
         OffenceData(
-          offence =
-          if (mappedOffence.isNullOrBlank() && isCourtNotifyingOrganisation) {
-            Offence.VIOLENCE_AGAINST_THE_PERSON.value
-          } else {
-            mappedOffence
-          },
+          offence = Offence.from(it.offenceType)?.value ?: it.offenceType,
           offenceDate = getBritishDate(it.offenceDate),
         )
       },
     )
+
+    if (order.offences.isEmpty() && isCivilCountyCourtNotifyingOrganisation) {
+      monitoringOrder.offences?.add(
+        OffenceData(
+          offence = Offence.VIOLENCE_AGAINST_THE_PERSON.value,
+          offenceDate = null,
+        ),
+      )
+    }
   } else {
     monitoringOrder.offence = getOffence(order)
   }
@@ -646,7 +649,7 @@ private fun getDapolMissedInError(order: Order): String {
   return if (conditions.dapolMissedInError == YesNoUnknown.YES) "true" else ""
 }
 
-private fun isCourtNotifyingOrganisation(interestedParties: InterestedParties?): Boolean {
+private fun isCivilCountyCourtNotifyingOrganisation(interestedParties: InterestedParties?): Boolean {
   val orgValue = interestedParties?.notifyingOrganisation
 
   if (orgValue in listOf(NotifyingOrganisationDDv5.FAMILY_COURT.value, NotifyingOrganisationDDv5.FAMILY_COURT.name)) {

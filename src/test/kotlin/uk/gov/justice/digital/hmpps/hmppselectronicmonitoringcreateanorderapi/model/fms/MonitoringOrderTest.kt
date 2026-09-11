@@ -732,7 +732,7 @@ class MonitoringOrderTest : OrderTestBase() {
     }
 
     @Test
-    fun `default offence to violence against the person for a civil court, offence blank`() {
+    fun `default offence to violence against the person for a civil court with no offences`() {
       val order = createOrder(
         type = RequestType.REQUEST,
         dataDictionaryVersion = DataDictionaryVersion.DDV6,
@@ -740,19 +740,13 @@ class MonitoringOrderTest : OrderTestBase() {
           notifyingOrganisation = NotifyingOrganisationDDv5.CIVIL_COUNTY_COURT.name,
           notifyingOrganisationName = CivilCountyCourtDDv5.KINGSTON_UPON_THAMES_COUNTY_AND_CIVIL_COURT.name,
         ),
-        offences = mutableListOf(
-          Offence(
-            versionId = UUID.randomUUID(),
-            offenceType = "",
-            offenceDate = null,
-          ),
-        ),
+        offences = mutableListOf(),
       )
 
       val featureFlags = FeatureFlags(ddV6CourtMappings = true, dataDictionaryVersion = DataDictionaryVersion.DDV6)
       val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, featureFlags, FmsOrderSource.CEMO)
 
-      assertThat(fmsMonitoringOrder.offences).contains(
+      assertThat(fmsMonitoringOrder.offences).containsExactly(
         OffenceData(
           offence = uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums
             .Offence.VIOLENCE_AGAINST_THE_PERSON.value,
