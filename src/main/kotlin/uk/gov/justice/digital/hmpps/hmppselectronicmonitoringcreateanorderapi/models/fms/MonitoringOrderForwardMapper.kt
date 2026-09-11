@@ -649,6 +649,10 @@ private fun getDapolMissedInError(order: Order): String {
 private fun isCourtNotifyingOrganisation(interestedParties: InterestedParties?): Boolean {
   val orgValue = interestedParties?.notifyingOrganisation
 
+  if (orgValue in listOf(NotifyingOrganisationDDv5.FAMILY_COURT.value, NotifyingOrganisationDDv5.FAMILY_COURT.name)) {
+    return false
+  }
+
   val matchingEnum = NotifyingOrganisationDDv5.from(orgValue)
     ?: NotifyingOrganisationDDv5.entries.find { it.value == orgValue }
 

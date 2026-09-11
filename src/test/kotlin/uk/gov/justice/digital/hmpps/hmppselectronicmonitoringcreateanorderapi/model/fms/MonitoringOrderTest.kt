@@ -789,6 +789,34 @@ class MonitoringOrderTest : OrderTestBase() {
         ),
       )
     }
+
+    @Test
+    fun `no default offence when notifyingOrganisation is family court`() {
+      val order = createOrder(
+        type = RequestType.REQUEST,
+        dataDictionaryVersion = DataDictionaryVersion.DDV6,
+        interestedParties = createInterestedParty(
+          notifyingOrganisation = NotifyingOrganisationDDv5.FAMILY_COURT.name,
+        ),
+        offences = mutableListOf(
+          Offence(
+            versionId = UUID.randomUUID(),
+            offenceType = null,
+            offenceDate = null,
+          ),
+        ),
+      )
+
+      val featureFlags = FeatureFlags(ddV6CourtMappings = true, dataDictionaryVersion = DataDictionaryVersion.DDV6)
+      val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, featureFlags, FmsOrderSource.CEMO)
+
+      assertThat(fmsMonitoringOrder.offences).contains(
+        OffenceData(
+          offence = null,
+          offenceDate = null,
+        ),
+      )
+    }
   }
 
   @Test
