@@ -46,6 +46,7 @@ import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
+import uk.gov.justice.digital.hmpps.courthearingeventreceiver.model.Address as HearingAddress
 
 @Service
 @EnableConfigurationProperties(
@@ -229,10 +230,7 @@ class HearingEventHandler(
     order.deviceWearerAdditionalInfo =
       getDeviceWearerAdditionalInfo(
         prompts,
-        order.addresses.firstOrNull {
-          it.addressType ==
-            AddressType.PRIMARY
-        },
+        address,
       )
     order.monitoringOrderAddtionalInfo = getMonitoringOrderAdditionalInfo(prompts, defendant)
     return order
@@ -790,7 +788,10 @@ class HearingEventHandler(
     )
   }
 
-  private fun getDeviceWearerAdditionalInfo(prompts: List<JudicialResultsPrompt>, primaryAddress: Address?): String {
+  private fun getDeviceWearerAdditionalInfo(
+    prompts: List<JudicialResultsPrompt>,
+    primaryAddress: HearingAddress?,
+  ): String {
     val additionalInfo = StringBuilder()
 
     prompts.filter {
@@ -804,17 +805,18 @@ class HearingEventHandler(
 
     if (primaryAddress != null) {
       val address = listOf(
-        primaryAddress.addressLine1,
-        primaryAddress.addressLine2,
-        primaryAddress.addressLine3,
-        primaryAddress.addressLine4,
+        primaryAddress.address1,
+        primaryAddress.address2,
+        primaryAddress.address3,
+        primaryAddress.address4,
+        primaryAddress.address5,
         primaryAddress.postcode,
       )
-        .filterNot { it.isBlank() }
+        .filterNot { it.isNullOrEmpty() }
         .joinToString(", ")
 
       additionalInfo.appendLine(
-        "Device Wearer Primary Address - \n$address",
+        "Defendant Address - \n$address",
       )
     }
     return additionalInfo.toString()
