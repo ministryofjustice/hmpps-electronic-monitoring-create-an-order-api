@@ -730,6 +730,86 @@ class MonitoringOrderTest : OrderTestBase() {
         ),
       )
     }
+
+    @Test
+    fun `default offence to violence against the person for a civil court with no offences`() {
+      val order = createOrder(
+        type = RequestType.REQUEST,
+        dataDictionaryVersion = DataDictionaryVersion.DDV6,
+        interestedParties = createInterestedParty(
+          notifyingOrganisation = NotifyingOrganisationDDv5.CIVIL_COUNTY_COURT.name,
+          notifyingOrganisationName = CivilCountyCourtDDv5.KINGSTON_UPON_THAMES_COUNTY_AND_CIVIL_COURT.name,
+        ),
+        offences = mutableListOf(),
+      )
+
+      val featureFlags = FeatureFlags(ddV6CourtMappings = true, dataDictionaryVersion = DataDictionaryVersion.DDV6)
+      val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, featureFlags, FmsOrderSource.CEMO)
+
+      assertThat(fmsMonitoringOrder.offences).containsExactly(
+        OffenceData(
+          offence = uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums
+            .Offence.VIOLENCE_AGAINST_THE_PERSON.value,
+          offenceDate = null,
+        ),
+      )
+    }
+
+    @Test
+    fun `does not default offence to violence against the person for a crown court`() {
+      val order = createOrder(
+        type = RequestType.REQUEST,
+        dataDictionaryVersion = DataDictionaryVersion.DDV6,
+        interestedParties = createInterestedParty(
+          notifyingOrganisation = NotifyingOrganisationDDv5.CROWN_COURT.name,
+        ),
+        offences = mutableListOf(
+          Offence(
+            versionId = UUID.randomUUID(),
+            offenceType = null,
+            offenceDate = null,
+          ),
+        ),
+      )
+
+      val featureFlags = FeatureFlags(ddV6CourtMappings = true, dataDictionaryVersion = DataDictionaryVersion.DDV6)
+      val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, featureFlags, FmsOrderSource.CEMO)
+
+      assertThat(fmsMonitoringOrder.offences).contains(
+        OffenceData(
+          offence = null,
+          offenceDate = null,
+        ),
+      )
+    }
+
+    @Test
+    fun `no default offence when notifyingOrganisation is family court`() {
+      val order = createOrder(
+        type = RequestType.REQUEST,
+        dataDictionaryVersion = DataDictionaryVersion.DDV6,
+        interestedParties = createInterestedParty(
+          notifyingOrganisation = NotifyingOrganisationDDv5.FAMILY_COURT.name,
+        ),
+        offences = mutableListOf(
+          Offence(
+            versionId = UUID.randomUUID(),
+            offenceType = null,
+            offenceDate = null,
+          ),
+        ),
+      )
+
+      val featureFlags = FeatureFlags(ddV6CourtMappings = true, dataDictionaryVersion = DataDictionaryVersion.DDV6)
+      val fmsMonitoringOrder = MonitoringOrder.fromOrder(order, null, featureFlags, FmsOrderSource.CEMO)
+
+      assertThat(fmsMonitoringOrder.offences).contains(
+        OffenceData(
+          offence = null,
+          offenceDate = null,
+        ),
+      )
+    }
   }
 
   @Test

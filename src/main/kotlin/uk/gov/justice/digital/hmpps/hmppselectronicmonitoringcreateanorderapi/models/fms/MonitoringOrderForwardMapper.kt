@@ -142,6 +142,9 @@ fun MonitoringOrder.Companion.fromOrder(
   if (order.dataDictionaryVersion.isLaterThanOrEqual(DataDictionaryVersion.DDV6) &&
     featureFlags.ddV6CourtMappings
   ) {
+    val isCivilCountyCourtNotifyingOrganisation =
+      isCivilCountyCourtNotifyingOrganisation(order.interestedParties)
+
     monitoringOrder.dapoOrderClauseNumbers?.addAll(
       order.dapoClauses.map {
         DapoClause(
@@ -159,6 +162,15 @@ fun MonitoringOrder.Companion.fromOrder(
         )
       },
     )
+
+    if (order.offences.isEmpty() && isCivilCountyCourtNotifyingOrganisation) {
+      monitoringOrder.offences?.add(
+        OffenceData(
+          offence = Offence.VIOLENCE_AGAINST_THE_PERSON.value,
+          offenceDate = null,
+        ),
+      )
+    }
   } else {
     monitoringOrder.offence = getOffence(order)
   }
@@ -635,6 +647,19 @@ private fun getDapolMissedInError(order: Order): String {
   }
 
   return if (conditions.dapolMissedInError == YesNoUnknown.YES) "true" else ""
+}
+
+private fun isCivilCountyCourtNotifyingOrganisation(interestedParties: InterestedParties?): Boolean {
+  val orgValue = interestedParties?.notifyingOrganisation
+
+  if (orgValue in listOf(NotifyingOrganisationDDv5.FAMILY_COURT.value, NotifyingOrganisationDDv5.FAMILY_COURT.name)) {
+    return false
+  }
+
+  val matchingEnum = NotifyingOrganisationDDv5.from(orgValue)
+    ?: NotifyingOrganisationDDv5.entries.find { it.value == orgValue }
+
+  return matchingEnum == NotifyingOrganisationDDv5.CIVIL_COUNTY_COURT
 }
 
 private fun getOrderType(order: Order, orderType: OrderType): String {
