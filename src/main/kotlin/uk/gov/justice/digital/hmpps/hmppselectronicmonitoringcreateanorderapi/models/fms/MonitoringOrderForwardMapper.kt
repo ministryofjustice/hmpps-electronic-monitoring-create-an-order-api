@@ -103,6 +103,7 @@ fun MonitoringOrder.Companion.fromOrder(
     orderTypeDescription = conditions.orderTypeDescription?.value ?: "",
     orderStart = getBritishDateAndTime(monitoringStartDate),
     orderEnd = getBritishDateAndTime(monitoringEndDate) ?: "",
+    interimCourtDate = getBritishDateAndTime(conditions.nextCourtHearingDate) ?: "",
     serviceEndDate = getBritishDate(monitoringEndDate) ?: "",
     caseId = caseId,
     conditionType = conditions.conditionType!!.value,
@@ -110,8 +111,14 @@ fun MonitoringOrder.Companion.fromOrder(
     orderStatus = "Not Started",
     offenceAdditionalDetails = getOffenceAdditionalDetails(order, featureFlags),
     pilot = conditions.pilot?.value ?: "",
-    magistrateCourtCaseReferenceNumber = order.deviceWearer?.courtCaseReferenceNumber ?: "",
+    additionalInformation = order.monitoringOrderAddtionalInfo,
   )
+
+  if (order.interestedParties?.notifyingOrganisation == NotifyingOrganisationDDv5.CROWN_COURT.value) {
+    monitoringOrder.crownCourtCaseReferenceNumber = order.deviceWearer?.courtCaseReferenceNumber ?: ""
+  } else {
+    monitoringOrder.magistrateCourtCaseReferenceNumber = order.deviceWearer?.courtCaseReferenceNumber ?: ""
+  }
   if (order.dataDictionaryVersion.isLaterThanOrEqual(DataDictionaryVersion.DDV6)) {
     monitoringOrder.subcategory = subcategory
     monitoringOrder.dapolMissedInError = getDapolMissedInError(order)
@@ -486,7 +493,7 @@ private fun getNotifyingOrganisation(
       else -> NotifyingOrganisationDDv5.from(notifyingOrganisation)?.value
     }
 
-  return resolvedNotifyingOrganisation ?: notifyingOrganisation ?: "N/A"
+  return resolvedNotifyingOrganisation ?: notifyingOrganisation ?: ""
 }
 
 private fun getNotifyingOrganisationName(

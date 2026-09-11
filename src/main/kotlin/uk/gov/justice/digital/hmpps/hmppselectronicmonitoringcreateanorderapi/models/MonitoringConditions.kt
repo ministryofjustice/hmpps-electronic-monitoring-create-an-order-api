@@ -94,6 +94,9 @@ data class MonitoringConditions(
   @Column(name = "DAPOL_MISSED_IN_ERROR", nullable = true)
   var dapolMissedInError: YesNoUnknown? = null,
 
+  @Column(name = "NEXT_COURT_HEARING_DATE", nullable = true)
+  var nextCourtHearingDate: ZonedDateTime? = null,
+
   @Schema(hidden = true)
   @OneToOne
   @JoinColumn(name = "VERSION_ID", updatable = false, insertable = false)

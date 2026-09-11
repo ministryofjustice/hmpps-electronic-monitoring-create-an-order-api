@@ -36,6 +36,7 @@ fun DeviceWearer.toDeviceWearer(versionId: UUID): CemoDeviceWearer {
     gender = Gender.nameFromValue(genderIdentity),
     sex = Sex.nameFromValue(sex),
     pncId = pncId,
+    defendantId = defendantId,
     nomisId = nomisId,
     deliusId = deliusId,
     prisonNumber = prisonNumber,

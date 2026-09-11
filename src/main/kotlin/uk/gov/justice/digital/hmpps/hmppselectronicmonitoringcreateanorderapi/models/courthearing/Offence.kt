@@ -1,5 +1,7 @@
 package uk.gov.justice.digital.hmpps.courthearingeventreceiver.model
 
+import java.time.LocalDate
+
 data class Offence(
   val id: String,
 
@@ -21,4 +23,5 @@ data class Offence(
 
   val verdict: Verdict?,
 
+  val startDate: LocalDate?,
 )

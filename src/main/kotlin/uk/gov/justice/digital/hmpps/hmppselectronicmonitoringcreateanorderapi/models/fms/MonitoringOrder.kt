@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms
 
+import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
 
 data class MonitoringOrder(
@@ -205,6 +206,10 @@ data class MonitoringOrder(
   var dapoOrderClauseNumbers: MutableList<DapoClause>? = mutableListOf(),
   @JsonProperty("offences")
   var offences: MutableList<OffenceData>? = mutableListOf(),
+
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  @JsonProperty("additional_information")
+  var additionalInformation: String? = "",
 ) {
   companion object
 }

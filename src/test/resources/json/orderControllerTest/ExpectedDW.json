@@ -56,6 +56,7 @@
   "delius_id": "deliusId",
   "prison_number": "prisonNumber",
   "home_office_case_reference_number": "",
+  "defendant_id": "defendantId",
   "cepr": "complianceAndEnforcementPersonReference",
   "interpreter_required": "true",
   "language": "British Sign"
