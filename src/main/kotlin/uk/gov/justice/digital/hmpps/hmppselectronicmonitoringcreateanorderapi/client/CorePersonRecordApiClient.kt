@@ -49,7 +49,7 @@ class CorePersonRecordApiClient(private val corePersonRecordApiWebClient: WebCli
   private fun fetchCorePersonDetails(path: String, identifier: String): CorePersonDetails = try {
     corePersonRecordApiWebClient
       .get()
-      .uri(path, identifier)
+      .uri(path, identifier.uppercase())
       .retrieve()
       .bodyToMono<CorePersonDetails>()
       .retryWhen(
