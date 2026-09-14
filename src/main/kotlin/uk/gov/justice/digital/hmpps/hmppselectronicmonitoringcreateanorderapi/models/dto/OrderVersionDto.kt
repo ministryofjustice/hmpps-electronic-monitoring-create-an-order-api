@@ -31,11 +31,6 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import java.time.OffsetDateTime
 import java.util.UUID
 
-/**
- * A single order version, flattened the same way OrderDto flattens the current
- * version of an Order, so external consumers of the case-id search endpoint get
- * a consistent shape across all versions of an order's history.
- */
 data class OrderVersionDto(
   val id: UUID,
   val versionId: Int,
