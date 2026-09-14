@@ -183,7 +183,7 @@
       ]
     }
   ],
-  "trail_monitoring": "No",
+  "trail_monitoring": "Yes",
   "exclusion_zones": [
     {
       "description": "Mock Exclusion Zone",

@@ -81,7 +81,7 @@
   "curfew_start": "2025-01-22 00:00:00",
   "curfew_end": "2025-01-22 10:00:00",
   "curfew_duration": [],
-  "trail_monitoring": "No",
+  "trail_monitoring": "",
   "exclusion_zones": [
     {
       "description": "Must not enter Place or area:bukcingham palace",

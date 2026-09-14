@@ -76,7 +76,7 @@
   "curfew_start": "",
   "curfew_end": "",
   "curfew_duration": [],
-  "trail_monitoring": "No",
+  "trail_monitoring": "",
   "exclusion_zones": [
     {
       "description": "ERPEM - Exclusion not to enter for a period with electronic monitoring\nExclusion Requirement with Electronic Monitoring: Not to enter 11 Mayfair\nLONDON. This exclusion with electronic monitoring lasts for 6 Months. Start date 10/11/2024. Start time 10:00. End date 10/11/2025. End time 10:00. ",
