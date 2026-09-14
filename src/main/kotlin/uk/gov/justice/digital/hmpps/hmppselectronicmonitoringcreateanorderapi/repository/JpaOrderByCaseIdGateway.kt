@@ -1,9 +1,8 @@
-package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service
+package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository
 
 import org.springframework.stereotype.Component
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.FmsSubmissionResultRepository
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.OrderByCaseIdGateway
 
 @Component
 class JpaOrderByCaseIdGateway(
