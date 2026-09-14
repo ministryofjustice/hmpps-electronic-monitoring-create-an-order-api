@@ -85,7 +85,7 @@
   "curfew_start": "2025-02-21 10:00:00",
   "curfew_end": "2025-02-20 10:00:00",
   "curfew_duration": [],
-  "trail_monitoring": "No",
+  "trail_monitoring": "",
   "exclusion_zones": [
     {
       "description": "Prohibition: Exclusion - Not to enter for a period with electronic monitoring Place / area:7 Hurricane Cl, Stafford ST16 1GZ\nExclusion and electronic monitoring period:1 Years\nStart date for tag:21/02/2025\nStart time for tag:10:00\nEnd date for tag:20/02/2026\nEnd time for tag:19:00",
