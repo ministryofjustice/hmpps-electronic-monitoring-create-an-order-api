@@ -4,6 +4,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderCaseSearchResultDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.utilities.TestUtilities
 
 class FakeOrderByCaseIdGateway : OrderByCaseIdGateway {
@@ -30,9 +31,9 @@ class FindOrderByCaseIdServiceTest {
     val order = TestUtilities.createReadyToSubmitOrder()
     gateway.addOrder("CASE123", order)
 
-    val result = service.execute("CASE123")
+    val result: OrderCaseSearchResultDto? = service.execute("CASE123")
 
-    assertThat(result).isSameAs(order)
+    assertThat(result?.id).isEqualTo(order.id)
     assertThat(result?.versions).isEqualTo(order.versions)
   }
 
