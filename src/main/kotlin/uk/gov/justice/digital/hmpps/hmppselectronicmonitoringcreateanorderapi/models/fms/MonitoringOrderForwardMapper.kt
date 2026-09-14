@@ -311,8 +311,6 @@ fun MonitoringOrder.Companion.fromOrder(
         else -> {}
       }
     }
-
-    monitoringOrder.trailMonitoring = "No"
   }
 
   if (order.mandatoryAttendanceConditions.count() > 0) {

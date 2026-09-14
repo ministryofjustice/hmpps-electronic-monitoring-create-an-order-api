@@ -81,7 +81,7 @@
   "curfew_start": "2025-01-22 00:00:00",
   "curfew_end": "2025-01-22 10:00:00",
   "curfew_duration": [],
-  "trail_monitoring": "No",
+  "trail_monitoring": "",
   "exclusion_zones": [
     {
       "description": "Exclusion - not to enter a place except to attend court or pre-arranged appointment with solicitor Place or area:RAB AUTO SERVICES GARAGE, Sandon Rd, Hopton, Stafford ST18 9TH",
