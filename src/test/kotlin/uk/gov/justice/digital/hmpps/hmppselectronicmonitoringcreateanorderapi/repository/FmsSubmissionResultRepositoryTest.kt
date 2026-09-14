@@ -41,7 +41,7 @@ class FmsSubmissionResultRepositoryTest {
       ),
     )
 
-    val result = repository.findByDeviceWearerResultDeviceWearerId("CASE123")
+    val result = repository.findByCaseId("CASE123")
 
     assertThat(result).isNotNull
     assertThat(result?.orderId).isEqualTo(orderId)
@@ -50,7 +50,7 @@ class FmsSubmissionResultRepositoryTest {
   @Test
   @DisplayName("returns null when no submission result matches the device wearer id")
   fun `returns null when no submission result matches the device wearer id`() {
-    val result = repository.findByDeviceWearerResultDeviceWearerId("UNKNOWN_CASE_ID")
+    val result = repository.findByCaseId("UNKNOWN_CASE_ID")
 
     assertThat(result).isNull()
   }

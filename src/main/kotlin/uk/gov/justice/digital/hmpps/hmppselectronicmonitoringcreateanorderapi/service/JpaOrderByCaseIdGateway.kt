@@ -10,7 +10,6 @@ class JpaOrderByCaseIdGateway(
   private val fmsSubmissionResultRepository: FmsSubmissionResultRepository,
   private val orderRepository: OrderRepository,
 ) : OrderByCaseIdGateway {
-  override fun findOrderByCaseId(caseId: String): Order? =
-    fmsSubmissionResultRepository.findByDeviceWearerResultDeviceWearerId(caseId)
-      ?.let { orderRepository.findById(it.orderId).orElse(null) }
+  override fun findOrderByCaseId(caseId: String): Order? = fmsSubmissionResultRepository.findByCaseId(caseId)
+    ?.let { orderRepository.findById(it.orderId).orElse(null) }
 }

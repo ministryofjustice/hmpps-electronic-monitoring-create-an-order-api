@@ -49,6 +49,9 @@ data class FmsSubmissionResult(
   @JoinColumn(name = "fms_attachment_result_id", referencedColumnName = "id")
   var attachmentResults: MutableList<FmsAttachmentSubmissionResult> = mutableListOf(),
 ) {
+  val caseId: String?
+    get() = deviceWearerResult.deviceWearerId.takeIf { it.isNotBlank() }
+
   val success: Boolean
     get() {
       return partialSuccess && attachmentSuccess
