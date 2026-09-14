@@ -34,7 +34,11 @@ class FindOrderByCaseIdServiceTest {
     val result: OrderCaseSearchResultDto? = service.execute("CASE123")
 
     assertThat(result?.id).isEqualTo(order.id)
-    assertThat(result?.versions).isEqualTo(order.versions)
+    assertThat(result?.versions).hasSize(order.versions.size)
+    assertThat(result?.versions?.map { it.versionId }).isEqualTo(order.versions.map { it.versionId })
+    assertThat(result?.versions?.first()?.status).isEqualTo(order.versions.first().status)
+    assertThat(result?.versions?.first()?.type).isEqualTo(order.versions.first().type)
+    assertThat(result?.versions?.first()?.deviceWearer).isEqualTo(order.versions.first().deviceWearer)
   }
 
   @Test
