@@ -11,7 +11,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.FindOrderByCaseIdService
 
 @RestController
-@PreAuthorize("hasRole('ROLE_EM_CEMO__EXTERNAL_SEARCH')")
+@PreAuthorize("hasRole('ROLE_EM_CEMO__GET_ORDER__RO')")
 @RequestMapping("/api/orders/search")
 class OrderCaseSearchController(private val findOrderByCaseIdService: FindOrderByCaseIdService) {
 
