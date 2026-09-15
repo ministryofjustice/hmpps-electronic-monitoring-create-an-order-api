@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository
 
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest
@@ -19,13 +18,11 @@ import java.util.*
     "spring.flyway.enabled=false",
   ],
 )
-@DisplayName("FmsSubmissionResultRepository")
 class FmsSubmissionResultRepositoryTest {
   @Autowired
   lateinit var repository: FmsSubmissionResultRepository
 
   @Test
-  @DisplayName("finds the submission result by device wearer id when it exists")
   fun `finds the submission result by device wearer id when it exists`() {
     val orderId = UUID.randomUUID()
 
@@ -48,7 +45,6 @@ class FmsSubmissionResultRepositoryTest {
   }
 
   @Test
-  @DisplayName("returns null when no submission result matches the device wearer id")
   fun `returns null when no submission result matches the device wearer id`() {
     val result = repository.findByCaseId("UNKNOWN_CASE_ID")
 

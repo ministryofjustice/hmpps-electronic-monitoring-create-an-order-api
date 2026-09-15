@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository
 
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest
@@ -20,7 +19,6 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.ut
   ],
 )
 @Import(JpaOrderByCaseIdGateway::class)
-@DisplayName("JpaOrderByCaseIdGateway")
 class JpaOrderByCaseIdGatewayTest {
   @Autowired
   lateinit var orderRepository: OrderRepository
@@ -32,7 +30,6 @@ class JpaOrderByCaseIdGatewayTest {
   lateinit var gateway: JpaOrderByCaseIdGateway
 
   @Test
-  @DisplayName("returns the order when a submission result matches the given case id")
   fun `returns the order when a submission result matches the given case id`() {
     val order = TestUtilities.createReadyToSubmitOrder()
     orderRepository.save(order)
@@ -53,7 +50,6 @@ class JpaOrderByCaseIdGatewayTest {
   }
 
   @Test
-  @DisplayName("returns null when no submission result matches the given case id")
   fun `returns null when no submission result matches the given case id`() {
     val result = gateway.findOrderByCaseId("UNKNOWN_CASE_ID")
 

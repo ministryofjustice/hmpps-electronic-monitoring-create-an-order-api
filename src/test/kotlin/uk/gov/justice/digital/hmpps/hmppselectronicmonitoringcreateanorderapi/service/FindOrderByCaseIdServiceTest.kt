@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service
 
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderCaseSearchResultDto
@@ -17,13 +16,9 @@ class FakeOrderByCaseIdGateway : OrderByCaseIdGateway {
   override fun findOrderByCaseId(caseId: String): Order? = ordersByCaseId[caseId]
 }
 
-@DisplayName("Find order by case ID")
 class FindOrderByCaseIdServiceTest {
 
   @Test
-  @DisplayName(
-    "Acceptance: returns the order, including its full version history, when the case ID matches a submitted order",
-  )
   fun `returns the order with full version history when the case id matches a submitted order`() {
     val gateway = FakeOrderByCaseIdGateway()
     val service = FindOrderByCaseIdService(gateway)
@@ -42,7 +37,6 @@ class FindOrderByCaseIdServiceTest {
   }
 
   @Test
-  @DisplayName("returns null when no order matches the given case id")
   fun `returns null when no order matches the given case id`() {
     val gateway = FakeOrderByCaseIdGateway()
     val service = FindOrderByCaseIdService(gateway)
