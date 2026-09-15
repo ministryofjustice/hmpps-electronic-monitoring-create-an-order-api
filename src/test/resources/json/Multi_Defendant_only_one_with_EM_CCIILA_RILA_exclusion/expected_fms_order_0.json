@@ -81,7 +81,7 @@
   "curfew_start": "2025-01-31 00:00:00",
   "curfew_end": "",
   "curfew_duration": [],
-  "trail_monitoring": "No",
+  "trail_monitoring": "",
   "exclusion_zones": [
     {
       "description": "Must not go within A radius of:2miles\nIn respect of this place:48 London Wall, City of London, London EC2M 5QB",

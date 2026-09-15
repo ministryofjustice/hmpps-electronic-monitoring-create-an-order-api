@@ -85,7 +85,7 @@
   "curfew_start": "2025-02-21 10:00:00",
   "curfew_end": "2025-07-22 10:00:00",
   "curfew_duration": [],
-  "trail_monitoring": "No",
+  "trail_monitoring": "",
   "exclusion_zones": [
     {
       "description": "Prohibition: Exclusion - Not to enter for a period with electronic monitoring Place / area:Hopton Hall, Lane, Hopton, Stafford ST18 0AZ\nExclusion and electronic monitoring period:6 Months\nStart date for tag:21/02/2025\nStart time for tag:10:00\nEnd date for tag:20/07/2025\nEnd time for tag:18:00\nAdditional information:Hopton Hall, Lane, Hopton,",

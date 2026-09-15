@@ -80,7 +80,7 @@
   "curfew_start": "",
   "curfew_end": "",
   "curfew_duration": [],
-  "trail_monitoring": "No",
+  "trail_monitoring": "",
   "exclusion_zones": [
     {
       "description": "Exclusion - not go within a radius unless accompanied by a police officer Within:5 miles radius of\nOf:Croydon",

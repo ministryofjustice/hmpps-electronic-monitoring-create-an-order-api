@@ -35,7 +35,7 @@ class CorePersonRecordApiClientTest : IntegrationTestBase() {
     fun `it calls the get by prison number endpoint`() {
       corePersonRecordApi.stubGetPrisonerDetails("A1234BC", prisonerDetailsJson)
 
-      corePersonRecordApiClient.getPersonByPrisonNumber("A1234BC", UUID.randomUUID())
+      corePersonRecordApiClient.getPersonByPrisonNumber("a1234bc", UUID.randomUUID())
 
       corePersonRecordApi.verify(1, getRequestedFor(urlPathEqualTo("/person/prison/A1234BC")))
     }

@@ -153,7 +153,7 @@ data class DeviceWearer(
   @JsonProperty("interpreter_required")
   var interpreterRequired: String? = "",
 
-  @JsonProperty("national_insurance_number")
+  @JsonProperty("ni_number")
   var nationalInsuranceNumber: String? = "",
 
   @JsonProperty("religion")

@@ -76,7 +76,7 @@
   "curfew_start": "",
   "curfew_end": "",
   "curfew_duration": [],
-  "trail_monitoring": "No",
+  "trail_monitoring": "",
   "exclusion_zones": [
     {
       "description": "Exclusion - not to enter a place Place or area:London Mayfair",

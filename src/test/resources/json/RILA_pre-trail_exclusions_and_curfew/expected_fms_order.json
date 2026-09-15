@@ -81,7 +81,7 @@
   "curfew_start": "2025-01-15 00:00:00",
   "curfew_end": "",
   "curfew_duration": [],
-  "trail_monitoring": "No",
+  "trail_monitoring": "",
   "exclusion_zones": [
     {
       "description": "Must not enter Place or area:trafalgaur square",
