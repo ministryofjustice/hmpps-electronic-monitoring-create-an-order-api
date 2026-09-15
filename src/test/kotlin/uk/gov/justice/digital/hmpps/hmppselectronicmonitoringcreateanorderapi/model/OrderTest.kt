@@ -8,6 +8,7 @@ import org.junit.jupiter.params.provider.MethodSource
 import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AdditionalDocument
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewConditions
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewReleaseDateConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.EnforcementZoneConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationLocation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.MandatoryAttendanceConditions
@@ -152,102 +153,61 @@ class OrderTest : OrderTestBase() {
 
   @Test
   fun `It should return isValid false for prison order with future monitoring start date and no curfew release date`() {
-    val order = createValidOrder()
-    order.interestedParties = createInterestedParty(notifyingOrganisation = NotifyingOrganisationDDv5.PRISON.name)
-    order.monitoringConditions!!.startDate = ZonedDateTime.now().plusYears(1)
-    order.curfewConditions = createCurfewConditions(startDate = ZonedDateTime.now())
-    order.curfewReleaseDateConditions = null
-    order.curfewTimeTable = createCurfewTimeTable()
-
-    order.monitoringConditionsAlcohol = null
-    order.monitoringConditionsTrail = null
-    order.enforcementZoneConditions.clear()
-    order.mandatoryAttendanceConditions.clear()
+    val order = createOrderWithCurfewConditions(
+      notifyingOrganisation = NotifyingOrganisationDDv5.PRISON,
+      monitoringStartDate = ZonedDateTime.now().plusYears(1),
+      curfewReleaseDateConditions = null,
+    )
     assertThat(order.isValid).isFalse()
   }
 
   @Test
   fun `It should return isValid true for prison order with past monitoring start date and no curfew release date`() {
-    val order = createValidOrder()
-    order.interestedParties = createInterestedParty(notifyingOrganisation = NotifyingOrganisationDDv5.PRISON.name)
-    order.monitoringConditions!!.startDate = ZonedDateTime.now().minusYears(1)
-    order.curfewConditions = createCurfewConditions(startDate = ZonedDateTime.now())
-    order.curfewReleaseDateConditions = null
-    order.curfewTimeTable = createCurfewTimeTable()
-
-    order.monitoringConditionsAlcohol = null
-    order.monitoringConditionsTrail = null
-    order.enforcementZoneConditions.clear()
-    order.mandatoryAttendanceConditions.clear()
+    val order = createOrderWithCurfewConditions(
+      notifyingOrganisation = NotifyingOrganisationDDv5.PRISON,
+      monitoringStartDate = ZonedDateTime.now().minusYears(1),
+      curfewReleaseDateConditions = null,
+    )
     assertThat(order.isValid).isTrue()
   }
 
   @Test
   fun `It should return isValid false for YCS order with future monitoring start date and no curfew release date`() {
-    val order = createValidOrder()
-    order.interestedParties =
-      createInterestedParty(notifyingOrganisation = NotifyingOrganisationDDv5.YOUTH_CUSTODY_SERVICE.name)
-    order.monitoringConditions!!.startDate = ZonedDateTime.now().plusYears(1)
-    order.curfewConditions = createCurfewConditions(startDate = ZonedDateTime.now())
-    order.curfewReleaseDateConditions = null
-    order.curfewTimeTable = createCurfewTimeTable()
-
-    order.monitoringConditionsAlcohol = null
-    order.monitoringConditionsTrail = null
-    order.enforcementZoneConditions.clear()
-    order.mandatoryAttendanceConditions.clear()
+    val order = createOrderWithCurfewConditions(
+      notifyingOrganisation = NotifyingOrganisationDDv5.YOUTH_CUSTODY_SERVICE,
+      monitoringStartDate = ZonedDateTime.now().plusYears(1),
+      curfewReleaseDateConditions = null,
+    )
     assertThat(order.isValid).isFalse()
   }
 
   @Test
   fun `It should return isValid true for YCS order with past monitoring start date and no curfew release date`() {
-    val order = createValidOrder()
-    order.interestedParties =
-      createInterestedParty(notifyingOrganisation = NotifyingOrganisationDDv5.YOUTH_CUSTODY_SERVICE.name)
-    order.monitoringConditions!!.startDate = ZonedDateTime.now().minusYears(1)
-    order.curfewConditions = createCurfewConditions(startDate = ZonedDateTime.now())
-    order.curfewReleaseDateConditions = null
-    order.curfewTimeTable = createCurfewTimeTable()
-
-    order.monitoringConditionsAlcohol = null
-    order.monitoringConditionsTrail = null
-    order.enforcementZoneConditions.clear()
-    order.mandatoryAttendanceConditions.clear()
+    val order = createOrderWithCurfewConditions(
+      notifyingOrganisation = NotifyingOrganisationDDv5.YOUTH_CUSTODY_SERVICE,
+      monitoringStartDate = ZonedDateTime.now().minusYears(1),
+      curfewReleaseDateConditions = null,
+    )
     assertThat(order.isValid).isTrue()
   }
 
   @Test
   fun `It should return isValid true for non prison or YCS order with future start date and no curfew release date`() {
-    val order = createValidOrder()
-    order.interestedParties = createInterestedParty(
-      notifyingOrganisation = NotifyingOrganisationDDv5.PROBATION.name,
-      responsibleOrganisation = ResponsibleOrganisation.PROBATION.name,
+    val order = createOrderWithCurfewConditions(
+      notifyingOrganisation = NotifyingOrganisationDDv5.PROBATION,
+      monitoringStartDate = ZonedDateTime.now().plusYears(1),
+      curfewReleaseDateConditions = null,
     )
-    order.monitoringConditions!!.startDate = ZonedDateTime.now().plusYears(1)
-    order.curfewConditions = createCurfewConditions(startDate = ZonedDateTime.now())
-    order.curfewReleaseDateConditions = null
-    order.curfewTimeTable = createCurfewTimeTable()
-
-    order.monitoringConditionsAlcohol = null
-    order.monitoringConditionsTrail = null
-    order.enforcementZoneConditions.clear()
-    order.mandatoryAttendanceConditions.clear()
     assertThat(order.isValid).isTrue()
   }
 
   @Test
   fun `It should return isValid true for prison order with future start date and curfew release date present`() {
-    val order = createValidOrder()
-    order.interestedParties = createInterestedParty(notifyingOrganisation = NotifyingOrganisationDDv5.PRISON.name)
-    order.monitoringConditions!!.startDate = ZonedDateTime.now().plusYears(1)
-    order.curfewConditions = createCurfewConditions(startDate = ZonedDateTime.now())
-    order.curfewReleaseDateConditions = createCurfewDayOfReslse()
-    order.curfewTimeTable = createCurfewTimeTable()
-
-    order.monitoringConditionsAlcohol = null
-    order.monitoringConditionsTrail = null
-    order.enforcementZoneConditions.clear()
-    order.mandatoryAttendanceConditions.clear()
+    val order = createOrderWithCurfewConditions(
+      notifyingOrganisation = NotifyingOrganisationDDv5.PRISON,
+      monitoringStartDate = ZonedDateTime.now().plusYears(1),
+      curfewReleaseDateConditions = createCurfewDayOfReslse(),
+    )
     assertThat(order.isValid).isTrue()
   }
 
@@ -578,6 +538,28 @@ class OrderTest : OrderTestBase() {
     startDate = baselineStart,
     endDate = baselineEnd,
   )
+
+  private fun createOrderWithCurfewConditions(
+    notifyingOrganisation: NotifyingOrganisationDDv5,
+    monitoringStartDate: ZonedDateTime,
+    curfewReleaseDateConditions: CurfewReleaseDateConditions?,
+  ): Order {
+    val order = createValidOrder()
+    order.interestedParties = createInterestedParty(
+      notifyingOrganisation = notifyingOrganisation.name,
+      responsibleOrganisation = ResponsibleOrganisation.PROBATION.name,
+    )
+    order.monitoringConditions!!.startDate = monitoringStartDate
+    order.curfewConditions = createCurfewConditions(startDate = ZonedDateTime.now())
+    order.curfewReleaseDateConditions = curfewReleaseDateConditions
+    order.curfewTimeTable = createCurfewTimeTable()
+
+    order.monitoringConditionsAlcohol = null
+    order.monitoringConditionsTrail = null
+    order.enforcementZoneConditions.clear()
+    order.mandatoryAttendanceConditions.clear()
+    return order
+  }
 
   companion object {
     @JvmStatic
