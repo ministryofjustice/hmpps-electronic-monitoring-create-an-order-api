@@ -36,10 +36,12 @@
   "parent_address_post_code": "",
   "parent_phone_number": null,
   "parent_dob": "",
+  "defendant_id": "384b3fb4-0ec6-4b16-927d-f0e9767cd0d2",
   "pnc_id": null,
   "nomis_id": null,
   "delius_id": null,
   "prison_number": null,
   "interpreter_required": null,
-  "language": null
+  "language": null,
+  "additional_information" : "Notification of electronic monitoring order (requirement) - \nElectronic monitoring contractor organisation name:Electronic Monitoring Contractor\nElectronic monitoring contractor email address 1:a@b.co.uk\nFirst notification of electronic monitoring:Yes\nAre there any additional requirements as well?:No\nDefendant's mobile number:09756734099\nWas an interpreter used?:No\nDoes the offender have any special needs?:No\nDefendant Address - \n80 Queen's Road, Queen's Road, Brighton, East Sussex, YO43 3DE\n"
 }

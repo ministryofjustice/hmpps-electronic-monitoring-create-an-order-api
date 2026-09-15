@@ -284,7 +284,7 @@
                         "promptReference": "curfewAddressDetailsAndTimings",
                         "promptSequence": 600,
                         "type": "TXT",
-                        "value": "Home address at "
+                        "value": "Home address at 69 Winston Road, Staindrop, Darlington, Durham, DL2 3NR"
                       },
                       {
                         "courtExtract": "Y",
@@ -316,70 +316,6 @@
                         "promptSequence": 100,
                         "type": "INT",
                         "value": "20 Days"
-                      }
-                    ]
-                  },
-                  {
-                    "isConvictedResult": false,
-                    "label": "Electronic Monitoring End - notify contractor",
-                    "judicialResultTypeId": "adbdbb76-8ff7-4a22-881f-6b95adbf915b",
-                    "resultText": "EMONE - Electronic Monitoring End - notify contractor",
-                    "orderedDate": "2024-12-04",
-                    "judicialResultPrompts": [
-                      {
-                        "courtExtract": "N",
-                        "isDurationEndDate": null,
-                        "isFinancialImposition": false,
-                        "judicialResultPromptTypeId": "92566757-ef79-4804-bced-c63ebb0937e7",
-                        "label": "Electronic monitoring contractor organisation name",
-                        "promptReference": "electronicmonitoringcontractorOrganisationName",
-                        "promptSequence": 100,
-                        "type": "NAMEADDRESS",
-                        "value": "Electronic Monitoring Contractor"
-                      },
-                      {
-                        "courtExtract": "N",
-                        "isDurationEndDate": null,
-                        "isFinancialImposition": false,
-                        "judicialResultPromptTypeId": "92566757-ef79-4804-bced-c63ebb0937e7",
-                        "label": "Electronic monitoring contractor email address 1",
-                        "promptReference": "electronicmonitoringcontractorEmailAddress1",
-                        "promptSequence": 100,
-                        "type": "NAMEADDRESS",
-                        "value": "a@b.co.uk"
-                      },
-                      {
-                        "courtExtract": "N",
-                        "isDurationEndDate": null,
-                        "isFinancialImposition": false,
-                        "judicialResultPromptTypeId": "6bc0a7e8-ecd6-4607-896c-e8e8e88bd616",
-                        "label": "Electronic monitoring type",
-                        "promptReference": "electronicMonitoringType",
-                        "promptSequence": 300,
-                        "type": "FIXL",
-                        "value": "bail conditions"
-                      },
-                      {
-                        "courtExtract": "N",
-                        "isDurationEndDate": null,
-                        "isFinancialImposition": false,
-                        "judicialResultPromptTypeId": "7946cf86-d0f6-4611-815f-fc4d6fc05e34",
-                        "label": "Date last electronic monitoring order made",
-                        "promptReference": "dateLastElectronicMonitoringOrderMade",
-                        "promptSequence": 400,
-                        "type": "DATE",
-                        "value": "20/11/2024"
-                      },
-                      {
-                        "courtExtract": "N",
-                        "isDurationEndDate": null,
-                        "isFinancialImposition": false,
-                        "judicialResultPromptTypeId": "fef836f8-cae7-410f-b006-989d884a8d14",
-                        "label": "Name of court that imposed electronic monitoring",
-                        "promptReference": "nameOfCourtThatImposedElectronicMonitoring",
-                        "promptSequence": 500,
-                        "type": "FIXL",
-                        "value": "Newton Aycliffe Magistrates' Court"
                       }
                     ]
                   }
@@ -425,10 +361,10 @@
                   "selfDefinedEthnicityDescription": "British",
                   "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
                 },
-                "firstName": "Person",
+                "firstName": "CP008",
                 "gender": "MALE",
                 "hearingLanguageNeeds": "ENGLISH",
-                "lastName": "Mock",
+                "lastName": "COEW_CURFEW",
                 "occupation": "Accountant",
                 "occupationCode": "2201",
                 "title": "MR"

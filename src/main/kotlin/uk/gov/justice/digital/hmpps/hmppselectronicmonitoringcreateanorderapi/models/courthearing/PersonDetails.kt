@@ -6,7 +6,7 @@ import java.time.LocalDate
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class PersonDetails(
 
-  val gender: Gender,
+  val gender: Gender?,
 
   val lastName: String,
 

@@ -157,6 +157,12 @@ data class OrderVersion(
   @Column(name = "IS_SENTENCING_ACT", nullable = true)
   var isSentencingAct: Boolean? = null,
 
+  @Transient
+  var deviceWearerAdditionalInfo: String? = null,
+
+  @Transient
+  var monitoringOrderAddtionalInfo: String? = null,
+
   @Schema(hidden = true)
   @ManyToOne
   @JoinColumn(name = "ORDER_ID", updatable = false, insertable = false)

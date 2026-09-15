@@ -36,10 +36,12 @@
   "parent_address_post_code": "",
   "parent_phone_number": null,
   "parent_dob": "",
+  "defendant_id": "a24c860d-7e7b-48a2-b301-4cc8c736424b",
   "pnc_id": null,
   "nomis_id": null,
   "delius_id": null,
   "prison_number": null,
   "interpreter_required": null,
-  "language": null
+  "language": null,
+  "additional_information" : "Notification of electronic monitoring order (requirement) - \nElectronic monitoring contractor organisation name:Electronic Monitoring Contractor\nElectronic monitoring contractor email address 1:a@b.co.uk\nFirst notification of electronic monitoring:Yes\nAre there any additional requirements as well?:No\nDefendant's mobile number:08304284699\nWas an interpreter used?:No\nDoes the offender have any special needs?:No\nDefendant Address - \n30 Church Street, Church Street, Edinburgh, City of Edinburgh, YO43 3DE\n"
 }

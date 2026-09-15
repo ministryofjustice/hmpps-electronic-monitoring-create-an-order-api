@@ -36,10 +36,12 @@
   "parent_address_post_code": "",
   "parent_phone_number": null,
   "parent_dob": "",
+  "defendant_id": "9e98be68-b684-4450-9753-316b4ca59153",
   "pnc_id": null,
   "nomis_id": null,
   "delius_id": null,
   "prison_number": null,
   "interpreter_required": null,
-  "language": null
+  "language": null,
+  "additional_information" : "Notification of electronic monitoring order (bail) - \nElectronic monitoring contractor organisation name:Electronic Monitoring Contractor\nElectronic monitoring contractor email address 1:a@b.co.uk\nContinuation of electronic monitoring:Yes\nDefendant's mobile number:05093218479\nWas an interpreter used?:No\nDoes the offender have any special needs?:No\nThis curfew shall apply upon release from custody:Yes\nDefendant Address - \n10 Downing Street, Downing Street, Westminster, Greater London, London, NW1 5BR\n"
 }

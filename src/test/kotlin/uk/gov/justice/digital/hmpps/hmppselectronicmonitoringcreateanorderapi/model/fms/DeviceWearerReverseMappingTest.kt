@@ -35,6 +35,7 @@ class DeviceWearerReverseMappingTest {
       interpreterRequired = "false",
       adultChild = "adult",
       pncId = "pnc",
+      defendantId = "defendant-id",
       nomisId = "nomis",
       deliusId = "delius",
       prisonNumber = "prisonNumber",
@@ -113,6 +114,7 @@ class DeviceWearerReverseMappingTest {
     val deviceWearer = deviceWearerDto.toDeviceWearer(versionId)
 
     assertThat(deviceWearer.pncId).isEqualTo(deviceWearerDto.pncId)
+    assertThat(deviceWearer.defendantId).isEqualTo(deviceWearerDto.defendantId)
     assertThat(deviceWearer.nomisId).isEqualTo(deviceWearerDto.nomisId)
     assertThat(deviceWearer.deliusId).isEqualTo(deviceWearerDto.deliusId)
     assertThat(deviceWearer.prisonNumber).isEqualTo(deviceWearerDto.prisonNumber)
