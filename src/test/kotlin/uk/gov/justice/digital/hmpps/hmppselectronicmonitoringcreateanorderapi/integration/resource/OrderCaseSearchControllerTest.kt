@@ -39,7 +39,7 @@ class OrderCaseSearchControllerTest : IntegrationTestBase() {
 
       webTestClient.get()
         .uri("/api/orders/search/by-case-id/CASE123")
-        .headers(setAuthorisation(roles = listOf("ROLE_EM_CEMO__EXTERNAL_SEARCH")))
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CEMO__GET_ORDER__RO")))
         .exchange()
         .expectStatus()
         .isOk
@@ -55,7 +55,7 @@ class OrderCaseSearchControllerTest : IntegrationTestBase() {
     fun `returns not found when no order matches the case id`() {
       webTestClient.get()
         .uri("/api/orders/search/by-case-id/UNKNOWN_CASE_ID")
-        .headers(setAuthorisation(roles = listOf("ROLE_EM_CEMO__EXTERNAL_SEARCH")))
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CEMO__GET_ORDER__RO")))
         .exchange()
         .expectStatus()
         .isNotFound()
