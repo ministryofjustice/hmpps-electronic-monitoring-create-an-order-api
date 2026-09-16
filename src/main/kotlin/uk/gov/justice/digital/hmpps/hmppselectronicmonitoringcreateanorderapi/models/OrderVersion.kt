@@ -177,13 +177,23 @@ data class OrderVersion(
         )
       )
 
+  private val isPrisonOrYouthCustodyServiceOrder: Boolean
+    get() = interestedParties?.notifyingOrganisation == NotifyingOrganisationDDv5.PRISON.name ||
+      interestedParties?.notifyingOrganisation == NotifyingOrganisationDDv5.YOUTH_CUSTODY_SERVICE.name
+
+  private val monitoringStartDateIsInThePast: Boolean
+    get() = monitoringConditions?.startDate?.isBefore(ZonedDateTime.now()) == true
+
+  private val curfewReleaseDateConditionsRequired: Boolean
+    get() = isPrisonOrYouthCustodyServiceOrder && !monitoringStartDateIsInThePast
+
   private val monitoringConditionsAreValid: Boolean
     get() = (
       (
         (
           curfewConditions?.startDate != null &&
             curfewConditions?.endDate != null &&
-            curfewReleaseDateConditions?.releaseDate != null &&
+            (!curfewReleaseDateConditionsRequired || curfewReleaseDateConditions?.releaseDate != null) &&
             curfewTimeTable.isNotEmpty()
           ) ||
           enforcementZoneConditions.isNotEmpty() ||
