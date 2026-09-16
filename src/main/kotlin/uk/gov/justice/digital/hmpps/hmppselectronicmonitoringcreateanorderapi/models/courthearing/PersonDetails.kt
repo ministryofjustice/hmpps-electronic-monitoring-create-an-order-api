@@ -21,6 +21,8 @@ data class PersonDetails(
   val contact: Contact?,
 
   val ethnicity: Ethnicity?,
+
+  val nationalInsuranceNumber: String?,
 )
 enum class Gender {
   MALE,

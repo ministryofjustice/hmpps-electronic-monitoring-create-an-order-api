@@ -154,6 +154,7 @@ class HearingEventHandler(
     val deviceWearer = DeviceWearer(
       versionId = order.getCurrentVersion().id,
       defendantId = defendant.id,
+      nationalInsuranceNumber = defendant.personDefendant?.personDetails?.nationalInsuranceNumber
     )
 
     if (person?.dateOfBirth != null) {

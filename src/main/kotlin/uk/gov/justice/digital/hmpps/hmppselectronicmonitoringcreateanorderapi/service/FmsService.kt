@@ -95,18 +95,15 @@ class FmsService(
   }
 
   private fun getSubmissionStrategy(order: Order, orderSource: FmsOrderSource): FmsSubmissionStrategy {
-    if (orderSource === FmsOrderSource.COMMON_PLATFORM && cpFmsIntegrationEnabled) {
-      return orderSubmissionStrategy
-    }
-
-    if (orderSource === FmsOrderSource.CEMO) {
+    if (orderSource === FmsOrderSource.CEMO ||
+      (orderSource === FmsOrderSource.COMMON_PLATFORM && cpFmsIntegrationEnabled)
+    ) {
       if (RequestType.VARIATION_TYPES.contains(order.type)) {
         return variationSubmissionStrategy
       }
 
       return orderSubmissionStrategy
     }
-
     return FmsDummySubmissionStrategy(this.objectMapper, featureFlags)
   }
 

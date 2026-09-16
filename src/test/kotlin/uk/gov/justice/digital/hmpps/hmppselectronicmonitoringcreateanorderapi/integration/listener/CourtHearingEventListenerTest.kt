@@ -217,6 +217,15 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
       HttpStatus.OK,
       FmsResponse(result = listOf(FmsResult(message = "", id = "MockMonitoringOrderId"))),
     )
+
+    sercoApi.stubUpdateCommonPlatformDeviceWearer(
+      HttpStatus.OK,
+      FmsResponse(result = listOf(FmsResult(message = "", id = "MockDeviceWearerId"))),
+    )
+    sercoApi.stubUpdateCommonPlatformMonitoringOrder(
+      HttpStatus.OK,
+      FmsResponse(result = listOf(FmsResult(message = "", id = "MockMonitoringOrderId"))),
+    )
     courtHearingEventListener.onDomainEvent(rawMessage)
     assertThat(getNumberOfMessagesCurrentlyOnDeadLetterQueue()).isEqualTo(0)
     if (numberOfDefendant == 1) {
