@@ -7,8 +7,12 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.web.reactive.server.expectBody
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderCaseSearchResultDto
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsDeviceWearerSubmissionResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsSubmissionResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsSubmissionStrategyKind
@@ -20,6 +24,17 @@ class OrderCaseSearchControllerTest : IntegrationTestBase() {
   lateinit var fmsSubmissionResultRepository: FmsSubmissionResultRepository
 
   private fun givenAnOrderSubmittedWithCaseId(caseId: String) = createStoredOrder().also { order ->
+    order.versions.add(
+      OrderVersion(
+        orderId = order.id,
+        versionId = 1,
+        username = testUser,
+        status = OrderStatus.SUBMITTED,
+        type = RequestType.VARIATION,
+        dataDictionaryVersion = DataDictionaryVersion.DDV4,
+      ),
+    )
+    repo.save(order)
     fmsSubmissionResultRepository.save(
       FmsSubmissionResult(
         orderId = order.id,
@@ -47,7 +62,8 @@ class OrderCaseSearchControllerTest : IntegrationTestBase() {
         .consumeWith {
           val result = it.responseBody!!
           assertThat(result.id).isEqualTo(order.id)
-          assertThat(result.versions).hasSize(order.versions.size)
+          assertThat(result.versions.map { version -> version.versionId })
+            .containsExactlyInAnyOrder(0, 1)
         }
     }
 

@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.c
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.Profile
 import org.springframework.core.convert.converter.Converter
 import org.springframework.security.authentication.AbstractAuthenticationToken
 import org.springframework.security.config.annotation.authentication.configuration.EnableGlobalAuthentication
@@ -24,6 +25,7 @@ import tools.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.UserRole
 
 @Configuration
+@Profile("!local")
 @EnableWebSecurity
 @EnableGlobalAuthentication
 @EnableMethodSecurity(prePostEnabled = true, proxyTargetClass = true)
