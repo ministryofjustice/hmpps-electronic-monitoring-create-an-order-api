@@ -175,7 +175,7 @@ class FmsVariationSubmissionStrategy(
 
     val monitoringOrder = monitoringOrderResult.data!!
 
-    if(orderSource == FmsOrderSource.CEMO){
+    if (orderSource == FmsOrderSource.CEMO) {
       val orderChanges = calculateOrderChanges(monitoringOrder, submitDeviceWearerResult, lastSuccessfulSubmitResult)
       monitoringOrder.orderVariationDetails = orderChanges.variationDetails
       if (order.type == RequestType.VARIATION) {
@@ -183,8 +183,7 @@ class FmsVariationSubmissionStrategy(
       } else {
         monitoringOrder.orderVariationType = VariationType.OTHER.value
       }
-    }
-    else{
+    } else {
       monitoringOrder.orderVariationDetails = order.variationDetails?.variationDetails ?: ""
     }
 
