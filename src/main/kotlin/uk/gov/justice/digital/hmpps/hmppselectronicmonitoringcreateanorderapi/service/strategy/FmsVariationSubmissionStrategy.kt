@@ -292,9 +292,7 @@ class FmsVariationSubmissionStrategy(
     }
     .minByOrNull { it.versionId }
     ?.let { repo.getReferenceById(it.fmsResultId!!) }
-    ?.deviceWearerResult
-    ?.deviceWearerId
-    ?.takeIf { it.isNotBlank() }
+    ?.caseId
 
   override fun submitOrder(order: Order, orderSource: FmsOrderSource): FmsSubmissionResult {
     val createDeviceWearerResult = this.updateDeviceWearer(order, orderSource)
