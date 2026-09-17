@@ -105,6 +105,7 @@ class TestUtilities {
         deliusId = "deliusId",
         nomisId = "nomisId",
         prisonNumber = "prisonNumber",
+        defendantId = "defendantId",
         homeOfficeReferenceNumber = "homeOfficeReferenceNumber",
         complianceAndEnforcementPersonReference = "complianceAndEnforcementPersonReference",
         courtCaseReferenceNumber = "courtCaseReferenceNumber",
