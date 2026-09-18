@@ -6,6 +6,8 @@ import java.time.OffsetDateTime
 import java.time.ZonedDateTime
 import java.util.UUID
 
+data class OrderInformationMonitoringConditionsDto(val startDate: ZonedDateTime? = null)
+
 data class OrderInformationDto(
   val id: UUID,
   val versionId: UUID,
@@ -14,7 +16,7 @@ data class OrderInformationDto(
   val firstName: String?,
   val lastName: String?,
   val notifyingOrganisation: String?,
-  val startDate: ZonedDateTime? = null,
+  val monitoringConditions: OrderInformationMonitoringConditionsDto? = null,
   val lastUpdatedBy: String? = null,
   val lastUpdatedDateTime: OffsetDateTime? = null,
 )

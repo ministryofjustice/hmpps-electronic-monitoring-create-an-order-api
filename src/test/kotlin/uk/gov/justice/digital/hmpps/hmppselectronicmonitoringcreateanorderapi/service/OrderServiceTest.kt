@@ -624,7 +624,7 @@ class OrderServiceTest {
 
       val results = service.listOrders(authentication)
 
-      assertThat(results.first().startDate).isEqualTo(mockOrder.getMonitoringStartDate())
+      assertThat(results.first().monitoringConditions?.startDate).isEqualTo(mockOrder.getMonitoringStartDate())
       assertThat(results.first().type).isEqualTo(mockOrder.type)
     }
 

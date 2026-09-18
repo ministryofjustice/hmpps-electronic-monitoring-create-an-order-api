@@ -965,7 +965,7 @@ class OrderControllerTest : IntegrationTestBase() {
         .expectBodyList<OrderInformationDto>()
         .hasSize(1).returnResult().responseBody
 
-      assertThat(result!!.first().startDate).isEqualTo(mockStartDate)
+      assertThat(result!!.first().monitoringConditions?.startDate).isEqualTo(mockStartDate)
     }
 
     @Test

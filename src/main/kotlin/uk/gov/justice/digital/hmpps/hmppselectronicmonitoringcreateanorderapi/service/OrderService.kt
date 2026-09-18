@@ -19,6 +19,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.TagFilter
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.CreateOrderDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderInformationDto
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderInformationMonitoringConditionsDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderSearchResultDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.VersionInformationDTO
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
@@ -403,7 +404,7 @@ class OrderService(val fmsService: FmsService, private val featureFlags: Feature
     firstName = this.getFirstName(),
     lastName = this.getLastName(),
     notifyingOrganisation = this.getNotifyingOrganisation(),
-    startDate = this.getStartDate(),
+    monitoringConditions = this.getStartDate()?.let { OrderInformationMonitoringConditionsDto(startDate = it) },
     lastUpdatedBy = this.getLastUpdatedBy(),
     lastUpdatedDateTime = this.getLastUpdatedDateTime(),
   )
