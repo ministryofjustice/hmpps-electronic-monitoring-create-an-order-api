@@ -33,10 +33,11 @@ interface OrderRepository :
 
   @Query(
     """
-    SELECT ov.orderId as id, ov.id AS versionId, ov.status AS status, ov.type AS type, dw.firstName AS firstName, dw.lastName AS lastName, ip.notifyingOrganisation AS notifyingOrganisation, ov.lastUpdatedBy AS lastUpdatedBy, ov.lastUpdatedDateTime AS lastUpdatedDateTime
+    SELECT ov.orderId as id, ov.id AS versionId, ov.status AS status, ov.type AS type, dw.firstName AS firstName, dw.lastName AS lastName, ip.notifyingOrganisation AS notifyingOrganisation, mc.startDate AS startDate, ov.lastUpdatedBy AS lastUpdatedBy, ov.lastUpdatedDateTime AS lastUpdatedDateTime
     FROM OrderVersion ov 
     LEFT JOIN ov.deviceWearer dw 
     LEFT JOIN ov.interestedParties ip
+    LEFT JOIN ov.monitoringConditions mc
     WHERE ov.versionId = (SELECT MAX(ov2.versionId) FROM OrderVersion ov2 WHERE ov2.orderId = ov.orderId)
     AND ov.username = :username
     AND ov.status = 'ERROR'

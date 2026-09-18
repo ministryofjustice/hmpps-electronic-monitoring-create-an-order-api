@@ -403,6 +403,7 @@ class OrderService(val fmsService: FmsService, private val featureFlags: Feature
     firstName = this.getFirstName(),
     lastName = this.getLastName(),
     notifyingOrganisation = this.getNotifyingOrganisation(),
+    startDate = this.getStartDate(),
     lastUpdatedBy = this.getLastUpdatedBy(),
     lastUpdatedDateTime = this.getLastUpdatedDateTime(),
   )

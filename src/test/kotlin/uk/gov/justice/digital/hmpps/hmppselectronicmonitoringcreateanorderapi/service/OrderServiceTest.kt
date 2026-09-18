@@ -588,6 +588,7 @@ class OrderServiceTest {
       override fun getFirstName() = mockOrder.deviceWearer?.firstName
       override fun getLastName() = mockOrder.deviceWearer?.lastName
       override fun getNotifyingOrganisation() = mockOrder.interestedParties?.notifyingOrganisation
+      override fun getStartDate() = mockOrder.monitoringConditions?.startDate
       override fun getLastUpdatedBy() = mockOrder.lastUpdatedBy
       override fun getLastUpdatedDateTime() = mockOrder.lastUpdatedDateTime
       override fun getIsSentencingAct() = mockOrder.isSentencingAct
