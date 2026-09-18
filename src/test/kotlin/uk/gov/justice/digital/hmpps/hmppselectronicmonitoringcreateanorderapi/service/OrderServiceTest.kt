@@ -617,6 +617,18 @@ class OrderServiceTest {
     }
 
     @Test
+    fun `MY_ORDERS returns expected fields`() {
+      val mockOrder = TestUtilities.createReadyToSubmitOrder(startDate = mockStartDate, endDate = mockEndDate)
+      val mockInfo = mockOrderListInformation(mockOrder)
+      whenever(repo.findMyOrders("mockUser")).thenReturn(listOf(mockInfo))
+
+      val results = service.listOrders(authentication)
+
+      assertThat(results.first().startDate).isEqualTo(mockOrder.getMonitoringStartDate())
+      assertThat(results.first().type).isEqualTo(mockOrder.type)
+    }
+
+    @Test
     fun `PRISON_ORDERS throws AccessDeniedException for non-prison users`() {
       whenever(userCohortService.getUserCohort(authentication)).thenReturn(UserCohort(Cohort.PROBATION))
 

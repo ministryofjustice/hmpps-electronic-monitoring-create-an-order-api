@@ -949,6 +949,26 @@ class OrderControllerTest : IntegrationTestBase() {
   @DisplayName("GET /api/orders")
   inner class ListOrders {
     @Test
+    fun `Should return the monitoring start date`() {
+      val order = TestUtilities.createReadyToSubmitOrder(
+        startDate = mockStartDate,
+        endDate = mockEndDate,
+      )
+      repo.save(order)
+
+      val result = webTestClient.get()
+        .uri("/api/orders")
+        .headers(setAuthorisation("AUTH_ADM"))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBodyList<OrderInformationDto>()
+        .hasSize(1).returnResult().responseBody
+
+      assertThat(result!!.first().startDate).isEqualTo(mockStartDate)
+    }
+
+    @Test
     fun `Should only return the most recent order version`() {
       val order = TestUtilities.createReadyToSubmitOrder(
         startDate = mockStartDate,
