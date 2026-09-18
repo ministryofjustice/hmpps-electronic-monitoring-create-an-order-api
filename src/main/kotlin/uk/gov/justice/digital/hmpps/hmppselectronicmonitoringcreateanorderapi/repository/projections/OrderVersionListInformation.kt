@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.r
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import java.time.OffsetDateTime
+import java.time.ZonedDateTime
 import java.util.UUID
 
 interface OrderVersionListInformation {
@@ -13,6 +14,7 @@ interface OrderVersionListInformation {
   fun getFirstName(): String?
   fun getLastName(): String?
   fun getNotifyingOrganisation(): String?
+  fun getStartDate(): ZonedDateTime?
   fun getLastUpdatedBy(): String?
   fun getLastUpdatedDateTime(): OffsetDateTime?
   fun getIsSentencingAct(): Boolean?
