@@ -9,7 +9,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import tools.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.utilities.SqsTestQueueFactory
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.listener.ReturnsEventListener
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.listener.ReturnsEventProcessor
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
@@ -17,13 +17,14 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.up3.Reason
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.up3.ReturnMessage
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.up3.ReturnStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsDeviceWearerSubmissionResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsSubmissionResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsSubmissionStrategyKind
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.FmsSubmissionResultRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 
-class ReturnsEventListenerTest : IntegrationTestBase() {
+class ReturnsEventProcessorTest : IntegrationTestBase() {
 
   @MockitoSpyBean
   lateinit var orderRepo: OrderRepository
@@ -35,7 +36,7 @@ class ReturnsEventListenerTest : IntegrationTestBase() {
   lateinit var sqsTestQueueFactory: SqsTestQueueFactory
 
   @Autowired
-  lateinit var returnsEventListener: ReturnsEventListener
+  lateinit var returnsEventProcessor: ReturnsEventProcessor
 
   @Autowired
   lateinit var objectMapper: ObjectMapper
@@ -53,7 +54,7 @@ class ReturnsEventListenerTest : IntegrationTestBase() {
     val caseId = "CASE123"
     val submittedOrder = arrangeSubmittedOrder(caseId)
 
-    queue.sendMessage(createReturnEventMessage(caseId, "Form returned"))
+    queue.sendMessage(createReturnEventMessage(caseId, ReturnStatus.REJECTED))
 
     await().until { queue.isEmpty() }
     assertThat(queue.dlqIsEmpty()).isEqualTo(true)
@@ -78,7 +79,7 @@ class ReturnsEventListenerTest : IntegrationTestBase() {
 
   fun createReturnEventMessage(
     caseId: String,
-    status: String = "approved",
+    status: ReturnStatus = ReturnStatus.REJECTED,
     section: String = "",
     details: String = "",
     dateTime: String = "",
