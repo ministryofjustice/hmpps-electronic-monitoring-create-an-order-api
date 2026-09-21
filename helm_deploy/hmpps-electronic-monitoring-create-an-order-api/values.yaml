@@ -22,7 +22,7 @@ generic-service:
         deny all;
         return 401;
       }
-     
+  
 
   # Environment variables to load into the deployment
   env:
@@ -60,6 +60,11 @@ generic-service:
       HMPPS_SQS_QUEUES_COURTHEARINGEVENTQUEUE_QUEUEARN: "sqs_queue_arn"
     sqs-court-case-events-fifo-dlq-secret:
       HMPPS_SQS_QUEUES_COURTHEARINGEVENTQUEUE_DLQNAME: "sqs_queue_name"
+    sqs-returns-events-fifo-secret:
+      HMPPS_SQS_QUEUES_RETURNSEVENTQUEUE_QUEUENAME: "sqs_queue_name"
+      HMPPS_SQS_QUEUES_RETURNSEVENTQUEUE_QUEUEARN: "sqs_queue_arn"
+    sqs-returns-events-fifo-dlq-secret:
+      HMPPS_SQS_QUEUES_RETURNSEVENTQUEUE_DLQNAME: "sqs_queue_name"
     large-court-cases-s3-bucket:
       HMPPS_S3_BUCKETNAME: "bucket_name"
   allowlist:

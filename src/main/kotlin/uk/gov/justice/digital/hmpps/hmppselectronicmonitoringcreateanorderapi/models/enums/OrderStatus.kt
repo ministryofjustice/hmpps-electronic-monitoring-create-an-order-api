@@ -4,4 +4,5 @@ enum class OrderStatus {
   IN_PROGRESS,
   ERROR,
   SUBMITTED,
+  REJECTED,
 }
