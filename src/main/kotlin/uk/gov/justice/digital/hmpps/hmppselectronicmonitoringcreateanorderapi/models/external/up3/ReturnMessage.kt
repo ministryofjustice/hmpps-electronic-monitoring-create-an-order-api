@@ -12,18 +12,6 @@ data class ReturnMessage(
 data class Reason(val section: String, val details: String)
 
 enum class ReturnStatus {
-  @JsonProperty("approved")
-  APPROVED,
-
   @JsonProperty("rejected")
   REJECTED,
-
-  @JsonProperty("pending")
-  PENDING,
-
-  @JsonProperty("installed")
-  INSTALLED,
-
-  @JsonProperty("scheduled")
-  SCHEDULED,
 }

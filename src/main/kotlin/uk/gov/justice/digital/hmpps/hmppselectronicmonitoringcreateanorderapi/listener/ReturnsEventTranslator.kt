@@ -18,7 +18,6 @@ class ReturnsEventTranslator(
 
     when (message.status) {
       ReturnStatus.REJECTED -> returnsEventProcessor.onRejected(message)
-      else -> {}
     }
   }
 }
