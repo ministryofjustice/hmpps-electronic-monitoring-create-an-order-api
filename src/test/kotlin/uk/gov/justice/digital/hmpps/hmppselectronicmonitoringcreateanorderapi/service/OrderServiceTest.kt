@@ -588,6 +588,7 @@ class OrderServiceTest {
       override fun getFirstName() = mockOrder.deviceWearer?.firstName
       override fun getLastName() = mockOrder.deviceWearer?.lastName
       override fun getNotifyingOrganisation() = mockOrder.interestedParties?.notifyingOrganisation
+      override fun getStartDate() = mockOrder.monitoringConditions?.startDate
       override fun getLastUpdatedBy() = mockOrder.lastUpdatedBy
       override fun getLastUpdatedDateTime() = mockOrder.lastUpdatedDateTime
       override fun getIsSentencingAct() = mockOrder.isSentencingAct
@@ -613,6 +614,18 @@ class OrderServiceTest {
       val results = service.listOrders(authentication)
 
       assertThat(results.first().id).isEqualTo(mockOrder.id)
+    }
+
+    @Test
+    fun `MY_ORDERS returns expected fields`() {
+      val mockOrder = TestUtilities.createReadyToSubmitOrder(startDate = mockStartDate, endDate = mockEndDate)
+      val mockInfo = mockOrderListInformation(mockOrder)
+      whenever(repo.findMyOrders("mockUser")).thenReturn(listOf(mockInfo))
+
+      val results = service.listOrders(authentication)
+
+      assertThat(results.first().monitoringConditions?.startDate).isEqualTo(mockOrder.getMonitoringStartDate())
+      assertThat(results.first().type).isEqualTo(mockOrder.type)
     }
 
     @Test
