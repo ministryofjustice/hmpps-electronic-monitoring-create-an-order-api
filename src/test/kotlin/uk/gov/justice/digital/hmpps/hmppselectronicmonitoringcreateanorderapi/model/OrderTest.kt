@@ -19,11 +19,13 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DocumentType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.InstallationLocationType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisationDDv5
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Prison
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ProbationServiceRegion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ResponsibleOrganisation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.VariationType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.StatusUpdateReasonRequest
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.utilities.TestUtilities
 import java.time.ZoneId
 import java.time.ZonedDateTime
@@ -498,6 +500,20 @@ class OrderTest : OrderTestBase() {
     )
 
     assertThat(order.isValid).isTrue()
+  }
+
+  @Test
+  fun `should set status to rejected and add status updates when rejected`() {
+    val order = createValidOrder()
+
+    val datetimeOfStatusChange: ZonedDateTime = ZonedDateTime.now()
+    val reasons: List<StatusUpdateReasonRequest> =
+      mutableListOf(StatusUpdateReasonRequest(section = "Section A", details = "A details"))
+    order.reject(datetimeOfStatusChange, reasons)
+
+    assertThat(order.status).isEqualTo(OrderStatus.REJECTED)
+    assertThat(order.statusUpdates.size).isEqualTo(1)
+    assertThat(order.statusUpdates.first().statusUpdateReasons.size).isEqualTo(1)
   }
 
   private fun createValidOrder(requestType: RequestType = RequestType.REQUEST): Order = createOrder(
