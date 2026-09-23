@@ -14,6 +14,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ProcessingStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.up3.Reason
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.up3.ReturnMessage
@@ -62,6 +63,36 @@ class ReturnsEventProcessorTest : IntegrationTestBase() {
     val order = orderRepo.findById(submittedOrder.id).get()
 
     assertThat(order.status).isEqualTo(OrderStatus.REJECTED)
+  }
+
+  @Test
+  fun `store return type and reasons against the order version`() {
+    val caseId = "CASE789"
+    val submittedOrder = arrangeSubmittedOrder(caseId)
+
+    queue.sendMessage(
+      createReturnEventMessage(
+        caseId = caseId,
+        status = ReturnStatus.REJECTED,
+        section = "Section 5",
+        details = "Missing signature on the licence",
+        dateTime = "2026-09-23T10:15:00Z",
+      ),
+    )
+
+    await().until { queue.isEmpty() }
+    assertThat(queue.dlqIsEmpty()).isEqualTo(true)
+
+    val statusUpdates = repo.findById(submittedOrder.id).get().statusUpdates
+
+    assertThat(statusUpdates).hasSize(1)
+
+    val statusUpdate = statusUpdates.first()
+    assertThat(statusUpdate.status).isEqualTo(ProcessingStatus.REJECTED)
+    assertThat(statusUpdate.datetimeOfStatusChange).isEqualTo("2026-09-23T10:15:00Z")
+    assertThat(statusUpdate.statusUpdateReasons).hasSize(1)
+    assertThat(statusUpdate.statusUpdateReasons.first().section).isEqualTo("Section 5")
+    assertThat(statusUpdate.statusUpdateReasons.first().details).isEqualTo("Missing signature on the licence")
   }
 
   private fun arrangeSubmittedOrder(caseId: String): Order {

@@ -274,6 +274,11 @@ data class Order(
       getCurrentVersion().detailsOfInstallation = detailsOfInstallation
     }
 
+  val statusUpdates: MutableList<StatusUpdate>
+    get() {
+      return getCurrentVersion().statusUpdates
+    }
+
   val versionId: UUID
     get() {
       return getCurrentVersion().id
