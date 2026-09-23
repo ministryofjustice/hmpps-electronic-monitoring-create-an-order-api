@@ -5,21 +5,27 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import tools.jackson.databind.ObjectMapper
 import tools.jackson.module.kotlin.readValue
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ProcessingStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.up3.ReturnMessage
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.up3.ReturnStatus
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.RejectOrderService
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.StatusUpdateReasonRequest
 
 @Component
-class ReturnsEventTranslator(
-  private val returnsEventProcessor: ReturnsEventProcessor,
-  private val objectMapper: ObjectMapper,
-) {
+class ReturnsEventTranslator(private val rejectOrder: RejectOrderService, private val objectMapper: ObjectMapper) {
   @SqsListener("returnseventqueue", factory = "hmppsQueueContainerFactoryProxy")
   fun processEvent(rawMessage: String) {
     try {
       val message: ReturnMessage = objectMapper.readValue(rawMessage)
 
       when (message.status) {
-        ReturnStatus.REJECTED -> returnsEventProcessor.onRejected(message)
+        ReturnStatus.REJECTED ->
+          rejectOrder.execute(
+            message.caseId,
+            ProcessingStatus.REJECTED,
+            message.datetimeOfStatusChange,
+            message.reasons.map { StatusUpdateReasonRequest(section = it.section, details = it.details) },
+          )
       }
     } catch (e: Exception) {
       log.error("Failed to process returns event: ${e.message}")

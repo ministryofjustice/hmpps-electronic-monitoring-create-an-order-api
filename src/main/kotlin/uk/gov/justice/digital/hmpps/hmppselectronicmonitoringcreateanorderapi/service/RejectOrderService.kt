@@ -4,6 +4,7 @@ import jakarta.persistence.EntityNotFoundException
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.StatusUpdate
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.StatusUpdateReason
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ProcessingStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 import java.time.Instant
@@ -13,7 +14,7 @@ import java.time.ZonedDateTime
 data class StatusUpdateReasonRequest(val section: String, val details: String)
 
 @Service
-class AddStatusUpdateService(private val gateway: OrderByCaseIdGateway, private val repo: OrderRepository) {
+class RejectOrderService(private val gateway: OrderByCaseIdGateway, private val repo: OrderRepository) {
   fun execute(caseId: String, status: ProcessingStatus, dateTime: String, reasons: List<StatusUpdateReasonRequest>) {
     val order = gateway.findOrderByCaseId(caseId)
       ?: throw EntityNotFoundException("Order with caseId $caseId does not exist")
@@ -36,6 +37,7 @@ class AddStatusUpdateService(private val gateway: OrderByCaseIdGateway, private 
 
     statusUpdate.statusUpdateReasons.addAll(statusUpdateReasons)
 
+    order.status = OrderStatus.REJECTED
     order.statusUpdates.add(statusUpdate)
 
     repo.save(order)

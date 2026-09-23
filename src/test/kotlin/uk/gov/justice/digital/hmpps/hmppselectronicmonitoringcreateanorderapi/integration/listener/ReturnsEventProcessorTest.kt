@@ -9,7 +9,6 @@ import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import tools.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.utilities.SqsTestQueueFactory
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.listener.ReturnsEventProcessor
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
@@ -35,9 +34,6 @@ class ReturnsEventProcessorTest : IntegrationTestBase() {
 
   @Autowired
   lateinit var sqsTestQueueFactory: SqsTestQueueFactory
-
-  @Autowired
-  lateinit var returnsEventProcessor: ReturnsEventProcessor
 
   @Autowired
   lateinit var objectMapper: ObjectMapper
