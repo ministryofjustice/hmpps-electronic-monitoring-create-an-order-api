@@ -24,7 +24,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.FmsSubmissionResultRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 
-class ReturnsEventProcessorTest : IntegrationTestBase() {
+class ReturnsEventTest : IntegrationTestBase() {
 
   @MockitoSpyBean
   lateinit var orderRepo: OrderRepository
