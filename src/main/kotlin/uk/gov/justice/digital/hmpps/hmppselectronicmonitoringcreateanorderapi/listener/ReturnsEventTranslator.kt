@@ -5,11 +5,13 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import tools.jackson.databind.ObjectMapper
 import tools.jackson.module.kotlin.readValue
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ProcessingStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.up3.ReturnMessage
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.up3.ReturnStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.RejectOrderService
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.StatusUpdateReasonRequest
+import java.time.Instant
+import java.time.ZoneId
+import java.time.ZonedDateTime
 
 @Component
 class ReturnsEventTranslator(private val rejectOrder: RejectOrderService, private val objectMapper: ObjectMapper) {
@@ -17,13 +19,13 @@ class ReturnsEventTranslator(private val rejectOrder: RejectOrderService, privat
   fun processEvent(rawMessage: String) {
     try {
       val message: ReturnMessage = objectMapper.readValue(rawMessage)
+      val dateTime = ZonedDateTime.ofInstant(Instant.parse(message.datetimeOfStatusChange), ZoneId.of("Europe/London"))
 
       when (message.status) {
         ReturnStatus.REJECTED ->
           rejectOrder.execute(
             message.caseId,
-            ProcessingStatus.REJECTED,
-            message.datetimeOfStatusChange,
+            dateTime,
             message.reasons.map { StatusUpdateReasonRequest(section = it.section, details = it.details) },
           )
       }
