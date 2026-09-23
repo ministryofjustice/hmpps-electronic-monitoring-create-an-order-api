@@ -95,6 +95,14 @@ class ReturnsEventProcessorTest : IntegrationTestBase() {
     assertThat(statusUpdate.statusUpdateReasons.first().details).isEqualTo("Missing signature on the licence")
   }
 
+  @Test
+  fun `dead letters a malformed returns event`() {
+    queue.sendMessage("BAD JSON")
+
+    await().until { !queue.dlqIsEmpty() }
+    assertThat(queue.dlqIsEmpty()).isEqualTo(false)
+  }
+
   private fun arrangeSubmittedOrder(caseId: String): Order {
     val submittedOrder = createSubmittedOrder(RequestType.REQUEST, DataDictionaryVersion.DDV7)
     fmsSubmissionResultRepository.save(
@@ -113,7 +121,7 @@ class ReturnsEventProcessorTest : IntegrationTestBase() {
     status: ReturnStatus = ReturnStatus.REJECTED,
     section: String = "",
     details: String = "",
-    dateTime: String = "",
+    dateTime: String = "2026-09-23T10:15:00Z",
   ): String {
     val message = ReturnMessage(
       caseId = caseId,
