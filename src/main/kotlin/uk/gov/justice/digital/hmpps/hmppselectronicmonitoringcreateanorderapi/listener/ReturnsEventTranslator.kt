@@ -5,10 +5,10 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import tools.jackson.databind.ObjectMapper
 import tools.jackson.module.kotlin.readValue
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.RejectionReason
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.up3.ReturnMessage
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.up3.ReturnStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.RejectOrderService
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.StatusUpdateReasonRequest
 import java.time.Instant
 import java.time.ZoneId
 import java.time.ZonedDateTime
@@ -26,7 +26,7 @@ class ReturnsEventTranslator(private val rejectOrder: RejectOrderService, privat
           rejectOrder.execute(
             message.caseId,
             dateTime,
-            message.reasons.map { StatusUpdateReasonRequest(section = it.section, details = it.details) },
+            message.reasons.map { RejectionReason(section = it.section, details = it.details) },
           )
       }
     } catch (e: Exception) {

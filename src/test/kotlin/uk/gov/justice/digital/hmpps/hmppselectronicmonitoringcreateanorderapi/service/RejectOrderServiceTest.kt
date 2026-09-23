@@ -6,8 +6,9 @@ import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.verifyNoInteractions
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.RejectionReason
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ProcessingStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.utilities.TestUtilities
 import java.time.ZonedDateTime
@@ -15,58 +16,27 @@ import java.time.ZonedDateTime
 class RejectOrderServiceTest {
 
   @Test
-  fun `adds a status update with its reasons to the order matching the given case id`() {
+  fun `rejects and saves the order matching the given case id`() {
     val gateway = FakeOrderByCaseIdGateway()
     val repo = mock<OrderRepository>()
     val service = RejectOrderService(gateway, repo)
-    val currentDateTime = ZonedDateTime.now()
 
     val order = TestUtilities.createReadyToSubmitOrder()
     gateway.addOrder("CASE123", order)
 
     service.execute(
       "CASE123",
-      currentDateTime,
-      listOf(
-        StatusUpdateReasonRequest(section = "Section A", details = "A details"),
-        StatusUpdateReasonRequest(section = "Section B", details = "B details"),
-      ),
+      ZonedDateTime.now(),
+      listOf(RejectionReason(section = "Section A", details = "A details")),
     )
 
     assertThat(order.status).isEqualTo(OrderStatus.REJECTED)
-
-    val statusUpdate = order.statusUpdates.single()
-    assertThat(statusUpdate.versionId).isEqualTo(order.versionId)
-    assertThat(statusUpdate.status).isEqualTo(ProcessingStatus.REJECTED)
-    assertThat(statusUpdate.datetimeOfStatusChange)
-      .isEqualTo(currentDateTime)
-
-    assertThat(statusUpdate.statusUpdateReasons).hasSize(2)
-    assertThat(statusUpdate.statusUpdateReasons.map { it.statusUpdateId }).containsOnly(statusUpdate.id)
-    assertThat(statusUpdate.statusUpdateReasons[0].section).isEqualTo("Section A")
-    assertThat(statusUpdate.statusUpdateReasons[0].details).isEqualTo("A details")
-    assertThat(statusUpdate.statusUpdateReasons[1].section).isEqualTo("Section B")
-    assertThat(statusUpdate.statusUpdateReasons[1].details).isEqualTo("B details")
-
+    assertThat(order.statusUpdates).hasSize(1)
     verify(repo).save(order)
   }
 
   @Test
-  fun `adds a status update with no reasons when none are given`() {
-    val gateway = FakeOrderByCaseIdGateway()
-    val repo = mock<OrderRepository>()
-    val service = RejectOrderService(gateway, repo)
-
-    val order = TestUtilities.createReadyToSubmitOrder()
-    gateway.addOrder("CASE123", order)
-
-    service.execute("CASE123", ZonedDateTime.now(), emptyList())
-
-    assertThat(order.statusUpdates.single().statusUpdateReasons).isEmpty()
-  }
-
-  @Test
-  fun `throws when no order matches the given case id`() {
+  fun `throws and saves nothing when no order matches the given case id`() {
     val gateway = FakeOrderByCaseIdGateway()
     val repo = mock<OrderRepository>()
     val service = RejectOrderService(gateway, repo)
@@ -74,5 +44,7 @@ class RejectOrderServiceTest {
     assertThatThrownBy {
       service.execute("UNKNOWN_CASE_ID", ZonedDateTime.now(), emptyList())
     }.isInstanceOf(EntityNotFoundException::class.java)
+
+    verifyNoInteractions(repo)
   }
 }

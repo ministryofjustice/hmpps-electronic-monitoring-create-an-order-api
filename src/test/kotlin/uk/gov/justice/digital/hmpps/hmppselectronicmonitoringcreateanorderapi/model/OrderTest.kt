@@ -14,6 +14,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.MandatoryAttendanceConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderParameters
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.RejectionReason
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.TrailMonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.VariationDetails
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DocumentType
@@ -22,10 +23,10 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Prison
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ProbationServiceRegion
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ProcessingStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ResponsibleOrganisation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.VariationType
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.StatusUpdateReasonRequest
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.utilities.TestUtilities
 import java.time.ZoneId
 import java.time.ZonedDateTime
@@ -505,15 +506,37 @@ class OrderTest : OrderTestBase() {
   @Test
   fun `should set status to rejected and add status updates when rejected`() {
     val order = createValidOrder()
+    val datetimeOfStatusChange = ZonedDateTime.now()
 
-    val datetimeOfStatusChange: ZonedDateTime = ZonedDateTime.now()
-    val reasons: List<StatusUpdateReasonRequest> =
-      mutableListOf(StatusUpdateReasonRequest(section = "Section A", details = "A details"))
-    order.reject(datetimeOfStatusChange, reasons)
+    order.reject(
+      datetimeOfStatusChange,
+      listOf(
+        RejectionReason(section = "Section A", details = "A details"),
+        RejectionReason(section = "Section B", details = "B details"),
+      ),
+    )
 
     assertThat(order.status).isEqualTo(OrderStatus.REJECTED)
-    assertThat(order.statusUpdates.size).isEqualTo(1)
-    assertThat(order.statusUpdates.first().statusUpdateReasons.size).isEqualTo(1)
+
+    val statusUpdate = order.statusUpdates.single()
+    assertThat(statusUpdate.versionId).isEqualTo(order.versionId)
+    assertThat(statusUpdate.status).isEqualTo(ProcessingStatus.REJECTED)
+    assertThat(statusUpdate.datetimeOfStatusChange).isEqualTo(datetimeOfStatusChange)
+
+    assertThat(statusUpdate.statusUpdateReasons).hasSize(2)
+    assertThat(statusUpdate.statusUpdateReasons.map { it.statusUpdateId }).containsOnly(statusUpdate.id)
+    assertThat(statusUpdate.statusUpdateReasons.map { it.section }).containsExactly("Section A", "Section B")
+    assertThat(statusUpdate.statusUpdateReasons.map { it.details }).containsExactly("A details", "B details")
+  }
+
+  @Test
+  fun `should add a status update with no reasons when rejected without reasons`() {
+    val order = createValidOrder()
+
+    order.reject(ZonedDateTime.now(), emptyList())
+
+    assertThat(order.status).isEqualTo(OrderStatus.REJECTED)
+    assertThat(order.statusUpdates.single().statusUpdateReasons).isEmpty()
   }
 
   private fun createValidOrder(requestType: RequestType = RequestType.REQUEST): Order = createOrder(

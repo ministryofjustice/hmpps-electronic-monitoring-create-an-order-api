@@ -11,7 +11,6 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ProcessingStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.StatusUpdateReasonRequest
 import java.time.OffsetDateTime
 import java.time.ZonedDateTime
 import java.util.*
@@ -334,7 +333,7 @@ data class Order(
     getCurrentVersion().recalculateMonitoringStartEndDate()
   }
 
-  fun reject(datetimeOfStatusChange: ZonedDateTime, reasons: List<StatusUpdateReasonRequest>) {
+  fun reject(datetimeOfStatusChange: ZonedDateTime, reasons: List<RejectionReason>) {
     this.status = OrderStatus.REJECTED
     val update = StatusUpdate(
       versionId = versionId,
