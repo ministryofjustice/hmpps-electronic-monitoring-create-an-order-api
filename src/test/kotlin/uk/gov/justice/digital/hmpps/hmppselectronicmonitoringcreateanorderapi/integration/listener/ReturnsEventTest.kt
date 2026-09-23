@@ -126,6 +126,16 @@ class ReturnsEventTest : IntegrationTestBase() {
       datetimeOfStatusChange = dateTime,
     )
 
-    return objectMapper.writeValueAsString(message)
+    val messageJson = objectMapper.writeValueAsString(message)
+
+    return """
+      {
+        "Type": "Notification",
+        "MessageId": "eed5fdf9-ea08-5bf2-9d96-a27aed48bb71",
+        "TopicArn": "arn:aws:sns:eu-west-2:000000000000:returns_events_topic",
+        "Message": ${objectMapper.writeValueAsString(messageJson)},
+        "Timestamp": "2026-09-23T10:15:00.000Z"
+      }
+    """
   }
 }
