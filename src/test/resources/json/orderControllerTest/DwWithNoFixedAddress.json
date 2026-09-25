@@ -58,6 +58,7 @@
   "parent_phone_number": "00447401111111",
   "parent_dob": "",
   "pnc_id": "pncId",
+  "defendant_id": "defendantId",
   "nomis_id": "nomisId",
   "delius_id": "deliusId",
   "prison_number": "prisonNumber",
