@@ -1,8 +1,8 @@
 {
   "title": "",
-  "first_name": "Person",
+  "first_name": "CP006",
   "middle_name": "",
-  "last_name": "Mock",
+  "last_name": "CCSILA",
   "alias": null,
   "date_of_birth": "1956-01-22",
   "adult_child": "adult",
@@ -36,10 +36,12 @@
   "parent_address_post_code": "",
   "parent_phone_number": null,
   "parent_dob": "",
+  "defendant_id": "e3328ccc-da60-4c59-b4b4-b6a7d5354001",
   "pnc_id": null,
   "nomis_id": null,
   "delius_id": null,
   "prison_number": null,
   "interpreter_required": null,
-  "language": null
+  "language": null,
+  "additional_information" : "Notification of electronic monitoring order (bail) - \nElectronic monitoring contractor organisation name:Electronic Monitoring Contractor\nElectronic monitoring contractor email address 1:a@b.co.uk\nContinuation of electronic monitoring:Yes\nDefendant's mobile number:06152473859\nWas an interpreter used?:No\nLanguage:English\nDoes the offender have any special needs?:No\nSpecial needs:Special needs\nThis curfew shall apply upon release from custody:No\nDefendant Address - \n70 Victoria Street, Victoria Street, Oxford, Oxfordshire, NW1 5BR\n"
 }

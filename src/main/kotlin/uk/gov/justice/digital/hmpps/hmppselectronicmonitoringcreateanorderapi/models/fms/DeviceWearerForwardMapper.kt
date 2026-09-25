@@ -17,9 +17,14 @@ fun DeviceWearer.Companion.fromOrder(
   featureFlags: FeatureFlags,
   orderSource: FmsOrderSource,
 ): DeviceWearer {
-  var adultChild = "adult"
-  if (!order.deviceWearer?.adultAtTimeOfInstallation!!) {
-    adultChild = "child"
+  val adultAtTimeOfInstallation = order.deviceWearer?.adultAtTimeOfInstallation
+  var adultChild = ""
+  if (adultAtTimeOfInstallation != null) {
+    adultChild = if (!adultAtTimeOfInstallation) {
+      "child"
+    } else {
+      "adult"
+    }
   }
 
   var disabilities = emptyList<FmsDisability>()
@@ -50,9 +55,11 @@ fun DeviceWearer.Companion.fromOrder(
     language = order.deviceWearer?.language,
     nomisId = order.deviceWearer?.nomisId,
     pncId = order.deviceWearer?.pncId,
+    defendantId = order.deviceWearer?.defendantId ?: "",
     deliusId = order.deviceWearer?.deliusId,
     prisonNumber = order.deviceWearer?.prisonNumber,
     homeOfficeReferenceNumber = "",
+    additionalInformation = order.deviceWearerAdditionalInfo,
     nationalInsuranceNumber = order.deviceWearer?.nationalInsuranceNumber ?: "",
     religion = order.deviceWearer?.religion ?: "",
     ethnicity = order.deviceWearer?.ethnicity ?: "",
