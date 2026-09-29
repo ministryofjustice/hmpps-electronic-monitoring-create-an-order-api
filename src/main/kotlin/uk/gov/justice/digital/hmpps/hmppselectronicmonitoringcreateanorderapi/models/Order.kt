@@ -217,9 +217,12 @@ data class Order(
       getCurrentVersion().username = username
     }
 
-  val submittedBy: String?
+  var submittedBy: String?
     get() {
       return getCurrentVersion().submittedBy
+    }
+    set(submittedBy) {
+      getCurrentVersion().submittedBy = submittedBy
     }
 
   var variationDetails: VariationDetails?
@@ -340,6 +343,7 @@ data class Order(
     set(ownerCohort) {
       getCurrentVersion().monitoringOrderAddtionalInfo = ownerCohort
     }
+
   fun getMonitoringStartDate(): ZonedDateTime? = getCurrentVersion().getMonitoringStartDate()
 
   fun getMonitoringEndDate(): ZonedDateTime? = getCurrentVersion().getMonitoringEndDate()

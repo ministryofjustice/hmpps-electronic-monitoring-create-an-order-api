@@ -10,6 +10,8 @@ import org.mockito.kotlin.verifyNoInteractions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.EmailClient
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.RejectionReason
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.emails.RejectedNOEmail
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.emails.RejectedUserEmail
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.utilities.TestUtilities
 import java.time.ZonedDateTime
@@ -35,8 +37,41 @@ class RejectOrderServiceTest {
     assertThat(order.status).isEqualTo(OrderStatus.REJECTED)
     assertThat(order.statusUpdates).hasSize(1)
     verify(repo).save(order)
-    verify(emailClient).sendUserEmail()
-    verify(emailClient).sendNotificationOfficerEmail()
+  }
+
+  @Test
+  fun `send emails`() {
+    val gateway = FakeOrderByCaseIdGateway()
+    val repo = mock<OrderRepository>()
+    val emailClient = mock<EmailClient>()
+    val service = RejectOrderService(gateway, repo, emailClient)
+
+    val order = TestUtilities.createReadyToSubmitOrder(submittedBy = "Bob Jones")
+    gateway.addOrder("CASE123", order)
+
+    service.execute(
+      "CASE123",
+      ZonedDateTime.now(),
+      emptyList(),
+    )
+
+    verify(emailClient).sendUserEmail(
+      email = RejectedUserEmail(
+        emailAddress = "blah",
+        dwFirstName = order.deviceWearer?.firstName,
+        dwLastName = order.deviceWearer?.lastName,
+        userFirstName = "Bob",
+        userLastName = "Jones",
+      ),
+    )
+    verify(emailClient).sendNotificationOfficerEmail(
+      email = RejectedNOEmail(
+        emailAddress = order.interestedParties?.notifyingOrganisationEmail,
+        dwFirstName = order.deviceWearer?.firstName,
+        dwLastName = order.deviceWearer?.lastName,
+        notifyingOrgName = order.interestedParties?.notifyingOrganisationName,
+      ),
+    )
   }
 
   @Test

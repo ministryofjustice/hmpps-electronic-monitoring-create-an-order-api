@@ -5,6 +5,8 @@ import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.EmailClient
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.RejectionReason
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.emails.RejectedNOEmail
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.emails.RejectedUserEmail
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 import java.time.ZonedDateTime
 
@@ -23,7 +25,23 @@ class RejectOrderService(
 
     repo.save(order)
 
-    emailClient.sendUserEmail()
-    emailClient.sendNotificationOfficerEmail()
+    emailClient.sendUserEmail(
+      email = RejectedUserEmail(
+        emailAddress = "blah",
+        dwFirstName = order.deviceWearer?.firstName,
+        dwLastName = order.deviceWearer?.lastName,
+        userFirstName = order.submittedBy!!.split(" ").first(),
+        userLastName = order.submittedBy!!.split(" ").last(),
+      ),
+    )
+
+    emailClient.sendNotificationOfficerEmail(
+      email = RejectedNOEmail(
+        emailAddress = order.interestedParties?.notifyingOrganisationEmail,
+        dwFirstName = order.deviceWearer?.firstName,
+        dwLastName = order.deviceWearer?.lastName,
+        notifyingOrgName = order.interestedParties?.notifyingOrganisationName,
+      ),
+    )
   }
 }

@@ -64,8 +64,8 @@ class ReturnsEventTest : IntegrationTestBase() {
 
     assertThat(order.status).isEqualTo(OrderStatus.REJECTED)
 
-    assertThat(testEmailClient.hasRecievedUserEmail()).isEqualTo(true)
-    assertThat(testEmailClient.hasRecievedNOEmail()).isEqualTo(true)
+    assertThat(testEmailClient.hasSentUserEmail()).isEqualTo(true)
+    assertThat(testEmailClient.hasSentNOEmail()).isEqualTo(true)
   }
 
   @Test

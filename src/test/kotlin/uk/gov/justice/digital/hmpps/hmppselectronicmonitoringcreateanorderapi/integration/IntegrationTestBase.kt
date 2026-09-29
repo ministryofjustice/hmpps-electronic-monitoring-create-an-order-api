@@ -184,6 +184,7 @@ abstract class IntegrationTestBase {
     status: OrderStatus = OrderStatus.IN_PROGRESS,
     type: RequestType = RequestType.REQUEST,
     dataDictionaryVersion: DataDictionaryVersion = DataDictionaryVersion.DDV4,
+    submittedBy: String? = null,
   ): Order {
     val order = Order(
       id = orderId,
@@ -194,6 +195,7 @@ abstract class IntegrationTestBase {
           type = type,
           username = username,
           dataDictionaryVersion = dataDictionaryVersion,
+          submittedBy = submittedBy,
         ),
       ),
     )
@@ -203,7 +205,11 @@ abstract class IntegrationTestBase {
   fun createSubmittedOrder(
     type: RequestType = RequestType.REQUEST,
     dataDictionaryVersion: DataDictionaryVersion = DataDictionaryVersion.DDV4,
-  ): Order = createStoredOrder(status = OrderStatus.SUBMITTED, dataDictionaryVersion = dataDictionaryVersion)
+  ): Order = createStoredOrder(
+    status = OrderStatus.SUBMITTED,
+    dataDictionaryVersion = dataDictionaryVersion,
+    submittedBy = "Test User",
+  )
 
   fun createSubmittedVariation() = createSubmittedOrder(RequestType.VARIATION)
 
@@ -227,6 +233,7 @@ abstract class IntegrationTestBase {
     order.monitoringConditions!!.endDate = endDate
     return repo.save(order)
   }
+
   fun storedMonitoringOrderStartDate(orderId: UUID): ZonedDateTime? =
     repo.findById(orderId).orElseThrow().monitoringConditions!!.startDate
 }
