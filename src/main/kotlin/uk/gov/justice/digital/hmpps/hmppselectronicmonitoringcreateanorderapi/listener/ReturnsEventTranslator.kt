@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import tools.jackson.databind.ObjectMapper
 import tools.jackson.module.kotlin.readValue
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.HmppsSqsEventMessage
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.RejectionReason
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.up3.ReturnMessage
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.up3.ReturnStatus
@@ -22,7 +23,8 @@ class ReturnsEventTranslator(private val rejectOrder: RejectOrderService, privat
   @SqsListener("returnseventqueue", factory = "hmppsQueueContainerFactoryProxy")
   fun processEvent(rawMessage: String) {
     try {
-      val envelope: ReturnsSnsEnvelope = objectMapper.readValue(rawMessage)
+      val eventMessage: HmppsSqsEventMessage = objectMapper.readValue(rawMessage)
+      val envelope: ReturnsSnsEnvelope = objectMapper.readValue(eventMessage.message)
       val message: ReturnMessage = envelope.data
       val dateTime = ZonedDateTime.ofInstant(Instant.parse(message.datetimeOfStatusChange), ZoneId.of("Europe/London"))
 

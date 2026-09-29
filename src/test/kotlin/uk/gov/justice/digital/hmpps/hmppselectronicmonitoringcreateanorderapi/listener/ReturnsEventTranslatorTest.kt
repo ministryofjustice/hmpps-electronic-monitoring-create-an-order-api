@@ -17,7 +17,8 @@ import java.time.ZonedDateTime
 class ReturnsEventTranslatorTest {
 
   private val rejectOrder = mock<RejectOrderService>()
-  private val translator = ReturnsEventTranslator(rejectOrder, jacksonObjectMapper())
+  private val objectMapper = jacksonObjectMapper()
+  private val translator = ReturnsEventTranslator(rejectOrder, objectMapper)
 
   @Test
   fun `translates a rejected returns event into a reject order command`() {
@@ -80,16 +81,32 @@ class ReturnsEventTranslatorTest {
     status: String = "rejected",
     datetimeOfStatusChange: String = "2026-09-23T10:15:00Z",
     reasons: String = """[{"section": "Section A", "details": "A details"}]""",
-  ): String = """
-    {
-      "version": "2.0",
-      "eventType": "OrderCreated",
-      "data": {
-        "caseId": "$caseId",
-        "status": "$status",
-        "reasons": $reasons,
-        "datetimeOfStatusChange": "$datetimeOfStatusChange"
+  ): String {
+    val payload = """
+      {
+        "version": "2.0",
+        "eventType": "OrderCreated",
+        "data": {
+          "caseId": "$caseId",
+          "status": "$status",
+          "reasons": $reasons,
+          "datetimeOfStatusChange": "$datetimeOfStatusChange"
+        }
       }
-    }
-  """.trimIndent()
+    """.trimIndent()
+
+    return """
+      {
+        "Type": "Notification",
+        "MessageId": "0f1b1c9f-0d5b-4f1a-9a21-4e0f9a2f0a11",
+        "Message": ${objectMapper.writeValueAsString(payload)},
+        "MessageAttributes": {
+          "eventType": {
+            "Type": "String",
+            "Value": "returns.order.status.changed"
+          }
+        }
+      }
+    """.trimIndent()
+  }
 }
