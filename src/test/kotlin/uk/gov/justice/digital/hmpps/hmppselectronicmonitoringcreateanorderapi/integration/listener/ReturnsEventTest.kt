@@ -9,6 +9,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import tools.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.utilities.SqsTestQueueFactory
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.utilities.TestEmailClient
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
@@ -36,6 +37,9 @@ class ReturnsEventTest : IntegrationTestBase() {
   lateinit var sqsTestQueueFactory: SqsTestQueueFactory
 
   @Autowired
+  lateinit var testEmailClient: TestEmailClient
+
+  @Autowired
   lateinit var objectMapper: ObjectMapper
 
   private val queue by lazy { sqsTestQueueFactory.create("returnseventqueue") }
@@ -59,6 +63,9 @@ class ReturnsEventTest : IntegrationTestBase() {
     val order = orderRepo.findById(submittedOrder.id).get()
 
     assertThat(order.status).isEqualTo(OrderStatus.REJECTED)
+
+    assertThat(testEmailClient.hasRecievedUserEmail()).isEqualTo(true)
+    assertThat(testEmailClient.hasRecievedNOEmail()).isEqualTo(true)
   }
 
   @Test

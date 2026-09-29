@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.EmailClient
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.RejectionReason
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
@@ -19,7 +20,8 @@ class RejectOrderServiceTest {
   fun `rejects and saves the order matching the given case id`() {
     val gateway = FakeOrderByCaseIdGateway()
     val repo = mock<OrderRepository>()
-    val service = RejectOrderService(gateway, repo)
+    val emailClient = mock<EmailClient>()
+    val service = RejectOrderService(gateway, repo, emailClient)
 
     val order = TestUtilities.createReadyToSubmitOrder()
     gateway.addOrder("CASE123", order)
@@ -33,13 +35,16 @@ class RejectOrderServiceTest {
     assertThat(order.status).isEqualTo(OrderStatus.REJECTED)
     assertThat(order.statusUpdates).hasSize(1)
     verify(repo).save(order)
+    verify(emailClient).sendUserEmail()
+    verify(emailClient).sendNotificationOfficerEmail()
   }
 
   @Test
   fun `throws and saves nothing when no order matches the given case id`() {
     val gateway = FakeOrderByCaseIdGateway()
     val repo = mock<OrderRepository>()
-    val service = RejectOrderService(gateway, repo)
+    val emailClient = mock<EmailClient>()
+    val service = RejectOrderService(gateway, repo, emailClient)
 
     assertThatThrownBy {
       service.execute("UNKNOWN_CASE_ID", ZonedDateTime.now(), emptyList())
