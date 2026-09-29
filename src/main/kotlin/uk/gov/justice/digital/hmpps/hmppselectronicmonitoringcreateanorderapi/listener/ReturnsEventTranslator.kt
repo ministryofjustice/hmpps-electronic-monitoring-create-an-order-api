@@ -35,7 +35,7 @@ class ReturnsEventTranslator(private val rejectOrder: RejectOrderService, privat
           )
       }
     } catch (e: Exception) {
-      log.error("Failed to process returns event: ${e.message}")
+      log.error("Failed to process returns event: ${e.message}. Raw message: $rawMessage")
       throw e
     }
   }
