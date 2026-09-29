@@ -95,11 +95,9 @@ class ReturnsEventTranslatorTest {
 
   private fun snsEnvelope(message: String) = """
     {
-      "Type": "Notification",
-      "MessageId": "eed5fdf9-ea08-5bf2-9d96-a27aed48bb71",
-      "TopicArn": "arn:aws:sns:eu-west-2:000000000000:returns_events_topic",
-      "Message": ${jacksonObjectMapper().writeValueAsString(message)},
-      "Timestamp": "2026-09-23T10:15:00.000Z"
+      "version": "2.0",
+      "eventType": "OrderCreated",
+      "data": ${jacksonObjectMapper().writeValueAsString(message)}
     }
   """
 }

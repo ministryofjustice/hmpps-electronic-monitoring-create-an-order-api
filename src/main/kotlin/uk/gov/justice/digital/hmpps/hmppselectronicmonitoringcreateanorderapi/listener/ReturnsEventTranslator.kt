@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.listener
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
-import com.fasterxml.jackson.annotation.JsonProperty
 import io.awspring.cloud.sqs.annotation.SqsListener
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
@@ -16,7 +15,7 @@ import java.time.ZoneId
 import java.time.ZonedDateTime
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-data class ReturnsSnsEnvelope(@JsonProperty("Message") val message: String)
+data class ReturnsSnsEnvelope(val data: String)
 
 @Component
 class ReturnsEventTranslator(private val rejectOrder: RejectOrderService, private val objectMapper: ObjectMapper) {
@@ -24,7 +23,7 @@ class ReturnsEventTranslator(private val rejectOrder: RejectOrderService, privat
   fun processEvent(rawMessage: String) {
     try {
       val envelope: ReturnsSnsEnvelope = objectMapper.readValue(rawMessage)
-      val message: ReturnMessage = objectMapper.readValue(envelope.message)
+      val message: ReturnMessage = objectMapper.readValue(envelope.data)
       val dateTime = ZonedDateTime.ofInstant(Instant.parse(message.datetimeOfStatusChange), ZoneId.of("Europe/London"))
 
       when (message.status) {
