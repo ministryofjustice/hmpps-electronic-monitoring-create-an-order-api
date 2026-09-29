@@ -11,6 +11,7 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
 import tools.jackson.module.kotlin.jacksonObjectMapper
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.RejectionReason
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.EventService
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.RejectOrderService
 import java.time.ZonedDateTime
 
@@ -18,7 +19,8 @@ class ReturnsEventTranslatorTest {
 
   private val rejectOrder = mock<RejectOrderService>()
   private val objectMapper = jacksonObjectMapper()
-  private val translator = ReturnsEventTranslator(rejectOrder, objectMapper)
+  private val eventService = mock<EventService>()
+  private val translator = ReturnsEventTranslator(rejectOrder, objectMapper, eventService)
 
   @Test
   fun `translates a rejected returns event into a reject order command`() {
@@ -33,6 +35,10 @@ class ReturnsEventTranslatorTest {
       eq("CASE123"),
       any(),
       eq(listOf(RejectionReason(section = "Section A", details = "A details"))),
+    )
+    verify(eventService).recordEvent(
+      "Returns_Status_Update",
+      mapOf("caseId" to "CASE123", "status" to "REJECTED"),
     )
   }
 
@@ -58,6 +64,7 @@ class ReturnsEventTranslatorTest {
     assertThatThrownBy { translator.processEvent("BAD JSON") }.isInstanceOf(Exception::class.java)
 
     verifyNoInteractions(rejectOrder)
+    verify(eventService).recordEvent(eq("Returns_Event_Processing_Failed"), any(), any())
   }
 
   @Test
