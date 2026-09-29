@@ -15,7 +15,7 @@ import java.time.ZoneId
 import java.time.ZonedDateTime
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-data class ReturnsSnsEnvelope(val data: String)
+data class ReturnsSnsEnvelope(val data: ReturnMessage)
 
 @Component
 class ReturnsEventTranslator(private val rejectOrder: RejectOrderService, private val objectMapper: ObjectMapper) {
@@ -23,7 +23,7 @@ class ReturnsEventTranslator(private val rejectOrder: RejectOrderService, privat
   fun processEvent(rawMessage: String) {
     try {
       val envelope: ReturnsSnsEnvelope = objectMapper.readValue(rawMessage)
-      val message: ReturnMessage = objectMapper.readValue(envelope.data)
+      val message: ReturnMessage = envelope.data
       val dateTime = ZonedDateTime.ofInstant(Instant.parse(message.datetimeOfStatusChange), ZoneId.of("Europe/London"))
 
       when (message.status) {

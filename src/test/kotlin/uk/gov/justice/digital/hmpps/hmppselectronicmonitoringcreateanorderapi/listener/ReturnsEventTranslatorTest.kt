@@ -80,24 +80,16 @@ class ReturnsEventTranslatorTest {
     status: String = "rejected",
     datetimeOfStatusChange: String = "2026-09-23T10:15:00Z",
     reasons: String = """[{"section": "Section A", "details": "A details"}]""",
-  ): String {
-    val message = """
-      {
+  ): String = """
+    {
+      "version": "2.0",
+      "eventType": "OrderCreated",
+      "data": {
         "caseId": "$caseId",
         "status": "$status",
         "reasons": $reasons,
         "datetimeOfStatusChange": "$datetimeOfStatusChange"
       }
-    """.trimIndent()
-
-    return snsEnvelope(message)
-  }
-
-  private fun snsEnvelope(message: String) = """
-    {
-      "version": "2.0",
-      "eventType": "OrderCreated",
-      "data": ${jacksonObjectMapper().writeValueAsString(message)}
     }
-  """
+  """.trimIndent()
 }
