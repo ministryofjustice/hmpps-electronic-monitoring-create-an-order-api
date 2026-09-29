@@ -12,7 +12,7 @@ CREATE TABLE status_update_reason
     id               UUID         NOT NULL,
     status_update_id UUID         NOT NULL,
     section          VARCHAR(255) NOT NULL,
-    details          VARCHAR(1000),
+    details          VARCHAR(255),
     CONSTRAINT pk_status_update_reason PRIMARY KEY (id)
 );
 
