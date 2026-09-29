@@ -9,7 +9,7 @@ data class ReturnMessage(
   val datetimeOfStatusChange: String,
 )
 
-data class Reason(val section: String, val details: String)
+data class Reason(val section: String, val details: String?)
 
 enum class ReturnStatus {
   @JsonProperty("rejected")
