@@ -32,6 +32,10 @@ class TestEmailClient : EmailClient {
     assertThat(userEmails).containsExactly(expected)
   }
 
+  fun assertSentNoUserEmails() {
+    assertThat(userEmails).isEmpty()
+  }
+
   fun assertSentNotificationOfficerEmail(expected: RejectedNOEmail) {
     assertThat(noEmails).containsExactly(expected)
   }

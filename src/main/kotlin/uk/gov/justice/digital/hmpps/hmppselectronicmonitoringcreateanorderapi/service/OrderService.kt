@@ -5,6 +5,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.security.access.AccessDeniedException
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.ManageUserApi
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.config.FeatureFlags
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.BadRequestException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.ForbiddenException
@@ -36,7 +37,11 @@ import java.util.*
 @EnableConfigurationProperties(
   FeatureFlags::class,
 )
-class OrderService(val fmsService: FmsService, private val featureFlags: FeatureFlags) : OrderSectionServiceBase() {
+class OrderService(
+  val fmsService: FmsService,
+  private val featureFlags: FeatureFlags,
+  private val manageUserApi: ManageUserApi,
+) : OrderSectionServiceBase() {
 
   fun createOrder(username: String, createRecord: CreateOrderDto): Order {
     val order = Order()
@@ -296,6 +301,7 @@ class OrderService(val fmsService: FmsService, private val featureFlags: Feature
         } else {
           order.status = OrderStatus.SUBMITTED
           order.getCurrentVersion().submittedBy = fullName
+          order.getCurrentVersion().submittedByEmail = manageUserApi.getUserEmail(token.token)
           order.tags = getTags(order)
           updateLastUpdatedByAndSaveOrder(order)
         }

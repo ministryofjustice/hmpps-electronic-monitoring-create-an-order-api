@@ -225,6 +225,14 @@ data class Order(
       getCurrentVersion().submittedBy = submittedBy
     }
 
+  var submittedByEmail: String?
+    get() {
+      return getCurrentVersion().submittedByEmail
+    }
+    set(submittedByEmail) {
+      getCurrentVersion().submittedByEmail = submittedByEmail
+    }
+
   var variationDetails: VariationDetails?
     get() {
       return getCurrentVersion().variationDetails

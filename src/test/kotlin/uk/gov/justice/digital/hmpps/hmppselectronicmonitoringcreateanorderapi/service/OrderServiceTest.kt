@@ -24,8 +24,10 @@ import org.mockito.kotlin.whenever
 import org.springframework.boot.test.autoconfigure.json.JsonTest
 import org.springframework.security.access.AccessDeniedException
 import org.springframework.security.core.context.SecurityContextHolder
+import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken
 import org.springframework.test.context.ActiveProfiles
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.ManageUserApi
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.config.AuthAwareAuthenticationToken
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.config.FeatureFlags
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.BadRequestException
@@ -73,6 +75,7 @@ class OrderServiceTest {
   private lateinit var fmsService: FmsService
   private lateinit var service: OrderService
   private lateinit var userCohortService: UserCohortService
+  private lateinit var manageUserApi: ManageUserApi
   val mockStartDate: ZonedDateTime = ZonedDateTime.now().plusMonths(1)
   val mockEndDate: ZonedDateTime = ZonedDateTime.now().plusMonths(2)
   private lateinit var authentication: JwtAuthenticationToken
@@ -82,11 +85,13 @@ class OrderServiceTest {
     repo = mock(OrderRepository::class.java)
     fmsService = mock(FmsService::class.java)
     userCohortService = mock()
+    manageUserApi = mock()
     val featureFlags = FeatureFlags(ddV6CourtMappings = true, dataDictionaryVersion = DataDictionaryVersion.DDV4)
 
-    service = OrderService(fmsService, featureFlags)
+    service = OrderService(fmsService, featureFlags, manageUserApi)
     service.orderRepo = repo
     authentication = mock(AuthAwareAuthenticationToken::class.java)
+    whenever(authentication.token).thenReturn(mock<Jwt>())
     whenever(authentication.name).thenReturn("mockUser")
     whenever(userCohortService.getUserCohort(authentication)).thenReturn(UserCohort(Cohort.OTHER))
     val context = SecurityContextHolder.createEmptyContext()
@@ -301,6 +306,77 @@ class OrderServiceTest {
     argumentCaptor<Order>().apply {
       verify(repo, times(1)).save(capture())
       assertThat(firstValue.getCurrentVersion().submittedBy).isEqualTo("mockName")
+    }
+  }
+
+  @Test
+  fun `Should save the email address of the user who submitted the order`() {
+    val mockOrder = TestUtilities.createReadyToSubmitOrder(
+      startDate = mockStartDate,
+      endDate = mockEndDate,
+      username = "mockUser",
+    )
+    reset(repo)
+
+    val mockFmsResult = FmsSubmissionResult(
+      orderId = mockOrder.getCurrentVersion().id,
+      deviceWearerResult = FmsDeviceWearerSubmissionResult(
+        status = SubmissionStatus.SUCCESS,
+        deviceWearerId = "mockDeviceWearerId",
+      ),
+      monitoringOrderResult = FmsMonitoringOrderSubmissionResult(
+        status = SubmissionStatus.SUCCESS,
+        monitoringOrderId = "mockMonitoringOrderId",
+      ),
+      orderSource = FmsOrderSource.CEMO,
+      strategy = FmsSubmissionStrategyKind.ORDER,
+    )
+    whenever(repo.findById(mockOrder.id)).thenReturn(Optional.of(mockOrder))
+    whenever(fmsService.submitOrder(any<Order>(), eq(FmsOrderSource.CEMO))).thenReturn(mockFmsResult)
+    whenever(repo.save(any<Order>())).thenReturn(TestUtilities.createReadyToSubmitOrder())
+    whenever(manageUserApi.getUserEmail(any())).thenReturn("mock.user@justice.gov.uk")
+
+    service.submitOrder(mockOrder.id, authentication, "mockName")
+
+    argumentCaptor<Order>().apply {
+      verify(repo, times(1)).save(capture())
+      assertThat(firstValue.getCurrentVersion().submittedByEmail).isEqualTo("mock.user@justice.gov.uk")
+    }
+  }
+
+  @Test
+  fun `Should still submit the order when the submitting user's email cannot be retrieved`() {
+    val mockOrder = TestUtilities.createReadyToSubmitOrder(
+      startDate = mockStartDate,
+      endDate = mockEndDate,
+      username = "mockUser",
+    )
+    reset(repo)
+
+    val mockFmsResult = FmsSubmissionResult(
+      orderId = mockOrder.getCurrentVersion().id,
+      deviceWearerResult = FmsDeviceWearerSubmissionResult(
+        status = SubmissionStatus.SUCCESS,
+        deviceWearerId = "mockDeviceWearerId",
+      ),
+      monitoringOrderResult = FmsMonitoringOrderSubmissionResult(
+        status = SubmissionStatus.SUCCESS,
+        monitoringOrderId = "mockMonitoringOrderId",
+      ),
+      orderSource = FmsOrderSource.CEMO,
+      strategy = FmsSubmissionStrategyKind.ORDER,
+    )
+    whenever(repo.findById(mockOrder.id)).thenReturn(Optional.of(mockOrder))
+    whenever(fmsService.submitOrder(any<Order>(), eq(FmsOrderSource.CEMO))).thenReturn(mockFmsResult)
+    whenever(repo.save(any<Order>())).thenReturn(TestUtilities.createReadyToSubmitOrder())
+    whenever(manageUserApi.getUserEmail(any())).thenReturn(null)
+
+    service.submitOrder(mockOrder.id, authentication, "mockName")
+
+    argumentCaptor<Order>().apply {
+      verify(repo, times(1)).save(capture())
+      assertThat(firstValue.status).isEqualTo(OrderStatus.SUBMITTED)
+      assertThat(firstValue.getCurrentVersion().submittedByEmail).isNull()
     }
   }
 
@@ -748,7 +824,7 @@ class OrderServiceTest {
     @BeforeEach
     fun setup() {
       val featureFlags = FeatureFlags(ddV6CourtMappings = true, dataDictionaryVersion = DataDictionaryVersion.DDV5)
-      service = OrderService(fmsService, featureFlags)
+      service = OrderService(fmsService, featureFlags, manageUserApi)
       service.userCohortService = userCohortService
       service.orderRepo = repo
       whenever(repo.findById(order.id)).thenReturn(Optional.of(order))
@@ -1240,7 +1316,7 @@ class OrderServiceTest {
       @BeforeEach
       fun setup() {
         val featureFlags = FeatureFlags(ddV6CourtMappings = true, dataDictionaryVersion = DataDictionaryVersion.DDV5)
-        service = OrderService(fmsService, featureFlags)
+        service = OrderService(fmsService, featureFlags, manageUserApi)
         service.orderRepo = repo
         service.userCohortService = userCohortService
         whenever(repo.findById(orderInPast.id)).thenReturn(Optional.of(orderInPast))

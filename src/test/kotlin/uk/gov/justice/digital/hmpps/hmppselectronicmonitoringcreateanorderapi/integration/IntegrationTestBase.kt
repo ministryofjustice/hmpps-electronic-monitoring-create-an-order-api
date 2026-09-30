@@ -185,6 +185,7 @@ abstract class IntegrationTestBase {
     type: RequestType = RequestType.REQUEST,
     dataDictionaryVersion: DataDictionaryVersion = DataDictionaryVersion.DDV4,
     submittedBy: String? = null,
+    submittedByEmail: String? = null,
   ): Order {
     val order = Order(
       id = orderId,
@@ -196,6 +197,7 @@ abstract class IntegrationTestBase {
           username = username,
           dataDictionaryVersion = dataDictionaryVersion,
           submittedBy = submittedBy,
+          submittedByEmail = submittedByEmail,
         ),
       ),
     )
@@ -205,10 +207,12 @@ abstract class IntegrationTestBase {
   fun createSubmittedOrder(
     type: RequestType = RequestType.REQUEST,
     dataDictionaryVersion: DataDictionaryVersion = DataDictionaryVersion.DDV4,
+    submittedByEmail: String? = null,
   ): Order = createStoredOrder(
     status = OrderStatus.SUBMITTED,
     dataDictionaryVersion = dataDictionaryVersion,
     submittedBy = "Test User",
+    submittedByEmail = submittedByEmail,
   )
 
   fun createSubmittedVariation() = createSubmittedOrder(RequestType.VARIATION)

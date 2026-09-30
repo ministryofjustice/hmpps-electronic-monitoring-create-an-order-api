@@ -4,7 +4,9 @@ import jakarta.persistence.EntityNotFoundException
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.EmailClient
@@ -47,6 +49,7 @@ class RejectOrderServiceTest {
     val service = RejectOrderService(gateway, repo, emailClient)
 
     val order = TestUtilities.createReadyToSubmitOrder(submittedBy = "Bob Jones")
+    order.submittedByEmail = "bob.jones@justice.gov.uk"
     gateway.addOrder("CASE123", order)
 
     service.execute(
@@ -57,7 +60,7 @@ class RejectOrderServiceTest {
 
     verify(emailClient).sendUserEmail(
       email = RejectedUserEmail(
-        emailAddress = "blah",
+        emailAddress = "bob.jones@justice.gov.uk",
         dwFirstName = order.deviceWearer?.firstName,
         dwLastName = order.deviceWearer?.lastName,
         userFirstName = "Bob",
@@ -72,6 +75,23 @@ class RejectOrderServiceTest {
         notifyingOrgName = order.interestedParties?.notifyingOrganisationName,
       ),
     )
+  }
+
+  @Test
+  fun `does not send a user email when the order has no submitting user email address`() {
+    val gateway = FakeOrderByCaseIdGateway()
+    val repo = mock<OrderRepository>()
+    val emailClient = mock<EmailClient>()
+    val service = RejectOrderService(gateway, repo, emailClient)
+
+    val order = TestUtilities.createReadyToSubmitOrder(submittedBy = "Bob Jones")
+    order.submittedByEmail = null
+    gateway.addOrder("CASE123", order)
+
+    service.execute("CASE123", ZonedDateTime.now(), emptyList())
+
+    verify(emailClient, never()).sendUserEmail(any())
+    verify(emailClient).sendNotificationOfficerEmail(any())
   }
 
   @Test

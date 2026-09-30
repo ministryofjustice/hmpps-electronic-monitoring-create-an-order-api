@@ -34,6 +34,7 @@ class ReturnsEventTest : IntegrationTestBase() {
   private companion object {
     const val NOTIFYING_ORG_NAME = "Test Notifying Organisation"
     const val NOTIFYING_ORG_EMAIL = "notifying.org@example.com"
+    const val SUBMITTED_BY_EMAIL = "test.user@justice.gov.uk"
   }
 
   @MockitoSpyBean
@@ -76,7 +77,7 @@ class ReturnsEventTest : IntegrationTestBase() {
 
     testEmailClient.assertSentUserEmail(
       RejectedUserEmail(
-        emailAddress = "blah",
+        emailAddress = SUBMITTED_BY_EMAIL,
         dwFirstName = order.deviceWearer?.firstName,
         dwLastName = order.deviceWearer?.lastName,
         userFirstName = "Test",
@@ -89,6 +90,27 @@ class ReturnsEventTest : IntegrationTestBase() {
         emailAddress = NOTIFYING_ORG_EMAIL,
         dwFirstName = order.deviceWearer?.firstName,
         dwLastName = order.deviceWearer?.lastName,
+        notifyingOrgName = NOTIFYING_ORG_NAME,
+      ),
+    )
+  }
+
+  @Test
+  fun `does not send a user email when the order has no submitting user email address`() {
+    val caseId = "CASE456"
+    arrangeSubmittedOrder(caseId, submittedByEmail = null)
+
+    queue.sendMessage(createReturnEventMessage(caseId, ReturnStatus.REJECTED))
+
+    await().until { queue.isEmpty() }
+    assertThat(queue.dlqIsEmpty()).isEqualTo(true)
+
+    testEmailClient.assertSentNoUserEmails()
+    testEmailClient.assertSentNotificationOfficerEmail(
+      RejectedNOEmail(
+        emailAddress = NOTIFYING_ORG_EMAIL,
+        dwFirstName = null,
+        dwLastName = null,
         notifyingOrgName = NOTIFYING_ORG_NAME,
       ),
     )
@@ -132,8 +154,8 @@ class ReturnsEventTest : IntegrationTestBase() {
     assertThat(queue.dlqIsEmpty()).isEqualTo(false)
   }
 
-  private fun arrangeSubmittedOrder(caseId: String): Order {
-    val submittedOrder = createSubmittedOrder(RequestType.REQUEST, DataDictionaryVersion.DDV7)
+  private fun arrangeSubmittedOrder(caseId: String, submittedByEmail: String? = SUBMITTED_BY_EMAIL): Order {
+    val submittedOrder = createSubmittedOrder(RequestType.REQUEST, DataDictionaryVersion.DDV7, submittedByEmail)
     submittedOrder.interestedParties = InterestedParties(
       versionId = submittedOrder.versionId,
       notifyingOrganisation = NotifyingOrganisationDDv5.PRISON.name,

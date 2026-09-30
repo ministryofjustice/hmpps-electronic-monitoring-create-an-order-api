@@ -4,6 +4,7 @@ import jakarta.persistence.EntityNotFoundException
 import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.EmailClient
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.RejectionReason
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.emails.RejectedNOEmail
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.emails.RejectedUserEmail
@@ -25,15 +26,7 @@ class RejectOrderService(
 
     repo.save(order)
 
-    emailClient.sendUserEmail(
-      email = RejectedUserEmail(
-        emailAddress = "blah",
-        dwFirstName = order.deviceWearer?.firstName,
-        dwLastName = order.deviceWearer?.lastName,
-        userFirstName = order.submittedBy!!.split(" ").first(),
-        userLastName = order.submittedBy!!.split(" ").last(),
-      ),
-    )
+    sendUserEmail(order)
 
     emailClient.sendNotificationOfficerEmail(
       email = RejectedNOEmail(
@@ -41,6 +34,20 @@ class RejectOrderService(
         dwFirstName = order.deviceWearer?.firstName,
         dwLastName = order.deviceWearer?.lastName,
         notifyingOrgName = order.interestedParties?.notifyingOrganisationName,
+      ),
+    )
+  }
+
+  private fun sendUserEmail(order: Order) {
+    val emailAddress = order.submittedByEmail?.takeIf { it.isNotBlank() } ?: return
+
+    emailClient.sendUserEmail(
+      email = RejectedUserEmail(
+        emailAddress = emailAddress,
+        dwFirstName = order.deviceWearer?.firstName,
+        dwLastName = order.deviceWearer?.lastName,
+        userFirstName = order.submittedBy?.split(" ")?.first(),
+        userLastName = order.submittedBy?.split(" ")?.last(),
       ),
     )
   }
