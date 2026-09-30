@@ -113,6 +113,8 @@ class OrderControllerTest : IntegrationTestBase() {
       assertThat(order.type).isEqualTo(RequestType.REQUEST)
       assertThat(order.username).isEqualTo(testUser)
       assertThat(order.lastUpdatedBy).isEqualTo(testUserFullName)
+      assertThat(order.isSentencingAct).isTrue()
+      assertThat(repo.findById(order.id).orElseThrow().isSentencingAct).isTrue()
     }
 
     @Test
@@ -142,12 +144,34 @@ class OrderControllerTest : IntegrationTestBase() {
       assertThat(order.type).isEqualTo(RequestType.VARIATION)
       assertThat(order.username).isEqualTo(testUser)
       assertThat(order.lastUpdatedBy).isEqualTo(testUserFullName)
+      assertThat(order.isSentencingAct).isTrue()
+      assertThat(repo.findById(order.id).orElseThrow().isSentencingAct).isTrue()
     }
   }
 
   @Nested
   @DisplayName("POST /api/orders/copy-as-variation")
   inner class PostVariation {
+    @Test
+    fun `A variation of a legacy order retains its missing Sentencing Act flag`() {
+      val order = createAndPersistPopulatedOrder(status = OrderStatus.SUBMITTED)
+      order.isSentencingAct = null
+      repo.save(order)
+
+      val variationOrder = webTestClient.post()
+        .uri("/api/orders/${order.id}/copy-as-variation")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody(OrderDto::class.java)
+        .returnResult()
+        .responseBody!!
+
+      assertThat(variationOrder.isSentencingAct).isNull()
+      assertThat(repo.findById(order.id).orElseThrow().isSentencingAct).isNull()
+    }
+
     @Test
     fun `It should should create an order version with type VARIATION`() {
       val order = createAndPersistPopulatedOrder(status = OrderStatus.SUBMITTED)

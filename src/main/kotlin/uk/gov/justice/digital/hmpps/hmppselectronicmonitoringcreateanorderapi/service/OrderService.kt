@@ -48,6 +48,7 @@ class OrderService(val fmsService: FmsService, private val featureFlags: Feature
         type = createRecord.type,
         orderId = order.id,
         dataDictionaryVersion = dataDictionaryVersion,
+        isSentencingAct = true,
       ),
     )
 
@@ -150,7 +151,7 @@ class OrderService(val fmsService: FmsService, private val featureFlags: Feature
       .apply {
         val newVersionId = id
         variationDetails = null
-        isSentencingAct = sourceVersion.isSentencingAct
+        isSentencingAct = currentVersion.isSentencingAct
 
         orderParameters =
           sourceVersion.orderParameters?.copy(versionId = newVersionId, id = UUID.randomUUID())
