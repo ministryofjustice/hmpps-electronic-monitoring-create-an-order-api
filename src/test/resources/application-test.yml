@@ -44,6 +44,10 @@ hmpps.sqs:
       queueName: court_case_events_queue.fifo
       queueArn: arn:aws:sns:eu-west-2:000000000000:court_case_events_queue.fifo
       dlqName: court_case_events_dead_letter_queue.fifo
+    returnseventqueue:
+      queueName: returns_events_queue.fifo
+      queueArn: arn:aws:sns:eu-west-2:000000000000:returns_events_queue.fifo
+      dlqName: returns_events_dead_letter_queue.fifo
 
 hmpps.s3:
   provider: localstack
