@@ -263,9 +263,22 @@ class OrderServiceTest {
     assertThat(result.username).isEqualTo("mockUser")
     assertThat(result.status).isEqualTo(OrderStatus.IN_PROGRESS)
     assertThat(result.dataDictionaryVersion).isEqualTo(DataDictionaryVersion.DDV4)
+    assertThat(result.isSentencingAct).isNull()
     argumentCaptor<Order>().apply {
       verify(repo, times(1)).save(capture())
       assertThat(firstValue).isEqualTo(result)
+    }
+  }
+
+  @Test
+  fun `Create a standalone variation with Sentencing Act unset`() {
+    val result = service.createOrder("mockUser", CreateOrderDto(RequestType.VARIATION))
+
+    assertThat(result.type).isEqualTo(RequestType.VARIATION)
+    assertThat(result.isSentencingAct).isNull()
+    argumentCaptor<Order>().apply {
+      verify(repo).save(capture())
+      assertThat(firstValue.isSentencingAct).isNull()
     }
   }
 
@@ -753,6 +766,26 @@ class OrderServiceTest {
       service.orderRepo = repo
       whenever(repo.findById(order.id)).thenReturn(Optional.of(order))
       whenever(repo.save(order)).thenReturn(order)
+    }
+
+    @Test
+    fun `A variation of a legacy order retains its missing Sentencing Act flag`() {
+      order.isSentencingAct = null
+      whenever(authentication.name).thenReturn(order.username)
+
+      service.createVersion(order.id, authentication, RequestType.VARIATION)
+
+      assertThat(order.versions.last().isSentencingAct).isNull()
+    }
+
+    @Test
+    fun `An amendment inherits the original Sentencing Act flag`() {
+      order.isSentencingAct = true
+      whenever(authentication.name).thenReturn(order.username)
+
+      service.createVersion(order.id, authentication, RequestType.AMEND_ORIGINAL_REQUEST)
+
+      assertThat(order.versions.last().isSentencingAct).isTrue()
     }
 
     @Nested
@@ -1321,6 +1354,15 @@ class OrderServiceTest {
         whenever(userCohortService.getUserCohort(authentication)).thenReturn(mockUserCohort)
         whenever(userCohortService.matchesNotifyingOrg(mockUserCohort.cohort, "PRISON")).thenReturn(true)
         whenever(fmsService.getLatestOrderVersion(order)).thenReturn(mockVersion)
+      }
+
+      @Test
+      fun `It inherits Sentencing Act from the order rather than FMS`() {
+        order.isSentencingAct = true
+
+        service.createVersion(order.id, authentication, RequestType.VARIATION)
+
+        assertThat(order.versions.last().isSentencingAct).isTrue()
       }
 
       @Test
