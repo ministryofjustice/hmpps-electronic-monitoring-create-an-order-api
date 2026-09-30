@@ -117,6 +117,19 @@ class ReturnsEventTest : IntegrationTestBase() {
   }
 
   @Test
+  fun `does not send an NO email when the order has no NO email address`() {
+    val caseId = "CASE456"
+    arrangeSubmittedOrder(caseId, noEmail = null)
+
+    queue.sendMessage(createReturnEventMessage(caseId, ReturnStatus.REJECTED))
+
+    await().until { queue.isEmpty() }
+    assertThat(queue.dlqIsEmpty()).isEqualTo(true)
+
+    testEmailClient.assertSentNoNOEmails()
+  }
+
+  @Test
   fun `store return type and reasons against the order version`() {
     val caseId = "CASE789"
     val submittedOrder = arrangeSubmittedOrder(caseId)
@@ -154,13 +167,17 @@ class ReturnsEventTest : IntegrationTestBase() {
     assertThat(queue.dlqIsEmpty()).isEqualTo(false)
   }
 
-  private fun arrangeSubmittedOrder(caseId: String, submittedByEmail: String? = SUBMITTED_BY_EMAIL): Order {
+  private fun arrangeSubmittedOrder(
+    caseId: String,
+    submittedByEmail: String? = SUBMITTED_BY_EMAIL,
+    noEmail: String? = NOTIFYING_ORG_EMAIL,
+  ): Order {
     val submittedOrder = createSubmittedOrder(RequestType.REQUEST, DataDictionaryVersion.DDV7, submittedByEmail)
     submittedOrder.interestedParties = InterestedParties(
       versionId = submittedOrder.versionId,
       notifyingOrganisation = NotifyingOrganisationDDv5.PRISON.name,
       notifyingOrganisationName = NOTIFYING_ORG_NAME,
-      notifyingOrganisationEmail = NOTIFYING_ORG_EMAIL,
+      notifyingOrganisationEmail = noEmail,
     )
     repo.save(submittedOrder)
 

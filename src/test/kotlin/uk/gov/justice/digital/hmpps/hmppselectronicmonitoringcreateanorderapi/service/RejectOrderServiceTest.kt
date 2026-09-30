@@ -69,7 +69,7 @@ class RejectOrderServiceTest {
     )
     verify(emailClient).sendNotificationOfficerEmail(
       email = RejectedNOEmail(
-        emailAddress = order.interestedParties?.notifyingOrganisationEmail,
+        emailAddress = order.interestedParties?.notifyingOrganisationEmail!!,
         dwFirstName = order.deviceWearer?.firstName,
         dwLastName = order.deviceWearer?.lastName,
         notifyingOrgName = order.interestedParties?.notifyingOrganisationName,

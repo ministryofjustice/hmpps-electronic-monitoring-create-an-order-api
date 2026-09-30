@@ -3,7 +3,7 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.m
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 
 data class RejectedUserEmail(
-  override val emailAddress: String?,
+  override val emailAddress: String,
   override val dwFirstName: String?,
   override val dwLastName: String?,
   val userFirstName: String?,
