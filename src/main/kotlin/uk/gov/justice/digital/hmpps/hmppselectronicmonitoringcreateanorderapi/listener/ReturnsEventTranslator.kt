@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.l
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import io.awspring.cloud.sqs.annotation.SqsListener
 import org.slf4j.LoggerFactory
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression
 import org.springframework.stereotype.Component
 import tools.jackson.databind.ObjectMapper
 import tools.jackson.module.kotlin.readValue
@@ -20,6 +21,7 @@ import java.time.ZonedDateTime
 data class ReturnsSnsEnvelope(val data: ReturnMessage)
 
 @Component
+@ConditionalOnExpression("\${settings.return-listener-enabled:false}")
 class ReturnsEventTranslator(
   private val rejectOrder: RejectOrderService,
   private val objectMapper: ObjectMapper,
