@@ -263,7 +263,7 @@ class OrderServiceTest {
     assertThat(result.username).isEqualTo("mockUser")
     assertThat(result.status).isEqualTo(OrderStatus.IN_PROGRESS)
     assertThat(result.dataDictionaryVersion).isEqualTo(DataDictionaryVersion.DDV4)
-    assertThat(result.isSentencingAct).isTrue()
+    assertThat(result.isSentencingAct).isNull()
     argumentCaptor<Order>().apply {
       verify(repo, times(1)).save(capture())
       assertThat(firstValue).isEqualTo(result)
@@ -271,14 +271,14 @@ class OrderServiceTest {
   }
 
   @Test
-  fun `Create a standalone variation with Sentencing Act enabled`() {
+  fun `Create a standalone variation with Sentencing Act unset`() {
     val result = service.createOrder("mockUser", CreateOrderDto(RequestType.VARIATION))
 
     assertThat(result.type).isEqualTo(RequestType.VARIATION)
-    assertThat(result.isSentencingAct).isTrue()
+    assertThat(result.isSentencingAct).isNull()
     argumentCaptor<Order>().apply {
       verify(repo).save(capture())
-      assertThat(firstValue.isSentencingAct).isTrue()
+      assertThat(firstValue.isSentencingAct).isNull()
     }
   }
 

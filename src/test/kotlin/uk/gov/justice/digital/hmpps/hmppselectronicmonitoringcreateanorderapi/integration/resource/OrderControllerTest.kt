@@ -113,8 +113,8 @@ class OrderControllerTest : IntegrationTestBase() {
       assertThat(order.type).isEqualTo(RequestType.REQUEST)
       assertThat(order.username).isEqualTo(testUser)
       assertThat(order.lastUpdatedBy).isEqualTo(testUserFullName)
-      assertThat(order.isSentencingAct).isTrue()
-      assertThat(repo.findById(order.id).orElseThrow().isSentencingAct).isTrue()
+      assertThat(order.isSentencingAct).isNull()
+      assertThat(repo.findById(order.id).orElseThrow().isSentencingAct).isNull()
     }
 
     @Test
@@ -144,8 +144,8 @@ class OrderControllerTest : IntegrationTestBase() {
       assertThat(order.type).isEqualTo(RequestType.VARIATION)
       assertThat(order.username).isEqualTo(testUser)
       assertThat(order.lastUpdatedBy).isEqualTo(testUserFullName)
-      assertThat(order.isSentencingAct).isTrue()
-      assertThat(repo.findById(order.id).orElseThrow().isSentencingAct).isTrue()
+      assertThat(order.isSentencingAct).isNull()
+      assertThat(repo.findById(order.id).orElseThrow().isSentencingAct).isNull()
     }
   }
 

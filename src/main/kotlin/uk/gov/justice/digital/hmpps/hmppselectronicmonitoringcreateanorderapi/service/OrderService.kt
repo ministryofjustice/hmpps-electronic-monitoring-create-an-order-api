@@ -48,7 +48,6 @@ class OrderService(val fmsService: FmsService, private val featureFlags: Feature
         type = createRecord.type,
         orderId = order.id,
         dataDictionaryVersion = dataDictionaryVersion,
-        isSentencingAct = true,
       ),
     )
 

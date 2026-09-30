@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.s
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InterestedParties
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateInterestedPartiesDto
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisationDDv5
 import java.util.*
 
 @Service
@@ -13,6 +14,7 @@ class InterestedPartiesService(private val addressService: AddressService) : Ord
     updateRecord: UpdateInterestedPartiesDto,
   ): InterestedParties {
     val order = this.findEditableOrder(orderId, username)
+    val existingNotifyingOrganisation = order.interestedParties?.notifyingOrganisation
 
     val newInterestedParties = InterestedParties(
       versionId = order.getCurrentVersion().id,
@@ -35,6 +37,18 @@ class InterestedPartiesService(private val addressService: AddressService) : Ord
       order.probationDeliveryUnit = null
     }
 
+    if (order.getCurrentVersion().versionId == 0) {
+      if (existingNotifyingOrganisation == null && order.isSentencingAct == null) {
+        order.isSentencingAct = updateRecord.notifyingOrganisation in listOf(
+          NotifyingOrganisationDDv5.PRISON,
+          NotifyingOrganisationDDv5.PROBATION,
+        )
+      } else if (existingNotifyingOrganisation != null &&
+        existingNotifyingOrganisation != newInterestedParties.notifyingOrganisation
+      ) {
+        order.isSentencingAct = null
+      }
+    }
     order.interestedParties = newInterestedParties
 
     return updateLastUpdatedByAndSaveOrder(order, interestedParties = newInterestedParties).interestedParties!!
