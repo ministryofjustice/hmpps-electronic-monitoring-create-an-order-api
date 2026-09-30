@@ -19,6 +19,8 @@ dependencies {
   implementation("org.apache.logging.log4j:log4j-api:2.26.1")
   implementation("io.sentry:sentry-spring-boot-4:8.51.0")
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.1.0")
+  implementation("uk.gov.service.notify:notifications-java-client:6.2.1-RELEASE")
+
   // starters
   implementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter:3.0.0")
   implementation("org.springframework.boot:spring-boot-starter-webflux")
