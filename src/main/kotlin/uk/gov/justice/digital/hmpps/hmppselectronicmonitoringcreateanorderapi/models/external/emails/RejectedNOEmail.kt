@@ -8,6 +8,8 @@ data class RejectedNOEmail(
   override val dwLastName: String?,
   val notifyingOrgName: String?,
 ) : Email {
+  override val type: EmailType = EmailType.NO
+
   companion object {
     fun fromOrder(order: Order): RejectedNOEmail? {
       val emailAddress =

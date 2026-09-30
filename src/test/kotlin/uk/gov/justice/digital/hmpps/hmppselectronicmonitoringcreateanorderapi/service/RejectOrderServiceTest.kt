@@ -50,6 +50,7 @@ class RejectOrderServiceTest {
 
     val order = TestUtilities.createReadyToSubmitOrder(submittedBy = "Bob Jones")
     order.submittedByEmail = "bob.jones@justice.gov.uk"
+    order.interestedParties?.notifyingOrganisationEmail = NOTIFYING_ORG_EMAIL
     gateway.addOrder("CASE123", order)
 
     service.execute(
@@ -58,18 +59,17 @@ class RejectOrderServiceTest {
       emptyList(),
     )
 
-    verify(emailClient).sendUserEmail(
+    verify(emailClient).sendEmail(
       email = RejectedUserEmail(
         emailAddress = "bob.jones@justice.gov.uk",
         dwFirstName = order.deviceWearer?.firstName,
         dwLastName = order.deviceWearer?.lastName,
-        userFirstName = "Bob",
-        userLastName = "Jones",
+        username = "Bob Jones",
       ),
     )
-    verify(emailClient).sendNotificationOfficerEmail(
+    verify(emailClient).sendEmail(
       email = RejectedNOEmail(
-        emailAddress = order.interestedParties?.notifyingOrganisationEmail!!,
+        emailAddress = NOTIFYING_ORG_EMAIL,
         dwFirstName = order.deviceWearer?.firstName,
         dwLastName = order.deviceWearer?.lastName,
         notifyingOrgName = order.interestedParties?.notifyingOrganisationName,
@@ -86,12 +86,13 @@ class RejectOrderServiceTest {
 
     val order = TestUtilities.createReadyToSubmitOrder(submittedBy = "Bob Jones")
     order.submittedByEmail = null
+    order.interestedParties?.notifyingOrganisationEmail = NOTIFYING_ORG_EMAIL
     gateway.addOrder("CASE123", order)
 
     service.execute("CASE123", ZonedDateTime.now(), emptyList())
 
-    verify(emailClient, never()).sendUserEmail(any())
-    verify(emailClient).sendNotificationOfficerEmail(any())
+    verify(emailClient, never()).sendEmail(any<RejectedUserEmail>())
+    verify(emailClient).sendEmail(any<RejectedNOEmail>())
   }
 
   @Test
@@ -122,7 +123,11 @@ class RejectOrderServiceTest {
 
     service.execute("CASE123", ZonedDateTime.now(), emptyList())
 
-    verify(emailClient).sendUserEmail(any())
-    verify(emailClient, never()).sendNotificationOfficerEmail(any())
+    verify(emailClient).sendEmail(any<RejectedUserEmail>())
+    verify(emailClient, never()).sendEmail(any<RejectedNOEmail>())
+  }
+
+  private companion object {
+    const val NOTIFYING_ORG_EMAIL = "notifying.org@justice.gov.uk"
   }
 }

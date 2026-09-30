@@ -75,17 +75,13 @@ class ReturnsEventTest : IntegrationTestBase() {
 
     assertThat(order.status).isEqualTo(OrderStatus.REJECTED)
 
-    testEmailClient.assertSentUserEmail(
+    testEmailClient.assertSent(
       RejectedUserEmail(
         emailAddress = SUBMITTED_BY_EMAIL,
         dwFirstName = order.deviceWearer?.firstName,
         dwLastName = order.deviceWearer?.lastName,
-        userFirstName = "Test",
-        userLastName = "User",
+        username = "Test User",
       ),
-    )
-
-    testEmailClient.assertSentNotificationOfficerEmail(
       RejectedNOEmail(
         emailAddress = NOTIFYING_ORG_EMAIL,
         dwFirstName = order.deviceWearer?.firstName,
@@ -105,8 +101,7 @@ class ReturnsEventTest : IntegrationTestBase() {
     await().until { queue.isEmpty() }
     assertThat(queue.dlqIsEmpty()).isEqualTo(true)
 
-    testEmailClient.assertSentNoUserEmails()
-    testEmailClient.assertSentNotificationOfficerEmail(
+    testEmailClient.assertSent(
       RejectedNOEmail(
         emailAddress = NOTIFYING_ORG_EMAIL,
         dwFirstName = null,
@@ -126,7 +121,7 @@ class ReturnsEventTest : IntegrationTestBase() {
     await().until { queue.isEmpty() }
     assertThat(queue.dlqIsEmpty()).isEqualTo(true)
 
-    testEmailClient.assertSentNoNOEmails()
+    testEmailClient.assertNothingSent()
   }
 
   @Test

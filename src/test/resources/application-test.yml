@@ -35,6 +35,9 @@ services:
 CP_PROCESSING_ENABLED: true
 CP_FMS_INTEGRATION_ENABLED: true
 
+notify:
+  api-key: test
+
 hmpps.sqs:
   provider: localstack
   localstackUrl: http://localhost:4566

@@ -31,15 +31,15 @@ class RejectOrderService(
     sendNotificationOfficerEmail(order)
   }
 
-  private fun sendNotificationOfficerEmail(order: Order) {
-    val email = RejectedNOEmail.fromOrder(order) ?: return
-
-    emailClient.sendNotificationOfficerEmail(email)
-  }
-
   private fun sendUserEmail(order: Order) {
     val email = RejectedUserEmail.fromOrder(order) ?: return
 
-    emailClient.sendUserEmail(email)
+    emailClient.sendEmail(email)
+  }
+
+  private fun sendNotificationOfficerEmail(order: Order) {
+    val email = RejectedNOEmail.fromOrder(order) ?: return
+
+    emailClient.sendEmail(email)
   }
 }

@@ -5,42 +5,27 @@ import org.springframework.context.annotation.Primary
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.EmailClient
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.emails.RejectedNOEmail
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.emails.RejectedUserEmail
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.emails.Email
 
 @Component
 @Profile("test")
 @Primary
 class TestEmailClient : EmailClient {
-  private val userEmails = mutableListOf<RejectedUserEmail>()
-  private val noEmails = mutableListOf<RejectedNOEmail>()
+  private val emails = mutableListOf<Email>()
 
-  override fun sendUserEmail(email: RejectedUserEmail) {
-    userEmails.add(email)
-  }
-
-  override fun sendNotificationOfficerEmail(email: RejectedNOEmail) {
-    noEmails.add(email)
+  override fun sendEmail(email: Email) {
+    emails.add(email)
   }
 
   fun reset() {
-    userEmails.clear()
-    noEmails.clear()
+    emails.clear()
   }
 
-  fun assertSentUserEmail(expected: RejectedUserEmail) {
-    assertThat(userEmails).containsExactly(expected)
+  fun assertSent(vararg expected: Email) {
+    assertThat(emails).containsExactlyInAnyOrder(*expected)
   }
 
-  fun assertSentNoUserEmails() {
-    assertThat(userEmails).isEmpty()
-  }
-
-  fun assertSentNoNOEmails() {
-    assertThat(noEmails).isEmpty()
-  }
-
-  fun assertSentNotificationOfficerEmail(expected: RejectedNOEmail) {
-    assertThat(noEmails).containsExactly(expected)
+  fun assertNothingSent() {
+    assertThat(emails).isEmpty()
   }
 }
