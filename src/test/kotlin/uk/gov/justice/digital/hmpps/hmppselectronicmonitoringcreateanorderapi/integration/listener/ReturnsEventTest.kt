@@ -10,12 +10,16 @@ import tools.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.utilities.SqsTestQueueFactory
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.utilities.TestEmailClient
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InterestedParties
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisationDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ProcessingStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.emails.RejectedNOEmail
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.emails.RejectedUserEmail
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.up3.Reason
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.up3.ReturnMessage
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.up3.ReturnStatus
@@ -26,6 +30,11 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.re
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 
 class ReturnsEventTest : IntegrationTestBase() {
+
+  private companion object {
+    const val NOTIFYING_ORG_NAME = "Test Notifying Organisation"
+    const val NOTIFYING_ORG_EMAIL = "notifying.org@example.com"
+  }
 
   @MockitoSpyBean
   lateinit var orderRepo: OrderRepository
@@ -48,6 +57,7 @@ class ReturnsEventTest : IntegrationTestBase() {
   fun setup() {
     queue.purge()
     queue.purgeDlq()
+    testEmailClient.reset()
   }
 
   @Test
@@ -64,8 +74,24 @@ class ReturnsEventTest : IntegrationTestBase() {
 
     assertThat(order.status).isEqualTo(OrderStatus.REJECTED)
 
-    assertThat(testEmailClient.hasSentUserEmail(order)).isEqualTo(true)
-    assertThat(testEmailClient.hasSentNOEmail(order)).isEqualTo(true)
+    testEmailClient.assertSentUserEmail(
+      RejectedUserEmail(
+        emailAddress = "blah",
+        dwFirstName = order.deviceWearer?.firstName,
+        dwLastName = order.deviceWearer?.lastName,
+        userFirstName = "Test",
+        userLastName = "User",
+      ),
+    )
+
+    testEmailClient.assertSentNotificationOfficerEmail(
+      RejectedNOEmail(
+        emailAddress = NOTIFYING_ORG_EMAIL,
+        dwFirstName = order.deviceWearer?.firstName,
+        dwLastName = order.deviceWearer?.lastName,
+        notifyingOrgName = NOTIFYING_ORG_NAME,
+      ),
+    )
   }
 
   @Test
@@ -108,6 +134,14 @@ class ReturnsEventTest : IntegrationTestBase() {
 
   private fun arrangeSubmittedOrder(caseId: String): Order {
     val submittedOrder = createSubmittedOrder(RequestType.REQUEST, DataDictionaryVersion.DDV7)
+    submittedOrder.interestedParties = InterestedParties(
+      versionId = submittedOrder.versionId,
+      notifyingOrganisation = NotifyingOrganisationDDv5.PRISON.name,
+      notifyingOrganisationName = NOTIFYING_ORG_NAME,
+      notifyingOrganisationEmail = NOTIFYING_ORG_EMAIL,
+    )
+    repo.save(submittedOrder)
+
     fmsSubmissionResultRepository.save(
       FmsSubmissionResult(
         orderId = submittedOrder.id,
