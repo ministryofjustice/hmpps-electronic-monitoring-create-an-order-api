@@ -28,27 +28,18 @@ class RejectOrderService(
 
     sendUserEmail(order)
 
-    emailClient.sendNotificationOfficerEmail(
-      email = RejectedNOEmail(
-        emailAddress = order.interestedParties?.notifyingOrganisationEmail,
-        dwFirstName = order.deviceWearer?.firstName,
-        dwLastName = order.deviceWearer?.lastName,
-        notifyingOrgName = order.interestedParties?.notifyingOrganisationName,
-      ),
-    )
+    sendNotificationOfficerEmail(order)
+  }
+
+  private fun sendNotificationOfficerEmail(order: Order) {
+    val email = RejectedNOEmail.fromOrder(order) ?: return
+
+    emailClient.sendNotificationOfficerEmail(email)
   }
 
   private fun sendUserEmail(order: Order) {
-    val emailAddress = order.submittedByEmail?.takeIf { it.isNotBlank() } ?: return
+    val email = RejectedUserEmail.fromOrder(order) ?: return
 
-    emailClient.sendUserEmail(
-      email = RejectedUserEmail(
-        emailAddress = emailAddress,
-        dwFirstName = order.deviceWearer?.firstName,
-        dwLastName = order.deviceWearer?.lastName,
-        userFirstName = order.submittedBy?.split(" ")?.first(),
-        userLastName = order.submittedBy?.split(" ")?.last(),
-      ),
-    )
+    emailClient.sendUserEmail(email)
   }
 }

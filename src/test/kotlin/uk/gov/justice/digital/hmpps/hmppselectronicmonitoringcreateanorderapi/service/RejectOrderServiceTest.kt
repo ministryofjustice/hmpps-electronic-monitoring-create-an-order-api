@@ -107,4 +107,22 @@ class RejectOrderServiceTest {
 
     verifyNoInteractions(repo)
   }
+
+  @Test
+  fun `does not send notifying org email when no NO email`() {
+    val gateway = FakeOrderByCaseIdGateway()
+    val repo = mock<OrderRepository>()
+    val emailClient = mock<EmailClient>()
+    val service = RejectOrderService(gateway, repo, emailClient)
+
+    val order = TestUtilities.createReadyToSubmitOrder(submittedBy = "Bob Jones")
+    order.submittedByEmail = "bob.jones@justice.gov.uk"
+    order.interestedParties?.notifyingOrganisationEmail = null
+    gateway.addOrder("CASE123", order)
+
+    service.execute("CASE123", ZonedDateTime.now(), emptyList())
+
+    verify(emailClient).sendUserEmail(any())
+    verify(emailClient, never()).sendNotificationOfficerEmail(any())
+  }
 }
