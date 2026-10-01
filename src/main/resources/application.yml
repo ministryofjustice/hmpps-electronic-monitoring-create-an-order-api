@@ -80,6 +80,12 @@ settings:
   device-wearer-payload-version: Prod
   get-api-enabled: ${GET_API_ENABLED:false}
 
+notify:
+  api-key: ${NOTIFY_API_KEY}
+  templates:
+    order-rejected-user: ${NOTIFY_TEMPLATE_ORDER_REJECTED_USER:5222afcd-cd14-47a2-ac94-f4e9fb546619}
+    order-rejected-no: ${NOTIFY_TEMPLATE_ORDER_REJECTED_NO:a46310e0-e7f9-43a4-8fde-bc00e3b19c7a}
+
 management:
   endpoints:
     web:

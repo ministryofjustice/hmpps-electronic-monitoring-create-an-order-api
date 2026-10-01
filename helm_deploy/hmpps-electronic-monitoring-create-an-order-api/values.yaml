@@ -22,7 +22,7 @@ generic-service:
         deny all;
         return 401;
       }
-  
+
 
   # Environment variables to load into the deployment
   env:
@@ -67,6 +67,8 @@ generic-service:
       HMPPS_SQS_QUEUES_RETURNSEVENTQUEUE_DLQNAME: "sqs_queue_name"
     large-court-cases-s3-bucket:
       HMPPS_S3_BUCKETNAME: "bucket_name"
+    notify:
+      NOTIFY_API_KEY: "NOTIFY_API_KEY"
   allowlist:
     groups:
       - internal

@@ -10,6 +10,7 @@ import org.mockito.kotlin.isNull
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.config.NotifyProperties
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.NotifyApiException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.emails.RejectedNOEmail
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.emails.RejectedUserEmail
@@ -20,8 +21,16 @@ class NotifyEmailClientTest {
 
   private val notificationClient = mock<NotificationClient>()
 
+  private val notifyProperties = NotifyProperties(
+    templates = NotifyProperties.Templates(
+      orderRejectedUser = USER_TEMPLATE_ID,
+      orderRejectedNo = ORGANISATION_TEMPLATE_ID,
+    ),
+  )
+
   private val client = NotifyEmailClient(
     notificationClient = notificationClient,
+    notifyProperties = notifyProperties,
   )
 
   private val userEmail = RejectedUserEmail(
