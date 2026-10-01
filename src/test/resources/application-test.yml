@@ -78,3 +78,4 @@ SERCO_USERNAME: username
 SERCO_PASSWORD: password
 SERCO_URL: http://localhost:8094/
 GET_API_ENABLED: true
+RETURN_LISTENER_ENABLED: true

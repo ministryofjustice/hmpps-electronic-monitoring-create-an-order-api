@@ -6,6 +6,7 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.provider.ValueSource
 import org.springframework.http.MediaType
 import org.springframework.web.reactive.function.BodyInserters
@@ -74,6 +75,51 @@ class InterestedPartiesControllerTest : UpdateOrderIntegrationTestBase() {
   @Nested
   @DisplayName("PUT /api/orders/{orderId}/interested-parties")
   inner class UpdateInterestedParties {
+    @ParameterizedTest
+    @CsvSource("PRISON,true", "PROBATION,true", "HOME_OFFICE,false", "YOUTH_CUSTODY_SERVICE,false")
+    fun `first submission assigns Sentencing Act from notifying organisation`(organisation: String, expected: Boolean) {
+      val order = createOrder()
+      Assertions.assertThat(order.isSentencingAct).isNull()
+
+      webTestClient.put()
+        .uri("/api/orders/${order.id}/interested-parties")
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(
+          BodyInserters.fromValue(
+            buildMockRequest(
+              notifyingOrganisation = organisation,
+              notifyingOrganisationName = if (organisation == "PRISON") "LEWES_PRISON" else "",
+            ),
+          ),
+        )
+        .headers(setAuthorisation("AUTH_ADM"))
+        .exchange()
+        .expectStatus()
+        .isOk
+
+      Assertions.assertThat(getOrder(order.id).isSentencingAct).isEqualTo(expected)
+      Assertions.assertThat(repo.findById(order.id).orElseThrow().isSentencingAct).isEqualTo(expected)
+    }
+
+    @Test
+    fun `changing notifying organisation clears an assigned flag to null`() {
+      val order = createOrder()
+
+      listOf("PROBATION", "HOME_OFFICE").forEach { organisation ->
+        webTestClient.put()
+          .uri("/api/orders/${order.id}/interested-parties")
+          .contentType(MediaType.APPLICATION_JSON)
+          .body(BodyInserters.fromValue(buildMockRequest(notifyingOrganisation = organisation)))
+          .headers(setAuthorisation("AUTH_ADM"))
+          .exchange()
+          .expectStatus()
+          .isOk
+      }
+
+      Assertions.assertThat(getOrder(order.id).isSentencingAct).isNull()
+      Assertions.assertThat(repo.findById(order.id).orElseThrow().isSentencingAct).isNull()
+    }
+
     @Test
     fun `it should update the interested parties with valid request body`() {
       val order = createOrder()
