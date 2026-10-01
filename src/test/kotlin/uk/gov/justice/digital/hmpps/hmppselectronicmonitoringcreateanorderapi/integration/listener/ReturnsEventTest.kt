@@ -80,12 +80,14 @@ class ReturnsEventTest : IntegrationTestBase() {
         emailAddress = SUBMITTED_BY_EMAIL,
         dwFirstName = order.deviceWearer?.firstName,
         dwLastName = order.deviceWearer?.lastName,
+        orderId = order.id,
         username = "Test User",
       ),
       RejectedNOEmail(
         emailAddress = NOTIFYING_ORG_EMAIL,
         dwFirstName = order.deviceWearer?.firstName,
         dwLastName = order.deviceWearer?.lastName,
+        orderId = order.id,
         notifyingOrgName = NOTIFYING_ORG_NAME,
       ),
     )
@@ -94,7 +96,7 @@ class ReturnsEventTest : IntegrationTestBase() {
   @Test
   fun `does not send a user email when the order has no submitting user email address`() {
     val caseId = "CASE456"
-    arrangeSubmittedOrder(caseId, submittedByEmail = null)
+    val submittedOrder = arrangeSubmittedOrder(caseId, submittedByEmail = null)
 
     queue.sendMessage(createReturnEventMessage(caseId, ReturnStatus.REJECTED))
 
@@ -106,6 +108,7 @@ class ReturnsEventTest : IntegrationTestBase() {
         emailAddress = NOTIFYING_ORG_EMAIL,
         dwFirstName = null,
         dwLastName = null,
+        orderId = submittedOrder.id,
         notifyingOrgName = NOTIFYING_ORG_NAME,
       ),
     )
@@ -128,6 +131,7 @@ class ReturnsEventTest : IntegrationTestBase() {
         emailAddress = SUBMITTED_BY_EMAIL,
         dwFirstName = order.deviceWearer?.firstName,
         dwLastName = order.deviceWearer?.lastName,
+        orderId = order.id,
         username = "Test User",
       ),
     )

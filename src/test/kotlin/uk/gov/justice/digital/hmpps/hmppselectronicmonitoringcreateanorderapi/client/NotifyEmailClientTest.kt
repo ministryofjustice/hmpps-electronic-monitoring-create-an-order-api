@@ -16,6 +16,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.emails.RejectedUserEmail
 import uk.gov.service.notify.NotificationClient
 import uk.gov.service.notify.NotificationClientException
+import java.util.UUID
 
 class NotifyEmailClientTest {
 
@@ -37,6 +38,7 @@ class NotifyEmailClientTest {
     emailAddress = USER_EMAIL_ADDRESS,
     dwFirstName = "Alice",
     dwLastName = "Wearer",
+    orderId = USER_ORDER_VERSION_ID,
     username = "Bob Jones",
   )
 
@@ -44,6 +46,7 @@ class NotifyEmailClientTest {
     emailAddress = ORGANISATION_EMAIL_ADDRESS,
     dwFirstName = "Alice",
     dwLastName = "Wearer",
+    orderId = ORGANISATION_ORDER_VERSION_ID,
     notifyingOrgName = "Probation Service",
   )
 
@@ -67,9 +70,11 @@ class NotifyEmailClientTest {
       "username",
       "dw first name",
       "dw last name",
+      "order id",
     ).containsEntry("username", "Bob Jones")
       .containsEntry("dw first name", "Alice")
       .containsEntry("dw last name", "Wearer")
+      .containsEntry("order id", USER_ORDER_VERSION_ID.toString())
   }
 
   @Test
@@ -92,9 +97,11 @@ class NotifyEmailClientTest {
       "dw first name",
       "dw last name",
       "notifying organisation name",
+      "order id",
     ).containsEntry("dw first name", "Alice")
       .containsEntry("dw last name", "Wearer")
       .containsEntry("notifying organisation name", "Probation Service")
+      .containsEntry("order id", ORGANISATION_ORDER_VERSION_ID.toString())
   }
 
   @Test
@@ -139,5 +146,7 @@ class NotifyEmailClientTest {
     const val ORGANISATION_TEMPLATE_ID = "a46310e0-e7f9-43a4-8fde-bc00e3b19c7a"
     const val USER_EMAIL_ADDRESS = "bob.jones@justice.gov.uk"
     const val ORGANISATION_EMAIL_ADDRESS = "notifying.org@justice.gov.uk"
+    val USER_ORDER_VERSION_ID: UUID = UUID.fromString("b6f0e4b2-7e3a-4c3a-9e9a-1e2d3c4b5a6f")
+    val ORGANISATION_ORDER_VERSION_ID: UUID = UUID.fromString("c7a1f5c3-8f4b-5d4b-af0b-2f3e4d5c6b7a")
   }
 }

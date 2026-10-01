@@ -300,8 +300,8 @@ class OrderService(
           throw SubmitOrderException("Error submit attachments to Serco")
         } else {
           order.status = OrderStatus.SUBMITTED
-          order.getCurrentVersion().submittedBy = fullName
-          order.getCurrentVersion().submittedByEmail = manageUserApi.getUserEmail(token.token)
+          order.submittedBy = fullName
+          order.submittedByEmail = manageUserApi.getUserEmail(token.token)
           order.tags = getTags(order)
           updateLastUpdatedByAndSaveOrder(order)
         }

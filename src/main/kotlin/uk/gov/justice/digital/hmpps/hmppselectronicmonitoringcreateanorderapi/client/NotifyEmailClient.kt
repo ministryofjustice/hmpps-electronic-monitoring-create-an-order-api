@@ -6,8 +6,6 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.co
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.NotifyApiException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.emails.Email
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.emails.EmailType
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.emails.RejectedNOEmail
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.emails.RejectedUserEmail
 import uk.gov.service.notify.NotificationClient
 import uk.gov.service.notify.NotificationClientException
 
@@ -32,22 +30,21 @@ class NotifyEmailClient(
     }
   }
 
-  private fun getPersonalisation(email: Email): Map<String, String?> = when (email) {
-    is RejectedUserEmail ->
-      mapOf("dw first name" to email.dwFirstName, "dw last name" to email.dwLastName, "username" to email.username)
-
-    is RejectedNOEmail ->
-      mapOf(
-        "dw first name" to email.dwFirstName,
-        "dw last name" to email.dwLastName,
-        "notifying organisation name" to email.notifyingOrgName,
-      )
-
-    else -> mapOf()
-  }
+  private fun getPersonalisation(email: Email): Map<String, String?> =
+    email.personalisationFields.mapKeys { (field, _) -> notifyFieldLabels.getValue(field) }
 
   private fun templateId(emailType: EmailType): String = when (emailType) {
     EmailType.USER -> notifyProperties.templates.orderRejectedUser
     EmailType.NO -> notifyProperties.templates.orderRejectedNo
+  }
+
+  companion object {
+    private val notifyFieldLabels = mapOf(
+      "dwFirstName" to "dw first name",
+      "dwLastName" to "dw last name",
+      "orderId" to "order id",
+      "username" to "username",
+      "notifyingOrgName" to "notifying organisation name",
+    )
   }
 }

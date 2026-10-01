@@ -32,7 +32,7 @@ class RejectOrderServiceTest {
 
     assertThat(order.status).isEqualTo(OrderStatus.REJECTED)
     assertThat(order.statusUpdates).hasSize(1)
-    assertThat(result).isSameAs(order)
+    assertThat(result).isEqualTo(order.id)
     verify(repo).save(order)
   }
 

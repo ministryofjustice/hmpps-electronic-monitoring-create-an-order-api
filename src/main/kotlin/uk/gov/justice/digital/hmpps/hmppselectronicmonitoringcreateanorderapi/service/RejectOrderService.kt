@@ -3,15 +3,15 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.s
 import jakarta.persistence.EntityNotFoundException
 import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.RejectionReason
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 import java.time.ZonedDateTime
+import java.util.UUID
 
 @Service
 class RejectOrderService(private val gateway: OrderByCaseIdGateway, private val repo: OrderRepository) {
   @Transactional
-  fun execute(caseId: String, dateTime: ZonedDateTime, reasons: List<RejectionReason>): Order {
+  fun execute(caseId: String, dateTime: ZonedDateTime, reasons: List<RejectionReason>): UUID {
     val order = gateway.findOrderByCaseId(caseId)
       ?: throw EntityNotFoundException("Order with caseId $caseId does not exist")
 
@@ -19,6 +19,6 @@ class RejectOrderService(private val gateway: OrderByCaseIdGateway, private val 
 
     repo.save(order)
 
-    return order
+    return order.id
   }
 }
