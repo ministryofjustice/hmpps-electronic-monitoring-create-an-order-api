@@ -113,6 +113,100 @@ class InterestedPartiesServiceTest : OrderSectionServiceTestBase() {
     assertThat(updatedParties.notifyingOrganisationName).isEqualTo(mockUpdateRecord.notifyingOrganisationName)
   }
 
+  @ParameterizedTest
+  @MethodSource("sentencingActValues")
+  fun `first interested-party submission sets Sentencing Act based on notifying organisation`(
+    notifyingOrganisation: NotifyingOrganisationDDv5,
+    expected: Boolean,
+  ) {
+    mockOrder.interestedParties = null
+    whenever(orderRepo.findById(mockOrderId)).thenReturn(Optional.of(mockOrder))
+    whenever(orderRepo.save(mockOrder)).thenReturn(mockOrder)
+
+    service.updateInterestedParties(
+      mockOrderId,
+      mockUsername,
+      UpdateInterestedPartiesDto(notifyingOrganisation = notifyingOrganisation),
+    )
+
+    assertThat(mockOrder.isSentencingAct).isEqualTo(expected)
+  }
+
+  @Test
+  fun `updating interested parties without changing notifying organisation keeps the flag`() {
+    mockOrder.isSentencingAct = true
+    whenever(orderRepo.findById(mockOrderId)).thenReturn(Optional.of(mockOrder))
+    whenever(orderRepo.save(mockOrder)).thenReturn(mockOrder)
+
+    service.updateInterestedParties(
+      mockOrderId,
+      mockUsername,
+      UpdateInterestedPartiesDto(notifyingOrganisation = NotifyingOrganisationDDv5.PROBATION),
+    )
+
+    assertThat(mockOrder.isSentencingAct).isTrue()
+  }
+
+  @Test
+  fun `changing an existing notifying organisation clears the flag rather than reassigning it`() {
+    mockOrder.isSentencingAct = false
+    whenever(orderRepo.findById(mockOrderId)).thenReturn(Optional.of(mockOrder))
+    whenever(orderRepo.save(mockOrder)).thenReturn(mockOrder)
+
+    service.updateInterestedParties(
+      mockOrderId,
+      mockUsername,
+      UpdateInterestedPartiesDto(notifyingOrganisation = NotifyingOrganisationDDv5.PRISON),
+    )
+
+    assertThat(mockOrder.isSentencingAct).isNull()
+  }
+
+  @Test
+  fun `editing a legacy order with an existing notifying organisation retains null`() {
+    whenever(orderRepo.findById(mockOrderId)).thenReturn(Optional.of(mockOrder))
+    whenever(orderRepo.save(mockOrder)).thenReturn(mockOrder)
+
+    service.updateInterestedParties(
+      mockOrderId,
+      mockUsername,
+      UpdateInterestedPartiesDto(notifyingOrganisation = NotifyingOrganisationDDv5.PROBATION),
+    )
+
+    assertThat(mockOrder.isSentencingAct).isNull()
+  }
+
+  @Test
+  fun `editing a copied version preserves its inherited flag`() {
+    mockOrder.versions[0] = mockOrder.getCurrentVersion().copy(versionId = 1)
+    mockOrder.isSentencingAct = true
+    whenever(orderRepo.findById(mockOrderId)).thenReturn(Optional.of(mockOrder))
+    whenever(orderRepo.save(mockOrder)).thenReturn(mockOrder)
+
+    service.updateInterestedParties(
+      mockOrderId,
+      mockUsername,
+      UpdateInterestedPartiesDto(notifyingOrganisation = NotifyingOrganisationDDv5.HOME_OFFICE),
+    )
+
+    assertThat(mockOrder.isSentencingAct).isTrue()
+  }
+
+  @Test
+  fun `first interested-party update on a copied legacy version preserves null`() {
+    mockOrder.versions[0] = mockOrder.getCurrentVersion().copy(versionId = 1, interestedParties = null)
+    whenever(orderRepo.findById(mockOrderId)).thenReturn(Optional.of(mockOrder))
+    whenever(orderRepo.save(mockOrder)).thenReturn(mockOrder)
+
+    service.updateInterestedParties(
+      mockOrderId,
+      mockUsername,
+      UpdateInterestedPartiesDto(notifyingOrganisation = NotifyingOrganisationDDv5.PRISON),
+    )
+
+    assertThat(mockOrder.isSentencingAct).isNull()
+  }
+
   @Test
   fun `should clear PDU when responsible organisation changes from Probation`() {
     whenever(orderRepo.findById(mockOrderId)).thenReturn(Optional.of(mockOrder))
@@ -254,6 +348,14 @@ class InterestedPartiesServiceTest : OrderSectionServiceTestBase() {
   }
 
   companion object {
+    @JvmStatic
+    fun sentencingActValues() = listOf(
+      Arguments.of(NotifyingOrganisationDDv5.PRISON, true),
+      Arguments.of(NotifyingOrganisationDDv5.PROBATION, true),
+      Arguments.of(NotifyingOrganisationDDv5.HOME_OFFICE, false),
+      Arguments.of(NotifyingOrganisationDDv5.YOUTH_CUSTODY_SERVICE, false),
+    )
+
     @JvmStatic
     fun ownerCohortValues() = listOf(
       Arguments.of(NotifyingOrganisationDDv5.PRISON, Prison.LEWES_PRISON.name, Prison.LEWES_PRISON.name),
