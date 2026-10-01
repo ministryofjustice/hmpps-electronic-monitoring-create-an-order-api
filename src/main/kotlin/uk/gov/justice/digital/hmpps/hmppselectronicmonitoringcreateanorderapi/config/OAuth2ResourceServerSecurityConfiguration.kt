@@ -77,10 +77,11 @@ class AuthAwareTokenConverter : Converter<Jwt, AbstractAuthenticationToken> {
 
   private fun findPrincipal(claims: Map<String, Any?>): String = if (claims.containsKey(CLAIM_USERNAME)) {
     claims[CLAIM_USERNAME] as String
+  } else if (claims.containsKey(CLAIM_CLIENT_ID)) {
+    claims[CLAIM_CLIENT_ID] as String
   } else {
     throw InvalidBearerTokenException("Username is not in token")
   }
-
   private fun findName(claims: Map<String, Any?>): String = if (claims.containsKey(CLAIM_NAME)) {
     claims[CLAIM_NAME] as String
   } else {
@@ -107,6 +108,7 @@ class AuthAwareTokenConverter : Converter<Jwt, AbstractAuthenticationToken> {
     const val CLAIM_USERNAME = "user_name"
     const val CLAIM_AUTHORITY = "authorities"
     const val CLAIM_NAME = "name"
+    const val CLAIM_CLIENT_ID = "client_id"
   }
 }
 
