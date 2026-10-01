@@ -1,5 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository
 
+import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Slice
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor
 import org.springframework.data.jpa.repository.Query
@@ -26,11 +28,11 @@ interface OrderRepository :
     LEFT JOIN ov.monitoringConditions mc
     WHERE ov.versionId = (SELECT MAX(ov2.versionId) FROM OrderVersion ov2 WHERE ov2.orderId = ov.orderId)
     AND ov.username = :username
-    AND ov.status = 'IN_PROGRESS'
-    ORDER BY ov.lastUpdatedDateTime DESC 
+    AND ov.status IN ('IN_PROGRESS', 'REJECTED')
+    ORDER BY ov.lastUpdatedDateTime DESC
     """,
   )
-  fun findMyOrders(@Param("username") username: String): List<OrderVersionListInformation>
+  fun findMyOrders(@Param("username") username: String, pageable: Pageable): Slice<OrderVersionListInformation>
 
   @Query(
     """
@@ -42,10 +44,10 @@ interface OrderRepository :
     WHERE ov.versionId = (SELECT MAX(ov2.versionId) FROM OrderVersion ov2 WHERE ov2.orderId = ov.orderId)
     AND ov.username = :username
     AND ov.status = 'ERROR'
-    ORDER BY ov.lastUpdatedDateTime DESC 
+    ORDER BY ov.lastUpdatedDateTime DESC
     """,
   )
-  fun findFailedOrders(@Param("username") username: String): List<OrderVersionListInformation>
+  fun findFailedOrders(@Param("username") username: String, pageable: Pageable): Slice<OrderVersionListInformation>
 
   @Query(
     """
@@ -56,9 +58,27 @@ interface OrderRepository :
     LEFT JOIN ov.monitoringConditions mc
     WHERE ov.versionId = (SELECT MAX(ov2.versionId) FROM OrderVersion ov2 WHERE ov2.orderId = ov.orderId)
     AND ov.ownerCohort IN :prisonNames
-    AND ov.status = 'IN_PROGRESS'
-    ORDER BY ov.lastUpdatedDateTime DESC 
+    AND ov.status IN ('IN_PROGRESS', 'REJECTED')
+    ORDER BY ov.lastUpdatedDateTime DESC
     """,
   )
-  fun findPrisonOrders(@Param("prisonNames") prisonNames: List<String>): List<OrderVersionListInformation>
+  fun findPrisonOrders(
+    @Param("prisonNames") prisonNames: List<String>,
+    pageable: Pageable,
+  ): Slice<OrderVersionListInformation>
+
+  @Query(
+    """
+    SELECT ov.orderId as id, ov.id AS versionId, ov.status AS status, ov.type AS type, dw.firstName AS firstName, dw.lastName AS lastName, ip.notifyingOrganisation AS notifyingOrganisation, mc.startDate AS startDate, ov.lastUpdatedBy AS lastUpdatedBy, ov.lastUpdatedDateTime AS lastUpdatedDateTime
+    FROM OrderVersion ov
+    LEFT JOIN ov.deviceWearer dw
+    LEFT JOIN ov.interestedParties ip
+    LEFT JOIN ov.monitoringConditions mc
+    WHERE ov.versionId = (SELECT MAX(ov2.versionId) FROM OrderVersion ov2 WHERE ov2.orderId = ov.orderId)
+    AND ov.ownerCohort = 'HOME_OFFICE'
+    AND ov.status IN ('IN_PROGRESS', 'REJECTED')
+    ORDER BY ov.lastUpdatedDateTime DESC
+    """,
+  )
+  fun findHomeOfficeOrders(pageable: Pageable): Slice<OrderVersionListInformation>
 }

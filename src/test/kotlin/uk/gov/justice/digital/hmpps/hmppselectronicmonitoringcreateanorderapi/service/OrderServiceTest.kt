@@ -22,6 +22,8 @@ import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.boot.test.autoconfigure.json.JsonTest
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.SliceImpl
 import org.springframework.security.access.AccessDeniedException
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken
@@ -607,38 +609,41 @@ class OrderServiceTest {
       override fun getIsSentencingAct() = mockOrder.isSentencingAct
     }
 
+    private fun pageOf(mockInfo: OrderVersionListInformation) =
+      SliceImpl(listOf(mockInfo), PageRequest.of(0, 20), false)
+
     @Test
     fun `MY_ORDERS returns in-progress orders for the current user`() {
       val mockOrder = TestUtilities.createReadyToSubmitOrder(startDate = mockStartDate, endDate = mockEndDate)
       val mockInfo = mockOrderListInformation(mockOrder)
-      whenever(repo.findMyOrders("mockUser")).thenReturn(listOf(mockInfo))
+      whenever(repo.findMyOrders("mockUser", PageRequest.of(0, 20))).thenReturn(pageOf(mockInfo))
 
       val results = service.listOrders(authentication, OrderListView.MY_ORDERS)
 
-      assertThat(results.first().id).isEqualTo(mockOrder.id)
+      assertThat(results.content.first().id).isEqualTo(mockOrder.id)
     }
 
     @Test
     fun `MY_ORDERS is the default view`() {
       val mockOrder = TestUtilities.createReadyToSubmitOrder(startDate = mockStartDate, endDate = mockEndDate)
       val mockInfo = mockOrderListInformation(mockOrder)
-      whenever(repo.findMyOrders("mockUser")).thenReturn(listOf(mockInfo))
+      whenever(repo.findMyOrders("mockUser", PageRequest.of(0, 20))).thenReturn(pageOf(mockInfo))
 
       val results = service.listOrders(authentication)
 
-      assertThat(results.first().id).isEqualTo(mockOrder.id)
+      assertThat(results.content.first().id).isEqualTo(mockOrder.id)
     }
 
     @Test
     fun `MY_ORDERS returns expected fields`() {
       val mockOrder = TestUtilities.createReadyToSubmitOrder(startDate = mockStartDate, endDate = mockEndDate)
       val mockInfo = mockOrderListInformation(mockOrder)
-      whenever(repo.findMyOrders("mockUser")).thenReturn(listOf(mockInfo))
+      whenever(repo.findMyOrders("mockUser", PageRequest.of(0, 20))).thenReturn(pageOf(mockInfo))
 
       val results = service.listOrders(authentication)
 
-      assertThat(results.first().monitoringConditions?.startDate).isEqualTo(mockOrder.getMonitoringStartDate())
-      assertThat(results.first().type).isEqualTo(mockOrder.type)
+      assertThat(results.content.first().monitoringConditions?.startDate).isEqualTo(mockOrder.getMonitoringStartDate())
+      assertThat(results.content.first().type).isEqualTo(mockOrder.type)
     }
 
     @Test
@@ -648,6 +653,39 @@ class OrderServiceTest {
       assertThatThrownBy { service.listOrders(authentication, OrderListView.PRISON_ORDERS) }.isInstanceOf(
         AccessDeniedException::class.java,
       )
+    }
+
+    @Test
+    fun `HOME_OFFICE_ORDERS throws AccessDeniedException for non-home-office users`() {
+      whenever(userCohortService.getUserCohort(authentication)).thenReturn(UserCohort(Cohort.PROBATION))
+
+      assertThatThrownBy { service.listOrders(authentication, OrderListView.HOME_OFFICE_ORDERS) }
+        .isInstanceOf(AccessDeniedException::class.java)
+    }
+
+    @Test
+    fun `HOME_OFFICE_ORDERS returns paged orders for Home Office users`() {
+      val mockOrder = TestUtilities.createReadyToSubmitOrder(ownerCohort = Cohort.HOME_OFFICE.name)
+      val mockInfo = mockOrderListInformation(mockOrder)
+      val pageable = PageRequest.of(1, 10)
+      whenever(userCohortService.getUserCohort(authentication)).thenReturn(UserCohort(Cohort.HOME_OFFICE))
+      whenever(repo.findHomeOfficeOrders(pageable)).thenReturn(
+        SliceImpl(listOf(mockInfo), pageable, true),
+      )
+
+      val results = service.listOrders(authentication, OrderListView.HOME_OFFICE_ORDERS, page = 1, size = 10)
+
+      assertThat(results.content.first().id).isEqualTo(mockOrder.id)
+      assertThat(results.page).isEqualTo(1)
+      assertThat(results.size).isEqualTo(10)
+      assertThat(results.hasNext).isTrue()
+      verify(repo).findHomeOfficeOrders(pageable)
+    }
+
+    @Test
+    fun `listOrders rejects page sizes above the maximum`() {
+      assertThatThrownBy { service.listOrders(authentication, size = OrderService.MAX_ORDER_LIST_PAGE_SIZE + 1) }
+        .isInstanceOf(BadRequestException::class.java)
     }
 
     @Test
@@ -664,11 +702,12 @@ class OrderServiceTest {
           activeCaseLoadId = Prison.BEDFORD_PRISON.ids.first(),
         ),
       )
-      whenever(repo.findPrisonOrders(listOf(Prison.BEDFORD_PRISON.name))).thenReturn(listOf(mockInfo))
+      whenever(repo.findPrisonOrders(listOf(Prison.BEDFORD_PRISON.name), PageRequest.of(0, 20)))
+        .thenReturn(pageOf(mockInfo))
 
       val results = service.listOrders(authentication, OrderListView.PRISON_ORDERS)
 
-      assertThat(results.first().id).isEqualTo(mockOrder.id)
+      assertThat(results.content.first().id).isEqualTo(mockOrder.id)
     }
 
     @Test
@@ -679,8 +718,8 @@ class OrderServiceTest {
 
       val results = service.listOrders(authentication, OrderListView.PRISON_ORDERS)
 
-      assertThat(results).isEmpty()
-      verify(repo, never()).findPrisonOrders(any())
+      assertThat(results.content).isEmpty()
+      verify(repo, never()).findPrisonOrders(any(), any())
     }
 
     @Test
@@ -690,12 +729,12 @@ class OrderServiceTest {
       mockOrder.lastUpdatedBy = "Bob Smith"
       mockOrder.lastUpdatedDateTime = fixedTime
       val mockInfo = mockOrderListInformation(mockOrder)
-      whenever(repo.findMyOrders("mockUser")).thenReturn(listOf(mockInfo))
+      whenever(repo.findMyOrders("mockUser", PageRequest.of(0, 20))).thenReturn(pageOf(mockInfo))
 
       val results = service.listOrders(authentication, OrderListView.MY_ORDERS)
 
-      assertThat(results.first().lastUpdatedBy).isEqualTo("Bob Smith")
-      assertThat(results.first().lastUpdatedDateTime).isEqualTo(fixedTime)
+      assertThat(results.content.first().lastUpdatedBy).isEqualTo("Bob Smith")
+      assertThat(results.content.first().lastUpdatedDateTime).isEqualTo(fixedTime)
     }
   }
 
@@ -786,6 +825,16 @@ class OrderServiceTest {
       service.createVersion(order.id, authentication, RequestType.AMEND_ORIGINAL_REQUEST)
 
       assertThat(order.versions.last().isSentencingAct).isTrue()
+    }
+
+    @Test
+    fun `A new version retains its owner cohort`() {
+      order.ownerCohort = Cohort.HOME_OFFICE.name
+      whenever(authentication.name).thenReturn(order.username)
+
+      service.createVersion(order.id, authentication, RequestType.VARIATION)
+
+      assertThat(order.versions.last().ownerCohort).isEqualTo(Cohort.HOME_OFFICE.name)
     }
 
     @Nested

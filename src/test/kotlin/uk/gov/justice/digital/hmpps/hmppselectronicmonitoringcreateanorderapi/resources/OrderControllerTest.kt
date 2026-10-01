@@ -16,6 +16,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.CreateOrderDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderInformationDto
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderInformationPageDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderSearchResultDeviceWearerDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderSearchResultDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderSearchResultMonitoringConditionsDto
@@ -171,12 +172,13 @@ class OrderControllerTest {
       ),
     )
 
-    `when`(orderService.listOrders(authentication, OrderListView.MY_ORDERS)).thenReturn(orderInformation)
+    val page = OrderInformationPageDto(orderInformation, page = 0, size = 20, hasNext = false)
+    `when`(orderService.listOrders(authentication, OrderListView.MY_ORDERS, 0, 20)).thenReturn(page)
     `when`(authentication.name).thenReturn("mockUser")
 
     val result = controller.listOrders(authentication)
     Assertions.assertThat(result.body).isEqualTo(
-      orderInformation,
+      page,
     )
   }
 
