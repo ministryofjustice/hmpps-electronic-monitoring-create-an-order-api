@@ -64,6 +64,7 @@ abstract class IntegrationTestBase {
     roles: List<String> = listOf("ROLE_EM_CEMO__CREATE_ORDER"),
     scopes: List<String> = listOf("read"),
     userFullName: String? = "John Smith",
+    clientId: String? = "test-client-id",
   ): (
     HttpHeaders,
   ) -> Unit = jwtAuthHelper.setAuthorisationHeader(
@@ -71,12 +72,13 @@ abstract class IntegrationTestBase {
     scope = scopes,
     roles = roles,
     userFullName = userFullName,
+    clientId = clientId,
   )
 
   internal fun setAuthorisationWithoutUsername(
     roles: List<String> = listOf("ROLE_EM_CEMO__CREATE_ORDER"),
     scopes: List<String> = listOf("read"),
-  ): (HttpHeaders) -> Unit = jwtAuthHelper.setAuthorisationHeader(scope = scopes, roles = roles)
+  ): (HttpHeaders) -> Unit = jwtAuthHelper.setAuthorisationHeader(scope = scopes, roles = roles, clientId = null)
 
   protected fun stubPingWithResponse(status: Int) {
     hmppsAuth.stubHealthPing(status)

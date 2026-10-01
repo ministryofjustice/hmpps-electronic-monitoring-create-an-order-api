@@ -36,7 +36,7 @@ class JwtAuthorisationHelperWithUserFullName {
     NimbusReactiveJwtDecoder.withPublicKey(keyPair.public as RSAPublicKey).build()
 
   fun setAuthorisationHeader(
-    clientId: String = "test-client-id",
+    clientId: String? = "test-client-id",
     username: String? = null,
     scope: List<String> = listOf(),
     roles: List<String> = listOf(),
@@ -56,7 +56,7 @@ class JwtAuthorisationHelperWithUserFullName {
 
   @JvmOverloads
   fun createJwtAccessToken(
-    clientId: String = "test-client-id",
+    clientId: String? = "test-client-id",
     username: String? = null,
     scope: List<String>? = listOf(),
     roles: List<String>? = listOf(),
@@ -66,13 +66,13 @@ class JwtAuthorisationHelperWithUserFullName {
     grantType: String = "client_credentials",
     userFullName: String? = null,
   ): String = mutableMapOf<String, Any>(
-    "sub" to (username ?: clientId),
-    "client_id" to clientId,
+    "sub" to (username ?: clientId ?: ""),
     "auth_source" to authSource,
     "grant_type" to grantType,
   ).apply {
     username?.let { this["user_name"] = username }
     scope?.let { this["scope"] = scope }
+    clientId?.let { this["client_id"] = clientId }
     roles?.let {
       // ensure that all roles have a ROLE_ prefix
       this["authorities"] = roles.map { "ROLE_${it.substringAfter("ROLE_")}" }
