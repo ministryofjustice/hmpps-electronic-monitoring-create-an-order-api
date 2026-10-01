@@ -12,13 +12,20 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 @Primary
 class TestEmailClient : EmailClient {
   private val emails = mutableListOf<Email>()
+  private var failing = false
 
   override fun sendEmail(email: Email) {
+    if (failing) throw RuntimeException("Simulated Notify failure")
     emails.add(email)
   }
 
   fun reset() {
     emails.clear()
+    failing = false
+  }
+
+  fun failAlways() {
+    failing = true
   }
 
   fun assertSent(vararg expected: Email) {

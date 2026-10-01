@@ -11,7 +11,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.up3.ReturnMessage
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.up3.ReturnStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.EventService
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.RejectOrderService
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.RejectOrderNotificationService
 import java.time.Instant
 import java.time.ZoneId
 import java.time.ZonedDateTime
@@ -21,7 +21,7 @@ data class ReturnsSnsEnvelope(val data: ReturnMessage)
 
 @Component
 class ReturnsEventTranslator(
-  private val rejectOrder: RejectOrderService,
+  private val rejectOrder: RejectOrderNotificationService,
   private val objectMapper: ObjectMapper,
   private val eventService: EventService,
 ) {

@@ -113,15 +113,24 @@ class ReturnsEventTest : IntegrationTestBase() {
 
   @Test
   fun `does not send an NO email when the order has no NO email address`() {
-    val caseId = "CASE456"
-    arrangeSubmittedOrder(caseId, noEmail = null)
+    val caseId = "CASE654"
+    val submittedOrder = arrangeSubmittedOrder(caseId, noEmail = null)
 
     queue.sendMessage(createReturnEventMessage(caseId, ReturnStatus.REJECTED))
 
     await().until { queue.isEmpty() }
     assertThat(queue.dlqIsEmpty()).isEqualTo(true)
 
-    testEmailClient.assertNothingSent()
+    val order = orderRepo.findById(submittedOrder.id).get()
+
+    testEmailClient.assertSent(
+      RejectedUserEmail(
+        emailAddress = SUBMITTED_BY_EMAIL,
+        dwFirstName = order.deviceWearer?.firstName,
+        dwLastName = order.deviceWearer?.lastName,
+        username = "Test User",
+      ),
+    )
   }
 
   @Test
@@ -160,6 +169,21 @@ class ReturnsEventTest : IntegrationTestBase() {
 
     await().until { !queue.dlqIsEmpty() }
     assertThat(queue.dlqIsEmpty()).isEqualTo(false)
+  }
+
+  @Test
+  fun `still rejects the order and does not dead letter the event when sending emails fails`() {
+    val caseId = "CASE999"
+    val submittedOrder = arrangeSubmittedOrder(caseId)
+    testEmailClient.failAlways()
+
+    queue.sendMessage(createReturnEventMessage(caseId, ReturnStatus.REJECTED))
+
+    await().until { queue.isEmpty() }
+    assertThat(queue.dlqIsEmpty()).isEqualTo(true)
+
+    val order = orderRepo.findById(submittedOrder.id).get()
+    assertThat(order.status).isEqualTo(OrderStatus.REJECTED)
   }
 
   private fun arrangeSubmittedOrder(
