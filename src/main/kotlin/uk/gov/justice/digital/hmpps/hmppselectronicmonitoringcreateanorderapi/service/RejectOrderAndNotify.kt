@@ -12,7 +12,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.re
 import java.time.ZonedDateTime
 
 @Service
-class RejectOrderNotificationService(
+class RejectOrderAndNotify(
   private val rejectOrderService: RejectOrderService,
   private val orderRepository: OrderRepository,
   private val emailClient: EmailClient,

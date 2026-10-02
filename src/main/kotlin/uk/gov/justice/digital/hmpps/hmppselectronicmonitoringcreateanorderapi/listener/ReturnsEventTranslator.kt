@@ -12,7 +12,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.up3.ReturnMessage
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.up3.ReturnStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.EventService
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.RejectOrderNotificationService
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.RejectOrderAndNotify
 import java.time.Instant
 import java.time.ZoneId
 import java.time.ZonedDateTime
@@ -23,7 +23,7 @@ data class ReturnsSnsEnvelope(val data: ReturnMessage)
 @Component
 @ConditionalOnExpression("\${settings.return-listener-enabled:false}")
 class ReturnsEventTranslator(
-  private val rejectOrder: RejectOrderNotificationService,
+  private val rejectOrderAndNotify: RejectOrderAndNotify,
   private val objectMapper: ObjectMapper,
   private val eventService: EventService,
 ) {
@@ -37,7 +37,7 @@ class ReturnsEventTranslator(
 
       when (message.status) {
         ReturnStatus.REJECTED -> {
-          rejectOrder.execute(
+          rejectOrderAndNotify.execute(
             message.caseId,
             dateTime,
             message.reasons.map { RejectionReason(section = it.section, details = it.details) },

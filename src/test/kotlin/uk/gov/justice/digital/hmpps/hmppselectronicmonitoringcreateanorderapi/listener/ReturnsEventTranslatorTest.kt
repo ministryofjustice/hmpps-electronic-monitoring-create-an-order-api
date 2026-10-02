@@ -12,12 +12,12 @@ import org.mockito.kotlin.verifyNoInteractions
 import tools.jackson.module.kotlin.jacksonObjectMapper
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.RejectionReason
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.EventService
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.RejectOrderNotificationService
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.RejectOrderAndNotify
 import java.time.ZonedDateTime
 
 class ReturnsEventTranslatorTest {
 
-  private val rejectOrder = mock<RejectOrderNotificationService>()
+  private val rejectOrder = mock<RejectOrderAndNotify>()
   private val objectMapper = jacksonObjectMapper()
   private val eventService = mock<EventService>()
   private val translator = ReturnsEventTranslator(rejectOrder, objectMapper, eventService)
