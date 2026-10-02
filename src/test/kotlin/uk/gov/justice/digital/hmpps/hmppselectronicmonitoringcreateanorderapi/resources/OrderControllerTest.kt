@@ -172,8 +172,15 @@ class OrderControllerTest {
       ),
     )
 
-    val page = OrderInformationPageDto(orderInformation, page = 0, size = 20, hasNext = false)
-    `when`(orderService.listOrders(authentication, OrderListView.MY_ORDERS, 0, 20)).thenReturn(page)
+    val page = OrderInformationPageDto(
+      orderInformation,
+      page = 0,
+      size = OrderService.DEFAULT_ORDER_LIST_PAGE_SIZE,
+      hasNext = false,
+    )
+    `when`(
+      orderService.listOrders(authentication, OrderListView.MY_ORDERS, 0, OrderService.DEFAULT_ORDER_LIST_PAGE_SIZE),
+    ).thenReturn(page)
     `when`(authentication.name).thenReturn("mockUser")
 
     val result = controller.listOrders(authentication)

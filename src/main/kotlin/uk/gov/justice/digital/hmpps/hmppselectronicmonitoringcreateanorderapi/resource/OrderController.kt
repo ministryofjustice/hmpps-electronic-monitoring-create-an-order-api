@@ -120,7 +120,7 @@ class OrderController(@Autowired val orderService: OrderService) {
     authentication: Authentication,
     @RequestParam view: OrderListView = OrderListView.MY_ORDERS,
     @RequestParam(defaultValue = "0") page: Int = 0,
-    @RequestParam(defaultValue = "20") size: Int = 20,
+    @RequestParam(defaultValue = "50") size: Int = 50,
   ): ResponseEntity<OrderInformationPageDto> {
     val orderListInformation =
       orderService.listOrders(authentication as JwtAuthenticationToken, view, page, size)

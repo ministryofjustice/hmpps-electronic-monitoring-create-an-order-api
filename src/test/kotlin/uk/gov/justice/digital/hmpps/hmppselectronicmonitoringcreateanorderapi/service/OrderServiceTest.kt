@@ -610,13 +610,14 @@ class OrderServiceTest {
     }
 
     private fun pageOf(mockInfo: OrderVersionListInformation) =
-      SliceImpl(listOf(mockInfo), PageRequest.of(0, 20), false)
+      SliceImpl(listOf(mockInfo), PageRequest.of(0, OrderService.DEFAULT_ORDER_LIST_PAGE_SIZE), false)
 
     @Test
     fun `MY_ORDERS returns in-progress orders for the current user`() {
       val mockOrder = TestUtilities.createReadyToSubmitOrder(startDate = mockStartDate, endDate = mockEndDate)
       val mockInfo = mockOrderListInformation(mockOrder)
-      whenever(repo.findMyOrders("mockUser", PageRequest.of(0, 20))).thenReturn(pageOf(mockInfo))
+      whenever(repo.findMyOrders("mockUser", PageRequest.of(0, OrderService.DEFAULT_ORDER_LIST_PAGE_SIZE)))
+        .thenReturn(pageOf(mockInfo))
 
       val results = service.listOrders(authentication, OrderListView.MY_ORDERS)
 
@@ -627,7 +628,8 @@ class OrderServiceTest {
     fun `MY_ORDERS is the default view`() {
       val mockOrder = TestUtilities.createReadyToSubmitOrder(startDate = mockStartDate, endDate = mockEndDate)
       val mockInfo = mockOrderListInformation(mockOrder)
-      whenever(repo.findMyOrders("mockUser", PageRequest.of(0, 20))).thenReturn(pageOf(mockInfo))
+      whenever(repo.findMyOrders("mockUser", PageRequest.of(0, OrderService.DEFAULT_ORDER_LIST_PAGE_SIZE)))
+        .thenReturn(pageOf(mockInfo))
 
       val results = service.listOrders(authentication)
 
@@ -638,7 +640,8 @@ class OrderServiceTest {
     fun `MY_ORDERS returns expected fields`() {
       val mockOrder = TestUtilities.createReadyToSubmitOrder(startDate = mockStartDate, endDate = mockEndDate)
       val mockInfo = mockOrderListInformation(mockOrder)
-      whenever(repo.findMyOrders("mockUser", PageRequest.of(0, 20))).thenReturn(pageOf(mockInfo))
+      whenever(repo.findMyOrders("mockUser", PageRequest.of(0, OrderService.DEFAULT_ORDER_LIST_PAGE_SIZE)))
+        .thenReturn(pageOf(mockInfo))
 
       val results = service.listOrders(authentication)
 
@@ -702,7 +705,12 @@ class OrderServiceTest {
           activeCaseLoadId = Prison.BEDFORD_PRISON.ids.first(),
         ),
       )
-      whenever(repo.findPrisonOrders(listOf(Prison.BEDFORD_PRISON.name), PageRequest.of(0, 20)))
+      whenever(
+        repo.findPrisonOrders(
+          listOf(Prison.BEDFORD_PRISON.name),
+          PageRequest.of(0, OrderService.DEFAULT_ORDER_LIST_PAGE_SIZE),
+        ),
+      )
         .thenReturn(pageOf(mockInfo))
 
       val results = service.listOrders(authentication, OrderListView.PRISON_ORDERS)
@@ -729,7 +737,8 @@ class OrderServiceTest {
       mockOrder.lastUpdatedBy = "Bob Smith"
       mockOrder.lastUpdatedDateTime = fixedTime
       val mockInfo = mockOrderListInformation(mockOrder)
-      whenever(repo.findMyOrders("mockUser", PageRequest.of(0, 20))).thenReturn(pageOf(mockInfo))
+      whenever(repo.findMyOrders("mockUser", PageRequest.of(0, OrderService.DEFAULT_ORDER_LIST_PAGE_SIZE)))
+        .thenReturn(pageOf(mockInfo))
 
       val results = service.listOrders(authentication, OrderListView.MY_ORDERS)
 

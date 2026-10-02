@@ -150,6 +150,7 @@ class OrderService(val fmsService: FmsService, private val featureFlags: Feature
       dataDictionaryVersion = dataDictionaryVersion,
       fmsResultId = null,
       fmsResultDate = null,
+      // was there a reason this wasn't here already on create variation?
       ownerCohort = currentVersion.ownerCohort,
     )
       .apply {
