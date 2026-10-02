@@ -229,25 +229,14 @@ class ReturnsEventTest : IntegrationTestBase() {
       datetimeOfStatusChange = dateTime,
     )
 
-    val payload = """
-      {
-        "version": "2.0",
-        "eventType": "OrderCreated",
-        "data": ${objectMapper.writeValueAsString(message)}
-      }
-    """
-
     return """
       {
-        "Type": "Notification",
-        "MessageId": "0f1b1c9f-0d5b-4f1a-9a21-4e0f9a2f0a11",
-        "Message": ${objectMapper.writeValueAsString(payload)},
-        "MessageAttributes": {
-          "eventType": {
-            "Type": "String",
-            "Value": "returns.order.status.changed"
-          }
-        }
+        "eventId": "sha256:40fd45e4650528f60271b8260ce2c87bef7ff31c1ea2aa6508e4a2dc119e3001",
+        "publishedAt": "2026-10-02T10:31:27.192202337+01:00",
+        "data": ${objectMapper.writeValueAsString(message)},
+        "version": 1,
+        "source": "hmpps-external-api",
+        "eventType": "electronic-monitoring.case-status-returned"
       }
     """
   }
