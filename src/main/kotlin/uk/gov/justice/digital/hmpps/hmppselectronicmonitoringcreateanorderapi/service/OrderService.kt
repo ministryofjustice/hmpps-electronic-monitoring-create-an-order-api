@@ -301,7 +301,7 @@ class OrderService(
         } else {
           order.status = OrderStatus.SUBMITTED
           order.submittedBy = fullName
-          order.submittedByEmail = manageUserApi.getUserEmail(token.token)
+          order.submittedByEmail = runCatching { manageUserApi.getUserEmail(token.token) }.getOrNull()
           order.tags = getTags(order)
           updateLastUpdatedByAndSaveOrder(order)
         }
