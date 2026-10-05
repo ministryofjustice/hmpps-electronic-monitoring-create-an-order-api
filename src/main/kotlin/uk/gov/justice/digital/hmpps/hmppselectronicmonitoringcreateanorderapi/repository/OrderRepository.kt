@@ -29,7 +29,12 @@ interface OrderRepository :
     WHERE ov.versionId = (SELECT MAX(ov2.versionId) FROM OrderVersion ov2 WHERE ov2.orderId = ov.orderId)
     AND ov.username = :username
     AND ov.status IN ('IN_PROGRESS', 'REJECTED')
-    ORDER BY ov.lastUpdatedDateTime DESC
+    ORDER BY
+      CASE WHEN ov.status = 'REJECTED' THEN 0 ELSE 1 END ASC,
+      CASE WHEN mc.startDate IS NULL THEN 1 ELSE 0 END ASC,
+      mc.startDate ASC,
+      ov.lastUpdatedDateTime DESC,
+      ov.orderId ASC
     """,
   )
   fun findMyOrders(@Param("username") username: String, pageable: Pageable): Slice<OrderVersionListInformation>
@@ -44,7 +49,11 @@ interface OrderRepository :
     WHERE ov.versionId = (SELECT MAX(ov2.versionId) FROM OrderVersion ov2 WHERE ov2.orderId = ov.orderId)
     AND ov.username = :username
     AND ov.status = 'ERROR'
-    ORDER BY ov.lastUpdatedDateTime DESC
+    ORDER BY
+      CASE WHEN mc.startDate IS NULL THEN 1 ELSE 0 END ASC,
+      mc.startDate ASC,
+      ov.lastUpdatedDateTime DESC,
+      ov.orderId ASC
     """,
   )
   fun findFailedOrders(@Param("username") username: String, pageable: Pageable): Slice<OrderVersionListInformation>
@@ -59,7 +68,12 @@ interface OrderRepository :
     WHERE ov.versionId = (SELECT MAX(ov2.versionId) FROM OrderVersion ov2 WHERE ov2.orderId = ov.orderId)
     AND ov.ownerCohort IN :prisonNames
     AND ov.status IN ('IN_PROGRESS', 'REJECTED')
-    ORDER BY ov.lastUpdatedDateTime DESC
+    ORDER BY
+      CASE WHEN ov.status = 'REJECTED' THEN 0 ELSE 1 END ASC,
+      CASE WHEN mc.startDate IS NULL THEN 1 ELSE 0 END ASC,
+      mc.startDate ASC,
+      ov.lastUpdatedDateTime DESC,
+      ov.orderId ASC
     """,
   )
   fun findPrisonOrders(
@@ -77,7 +91,12 @@ interface OrderRepository :
     WHERE ov.versionId = (SELECT MAX(ov2.versionId) FROM OrderVersion ov2 WHERE ov2.orderId = ov.orderId)
     AND ov.ownerCohort = 'HOME_OFFICE'
     AND ov.status IN ('IN_PROGRESS', 'REJECTED')
-    ORDER BY ov.lastUpdatedDateTime DESC
+    ORDER BY
+      CASE WHEN ov.status = 'REJECTED' THEN 0 ELSE 1 END ASC,
+      CASE WHEN mc.startDate IS NULL THEN 1 ELSE 0 END ASC,
+      mc.startDate ASC,
+      ov.lastUpdatedDateTime DESC,
+      ov.orderId ASC
     """,
   )
   fun findHomeOfficeOrders(pageable: Pageable): Slice<OrderVersionListInformation>
