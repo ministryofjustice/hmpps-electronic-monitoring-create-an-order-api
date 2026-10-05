@@ -84,8 +84,8 @@ settings:
 notify:
   api-key: ${NOTIFY_API_KEY}
   templates:
-    order-rejected-user: 5222afcd-cd14-47a2-ac94-f4e9fb546619
-    order-rejected-no: a46310e0-e7f9-43a4-8fde-bc00e3b19c7a
+    order-rejected-user: 86dfd356-51ae-4675-be25-906896895345
+    order-rejected-no: 7ab4e88f-b912-48a4-9764-a6ad2ef76844
 
 management:
   endpoints:
