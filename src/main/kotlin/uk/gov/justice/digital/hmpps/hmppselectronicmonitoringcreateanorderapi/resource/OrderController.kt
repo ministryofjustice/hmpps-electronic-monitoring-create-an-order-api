@@ -231,6 +231,7 @@ class OrderController(@Autowired val orderService: OrderService) {
       offenceAdditionalDetails = order.offenceAdditionalDetails,
       mappa = order.mappa,
       detailsOfInstallation = order.detailsOfInstallation,
+      statusUpdates = order.statusUpdates,
       lastUpdatedBy = order.lastUpdatedBy,
       lastUpdatedDateTime = order.lastUpdatedDateTime,
       ownerCohort = order.ownerCohort,

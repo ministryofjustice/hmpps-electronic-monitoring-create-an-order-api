@@ -30,6 +30,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.RejectionReason
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderInformationDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderInformationPageDto
@@ -39,6 +40,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DocumentType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Prison
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ProcessingStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ServiceRequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.SubmissionStatus
@@ -1337,6 +1339,49 @@ class OrderControllerTest : IntegrationTestBase() {
       assertThat(result.monitoringConditions).isNotNull()
       assertThat(result.monitoringConditions?.startDate).isEqualTo(mockStartDate)
       assertThat(result.monitoringConditions?.endDate).isEqualTo(mockEndDate)
+    }
+
+    @Test
+    fun `It should return the status updates of the current version`() {
+      val order = createSubmittedOrder()
+      order.reject(
+        ZonedDateTime.parse("2025-01-01T10:00:00Z"),
+        listOf(RejectionReason("DEVICE_WEARER", "Wrong name")),
+      )
+      repo.save(order)
+
+      val result = webTestClient.get()
+        .uri("/api/orders/${order.id}")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody(OrderDto::class.java)
+        .returnResult()
+        .responseBody!!
+
+      assertThat(result.statusUpdates).hasSize(1)
+      assertThat(result.statusUpdates[0].status).isEqualTo(ProcessingStatus.REJECTED)
+      assertThat(result.statusUpdates[0].statusUpdateReasons).hasSize(1)
+      assertThat(result.statusUpdates[0].statusUpdateReasons[0].section).isEqualTo("DEVICE_WEARER")
+      assertThat(result.statusUpdates[0].statusUpdateReasons[0].details).isEqualTo("Wrong name")
+    }
+
+    @Test
+    fun `It should return an empty list of status updates when there are none`() {
+      val order = createOrder()
+
+      val result = webTestClient.get()
+        .uri("/api/orders/${order.id}")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody(OrderDto::class.java)
+        .returnResult()
+        .responseBody!!
+
+      assertThat(result.statusUpdates).isEmpty()
     }
   }
 
