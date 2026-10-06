@@ -36,7 +36,7 @@ class AuthTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `Providing JWT without user name claim return 403`() {
+  fun `Providing JWT without user name and client id claim return 403`() {
     webTestClient.post()
       .uri("/api/orders")
       .headers(setAuthorisationWithoutUsername())
@@ -53,6 +53,18 @@ class AuthTest : IntegrationTestBase() {
       .exchange()
       .expectStatus()
       .isForbidden
+  }
+
+  @Test
+  fun `Providing JWT with only client id can access a secured endpoint`() {
+    webTestClient.post()
+      .uri("/api/orders")
+      .headers(
+        setAuthorisation(roles = listOf("ROLE_EM_CEMO_HOME_OFFICE"), clientId = "test-client-id", username = null),
+      )
+      .exchange()
+      .expectStatus()
+      .isOk
   }
 
   @Test

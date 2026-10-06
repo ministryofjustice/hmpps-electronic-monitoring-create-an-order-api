@@ -64,6 +64,7 @@ abstract class IntegrationTestBase {
     roles: List<String> = listOf("ROLE_EM_CEMO__CREATE_ORDER"),
     scopes: List<String> = listOf("read"),
     userFullName: String? = "John Smith",
+    clientId: String? = "test-client-id",
   ): (
     HttpHeaders,
   ) -> Unit = jwtAuthHelper.setAuthorisationHeader(
@@ -71,12 +72,13 @@ abstract class IntegrationTestBase {
     scope = scopes,
     roles = roles,
     userFullName = userFullName,
+    clientId = clientId,
   )
 
   internal fun setAuthorisationWithoutUsername(
     roles: List<String> = listOf("ROLE_EM_CEMO__CREATE_ORDER"),
     scopes: List<String> = listOf("read"),
-  ): (HttpHeaders) -> Unit = jwtAuthHelper.setAuthorisationHeader(scope = scopes, roles = roles)
+  ): (HttpHeaders) -> Unit = jwtAuthHelper.setAuthorisationHeader(scope = scopes, roles = roles, clientId = null)
 
   protected fun stubPingWithResponse(status: Int) {
     hmppsAuth.stubHealthPing(status)
@@ -184,6 +186,8 @@ abstract class IntegrationTestBase {
     status: OrderStatus = OrderStatus.IN_PROGRESS,
     type: RequestType = RequestType.REQUEST,
     dataDictionaryVersion: DataDictionaryVersion = DataDictionaryVersion.DDV4,
+    submittedBy: String? = null,
+    submittedByEmail: String? = null,
   ): Order {
     val order = Order(
       id = orderId,
@@ -194,6 +198,8 @@ abstract class IntegrationTestBase {
           type = type,
           username = username,
           dataDictionaryVersion = dataDictionaryVersion,
+          submittedBy = submittedBy,
+          submittedByEmail = submittedByEmail,
         ),
       ),
     )
@@ -203,7 +209,13 @@ abstract class IntegrationTestBase {
   fun createSubmittedOrder(
     type: RequestType = RequestType.REQUEST,
     dataDictionaryVersion: DataDictionaryVersion = DataDictionaryVersion.DDV4,
-  ): Order = createStoredOrder(status = OrderStatus.SUBMITTED, dataDictionaryVersion = dataDictionaryVersion)
+    submittedByEmail: String? = null,
+  ): Order = createStoredOrder(
+    status = OrderStatus.SUBMITTED,
+    dataDictionaryVersion = dataDictionaryVersion,
+    submittedBy = "Test User",
+    submittedByEmail = submittedByEmail,
+  )
 
   fun createSubmittedVariation() = createSubmittedOrder(RequestType.VARIATION)
 
@@ -227,6 +239,7 @@ abstract class IntegrationTestBase {
     order.monitoringConditions!!.endDate = endDate
     return repo.save(order)
   }
+
   fun storedMonitoringOrderStartDate(orderId: UUID): ZonedDateTime? =
     repo.findById(orderId).orElseThrow().monitoringConditions!!.startDate
 }

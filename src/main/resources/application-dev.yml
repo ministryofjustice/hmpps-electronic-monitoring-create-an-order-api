@@ -1,2 +1,7 @@
 settings:
   device-wearer-payload-version: Prod
+
+notify:
+  templates:
+    order-rejected-user: 5222afcd-cd14-47a2-ac94-f4e9fb546619
+    order-rejected-no: a46310e0-e7f9-43a4-8fde-bc00e3b19c7a

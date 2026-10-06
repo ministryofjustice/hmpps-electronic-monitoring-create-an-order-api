@@ -70,6 +70,7 @@ class TestUtilities {
       ownerCohort: String = "",
       tags: String = "",
       isSentencingAct: Boolean? = false,
+      submittedBy: String = "",
     ): Order {
       val order = Order(
         id = id,
@@ -86,6 +87,7 @@ class TestUtilities {
           dataDictionaryVersion = dataDictionaryVersion,
           ownerCohort = ownerCohort,
           tags = tags,
+          submittedBy = submittedBy,
         ),
       )
 

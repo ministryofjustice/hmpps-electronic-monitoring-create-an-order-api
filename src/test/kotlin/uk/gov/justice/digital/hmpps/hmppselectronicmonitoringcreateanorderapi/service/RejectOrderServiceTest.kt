@@ -24,7 +24,7 @@ class RejectOrderServiceTest {
     val order = TestUtilities.createReadyToSubmitOrder()
     gateway.addOrder("CASE123", order)
 
-    service.execute(
+    val result = service.execute(
       "CASE123",
       ZonedDateTime.now(),
       listOf(RejectionReason(section = "Section A", details = "A details")),
@@ -32,6 +32,7 @@ class RejectOrderServiceTest {
 
     assertThat(order.status).isEqualTo(OrderStatus.REJECTED)
     assertThat(order.statusUpdates).hasSize(1)
+    assertThat(result).isEqualTo(order.id)
     verify(repo).save(order)
   }
 

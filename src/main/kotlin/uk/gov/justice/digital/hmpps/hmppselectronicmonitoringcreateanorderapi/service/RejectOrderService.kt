@@ -6,16 +6,19 @@ import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.RejectionReason
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 import java.time.ZonedDateTime
+import java.util.UUID
 
 @Service
 class RejectOrderService(private val gateway: OrderByCaseIdGateway, private val repo: OrderRepository) {
   @Transactional
-  fun execute(caseId: String, dateTime: ZonedDateTime, reasons: List<RejectionReason>) {
+  fun execute(caseId: String, dateTime: ZonedDateTime, reasons: List<RejectionReason>): UUID {
     val order = gateway.findOrderByCaseId(caseId)
       ?: throw EntityNotFoundException("Order with caseId $caseId does not exist")
 
     order.reject(dateTime, reasons)
 
     repo.save(order)
+
+    return order.id
   }
 }

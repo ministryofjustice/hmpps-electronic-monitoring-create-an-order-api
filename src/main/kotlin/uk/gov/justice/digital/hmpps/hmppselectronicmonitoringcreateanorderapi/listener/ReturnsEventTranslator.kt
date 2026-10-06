@@ -7,37 +7,35 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression
 import org.springframework.stereotype.Component
 import tools.jackson.databind.ObjectMapper
 import tools.jackson.module.kotlin.readValue
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.HmppsSqsEventMessage
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.RejectionReason
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.up3.ReturnMessage
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.up3.ReturnStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.EventService
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.RejectOrderService
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.RejectOrderAndNotify
 import java.time.Instant
 import java.time.ZoneId
 import java.time.ZonedDateTime
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-data class ReturnsSnsEnvelope(val data: ReturnMessage)
+data class ReturnsDomainEvent(val data: ReturnMessage)
 
 @Component
 @ConditionalOnExpression("\${settings.return-listener-enabled:false}")
 class ReturnsEventTranslator(
-  private val rejectOrder: RejectOrderService,
+  private val rejectOrderAndNotify: RejectOrderAndNotify,
   private val objectMapper: ObjectMapper,
   private val eventService: EventService,
 ) {
   @SqsListener("returnseventqueue", factory = "hmppsQueueContainerFactoryProxy")
   fun processEvent(rawMessage: String) {
     try {
-      val eventMessage: HmppsSqsEventMessage = objectMapper.readValue(rawMessage)
-      val envelope: ReturnsSnsEnvelope = objectMapper.readValue(eventMessage.message)
-      val message: ReturnMessage = envelope.data
+      val event: ReturnsDomainEvent = objectMapper.readValue(rawMessage)
+      val message: ReturnMessage = event.data
       val dateTime = ZonedDateTime.ofInstant(Instant.parse(message.datetimeOfStatusChange), ZoneId.of("Europe/London"))
 
       when (message.status) {
         ReturnStatus.REJECTED -> {
-          rejectOrder.execute(
+          rejectOrderAndNotify.execute(
             message.caseId,
             dateTime,
             message.reasons.map { RejectionReason(section = it.section, details = it.details) },
