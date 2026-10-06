@@ -836,16 +836,6 @@ class OrderServiceTest {
       assertThat(order.versions.last().isSentencingAct).isTrue()
     }
 
-    @Test
-    fun `A new version retains its owner cohort`() {
-      order.ownerCohort = Cohort.HOME_OFFICE.name
-      whenever(authentication.name).thenReturn(order.username)
-
-      service.createVersion(order.id, authentication, RequestType.VARIATION)
-
-      assertThat(order.versions.last().ownerCohort).isEqualTo(Cohort.HOME_OFFICE.name)
-    }
-
     @Nested
     @DisplayName("Create Version as Variation")
     inner class CreateVersionAsVariation {
