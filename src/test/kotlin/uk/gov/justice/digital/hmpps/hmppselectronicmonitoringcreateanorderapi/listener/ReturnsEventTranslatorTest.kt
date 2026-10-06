@@ -12,12 +12,12 @@ import org.mockito.kotlin.verifyNoInteractions
 import tools.jackson.module.kotlin.jacksonObjectMapper
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.RejectionReason
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.EventService
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.RejectOrderService
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.RejectOrderAndNotify
 import java.time.ZonedDateTime
 
 class ReturnsEventTranslatorTest {
 
-  private val rejectOrder = mock<RejectOrderService>()
+  private val rejectOrder = mock<RejectOrderAndNotify>()
   private val objectMapper = jacksonObjectMapper()
   private val eventService = mock<EventService>()
   private val translator = ReturnsEventTranslator(rejectOrder, objectMapper, eventService)
@@ -88,32 +88,19 @@ class ReturnsEventTranslatorTest {
     status: String = "rejected",
     datetimeOfStatusChange: String = "2026-09-23T10:15:00Z",
     reasons: String = """[{"section": "Section A", "details": "A details"}]""",
-  ): String {
-    val payload = """
+  ): String = """
       {
-        "version": "2.0",
-        "eventType": "OrderCreated",
+        "eventId": "sha256:40fd45e4650528f60271b8260ce2c87bef7ff31c1ea2aa6508e4a2dc119e3001",
+        "publishedAt": "2026-10-02T10:31:27.192202337+01:00",
         "data": {
           "caseId": "$caseId",
           "status": "$status",
           "reasons": $reasons,
           "datetimeOfStatusChange": "$datetimeOfStatusChange"
-        }
+        },
+        "version": 1,
+        "source": "hmpps-external-api",
+        "eventType": "electronic-monitoring.case-status-returned"
       }
-    """.trimIndent()
-
-    return """
-      {
-        "Type": "Notification",
-        "MessageId": "0f1b1c9f-0d5b-4f1a-9a21-4e0f9a2f0a11",
-        "Message": ${objectMapper.writeValueAsString(payload)},
-        "MessageAttributes": {
-          "eventType": {
-            "Type": "String",
-            "Value": "returns.order.status.changed"
-          }
-        }
-      }
-    """.trimIndent()
-  }
+  """.trimIndent()
 }

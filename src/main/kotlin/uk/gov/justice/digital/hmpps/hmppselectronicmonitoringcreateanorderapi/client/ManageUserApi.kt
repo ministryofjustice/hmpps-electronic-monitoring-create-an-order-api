@@ -7,4 +7,5 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 interface ManageUserApi {
   fun getUserGroups(token: Jwt): List<UserGroup>
   fun getUserActiveCaseload(token: Jwt): HmppsCaseload?
+  fun getUserEmail(token: Jwt): String?
 }

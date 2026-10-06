@@ -145,6 +145,9 @@ data class OrderVersion(
   @Column(name = "SUBMITTED_BY", nullable = true)
   var submittedBy: String? = null,
 
+  @Column(name = "SUBMITTED_BY_EMAIL", nullable = true)
+  var submittedByEmail: String? = null,
+
   @Column(name = "TAGS", nullable = true)
   var tags: String? = null,
 

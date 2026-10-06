@@ -12,6 +12,7 @@ import tools.jackson.databind.ObjectMapper
 import tools.jackson.module.kotlin.jacksonObjectMapper
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.UserGroup
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.hmpps.HmppsUserCaseloadResponse
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.hmpps.HmppsUserEmailResponse
 
 class ManageUserApiExtension :
   BeforeAllCallback,
@@ -52,6 +53,30 @@ class ManageUserMockServer : WireMockServer(WIREMOCK_PORT) {
               mapper.writeValueAsString(caseLoad),
             )
             .withStatus(200),
+        ),
+    )
+  }
+
+  fun stubGetUserEmail(email: HmppsUserEmailResponse) {
+    stubFor(
+      get(urlPathTemplate("/users/me/email"))
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withBody(
+              mapper.writeValueAsString(email),
+            )
+            .withStatus(200),
+        ),
+    )
+  }
+
+  fun stubGetUserEmailNotFound() {
+    stubFor(
+      get(urlPathTemplate("/users/me/email"))
+        .willReturn(
+          aResponse()
+            .withStatus(404),
         ),
     )
   }

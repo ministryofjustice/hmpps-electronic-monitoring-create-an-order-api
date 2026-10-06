@@ -11,6 +11,7 @@ import reactor.core.publisher.Mono
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.UserGroup
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.hmpps.HmppsCaseload
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.hmpps.HmppsUserCaseloadResponse
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.hmpps.HmppsUserEmailResponse
 
 @Component
 class ManageUserApiClient(private val manageUserApiWebClient: WebClient) : ManageUserApi {
@@ -34,4 +35,14 @@ class ManageUserApiClient(private val manageUserApiWebClient: WebClient) : Manag
     .onErrorResume(WebClientResponseException::class.java) { Mono.empty() }
     .block()!!
     .activeCaseload
+
+  override fun getUserEmail(token: Jwt): String? = manageUserApiWebClient
+    .get()
+    .uri("/users/me/email")
+    .header(HttpHeaders.AUTHORIZATION, "Bearer ${token.tokenValue}")
+    .retrieve()
+    .bodyToMono<HmppsUserEmailResponse>()
+    .onErrorResume(WebClientResponseException::class.java) { Mono.empty() }
+    .block()
+    ?.email
 }

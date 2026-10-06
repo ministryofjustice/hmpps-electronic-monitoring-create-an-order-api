@@ -9,12 +9,17 @@ import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import tools.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.utilities.SqsTestQueueFactory
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.utilities.TestEmailClient
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InterestedParties
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisationDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ProcessingStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.emails.RejectedNOEmail
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.emails.RejectedUserEmail
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.up3.Reason
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.up3.ReturnMessage
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.up3.ReturnStatus
@@ -26,6 +31,12 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.re
 
 class ReturnsEventTest : IntegrationTestBase() {
 
+  private companion object {
+    const val NOTIFYING_ORG_NAME = "Test Notifying Organisation"
+    const val NOTIFYING_ORG_EMAIL = "notifying.org@example.com"
+    const val SUBMITTED_BY_EMAIL = "test.user@justice.gov.uk"
+  }
+
   @MockitoSpyBean
   lateinit var orderRepo: OrderRepository
 
@@ -36,6 +47,9 @@ class ReturnsEventTest : IntegrationTestBase() {
   lateinit var sqsTestQueueFactory: SqsTestQueueFactory
 
   @Autowired
+  lateinit var testEmailClient: TestEmailClient
+
+  @Autowired
   lateinit var objectMapper: ObjectMapper
 
   private val queue by lazy { sqsTestQueueFactory.create("returnseventqueue") }
@@ -44,6 +58,7 @@ class ReturnsEventTest : IntegrationTestBase() {
   fun setup() {
     queue.purge()
     queue.purgeDlq()
+    testEmailClient.reset()
   }
 
   @Test
@@ -59,6 +74,67 @@ class ReturnsEventTest : IntegrationTestBase() {
     val order = orderRepo.findById(submittedOrder.id).get()
 
     assertThat(order.status).isEqualTo(OrderStatus.REJECTED)
+
+    testEmailClient.assertSent(
+      RejectedUserEmail(
+        emailAddress = SUBMITTED_BY_EMAIL,
+        dwFirstName = order.deviceWearer?.firstName,
+        dwLastName = order.deviceWearer?.lastName,
+        orderId = order.id,
+        username = "Test User",
+      ),
+      RejectedNOEmail(
+        emailAddress = NOTIFYING_ORG_EMAIL,
+        dwFirstName = order.deviceWearer?.firstName,
+        dwLastName = order.deviceWearer?.lastName,
+        orderId = order.id,
+        notifyingOrgName = NOTIFYING_ORG_NAME,
+      ),
+    )
+  }
+
+  @Test
+  fun `does not send a user email when the order has no submitting user email address`() {
+    val caseId = "CASE456"
+    val submittedOrder = arrangeSubmittedOrder(caseId, submittedByEmail = null)
+
+    queue.sendMessage(createReturnEventMessage(caseId, ReturnStatus.REJECTED))
+
+    await().until { queue.isEmpty() }
+    assertThat(queue.dlqIsEmpty()).isEqualTo(true)
+
+    testEmailClient.assertSent(
+      RejectedNOEmail(
+        emailAddress = NOTIFYING_ORG_EMAIL,
+        dwFirstName = null,
+        dwLastName = null,
+        orderId = submittedOrder.id,
+        notifyingOrgName = NOTIFYING_ORG_NAME,
+      ),
+    )
+  }
+
+  @Test
+  fun `does not send an NO email when the order has no NO email address`() {
+    val caseId = "CASE654"
+    val submittedOrder = arrangeSubmittedOrder(caseId, noEmail = null)
+
+    queue.sendMessage(createReturnEventMessage(caseId, ReturnStatus.REJECTED))
+
+    await().until { queue.isEmpty() }
+    assertThat(queue.dlqIsEmpty()).isEqualTo(true)
+
+    val order = orderRepo.findById(submittedOrder.id).get()
+
+    testEmailClient.assertSent(
+      RejectedUserEmail(
+        emailAddress = SUBMITTED_BY_EMAIL,
+        dwFirstName = order.deviceWearer?.firstName,
+        dwLastName = order.deviceWearer?.lastName,
+        orderId = order.id,
+        username = "Test User",
+      ),
+    )
   }
 
   @Test
@@ -99,8 +175,35 @@ class ReturnsEventTest : IntegrationTestBase() {
     assertThat(queue.dlqIsEmpty()).isEqualTo(false)
   }
 
-  private fun arrangeSubmittedOrder(caseId: String): Order {
-    val submittedOrder = createSubmittedOrder(RequestType.REQUEST, DataDictionaryVersion.DDV7)
+  @Test
+  fun `still rejects the order and does not dead letter the event when sending emails fails`() {
+    val caseId = "CASE999"
+    val submittedOrder = arrangeSubmittedOrder(caseId)
+    testEmailClient.failAlways()
+
+    queue.sendMessage(createReturnEventMessage(caseId, ReturnStatus.REJECTED))
+
+    await().until { queue.isEmpty() }
+    assertThat(queue.dlqIsEmpty()).isEqualTo(true)
+
+    val order = orderRepo.findById(submittedOrder.id).get()
+    assertThat(order.status).isEqualTo(OrderStatus.REJECTED)
+  }
+
+  private fun arrangeSubmittedOrder(
+    caseId: String,
+    submittedByEmail: String? = SUBMITTED_BY_EMAIL,
+    noEmail: String? = NOTIFYING_ORG_EMAIL,
+  ): Order {
+    val submittedOrder = createSubmittedOrder(RequestType.REQUEST, DataDictionaryVersion.DDV7, submittedByEmail)
+    submittedOrder.interestedParties = InterestedParties(
+      versionId = submittedOrder.versionId,
+      notifyingOrganisation = NotifyingOrganisationDDv5.PRISON.name,
+      notifyingOrganisationName = NOTIFYING_ORG_NAME,
+      notifyingOrganisationEmail = noEmail,
+    )
+    repo.save(submittedOrder)
+
     fmsSubmissionResultRepository.save(
       FmsSubmissionResult(
         orderId = submittedOrder.id,
@@ -126,25 +229,14 @@ class ReturnsEventTest : IntegrationTestBase() {
       datetimeOfStatusChange = dateTime,
     )
 
-    val payload = """
-      {
-        "version": "2.0",
-        "eventType": "OrderCreated",
-        "data": ${objectMapper.writeValueAsString(message)}
-      }
-    """
-
     return """
       {
-        "Type": "Notification",
-        "MessageId": "0f1b1c9f-0d5b-4f1a-9a21-4e0f9a2f0a11",
-        "Message": ${objectMapper.writeValueAsString(payload)},
-        "MessageAttributes": {
-          "eventType": {
-            "Type": "String",
-            "Value": "returns.order.status.changed"
-          }
-        }
+        "eventId": "sha256:40fd45e4650528f60271b8260ce2c87bef7ff31c1ea2aa6508e4a2dc119e3001",
+        "publishedAt": "2026-10-02T10:31:27.192202337+01:00",
+        "data": ${objectMapper.writeValueAsString(message)},
+        "version": 1,
+        "source": "hmpps-external-api",
+        "eventType": "electronic-monitoring.case-status-returned"
       }
     """
   }

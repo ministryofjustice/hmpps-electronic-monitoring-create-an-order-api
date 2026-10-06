@@ -41,6 +41,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.SubmissionStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.hmpps.HmppsCaseload
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.hmpps.HmppsUserCaseloadResponse
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.hmpps.HmppsUserEmailResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsAttachmentResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsAttachmentResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsAttachmentSubmissionResult
@@ -1465,6 +1466,76 @@ class OrderControllerTest : IntegrationTestBase() {
     }
 
     fun String.removeWhitespaceAndNewlines(): String = this.replace("(\"[^\"]*\")|\\s".toRegex(), "\$1")
+
+    private fun stubSuccessfulSercoSubmission(order: Order) {
+      sercoAuthApi.stubGrantToken()
+      sercoApi.stubCreateDeviceWearer(
+        HttpStatus.OK,
+        FmsResponse(result = listOf(FmsResult(message = "", id = "MockDeviceWearerId"))),
+      )
+      sercoApi.stubCreateMonitoringOrder(
+        HttpStatus.OK,
+        FmsResponse(result = listOf(FmsResult(message = "", id = "MockMonitoringOrderId"))),
+      )
+
+      val attachments = order.additionalDocuments.map { it.documentId to it.fileName!! } +
+        order.enforcementZoneConditions
+          .filter { it.fileId != null && it.fileName != null }
+          .map { it.fileId!! to it.fileName!! }
+
+      attachments.forEach { (fileId, fileName) ->
+        documentApi.stubGetDocument(fileId.toString())
+        sercoApi.stubSubmitAttachment(
+          HttpStatus.OK,
+          FmsAttachmentResponse(
+            result = FmsAttachmentResult(
+              fileName = fileName,
+              tableName = "x_serg2_ems_csm_sr_mo_new",
+              sysId = "MockSysId",
+              tableSysId = "MockDeviceWearerId",
+            ),
+          ),
+        )
+      }
+    }
+
+    @Test
+    fun `It stores the submitting user's email address against the submitted version`() {
+      val order = createAndPersistPopulatedOrder()
+      stubSuccessfulSercoSubmission(order)
+      manageUserApi.stubGetUserEmail(
+        HmppsUserEmailResponse(username = testUser, email = "test.user@justice.gov.uk", verified = true),
+      )
+
+      webTestClient.post()
+        .uri("/api/orders/${order.id}/submit")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .isOk
+
+      val updatedOrder = repo.findById(order.id).orElseThrow()
+      assertThat(updatedOrder.status).isEqualTo(OrderStatus.SUBMITTED)
+      assertThat(updatedOrder.submittedByEmail).isEqualTo("test.user@justice.gov.uk")
+    }
+
+    @Test
+    fun `It still submits the order when the user's email cannot be retrieved`() {
+      val order = createAndPersistPopulatedOrder()
+      stubSuccessfulSercoSubmission(order)
+      manageUserApi.stubGetUserEmailNotFound()
+
+      webTestClient.post()
+        .uri("/api/orders/${order.id}/submit")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .isOk
+
+      val updatedOrder = repo.findById(order.id).orElseThrow()
+      assertThat(updatedOrder.status).isEqualTo(OrderStatus.SUBMITTED)
+      assertThat(updatedOrder.submittedByEmail).isNull()
+    }
 
     @Test
     fun `It updates order with serco device wearer id, monitoring id, order status & attachments, and return 200`() {
