@@ -24,9 +24,13 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.cl
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.FmsClient
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.config.FeatureFlags
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.CreateSercoEntityException
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.CaseState
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.DeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsDeviceWearerSubmissionResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsMonitoringOrderSubmissionResult
@@ -314,5 +318,52 @@ class FmsServiceTest {
         any(),
       )
     }
+  }
+
+  @Test
+  fun `getCaseState queries the case linked to the latest submitted version, not the current draft`() {
+    val orderId = UUID.randomUUID()
+    val previousSubmitted = OrderVersion(
+      orderId = orderId,
+      versionId = 1,
+      username = "user",
+      status = OrderStatus.SUBMITTED,
+      type = RequestType.REQUEST,
+      dataDictionaryVersion = DataDictionaryVersion.DDV6,
+      fmsResultId = UUID.randomUUID(),
+    )
+    val currentDraft = OrderVersion(
+      orderId = orderId,
+      versionId = 2,
+      username = "user",
+      status = OrderStatus.IN_PROGRESS,
+      type = RequestType.VARIATION,
+      dataDictionaryVersion = DataDictionaryVersion.DDV6,
+    )
+    val order = Order(orderId, mutableListOf(previousSubmitted, currentDraft))
+    val caseId = "linked-case"
+    whenever(repo.findById(previousSubmitted.fmsResultId!!)).thenReturn(
+      Optional.of(
+        FmsSubmissionResult(
+          id = previousSubmitted.fmsResultId!!,
+          orderId = orderId,
+          strategy = FmsSubmissionStrategyKind.ORDER,
+          orderSource = FmsOrderSource.CEMO,
+          deviceWearerResult = FmsDeviceWearerSubmissionResult(deviceWearerId = caseId),
+        ),
+      ),
+    )
+    whenever(mockClient.getState(caseId)).thenReturn(CaseState.OPEN)
+
+    assertThat(service.getCaseState(order)).isEqualTo(CaseState.OPEN)
+    verify(mockClient).getState(caseId)
+  }
+
+  @Test
+  fun `getCaseState returns UNKNOWN when no linked submission exists`() {
+    val order = TestUtilities.createReadyToSubmitOrder(status = OrderStatus.IN_PROGRESS)
+
+    assertThat(service.getCaseState(order)).isEqualTo(CaseState.UNKNOWN)
+    verifyNoInteractions(mockClient)
   }
 }

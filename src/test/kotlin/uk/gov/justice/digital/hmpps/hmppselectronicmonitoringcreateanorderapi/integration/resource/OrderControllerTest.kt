@@ -1,5 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.resource
 
+import FmsState
+import FmsStateResponse
 import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -34,8 +36,10 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderInformationDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderSearchResultDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.VersionInformationDTO
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.CaseState
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DocumentType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ProcessingStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
@@ -47,9 +51,12 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsAttachmentResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsAttachmentResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsAttachmentSubmissionResult
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsDeviceWearerSubmissionResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsErrorResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsResult
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsSubmissionResult
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsSubmissionStrategyKind
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.MonitoringOrder
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.FmsSubmissionResultRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidationError
@@ -155,6 +162,24 @@ class OrderControllerTest : IntegrationTestBase() {
   @Nested
   @DisplayName("POST /api/orders/copy-as-variation")
   inner class PostVariation {
+    @Test
+    fun `FMS processing state returns conflict with a machine readable error code`() {
+      val order = createAndPersistPopulatedOrder(status = OrderStatus.SUBMITTED)
+      stubCaseState(order, CaseState.OPEN)
+
+      val error = webTestClient.post()
+        .uri("/api/orders/${order.id}/copy-as-variation")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .isEqualTo(HttpStatus.CONFLICT)
+        .expectBody<ErrorResponse>()
+        .returnResult()
+        .responseBody!!
+
+      assertThat(error.errorCode).isEqualTo("ORDER_CASE_STILL_PROCESSING")
+    }
+
     @Test
     fun `A variation of a legacy order retains its missing Sentencing Act flag`() {
       val order = createAndPersistPopulatedOrder(status = OrderStatus.SUBMITTED)
@@ -499,10 +524,14 @@ class OrderControllerTest : IntegrationTestBase() {
   @DisplayName("POST /api/order/amend-rejected-order")
   inner class AmendRejectedOrder {
     @Test
-    fun `It should create a new version with type AMEND_ORIGINAL_REQUEST`() {
-      val order = createAndPersistPopulatedOrder(status = OrderStatus.SUBMITTED)
+    fun `It should create a variation version for a cancelled change order`() {
+      val order = createAndPersistPopulatedOrder(
+        status = OrderStatus.SUBMITTED,
+        requestType = RequestType.VARIATION,
+      )
+      stubCaseState(order, CaseState.CANCELLED)
 
-      val variationOrder = webTestClient.post()
+      val amendedOrder = webTestClient.post()
         .uri("/api/orders/${order.id}/amend-rejected-order")
         .headers(setAuthorisation(username = "AUTH_ADM"))
         .exchange()
@@ -512,12 +541,35 @@ class OrderControllerTest : IntegrationTestBase() {
         .returnResult()
         .responseBody!!
 
-      assertThat(variationOrder.id).isNotNull()
-      assertThat(variationOrder.id).isEqualTo(order.id)
-      assertThat(variationOrder.status).isEqualTo(OrderStatus.IN_PROGRESS)
-      assertThat(variationOrder.type).isEqualTo(RequestType.AMEND_ORIGINAL_REQUEST)
-      assertThat(variationOrder.username).isEqualTo(testUser)
-      assertThat(variationOrder.lastUpdatedBy).isEqualTo(testUserFullName)
+      assertThat(amendedOrder.id).isEqualTo(order.id)
+      assertThat(amendedOrder.status).isEqualTo(OrderStatus.IN_PROGRESS)
+      assertThat(amendedOrder.type).isEqualTo(RequestType.VARIATION)
+      assertThat(amendedOrder.username).isEqualTo(testUser)
+      assertThat(amendedOrder.lastUpdatedBy).isEqualTo(testUserFullName)
+      val updatedOrder = repo.findById(order.id).orElseThrow()
+      assertThat(updatedOrder.versions).hasSize(2)
+      assertThat(updatedOrder.versions.first().status).isEqualTo(OrderStatus.SUBMITTED)
+      assertThat(updatedOrder.versions.first().type).isEqualTo(RequestType.VARIATION)
+    }
+
+    @Test
+    fun `It should create a new-order version for a cancelled new order`() {
+      val order = createAndPersistPopulatedOrder(status = OrderStatus.SUBMITTED, requestType = RequestType.REQUEST)
+      stubCaseState(order, CaseState.CANCELLED)
+
+      val amendedOrder = webTestClient.post()
+        .uri("/api/orders/${order.id}/amend-rejected-order")
+        .headers(setAuthorisation(username = "AUTH_ADM"))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody(OrderDto::class.java)
+        .returnResult()
+        .responseBody!!
+
+      assertThat(amendedOrder.id).isEqualTo(order.id)
+      assertThat(amendedOrder.type).isEqualTo(RequestType.REQUEST)
+      assertThat(repo.findById(order.id).orElseThrow().versions).hasSize(2)
     }
   }
 
@@ -2298,7 +2350,31 @@ class OrderControllerTest : IntegrationTestBase() {
       ownerCohort = ownerCohort,
       tags = tags,
     )
+    if (status == OrderStatus.SUBMITTED || status == OrderStatus.REJECTED) {
+      val caseId = "case-${UUID.randomUUID()}"
+      val result = FmsSubmissionResult(
+        orderId = order.id,
+        strategy = FmsSubmissionStrategyKind.ORDER,
+        orderSource = FmsOrderSource.CEMO,
+        deviceWearerResult = FmsDeviceWearerSubmissionResult(deviceWearerId = caseId),
+      )
+      fmsResultRepository.save(result)
+      order.fmsResultId = result.id
+    }
     repo.save(order)
+    if (status == OrderStatus.SUBMITTED || status == OrderStatus.REJECTED) {
+      stubCaseState(order, CaseState.CLOSED)
+    }
     return order
+  }
+
+  private fun stubCaseState(order: Order, state: CaseState) {
+    val result = fmsResultRepository.findById(order.fmsResultId!!).orElseThrow()
+    sercoAuthApi.stubGrantToken()
+    sercoApi.stubGetState(
+      result.caseId!!,
+      HttpStatus.OK,
+      FmsStateResponse(FmsState(state.value)),
+    )
   }
 }

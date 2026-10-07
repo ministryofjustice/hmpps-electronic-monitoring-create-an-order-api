@@ -32,6 +32,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.co
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.config.FeatureFlags
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.BadRequestException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.ForbiddenException
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.OrderChangeException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AdditionalDocument
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationAppointment
@@ -45,6 +46,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderSearchResultDeviceWearerDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderSearchResultDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderSearchResultMonitoringConditionsDto
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.CaseState
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DocumentType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
@@ -94,6 +96,7 @@ class OrderServiceTest {
     whenever(authentication.token).thenReturn(mock<Jwt>())
     whenever(authentication.name).thenReturn("mockUser")
     whenever(userCohortService.getUserCohort(authentication)).thenReturn(UserCohort(Cohort.OTHER))
+    whenever(fmsService.getCaseState(any())).thenReturn(CaseState.CLOSED)
     val context = SecurityContextHolder.createEmptyContext()
     context.authentication = authentication
     SecurityContextHolder.setContext(context)
@@ -1399,11 +1402,11 @@ class OrderServiceTest {
       }
 
       @Test
-      fun `It should set previous version type to REJECTED`() {
+      fun `It should preserve the previous version type`() {
         argumentCaptor<Order>().apply {
           verify(repo, times(1)).save(capture())
           assertThat(firstValue.id).isEqualTo(order.id)
-          assertThat(firstValue.versions.first().type).isEqualTo(RequestType.REJECTED)
+          assertThat(firstValue.versions.first().type).isEqualTo(RequestType.REQUEST)
         }
       }
     }
@@ -1457,6 +1460,110 @@ class OrderServiceTest {
           assertThat(firstValue.versions.last().versionId).isEqualTo(1)
         }
       }
+    }
+  }
+
+  @Nested
+  @DisplayName("Cancelled submission amendment")
+  inner class CancelledSubmissionReplacement {
+    @Test
+    fun `creates a variation version when the cancelled submission was a change order`() {
+      val source = TestUtilities.createReadyToSubmitOrder(
+        status = OrderStatus.REJECTED,
+        username = "mockUser",
+        requestType = RequestType.VARIATION,
+      )
+      val rejectedVersion = source.getCurrentVersion()
+      rejectedVersion.fmsResultId = UUID.randomUUID()
+      whenever(repo.findById(source.id)).thenReturn(Optional.of(source))
+      whenever(fmsService.getCaseState(source)).thenReturn(CaseState.CANCELLED)
+      whenever(repo.save(any<Order>())).thenAnswer { it.getArgument<Order>(0) }
+
+      val replacement = service.createNewOrderFromRejected(source.id, authentication)
+
+      assertThat(replacement.id).isEqualTo(source.id)
+      assertThat(replacement.versions).hasSize(2)
+      assertThat(replacement.status).isEqualTo(OrderStatus.IN_PROGRESS)
+      assertThat(replacement.type).isEqualTo(RequestType.VARIATION)
+      assertThat(replacement.fmsResultId).isNull()
+      assertThat(rejectedVersion.orderId).isEqualTo(source.id)
+      assertThat(rejectedVersion.status).isEqualTo(OrderStatus.REJECTED)
+      assertThat(rejectedVersion.type).isEqualTo(RequestType.VARIATION)
+    }
+
+    @Test
+    fun `creates a new-order version when the cancelled submission was a new order`() {
+      val source = TestUtilities.createReadyToSubmitOrder(
+        status = OrderStatus.REJECTED,
+        username = "mockUser",
+        requestType = RequestType.REQUEST,
+      )
+      val rejectedVersion = source.getCurrentVersion()
+      whenever(repo.findById(source.id)).thenReturn(Optional.of(source))
+      whenever(fmsService.getCaseState(source)).thenReturn(CaseState.CANCELLED)
+      whenever(repo.save(any<Order>())).thenAnswer { it.getArgument<Order>(0) }
+
+      val amendedOrder = service.createNewOrderFromRejected(source.id, authentication)
+
+      assertThat(amendedOrder.id).isEqualTo(source.id)
+      assertThat(amendedOrder.versions).hasSize(2)
+      assertThat(amendedOrder.type).isEqualTo(RequestType.REQUEST)
+      assertThat(rejectedVersion.type).isEqualTo(RequestType.REQUEST)
+    }
+
+    @Test
+    fun `blocks cloning while FMS is processing`() {
+      val source = TestUtilities.createReadyToSubmitOrder(status = OrderStatus.SUBMITTED, username = "mockUser")
+      whenever(repo.findById(source.id)).thenReturn(Optional.of(source))
+      whenever(fmsService.getCaseState(source)).thenReturn(CaseState.AWAITING_INFO)
+
+      assertThatThrownBy { service.createVersion(source.id, authentication, RequestType.VARIATION) }
+        .isInstanceOf(OrderChangeException::class.java)
+        .extracting("errorCode")
+        .isEqualTo("ORDER_CASE_STILL_PROCESSING")
+      verify(repo, never()).save(any<Order>())
+    }
+
+    @Test
+    fun `blocks variation cloning for cancelled cases so callers must use rejected-order operation`() {
+      val source = TestUtilities.createReadyToSubmitOrder(status = OrderStatus.SUBMITTED, username = "mockUser")
+      whenever(repo.findById(source.id)).thenReturn(Optional.of(source))
+      whenever(fmsService.getCaseState(source)).thenReturn(CaseState.CANCELLED)
+
+      assertThatThrownBy { service.createVersion(source.id, authentication, RequestType.VARIATION) }
+        .isInstanceOf(OrderChangeException::class.java)
+        .extracting("errorCode")
+        .isEqualTo("ORDER_CASE_REJECTED")
+      verify(repo, never()).save(any<Order>())
+    }
+
+    @Test
+    fun `blocks new-order replacement when the FMS state is unknown`() {
+      val source = TestUtilities.createReadyToSubmitOrder(status = OrderStatus.REJECTED, username = "mockUser")
+      whenever(repo.findById(source.id)).thenReturn(Optional.of(source))
+      whenever(fmsService.getCaseState(source)).thenReturn(CaseState.UNKNOWN)
+
+      assertThatThrownBy { service.createNewOrderFromRejected(source.id, authentication) }
+        .isInstanceOf(OrderChangeException::class.java)
+        .extracting("errorCode")
+        .isEqualTo("ORDER_CASE_STATE_UNAVAILABLE")
+      verify(repo, never()).save(any<Order>())
+    }
+
+    @Test
+    fun `does not create another replacement when the order already has an in-progress version`() {
+      val source = TestUtilities.createReadyToSubmitOrder(status = OrderStatus.REJECTED, username = "mockUser")
+      whenever(repo.findById(source.id)).thenReturn(Optional.of(source))
+      whenever(fmsService.getCaseState(source)).thenReturn(CaseState.CANCELLED)
+      whenever(repo.save(any<Order>())).thenAnswer { it.getArgument<Order>(0) }
+
+      service.createNewOrderFromRejected(source.id, authentication)
+
+      assertThatThrownBy { service.createNewOrderFromRejected(source.id, authentication) }
+        .isInstanceOf(OrderChangeException::class.java)
+        .extracting("errorCode")
+        .isEqualTo("ORDER_VERSION_NOT_AVAILABLE")
+      verify(repo, times(1)).save(any<Order>())
     }
   }
 

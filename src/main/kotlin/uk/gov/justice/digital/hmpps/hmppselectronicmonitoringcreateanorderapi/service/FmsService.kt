@@ -11,6 +11,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.co
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.CreateSercoEntityException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.CaseState
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
@@ -92,6 +93,20 @@ class FmsService(
       }
     }
     return null
+  }
+
+  fun getCaseState(order: Order): CaseState {
+    val submittedVersion = order.versions
+      .filter { it.status == OrderStatus.SUBMITTED || it.status == OrderStatus.REJECTED }
+      .filter { it.fmsResultId != null } // maybe we look at dates too
+      .maxByOrNull { it.versionId }
+      ?: return CaseState.UNKNOWN
+
+    return runCatching {
+      val result = repo.findById(submittedVersion.fmsResultId!!).orElse(null)
+      val caseId = result?.caseId
+      if (caseId.isNullOrBlank()) CaseState.UNKNOWN else fmsClient.getState(caseId)
+    }.getOrDefault(CaseState.UNKNOWN)
   }
 
   private fun getSubmissionStrategy(order: Order, orderSource: FmsOrderSource): FmsSubmissionStrategy {
