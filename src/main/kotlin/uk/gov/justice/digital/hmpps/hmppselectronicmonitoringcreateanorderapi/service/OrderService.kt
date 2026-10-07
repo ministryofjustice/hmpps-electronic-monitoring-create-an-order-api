@@ -2,6 +2,9 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.s
 
 import jakarta.persistence.EntityNotFoundException
 import org.springframework.boot.context.properties.EnableConfigurationProperties
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Slice
+import org.springframework.data.domain.SliceImpl
 import org.springframework.security.access.AccessDeniedException
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken
 import org.springframework.stereotype.Service
@@ -21,6 +24,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.CreateOrderDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderInformationDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderInformationMonitoringConditionsDto
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderInformationPageDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderSearchResultDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.VersionInformationDTO
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
@@ -346,11 +350,18 @@ class OrderService(
   fun listOrders(
     authentication: JwtAuthenticationToken,
     view: OrderListView = OrderListView.MY_ORDERS,
-  ): List<OrderInformationDto> {
+    page: Int = 0,
+    size: Int = DEFAULT_ORDER_LIST_PAGE_SIZE,
+  ): OrderInformationPageDto {
+    if (page < 0) throw BadRequestException("Page must be zero or greater")
+    if (size !in 1..MAX_ORDER_LIST_PAGE_SIZE) {
+      throw BadRequestException("Page size must be between 1 and $MAX_ORDER_LIST_PAGE_SIZE")
+    }
+    val pageable = PageRequest.of(page, size)
     val username = authentication.name
-    val results = when (view) {
-      OrderListView.MY_ORDERS -> orderRepo.findMyOrders(username)
-      OrderListView.FAILED_ORDERS -> orderRepo.findFailedOrders(username)
+    val results: Slice<OrderVersionListInformation> = when (view) {
+      OrderListView.MY_ORDERS -> orderRepo.findMyOrders(username, pageable)
+      OrderListView.FAILED_ORDERS -> orderRepo.findFailedOrders(username, pageable)
       OrderListView.PRISON_ORDERS -> {
         val userCohort = userCohortService.getUserCohort(authentication)
         if (userCohort.cohort != Cohort.PRISON || userCohort.activeCaseLoadId == "CADM_I") {
@@ -360,14 +371,21 @@ class OrderService(
           ?: throw AccessDeniedException("Prison user has no active caseload")
         val prisonNames = Prison.fromId(caseLoadId).map { it.name }
         if (prisonNames.isEmpty()) {
-          emptyList()
+          SliceImpl(emptyList(), pageable, false)
         } else {
-          orderRepo.findPrisonOrders(prisonNames)
+          orderRepo.findPrisonOrders(prisonNames, pageable)
         }
+      }
+      OrderListView.HOME_OFFICE_ORDERS -> {
+        val userCohort = userCohortService.getUserCohort(authentication)
+        if (userCohort.cohort != Cohort.HOME_OFFICE) {
+          throw AccessDeniedException("Home Office view is only available to Home Office users")
+        }
+        orderRepo.findHomeOfficeOrders(pageable)
       }
     }
 
-    return results.map { it.toListInformationDto() }
+    return results.toOrderInformationPageDto()
   }
 
   fun searchOrders(searchTerm: String, authentication: JwtAuthenticationToken): List<OrderSearchResultDto> {
@@ -414,6 +432,18 @@ class OrderService(
     lastUpdatedBy = this.getLastUpdatedBy(),
     lastUpdatedDateTime = this.getLastUpdatedDateTime(),
   )
+
+  private fun Slice<OrderVersionListInformation>.toOrderInformationPageDto() = OrderInformationPageDto(
+    content = content.map { it.toListInformationDto() },
+    page = number,
+    size = size,
+    hasNext = hasNext(),
+  )
+
+  companion object {
+    const val DEFAULT_ORDER_LIST_PAGE_SIZE = 50
+    const val MAX_ORDER_LIST_PAGE_SIZE = 100
+  }
 
   private fun OrderVersion.toDTO() = VersionInformationDTO(
     orderId = this.orderId,
