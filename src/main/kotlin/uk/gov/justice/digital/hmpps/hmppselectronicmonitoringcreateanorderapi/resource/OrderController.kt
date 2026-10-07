@@ -20,7 +20,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.co
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.CreateOrderDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderDto
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderInformationDto
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderInformationPageDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderSearchResultDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateAmendOrderDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateIsSentencingAct
@@ -119,9 +119,11 @@ class OrderController(@Autowired val orderService: OrderService) {
   fun listOrders(
     authentication: Authentication,
     @RequestParam view: OrderListView = OrderListView.MY_ORDERS,
-  ): ResponseEntity<List<OrderInformationDto>> {
+    @RequestParam(defaultValue = "0") page: Int = 0,
+    @RequestParam(defaultValue = "50") size: Int = 50,
+  ): ResponseEntity<OrderInformationPageDto> {
     val orderListInformation =
-      orderService.listOrders(authentication as JwtAuthenticationToken, view)
+      orderService.listOrders(authentication as JwtAuthenticationToken, view, page, size)
 
     return ResponseEntity(orderListInformation, HttpStatus.OK)
   }
