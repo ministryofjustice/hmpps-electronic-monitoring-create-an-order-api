@@ -133,7 +133,9 @@ class OrderService(
   fun getCaseState(order: Order): CaseState = fmsService.getCaseState(order)
 
   fun canCreateNewVersion(order: Order, caseState: CaseState): Boolean = when (order.status) {
-    OrderStatus.SUBMITTED -> caseState in setOf(CaseState.CLOSED, CaseState.RESOLVED, CaseState.CANCELLED)
+    OrderStatus.SUBMITTED ->
+      caseState in
+        setOf(CaseState.CLOSED, CaseState.RESOLVED, CaseState.CANCELLED, CaseState.UNKNOWN)
     OrderStatus.REJECTED -> caseState == CaseState.CANCELLED
     else -> false
   }
