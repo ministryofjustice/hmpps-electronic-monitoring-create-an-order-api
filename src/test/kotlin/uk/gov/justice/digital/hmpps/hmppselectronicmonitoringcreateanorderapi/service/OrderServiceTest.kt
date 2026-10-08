@@ -845,6 +845,35 @@ class OrderServiceTest {
     assertThat(result).isEqualTo(listOf(mockResult))
   }
 
+  @ParameterizedTest(name = "createVersion with status {0}")
+  @MethodSource("orderStatusesForCreateVersion")
+  fun `createVersion with status`(status: OrderStatus, shouldThrow: Boolean) {
+    val orderId = UUID.randomUUID()
+    val versionId = UUID.randomUUID()
+    val order = TestUtilities.createReadyToSubmitOrder(
+      id = orderId,
+      versionId = versionId,
+      status = status,
+    )
+    whenever(repo.findById(orderId)).thenReturn(Optional.of(order))
+    whenever(authentication.name).thenReturn(order.username)
+    whenever(repo.save(any<Order>())).thenReturn(order)
+
+    if (shouldThrow) {
+      val exception = assertThrows<BadRequestException> {
+        service.createVersion(orderId, authentication, RequestType.VARIATION)
+      }
+      assertThat(exception.message).isEqualTo("New order version is not allowed for order with status $status")
+    } else {
+      service.createVersion(orderId, authentication, RequestType.VARIATION)
+      argumentCaptor<Order>().apply {
+        verify(repo).save(capture())
+        assertThat(firstValue.versions).hasSizeGreaterThanOrEqualTo(2)
+        assertThat(firstValue.versions.last().status).isEqualTo(OrderStatus.IN_PROGRESS)
+      }
+    }
+  }
+
   @Nested
   @DisplayName("Create Version")
   inner class CreateVersion {
@@ -1716,6 +1745,14 @@ class OrderServiceTest {
       Arguments.of(NotifyingOrganisationDDv5.CIVIL_COUNTY_COURT.name, "Civil Court"),
       Arguments.of(NotifyingOrganisationDDv5.FAMILY_COURT.name, "Family Court"),
       Arguments.of(NotifyingOrganisationDDv5.HOME_OFFICE.name, "Home Office"),
+    )
+
+    @JvmStatic
+    fun orderStatusesForCreateVersion() = listOf(
+      Arguments.of(OrderStatus.IN_PROGRESS, true),
+      Arguments.of(OrderStatus.ERROR, true),
+      Arguments.of(OrderStatus.SUBMITTED, false),
+      Arguments.of(OrderStatus.REJECTED, false),
     )
   }
 }

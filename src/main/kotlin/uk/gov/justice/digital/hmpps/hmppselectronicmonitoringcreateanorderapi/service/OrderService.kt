@@ -122,7 +122,7 @@ class OrderService(
     return order
   }
 
-  private fun isUserFromOriginalNotifyingOrganistion(
+  private fun isUserFromOriginalNotifyingOrganisation(
     token: JwtAuthenticationToken,
     notifyingOrganisation: String?,
   ): Boolean {
@@ -132,11 +132,12 @@ class OrderService(
 
   private fun <T> List<T>.cloneItems(transform: (T) -> T): MutableList<T> = map(transform).toMutableList()
 
+  private val allowNewVersionStatuses = listOf(OrderStatus.SUBMITTED, OrderStatus.REJECTED)
   fun createVersion(orderId: UUID, token: JwtAuthenticationToken, versionType: RequestType): Order {
     val order = getOrder(orderId, token)
     val currentVersion = order.getCurrentVersion()
-    if (currentVersion.status != OrderStatus.SUBMITTED) {
-      throw BadRequestException("Order latest version not submitted")
+    if (!allowNewVersionStatuses.contains(currentVersion.status)) {
+      throw BadRequestException("New order version is not allowed for order with status ${currentVersion.status}")
     }
     var sourceVersion = currentVersion
     if (versionType == RequestType.AMEND_ORIGINAL_REQUEST) {
@@ -176,7 +177,7 @@ class OrderService(
 
         val currentIPs = sourceVersion.interestedParties
         val isUserFromOriginalNotifyingOrganistion =
-          isUserFromOriginalNotifyingOrganistion(token, currentIPs?.notifyingOrganisation)
+          isUserFromOriginalNotifyingOrganisation(token, currentIPs?.notifyingOrganisation)
         val isStartDateInFuture = order.getMonitoringStartDate()?.isAfter(ZonedDateTime.now()) == true
 
         interestedParties =
