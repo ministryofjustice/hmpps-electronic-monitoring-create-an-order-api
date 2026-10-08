@@ -138,8 +138,15 @@ class OrderService(
     else -> false
   }
 
-  private fun requireCaseState(order: Order, caseState: CaseState, allowedStates: Set<CaseState>) {
-    if (!canCreateNewVersion(order, caseState)) {
+  private fun requireCaseState(
+    order: Order,
+    caseState: CaseState,
+    allowedStates: Set<CaseState>,
+    allowUnknownForVariation: Boolean = false,
+  ) {
+    val unknownAllowed =
+      allowUnknownForVariation && order.status == OrderStatus.SUBMITTED && caseState == CaseState.UNKNOWN
+    if (!canCreateNewVersion(order, caseState) && !unknownAllowed) {
       throw OrderChangeException(
         when {
           order.status == OrderStatus.IN_PROGRESS -> "ORDER_DRAFT_EXISTS"
@@ -157,7 +164,7 @@ class OrderService(
         "A new version cannot be created for the order's current state",
       )
     }
-    if (caseState !in allowedStates) {
+    if (caseState !in allowedStates && !unknownAllowed) {
       throw OrderChangeException(
         if (caseState == CaseState.CANCELLED) "ORDER_CASE_REJECTED" else "ORDER_CASE_NOT_REJECTED",
         "This operation is not available for the order's FMS case state",
@@ -172,7 +179,12 @@ class OrderService(
       throw BadRequestException("Order latest version not submitted")
     }
     val caseState = fmsService.getCaseState(order)
-    requireCaseState(order, caseState, setOf(CaseState.CLOSED, CaseState.RESOLVED))
+    requireCaseState(
+      order,
+      caseState,
+      setOf(CaseState.CLOSED, CaseState.RESOLVED),
+      allowUnknownForVariation = versionType in RequestType.VARIATION_TYPES,
+    )
     val sourceVersion =
       if (versionType == RequestType.AMEND_ORIGINAL_REQUEST) {
         currentVersion

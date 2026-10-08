@@ -1467,6 +1467,21 @@ class OrderServiceTest {
   @DisplayName("Cancelled submission amendment")
   inner class CancelledSubmissionReplacement {
     @Test
+    fun `allows variation creation when the FMS state is unknown but order staus is submitted`() {
+      val source = TestUtilities.createReadyToSubmitOrder(status = OrderStatus.SUBMITTED, username = "mockUser")
+      whenever(repo.findById(source.id)).thenReturn(Optional.of(source))
+      whenever(fmsService.getCaseState(source)).thenReturn(CaseState.UNKNOWN)
+      whenever(repo.save(any<Order>())).thenAnswer { it.getArgument<Order>(0) }
+
+      val variation = service.createVersion(source.id, authentication, RequestType.VARIATION)
+
+      assertThat(variation.versions).hasSize(2)
+      assertThat(variation.getCurrentVersion().type).isEqualTo(RequestType.VARIATION)
+      assertThat(variation.getCurrentVersion().status).isEqualTo(OrderStatus.IN_PROGRESS)
+      verify(repo, times(1)).save(source)
+    }
+
+    @Test
     fun `creates a variation version when the cancelled submission was a change order`() {
       val source = TestUtilities.createReadyToSubmitOrder(
         status = OrderStatus.REJECTED,

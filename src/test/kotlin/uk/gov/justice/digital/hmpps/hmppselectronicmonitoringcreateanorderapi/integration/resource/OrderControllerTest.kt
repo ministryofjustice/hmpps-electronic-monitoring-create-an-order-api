@@ -181,6 +181,26 @@ class OrderControllerTest : IntegrationTestBase() {
     }
 
     @Test
+    fun `UNKNOWN FMS state still allows a normal variation if order status submitted`() {
+      val order = createAndPersistPopulatedOrder(status = OrderStatus.SUBMITTED)
+      stubCaseState(order, CaseState.UNKNOWN)
+
+      val variationOrder = webTestClient.post()
+        .uri("/api/orders/${order.id}/copy-as-variation")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody(OrderDto::class.java)
+        .returnResult()
+        .responseBody!!
+
+      assertThat(variationOrder.id).isEqualTo(order.id)
+      assertThat(variationOrder.status).isEqualTo(OrderStatus.IN_PROGRESS)
+      assertThat(variationOrder.type).isEqualTo(RequestType.VARIATION)
+    }
+
+    @Test
     fun `A variation of a legacy order retains its missing Sentencing Act flag`() {
       val order = createAndPersistPopulatedOrder(status = OrderStatus.SUBMITTED)
       order.isSentencingAct = null
