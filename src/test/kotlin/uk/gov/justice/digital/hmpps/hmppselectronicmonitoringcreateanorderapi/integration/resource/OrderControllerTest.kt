@@ -310,7 +310,7 @@ class OrderControllerTest : IntegrationTestBase() {
 
       val error = result.responseBody!!
       assertThat(error.userMessage)
-        .isEqualTo("Bad Request: Order latest version not submitted")
+        .isEqualTo("Bad Request: New order version is not allowed for order with status IN_PROGRESS")
     }
   }
 
@@ -464,7 +464,7 @@ class OrderControllerTest : IntegrationTestBase() {
 
       val error = result.responseBody!!
       assertThat(error.userMessage)
-        .isEqualTo("Bad Request: Order latest version not submitted")
+        .isEqualTo("Bad Request: New order version is not allowed for order with status IN_PROGRESS")
     }
 
     @Test
