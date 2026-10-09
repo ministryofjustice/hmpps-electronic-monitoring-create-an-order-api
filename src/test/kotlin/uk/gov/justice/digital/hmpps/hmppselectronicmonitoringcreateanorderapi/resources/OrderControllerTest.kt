@@ -20,6 +20,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderSearchResultDeviceWearerDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderSearchResultDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderSearchResultMonitoringConditionsDto
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.CaseState
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderListView
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
@@ -88,6 +89,7 @@ class OrderControllerTest {
     )
 
     `when`(orderService.getOrder(order.id, authentication)).thenReturn(order)
+    `when`(orderService.getCaseState(order)).thenReturn(CaseState.OPEN)
     `when`(authentication.name).thenReturn("mockUser")
 
     val result = controller.getOrder(order.id, authentication)
@@ -129,8 +131,31 @@ class OrderControllerTest {
         orderParameters = null,
         versionId = version.id,
         isOwner = true,
+        caseState = CaseState.OPEN,
       ),
     )
+  }
+
+  @Test
+  fun `Amend rejected order returns a fresh order`() {
+    val sourceOrderId = UUID.randomUUID()
+    val replacement = Order(
+      versions = mutableListOf(
+        OrderVersion(
+          orderId = UUID.randomUUID(),
+          username = "mockUser",
+          status = OrderStatus.IN_PROGRESS,
+          type = RequestType.REQUEST,
+          dataDictionaryVersion = mockDictionaryVersion,
+        ),
+      ),
+    )
+    `when`(orderService.createNewOrderFromRejected(sourceOrderId, authentication)).thenReturn(replacement)
+
+    val response = controller.amendOriginalOrderVersion(sourceOrderId, authentication)
+
+    Assertions.assertThat(response.body?.id).isEqualTo(replacement.id)
+    verify(orderService).createNewOrderFromRejected(sourceOrderId, authentication)
   }
 
   @Test

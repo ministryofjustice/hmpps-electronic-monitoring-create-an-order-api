@@ -12,6 +12,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.cl
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.config.FeatureFlags
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.BadRequestException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.ForbiddenException
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.OrderChangeException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.SubmitOrderException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.MonitoringConditions
@@ -27,6 +28,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderInformationPageDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderSearchResultDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.VersionInformationDTO
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.CaseState
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisationDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderListView
@@ -132,147 +134,205 @@ class OrderService(
 
   private fun <T> List<T>.cloneItems(transform: (T) -> T): MutableList<T> = map(transform).toMutableList()
 
-  private val allowNewVersionStatuses = listOf(OrderStatus.SUBMITTED, OrderStatus.REJECTED)
+  private val allowNewVersionStatuses = setOf(OrderStatus.SUBMITTED, OrderStatus.REJECTED)
+
+  fun getCaseState(order: Order): CaseState = fmsService.getCaseState(order)
+
+  fun canCreateNewVersion(order: Order, caseState: CaseState): Boolean = when (order.status) {
+    OrderStatus.SUBMITTED ->
+      caseState in
+        setOf(CaseState.OPEN, CaseState.CLOSED, CaseState.RESOLVED, CaseState.CANCELLED, CaseState.UNKNOWN)
+    OrderStatus.REJECTED -> caseState in setOf(CaseState.OPEN, CaseState.CLOSED, CaseState.CANCELLED)
+    else -> false
+  }
+
+  private fun requireCaseState(
+    order: Order,
+    caseState: CaseState,
+    allowedStates: Set<CaseState>,
+    allowUnknownForVariation: Boolean = false,
+  ) {
+    val unknownAllowed =
+      allowUnknownForVariation && order.status in allowNewVersionStatuses && caseState == CaseState.UNKNOWN
+    if (!canCreateNewVersion(order, caseState) && !unknownAllowed) {
+      throw OrderChangeException(
+        when {
+          caseState == CaseState.UNKNOWN -> "ORDER_CASE_STATE_UNAVAILABLE"
+          caseState in setOf(
+            CaseState.NEW,
+            CaseState.AWAITING_INFO,
+            CaseState.AWAITING_VALIDATION,
+            CaseState.AWAITING_APPROVAL,
+          ) ->
+            "ORDER_CASE_STILL_PROCESSING"
+          else -> "ORDER_VERSION_NOT_AVAILABLE"
+        },
+        "A new version cannot be created for the order's current state",
+      )
+    }
+    if (caseState !in allowedStates && !unknownAllowed) {
+      throw OrderChangeException(
+        if (caseState == CaseState.CANCELLED) "ORDER_CASE_REJECTED" else "ORDER_CASE_NOT_REJECTED",
+        "This operation is not available for the order's FMS case state",
+      )
+    }
+  }
+
   fun createVersion(orderId: UUID, token: JwtAuthenticationToken, versionType: RequestType): Order {
     val order = getOrder(orderId, token)
     val currentVersion = order.getCurrentVersion()
-    if (!allowNewVersionStatuses.contains(currentVersion.status)) {
+    if (currentVersion.status !in allowNewVersionStatuses && currentVersion.status != OrderStatus.IN_PROGRESS) {
       throw BadRequestException("New order version is not allowed for order with status ${currentVersion.status}")
     }
-    var sourceVersion = currentVersion
-    if (versionType == RequestType.AMEND_ORIGINAL_REQUEST) {
-      currentVersion.type = RequestType.REJECTED
-    } else {
-      sourceVersion = fmsService.getLatestOrderVersion(order) ?: currentVersion
+    if (currentVersion.status != OrderStatus.IN_PROGRESS) {
+      val caseState = fmsService.getCaseState(order)
+      requireCaseState(
+        order,
+        caseState,
+        setOf(CaseState.OPEN, CaseState.CLOSED, CaseState.RESOLVED),
+        allowUnknownForVariation = versionType in RequestType.VARIATION_TYPES,
+      )
     }
-    val newVersionNumber = currentVersion.versionId + 1
-    val dataDictionaryVersion = featureFlags.dataDictionaryVersion
-    val newOrderVersion = OrderVersion(
-      orderId = orderId,
-      versionId = newVersionNumber,
-      status = OrderStatus.IN_PROGRESS,
-      type = versionType,
-      username = token.name,
-      dataDictionaryVersion = dataDictionaryVersion,
-      fmsResultId = null,
-      fmsResultDate = null,
+    val sourceVersion = when {
+      currentVersion.status == OrderStatus.IN_PROGRESS || versionType == RequestType.AMEND_ORIGINAL_REQUEST ->
+        currentVersion
+      else -> fmsService.getLatestOrderVersion(order) ?: currentVersion
+    }
+    val newOrderVersion = buildCopiedVersion(
+      sourceOrder = order,
+      sourceVersion = sourceVersion,
+      targetOrderId = order.id,
+      versionNumber = currentVersion.versionId + 1,
+      versionType = versionType,
+      token = token,
     )
-      .apply {
-        val newVersionId = id
-        variationDetails = null
-        isSentencingAct = currentVersion.isSentencingAct
-
-        orderParameters =
-          sourceVersion.orderParameters?.copy(versionId = newVersionId, id = UUID.randomUUID())
-        deviceWearer =
-          sourceVersion.deviceWearer?.copy(versionId = newVersionId, id = UUID.randomUUID())
-        deviceWearerResponsibleAdult =
-          sourceVersion.deviceWearerResponsibleAdult?.copy(versionId = newVersionId, id = UUID.randomUUID())
-        contactDetails =
-          sourceVersion.contactDetails?.copy(versionId = newVersionId, id = UUID.randomUUID())
-        curfewConditions =
-          sourceVersion.curfewConditions?.copy(versionId = newVersionId, id = UUID.randomUUID())
-        curfewReleaseDateConditions =
-          sourceVersion.curfewReleaseDateConditions?.copy(versionId = newVersionId, id = UUID.randomUUID())
-
-        val currentIPs = sourceVersion.interestedParties
-        val isUserFromOriginalNotifyingOrganistion =
-          isUserFromOriginalNotifyingOrganisation(token, currentIPs?.notifyingOrganisation)
-        val isStartDateInFuture = order.getMonitoringStartDate()?.isAfter(ZonedDateTime.now()) == true
-
-        interestedParties =
-          sourceVersion.interestedParties?.copy(
-            versionId = newVersionId,
-            id = UUID.randomUUID(),
-            notifyingOrganisation = currentIPs?.notifyingOrganisation
-              ?.takeIf { isUserFromOriginalNotifyingOrganistion },
-            notifyingOrganisationName = currentIPs?.notifyingOrganisationName
-              ?.takeIf { isUserFromOriginalNotifyingOrganistion },
-            notifyingOrganisationEmail = currentIPs?.notifyingOrganisationEmail
-              ?.takeIf { isUserFromOriginalNotifyingOrganistion },
-
-            responsibleOrganisation = currentIPs?.responsibleOrganisation?.takeIf {
-              isStartDateInFuture
-            },
-            responsibleOrganisationRegion = currentIPs?.responsibleOrganisationRegion?.takeIf {
-              isStartDateInFuture
-            },
-            responsibleOrganisationEmail = currentIPs?.responsibleOrganisationEmail?.takeIf {
-              isStartDateInFuture
-            },
-            responsibleOfficerName = currentIPs?.responsibleOfficerName?.takeIf {
-              isStartDateInFuture
-            },
-            responsibleOfficerFirstName = currentIPs?.responsibleOfficerFirstName?.takeIf {
-              isStartDateInFuture
-            },
-            responsibleOfficerLastName = currentIPs?.responsibleOfficerLastName?.takeIf {
-              isStartDateInFuture
-            },
-            responsibleOfficerEmail = currentIPs?.responsibleOfficerEmail?.takeIf {
-              isStartDateInFuture
-            },
-            responsibleOfficerPhoneNumber = currentIPs?.responsibleOfficerPhoneNumber?.takeIf {
-              isStartDateInFuture
-            },
-          )
-
-        probationDeliveryUnit =
-          sourceVersion.probationDeliveryUnit?.copy(versionId = newVersionId, id = UUID.randomUUID())
-
-        monitoringConditions =
-          sourceVersion.monitoringConditions?.copy(
-            versionId = newVersionId,
-            id = UUID.randomUUID(),
-            startDate = null,
-            endDate = null,
-          )
-
-        monitoringConditionsAlcohol =
-          sourceVersion.monitoringConditionsAlcohol?.copy(versionId = newVersionId, id = UUID.randomUUID())
-        monitoringConditionsTrail =
-          sourceVersion.monitoringConditionsTrail?.copy(versionId = newVersionId, id = UUID.randomUUID())
-        installationLocation =
-          sourceVersion.installationLocation?.copy(versionId = newVersionId, id = UUID.randomUUID())
-        installationAppointment =
-          sourceVersion.installationAppointment?.copy(versionId = newVersionId, id = UUID.randomUUID())
-        offenceAdditionalDetails =
-          sourceVersion.offenceAdditionalDetails?.copy(versionId = newVersionId, id = UUID.randomUUID())
-        detailsOfInstallation =
-          sourceVersion.detailsOfInstallation?.copy(versionId = newVersionId, id = UUID.randomUUID())
-        mappa =
-          sourceVersion.mappa?.copy(versionId = newVersionId, id = UUID.randomUUID())
-
-        additionalDocuments =
-          currentVersion.additionalDocuments.cloneItems {
-            it.copy(versionId = newVersionId, id = UUID.randomUUID())
-          }
-        addresses =
-          sourceVersion.addresses.cloneItems {
-            it.copy(versionId = newVersionId, id = UUID.randomUUID())
-          }
-        curfewTimeTable =
-          sourceVersion.curfewTimeTable.cloneItems {
-            it.copy(versionId = newVersionId, id = UUID.randomUUID())
-          }
-        enforcementZoneConditions =
-          sourceVersion.enforcementZoneConditions.cloneItems {
-            it.copy(versionId = newVersionId, id = UUID.randomUUID())
-          }
-        mandatoryAttendanceConditions =
-          sourceVersion.mandatoryAttendanceConditions.cloneItems {
-            it.copy(versionId = newVersionId, id = UUID.randomUUID())
-          }
-        offences = sourceVersion.offences.cloneItems {
-          it.copy(versionId = newVersionId, id = UUID.randomUUID())
-        }
-        dapoClauses = sourceVersion.dapoClauses.cloneItems {
-          it.copy(versionId = newVersionId, id = UUID.randomUUID())
-        }
-      }
     order.versions.add(newOrderVersion)
     order.recalculateMonitoringStartEndDate()
     return updateLastUpdatedByAndSaveOrder(order)
+  }
+
+  fun createNewOrderFromRejected(orderId: UUID, token: JwtAuthenticationToken): Order {
+    val sourceOrder = getOrder(orderId, token)
+    val sourceVersion = sourceOrder.getCurrentVersion()
+    if (sourceVersion.status != OrderStatus.SUBMITTED && sourceVersion.status != OrderStatus.REJECTED) {
+      throw OrderChangeException(
+        "ORDER_VERSION_NOT_AVAILABLE",
+        "The latest order version is not eligible for replacement",
+      )
+    }
+
+    val caseState = fmsService.getCaseState(sourceOrder)
+    if (sourceVersion.status != OrderStatus.REJECTED || caseState == CaseState.UNKNOWN) {
+      requireCaseState(sourceOrder, caseState, setOf(CaseState.CANCELLED))
+    }
+
+    val sourceType = if (sourceVersion.type == RequestType.REJECTED) {
+      sourceOrder.versions
+        .filter { it.versionId < sourceVersion.versionId && it.type != RequestType.REJECTED }
+        .maxByOrNull { it.versionId }
+        ?.type
+        ?: throw OrderChangeException(
+          "ORDER_SOURCE_TYPE_UNAVAILABLE",
+          "The rejected order's original type cannot be determined",
+        )
+    } else {
+      sourceVersion.type
+    }
+    val replacementType = if (sourceType in RequestType.VARIATION_TYPES) RequestType.VARIATION else RequestType.REQUEST
+    val replacementVersion = buildCopiedVersion(
+      sourceOrder = sourceOrder,
+      sourceVersion = sourceVersion,
+      targetOrderId = sourceOrder.id,
+      versionNumber = sourceVersion.versionId + 1,
+      versionType = replacementType,
+      token = token,
+    )
+    sourceOrder.versions.add(replacementVersion)
+    sourceOrder.recalculateMonitoringStartEndDate()
+    return updateLastUpdatedByAndSaveOrder(sourceOrder)
+  }
+
+  private fun buildCopiedVersion(
+    sourceOrder: Order,
+    sourceVersion: OrderVersion,
+    targetOrderId: UUID,
+    versionNumber: Int,
+    versionType: RequestType,
+    token: JwtAuthenticationToken,
+  ): OrderVersion = OrderVersion(
+    orderId = targetOrderId,
+    versionId = versionNumber,
+    status = OrderStatus.IN_PROGRESS,
+    type = versionType,
+    username = token.name,
+    dataDictionaryVersion = featureFlags.dataDictionaryVersion,
+  ).apply {
+    val newVersionId = id
+    variationDetails = null
+    isSentencingAct = sourceOrder.isSentencingAct
+
+    orderParameters = sourceVersion.orderParameters?.copy(versionId = newVersionId, id = UUID.randomUUID())
+    deviceWearer = sourceVersion.deviceWearer?.copy(versionId = newVersionId, id = UUID.randomUUID())
+    deviceWearerResponsibleAdult =
+      sourceVersion.deviceWearerResponsibleAdult?.copy(versionId = newVersionId, id = UUID.randomUUID())
+    contactDetails = sourceVersion.contactDetails?.copy(versionId = newVersionId, id = UUID.randomUUID())
+    curfewConditions = sourceVersion.curfewConditions?.copy(versionId = newVersionId, id = UUID.randomUUID())
+    curfewReleaseDateConditions =
+      sourceVersion.curfewReleaseDateConditions?.copy(versionId = newVersionId, id = UUID.randomUUID())
+
+    val currentIPs = sourceVersion.interestedParties
+    val sameNotifyingOrganisation =
+      isUserFromOriginalNotifyingOrganisation(token, currentIPs?.notifyingOrganisation)
+    val startDateIsInFuture = sourceOrder.getMonitoringStartDate()?.isAfter(ZonedDateTime.now()) == true
+    interestedParties = currentIPs?.copy(
+      versionId = newVersionId,
+      id = UUID.randomUUID(),
+      notifyingOrganisation = currentIPs.notifyingOrganisation?.takeIf { sameNotifyingOrganisation },
+      notifyingOrganisationName = currentIPs.notifyingOrganisationName?.takeIf { sameNotifyingOrganisation },
+      notifyingOrganisationEmail = currentIPs.notifyingOrganisationEmail?.takeIf { sameNotifyingOrganisation },
+      responsibleOrganisation = currentIPs.responsibleOrganisation?.takeIf { startDateIsInFuture },
+      responsibleOrganisationRegion = currentIPs.responsibleOrganisationRegion?.takeIf { startDateIsInFuture },
+      responsibleOrganisationEmail = currentIPs.responsibleOrganisationEmail?.takeIf { startDateIsInFuture },
+      responsibleOfficerName = currentIPs.responsibleOfficerName?.takeIf { startDateIsInFuture },
+      responsibleOfficerFirstName = currentIPs.responsibleOfficerFirstName?.takeIf { startDateIsInFuture },
+      responsibleOfficerLastName = currentIPs.responsibleOfficerLastName?.takeIf { startDateIsInFuture },
+      responsibleOfficerEmail = currentIPs.responsibleOfficerEmail?.takeIf { startDateIsInFuture },
+      responsibleOfficerPhoneNumber = currentIPs.responsibleOfficerPhoneNumber?.takeIf { startDateIsInFuture },
+    )
+    probationDeliveryUnit = sourceVersion.probationDeliveryUnit?.copy(versionId = newVersionId, id = UUID.randomUUID())
+    monitoringConditions = sourceVersion.monitoringConditions?.copy(
+      versionId = newVersionId,
+      id = UUID.randomUUID(),
+      startDate = null,
+      endDate = null,
+    )
+    monitoringConditionsAlcohol =
+      sourceVersion.monitoringConditionsAlcohol?.copy(versionId = newVersionId, id = UUID.randomUUID())
+    monitoringConditionsTrail =
+      sourceVersion.monitoringConditionsTrail?.copy(versionId = newVersionId, id = UUID.randomUUID())
+    installationLocation = sourceVersion.installationLocation?.copy(versionId = newVersionId, id = UUID.randomUUID())
+    installationAppointment =
+      sourceVersion.installationAppointment?.copy(versionId = newVersionId, id = UUID.randomUUID())
+    offenceAdditionalDetails =
+      sourceVersion.offenceAdditionalDetails?.copy(versionId = newVersionId, id = UUID.randomUUID())
+    detailsOfInstallation =
+      sourceVersion.detailsOfInstallation?.copy(versionId = newVersionId, id = UUID.randomUUID())
+    mappa = sourceVersion.mappa?.copy(versionId = newVersionId, id = UUID.randomUUID())
+    additionalDocuments = sourceVersion.additionalDocuments.cloneItems {
+      it.copy(versionId = newVersionId, id = UUID.randomUUID())
+    }
+    addresses = sourceVersion.addresses.cloneItems { it.copy(versionId = newVersionId, id = UUID.randomUUID()) }
+    curfewTimeTable = sourceVersion.curfewTimeTable.cloneItems {
+      it.copy(versionId = newVersionId, id = UUID.randomUUID())
+    }
+    enforcementZoneConditions = sourceVersion.enforcementZoneConditions.cloneItems {
+      it.copy(versionId = newVersionId, id = UUID.randomUUID())
+    }
+    mandatoryAttendanceConditions = sourceVersion.mandatoryAttendanceConditions.cloneItems {
+      it.copy(versionId = newVersionId, id = UUID.randomUUID())
+    }
+    offences = sourceVersion.offences.cloneItems { it.copy(versionId = newVersionId, id = UUID.randomUUID()) }
+    dapoClauses = sourceVersion.dapoClauses.cloneItems { it.copy(versionId = newVersionId, id = UUID.randomUUID()) }
   }
 
   fun submitOrder(id: UUID, token: JwtAuthenticationToken, fullName: String): Order {
