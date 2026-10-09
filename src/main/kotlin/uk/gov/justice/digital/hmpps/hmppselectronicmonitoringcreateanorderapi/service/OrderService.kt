@@ -141,8 +141,8 @@ class OrderService(
   fun canCreateNewVersion(order: Order, caseState: CaseState): Boolean = when (order.status) {
     OrderStatus.SUBMITTED ->
       caseState in
-        setOf(CaseState.CLOSED, CaseState.RESOLVED, CaseState.CANCELLED, CaseState.UNKNOWN)
-    OrderStatus.REJECTED -> caseState in setOf(CaseState.CLOSED, CaseState.CANCELLED)
+        setOf(CaseState.OPEN, CaseState.CLOSED, CaseState.RESOLVED, CaseState.CANCELLED, CaseState.UNKNOWN)
+    OrderStatus.REJECTED -> caseState in setOf(CaseState.OPEN, CaseState.CLOSED, CaseState.CANCELLED)
     else -> false
   }
 
@@ -160,7 +160,6 @@ class OrderService(
           caseState == CaseState.UNKNOWN -> "ORDER_CASE_STATE_UNAVAILABLE"
           caseState in setOf(
             CaseState.NEW,
-            CaseState.OPEN,
             CaseState.AWAITING_INFO,
             CaseState.AWAITING_VALIDATION,
             CaseState.AWAITING_APPROVAL,
@@ -190,7 +189,7 @@ class OrderService(
       requireCaseState(
         order,
         caseState,
-        setOf(CaseState.CLOSED, CaseState.RESOLVED),
+        setOf(CaseState.OPEN, CaseState.CLOSED, CaseState.RESOLVED),
         allowUnknownForVariation = versionType in RequestType.VARIATION_TYPES,
       )
     }
@@ -223,7 +222,9 @@ class OrderService(
     }
 
     val caseState = fmsService.getCaseState(sourceOrder)
-    requireCaseState(sourceOrder, caseState, setOf(CaseState.CANCELLED))
+    if (sourceVersion.status != OrderStatus.REJECTED || caseState == CaseState.UNKNOWN) {
+      requireCaseState(sourceOrder, caseState, setOf(CaseState.CANCELLED))
+    }
 
     val sourceType = if (sourceVersion.type == RequestType.REJECTED) {
       sourceOrder.versions

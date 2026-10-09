@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ArgumentsSource
+import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.provider.ValueSource
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.PageRequest
@@ -168,7 +169,7 @@ class OrderControllerTest : IntegrationTestBase() {
     @Test
     fun `FMS processing state returns conflict with a machine readable error code`() {
       val order = createAndPersistPopulatedOrder(status = OrderStatus.SUBMITTED)
-      stubCaseState(order, CaseState.OPEN)
+      stubCaseState(order, CaseState.AWAITING_VALIDATION)
 
       val error = webTestClient.post()
         .uri("/api/orders/${order.id}/copy-as-variation")
@@ -556,6 +557,82 @@ class OrderControllerTest : IntegrationTestBase() {
   @Nested
   @DisplayName("POST /api/order/amend-rejected-order")
   inner class AmendRejectedOrder {
+    @ParameterizedTest
+    @CsvSource(
+      "NEW,REQUEST", "NEW,VARIATION",
+      "OPEN,REQUEST", "OPEN,VARIATION",
+      "CLOSED,REQUEST", "CLOSED,VARIATION",
+      "RESOLVED,REQUEST", "RESOLVED,VARIATION",
+      "CANCELLED,REQUEST", "CANCELLED,VARIATION",
+      "AWAITING_INFO,REQUEST", "AWAITING_INFO,VARIATION",
+      "AWAITING_VALIDATION,REQUEST", "AWAITING_VALIDATION,VARIATION",
+      "AWAITING_APPROVAL,REQUEST", "AWAITING_APPROVAL,VARIATION",
+    )
+    fun `returned orders with known FMS states can create replacements`(
+      caseState: CaseState,
+      requestType: RequestType,
+    ) {
+      val order = createAndPersistPopulatedOrder(status = OrderStatus.REJECTED, requestType = requestType)
+      val rejectedVersion = order.getCurrentVersion()
+      stubCaseState(order, caseState)
+
+      val replacement = webTestClient.post()
+        .uri("/api/orders/${order.id}/amend-rejected-order")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus().isOk
+        .expectBody<OrderDto>()
+        .returnResult().responseBody!!
+
+      assertThat(replacement.id).isEqualTo(order.id)
+      assertThat(replacement.versionId).isNotEqualTo(rejectedVersion.id)
+      assertThat(replacement.status).isEqualTo(OrderStatus.IN_PROGRESS)
+      assertThat(replacement.type).isEqualTo(requestType)
+      assertThat(replacement.username).isEqualTo(testUser)
+      assertThat(replacement.lastUpdatedBy).isEqualTo(testUserFullName)
+      val persistedOrder = repo.findById(order.id).orElseThrow()
+      assertThat(persistedOrder.versions).hasSize(2)
+      assertThat(persistedOrder.getCurrentVersion().id).isEqualTo(replacement.versionId)
+      assertThat(persistedOrder.getCurrentVersion().versionId).isEqualTo(rejectedVersion.versionId + 1)
+      val persistedRejectedVersion = persistedOrder.versions.single { it.id == rejectedVersion.id }
+      assertThat(persistedRejectedVersion.status).isEqualTo(OrderStatus.REJECTED)
+      assertThat(persistedRejectedVersion.type).isEqualTo(requestType)
+    }
+
+    @Test
+    fun `submitted orders with OPEN FMS cases still cannot create replacements`() {
+      val order = createAndPersistPopulatedOrder(status = OrderStatus.SUBMITTED)
+      stubCaseState(order, CaseState.OPEN)
+
+      val error = webTestClient.post()
+        .uri("/api/orders/${order.id}/amend-rejected-order")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus().isEqualTo(HttpStatus.CONFLICT)
+        .expectBody<ErrorResponse>()
+        .returnResult().responseBody!!
+
+      assertThat(error.errorCode).isEqualTo("ORDER_CASE_NOT_REJECTED")
+      assertThat(repo.findById(order.id).orElseThrow().versions).hasSize(1)
+    }
+
+    @Test
+    fun `returned orders with UNKNOWN FMS states still cannot create replacements`() {
+      val order = createAndPersistPopulatedOrder(status = OrderStatus.REJECTED)
+      stubCaseState(order, CaseState.UNKNOWN)
+
+      val error = webTestClient.post()
+        .uri("/api/orders/${order.id}/amend-rejected-order")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus().isEqualTo(HttpStatus.CONFLICT)
+        .expectBody<ErrorResponse>()
+        .returnResult().responseBody!!
+
+      assertThat(error.errorCode).isEqualTo("ORDER_CASE_STATE_UNAVAILABLE")
+      assertThat(repo.findById(order.id).orElseThrow().versions).hasSize(1)
+    }
+
     @Test
     fun `It should create a variation version for a cancelled change order`() {
       val order = createAndPersistPopulatedOrder(
