@@ -12,6 +12,7 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ArgumentsSource
 import org.junit.jupiter.params.provider.ValueSource
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.data.domain.PageRequest
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.util.JsonPathExpectationsHelper
@@ -34,6 +35,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.RejectionReason
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderInformationDto
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderInformationPageDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderSearchResultDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.VersionInformationDTO
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.CaseState
@@ -41,6 +43,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DocumentType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Prison
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ProcessingStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ServiceRequestType
@@ -338,21 +341,26 @@ class OrderControllerTest : IntegrationTestBase() {
     }
 
     @Test
-    fun `It return bad request when latest version is not in SUBMITTED state`() {
+    fun `It creates a variation draft from an existing draft`() {
       val order = createAndPersistPopulatedOrder(status = OrderStatus.IN_PROGRESS)
+      val existingVersion = order.getCurrentVersion()
+      val existingVersionCount = order.versions.size
 
-      val result = webTestClient.post()
+      val variation = webTestClient.post()
         .uri("/api/orders/${order.id}/copy-as-variation")
         .headers(setAuthorisation(username = "AUTH_ADM"))
         .exchange()
         .expectStatus()
-        .is4xxClientError
-        .expectBody(ErrorResponse::class.java)
+        .isOk
+        .expectBody(OrderDto::class.java)
         .returnResult()
+        .responseBody!!
 
-      val error = result.responseBody!!
-      assertThat(error.userMessage)
-        .isEqualTo("Bad Request: Order latest version not submitted")
+      assertThat(variation.id).isEqualTo(order.id)
+      assertThat(variation.versionId).isNotEqualTo(existingVersion.id)
+      assertThat(variation.status).isEqualTo(OrderStatus.IN_PROGRESS)
+      assertThat(variation.type).isEqualTo(RequestType.VARIATION)
+      assertThat(repo.findById(order.id).orElseThrow().versions).hasSize(existingVersionCount + 1)
     }
   }
 
@@ -482,10 +490,12 @@ class OrderControllerTest : IntegrationTestBase() {
     }
 
     @Test
-    fun `It return bad request when latest version is not in SUBMITTED state`() {
+    fun `It creates an amended draft from an existing draft`() {
       val order = createAndPersistPopulatedOrder(status = OrderStatus.IN_PROGRESS)
+      val existingVersion = order.getCurrentVersion()
+      val existingVersionCount = order.versions.size
 
-      val result = webTestClient.post()
+      val amendedOrder = webTestClient.post()
         .uri("/api/orders/${order.id}/amend-order")
         .contentType(MediaType.APPLICATION_JSON)
         .body(
@@ -500,13 +510,16 @@ class OrderControllerTest : IntegrationTestBase() {
         .headers(setAuthorisation(username = "AUTH_ADM"))
         .exchange()
         .expectStatus()
-        .is4xxClientError
-        .expectBody(ErrorResponse::class.java)
+        .isOk
+        .expectBody(OrderDto::class.java)
         .returnResult()
+        .responseBody!!
 
-      val error = result.responseBody!!
-      assertThat(error.userMessage)
-        .isEqualTo("Bad Request: Order latest version not submitted")
+      assertThat(amendedOrder.id).isEqualTo(order.id)
+      assertThat(amendedOrder.versionId).isNotEqualTo(existingVersion.id)
+      assertThat(amendedOrder.status).isEqualTo(OrderStatus.IN_PROGRESS)
+      assertThat(amendedOrder.type).isEqualTo(RequestType.VARIATION)
+      assertThat(repo.findById(order.id).orElseThrow().versions).hasSize(existingVersionCount + 1)
     }
 
     @Test
@@ -607,8 +620,8 @@ class OrderControllerTest : IntegrationTestBase() {
         .exchange()
         .expectStatus()
         .isOk
-        .expectBodyList<OrderInformationDto>()
-        .hasSize(1)
+        .expectBody<OrderInformationPageDto>()
+        .consumeWith { assertThat(it.responseBody?.content).hasSize(1) }
     }
 
     @Test
@@ -621,8 +634,8 @@ class OrderControllerTest : IntegrationTestBase() {
         .exchange()
         .expectStatus()
         .isOk
-        .expectBodyList(OrderInformationDto::class.java)
-        .hasSize(1)
+        .expectBody(OrderInformationPageDto::class.java)
+        .consumeWith { assertThat(it.responseBody?.content).hasSize(1) }
     }
 
     @Test
@@ -662,8 +675,8 @@ class OrderControllerTest : IntegrationTestBase() {
         .exchange()
         .expectStatus()
         .isOk
-        .expectBodyList(OrderInformationDto::class.java)
-        .hasSize(1)
+        .expectBody<OrderInformationPageDto>()
+        .consumeWith { assertThat(it.responseBody?.content).hasSize(1) }
     }
 
     @Test
@@ -703,8 +716,8 @@ class OrderControllerTest : IntegrationTestBase() {
         .exchange()
         .expectStatus()
         .isOk
-        .expectBodyList(OrderInformationDto::class.java)
-        .hasSize(1)
+        .expectBody<OrderInformationPageDto>()
+        .consumeWith { assertThat(it.responseBody?.content).hasSize(1) }
     }
 
     @Test
@@ -744,8 +757,8 @@ class OrderControllerTest : IntegrationTestBase() {
         .exchange()
         .expectStatus()
         .isOk
-        .expectBodyList<OrderInformationDto>()
-        .hasSize(1)
+        .expectBody<OrderInformationPageDto>()
+        .consumeWith { assertThat(it.responseBody?.content).hasSize(1) }
     }
 
     @Test
@@ -785,8 +798,8 @@ class OrderControllerTest : IntegrationTestBase() {
         .exchange()
         .expectStatus()
         .isOk
-        .expectBodyList(OrderInformationDto::class.java)
-        .hasSize(1)
+        .expectBody<OrderInformationPageDto>()
+        .consumeWith { assertThat(it.responseBody?.content).hasSize(1) }
     }
 
     @Test
@@ -826,8 +839,8 @@ class OrderControllerTest : IntegrationTestBase() {
         .exchange()
         .expectStatus()
         .isOk
-        .expectBodyList(OrderInformationDto::class.java)
-        .hasSize(1)
+        .expectBody<OrderInformationPageDto>()
+        .consumeWith { assertThat(it.responseBody?.content).hasSize(1) }
     }
 
     @Test
@@ -898,8 +911,8 @@ class OrderControllerTest : IntegrationTestBase() {
         .exchange()
         .expectStatus()
         .isOk
-        .expectBodyList(OrderInformationDto::class.java)
-        .hasSize(2)
+        .expectBody<OrderInformationPageDto>()
+        .consumeWith { assertThat(it.responseBody?.content).hasSize(2) }
     }
   }
 
@@ -1061,10 +1074,10 @@ class OrderControllerTest : IntegrationTestBase() {
         .exchange()
         .expectStatus()
         .isOk
-        .expectBodyList<OrderInformationDto>()
-        .hasSize(1).returnResult().responseBody
+        .expectBody<OrderInformationPageDto>()
+        .returnResult().responseBody
 
-      assertThat(result!!.first().monitoringConditions?.startDate).isEqualTo(mockStartDate)
+      assertThat(result!!.content.first().monitoringConditions?.startDate).isEqualTo(mockStartDate)
     }
 
     @Test
@@ -1108,10 +1121,10 @@ class OrderControllerTest : IntegrationTestBase() {
         .exchange()
         .expectStatus()
         .isOk
-        .expectBodyList<OrderInformationDto>()
-        .hasSize(1).returnResult().responseBody
+        .expectBody<OrderInformationPageDto>()
+        .returnResult().responseBody
 
-      assertThat(result!!.first().versionId).isEqualTo(versionId2)
+      assertThat(result!!.content.first().versionId).isEqualTo(versionId2)
     }
 
     @Test
@@ -1124,8 +1137,199 @@ class OrderControllerTest : IntegrationTestBase() {
         .exchange()
         .expectStatus()
         .isOk
-        .expectBodyList(OrderDto::class.java)
-        .hasSize(0)
+        .expectBody<OrderInformationPageDto>()
+        .consumeWith { assertThat(it.responseBody?.content).isEmpty() }
+    }
+
+    @Test
+    fun `Home Office users receive bounded Home Office orders with continuation metadata`() {
+      val firstOrder = TestUtilities.createReadyToSubmitOrder(
+        ownerCohort = "HOME_OFFICE",
+        startDate = ZonedDateTime.parse("2030-01-01T00:00:00Z"),
+      )
+      val secondOrder = TestUtilities.createReadyToSubmitOrder(
+        ownerCohort = "HOME_OFFICE",
+        startDate = ZonedDateTime.parse("2030-02-01T00:00:00Z"),
+      )
+      firstOrder.lastUpdatedDateTime = OffsetDateTime.parse("2026-01-01T00:00:00Z")
+      secondOrder.lastUpdatedDateTime = OffsetDateTime.parse("2026-01-02T00:00:00Z")
+      repo.saveAll(listOf(firstOrder, secondOrder))
+
+      val firstPage = webTestClient.get()
+        .uri("/api/orders?view=HOME_OFFICE_ORDERS&page=0&size=1")
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CEMO__CREATE_ORDER", "ROLE_EM_CEMO_HOME_OFFICE")))
+        .exchange()
+        .expectStatus().isOk
+        .expectBody<OrderInformationPageDto>()
+        .returnResult().responseBody!!
+
+      assertThat(firstPage.content).hasSize(1)
+      assertThat(firstPage.content.first().id).isEqualTo(firstOrder.id)
+      assertThat(firstPage.page).isZero()
+      assertThat(firstPage.size).isEqualTo(1)
+      assertThat(firstPage.hasNext).isTrue()
+
+      val secondPage = webTestClient.get()
+        .uri("/api/orders?view=HOME_OFFICE_ORDERS&page=1&size=1")
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CEMO__CREATE_ORDER", "ROLE_EM_CEMO_HOME_OFFICE")))
+        .exchange()
+        .expectStatus().isOk
+        .expectBody<OrderInformationPageDto>()
+        .returnResult().responseBody!!
+
+      assertThat(secondPage.content).hasSize(1)
+      assertThat(secondPage.content.first().id).isEqualTo(secondOrder.id)
+      assertThat(secondPage.hasNext).isFalse()
+    }
+
+    @Test
+    fun `Home Office view filters by owner cohort and latest eligible status`() {
+      val inProgressOrder = TestUtilities.createReadyToSubmitOrder(ownerCohort = "HOME_OFFICE")
+      val rejectedOrder = TestUtilities.createReadyToSubmitOrder(ownerCohort = "HOME_OFFICE")
+        .apply { status = OrderStatus.REJECTED }
+      val submittedOrder = TestUtilities.createReadyToSubmitOrder(ownerCohort = "HOME_OFFICE")
+        .apply { status = OrderStatus.SUBMITTED }
+      val otherCohortOrder = TestUtilities.createReadyToSubmitOrder(ownerCohort = "PROBATION")
+      val orderWithIneligibleLatestVersion = TestUtilities.createReadyToSubmitOrder(ownerCohort = "HOME_OFFICE")
+      val latestVersionId = UUID.randomUUID()
+      orderWithIneligibleLatestVersion.versions.add(
+        OrderVersion(
+          id = latestVersionId,
+          orderId = orderWithIneligibleLatestVersion.id,
+          versionId = 1,
+          username = "AUTH_ADM",
+          status = OrderStatus.SUBMITTED,
+          type = RequestType.REQUEST,
+          dataDictionaryVersion = DataDictionaryVersion.DDV4,
+          ownerCohort = "HOME_OFFICE",
+        ),
+      )
+      repo.saveAll(
+        listOf(inProgressOrder, rejectedOrder, submittedOrder, otherCohortOrder, orderWithIneligibleLatestVersion),
+      )
+
+      val page = webTestClient.get()
+        .uri("/api/orders?view=HOME_OFFICE_ORDERS&size=10")
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CEMO__CREATE_ORDER", "ROLE_EM_CEMO_HOME_OFFICE")))
+        .exchange()
+        .expectStatus().isOk
+        .expectBody<OrderInformationPageDto>()
+        .returnResult().responseBody!!
+
+      assertThat(page.content.map { it.id }).containsExactlyInAnyOrder(inProgressOrder.id, rejectedOrder.id)
+      assertThat(page.hasNext).isFalse()
+    }
+
+    @Test
+    fun `Order list repository queries prioritize rejected orders then earliest start date`() {
+      val earliestStartDate = ZonedDateTime.parse("2030-01-01T00:00:00Z")
+      val laterStartDate = ZonedDateTime.parse("2030-02-01T00:00:00Z")
+
+      fun order(status: OrderStatus, startDate: ZonedDateTime?, ownerCohort: String, username: String = "AUTH_ADM") =
+        TestUtilities.createReadyToSubmitOrder(
+          username = username,
+          startDate = startDate ?: mockStartDate,
+          ownerCohort = ownerCohort,
+        ).apply {
+          this.status = status
+          if (startDate == null) monitoringConditions?.startDate = null
+        }
+
+      val myRejectedLater = order(OrderStatus.REJECTED, laterStartDate, "CIVIL_COURT")
+      val myInProgressEarliest = order(OrderStatus.IN_PROGRESS, earliestStartDate, "CIVIL_COURT")
+      val myRejectedEarliest = order(OrderStatus.REJECTED, earliestStartDate, "CIVIL_COURT")
+      val myRejectedWithoutStartDate = order(OrderStatus.REJECTED, null, "CIVIL_COURT")
+
+      val failedLater = order(OrderStatus.ERROR, laterStartDate, "CIVIL_COURT")
+      val failedEarliest = order(OrderStatus.ERROR, earliestStartDate, "CIVIL_COURT")
+
+      val prisonRejectedLater = order(
+        OrderStatus.REJECTED,
+        laterStartDate,
+        Prison.BEDFORD_PRISON.name,
+        username = "PRISON_USER",
+      )
+      val prisonInProgressEarliest = order(
+        OrderStatus.IN_PROGRESS,
+        earliestStartDate,
+        Prison.BEDFORD_PRISON.name,
+        username = "PRISON_USER",
+      )
+      val prisonRejectedEarliest = order(
+        OrderStatus.REJECTED,
+        earliestStartDate,
+        Prison.BEDFORD_PRISON.name,
+        username = "PRISON_USER",
+      )
+
+      val homeOfficeRejectedLater = order(
+        OrderStatus.REJECTED,
+        laterStartDate,
+        "HOME_OFFICE",
+        username = "HOME_OFFICE_USER",
+      )
+      val homeOfficeInProgressEarliest = order(
+        OrderStatus.IN_PROGRESS,
+        earliestStartDate,
+        "HOME_OFFICE",
+        username = "HOME_OFFICE_USER",
+      )
+      val homeOfficeRejectedEarliest = order(
+        OrderStatus.REJECTED,
+        earliestStartDate,
+        "HOME_OFFICE",
+        username = "HOME_OFFICE_USER",
+      )
+
+      repo.saveAll(
+        listOf(
+          myRejectedLater,
+          myInProgressEarliest,
+          myRejectedEarliest,
+          myRejectedWithoutStartDate,
+          failedLater,
+          failedEarliest,
+          prisonRejectedLater,
+          prisonInProgressEarliest,
+          prisonRejectedEarliest,
+          homeOfficeRejectedLater,
+          homeOfficeInProgressEarliest,
+          homeOfficeRejectedEarliest,
+        ),
+      )
+
+      val pageable = PageRequest.of(0, 20)
+      assertThat(repo.findMyOrders("AUTH_ADM", pageable).content.map { it.getId() })
+        .containsExactly(
+          myRejectedEarliest.id,
+          myRejectedLater.id,
+          myRejectedWithoutStartDate.id,
+          myInProgressEarliest.id,
+        )
+      assertThat(repo.findFailedOrders("AUTH_ADM", pageable).content.map { it.getId() })
+        .containsExactly(failedEarliest.id, failedLater.id)
+      assertThat(repo.findPrisonOrders(listOf(Prison.BEDFORD_PRISON.name), pageable).content.map { it.getId() })
+        .containsExactly(prisonRejectedEarliest.id, prisonRejectedLater.id, prisonInProgressEarliest.id)
+      assertThat(repo.findHomeOfficeOrders(pageable).content.map { it.getId() })
+        .containsExactly(homeOfficeRejectedEarliest.id, homeOfficeRejectedLater.id, homeOfficeInProgressEarliest.id)
+    }
+
+    @Test
+    fun `Home Office list is forbidden to users from other cohorts`() {
+      webTestClient.get()
+        .uri("/api/orders?view=HOME_OFFICE_ORDERS")
+        .headers(setAuthorisation(roles = listOf("ROLE_EM_CEMO__CREATE_ORDER", "ROLE_PRISON")))
+        .exchange()
+        .expectStatus().isForbidden
+    }
+
+    @Test
+    fun `List rejects oversized page requests`() {
+      webTestClient.get()
+        .uri("/api/orders?size=101")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus().isBadRequest
     }
   }
 

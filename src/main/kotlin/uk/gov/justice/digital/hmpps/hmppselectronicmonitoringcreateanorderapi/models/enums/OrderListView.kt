@@ -4,4 +4,5 @@ enum class OrderListView {
   MY_ORDERS,
   FAILED_ORDERS,
   PRISON_ORDERS,
+  HOME_OFFICE_ORDERS,
 }

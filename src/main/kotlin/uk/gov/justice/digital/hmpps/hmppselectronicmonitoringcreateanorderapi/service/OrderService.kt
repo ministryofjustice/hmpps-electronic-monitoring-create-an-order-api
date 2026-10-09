@@ -2,6 +2,9 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.s
 
 import jakarta.persistence.EntityNotFoundException
 import org.springframework.boot.context.properties.EnableConfigurationProperties
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Slice
+import org.springframework.data.domain.SliceImpl
 import org.springframework.security.access.AccessDeniedException
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken
 import org.springframework.stereotype.Service
@@ -22,6 +25,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.CreateOrderDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderInformationDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderInformationMonitoringConditionsDto
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderInformationPageDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderSearchResultDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.VersionInformationDTO
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.CaseState
@@ -120,7 +124,7 @@ class OrderService(
     return order
   }
 
-  private fun isUserFromOriginalNotifyingOrganistion(
+  private fun isUserFromOriginalNotifyingOrganisation(
     token: JwtAuthenticationToken,
     notifyingOrganisation: String?,
   ): Boolean {
@@ -130,13 +134,15 @@ class OrderService(
 
   private fun <T> List<T>.cloneItems(transform: (T) -> T): MutableList<T> = map(transform).toMutableList()
 
+  private val allowNewVersionStatuses = setOf(OrderStatus.SUBMITTED, OrderStatus.REJECTED)
+
   fun getCaseState(order: Order): CaseState = fmsService.getCaseState(order)
 
   fun canCreateNewVersion(order: Order, caseState: CaseState): Boolean = when (order.status) {
     OrderStatus.SUBMITTED ->
       caseState in
         setOf(CaseState.CLOSED, CaseState.RESOLVED, CaseState.CANCELLED, CaseState.UNKNOWN)
-    OrderStatus.REJECTED -> caseState == CaseState.CANCELLED
+    OrderStatus.REJECTED -> caseState in setOf(CaseState.CLOSED, CaseState.CANCELLED)
     else -> false
   }
 
@@ -147,11 +153,10 @@ class OrderService(
     allowUnknownForVariation: Boolean = false,
   ) {
     val unknownAllowed =
-      allowUnknownForVariation && order.status == OrderStatus.SUBMITTED && caseState == CaseState.UNKNOWN
+      allowUnknownForVariation && order.status in allowNewVersionStatuses && caseState == CaseState.UNKNOWN
     if (!canCreateNewVersion(order, caseState) && !unknownAllowed) {
       throw OrderChangeException(
         when {
-          order.status == OrderStatus.IN_PROGRESS -> "ORDER_DRAFT_EXISTS"
           caseState == CaseState.UNKNOWN -> "ORDER_CASE_STATE_UNAVAILABLE"
           caseState in setOf(
             CaseState.NEW,
@@ -177,22 +182,23 @@ class OrderService(
   fun createVersion(orderId: UUID, token: JwtAuthenticationToken, versionType: RequestType): Order {
     val order = getOrder(orderId, token)
     val currentVersion = order.getCurrentVersion()
-    if (currentVersion.status != OrderStatus.SUBMITTED) {
-      throw BadRequestException("Order latest version not submitted")
+    if (currentVersion.status !in allowNewVersionStatuses && currentVersion.status != OrderStatus.IN_PROGRESS) {
+      throw BadRequestException("New order version is not allowed for order with status ${currentVersion.status}")
     }
-    val caseState = fmsService.getCaseState(order)
-    requireCaseState(
-      order,
-      caseState,
-      setOf(CaseState.CLOSED, CaseState.RESOLVED),
-      allowUnknownForVariation = versionType in RequestType.VARIATION_TYPES,
-    )
-    val sourceVersion =
-      if (versionType == RequestType.AMEND_ORIGINAL_REQUEST) {
+    if (currentVersion.status != OrderStatus.IN_PROGRESS) {
+      val caseState = fmsService.getCaseState(order)
+      requireCaseState(
+        order,
+        caseState,
+        setOf(CaseState.CLOSED, CaseState.RESOLVED),
+        allowUnknownForVariation = versionType in RequestType.VARIATION_TYPES,
+      )
+    }
+    val sourceVersion = when {
+      currentVersion.status == OrderStatus.IN_PROGRESS || versionType == RequestType.AMEND_ORIGINAL_REQUEST ->
         currentVersion
-      } else {
-        fmsService.getLatestOrderVersion(order) ?: currentVersion
-      }
+      else -> fmsService.getLatestOrderVersion(order) ?: currentVersion
+    }
     val newOrderVersion = buildCopiedVersion(
       sourceOrder = order,
       sourceVersion = sourceVersion,
@@ -275,7 +281,7 @@ class OrderService(
 
     val currentIPs = sourceVersion.interestedParties
     val sameNotifyingOrganisation =
-      isUserFromOriginalNotifyingOrganistion(token, currentIPs?.notifyingOrganisation)
+      isUserFromOriginalNotifyingOrganisation(token, currentIPs?.notifyingOrganisation)
     val startDateIsInFuture = sourceOrder.getMonitoringStartDate()?.isAfter(ZonedDateTime.now()) == true
     interestedParties = currentIPs?.copy(
       versionId = newVersionId,
@@ -404,11 +410,18 @@ class OrderService(
   fun listOrders(
     authentication: JwtAuthenticationToken,
     view: OrderListView = OrderListView.MY_ORDERS,
-  ): List<OrderInformationDto> {
+    page: Int = 0,
+    size: Int = DEFAULT_ORDER_LIST_PAGE_SIZE,
+  ): OrderInformationPageDto {
+    if (page < 0) throw BadRequestException("Page must be zero or greater")
+    if (size !in 1..MAX_ORDER_LIST_PAGE_SIZE) {
+      throw BadRequestException("Page size must be between 1 and $MAX_ORDER_LIST_PAGE_SIZE")
+    }
+    val pageable = PageRequest.of(page, size)
     val username = authentication.name
-    val results = when (view) {
-      OrderListView.MY_ORDERS -> orderRepo.findMyOrders(username)
-      OrderListView.FAILED_ORDERS -> orderRepo.findFailedOrders(username)
+    val results: Slice<OrderVersionListInformation> = when (view) {
+      OrderListView.MY_ORDERS -> orderRepo.findMyOrders(username, pageable)
+      OrderListView.FAILED_ORDERS -> orderRepo.findFailedOrders(username, pageable)
       OrderListView.PRISON_ORDERS -> {
         val userCohort = userCohortService.getUserCohort(authentication)
         if (userCohort.cohort != Cohort.PRISON || userCohort.activeCaseLoadId == "CADM_I") {
@@ -418,14 +431,21 @@ class OrderService(
           ?: throw AccessDeniedException("Prison user has no active caseload")
         val prisonNames = Prison.fromId(caseLoadId).map { it.name }
         if (prisonNames.isEmpty()) {
-          emptyList()
+          SliceImpl(emptyList(), pageable, false)
         } else {
-          orderRepo.findPrisonOrders(prisonNames)
+          orderRepo.findPrisonOrders(prisonNames, pageable)
         }
+      }
+      OrderListView.HOME_OFFICE_ORDERS -> {
+        val userCohort = userCohortService.getUserCohort(authentication)
+        if (userCohort.cohort != Cohort.HOME_OFFICE) {
+          throw AccessDeniedException("Home Office view is only available to Home Office users")
+        }
+        orderRepo.findHomeOfficeOrders(pageable)
       }
     }
 
-    return results.map { it.toListInformationDto() }
+    return results.toOrderInformationPageDto()
   }
 
   fun searchOrders(searchTerm: String, authentication: JwtAuthenticationToken): List<OrderSearchResultDto> {
@@ -472,6 +492,18 @@ class OrderService(
     lastUpdatedBy = this.getLastUpdatedBy(),
     lastUpdatedDateTime = this.getLastUpdatedDateTime(),
   )
+
+  private fun Slice<OrderVersionListInformation>.toOrderInformationPageDto() = OrderInformationPageDto(
+    content = content.map { it.toListInformationDto() },
+    page = number,
+    size = size,
+    hasNext = hasNext(),
+  )
+
+  companion object {
+    const val DEFAULT_ORDER_LIST_PAGE_SIZE = 50
+    const val MAX_ORDER_LIST_PAGE_SIZE = 100
+  }
 
   private fun OrderVersion.toDTO() = VersionInformationDTO(
     orderId = this.orderId,
