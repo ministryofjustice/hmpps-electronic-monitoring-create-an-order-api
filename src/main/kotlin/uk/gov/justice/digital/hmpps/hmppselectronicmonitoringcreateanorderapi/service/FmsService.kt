@@ -96,14 +96,11 @@ class FmsService(
   }
 
   fun getCaseState(order: Order): CaseState {
-    val submittedVersion = order.versions
-      .filter { it.status == OrderStatus.SUBMITTED || it.status == OrderStatus.REJECTED }
-      .filter { it.fmsResultId != null } // maybe we look at dates too
-      .maxByOrNull { it.versionId }
-      ?: return CaseState.UNKNOWN
+    val latestVersion = order.versions.maxByOrNull { it.versionId } ?: return CaseState.UNKNOWN
+    val fmsResultId = latestVersion.fmsResultId ?: return CaseState.UNKNOWN
 
     return runCatching {
-      val result = repo.findById(submittedVersion.fmsResultId!!).orElse(null)
+      val result = repo.findById(fmsResultId).orElse(null)
       val caseId = result?.caseId
       if (caseId.isNullOrBlank()) CaseState.UNKNOWN else fmsClient.getState(caseId)
     }.getOrDefault(CaseState.UNKNOWN)

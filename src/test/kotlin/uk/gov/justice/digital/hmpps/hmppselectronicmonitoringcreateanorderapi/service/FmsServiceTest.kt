@@ -6,6 +6,9 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
+import org.junit.jupiter.params.provider.EnumSource
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.never
 import org.mockito.Mockito.verifyNoInteractions
@@ -321,33 +324,84 @@ class FmsServiceTest {
   }
 
   @Test
-  fun `getCaseState queries the case linked to the latest submitted version, not the current draft`() {
-    val orderId = UUID.randomUUID()
-    val previousSubmitted = OrderVersion(
-      orderId = orderId,
-      versionId = 1,
+  fun `getCaseState returns UNKNOWN when the order has no versions`() {
+    val order = Order()
+
+    assertThat(service.getCaseState(order)).isEqualTo(CaseState.UNKNOWN)
+    verifyNoInteractions(repo, mockClient)
+  }
+
+  @ParameterizedTest
+  @CsvSource(
+    "SUBMITTED,OPEN",
+    "SUBMITTED,CANCELLED",
+    "REJECTED,OPEN",
+    "REJECTED,CANCELLED",
+    "IN_PROGRESS,OPEN",
+    "IN_PROGRESS,CANCELLED",
+    "ERROR,OPEN",
+    "ERROR,CANCELLED",
+  )
+  fun `getCaseState returns UNKNOWN when the latest version has no FMS result ID`(
+    status: OrderStatus,
+    olderCaseState: CaseState,
+  ) {
+    val order = TestUtilities.createReadyToSubmitOrder(status = OrderStatus.SUBMITTED)
+    val previousSubmitted = order.getCurrentVersion()
+    val previousResultId = UUID.randomUUID()
+    previousSubmitted.fmsResultId = previousResultId
+    val latestSubmitted = OrderVersion(
+      orderId = order.id,
+      versionId = previousSubmitted.versionId + 1,
       username = "user",
-      status = OrderStatus.SUBMITTED,
-      type = RequestType.REQUEST,
-      dataDictionaryVersion = DataDictionaryVersion.DDV6,
-      fmsResultId = UUID.randomUUID(),
-    )
-    val currentDraft = OrderVersion(
-      orderId = orderId,
-      versionId = 2,
-      username = "user",
-      status = OrderStatus.IN_PROGRESS,
+      status = status,
       type = RequestType.VARIATION,
       dataDictionaryVersion = DataDictionaryVersion.DDV6,
     )
-    val order = Order(orderId, mutableListOf(previousSubmitted, currentDraft))
-    val caseId = "linked-case"
-    whenever(repo.findById(previousSubmitted.fmsResultId!!)).thenReturn(
+    order.versions.add(latestSubmitted)
+    val caseId = "older-case"
+    whenever(repo.findById(previousResultId)).thenReturn(
       Optional.of(
         FmsSubmissionResult(
-          id = previousSubmitted.fmsResultId!!,
-          orderId = orderId,
+          id = previousResultId,
+          orderId = order.id,
           strategy = FmsSubmissionStrategyKind.ORDER,
+          orderSource = FmsOrderSource.CEMO,
+          deviceWearerResult = FmsDeviceWearerSubmissionResult(deviceWearerId = caseId),
+        ),
+      ),
+    )
+    whenever(mockClient.getState(caseId)).thenReturn(olderCaseState)
+
+    assertThat(service.getCaseState(order)).isEqualTo(CaseState.UNKNOWN)
+    verifyNoInteractions(repo, mockClient)
+  }
+
+  @ParameterizedTest
+  @EnumSource(OrderStatus::class)
+  fun `getCaseState uses the highest version regardless of local status or list order`(status: OrderStatus) {
+    val order = TestUtilities.createReadyToSubmitOrder(status = OrderStatus.SUBMITTED)
+    val previousSubmitted = order.getCurrentVersion()
+    val latestResultId = UUID.randomUUID()
+    val previousResultId = UUID.randomUUID()
+    previousSubmitted.fmsResultId = previousResultId
+    val latestSubmitted = OrderVersion(
+      orderId = order.id,
+      versionId = previousSubmitted.versionId + 1,
+      username = "user",
+      status = status,
+      type = RequestType.VARIATION,
+      dataDictionaryVersion = DataDictionaryVersion.DDV6,
+      fmsResultId = latestResultId,
+    )
+    order.versions.add(0, latestSubmitted)
+    val caseId = "latest-case"
+    whenever(repo.findById(latestResultId)).thenReturn(
+      Optional.of(
+        FmsSubmissionResult(
+          id = latestResultId,
+          orderId = order.id,
+          strategy = FmsSubmissionStrategyKind.VARIATION,
           orderSource = FmsOrderSource.CEMO,
           deviceWearerResult = FmsDeviceWearerSubmissionResult(deviceWearerId = caseId),
         ),
@@ -356,6 +410,8 @@ class FmsServiceTest {
     whenever(mockClient.getState(caseId)).thenReturn(CaseState.OPEN)
 
     assertThat(service.getCaseState(order)).isEqualTo(CaseState.OPEN)
+    verify(repo).findById(latestResultId)
+    verify(repo, never()).findById(previousResultId)
     verify(mockClient).getState(caseId)
   }
 
