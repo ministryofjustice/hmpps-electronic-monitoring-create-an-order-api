@@ -1,5 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository
 
+import jakarta.persistence.EntityManager
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
@@ -11,6 +13,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.CaseState
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DeviceWearerAddressUsage
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
@@ -31,6 +34,12 @@ import java.util.*
 class OrderVersionRepositoryTest {
   @Autowired
   lateinit var orderRepo: OrderRepository
+
+  @Autowired
+  lateinit var orderVersionRepo: OrderVersionRepository
+
+  @Autowired
+  lateinit var entityManager: EntityManager
 
   private val mockUsername: String = "username"
   private val mockOrderId: UUID = UUID.randomUUID()
@@ -134,6 +143,18 @@ class OrderVersionRepositoryTest {
       assertDoesNotThrow {
         orderRepo.findById(mockOrderId)
       }
+    }
+
+    @Test
+    fun `updates the case state on the specified order version`() {
+      databaseInsert()
+
+      assertThat(orderVersionRepo.updateFmsCaseState(mockVersionId, CaseState.CLOSED)).isEqualTo(1)
+      entityManager.flush()
+      entityManager.clear()
+
+      assertThat(orderRepo.findById(mockOrderId).orElseThrow().getCurrentVersion().fmsCaseState)
+        .isEqualTo(CaseState.CLOSED)
     }
   }
 }

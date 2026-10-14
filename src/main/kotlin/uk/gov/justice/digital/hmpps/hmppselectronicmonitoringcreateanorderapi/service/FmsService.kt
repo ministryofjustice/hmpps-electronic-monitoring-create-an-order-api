@@ -19,6 +19,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsSubmissionResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.FmsOrderDetailsRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.FmsSubmissionResultRepository
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderVersionRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.strategy.FmsDummySubmissionStrategy
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.strategy.FmsOrderSubmissionStrategy
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.strategy.FmsSubmissionStrategy
@@ -39,6 +40,7 @@ class FmsService(
   private val featureFlags: FeatureFlags,
   val eventService: EventService,
   val fmsOrderDetailsRepository: FmsOrderDetailsRepository,
+  private val orderVersionRepository: OrderVersionRepository,
 ) {
 
   private val orderSubmissionStrategy = FmsOrderSubmissionStrategy(
@@ -97,13 +99,23 @@ class FmsService(
 
   fun getCaseState(order: Order): CaseState {
     val latestVersion = order.versions.maxByOrNull { it.versionId } ?: return CaseState.UNKNOWN
+    val storedCaseState = latestVersion.fmsCaseState
+    if (latestVersion.status != OrderStatus.SUBMITTED) return storedCaseState ?: CaseState.UNKNOWN
+    if (storedCaseState?.isCemoTerminalCaseStatus == true) return storedCaseState
     val fmsResultId = latestVersion.fmsResultId ?: return CaseState.UNKNOWN
 
-    return runCatching {
+    val caseState = runCatching {
       val result = repo.findById(fmsResultId).orElse(null)
       val caseId = result?.caseId
       if (caseId.isNullOrBlank()) CaseState.UNKNOWN else fmsClient.getState(caseId)
     }.getOrDefault(CaseState.UNKNOWN)
+
+    if (caseState == CaseState.UNKNOWN) return CaseState.UNKNOWN
+
+    orderVersionRepository.updateFmsCaseState(latestVersion.id, caseState)
+    latestVersion.fmsCaseState = caseState
+
+    return caseState
   }
 
   private fun getSubmissionStrategy(order: Order, orderSource: FmsOrderSource): FmsSubmissionStrategy {

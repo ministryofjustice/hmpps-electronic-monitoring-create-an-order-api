@@ -135,16 +135,10 @@ class OrderService(
   private fun <T> List<T>.cloneItems(transform: (T) -> T): MutableList<T> = map(transform).toMutableList()
 
   private val allowNewVersionStatuses = setOf(OrderStatus.SUBMITTED, OrderStatus.REJECTED)
+  private val processingCaseStates = setOf(CaseState.NEW, CaseState.OPEN)
+  private val rejectedCaseStates = setOf(CaseState.CANCELLED, CaseState.CLOSED, CaseState.RESOLVED)
 
   fun getCaseState(order: Order): CaseState = fmsService.getCaseState(order)
-
-  fun canCreateNewVersion(order: Order, caseState: CaseState): Boolean = when (order.status) {
-    OrderStatus.SUBMITTED ->
-      caseState in
-        setOf(CaseState.OPEN, CaseState.CLOSED, CaseState.RESOLVED, CaseState.CANCELLED, CaseState.UNKNOWN)
-    OrderStatus.REJECTED -> caseState in setOf(CaseState.OPEN, CaseState.CLOSED, CaseState.CANCELLED)
-    else -> false
-  }
 
   private fun requireCaseState(
     order: Order,
@@ -154,25 +148,18 @@ class OrderService(
   ) {
     val unknownAllowed =
       allowUnknownForVariation && order.status in allowNewVersionStatuses && caseState == CaseState.UNKNOWN
-    if (!canCreateNewVersion(order, caseState) && !unknownAllowed) {
+    if (caseState in processingCaseStates) {
       throw OrderChangeException(
-        when {
-          caseState == CaseState.UNKNOWN -> "ORDER_CASE_STATE_UNAVAILABLE"
-          caseState in setOf(
-            CaseState.NEW,
-            CaseState.AWAITING_INFO,
-            CaseState.AWAITING_VALIDATION,
-            CaseState.AWAITING_APPROVAL,
-          ) ->
-            "ORDER_CASE_STILL_PROCESSING"
-          else -> "ORDER_VERSION_NOT_AVAILABLE"
-        },
+        "ORDER_CASE_STILL_PROCESSING",
         "A new version cannot be created for the order's current state",
       )
     }
     if (caseState !in allowedStates && !unknownAllowed) {
       throw OrderChangeException(
-        if (caseState == CaseState.CANCELLED) "ORDER_CASE_REJECTED" else "ORDER_CASE_NOT_REJECTED",
+        when {
+          caseState in rejectedCaseStates -> "ORDER_CASE_REJECTED"
+          else -> "ORDER_CASE_NOT_REJECTED"
+        },
         "This operation is not available for the order's FMS case state",
       )
     }
@@ -189,7 +176,7 @@ class OrderService(
       requireCaseState(
         order,
         caseState,
-        setOf(CaseState.OPEN, CaseState.CLOSED, CaseState.RESOLVED),
+        setOf(CaseState.AWAITING_VALIDATION),
         allowUnknownForVariation = versionType in RequestType.VARIATION_TYPES,
       )
     }
@@ -221,9 +208,9 @@ class OrderService(
       )
     }
 
-    val caseState = fmsService.getCaseState(sourceOrder)
-    if (sourceVersion.status != OrderStatus.REJECTED || caseState == CaseState.UNKNOWN) {
-      requireCaseState(sourceOrder, caseState, setOf(CaseState.CANCELLED))
+    if (sourceVersion.status != OrderStatus.REJECTED) {
+      val caseState = fmsService.getCaseState(sourceOrder)
+      requireCaseState(sourceOrder, caseState, rejectedCaseStates)
     }
 
     val sourceType = if (sourceVersion.type == RequestType.REJECTED) {

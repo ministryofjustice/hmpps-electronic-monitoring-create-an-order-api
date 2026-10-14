@@ -12,6 +12,9 @@ enum class CaseState(val value: String) {
   UNKNOWN("Unknown"),
   ;
 
+  val isCemoTerminalCaseStatus: Boolean
+    get() = this in setOf(AWAITING_VALIDATION, CLOSED, RESOLVED, CANCELLED)
+
   companion object {
     fun fromStateString(value: String?): CaseState = CaseState.entries.firstOrNull { it.value == value } ?: UNKNOWN
   }

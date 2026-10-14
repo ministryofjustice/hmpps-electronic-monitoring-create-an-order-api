@@ -99,7 +99,7 @@ class OrderServiceTest {
     whenever(authentication.token).thenReturn(mock<Jwt>())
     whenever(authentication.name).thenReturn("mockUser")
     whenever(userCohortService.getUserCohort(authentication)).thenReturn(UserCohort(Cohort.OTHER))
-    whenever(fmsService.getCaseState(any())).thenReturn(CaseState.CLOSED)
+    whenever(fmsService.getCaseState(any())).thenReturn(CaseState.AWAITING_VALIDATION)
     val context = SecurityContextHolder.createEmptyContext()
     context.authentication = authentication
     SecurityContextHolder.setContext(context)
@@ -1559,9 +1559,8 @@ class OrderServiceTest {
       verify(repo, times(1)).save(source)
     }
 
-    @ParameterizedTest
-    @EnumSource(value = CaseState::class, names = ["UNKNOWN"], mode = EnumSource.Mode.EXCLUDE)
-    fun `creates a variation version for a returned change order with a known FMS state`(caseState: CaseState) {
+    @Test
+    fun `creates a variation version for a returned change order without fetching FMS state`() {
       val source = TestUtilities.createReadyToSubmitOrder(
         status = OrderStatus.REJECTED,
         username = "mockUser",
@@ -1570,7 +1569,6 @@ class OrderServiceTest {
       val rejectedVersion = source.getCurrentVersion()
       rejectedVersion.fmsResultId = UUID.randomUUID()
       whenever(repo.findById(source.id)).thenReturn(Optional.of(source))
-      whenever(fmsService.getCaseState(source)).thenReturn(caseState)
       whenever(repo.save(any<Order>())).thenAnswer { it.getArgument<Order>(0) }
 
       val replacement = service.createNewOrderFromRejected(source.id, authentication)
@@ -1582,16 +1580,16 @@ class OrderServiceTest {
       assertThat(replacement.status).isEqualTo(OrderStatus.IN_PROGRESS)
       assertThat(replacement.type).isEqualTo(RequestType.VARIATION)
       assertThat(replacement.fmsResultId).isNull()
+      assertThat(replacement.getCurrentVersion().fmsCaseState).isNull()
       assertThat(rejectedVersion.orderId).isEqualTo(source.id)
       assertThat(rejectedVersion.status).isEqualTo(OrderStatus.REJECTED)
       assertThat(rejectedVersion.type).isEqualTo(RequestType.VARIATION)
-      verify(fmsService).getCaseState(source)
+      verify(fmsService, never()).getCaseState(source)
       verify(repo).save(source)
     }
 
-    @ParameterizedTest
-    @EnumSource(value = CaseState::class, names = ["UNKNOWN"], mode = EnumSource.Mode.EXCLUDE)
-    fun `creates a new-order version for a returned new order with a known FMS state`(caseState: CaseState) {
+    @Test
+    fun `creates a new-order version for a returned new order without fetching FMS state`() {
       val source = TestUtilities.createReadyToSubmitOrder(
         status = OrderStatus.REJECTED,
         username = "mockUser",
@@ -1599,7 +1597,6 @@ class OrderServiceTest {
       )
       val rejectedVersion = source.getCurrentVersion()
       whenever(repo.findById(source.id)).thenReturn(Optional.of(source))
-      whenever(fmsService.getCaseState(source)).thenReturn(caseState)
       whenever(repo.save(any<Order>())).thenAnswer { it.getArgument<Order>(0) }
 
       val amendedOrder = service.createNewOrderFromRejected(source.id, authentication)
@@ -1610,28 +1607,22 @@ class OrderServiceTest {
       assertThat(amendedOrder.getCurrentVersion().versionId).isEqualTo(rejectedVersion.versionId + 1)
       assertThat(amendedOrder.status).isEqualTo(OrderStatus.IN_PROGRESS)
       assertThat(amendedOrder.type).isEqualTo(RequestType.REQUEST)
+      assertThat(amendedOrder.getCurrentVersion().fmsCaseState).isNull()
       assertThat(rejectedVersion.status).isEqualTo(OrderStatus.REJECTED)
       assertThat(rejectedVersion.type).isEqualTo(RequestType.REQUEST)
-      verify(fmsService).getCaseState(source)
+      verify(fmsService, never()).getCaseState(source)
       verify(repo).save(source)
     }
 
     @ParameterizedTest
-    @EnumSource(value = CaseState::class, names = ["CANCELLED"], mode = EnumSource.Mode.EXCLUDE)
-    fun `submitted orders still require a cancelled FMS case for replacement`(caseState: CaseState) {
+    @EnumSource(value = CaseState::class, names = ["CANCELLED", "CLOSED", "RESOLVED"], mode = EnumSource.Mode.EXCLUDE)
+    fun `submitted orders require a rejected FMS case for replacement`(caseState: CaseState) {
       val source = TestUtilities.createReadyToSubmitOrder(status = OrderStatus.SUBMITTED, username = "mockUser")
       whenever(repo.findById(source.id)).thenReturn(Optional.of(source))
       whenever(fmsService.getCaseState(source)).thenReturn(caseState)
-      val expectedErrorCode = if (caseState in setOf(
-          CaseState.NEW,
-          CaseState.AWAITING_INFO,
-          CaseState.AWAITING_VALIDATION,
-          CaseState.AWAITING_APPROVAL,
-        )
-      ) {
-        "ORDER_CASE_STILL_PROCESSING"
-      } else {
-        "ORDER_CASE_NOT_REJECTED"
+      val expectedErrorCode = when (caseState) {
+        CaseState.NEW, CaseState.OPEN -> "ORDER_CASE_STILL_PROCESSING"
+        else -> "ORDER_CASE_NOT_REJECTED"
       }
 
       assertThatThrownBy { service.createNewOrderFromRejected(source.id, authentication) }
@@ -1643,10 +1634,7 @@ class OrderServiceTest {
     }
 
     @ParameterizedTest
-    @EnumSource(
-      value = CaseState::class,
-      names = ["NEW", "AWAITING_INFO", "AWAITING_VALIDATION", "AWAITING_APPROVAL"],
-    )
+    @EnumSource(value = CaseState::class, names = ["NEW", "OPEN"])
     fun `blocks cloning while FMS is processing`(caseState: CaseState) {
       val source = TestUtilities.createReadyToSubmitOrder(status = OrderStatus.SUBMITTED, username = "mockUser")
       whenever(repo.findById(source.id)).thenReturn(Optional.of(source))
@@ -1660,10 +1648,27 @@ class OrderServiceTest {
     }
 
     @Test
-    fun `blocks variation cloning for cancelled cases so callers must use rejected-order operation`() {
+    fun `allows variation creation for an accepted FMS case`() {
       val source = TestUtilities.createReadyToSubmitOrder(status = OrderStatus.SUBMITTED, username = "mockUser")
       whenever(repo.findById(source.id)).thenReturn(Optional.of(source))
-      whenever(fmsService.getCaseState(source)).thenReturn(CaseState.CANCELLED)
+      whenever(fmsService.getCaseState(source)).thenReturn(CaseState.AWAITING_VALIDATION)
+      whenever(repo.save(any<Order>())).thenAnswer { it.getArgument<Order>(0) }
+
+      val variation = service.createVersion(source.id, authentication, RequestType.VARIATION)
+
+      assertThat(variation.getCurrentVersion().type).isEqualTo(RequestType.VARIATION)
+      assertThat(variation.getCurrentVersion().status).isEqualTo(OrderStatus.IN_PROGRESS)
+      verify(repo).save(source)
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = CaseState::class, names = ["CANCELLED", "CLOSED", "RESOLVED"])
+    fun `blocks variation cloning for rejected cases so callers must use rejected-order operation`(
+      caseState: CaseState,
+    ) {
+      val source = TestUtilities.createReadyToSubmitOrder(status = OrderStatus.SUBMITTED, username = "mockUser")
+      whenever(repo.findById(source.id)).thenReturn(Optional.of(source))
+      whenever(fmsService.getCaseState(source)).thenReturn(caseState)
 
       assertThatThrownBy { service.createVersion(source.id, authentication, RequestType.VARIATION) }
         .isInstanceOf(OrderChangeException::class.java)
@@ -1700,16 +1705,16 @@ class OrderServiceTest {
     }
 
     @Test
-    fun `blocks new-order replacement when the FMS state is unknown`() {
+    fun `allows rejected-order replacement when no FMS case state was previously stored`() {
       val source = TestUtilities.createReadyToSubmitOrder(status = OrderStatus.REJECTED, username = "mockUser")
       whenever(repo.findById(source.id)).thenReturn(Optional.of(source))
-      whenever(fmsService.getCaseState(source)).thenReturn(CaseState.UNKNOWN)
+      whenever(repo.save(any<Order>())).thenAnswer { it.getArgument<Order>(0) }
 
-      assertThatThrownBy { service.createNewOrderFromRejected(source.id, authentication) }
-        .isInstanceOf(OrderChangeException::class.java)
-        .extracting("errorCode")
-        .isEqualTo("ORDER_CASE_STATE_UNAVAILABLE")
-      verify(repo, never()).save(any<Order>())
+      val replacement = service.createNewOrderFromRejected(source.id, authentication)
+
+      assertThat(replacement.getCurrentVersion().status).isEqualTo(OrderStatus.IN_PROGRESS)
+      verify(fmsService, never()).getCaseState(source)
+      verify(repo).save(source)
     }
 
     @ParameterizedTest

@@ -46,6 +46,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.MonitoringOrder
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.FmsOrderDetailsRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.FmsSubmissionResultRepository
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderVersionRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.utilities.TestUtilities
 import java.time.OffsetDateTime
 import java.util.Optional
@@ -62,6 +63,7 @@ class FmsServiceTest {
   private lateinit var repo: FmsSubmissionResultRepository
   private lateinit var eventService: EventService
   private lateinit var fmsOrderDetailsRepository: FmsOrderDetailsRepository
+  private lateinit var orderVersionRepository: OrderVersionRepository
   private val mockFeatureFlags =
     FeatureFlags(
       dataDictionaryVersion = DataDictionaryVersion.DDV6,
@@ -82,6 +84,7 @@ class FmsServiceTest {
     env = mock(Environment::class.java)
     eventService = mock(EventService::class.java)
     fmsOrderDetailsRepository = mock(FmsOrderDetailsRepository::class.java)
+    orderVersionRepository = mock(OrderVersionRepository::class.java)
     service =
       FmsService(
         mockClient,
@@ -92,6 +95,7 @@ class FmsServiceTest {
         mockFeatureFlags,
         eventService,
         fmsOrderDetailsRepository,
+        orderVersionRepository,
       )
   }
 
@@ -160,6 +164,7 @@ class FmsServiceTest {
       ),
       eventService,
       fmsOrderDetailsRepository,
+      orderVersionRepository,
     )
 
     service.submitOrder(mockOrder, FmsOrderSource.CEMO)
@@ -260,6 +265,7 @@ class FmsServiceTest {
         ),
         eventService,
         fmsOrderDetailsRepository,
+        orderVersionRepository,
       )
 
       val mockOrder = TestUtilities.createReadyToSubmitOrder(status = OrderStatus.SUBMITTED)
@@ -379,7 +385,7 @@ class FmsServiceTest {
 
   @ParameterizedTest
   @EnumSource(OrderStatus::class)
-  fun `getCaseState uses the highest version regardless of local status or list order`(status: OrderStatus) {
+  fun `getCaseState only fetches FMS state for the latest submitted version`(status: OrderStatus) {
     val order = TestUtilities.createReadyToSubmitOrder(status = OrderStatus.SUBMITTED)
     val previousSubmitted = order.getCurrentVersion()
     val latestResultId = UUID.randomUUID()
@@ -409,10 +415,81 @@ class FmsServiceTest {
     )
     whenever(mockClient.getState(caseId)).thenReturn(CaseState.OPEN)
 
+    if (status == OrderStatus.SUBMITTED) {
+      assertThat(service.getCaseState(order)).isEqualTo(CaseState.OPEN)
+      assertThat(latestSubmitted.fmsCaseState).isEqualTo(CaseState.OPEN)
+      verify(repo).findById(latestResultId)
+      verify(repo, never()).findById(previousResultId)
+      verify(mockClient).getState(caseId)
+      verify(orderVersionRepository).updateFmsCaseState(latestSubmitted.id, CaseState.OPEN)
+    } else {
+      assertThat(service.getCaseState(order)).isEqualTo(CaseState.UNKNOWN)
+      verifyNoInteractions(repo, mockClient)
+      verify(orderVersionRepository, never()).updateFmsCaseState(any(), any())
+    }
+  }
+
+  @ParameterizedTest
+  @EnumSource(value = CaseState::class, names = ["AWAITING_VALIDATION", "CLOSED", "RESOLVED", "CANCELLED"])
+  fun `getCaseState returns a stored CEMO outcome without calling FMS`(caseState: CaseState) {
+    val order = TestUtilities.createReadyToSubmitOrder(status = OrderStatus.SUBMITTED)
+    order.getCurrentVersion().apply {
+      fmsResultId = UUID.randomUUID()
+      fmsCaseState = caseState
+    }
+
+    assertThat(service.getCaseState(order)).isEqualTo(caseState)
+    verifyNoInteractions(repo, mockClient, orderVersionRepository)
+  }
+
+  @ParameterizedTest
+  @EnumSource(value = CaseState::class, names = ["NEW", "OPEN"])
+  fun `getCaseState refreshes a stored processing state and persists successful result`(storedCaseState: CaseState) {
+    val order = TestUtilities.createReadyToSubmitOrder(status = OrderStatus.SUBMITTED)
+    val version = order.getCurrentVersion().apply {
+      fmsResultId = UUID.randomUUID()
+      fmsCaseState = storedCaseState
+    }
+    val caseId = "submitted-case"
+    whenever(repo.findById(version.fmsResultId!!)).thenReturn(
+      Optional.of(
+        FmsSubmissionResult(
+          id = version.fmsResultId!!,
+          orderId = order.id,
+          strategy = FmsSubmissionStrategyKind.ORDER,
+          orderSource = FmsOrderSource.CEMO,
+          deviceWearerResult = FmsDeviceWearerSubmissionResult(deviceWearerId = caseId),
+        ),
+      ),
+    )
+    whenever(mockClient.getState(caseId)).thenReturn(CaseState.CLOSED)
+
+    assertThat(service.getCaseState(order)).isEqualTo(CaseState.CLOSED)
+    assertThat(version.fmsCaseState).isEqualTo(CaseState.CLOSED)
+    verify(orderVersionRepository).updateFmsCaseState(version.id, CaseState.CLOSED)
+  }
+
+  @Test
+  fun `getCaseState returns UNKNOWN on refresh failure and retains prior stored state`() {
+    val order = TestUtilities.createReadyToSubmitOrder(status = OrderStatus.SUBMITTED)
+    val version = order.getCurrentVersion().apply {
+      fmsResultId = UUID.randomUUID()
+      fmsCaseState = CaseState.OPEN
+    }
+    whenever(repo.findById(version.fmsResultId!!)).thenThrow(RuntimeException("FMS unavailable"))
+
+    assertThat(service.getCaseState(order)).isEqualTo(CaseState.UNKNOWN)
+    assertThat(version.fmsCaseState).isEqualTo(CaseState.OPEN)
+    verify(orderVersionRepository, never()).updateFmsCaseState(any(), any())
+  }
+
+  @Test
+  fun `getCaseState uses a stored state for rejected orders without calling FMS`() {
+    val order = TestUtilities.createReadyToSubmitOrder(status = OrderStatus.REJECTED)
+    order.getCurrentVersion().fmsCaseState = CaseState.OPEN
+
     assertThat(service.getCaseState(order)).isEqualTo(CaseState.OPEN)
-    verify(repo).findById(latestResultId)
-    verify(repo, never()).findById(previousResultId)
-    verify(mockClient).getState(caseId)
+    verifyNoInteractions(repo, mockClient, orderVersionRepository)
   }
 
   @Test
