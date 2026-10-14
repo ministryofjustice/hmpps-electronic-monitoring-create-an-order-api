@@ -1678,30 +1678,32 @@ class OrderServiceTest {
     }
 
     @Test
-    fun `blocks variation for a rejected order with a cancelled FMS case`() {
+    fun `blocks variation for a rejected order with a cancelled stored FMS case`() {
       val source = TestUtilities.createReadyToSubmitOrder(status = OrderStatus.REJECTED, username = "mockUser")
       whenever(repo.findById(source.id)).thenReturn(Optional.of(source))
-      whenever(fmsService.getCaseState(source)).thenReturn(CaseState.CANCELLED)
+      source.getCurrentVersion().fmsCaseState = CaseState.CANCELLED
 
       assertThatThrownBy { service.createVersion(source.id, authentication, RequestType.VARIATION) }
         .isInstanceOf(OrderChangeException::class.java)
         .extracting("errorCode")
         .isEqualTo("ORDER_CASE_REJECTED")
+      verify(fmsService, never()).getCaseState(source)
       verify(repo, never()).save(any<Order>())
     }
 
     @Test
-    fun `allows variation for a rejected order when the FMS state is unknown`() {
+    fun `rejects variation for a rejected order when its stored FMS state is unknown`() {
       val source = TestUtilities.createReadyToSubmitOrder(status = OrderStatus.REJECTED, username = "mockUser")
+      source.getCurrentVersion().fmsCaseState = CaseState.UNKNOWN
       whenever(repo.findById(source.id)).thenReturn(Optional.of(source))
-      whenever(fmsService.getCaseState(source)).thenReturn(CaseState.UNKNOWN)
-      whenever(repo.save(any<Order>())).thenAnswer { it.getArgument<Order>(0) }
 
-      val variation = service.createVersion(source.id, authentication, RequestType.VARIATION)
+      assertThatThrownBy { service.createVersion(source.id, authentication, RequestType.VARIATION) }
+        .isInstanceOf(OrderChangeException::class.java)
+        .extracting("errorCode")
+        .isEqualTo("ORDER_CASE_NOT_REJECTED")
 
-      assertThat(variation.getCurrentVersion().type).isEqualTo(RequestType.VARIATION)
-      assertThat(variation.getCurrentVersion().status).isEqualTo(OrderStatus.IN_PROGRESS)
-      verify(repo, times(1)).save(source)
+      verify(fmsService, never()).getCaseState(source)
+      verify(repo, never()).save(any<Order>())
     }
 
     @Test
@@ -1950,7 +1952,6 @@ class OrderServiceTest {
       Arguments.of(OrderStatus.IN_PROGRESS, false),
       Arguments.of(OrderStatus.ERROR, true),
       Arguments.of(OrderStatus.SUBMITTED, false),
-      Arguments.of(OrderStatus.REJECTED, false),
     )
   }
 }

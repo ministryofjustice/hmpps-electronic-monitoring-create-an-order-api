@@ -206,6 +206,39 @@ class OrderControllerTest : IntegrationTestBase() {
       assertThat(error.errorCode).isEqualTo("ORDER_CASE_STILL_PROCESSING")
     }
 
+    @ParameterizedTest
+    @ValueSource(strings = ["REQUEST", "VARIATION"])
+    fun `rejected orders cannot use the normal variation route but can use the rejection route`(
+      requestType: RequestType,
+    ) {
+      val order = createAndPersistPopulatedOrder(status = OrderStatus.REJECTED, requestType = requestType)
+
+      val error = webTestClient.post()
+        .uri("/api/orders/${order.id}/copy-as-variation")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .isEqualTo(HttpStatus.CONFLICT)
+        .expectBody<ErrorResponse>()
+        .returnResult()
+        .responseBody!!
+
+      assertThat(error.errorCode).isEqualTo("ORDER_CASE_NOT_REJECTED")
+      assertThat(repo.findById(order.id).orElseThrow().versions).hasSize(1)
+
+      val replacement = webTestClient.post()
+        .uri("/api/orders/${order.id}/amend-rejected-order")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus().isOk
+        .expectBody<OrderDto>()
+        .returnResult().responseBody!!
+
+      assertThat(replacement.status).isEqualTo(OrderStatus.IN_PROGRESS)
+      assertThat(replacement.type).isEqualTo(requestType)
+      assertThat(repo.findById(order.id).orElseThrow().versions).hasSize(2)
+    }
+
     @Test
     fun `UNKNOWN FMS state still allows a normal variation if order status submitted`() {
       val order = createAndPersistPopulatedOrder(status = OrderStatus.SUBMITTED)
@@ -584,6 +617,13 @@ class OrderControllerTest : IntegrationTestBase() {
     fun `returned orders can create replacements regardless of FMS case state`(requestType: RequestType) {
       val order = createAndPersistPopulatedOrder(status = OrderStatus.REJECTED, requestType = requestType)
       val rejectedVersion = order.getCurrentVersion()
+      val rejectedVersionBefore = webTestClient.get()
+        .uri("/api/orders/${order.id}/versions/${rejectedVersion.id}")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus().isOk
+        .expectBody<OrderDto>()
+        .returnResult().responseBody!!
 
       val replacement = webTestClient.post()
         .uri("/api/orders/${order.id}/amend-rejected-order")
@@ -606,6 +646,18 @@ class OrderControllerTest : IntegrationTestBase() {
       val persistedRejectedVersion = persistedOrder.versions.single { it.id == rejectedVersion.id }
       assertThat(persistedRejectedVersion.status).isEqualTo(OrderStatus.REJECTED)
       assertThat(persistedRejectedVersion.type).isEqualTo(requestType)
+      assertThat(persistedOrder.versions.count { it.status == OrderStatus.IN_PROGRESS }).isEqualTo(1)
+
+      val rejectedVersionAfter = webTestClient.get()
+        .uri("/api/orders/${order.id}/versions/${rejectedVersion.id}")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus().isOk
+        .expectBody<OrderDto>()
+        .returnResult().responseBody!!
+      assertThat(rejectedVersionAfter)
+        .usingRecursiveComparison()
+        .isEqualTo(rejectedVersionBefore)
     }
 
     @ParameterizedTest

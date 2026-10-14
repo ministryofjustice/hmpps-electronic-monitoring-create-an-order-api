@@ -147,7 +147,7 @@ class OrderService(
     allowUnknownForVariation: Boolean = false,
   ) {
     val unknownAllowed =
-      allowUnknownForVariation && order.status in allowNewVersionStatuses && caseState == CaseState.UNKNOWN
+      allowUnknownForVariation && order.status == OrderStatus.SUBMITTED && caseState == CaseState.UNKNOWN
     if (caseState in processingCaseStates) {
       throw OrderChangeException(
         "ORDER_CASE_STILL_PROCESSING",
@@ -172,7 +172,11 @@ class OrderService(
       throw BadRequestException("New order version is not allowed for order with status ${currentVersion.status}")
     }
     if (currentVersion.status != OrderStatus.IN_PROGRESS) {
-      val caseState = fmsService.getCaseState(order)
+      val caseState = if (currentVersion.status == OrderStatus.REJECTED) {
+        currentVersion.fmsCaseState ?: CaseState.UNKNOWN
+      } else {
+        fmsService.getCaseState(order)
+      }
       requireCaseState(
         order,
         caseState,
