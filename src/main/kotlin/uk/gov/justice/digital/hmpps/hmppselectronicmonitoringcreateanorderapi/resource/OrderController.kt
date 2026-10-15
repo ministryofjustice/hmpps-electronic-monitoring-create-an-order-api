@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.config.AuthAwareAuthenticationToken
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.CreateAmendmentDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.CreateOrderDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderInformationPageDto
@@ -25,7 +26,6 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateAmendOrderDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateIsSentencingAct
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.VersionInformationDTO
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.CaseState
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderListView
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.OrderService
@@ -54,13 +54,17 @@ class OrderController(@Autowired val orderService: OrderService) {
     return ResponseEntity(convertToDto(order), HttpStatus.OK)
   }
 
-  @PostMapping("/orders/{orderId}/copy-as-variation")
-  fun createVariationFromExisting(
+  @PostMapping("/orders/{orderId}/amend")
+  fun createAmendment(
     @PathVariable orderId: UUID,
+    @RequestBody @Valid updateRecord: CreateAmendmentDto,
     authentication: Authentication,
   ): ResponseEntity<OrderDto> {
-    val newVersion =
-      orderService.createVersion(orderId, authentication as JwtAuthenticationToken, RequestType.VARIATION)
+    val newVersion = orderService.amendOrder(
+      orderId,
+      authentication as JwtAuthenticationToken,
+      requireNotNull(updateRecord.action),
+    )
     return ResponseEntity(convertToDto(newVersion), HttpStatus.OK)
   }
 
@@ -81,15 +85,6 @@ class OrderController(@Autowired val orderService: OrderService) {
     return ResponseEntity(convertToDto(newVersion), HttpStatus.OK)
   }
 
-  @PostMapping("/orders/{orderId}/amend-rejected-order")
-  fun amendOriginalOrderVersion(
-    @PathVariable orderId: UUID,
-    authentication: Authentication,
-  ): ResponseEntity<OrderDto> {
-    val newOrder = orderService.createNewOrderFromRejected(orderId, authentication as JwtAuthenticationToken)
-    return ResponseEntity(convertToDto(newOrder), HttpStatus.OK)
-  }
-
   @PutMapping("/orders/{orderId}/update-order-owner")
   fun updateOrderOwner(
     @PathVariable orderId: UUID,
@@ -104,9 +99,8 @@ class OrderController(@Autowired val orderService: OrderService) {
   fun getOrder(@PathVariable orderId: UUID, authentication: Authentication): ResponseEntity<OrderDto> {
     val token = authentication as JwtAuthenticationToken
     val order = orderService.getOrder(orderId, token)
-    val caseState = orderService.getCaseState(order)
 
-    return ResponseEntity(convertToDto(order, token, caseState), HttpStatus.OK)
+    return ResponseEntity(convertToDto(order, token), HttpStatus.OK)
   }
 
   @DeleteMapping("/orders/{orderId}")
@@ -194,12 +188,9 @@ class OrderController(@Autowired val orderService: OrderService) {
     return ResponseEntity(HttpStatus.OK)
   }
 
-  private fun convertToDto(
-    order: Order,
-    authentication: JwtAuthenticationToken? = null,
-    caseState: CaseState = CaseState.UNKNOWN,
-  ): OrderDto {
+  private fun convertToDto(order: Order, authentication: JwtAuthenticationToken? = null): OrderDto {
     val isOwner = authentication == null || authentication.name == order.username
+    val canAmend = orderService.canAmend(order)
     val dto = OrderDto(
       id = order.id,
       additionalDocuments = order.additionalDocuments,
@@ -242,7 +233,7 @@ class OrderController(@Autowired val orderService: OrderService) {
       ownerCohort = order.ownerCohort,
       isOwner = isOwner,
       isSentencingAct = order.isSentencingAct,
-      caseState = caseState,
+      canAmend = canAmend,
     )
     dto.monitoringConditions?.startDate = order.getMonitoringStartDate()
     dto.monitoringConditions?.endDate = order.getMonitoringEndDate()

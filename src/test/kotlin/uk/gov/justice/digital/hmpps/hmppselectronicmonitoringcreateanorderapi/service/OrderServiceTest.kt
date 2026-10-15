@@ -49,6 +49,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderSearchResultDeviceWearerDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderSearchResultDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderSearchResultMonitoringConditionsDto
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AmendmentAction
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.CaseState
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DocumentType
@@ -59,6 +60,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderListView
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Prison
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ProcessingStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.SubmissionStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsDeviceWearerSubmissionResult
@@ -1545,18 +1547,17 @@ class OrderServiceTest {
   @DisplayName("Cancelled submission amendment")
   inner class CancelledSubmissionReplacement {
     @Test
-    fun `allows variation creation when the FMS state is unknown but order staus is submitted`() {
+    fun `blocks variation creation when the submitted order FMS state is unknown`() {
       val source = TestUtilities.createReadyToSubmitOrder(status = OrderStatus.SUBMITTED, username = "mockUser")
       whenever(repo.findById(source.id)).thenReturn(Optional.of(source))
       whenever(fmsService.getCaseState(source)).thenReturn(CaseState.UNKNOWN)
       whenever(repo.save(any<Order>())).thenAnswer { it.getArgument<Order>(0) }
 
-      val variation = service.createVersion(source.id, authentication, RequestType.VARIATION)
-
-      assertThat(variation.versions).hasSize(2)
-      assertThat(variation.getCurrentVersion().type).isEqualTo(RequestType.VARIATION)
-      assertThat(variation.getCurrentVersion().status).isEqualTo(OrderStatus.IN_PROGRESS)
-      verify(repo, times(1)).save(source)
+      assertThatThrownBy { service.amendOrder(source.id, authentication, AmendmentAction.COPY_AS_VARIATION) }
+        .isInstanceOf(OrderChangeException::class.java)
+        .extracting("errorCode").isEqualTo("ORDER_CASE_STILL_PROCESSING")
+      assertThat(source.versions).hasSize(1)
+      verify(repo, never()).save(source)
     }
 
     @Test
@@ -1571,7 +1572,7 @@ class OrderServiceTest {
       whenever(repo.findById(source.id)).thenReturn(Optional.of(source))
       whenever(repo.save(any<Order>())).thenAnswer { it.getArgument<Order>(0) }
 
-      val replacement = service.createNewOrderFromRejected(source.id, authentication)
+      val replacement = service.amendOrder(source.id, authentication, AmendmentAction.AMEND_REJECTED_ORDER)
 
       assertThat(replacement.id).isEqualTo(source.id)
       assertThat(replacement.versions).hasSize(2)
@@ -1580,7 +1581,7 @@ class OrderServiceTest {
       assertThat(replacement.status).isEqualTo(OrderStatus.IN_PROGRESS)
       assertThat(replacement.type).isEqualTo(RequestType.VARIATION)
       assertThat(replacement.fmsResultId).isNull()
-      assertThat(replacement.getCurrentVersion().fmsCaseState).isNull()
+      assertThat(replacement.statusUpdates).isEmpty()
       assertThat(rejectedVersion.orderId).isEqualTo(source.id)
       assertThat(rejectedVersion.status).isEqualTo(OrderStatus.REJECTED)
       assertThat(rejectedVersion.type).isEqualTo(RequestType.VARIATION)
@@ -1599,15 +1600,15 @@ class OrderServiceTest {
       whenever(repo.findById(source.id)).thenReturn(Optional.of(source))
       whenever(repo.save(any<Order>())).thenAnswer { it.getArgument<Order>(0) }
 
-      val amendedOrder = service.createNewOrderFromRejected(source.id, authentication)
+      val amendedOrder = service.amendOrder(source.id, authentication, AmendmentAction.AMEND_REJECTED_ORDER)
 
       assertThat(amendedOrder.id).isEqualTo(source.id)
       assertThat(amendedOrder.versions).hasSize(2)
       assertThat(amendedOrder.getCurrentVersion().id).isNotEqualTo(rejectedVersion.id)
       assertThat(amendedOrder.getCurrentVersion().versionId).isEqualTo(rejectedVersion.versionId + 1)
       assertThat(amendedOrder.status).isEqualTo(OrderStatus.IN_PROGRESS)
-      assertThat(amendedOrder.type).isEqualTo(RequestType.REQUEST)
-      assertThat(amendedOrder.getCurrentVersion().fmsCaseState).isNull()
+      assertThat(amendedOrder.type).isEqualTo(RequestType.AMEND_ORIGINAL_REQUEST)
+      assertThat(amendedOrder.statusUpdates).isEmpty()
       assertThat(rejectedVersion.status).isEqualTo(OrderStatus.REJECTED)
       assertThat(rejectedVersion.type).isEqualTo(RequestType.REQUEST)
       verify(fmsService, never()).getCaseState(source)
@@ -1621,11 +1622,11 @@ class OrderServiceTest {
       whenever(repo.findById(source.id)).thenReturn(Optional.of(source))
       whenever(fmsService.getCaseState(source)).thenReturn(caseState)
       val expectedErrorCode = when (caseState) {
-        CaseState.NEW, CaseState.OPEN -> "ORDER_CASE_STILL_PROCESSING"
-        else -> "ORDER_CASE_NOT_REJECTED"
+        CaseState.AWAITING_VALIDATION -> "ORDER_CASE_NOT_REJECTED"
+        else -> "ORDER_CASE_STILL_PROCESSING"
       }
 
-      assertThatThrownBy { service.createNewOrderFromRejected(source.id, authentication) }
+      assertThatThrownBy { service.amendOrder(source.id, authentication, AmendmentAction.AMEND_REJECTED_ORDER) }
         .isInstanceOf(OrderChangeException::class.java)
         .extracting("errorCode")
         .isEqualTo(expectedErrorCode)
@@ -1654,7 +1655,7 @@ class OrderServiceTest {
       whenever(fmsService.getCaseState(source)).thenReturn(CaseState.AWAITING_VALIDATION)
       whenever(repo.save(any<Order>())).thenAnswer { it.getArgument<Order>(0) }
 
-      val variation = service.createVersion(source.id, authentication, RequestType.VARIATION)
+      val variation = service.amendOrder(source.id, authentication, AmendmentAction.COPY_AS_VARIATION)
 
       assertThat(variation.getCurrentVersion().type).isEqualTo(RequestType.VARIATION)
       assertThat(variation.getCurrentVersion().status).isEqualTo(OrderStatus.IN_PROGRESS)
@@ -1678,12 +1679,10 @@ class OrderServiceTest {
     }
 
     @Test
-    fun `blocks variation for a rejected order with a cancelled stored FMS case`() {
+    fun `blocks the variation action for an internally rejected order`() {
       val source = TestUtilities.createReadyToSubmitOrder(status = OrderStatus.REJECTED, username = "mockUser")
       whenever(repo.findById(source.id)).thenReturn(Optional.of(source))
-      source.getCurrentVersion().fmsCaseState = CaseState.CANCELLED
-
-      assertThatThrownBy { service.createVersion(source.id, authentication, RequestType.VARIATION) }
+      assertThatThrownBy { service.amendOrder(source.id, authentication, AmendmentAction.COPY_AS_VARIATION) }
         .isInstanceOf(OrderChangeException::class.java)
         .extracting("errorCode")
         .isEqualTo("ORDER_CASE_REJECTED")
@@ -1692,15 +1691,14 @@ class OrderServiceTest {
     }
 
     @Test
-    fun `rejects variation for a rejected order when its stored FMS state is unknown`() {
+    fun `the separate service-request operation still refuses rejected orders`() {
       val source = TestUtilities.createReadyToSubmitOrder(status = OrderStatus.REJECTED, username = "mockUser")
-      source.getCurrentVersion().fmsCaseState = CaseState.UNKNOWN
       whenever(repo.findById(source.id)).thenReturn(Optional.of(source))
 
       assertThatThrownBy { service.createVersion(source.id, authentication, RequestType.VARIATION) }
         .isInstanceOf(OrderChangeException::class.java)
         .extracting("errorCode")
-        .isEqualTo("ORDER_CASE_NOT_REJECTED")
+        .isEqualTo("ORDER_CASE_REJECTED")
 
       verify(fmsService, never()).getCaseState(source)
       verify(repo, never()).save(any<Order>())
@@ -1712,7 +1710,7 @@ class OrderServiceTest {
       whenever(repo.findById(source.id)).thenReturn(Optional.of(source))
       whenever(repo.save(any<Order>())).thenAnswer { it.getArgument<Order>(0) }
 
-      val replacement = service.createNewOrderFromRejected(source.id, authentication)
+      val replacement = service.amendOrder(source.id, authentication, AmendmentAction.AMEND_REJECTED_ORDER)
 
       assertThat(replacement.getCurrentVersion().status).isEqualTo(OrderStatus.IN_PROGRESS)
       verify(fmsService, never()).getCaseState(source)
@@ -1727,13 +1725,115 @@ class OrderServiceTest {
       whenever(fmsService.getCaseState(source)).thenReturn(caseState)
       whenever(repo.save(any<Order>())).thenAnswer { it.getArgument<Order>(0) }
 
-      service.createNewOrderFromRejected(source.id, authentication)
+      service.amendOrder(source.id, authentication, AmendmentAction.AMEND_REJECTED_ORDER)
 
-      assertThatThrownBy { service.createNewOrderFromRejected(source.id, authentication) }
+      assertThatThrownBy { service.amendOrder(source.id, authentication, AmendmentAction.AMEND_REJECTED_ORDER) }
         .isInstanceOf(OrderChangeException::class.java)
         .extracting("errorCode")
         .isEqualTo("ORDER_VERSION_NOT_AVAILABLE")
       verify(repo, times(1)).save(any<Order>())
+    }
+  }
+
+  @Nested
+  @DisplayName("Amendment eligibility")
+  inner class AmendmentEligibility {
+    @ParameterizedTest
+    @EnumSource(OrderStatus::class)
+    fun `only submitted orders query FMS`(status: OrderStatus) {
+      val source = TestUtilities.createReadyToSubmitOrder(status = status, username = "mockUser")
+      whenever(fmsService.getCaseState(source)).thenReturn(CaseState.UNKNOWN)
+
+      assertThat(service.canAmend(source)).isEqualTo(status == OrderStatus.REJECTED)
+
+      if (status == OrderStatus.SUBMITTED) {
+        verify(fmsService).getCaseState(source)
+      } else {
+        verify(fmsService, never()).getCaseState(source)
+      }
+      assertThat(source.statusUpdates).isEmpty()
+      verify(repo, never()).save(source)
+    }
+
+    @ParameterizedTest
+    @EnumSource(CaseState::class)
+    fun `submitted eligibility records only terminal outcomes once without changing audit fields`(state: CaseState) {
+      val source = TestUtilities.createReadyToSubmitOrder(status = OrderStatus.SUBMITTED, username = "mockUser")
+      val auditTime = source.lastUpdatedDateTime
+      val auditUser = source.lastUpdatedBy
+      whenever(fmsService.getCaseState(source)).thenReturn(state)
+      val expected = when (state) {
+        CaseState.AWAITING_VALIDATION -> ProcessingStatus.ACCEPTED
+        CaseState.CLOSED, CaseState.CANCELLED, CaseState.RESOLVED -> ProcessingStatus.REJECTED
+        else -> null
+      }
+      val before = ZonedDateTime.now()
+
+      repeat(2) { assertThat(service.canAmend(source)).isEqualTo(expected != null) }
+
+      assertThat(source.status).isEqualTo(OrderStatus.SUBMITTED)
+      assertThat(source.lastUpdatedDateTime).isEqualTo(auditTime)
+      assertThat(source.lastUpdatedBy).isEqualTo(auditUser)
+      if (expected == null) {
+        assertThat(source.statusUpdates).isEmpty()
+        verify(repo, never()).save(source)
+      } else {
+        assertThat(source.statusUpdates).hasSize(1)
+        val update = source.statusUpdates.single()
+        assertThat(update.status).isEqualTo(expected)
+        assertThat(update.versionId).isEqualTo(source.versionId)
+        assertThat(update.datetimeOfStatusChange).isBetween(before, ZonedDateTime.now())
+        assertThat(update.statusUpdateReasons).isEmpty()
+        verify(repo).save(source)
+      }
+    }
+
+    @ParameterizedTest
+    @EnumSource(
+      value = RequestType::class,
+      names = [
+        "REQUEST", "AMEND_ORIGINAL_REQUEST", "VARIATION", "REINSTALL_DEVICE",
+        "REVOCATION", "END_MONITORING", "REINSTALL_AT_DIFFERENT_ADDRESS",
+      ],
+    )
+    fun `rejected family determines copied type`(sourceType: RequestType) {
+      val source = TestUtilities.createReadyToSubmitOrder(
+        status = OrderStatus.SUBMITTED,
+        username = "mockUser",
+        requestType = sourceType,
+      )
+      whenever(repo.findById(source.id)).thenReturn(Optional.of(source))
+      whenever(repo.save(source)).thenReturn(source)
+      whenever(fmsService.getCaseState(source)).thenReturn(CaseState.CLOSED)
+      val original = source.getCurrentVersion()
+
+      val result = service.amendOrder(source.id, authentication, AmendmentAction.AMEND_REJECTED_ORDER)
+
+      assertThat(result.type).isEqualTo(
+        if (sourceType in RequestType.VARIATION_TYPES) RequestType.VARIATION else RequestType.AMEND_ORIGINAL_REQUEST,
+      )
+      assertThat(original.statusUpdates.map { it.status }).containsExactly(ProcessingStatus.REJECTED)
+      assertThat(result.statusUpdates).isEmpty()
+      verify(fmsService, never()).getLatestOrderVersion(source)
+    }
+
+    @Test
+    fun `legacy rejected request types recover their original family`() {
+      val source = TestUtilities.createReadyToSubmitOrder(status = OrderStatus.REJECTED, username = "mockUser")
+      val original = source.getCurrentVersion()
+      source.versions.add(
+        original.copy(
+          id = UUID.randomUUID(),
+          versionId = original.versionId + 1,
+          type = RequestType.REJECTED,
+        ),
+      )
+      whenever(repo.findById(source.id)).thenReturn(Optional.of(source))
+      whenever(repo.save(source)).thenReturn(source)
+
+      val result = service.amendOrder(source.id, authentication, AmendmentAction.AMEND_REJECTED_ORDER)
+
+      assertThat(result.type).isEqualTo(RequestType.AMEND_ORIGINAL_REQUEST)
     }
   }
 

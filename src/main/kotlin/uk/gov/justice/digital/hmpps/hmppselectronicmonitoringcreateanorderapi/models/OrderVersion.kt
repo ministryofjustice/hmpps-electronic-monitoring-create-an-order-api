@@ -15,7 +15,6 @@ import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
 import jakarta.persistence.UniqueConstraint
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.CaseState
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DocumentType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisationDDv5
@@ -64,10 +63,6 @@ data class OrderVersion(
 
   @Column(name = "FMS_RESULT_DATE", nullable = true)
   var fmsResultDate: OffsetDateTime? = null,
-
-  @Enumerated(EnumType.STRING)
-  @Column(name = "FMS_CASE_STATE", nullable = true, length = 32)
-  var fmsCaseState: CaseState? = null,
 
   @OneToOne(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "version", orphanRemoval = true)
   var deviceWearer: DeviceWearer? = null,

@@ -18,6 +18,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.MonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.StatusUpdate
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.Cohort
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.UserCohort
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.OrderSearchCriteria
@@ -28,12 +29,14 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderInformationPageDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderSearchResultDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.VersionInformationDTO
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AmendmentAction
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.CaseState
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisationDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderListView
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Prison
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ProcessingStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.projections.OrderVersionListInformation
 import java.time.ZonedDateTime
@@ -134,55 +137,61 @@ class OrderService(
 
   private fun <T> List<T>.cloneItems(transform: (T) -> T): MutableList<T> = map(transform).toMutableList()
 
-  private val allowNewVersionStatuses = setOf(OrderStatus.SUBMITTED, OrderStatus.REJECTED)
-  private val processingCaseStates = setOf(CaseState.NEW, CaseState.OPEN)
-  private val rejectedCaseStates = setOf(CaseState.CANCELLED, CaseState.CLOSED, CaseState.RESOLVED)
+  fun canAmend(order: Order): Boolean {
+    if (order.status != OrderStatus.SUBMITTED) return order.status == OrderStatus.REJECTED
+    val updateCount = order.statusUpdates.size
+    val outcome = determineAmendmentOutcome(order)
+    if (order.statusUpdates.size != updateCount) {
+      // Observations are not user edits and must not change form audit fields.
+      orderRepo.save(order)
+    }
+    return outcome != null
+  }
 
-  fun getCaseState(order: Order): CaseState = fmsService.getCaseState(order)
+  private fun determineAmendmentOutcome(order: Order): ProcessingStatus? {
+    if (order.status == OrderStatus.REJECTED) return ProcessingStatus.REJECTED
+    if (order.status != OrderStatus.SUBMITTED) return null
 
-  private fun requireCaseState(
-    order: Order,
-    caseState: CaseState,
-    allowedStates: Set<CaseState>,
-    allowUnknownForVariation: Boolean = false,
-  ) {
-    val unknownAllowed =
-      allowUnknownForVariation && order.status == OrderStatus.SUBMITTED && caseState == CaseState.UNKNOWN
-    if (caseState in processingCaseStates) {
-      throw OrderChangeException(
-        "ORDER_CASE_STILL_PROCESSING",
-        "A new version cannot be created for the order's current state",
+    val outcome = when (fmsService.getCaseState(order)) {
+      CaseState.AWAITING_VALIDATION -> ProcessingStatus.ACCEPTED
+      CaseState.CANCELLED, CaseState.CLOSED, CaseState.RESOLVED -> ProcessingStatus.REJECTED
+      else -> return null
+    }
+    if (order.statusUpdates.none { it.status == outcome }) {
+      order.statusUpdates.add(
+        StatusUpdate(
+          versionId = order.versionId,
+          status = outcome,
+          datetimeOfStatusChange = ZonedDateTime.now(),
+        ),
       )
     }
-    if (caseState !in allowedStates && !unknownAllowed) {
-      throw OrderChangeException(
-        when {
-          caseState in rejectedCaseStates -> "ORDER_CASE_REJECTED"
-          else -> "ORDER_CASE_NOT_REJECTED"
-        },
-        "This operation is not available for the order's FMS case state",
-      )
+    return outcome
+  }
+
+  private fun requireAmendmentOutcome(order: Order): ProcessingStatus =
+    determineAmendmentOutcome(order) ?: throw OrderChangeException(
+      if (order.status == OrderStatus.SUBMITTED) "ORDER_CASE_STILL_PROCESSING" else "ORDER_VERSION_NOT_AVAILABLE",
+      "The latest order version is not eligible for amendment",
+    )
+
+  private fun requireAmendmentAction(outcome: ProcessingStatus, action: AmendmentAction) {
+    if (outcome == ProcessingStatus.REJECTED && action != AmendmentAction.AMEND_REJECTED_ORDER) {
+      throw OrderChangeException("ORDER_CASE_REJECTED", "The order requires a rejected-order amendment")
+    }
+    if (outcome == ProcessingStatus.ACCEPTED && action != AmendmentAction.COPY_AS_VARIATION) {
+      throw OrderChangeException("ORDER_CASE_NOT_REJECTED", "The order requires a variation")
     }
   }
 
   fun createVersion(orderId: UUID, token: JwtAuthenticationToken, versionType: RequestType): Order {
     val order = getOrder(orderId, token)
     val currentVersion = order.getCurrentVersion()
-    if (currentVersion.status !in allowNewVersionStatuses && currentVersion.status != OrderStatus.IN_PROGRESS) {
+    if (currentVersion.status == OrderStatus.ERROR) {
       throw BadRequestException("New order version is not allowed for order with status ${currentVersion.status}")
     }
     if (currentVersion.status != OrderStatus.IN_PROGRESS) {
-      val caseState = if (currentVersion.status == OrderStatus.REJECTED) {
-        currentVersion.fmsCaseState ?: CaseState.UNKNOWN
-      } else {
-        fmsService.getCaseState(order)
-      }
-      requireCaseState(
-        order,
-        caseState,
-        setOf(CaseState.AWAITING_VALIDATION),
-        allowUnknownForVariation = versionType in RequestType.VARIATION_TYPES,
-      )
+      requireAmendmentAction(requireAmendmentOutcome(order), AmendmentAction.COPY_AS_VARIATION)
     }
     val sourceVersion = when {
       currentVersion.status == OrderStatus.IN_PROGRESS || versionType == RequestType.AMEND_ORIGINAL_REQUEST ->
@@ -202,20 +211,11 @@ class OrderService(
     return updateLastUpdatedByAndSaveOrder(order)
   }
 
-  fun createNewOrderFromRejected(orderId: UUID, token: JwtAuthenticationToken): Order {
+  fun amendOrder(orderId: UUID, token: JwtAuthenticationToken, action: AmendmentAction): Order {
     val sourceOrder = getOrder(orderId, token)
     val sourceVersion = sourceOrder.getCurrentVersion()
-    if (sourceVersion.status != OrderStatus.SUBMITTED && sourceVersion.status != OrderStatus.REJECTED) {
-      throw OrderChangeException(
-        "ORDER_VERSION_NOT_AVAILABLE",
-        "The latest order version is not eligible for replacement",
-      )
-    }
-
-    if (sourceVersion.status != OrderStatus.REJECTED) {
-      val caseState = fmsService.getCaseState(sourceOrder)
-      requireCaseState(sourceOrder, caseState, rejectedCaseStates)
-    }
+    val outcome = requireAmendmentOutcome(sourceOrder)
+    requireAmendmentAction(outcome, action)
 
     val sourceType = if (sourceVersion.type == RequestType.REJECTED) {
       sourceOrder.versions
@@ -229,10 +229,19 @@ class OrderService(
     } else {
       sourceVersion.type
     }
-    val replacementType = if (sourceType in RequestType.VARIATION_TYPES) RequestType.VARIATION else RequestType.REQUEST
+    val replacementType = when {
+      sourceType in RequestType.VARIATION_TYPES -> RequestType.VARIATION
+      outcome == ProcessingStatus.REJECTED -> RequestType.AMEND_ORIGINAL_REQUEST
+      else -> RequestType.VARIATION
+    }
+    val copySource = if (outcome == ProcessingStatus.ACCEPTED) {
+      fmsService.getLatestOrderVersion(sourceOrder) ?: sourceVersion
+    } else {
+      sourceVersion
+    }
     val replacementVersion = buildCopiedVersion(
       sourceOrder = sourceOrder,
-      sourceVersion = sourceVersion,
+      sourceVersion = copySource,
       targetOrderId = sourceOrder.id,
       versionNumber = sourceVersion.versionId + 1,
       versionType = replacementType,

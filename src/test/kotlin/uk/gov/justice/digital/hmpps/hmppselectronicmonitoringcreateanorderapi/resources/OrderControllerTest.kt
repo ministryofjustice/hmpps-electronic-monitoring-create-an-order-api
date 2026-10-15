@@ -13,6 +13,7 @@ import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.config.AuthAwareAuthenticationToken
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.CreateAmendmentDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.CreateOrderDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderInformationDto
@@ -20,7 +21,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderSearchResultDeviceWearerDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderSearchResultDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderSearchResultMonitoringConditionsDto
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.CaseState
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AmendmentAction
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderListView
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
@@ -89,7 +90,7 @@ class OrderControllerTest {
     )
 
     `when`(orderService.getOrder(order.id, authentication)).thenReturn(order)
-    `when`(orderService.getCaseState(order)).thenReturn(CaseState.OPEN)
+    `when`(orderService.canAmend(order)).thenReturn(true)
     `when`(authentication.name).thenReturn("mockUser")
 
     val result = controller.getOrder(order.id, authentication)
@@ -131,7 +132,7 @@ class OrderControllerTest {
         orderParameters = null,
         versionId = version.id,
         isOwner = true,
-        caseState = CaseState.OPEN,
+        canAmend = true,
       ),
     )
   }
@@ -150,12 +151,17 @@ class OrderControllerTest {
         ),
       ),
     )
-    `when`(orderService.createNewOrderFromRejected(sourceOrderId, authentication)).thenReturn(replacement)
+    `when`(orderService.amendOrder(sourceOrderId, authentication, AmendmentAction.AMEND_REJECTED_ORDER))
+      .thenReturn(replacement)
 
-    val response = controller.amendOriginalOrderVersion(sourceOrderId, authentication)
+    val response = controller.createAmendment(
+      sourceOrderId,
+      CreateAmendmentDto(AmendmentAction.AMEND_REJECTED_ORDER),
+      authentication,
+    )
 
     Assertions.assertThat(response.body?.id).isEqualTo(replacement.id)
-    verify(orderService).createNewOrderFromRejected(sourceOrderId, authentication)
+    verify(orderService).amendOrder(sourceOrderId, authentication, AmendmentAction.AMEND_REJECTED_ORDER)
   }
 
   @Test

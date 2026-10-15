@@ -11,12 +11,13 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AlcoholMonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.StatusUpdate
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.CaseState
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DeviceWearerAddressUsage
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ProcessingStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import java.time.LocalDate
 import java.time.LocalTime
@@ -146,15 +147,21 @@ class OrderVersionRepositoryTest {
     }
 
     @Test
-    fun `updates the case state on the specified order version`() {
+    fun `persists accepted and rejected observations on their order version`() {
       databaseInsert()
 
-      assertThat(orderVersionRepo.updateFmsCaseState(mockVersionId, CaseState.CLOSED)).isEqualTo(1)
+      val version = orderVersionRepo.findById(mockVersionId).orElseThrow()
+      ProcessingStatus.entries.forEach {
+        version.statusUpdates.add(
+          StatusUpdate(versionId = mockVersionId, status = it, datetimeOfStatusChange = ZonedDateTime.now()),
+        )
+      }
+      orderVersionRepo.save(version)
       entityManager.flush()
       entityManager.clear()
 
-      assertThat(orderRepo.findById(mockOrderId).orElseThrow().getCurrentVersion().fmsCaseState)
-        .isEqualTo(CaseState.CLOSED)
+      assertThat(orderRepo.findById(mockOrderId).orElseThrow().statusUpdates.map { it.status })
+        .containsExactlyInAnyOrder(ProcessingStatus.ACCEPTED, ProcessingStatus.REJECTED)
     }
   }
 }
