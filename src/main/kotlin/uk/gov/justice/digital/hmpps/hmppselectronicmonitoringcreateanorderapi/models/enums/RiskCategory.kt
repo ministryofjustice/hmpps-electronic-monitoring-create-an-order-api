@@ -18,6 +18,8 @@ enum class RiskCategory(val value: String) {
   HOMOPHOBIC_VIEWS("Evidence known to the Device Wearer having homophobic views"),
   UNDER_18("Under 18 living at property"),
   NO_RISK("No risk"),
+  NO_RISK_AT_ADDRESS("No risk at address"),
+  RISK_AT_ADDRESS_UNKNOWN("Risk at address unknown"),
   ;
 
   companion object {
