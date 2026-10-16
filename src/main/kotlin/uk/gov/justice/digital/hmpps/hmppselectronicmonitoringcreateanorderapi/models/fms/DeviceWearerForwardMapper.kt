@@ -176,6 +176,12 @@ private fun getRiskDetails(order: Order): String? =
     order.installationAndRisk?.riskDetails
   }
 
+private val riskCategoriesNotSentToFms = setOf(
+  RiskCategory.NO_RISK,
+  RiskCategory.NO_RISK_AT_ADDRESS,
+  RiskCategory.RISK_AT_ADDRESS_UNKNOWN,
+)
+
 private fun getRiskCategories(order: Order, featureFlags: FeatureFlags): List<FmsRiskCategory> {
   val riskCategories =
     if (order.dataDictionaryVersion.isLaterThanOrEqual(DataDictionaryVersion.DDV6) &&
@@ -190,7 +196,7 @@ private fun getRiskCategories(order: Order, featureFlags: FeatureFlags): List<Fm
     return riskCategories
       .filter {
         RiskCategory.entries.any { riskCategory ->
-          riskCategory != RiskCategory.NO_RISK &&
+          riskCategory !in riskCategoriesNotSentToFms &&
             riskCategory.name == it
         }
       }

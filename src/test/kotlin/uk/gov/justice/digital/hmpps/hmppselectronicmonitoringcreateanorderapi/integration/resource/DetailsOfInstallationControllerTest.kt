@@ -3,6 +3,8 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.i
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.ValueSource
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.web.reactive.function.BodyInserters
@@ -53,6 +55,23 @@ class DetailsOfInstallationControllerTest : UpdateOrderIntegrationTestBase() {
       .isEqualTo(arrayOf("THREATS_OF_VIOLENCE", "SEXUAL_OFFENCES"))
     Assertions.assertThat(updatedOrder.detailsOfInstallation?.riskDetails).isEqualTo("some details")
     Assertions.assertThat(updatedOrder.detailsOfInstallation?.genderRiskDetails).isEqualTo("some gender")
+  }
+
+  @ParameterizedTest(name = "should accept and persist {0}")
+  @ValueSource(strings = ["NO_RISK_AT_ADDRESS", "RISK_AT_ADDRESS_UNKNOWN"])
+  fun `should accept address-only risk categories`(riskCategory: String) {
+    val order = createOrder()
+
+    webTestClient.put()
+      .uri("/api/orders/${order.id}/details-of-installation")
+      .contentType(MediaType.APPLICATION_JSON)
+      .body(BodyInserters.fromValue(mockValidRequestBody(riskCategory = arrayOf(riskCategory))))
+      .headers(setAuthorisation())
+      .exchange().expectStatus().isOk
+
+    val updatedOrder = getOrder(order.id)
+
+    Assertions.assertThat(updatedOrder.detailsOfInstallation?.riskCategory).isEqualTo(arrayOf(riskCategory))
   }
 
   @Test

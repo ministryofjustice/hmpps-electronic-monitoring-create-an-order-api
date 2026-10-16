@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
+import org.junit.jupiter.params.provider.ValueSource
 import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.config.FeatureFlags
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.model.OrderTestBase
@@ -153,6 +154,44 @@ class DeviceWearerTest : OrderTestBase() {
     val fmsDeviceWearer = FmsDeviceWearer.fromOrder(order, featureFlags, dataSource)
 
     assertThat(fmsDeviceWearer.riskCategory!!.count()).isEqualTo(0)
+  }
+
+  @ParameterizedTest(name = "it should not map {0} to serco")
+  @ValueSource(strings = ["NO_RISK_AT_ADDRESS", "RISK_AT_ADDRESS_UNKNOWN"])
+  fun `It should not map address-only risk categories to serco`(riskCategory: String) {
+    val order = createOrder(
+      dataDictionaryVersion = DataDictionaryVersion.DDV6,
+      deviceWearer = createDeviceWearer(),
+    )
+    order.installationAndRisk = null
+    order.detailsOfInstallation = DetailsOfInstallation(
+      versionId = order.getCurrentVersion().id,
+      riskCategory = arrayOf(riskCategory),
+    )
+
+    val ddv6Flags = FeatureFlags(dataDictionaryVersion = DataDictionaryVersion.DDV6, ddV6CourtMappings = true)
+    val fmsDeviceWearer = FmsDeviceWearer.fromOrder(order, ddv6Flags, dataSource)
+
+    assertThat(fmsDeviceWearer.riskCategory).isEmpty()
+  }
+
+  @ParameterizedTest(name = "it should only map real risks to serco when {0} is also selected")
+  @ValueSource(strings = ["NO_RISK_AT_ADDRESS", "RISK_AT_ADDRESS_UNKNOWN"])
+  fun `It should filter address-only risk categories from mixed selections`(riskCategory: String) {
+    val order = createOrder(
+      dataDictionaryVersion = DataDictionaryVersion.DDV6,
+      deviceWearer = createDeviceWearer(),
+    )
+    order.installationAndRisk = null
+    order.detailsOfInstallation = DetailsOfInstallation(
+      versionId = order.getCurrentVersion().id,
+      riskCategory = arrayOf("THREATS_OF_VIOLENCE", riskCategory),
+    )
+
+    val ddv6Flags = FeatureFlags(dataDictionaryVersion = DataDictionaryVersion.DDV6, ddV6CourtMappings = true)
+    val fmsDeviceWearer = FmsDeviceWearer.fromOrder(order, ddv6Flags, dataSource)
+
+    assertThat(fmsDeviceWearer.riskCategory!!.map { it.category }).containsExactly("Threats of Violence")
   }
 
   @Test
