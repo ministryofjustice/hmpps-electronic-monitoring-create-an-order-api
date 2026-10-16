@@ -13,7 +13,6 @@ import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.config.AuthAwareAuthenticationToken
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.CreateAmendmentDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.CreateOrderDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderInformationDto
@@ -21,12 +20,13 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderSearchResultDeviceWearerDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderSearchResultDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderSearchResultMonitoringConditionsDto
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AmendmentAction
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderListView
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ProcessingStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.OrderController
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.OrderAmendmentResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.OrderService
 import java.util.*
 
@@ -151,17 +151,14 @@ class OrderControllerTest {
         ),
       ),
     )
-    `when`(orderService.amendOrder(sourceOrderId, authentication, AmendmentAction.AMEND_REJECTED_ORDER))
-      .thenReturn(replacement)
+    `when`(orderService.amendOrder(sourceOrderId, authentication))
+      .thenReturn(OrderAmendmentResult(replacement, ProcessingStatus.REJECTED))
 
-    val response = controller.createAmendment(
-      sourceOrderId,
-      CreateAmendmentDto(AmendmentAction.AMEND_REJECTED_ORDER),
-      authentication,
-    )
+    val response = controller.createAmendment(sourceOrderId, authentication)
 
-    Assertions.assertThat(response.body?.id).isEqualTo(replacement.id)
-    verify(orderService).amendOrder(sourceOrderId, authentication, AmendmentAction.AMEND_REJECTED_ORDER)
+    Assertions.assertThat(response.body?.order?.id).isEqualTo(replacement.id)
+    Assertions.assertThat(response.body?.outcome).isEqualTo(ProcessingStatus.REJECTED)
+    verify(orderService).amendOrder(sourceOrderId, authentication)
   }
 
   @Test

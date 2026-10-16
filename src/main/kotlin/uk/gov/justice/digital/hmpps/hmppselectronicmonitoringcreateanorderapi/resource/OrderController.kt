@@ -18,8 +18,8 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.config.AuthAwareAuthenticationToken
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.CreateAmendmentDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.CreateOrderDto
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderAmendmentDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderInformationPageDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderSearchResultDto
@@ -55,17 +55,12 @@ class OrderController(@Autowired val orderService: OrderService) {
   }
 
   @PostMapping("/orders/{orderId}/amend")
-  fun createAmendment(
-    @PathVariable orderId: UUID,
-    @RequestBody @Valid updateRecord: CreateAmendmentDto,
-    authentication: Authentication,
-  ): ResponseEntity<OrderDto> {
-    val newVersion = orderService.amendOrder(
-      orderId,
-      authentication as JwtAuthenticationToken,
-      requireNotNull(updateRecord.action),
+  fun createAmendment(@PathVariable orderId: UUID, authentication: Authentication): ResponseEntity<OrderAmendmentDto> {
+    val result = orderService.amendOrder(orderId, authentication as JwtAuthenticationToken)
+    return ResponseEntity(
+      OrderAmendmentDto(order = convertToDto(result.order), outcome = result.outcome),
+      HttpStatus.OK,
     )
-    return ResponseEntity(convertToDto(newVersion), HttpStatus.OK)
   }
 
   @PostMapping("/orders/{orderId}/amend-order")

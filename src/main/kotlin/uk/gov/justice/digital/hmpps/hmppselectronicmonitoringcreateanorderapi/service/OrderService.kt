@@ -29,7 +29,6 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderInformationPageDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderSearchResultDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.VersionInformationDTO
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AmendmentAction
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.CaseState
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisationDDv5
@@ -142,7 +141,6 @@ class OrderService(
     val updateCount = order.statusUpdates.size
     val outcome = determineAmendmentOutcome(order)
     if (order.statusUpdates.size != updateCount) {
-      // Observations are not user edits and must not change form audit fields.
       orderRepo.save(order)
     }
     return outcome != null
@@ -175,13 +173,12 @@ class OrderService(
       "The latest order version is not eligible for amendment",
     )
 
-  private fun requireAmendmentAction(outcome: ProcessingStatus, action: AmendmentAction) {
-    if (outcome == ProcessingStatus.REJECTED && action != AmendmentAction.AMEND_REJECTED_ORDER) {
+  private fun requireAcceptedAmendmentOutcome(order: Order): ProcessingStatus {
+    val outcome = requireAmendmentOutcome(order)
+    if (outcome != ProcessingStatus.ACCEPTED) {
       throw OrderChangeException("ORDER_CASE_REJECTED", "The order requires a rejected-order amendment")
     }
-    if (outcome == ProcessingStatus.ACCEPTED && action != AmendmentAction.COPY_AS_VARIATION) {
-      throw OrderChangeException("ORDER_CASE_NOT_REJECTED", "The order requires a variation")
-    }
+    return outcome
   }
 
   fun createVersion(orderId: UUID, token: JwtAuthenticationToken, versionType: RequestType): Order {
@@ -191,7 +188,7 @@ class OrderService(
       throw BadRequestException("New order version is not allowed for order with status ${currentVersion.status}")
     }
     if (currentVersion.status != OrderStatus.IN_PROGRESS) {
-      requireAmendmentAction(requireAmendmentOutcome(order), AmendmentAction.COPY_AS_VARIATION)
+      requireAcceptedAmendmentOutcome(order)
     }
     val sourceVersion = when {
       currentVersion.status == OrderStatus.IN_PROGRESS || versionType == RequestType.AMEND_ORIGINAL_REQUEST ->
@@ -211,11 +208,10 @@ class OrderService(
     return updateLastUpdatedByAndSaveOrder(order)
   }
 
-  fun amendOrder(orderId: UUID, token: JwtAuthenticationToken, action: AmendmentAction): Order {
+  fun amendOrder(orderId: UUID, token: JwtAuthenticationToken): OrderAmendmentResult {
     val sourceOrder = getOrder(orderId, token)
     val sourceVersion = sourceOrder.getCurrentVersion()
     val outcome = requireAmendmentOutcome(sourceOrder)
-    requireAmendmentAction(outcome, action)
 
     val sourceType = if (sourceVersion.type == RequestType.REJECTED) {
       sourceOrder.versions
@@ -249,7 +245,10 @@ class OrderService(
     )
     sourceOrder.versions.add(replacementVersion)
     sourceOrder.recalculateMonitoringStartEndDate()
-    return updateLastUpdatedByAndSaveOrder(sourceOrder)
+    return OrderAmendmentResult(
+      order = updateLastUpdatedByAndSaveOrder(sourceOrder),
+      outcome = outcome,
+    )
   }
 
   private fun buildCopiedVersion(

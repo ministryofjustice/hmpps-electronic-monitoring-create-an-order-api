@@ -36,12 +36,12 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.RejectionReason
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderAmendmentDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderInformationDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderInformationPageDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderSearchResultDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.VersionInformationDTO
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AmendmentAction
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.CaseState
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DocumentType
@@ -174,17 +174,19 @@ class OrderControllerTest : IntegrationTestBase() {
       val order = createAndPersistPopulatedOrder(status = OrderStatus.SUBMITTED)
       stubCaseState(order, CaseState.AWAITING_VALIDATION)
 
-      val variation = amendmentRequest(order.id, AmendmentAction.COPY_AS_VARIATION)
+      val result = webTestClient.post()
+        .uri("/api/orders/${order.id}/amend")
         .headers(setAuthorisation())
         .exchange()
         .expectStatus()
         .isOk
-        .expectBody<OrderDto>()
+        .expectBody<OrderAmendmentDto>()
         .returnResult()
         .responseBody!!
 
-      assertThat(variation.status).isEqualTo(OrderStatus.IN_PROGRESS)
-      assertThat(variation.type).isEqualTo(RequestType.VARIATION)
+      assertThat(result.outcome).isEqualTo(ProcessingStatus.ACCEPTED)
+      assertThat(result.order.status).isEqualTo(OrderStatus.IN_PROGRESS)
+      assertThat(result.order.type).isEqualTo(RequestType.VARIATION)
     }
 
     @ParameterizedTest
@@ -193,7 +195,8 @@ class OrderControllerTest : IntegrationTestBase() {
       val order = createAndPersistPopulatedOrder(status = OrderStatus.SUBMITTED)
       stubCaseState(order, caseState)
 
-      val error = amendmentRequest(order.id, AmendmentAction.COPY_AS_VARIATION)
+      val error = webTestClient.post()
+        .uri("/api/orders/${order.id}/amend")
         .headers(setAuthorisation())
         .exchange()
         .expectStatus()
@@ -207,32 +210,20 @@ class OrderControllerTest : IntegrationTestBase() {
 
     @ParameterizedTest
     @ValueSource(strings = ["REQUEST", "VARIATION"])
-    fun `rejected orders cannot use the normal variation route but can use the rejection route`(
-      requestType: RequestType,
-    ) {
+    fun `rejected orders automatically create a replacement version`(requestType: RequestType) {
       val order = createAndPersistPopulatedOrder(status = OrderStatus.REJECTED, requestType = requestType)
 
-      val error = amendmentRequest(order.id, AmendmentAction.COPY_AS_VARIATION)
-        .headers(setAuthorisation())
-        .exchange()
-        .expectStatus()
-        .isEqualTo(HttpStatus.CONFLICT)
-        .expectBody<ErrorResponse>()
-        .returnResult()
-        .responseBody!!
-
-      assertThat(error.errorCode).isEqualTo("ORDER_CASE_REJECTED")
-      assertThat(repo.findById(order.id).orElseThrow().versions).hasSize(1)
-
-      val replacement = amendmentRequest(order.id, AmendmentAction.AMEND_REJECTED_ORDER)
+      val replacement = webTestClient.post()
+        .uri("/api/orders/${order.id}/amend")
         .headers(setAuthorisation())
         .exchange()
         .expectStatus().isOk
-        .expectBody<OrderDto>()
+        .expectBody<OrderAmendmentDto>()
         .returnResult().responseBody!!
 
-      assertThat(replacement.status).isEqualTo(OrderStatus.IN_PROGRESS)
-      assertThat(replacement.type).isEqualTo(
+      assertThat(replacement.outcome).isEqualTo(ProcessingStatus.REJECTED)
+      assertThat(replacement.order.status).isEqualTo(OrderStatus.IN_PROGRESS)
+      assertThat(replacement.order.type).isEqualTo(
         if (requestType == RequestType.REQUEST) RequestType.AMEND_ORIGINAL_REQUEST else RequestType.VARIATION,
       )
       assertThat(repo.findById(order.id).orElseThrow().versions).hasSize(2)
@@ -243,7 +234,8 @@ class OrderControllerTest : IntegrationTestBase() {
       val order = createAndPersistPopulatedOrder(status = OrderStatus.SUBMITTED)
       stubCaseState(order, CaseState.UNKNOWN)
 
-      val error = amendmentRequest(order.id, AmendmentAction.COPY_AS_VARIATION)
+      val error = webTestClient.post()
+        .uri("/api/orders/${order.id}/amend")
         .headers(setAuthorisation())
         .exchange()
         .expectStatus()
@@ -262,16 +254,17 @@ class OrderControllerTest : IntegrationTestBase() {
       order.isSentencingAct = null
       repo.save(order)
 
-      val variationOrder = amendmentRequest(order.id, AmendmentAction.COPY_AS_VARIATION)
+      val variationOrder = webTestClient.post()
+        .uri("/api/orders/${order.id}/amend")
         .headers(setAuthorisation())
         .exchange()
         .expectStatus()
         .isOk
-        .expectBody(OrderDto::class.java)
+        .expectBody(OrderAmendmentDto::class.java)
         .returnResult()
         .responseBody!!
 
-      assertThat(variationOrder.isSentencingAct).isNull()
+      assertThat(variationOrder.order.isSentencingAct).isNull()
       assertThat(repo.findById(order.id).orElseThrow().isSentencingAct).isNull()
     }
 
@@ -279,54 +272,57 @@ class OrderControllerTest : IntegrationTestBase() {
     fun `It should should create an order version with type VARIATION`() {
       val order = createAndPersistPopulatedOrder(status = OrderStatus.SUBMITTED)
 
-      val variationOrder = amendmentRequest(order.id, AmendmentAction.COPY_AS_VARIATION)
+      val variationOrder = webTestClient.post()
+        .uri("/api/orders/${order.id}/amend")
         .headers(setAuthorisation(username = "AUTH_ADM"))
         .exchange()
         .expectStatus()
         .isOk
-        .expectBody(OrderDto::class.java)
+        .expectBody(OrderAmendmentDto::class.java)
         .returnResult()
         .responseBody!!
 
-      assertThat(variationOrder.id).isNotNull()
-      assertThat(variationOrder.id).isEqualTo(order.id)
-      assertThat(variationOrder.status).isEqualTo(OrderStatus.IN_PROGRESS)
-      assertThat(variationOrder.type).isEqualTo(RequestType.VARIATION)
-      assertThat(variationOrder.username).isEqualTo(testUser)
-      assertThat(variationOrder.lastUpdatedBy).isEqualTo(testUserFullName)
+      assertThat(variationOrder.order.id).isNotNull()
+      assertThat(variationOrder.order.id).isEqualTo(order.id)
+      assertThat(variationOrder.order.status).isEqualTo(OrderStatus.IN_PROGRESS)
+      assertThat(variationOrder.order.type).isEqualTo(RequestType.VARIATION)
+      assertThat(variationOrder.order.username).isEqualTo(testUser)
+      assertThat(variationOrder.order.lastUpdatedBy).isEqualTo(testUserFullName)
     }
 
     @Test
     fun `A new id and variationId should be assigned to the new variation order`() {
       val order = createAndPersistPopulatedOrder(status = OrderStatus.SUBMITTED)
 
-      val variationOrder = amendmentRequest(order.id, AmendmentAction.COPY_AS_VARIATION)
+      val variationOrder = webTestClient.post()
+        .uri("/api/orders/${order.id}/amend")
         .headers(setAuthorisation())
         .exchange()
         .expectStatus()
         .isOk
-        .expectBody(OrderDto::class.java)
+        .expectBody(OrderAmendmentDto::class.java)
         .returnResult()
         .responseBody!!
 
-      assertThat(variationOrder.deviceWearer!!.id).isNotEqualTo(order.deviceWearer!!.id)
-      assertThat(variationOrder.deviceWearer.versionId).isNotEqualTo(order.deviceWearer!!.versionId)
+      assertThat(variationOrder.order.deviceWearer!!.id).isNotEqualTo(order.deviceWearer!!.id)
+      assertThat(variationOrder.order.deviceWearer.versionId).isNotEqualTo(order.deviceWearer!!.versionId)
     }
 
     @Test
     fun `Only relevant details are copied`() {
       val order = createAndPersistPopulatedOrder(status = OrderStatus.SUBMITTED)
 
-      val variationOrder = amendmentRequest(order.id, AmendmentAction.COPY_AS_VARIATION)
+      val variationOrder = webTestClient.post()
+        .uri("/api/orders/${order.id}/amend")
         .headers(setAuthorisation())
         .exchange()
         .expectStatus()
         .isOk
-        .expectBody(OrderDto::class.java)
+        .expectBody(OrderAmendmentDto::class.java)
         .returnResult()
         .responseBody!!
 
-      assertThat(variationOrder.deviceWearer)
+      assertThat(variationOrder.order.deviceWearer)
         .usingRecursiveComparison()
         .ignoringCollectionOrder()
         .ignoringFields(
@@ -337,7 +333,7 @@ class OrderControllerTest : IntegrationTestBase() {
         )
         .isEqualTo(order.deviceWearer)
 
-      assertThat(variationOrder.contactDetails)
+      assertThat(variationOrder.order.contactDetails)
         .usingRecursiveComparison()
         .ignoringCollectionOrder()
         .ignoringFields(
@@ -347,7 +343,7 @@ class OrderControllerTest : IntegrationTestBase() {
         )
         .isEqualTo(order.contactDetails)
 
-      assertThat(variationOrder.interestedParties)
+      assertThat(variationOrder.order.interestedParties)
         .usingRecursiveComparison()
         .ignoringCollectionOrder()
         .ignoringFields(
@@ -360,11 +356,11 @@ class OrderControllerTest : IntegrationTestBase() {
         )
         .isEqualTo(order.interestedParties)
 
-      assertThat(variationOrder.interestedParties?.notifyingOrganisation).isNull()
-      assertThat(variationOrder.interestedParties?.notifyingOrganisationName).isNull()
-      assertThat(variationOrder.interestedParties?.notifyingOrganisationEmail).isNull()
+      assertThat(variationOrder.order.interestedParties?.notifyingOrganisation).isNull()
+      assertThat(variationOrder.order.interestedParties?.notifyingOrganisationName).isNull()
+      assertThat(variationOrder.order.interestedParties?.notifyingOrganisationEmail).isNull()
 
-      assertThat(variationOrder.addresses)
+      assertThat(variationOrder.order.addresses)
         .usingRecursiveComparison()
         .ignoringCollectionOrder()
         .ignoringFields(
@@ -374,7 +370,7 @@ class OrderControllerTest : IntegrationTestBase() {
         )
         .isEqualTo(order.addresses)
 
-      assertThat(variationOrder.monitoringConditions)
+      assertThat(variationOrder.order.monitoringConditions)
         .usingRecursiveComparison()
         .ignoringCollectionOrder()
         .ignoringFields(
@@ -386,7 +382,7 @@ class OrderControllerTest : IntegrationTestBase() {
         )
         .isEqualTo(order.monitoringConditions)
 
-      assertThat(variationOrder.installationAndRisk).isNull()
+      assertThat(variationOrder.order.installationAndRisk).isNull()
     }
 
     @Test
@@ -394,7 +390,8 @@ class OrderControllerTest : IntegrationTestBase() {
       val order = createAndPersistPopulatedOrder(status = OrderStatus.IN_PROGRESS)
       val existingVersionCount = order.versions.size
 
-      val error = amendmentRequest(order.id, AmendmentAction.COPY_AS_VARIATION)
+      val error = webTestClient.post()
+        .uri("/api/orders/${order.id}/amend")
         .headers(setAuthorisation(username = "AUTH_ADM"))
         .exchange()
         .expectStatus()
@@ -411,29 +408,30 @@ class OrderControllerTest : IntegrationTestBase() {
   @Nested
   @DisplayName("Merged amendment contract")
   inner class AmendmentContract {
-    @ParameterizedTest
-    @ValueSource(strings = ["{}", "{\"action\":null}", "{\"action\":\"INVALID\"}", "{"])
-    fun `action must be present and valid`(body: String) {
+    @Test
+    fun `bodyless POST automatically creates an amendment for a locally rejected order`() {
       val order = createAndPersistPopulatedOrder(status = OrderStatus.REJECTED)
 
-      webTestClient.post()
+      val response = webTestClient.post()
         .uri("/api/orders/${order.id}/amend")
         .headers(setAuthorisation())
-        .contentType(MediaType.APPLICATION_JSON)
-        .bodyValue(body)
         .exchange()
-        .expectStatus().isBadRequest
+        .expectStatus().isOk
+        .expectBody<OrderAmendmentDto>()
+        .returnResult().responseBody!!
 
-      assertThat(repo.findById(order.id).orElseThrow().versions).hasSize(1)
+      assertThat(response.outcome).isEqualTo(ProcessingStatus.REJECTED)
+      assertThat(response.order.status).isEqualTo(OrderStatus.IN_PROGRESS)
+      assertThat(repo.findById(order.id).orElseThrow().versions).hasSize(2)
     }
 
     @Test
     fun `authentication and create-order role are required`() {
       val order = createAndPersistPopulatedOrder(status = OrderStatus.REJECTED)
 
-      amendmentRequest(order.id, AmendmentAction.AMEND_REJECTED_ORDER)
+      amendmentRequest(order.id)
         .exchange().expectStatus().isForbidden
-      amendmentRequest(order.id, AmendmentAction.AMEND_REJECTED_ORDER)
+      amendmentRequest(order.id)
         .headers(setAuthorisation(roles = listOf("ROLE_OTHER")))
         .exchange().expectStatus().isForbidden
 
@@ -442,7 +440,7 @@ class OrderControllerTest : IntegrationTestBase() {
 
     @Test
     fun `missing orders return not found`() {
-      amendmentRequest(UUID.randomUUID(), AmendmentAction.AMEND_REJECTED_ORDER)
+      amendmentRequest(UUID.randomUUID())
         .headers(setAuthorisation())
         .exchange().expectStatus().isNotFound
     }
@@ -451,7 +449,7 @@ class OrderControllerTest : IntegrationTestBase() {
     fun `inaccessible orders remain forbidden`() {
       val order = createOrder("AUTH_ADM")
 
-      amendmentRequest(order.id, AmendmentAction.AMEND_REJECTED_ORDER)
+      amendmentRequest(order.id)
         .headers(setAuthorisation("AUTH_ADM_2"))
         .exchange().expectStatus().isForbidden
 
@@ -469,32 +467,35 @@ class OrderControllerTest : IntegrationTestBase() {
     }
 
     @Test
-    fun `accepted orders refuse the rejected action without persisting an observation`() {
+    fun `accepted orders automatically create variations and persist an accepted outcome`() {
       val order = createAndPersistPopulatedOrder(status = OrderStatus.SUBMITTED)
 
-      val error = amendmentRequest(order.id, AmendmentAction.AMEND_REJECTED_ORDER)
+      val response = amendmentRequest(order.id)
         .headers(setAuthorisation())
-        .exchange().expectStatus().isEqualTo(HttpStatus.CONFLICT)
-        .expectBody<ErrorResponse>().returnResult().responseBody!!
+        .exchange().expectStatus().isOk
+        .expectBody<OrderAmendmentDto>().returnResult().responseBody!!
 
-      assertThat(error.errorCode).isEqualTo("ORDER_CASE_NOT_REJECTED")
+      assertThat(response.outcome).isEqualTo(ProcessingStatus.ACCEPTED)
+      assertThat(response.order.type).isEqualTo(RequestType.VARIATION)
       val persisted = repo.findById(order.id).orElseThrow()
-      assertThat(persisted.versions).hasSize(1)
-      assertThat(persisted.statusUpdates).isEmpty()
+      assertThat(persisted.versions).hasSize(2)
+      assertThat(persisted.versions.single { it.status == OrderStatus.SUBMITTED }.statusUpdates.map { it.status })
+        .containsExactly(ProcessingStatus.ACCEPTED)
     }
 
     @Test
-    fun `submitted rejected outcomes refuse the variation action`() {
+    fun `submitted rejected outcomes automatically create rejected amendments`() {
       val order = createAndPersistPopulatedOrder(status = OrderStatus.SUBMITTED)
       stubCaseState(order, CaseState.CLOSED)
 
-      val error = amendmentRequest(order.id, AmendmentAction.COPY_AS_VARIATION)
+      val response = amendmentRequest(order.id)
         .headers(setAuthorisation())
-        .exchange().expectStatus().isEqualTo(HttpStatus.CONFLICT)
-        .expectBody<ErrorResponse>().returnResult().responseBody!!
+        .exchange().expectStatus().isOk
+        .expectBody<OrderAmendmentDto>().returnResult().responseBody!!
 
-      assertThat(error.errorCode).isEqualTo("ORDER_CASE_REJECTED")
-      assertThat(repo.findById(order.id).orElseThrow().versions).hasSize(1)
+      assertThat(response.outcome).isEqualTo(ProcessingStatus.REJECTED)
+      assertThat(response.order.type).isEqualTo(RequestType.AMEND_ORIGINAL_REQUEST)
+      assertThat(repo.findById(order.id).orElseThrow().versions).hasSize(2)
     }
 
     @Test
@@ -506,7 +507,7 @@ class OrderControllerTest : IntegrationTestBase() {
         .expectBody<OrderDto>().consumeWith { assertThat(it.responseBody?.canAmend).isTrue() }
       stubCaseState(order, CaseState.OPEN)
 
-      amendmentRequest(order.id, AmendmentAction.COPY_AS_VARIATION)
+      amendmentRequest(order.id)
         .headers(setAuthorisation())
         .exchange().expectStatus().isEqualTo(HttpStatus.CONFLICT)
 
@@ -517,10 +518,10 @@ class OrderControllerTest : IntegrationTestBase() {
     fun `a repeated amendment cannot create a second draft`() {
       val order = createAndPersistPopulatedOrder(status = OrderStatus.REJECTED)
 
-      amendmentRequest(order.id, AmendmentAction.AMEND_REJECTED_ORDER)
+      amendmentRequest(order.id)
         .headers(setAuthorisation())
         .exchange().expectStatus().isOk
-      amendmentRequest(order.id, AmendmentAction.AMEND_REJECTED_ORDER)
+      amendmentRequest(order.id)
         .headers(setAuthorisation())
         .exchange().expectStatus().isEqualTo(HttpStatus.CONFLICT)
 
@@ -733,24 +734,25 @@ class OrderControllerTest : IntegrationTestBase() {
         .expectBody<OrderDto>()
         .returnResult().responseBody!!
 
-      val replacement = amendmentRequest(order.id, AmendmentAction.AMEND_REJECTED_ORDER)
+      val replacement = amendmentRequest(order.id)
         .headers(setAuthorisation())
         .exchange()
         .expectStatus().isOk
-        .expectBody<OrderDto>()
+        .expectBody<OrderAmendmentDto>()
         .returnResult().responseBody!!
 
-      assertThat(replacement.id).isEqualTo(order.id)
-      assertThat(replacement.versionId).isNotEqualTo(rejectedVersion.id)
-      assertThat(replacement.status).isEqualTo(OrderStatus.IN_PROGRESS)
-      assertThat(replacement.type).isEqualTo(
+      assertThat(replacement.outcome).isEqualTo(ProcessingStatus.REJECTED)
+      assertThat(replacement.order.id).isEqualTo(order.id)
+      assertThat(replacement.order.versionId).isNotEqualTo(rejectedVersion.id)
+      assertThat(replacement.order.status).isEqualTo(OrderStatus.IN_PROGRESS)
+      assertThat(replacement.order.type).isEqualTo(
         if (requestType == RequestType.REQUEST) RequestType.AMEND_ORIGINAL_REQUEST else RequestType.VARIATION,
       )
-      assertThat(replacement.username).isEqualTo(testUser)
-      assertThat(replacement.lastUpdatedBy).isEqualTo(testUserFullName)
+      assertThat(replacement.order.username).isEqualTo(testUser)
+      assertThat(replacement.order.lastUpdatedBy).isEqualTo(testUserFullName)
       val persistedOrder = repo.findById(order.id).orElseThrow()
       assertThat(persistedOrder.versions).hasSize(2)
-      assertThat(persistedOrder.getCurrentVersion().id).isEqualTo(replacement.versionId)
+      assertThat(persistedOrder.getCurrentVersion().id).isEqualTo(replacement.order.versionId)
       assertThat(persistedOrder.getCurrentVersion().versionId).isEqualTo(rejectedVersion.versionId + 1)
       val persistedRejectedVersion = persistedOrder.versions.single { it.id == rejectedVersion.id }
       assertThat(persistedRejectedVersion.status).isEqualTo(OrderStatus.REJECTED)
@@ -775,7 +777,7 @@ class OrderControllerTest : IntegrationTestBase() {
       val order = createAndPersistPopulatedOrder(status = OrderStatus.SUBMITTED)
       stubCaseState(order, caseState)
 
-      val error = amendmentRequest(order.id, AmendmentAction.AMEND_REJECTED_ORDER)
+      val error = amendmentRequest(order.id)
         .headers(setAuthorisation())
         .exchange()
         .expectStatus().isEqualTo(HttpStatus.CONFLICT)
@@ -790,14 +792,15 @@ class OrderControllerTest : IntegrationTestBase() {
     fun `rejected orders can create replacements without a stored FMS case state`() {
       val order = createAndPersistPopulatedOrder(status = OrderStatus.REJECTED)
 
-      val replacement = amendmentRequest(order.id, AmendmentAction.AMEND_REJECTED_ORDER)
+      val replacement = amendmentRequest(order.id)
         .headers(setAuthorisation())
         .exchange()
         .expectStatus().isOk
-        .expectBody<OrderDto>()
+        .expectBody<OrderAmendmentDto>()
         .returnResult().responseBody!!
 
-      assertThat(replacement.status).isEqualTo(OrderStatus.IN_PROGRESS)
+      assertThat(replacement.outcome).isEqualTo(ProcessingStatus.REJECTED)
+      assertThat(replacement.order.status).isEqualTo(OrderStatus.IN_PROGRESS)
       assertThat(repo.findById(order.id).orElseThrow().versions).hasSize(2)
     }
 
@@ -810,20 +813,21 @@ class OrderControllerTest : IntegrationTestBase() {
       )
       stubCaseState(order, caseState)
 
-      val amendedOrder = amendmentRequest(order.id, AmendmentAction.AMEND_REJECTED_ORDER)
+      val amendedOrder = amendmentRequest(order.id)
         .headers(setAuthorisation(username = "AUTH_ADM"))
         .exchange()
         .expectStatus()
         .isOk
-        .expectBody(OrderDto::class.java)
+        .expectBody(OrderAmendmentDto::class.java)
         .returnResult()
         .responseBody!!
 
-      assertThat(amendedOrder.id).isEqualTo(order.id)
-      assertThat(amendedOrder.status).isEqualTo(OrderStatus.IN_PROGRESS)
-      assertThat(amendedOrder.type).isEqualTo(RequestType.VARIATION)
-      assertThat(amendedOrder.username).isEqualTo(testUser)
-      assertThat(amendedOrder.lastUpdatedBy).isEqualTo(testUserFullName)
+      assertThat(amendedOrder.outcome).isEqualTo(ProcessingStatus.REJECTED)
+      assertThat(amendedOrder.order.id).isEqualTo(order.id)
+      assertThat(amendedOrder.order.status).isEqualTo(OrderStatus.IN_PROGRESS)
+      assertThat(amendedOrder.order.type).isEqualTo(RequestType.VARIATION)
+      assertThat(amendedOrder.order.username).isEqualTo(testUser)
+      assertThat(amendedOrder.order.lastUpdatedBy).isEqualTo(testUserFullName)
       val updatedOrder = repo.findById(order.id).orElseThrow()
       assertThat(updatedOrder.versions).hasSize(2)
       assertThat(updatedOrder.versions.first().status).isEqualTo(OrderStatus.SUBMITTED)
@@ -836,17 +840,18 @@ class OrderControllerTest : IntegrationTestBase() {
       val order = createAndPersistPopulatedOrder(status = OrderStatus.SUBMITTED, requestType = RequestType.REQUEST)
       stubCaseState(order, caseState)
 
-      val amendedOrder = amendmentRequest(order.id, AmendmentAction.AMEND_REJECTED_ORDER)
+      val amendedOrder = amendmentRequest(order.id)
         .headers(setAuthorisation(username = "AUTH_ADM"))
         .exchange()
         .expectStatus()
         .isOk
-        .expectBody(OrderDto::class.java)
+        .expectBody(OrderAmendmentDto::class.java)
         .returnResult()
         .responseBody!!
 
-      assertThat(amendedOrder.id).isEqualTo(order.id)
-      assertThat(amendedOrder.type).isEqualTo(RequestType.AMEND_ORIGINAL_REQUEST)
+      assertThat(amendedOrder.outcome).isEqualTo(ProcessingStatus.REJECTED)
+      assertThat(amendedOrder.order.id).isEqualTo(order.id)
+      assertThat(amendedOrder.order.type).isEqualTo(RequestType.AMEND_ORIGINAL_REQUEST)
       assertThat(repo.findById(order.id).orElseThrow().versions).hasSize(2)
     }
   }
@@ -2392,7 +2397,6 @@ class OrderControllerTest : IntegrationTestBase() {
       val rawExpectedOrderJson = Files.readString(
         Paths.get("src/test/resources/json/orderControllerTest/ExpectedMo.json"),
       ).trimIndent()
-
       val expectedOrderJson = rawExpectedOrderJson
         .replace("{mockStartDateInBritishTime}", mockStartDateInBritishTime)
         .replace("{mockEndDateInBritishTime}", mockEndDateInBritishTime)
@@ -2930,9 +2934,8 @@ class OrderControllerTest : IntegrationTestBase() {
     return order
   }
 
-  private fun amendmentRequest(orderId: UUID, action: AmendmentAction) = webTestClient.post()
+  private fun amendmentRequest(orderId: UUID) = webTestClient.post()
     .uri("/api/orders/$orderId/amend")
-    .bodyValue(mapOf("action" to action.name))
 
   private fun stubCaseState(order: Order, state: CaseState) {
     val result = fmsResultRepository.findById(order.fmsResultId!!).orElseThrow()
