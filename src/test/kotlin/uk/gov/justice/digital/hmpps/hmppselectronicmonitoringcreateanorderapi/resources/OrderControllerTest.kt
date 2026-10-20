@@ -23,10 +23,8 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderListView
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ProcessingStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.OrderController
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.OrderAmendmentResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.OrderService
 import java.util.*
 
@@ -90,7 +88,6 @@ class OrderControllerTest {
     )
 
     `when`(orderService.getOrder(order.id, authentication)).thenReturn(order)
-    `when`(orderService.canAmend(order)).thenReturn(true)
     `when`(authentication.name).thenReturn("mockUser")
 
     val result = controller.getOrder(order.id, authentication)
@@ -132,33 +129,8 @@ class OrderControllerTest {
         orderParameters = null,
         versionId = version.id,
         isOwner = true,
-        canAmend = true,
       ),
     )
-  }
-
-  @Test
-  fun `Amend rejected order returns a fresh order`() {
-    val sourceOrderId = UUID.randomUUID()
-    val replacement = Order(
-      versions = mutableListOf(
-        OrderVersion(
-          orderId = UUID.randomUUID(),
-          username = "mockUser",
-          status = OrderStatus.IN_PROGRESS,
-          type = RequestType.REQUEST,
-          dataDictionaryVersion = mockDictionaryVersion,
-        ),
-      ),
-    )
-    `when`(orderService.amendOrder(sourceOrderId, authentication))
-      .thenReturn(OrderAmendmentResult(replacement, ProcessingStatus.REJECTED))
-
-    val response = controller.createAmendment(sourceOrderId, authentication)
-
-    Assertions.assertThat(response.body?.order?.id).isEqualTo(replacement.id)
-    Assertions.assertThat(response.body?.outcome).isEqualTo(ProcessingStatus.REJECTED)
-    verify(orderService).amendOrder(sourceOrderId, authentication)
   }
 
   @Test
