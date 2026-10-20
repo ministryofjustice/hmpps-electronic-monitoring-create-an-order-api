@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.m
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressSource
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DeviceType
@@ -681,6 +682,7 @@ class MonitoringOrderReverseMappingTest {
 
     assertThat(installationAddress).isNotNull
     assertThat(installationAddress!!.addressType).isEqualTo(AddressType.INSTALLATION)
+    assertThat(installationAddress.addressSource).isEqualTo(AddressSource.CEMO)
     assertThat(installationAddress.addressLine1).isEqualTo("2 fake street")
     assertThat(installationAddress.postcode).isEqualTo("AB2 3CD")
   }

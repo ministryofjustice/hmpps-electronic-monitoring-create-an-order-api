@@ -24,6 +24,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InterestedParties
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressSource
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisationDDv5
@@ -293,6 +294,9 @@ class DeviceWearerDetailsServiceTest {
       assertThat(mockOrder.addresses.size).isEqualTo(2)
       assertThat(mockOrder.addresses.any { it.addressType == AddressType.PRIMARY }).isTrue
       assertThat(mockOrder.addresses.any { it.addressType == AddressType.SECONDARY }).isTrue
+      assertThat(mockOrder.addresses).allSatisfy {
+        assertThat(it.addressSource).isEqualTo(AddressSource.CORE_PERSON_RECORD)
+      }
     }
 
     @Test
