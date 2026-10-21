@@ -630,9 +630,6 @@ class AdditionalDocumentServiceTest : OrderSectionServiceTestBase() {
     if (fileType == DocumentType.PHOTO_ID) {
       Assertions.assertThat(result.havePhoto).isEqualTo(true)
     }
-    if (fileType == DocumentType.COURT_ORDER) {
-      Assertions.assertThat(result.haveCourtOrder).isEqualTo(true)
-    }
     Assertions.assertThat(result.versionId).isEqualTo(mockVersionId)
   }
 
@@ -651,7 +648,6 @@ class AdditionalDocumentServiceTest : OrderSectionServiceTestBase() {
           dataDictionaryVersion = mockDictionaryVersion,
           orderParameters = OrderParameters(
             versionId = mockVersionId,
-            haveCourtOrder = if (fileType == DocumentType.COURT_ORDER) false else null,
             havePhoto = if (fileType == DocumentType.PHOTO_ID) false else null,
           ),
         ),
@@ -674,9 +670,6 @@ class AdditionalDocumentServiceTest : OrderSectionServiceTestBase() {
     if (fileType == DocumentType.PHOTO_ID) {
       Assertions.assertThat(result.havePhoto).isEqualTo(true)
     }
-    if (fileType == DocumentType.COURT_ORDER) {
-      Assertions.assertThat(result.haveCourtOrder).isEqualTo(true)
-    }
     Assertions.assertThat(result.versionId).isEqualTo(mockVersionId)
   }
 
@@ -695,7 +688,6 @@ class AdditionalDocumentServiceTest : OrderSectionServiceTestBase() {
           dataDictionaryVersion = mockDictionaryVersion,
           orderParameters = OrderParameters(
             versionId = mockVersionId,
-            haveCourtOrder = if (fileType == DocumentType.COURT_ORDER) true else null,
             havePhoto = if (fileType == DocumentType.PHOTO_ID) true else null,
           ),
           additionalDocuments = mutableListOf(
@@ -730,9 +722,6 @@ class AdditionalDocumentServiceTest : OrderSectionServiceTestBase() {
     if (fileType == DocumentType.PHOTO_ID) {
       Assertions.assertThat(result.havePhoto).isEqualTo(false)
     }
-    if (fileType == DocumentType.COURT_ORDER) {
-      Assertions.assertThat(result.haveCourtOrder).isEqualTo(false)
-    }
     Assertions.assertThat(result.versionId).isEqualTo(mockVersionId)
     Assertions.assertThat(mockOrder.additionalDocuments.size).isEqualTo(1)
     Assertions.assertThat(mockOrder.additionalDocuments.filter { x -> x.fileType == fileType }.size)
@@ -742,7 +731,6 @@ class AdditionalDocumentServiceTest : OrderSectionServiceTestBase() {
   companion object {
     @JvmStatic
     fun expectedFileRequiredTypeParameters() = listOf(
-      Arguments.of(DocumentType.COURT_ORDER),
       Arguments.of(DocumentType.PHOTO_ID),
     )
   }
