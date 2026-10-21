@@ -22,6 +22,9 @@ data class OrderParameters(
   @Column(name = "HAVE_PHOTO", nullable = true)
   var havePhoto: Boolean? = null,
 
+  @Column(name = "HAVE_COURT_ORDER", nullable = true)
+  var haveCourtOrder: Boolean? = null,
+
   @Schema(hidden = true)
   @OneToOne
   @JoinColumn(name = "VERSION_ID", updatable = false, insertable = false)
