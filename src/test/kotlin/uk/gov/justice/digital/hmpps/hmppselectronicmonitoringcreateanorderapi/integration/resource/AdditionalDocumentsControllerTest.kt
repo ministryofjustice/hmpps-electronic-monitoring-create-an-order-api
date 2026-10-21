@@ -491,6 +491,27 @@ class AdditionalDocumentsControllerTest : UpdateOrderIntegrationTestBase() {
     }
   }
 
+  @Test
+  fun `should return OK for the retired court document question`() {
+    val order = createOrder()
+
+    webTestClient.put()
+      .uri("/api/orders/${order.id}/attachments/file-required")
+      .contentType(MediaType.APPLICATION_JSON)
+      .bodyValue(
+        """
+        {
+          "fileType": "COURT_ORDER",
+          "fileRequired": true
+        }
+        """.trimIndent(),
+      )
+      .headers(setAuthorisation("AUTH_ADM"))
+      .exchange()
+      .expectStatus()
+      .isOk
+  }
+
   @Nested
   @DisplayName("PUT /api/orders/{orderId}/attachments/have-photo")
   inner class HavePhoto {

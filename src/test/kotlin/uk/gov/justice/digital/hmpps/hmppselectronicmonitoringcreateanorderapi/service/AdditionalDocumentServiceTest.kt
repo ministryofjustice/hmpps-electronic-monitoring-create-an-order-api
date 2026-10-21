@@ -728,6 +728,50 @@ class AdditionalDocumentServiceTest : OrderSectionServiceTestBase() {
       .isEqualTo(0)
   }
 
+  @Test
+  fun `should accept retired court document question without changing photo or documents`() {
+    val params = OrderParameters(
+      versionId = mockVersionId,
+      havePhoto = true,
+    )
+    val courtDocument = AdditionalDocument(
+      versionId = mockVersionId,
+      fileType = DocumentType.COURT_ORDER,
+      documentId = mockDocumentId,
+    )
+    val mockOrder = Order(
+      id = mockOrderId,
+      versions = mutableListOf(
+        OrderVersion(
+          id = mockVersionId,
+          status = OrderStatus.IN_PROGRESS,
+          type = RequestType.REQUEST,
+          username = username,
+          orderId = mockOrderId,
+          dataDictionaryVersion = mockDictionaryVersion,
+          orderParameters = params,
+          additionalDocuments = mutableListOf(courtDocument),
+        ),
+      ),
+    )
+    whenever(repo.findById(mockOrderId)).thenReturn(Optional.of(mockOrder))
+    whenever(repo.save(mockOrder)).thenReturn(mockOrder)
+
+    for (fileRequired in listOf(true, false)) {
+      val result = service.updateFileRequired(
+        mockOrderId,
+        username,
+        UpdateFileRequiredDto(
+          fileRequired = fileRequired,
+          fileType = DocumentType.COURT_ORDER,
+        ),
+      )
+
+      assertThat(result.havePhoto).isTrue()
+      assertThat(mockOrder.additionalDocuments).containsExactly(courtDocument)
+    }
+  }
+
   companion object {
     @JvmStatic
     fun expectedFileRequiredTypeParameters() = listOf(

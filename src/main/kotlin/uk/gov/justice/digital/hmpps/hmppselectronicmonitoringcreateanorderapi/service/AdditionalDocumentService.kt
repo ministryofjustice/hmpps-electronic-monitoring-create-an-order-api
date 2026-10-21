@@ -106,6 +106,7 @@ class AdditionalDocumentService(val webClient: DocumentApiClient) : OrderSection
     }
 
     when (updateRecord.fileType) {
+      DocumentType.COURT_ORDER -> Unit
       DocumentType.PHOTO_ID -> params.havePhoto = updateRecord.fileRequired!!
       else -> throw IllegalArgumentException("Unsupported document type: ${updateRecord.fileType}")
     }
