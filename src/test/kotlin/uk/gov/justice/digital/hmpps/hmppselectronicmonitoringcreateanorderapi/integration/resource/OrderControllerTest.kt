@@ -688,6 +688,70 @@ class OrderControllerTest : IntegrationTestBase() {
     }
 
     @Test
+    fun `It creates a selected service-request version from a locally rejected variation`() {
+      val order = createAndPersistPopulatedOrder(status = OrderStatus.REJECTED, requestType = RequestType.VARIATION)
+
+      val amendedOrder = webTestClient.post()
+        .uri("/api/orders/${order.id}/amend-order")
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(BodyInserters.fromValue("""{"type":"REINSTALL_DEVICE"}"""))
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus().isOk
+        .expectBody<OrderDto>()
+        .returnResult().responseBody!!
+
+      assertThat(amendedOrder.id).isEqualTo(order.id)
+      assertThat(amendedOrder.versionId).isNotEqualTo(order.versionId)
+      assertThat(amendedOrder.status).isEqualTo(OrderStatus.IN_PROGRESS)
+      assertThat(amendedOrder.type).isEqualTo(RequestType.REINSTALL_DEVICE)
+      val persisted = repo.findById(order.id).orElseThrow()
+      assertThat(persisted.versions).hasSize(2)
+      assertThat(persisted.versions.first().status).isEqualTo(OrderStatus.REJECTED)
+      assertThat(persisted.versions.first().type).isEqualTo(RequestType.VARIATION)
+    }
+
+    @Test
+    fun `It creates a selected service-request version when FMS rejected a submitted variation`() {
+      val order = createAndPersistPopulatedOrder(status = OrderStatus.SUBMITTED, requestType = RequestType.VARIATION)
+      stubCaseState(order, CaseState.CLOSED)
+
+      val amendedOrder = webTestClient.post()
+        .uri("/api/orders/${order.id}/amend-order")
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(BodyInserters.fromValue("""{"type":"REINSTALL_DEVICE"}"""))
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus().isOk
+        .expectBody<OrderDto>()
+        .returnResult().responseBody!!
+
+      assertThat(amendedOrder.type).isEqualTo(RequestType.REINSTALL_DEVICE)
+      assertThat(amendedOrder.status).isEqualTo(OrderStatus.IN_PROGRESS)
+      val persisted = repo.findById(order.id).orElseThrow()
+      assertThat(persisted.versions).hasSize(2)
+      assertThat(persisted.versions.first().status).isEqualTo(OrderStatus.SUBMITTED)
+      assertThat(persisted.versions.first().statusUpdates.map { it.status }).containsExactly(ProcessingStatus.REJECTED)
+    }
+
+    @Test
+    fun `It refuses service-request versions for a rejected original request`() {
+      val order = createAndPersistPopulatedOrder(status = OrderStatus.REJECTED, requestType = RequestType.REQUEST)
+
+      webTestClient.post()
+        .uri("/api/orders/${order.id}/amend-order")
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(BodyInserters.fromValue("""{"type":"REINSTALL_DEVICE"}"""))
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus().isEqualTo(HttpStatus.CONFLICT)
+        .expectBody<ErrorResponse>()
+        .consumeWith { assertThat(it.responseBody?.errorCode).isEqualTo("ORDER_CASE_REJECTED") }
+
+      assertThat(repo.findById(order.id).orElseThrow().versions).hasSize(1)
+    }
+
+    @Test
     fun `It return bad request when type is missing`() {
       val order = createAndPersistPopulatedOrder(status = OrderStatus.IN_PROGRESS)
 

@@ -173,13 +173,19 @@ class OrderService(
       "The latest order version is not eligible for amendment",
     )
 
-  private fun requireAcceptedAmendmentOutcome(order: Order): ProcessingStatus {
-    val outcome = requireAmendmentOutcome(order)
-    if (outcome != ProcessingStatus.ACCEPTED) {
-      throw OrderChangeException("ORDER_CASE_REJECTED", "The order requires a rejected-order amendment")
+  private fun getSourceRequestType(order: Order, sourceVersion: OrderVersion): RequestType =
+    if (sourceVersion.type == RequestType.REJECTED) {
+      order.versions
+        .filter { it.versionId < sourceVersion.versionId && it.type != RequestType.REJECTED }
+        .maxByOrNull { it.versionId }
+        ?.type
+        ?: throw OrderChangeException(
+          "ORDER_SOURCE_TYPE_UNAVAILABLE",
+          "The rejected order's original type cannot be determined",
+        )
+    } else {
+      sourceVersion.type
     }
-    return outcome
-  }
 
   fun createVersion(orderId: UUID, token: JwtAuthenticationToken, versionType: RequestType): Order {
     val order = getOrder(orderId, token)
@@ -187,12 +193,21 @@ class OrderService(
     if (currentVersion.status == OrderStatus.ERROR) {
       throw BadRequestException("New order version is not allowed for order with status ${currentVersion.status}")
     }
-    if (currentVersion.status != OrderStatus.IN_PROGRESS) {
-      requireAcceptedAmendmentOutcome(order)
+    val amendmentOutcome = if (currentVersion.status == OrderStatus.IN_PROGRESS) {
+      null
+    } else {
+      requireAmendmentOutcome(order)
     }
+    val isRejectedVariation = amendmentOutcome == ProcessingStatus.REJECTED &&
+      getSourceRequestType(order, currentVersion) in RequestType.VARIATION_TYPES
+    if (amendmentOutcome == ProcessingStatus.REJECTED && !isRejectedVariation) {
+      throw OrderChangeException("ORDER_CASE_REJECTED", "The order requires a rejected-order amendment")
+    }
+
     val sourceVersion = when {
-      currentVersion.status == OrderStatus.IN_PROGRESS || versionType == RequestType.AMEND_ORIGINAL_REQUEST ->
-        currentVersion
+      currentVersion.status == OrderStatus.IN_PROGRESS ||
+        versionType == RequestType.AMEND_ORIGINAL_REQUEST ||
+        isRejectedVariation -> currentVersion
       else -> fmsService.getLatestOrderVersion(order) ?: currentVersion
     }
     val newOrderVersion = buildCopiedVersion(
@@ -212,19 +227,7 @@ class OrderService(
     val sourceOrder = getOrder(orderId, token)
     val sourceVersion = sourceOrder.getCurrentVersion()
     val outcome = requireAmendmentOutcome(sourceOrder)
-
-    val sourceType = if (sourceVersion.type == RequestType.REJECTED) {
-      sourceOrder.versions
-        .filter { it.versionId < sourceVersion.versionId && it.type != RequestType.REJECTED }
-        .maxByOrNull { it.versionId }
-        ?.type
-        ?: throw OrderChangeException(
-          "ORDER_SOURCE_TYPE_UNAVAILABLE",
-          "The rejected order's original type cannot be determined",
-        )
-    } else {
-      sourceVersion.type
-    }
+    val sourceType = getSourceRequestType(sourceOrder, sourceVersion)
     val replacementType = when {
       sourceType in RequestType.VARIATION_TYPES -> RequestType.VARIATION
       outcome == ProcessingStatus.REJECTED -> RequestType.AMEND_ORIGINAL_REQUEST
