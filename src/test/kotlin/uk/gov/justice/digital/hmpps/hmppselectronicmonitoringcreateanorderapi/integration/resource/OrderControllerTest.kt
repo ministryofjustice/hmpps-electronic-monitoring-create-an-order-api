@@ -1,5 +1,9 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.resource
 
+import FmsState
+import FmsStateResponse
+import com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor
+import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
 import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -8,6 +12,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ArgumentsSource
+import org.junit.jupiter.params.provider.EnumSource
 import org.junit.jupiter.params.provider.ValueSource
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.PageRequest
@@ -31,13 +36,16 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.RejectionReason
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderAmendmentDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderInformationDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderInformationPageDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderSearchResultDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.VersionInformationDTO
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.CaseState
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DocumentType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Prison
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ProcessingStatus
@@ -50,9 +58,12 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsAttachmentResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsAttachmentResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsAttachmentSubmissionResult
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsDeviceWearerSubmissionResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsErrorResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsResult
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsSubmissionResult
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsSubmissionStrategyKind
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.MonitoringOrder
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.FmsSubmissionResultRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidationError
@@ -156,8 +167,87 @@ class OrderControllerTest : IntegrationTestBase() {
   }
 
   @Nested
-  @DisplayName("POST /api/orders/copy-as-variation")
+  @DisplayName("POST /api/orders/{orderId}/amend - copy as variation")
   inner class PostVariation {
+    @Test
+    fun `accepted FMS state allows a variation`() {
+      val order = createAndPersistPopulatedOrder(status = OrderStatus.SUBMITTED)
+      stubCaseState(order, CaseState.AWAITING_VALIDATION)
+
+      val result = webTestClient.post()
+        .uri("/api/orders/${order.id}/amend")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody<OrderAmendmentDto>()
+        .returnResult()
+        .responseBody!!
+
+      assertThat(result.outcome).isEqualTo(ProcessingStatus.ACCEPTED)
+      assertThat(result.order.status).isEqualTo(OrderStatus.IN_PROGRESS)
+      assertThat(result.order.type).isEqualTo(RequestType.VARIATION)
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = CaseState::class, names = ["NEW", "OPEN"])
+    fun `FMS processing states return conflict with a machine readable error code`(caseState: CaseState) {
+      val order = createAndPersistPopulatedOrder(status = OrderStatus.SUBMITTED)
+      stubCaseState(order, caseState)
+
+      val error = webTestClient.post()
+        .uri("/api/orders/${order.id}/amend")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .isEqualTo(HttpStatus.CONFLICT)
+        .expectBody<ErrorResponse>()
+        .returnResult()
+        .responseBody!!
+
+      assertThat(error.errorCode).isEqualTo("ORDER_CASE_STILL_PROCESSING")
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = ["REQUEST", "VARIATION"])
+    fun `rejected orders automatically create a replacement version`(requestType: RequestType) {
+      val order = createAndPersistPopulatedOrder(status = OrderStatus.REJECTED, requestType = requestType)
+
+      val replacement = webTestClient.post()
+        .uri("/api/orders/${order.id}/amend")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus().isOk
+        .expectBody<OrderAmendmentDto>()
+        .returnResult().responseBody!!
+
+      assertThat(replacement.outcome).isEqualTo(ProcessingStatus.REJECTED)
+      assertThat(replacement.order.status).isEqualTo(OrderStatus.IN_PROGRESS)
+      assertThat(replacement.order.type).isEqualTo(
+        if (requestType == RequestType.REQUEST) RequestType.AMEND_ORIGINAL_REQUEST else RequestType.VARIATION,
+      )
+      assertThat(repo.findById(order.id).orElseThrow().versions).hasSize(2)
+    }
+
+    @Test
+    fun `UNKNOWN FMS state locks a submitted order`() {
+      val order = createAndPersistPopulatedOrder(status = OrderStatus.SUBMITTED)
+      stubCaseState(order, CaseState.UNKNOWN)
+
+      val error = webTestClient.post()
+        .uri("/api/orders/${order.id}/amend")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .isEqualTo(HttpStatus.CONFLICT)
+        .expectBody(ErrorResponse::class.java)
+        .returnResult()
+        .responseBody!!
+
+      assertThat(error.errorCode).isEqualTo("ORDER_CASE_STILL_PROCESSING")
+      assertThat(repo.findById(order.id).orElseThrow().versions).hasSize(1)
+    }
+
     @Test
     fun `A variation of a legacy order retains its missing Sentencing Act flag`() {
       val order = createAndPersistPopulatedOrder(status = OrderStatus.SUBMITTED)
@@ -165,16 +255,16 @@ class OrderControllerTest : IntegrationTestBase() {
       repo.save(order)
 
       val variationOrder = webTestClient.post()
-        .uri("/api/orders/${order.id}/copy-as-variation")
+        .uri("/api/orders/${order.id}/amend")
         .headers(setAuthorisation())
         .exchange()
         .expectStatus()
         .isOk
-        .expectBody(OrderDto::class.java)
+        .expectBody(OrderAmendmentDto::class.java)
         .returnResult()
         .responseBody!!
 
-      assertThat(variationOrder.isSentencingAct).isNull()
+      assertThat(variationOrder.order.isSentencingAct).isNull()
       assertThat(repo.findById(order.id).orElseThrow().isSentencingAct).isNull()
     }
 
@@ -183,21 +273,21 @@ class OrderControllerTest : IntegrationTestBase() {
       val order = createAndPersistPopulatedOrder(status = OrderStatus.SUBMITTED)
 
       val variationOrder = webTestClient.post()
-        .uri("/api/orders/${order.id}/copy-as-variation")
+        .uri("/api/orders/${order.id}/amend")
         .headers(setAuthorisation(username = "AUTH_ADM"))
         .exchange()
         .expectStatus()
         .isOk
-        .expectBody(OrderDto::class.java)
+        .expectBody(OrderAmendmentDto::class.java)
         .returnResult()
         .responseBody!!
 
-      assertThat(variationOrder.id).isNotNull()
-      assertThat(variationOrder.id).isEqualTo(order.id)
-      assertThat(variationOrder.status).isEqualTo(OrderStatus.IN_PROGRESS)
-      assertThat(variationOrder.type).isEqualTo(RequestType.VARIATION)
-      assertThat(variationOrder.username).isEqualTo(testUser)
-      assertThat(variationOrder.lastUpdatedBy).isEqualTo(testUserFullName)
+      assertThat(variationOrder.order.id).isNotNull()
+      assertThat(variationOrder.order.id).isEqualTo(order.id)
+      assertThat(variationOrder.order.status).isEqualTo(OrderStatus.IN_PROGRESS)
+      assertThat(variationOrder.order.type).isEqualTo(RequestType.VARIATION)
+      assertThat(variationOrder.order.username).isEqualTo(testUser)
+      assertThat(variationOrder.order.lastUpdatedBy).isEqualTo(testUserFullName)
     }
 
     @Test
@@ -205,17 +295,17 @@ class OrderControllerTest : IntegrationTestBase() {
       val order = createAndPersistPopulatedOrder(status = OrderStatus.SUBMITTED)
 
       val variationOrder = webTestClient.post()
-        .uri("/api/orders/${order.id}/copy-as-variation")
+        .uri("/api/orders/${order.id}/amend")
         .headers(setAuthorisation())
         .exchange()
         .expectStatus()
         .isOk
-        .expectBody(OrderDto::class.java)
+        .expectBody(OrderAmendmentDto::class.java)
         .returnResult()
         .responseBody!!
 
-      assertThat(variationOrder.deviceWearer!!.id).isNotEqualTo(order.deviceWearer!!.id)
-      assertThat(variationOrder.deviceWearer.versionId).isNotEqualTo(order.deviceWearer!!.versionId)
+      assertThat(variationOrder.order.deviceWearer!!.id).isNotEqualTo(order.deviceWearer!!.id)
+      assertThat(variationOrder.order.deviceWearer.versionId).isNotEqualTo(order.deviceWearer!!.versionId)
     }
 
     @Test
@@ -223,16 +313,16 @@ class OrderControllerTest : IntegrationTestBase() {
       val order = createAndPersistPopulatedOrder(status = OrderStatus.SUBMITTED)
 
       val variationOrder = webTestClient.post()
-        .uri("/api/orders/${order.id}/copy-as-variation")
+        .uri("/api/orders/${order.id}/amend")
         .headers(setAuthorisation())
         .exchange()
         .expectStatus()
         .isOk
-        .expectBody(OrderDto::class.java)
+        .expectBody(OrderAmendmentDto::class.java)
         .returnResult()
         .responseBody!!
 
-      assertThat(variationOrder.deviceWearer)
+      assertThat(variationOrder.order.deviceWearer)
         .usingRecursiveComparison()
         .ignoringCollectionOrder()
         .ignoringFields(
@@ -243,7 +333,7 @@ class OrderControllerTest : IntegrationTestBase() {
         )
         .isEqualTo(order.deviceWearer)
 
-      assertThat(variationOrder.contactDetails)
+      assertThat(variationOrder.order.contactDetails)
         .usingRecursiveComparison()
         .ignoringCollectionOrder()
         .ignoringFields(
@@ -253,7 +343,7 @@ class OrderControllerTest : IntegrationTestBase() {
         )
         .isEqualTo(order.contactDetails)
 
-      assertThat(variationOrder.interestedParties)
+      assertThat(variationOrder.order.interestedParties)
         .usingRecursiveComparison()
         .ignoringCollectionOrder()
         .ignoringFields(
@@ -266,11 +356,11 @@ class OrderControllerTest : IntegrationTestBase() {
         )
         .isEqualTo(order.interestedParties)
 
-      assertThat(variationOrder.interestedParties?.notifyingOrganisation).isNull()
-      assertThat(variationOrder.interestedParties?.notifyingOrganisationName).isNull()
-      assertThat(variationOrder.interestedParties?.notifyingOrganisationEmail).isNull()
+      assertThat(variationOrder.order.interestedParties?.notifyingOrganisation).isNull()
+      assertThat(variationOrder.order.interestedParties?.notifyingOrganisationName).isNull()
+      assertThat(variationOrder.order.interestedParties?.notifyingOrganisationEmail).isNull()
 
-      assertThat(variationOrder.addresses)
+      assertThat(variationOrder.order.addresses)
         .usingRecursiveComparison()
         .ignoringCollectionOrder()
         .ignoringFields(
@@ -280,7 +370,7 @@ class OrderControllerTest : IntegrationTestBase() {
         )
         .isEqualTo(order.addresses)
 
-      assertThat(variationOrder.monitoringConditions)
+      assertThat(variationOrder.order.monitoringConditions)
         .usingRecursiveComparison()
         .ignoringCollectionOrder()
         .ignoringFields(
@@ -292,25 +382,150 @@ class OrderControllerTest : IntegrationTestBase() {
         )
         .isEqualTo(order.monitoringConditions)
 
-      assertThat(variationOrder.installationAndRisk).isNull()
+      assertThat(variationOrder.order.installationAndRisk).isNull()
     }
 
     @Test
-    fun `It return bad request when latest version is not in SUBMITTED state`() {
+    fun `It refuses an amendment of an existing draft`() {
       val order = createAndPersistPopulatedOrder(status = OrderStatus.IN_PROGRESS)
+      val existingVersionCount = order.versions.size
 
-      val result = webTestClient.post()
-        .uri("/api/orders/${order.id}/copy-as-variation")
+      val error = webTestClient.post()
+        .uri("/api/orders/${order.id}/amend")
         .headers(setAuthorisation(username = "AUTH_ADM"))
         .exchange()
         .expectStatus()
-        .is4xxClientError
+        .isEqualTo(HttpStatus.CONFLICT)
         .expectBody(ErrorResponse::class.java)
         .returnResult()
+        .responseBody!!
 
-      val error = result.responseBody!!
-      assertThat(error.userMessage)
-        .isEqualTo("Bad Request: New order version is not allowed for order with status IN_PROGRESS")
+      assertThat(error.errorCode).isEqualTo("ORDER_VERSION_NOT_AVAILABLE")
+      assertThat(repo.findById(order.id).orElseThrow().versions).hasSize(existingVersionCount)
+    }
+  }
+
+  @Nested
+  @DisplayName("Merged amendment contract")
+  inner class AmendmentContract {
+    @Test
+    fun `bodyless POST automatically creates an amendment for a locally rejected order`() {
+      val order = createAndPersistPopulatedOrder(status = OrderStatus.REJECTED)
+
+      val response = webTestClient.post()
+        .uri("/api/orders/${order.id}/amend")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus().isOk
+        .expectBody<OrderAmendmentDto>()
+        .returnResult().responseBody!!
+
+      assertThat(response.outcome).isEqualTo(ProcessingStatus.REJECTED)
+      assertThat(response.order.status).isEqualTo(OrderStatus.IN_PROGRESS)
+      assertThat(repo.findById(order.id).orElseThrow().versions).hasSize(2)
+    }
+
+    @Test
+    fun `authentication and create-order role are required`() {
+      val order = createAndPersistPopulatedOrder(status = OrderStatus.REJECTED)
+
+      amendmentRequest(order.id)
+        .exchange().expectStatus().isForbidden
+      amendmentRequest(order.id)
+        .headers(setAuthorisation(roles = listOf("ROLE_OTHER")))
+        .exchange().expectStatus().isForbidden
+
+      assertThat(repo.findById(order.id).orElseThrow().versions).hasSize(1)
+    }
+
+    @Test
+    fun `missing orders return not found`() {
+      amendmentRequest(UUID.randomUUID())
+        .headers(setAuthorisation())
+        .exchange().expectStatus().isNotFound
+    }
+
+    @Test
+    fun `inaccessible orders remain forbidden`() {
+      val order = createOrder("AUTH_ADM")
+
+      amendmentRequest(order.id)
+        .headers(setAuthorisation("AUTH_ADM_2"))
+        .exchange().expectStatus().isForbidden
+
+      assertThat(repo.findById(order.id).orElseThrow().versions).hasSize(1)
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = ["copy-as-variation", "amend-rejected-order"])
+    fun `old endpoints are removed`(route: String) {
+      val order = createAndPersistPopulatedOrder(status = OrderStatus.REJECTED)
+
+      webTestClient.post().uri("/api/orders/${order.id}/$route")
+        .headers(setAuthorisation())
+        .exchange().expectStatus().isNotFound
+    }
+
+    @Test
+    fun `accepted orders automatically create variations and persist an accepted outcome`() {
+      val order = createAndPersistPopulatedOrder(status = OrderStatus.SUBMITTED)
+
+      val response = amendmentRequest(order.id)
+        .headers(setAuthorisation())
+        .exchange().expectStatus().isOk
+        .expectBody<OrderAmendmentDto>().returnResult().responseBody!!
+
+      assertThat(response.outcome).isEqualTo(ProcessingStatus.ACCEPTED)
+      assertThat(response.order.type).isEqualTo(RequestType.VARIATION)
+      val persisted = repo.findById(order.id).orElseThrow()
+      assertThat(persisted.versions).hasSize(2)
+      assertThat(persisted.versions.single { it.status == OrderStatus.SUBMITTED }.statusUpdates.map { it.status })
+        .containsExactly(ProcessingStatus.ACCEPTED)
+    }
+
+    @Test
+    fun `submitted rejected outcomes automatically create rejected amendments`() {
+      val order = createAndPersistPopulatedOrder(status = OrderStatus.SUBMITTED)
+      stubCaseState(order, CaseState.CLOSED)
+
+      val response = amendmentRequest(order.id)
+        .headers(setAuthorisation())
+        .exchange().expectStatus().isOk
+        .expectBody<OrderAmendmentDto>().returnResult().responseBody!!
+
+      assertThat(response.outcome).isEqualTo(ProcessingStatus.REJECTED)
+      assertThat(response.order.type).isEqualTo(RequestType.AMEND_ORIGINAL_REQUEST)
+      assertThat(repo.findById(order.id).orElseThrow().versions).hasSize(2)
+    }
+
+    @Test
+    fun `POST rechecks eligibility rather than trusting an earlier GET`() {
+      val order = createAndPersistPopulatedOrder(status = OrderStatus.SUBMITTED)
+      webTestClient.get().uri("/api/orders/${order.id}")
+        .headers(setAuthorisation())
+        .exchange().expectStatus().isOk
+        .expectBody<OrderDto>().consumeWith { assertThat(it.responseBody?.canAmend).isTrue() }
+      stubCaseState(order, CaseState.OPEN)
+
+      amendmentRequest(order.id)
+        .headers(setAuthorisation())
+        .exchange().expectStatus().isEqualTo(HttpStatus.CONFLICT)
+
+      assertThat(repo.findById(order.id).orElseThrow().versions).hasSize(1)
+    }
+
+    @Test
+    fun `a repeated amendment cannot create a second draft`() {
+      val order = createAndPersistPopulatedOrder(status = OrderStatus.REJECTED)
+
+      amendmentRequest(order.id)
+        .headers(setAuthorisation())
+        .exchange().expectStatus().isOk
+      amendmentRequest(order.id)
+        .headers(setAuthorisation())
+        .exchange().expectStatus().isEqualTo(HttpStatus.CONFLICT)
+
+      assertThat(repo.findById(order.id).orElseThrow().versions).hasSize(2)
     }
   }
 
@@ -440,10 +655,12 @@ class OrderControllerTest : IntegrationTestBase() {
     }
 
     @Test
-    fun `It return bad request when latest version is not in SUBMITTED state`() {
+    fun `It creates an amended draft from an existing draft`() {
       val order = createAndPersistPopulatedOrder(status = OrderStatus.IN_PROGRESS)
+      val existingVersion = order.getCurrentVersion()
+      val existingVersionCount = order.versions.size
 
-      val result = webTestClient.post()
+      val amendedOrder = webTestClient.post()
         .uri("/api/orders/${order.id}/amend-order")
         .contentType(MediaType.APPLICATION_JSON)
         .body(
@@ -458,13 +675,80 @@ class OrderControllerTest : IntegrationTestBase() {
         .headers(setAuthorisation(username = "AUTH_ADM"))
         .exchange()
         .expectStatus()
-        .is4xxClientError
-        .expectBody(ErrorResponse::class.java)
+        .isOk
+        .expectBody(OrderDto::class.java)
         .returnResult()
+        .responseBody!!
 
-      val error = result.responseBody!!
-      assertThat(error.userMessage)
-        .isEqualTo("Bad Request: New order version is not allowed for order with status IN_PROGRESS")
+      assertThat(amendedOrder.id).isEqualTo(order.id)
+      assertThat(amendedOrder.versionId).isNotEqualTo(existingVersion.id)
+      assertThat(amendedOrder.status).isEqualTo(OrderStatus.IN_PROGRESS)
+      assertThat(amendedOrder.type).isEqualTo(RequestType.VARIATION)
+      assertThat(repo.findById(order.id).orElseThrow().versions).hasSize(existingVersionCount + 1)
+    }
+
+    @Test
+    fun `It creates a selected service-request version from a locally rejected variation`() {
+      val order = createAndPersistPopulatedOrder(status = OrderStatus.REJECTED, requestType = RequestType.VARIATION)
+
+      val amendedOrder = webTestClient.post()
+        .uri("/api/orders/${order.id}/amend-order")
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(BodyInserters.fromValue("""{"type":"REINSTALL_DEVICE"}"""))
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus().isOk
+        .expectBody<OrderDto>()
+        .returnResult().responseBody!!
+
+      assertThat(amendedOrder.id).isEqualTo(order.id)
+      assertThat(amendedOrder.versionId).isNotEqualTo(order.versionId)
+      assertThat(amendedOrder.status).isEqualTo(OrderStatus.IN_PROGRESS)
+      assertThat(amendedOrder.type).isEqualTo(RequestType.REINSTALL_DEVICE)
+      val persisted = repo.findById(order.id).orElseThrow()
+      assertThat(persisted.versions).hasSize(2)
+      assertThat(persisted.versions.first().status).isEqualTo(OrderStatus.REJECTED)
+      assertThat(persisted.versions.first().type).isEqualTo(RequestType.VARIATION)
+    }
+
+    @Test
+    fun `It creates a selected service-request version when FMS rejected a submitted variation`() {
+      val order = createAndPersistPopulatedOrder(status = OrderStatus.SUBMITTED, requestType = RequestType.VARIATION)
+      stubCaseState(order, CaseState.CLOSED)
+
+      val amendedOrder = webTestClient.post()
+        .uri("/api/orders/${order.id}/amend-order")
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(BodyInserters.fromValue("""{"type":"REINSTALL_DEVICE"}"""))
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus().isOk
+        .expectBody<OrderDto>()
+        .returnResult().responseBody!!
+
+      assertThat(amendedOrder.type).isEqualTo(RequestType.REINSTALL_DEVICE)
+      assertThat(amendedOrder.status).isEqualTo(OrderStatus.IN_PROGRESS)
+      val persisted = repo.findById(order.id).orElseThrow()
+      assertThat(persisted.versions).hasSize(2)
+      assertThat(persisted.versions.first().status).isEqualTo(OrderStatus.SUBMITTED)
+      assertThat(persisted.versions.first().statusUpdates.map { it.status }).containsExactly(ProcessingStatus.REJECTED)
+    }
+
+    @Test
+    fun `It refuses service-request versions for a rejected original request`() {
+      val order = createAndPersistPopulatedOrder(status = OrderStatus.REJECTED, requestType = RequestType.REQUEST)
+
+      webTestClient.post()
+        .uri("/api/orders/${order.id}/amend-order")
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(BodyInserters.fromValue("""{"type":"REINSTALL_DEVICE"}"""))
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus().isEqualTo(HttpStatus.CONFLICT)
+        .expectBody<ErrorResponse>()
+        .consumeWith { assertThat(it.responseBody?.errorCode).isEqualTo("ORDER_CASE_REJECTED") }
+
+      assertThat(repo.findById(order.id).orElseThrow().versions).hasSize(1)
     }
 
     @Test
@@ -499,28 +783,140 @@ class OrderControllerTest : IntegrationTestBase() {
   }
 
   @Nested
-  @DisplayName("POST /api/order/amend-rejected-order")
+  @DisplayName("POST /api/orders/{orderId}/amend - rejected order")
   inner class AmendRejectedOrder {
-    @Test
-    fun `It should create a new version with type AMEND_ORIGINAL_REQUEST`() {
-      val order = createAndPersistPopulatedOrder(status = OrderStatus.SUBMITTED)
+    @ParameterizedTest
+    @ValueSource(strings = ["REQUEST", "VARIATION"])
+    fun `returned orders can create replacements regardless of FMS case state`(requestType: RequestType) {
+      val order = createAndPersistPopulatedOrder(status = OrderStatus.REJECTED, requestType = requestType)
+      val rejectedVersion = order.getCurrentVersion()
+      val rejectedVersionBefore = webTestClient.get()
+        .uri("/api/orders/${order.id}/versions/${rejectedVersion.id}")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus().isOk
+        .expectBody<OrderDto>()
+        .returnResult().responseBody!!
 
-      val variationOrder = webTestClient.post()
-        .uri("/api/orders/${order.id}/amend-rejected-order")
+      val replacement = amendmentRequest(order.id)
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus().isOk
+        .expectBody<OrderAmendmentDto>()
+        .returnResult().responseBody!!
+
+      assertThat(replacement.outcome).isEqualTo(ProcessingStatus.REJECTED)
+      assertThat(replacement.order.id).isEqualTo(order.id)
+      assertThat(replacement.order.versionId).isNotEqualTo(rejectedVersion.id)
+      assertThat(replacement.order.status).isEqualTo(OrderStatus.IN_PROGRESS)
+      assertThat(replacement.order.type).isEqualTo(
+        if (requestType == RequestType.REQUEST) RequestType.AMEND_ORIGINAL_REQUEST else RequestType.VARIATION,
+      )
+      assertThat(replacement.order.username).isEqualTo(testUser)
+      assertThat(replacement.order.lastUpdatedBy).isEqualTo(testUserFullName)
+      val persistedOrder = repo.findById(order.id).orElseThrow()
+      assertThat(persistedOrder.versions).hasSize(2)
+      assertThat(persistedOrder.getCurrentVersion().id).isEqualTo(replacement.order.versionId)
+      assertThat(persistedOrder.getCurrentVersion().versionId).isEqualTo(rejectedVersion.versionId + 1)
+      val persistedRejectedVersion = persistedOrder.versions.single { it.id == rejectedVersion.id }
+      assertThat(persistedRejectedVersion.status).isEqualTo(OrderStatus.REJECTED)
+      assertThat(persistedRejectedVersion.type).isEqualTo(requestType)
+      assertThat(persistedOrder.versions.count { it.status == OrderStatus.IN_PROGRESS }).isEqualTo(1)
+
+      val rejectedVersionAfter = webTestClient.get()
+        .uri("/api/orders/${order.id}/versions/${rejectedVersion.id}")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus().isOk
+        .expectBody<OrderDto>()
+        .returnResult().responseBody!!
+      assertThat(rejectedVersionAfter)
+        .usingRecursiveComparison()
+        .isEqualTo(rejectedVersionBefore)
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = CaseState::class, names = ["NEW", "OPEN"])
+    fun `submitted orders with processing FMS cases cannot create replacements`(caseState: CaseState) {
+      val order = createAndPersistPopulatedOrder(status = OrderStatus.SUBMITTED)
+      stubCaseState(order, caseState)
+
+      val error = amendmentRequest(order.id)
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus().isEqualTo(HttpStatus.CONFLICT)
+        .expectBody<ErrorResponse>()
+        .returnResult().responseBody!!
+
+      assertThat(error.errorCode).isEqualTo("ORDER_CASE_STILL_PROCESSING")
+      assertThat(repo.findById(order.id).orElseThrow().versions).hasSize(1)
+    }
+
+    @Test
+    fun `rejected orders can create replacements without a stored FMS case state`() {
+      val order = createAndPersistPopulatedOrder(status = OrderStatus.REJECTED)
+
+      val replacement = amendmentRequest(order.id)
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus().isOk
+        .expectBody<OrderAmendmentDto>()
+        .returnResult().responseBody!!
+
+      assertThat(replacement.outcome).isEqualTo(ProcessingStatus.REJECTED)
+      assertThat(replacement.order.status).isEqualTo(OrderStatus.IN_PROGRESS)
+      assertThat(repo.findById(order.id).orElseThrow().versions).hasSize(2)
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = CaseState::class, names = ["CANCELLED", "CLOSED", "RESOLVED"])
+    fun `It should create a variation version for a rejected change order`(caseState: CaseState) {
+      val order = createAndPersistPopulatedOrder(
+        status = OrderStatus.SUBMITTED,
+        requestType = RequestType.VARIATION,
+      )
+      stubCaseState(order, caseState)
+
+      val amendedOrder = amendmentRequest(order.id)
         .headers(setAuthorisation(username = "AUTH_ADM"))
         .exchange()
         .expectStatus()
         .isOk
-        .expectBody(OrderDto::class.java)
+        .expectBody(OrderAmendmentDto::class.java)
         .returnResult()
         .responseBody!!
 
-      assertThat(variationOrder.id).isNotNull()
-      assertThat(variationOrder.id).isEqualTo(order.id)
-      assertThat(variationOrder.status).isEqualTo(OrderStatus.IN_PROGRESS)
-      assertThat(variationOrder.type).isEqualTo(RequestType.AMEND_ORIGINAL_REQUEST)
-      assertThat(variationOrder.username).isEqualTo(testUser)
-      assertThat(variationOrder.lastUpdatedBy).isEqualTo(testUserFullName)
+      assertThat(amendedOrder.outcome).isEqualTo(ProcessingStatus.REJECTED)
+      assertThat(amendedOrder.order.id).isEqualTo(order.id)
+      assertThat(amendedOrder.order.status).isEqualTo(OrderStatus.IN_PROGRESS)
+      assertThat(amendedOrder.order.type).isEqualTo(RequestType.VARIATION)
+      assertThat(amendedOrder.order.username).isEqualTo(testUser)
+      assertThat(amendedOrder.order.lastUpdatedBy).isEqualTo(testUserFullName)
+      val updatedOrder = repo.findById(order.id).orElseThrow()
+      assertThat(updatedOrder.versions).hasSize(2)
+      assertThat(updatedOrder.versions.first().status).isEqualTo(OrderStatus.SUBMITTED)
+      assertThat(updatedOrder.versions.first().type).isEqualTo(RequestType.VARIATION)
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = CaseState::class, names = ["CANCELLED", "CLOSED", "RESOLVED"])
+    fun `It should create a new-order version for a rejected new order`(caseState: CaseState) {
+      val order = createAndPersistPopulatedOrder(status = OrderStatus.SUBMITTED, requestType = RequestType.REQUEST)
+      stubCaseState(order, caseState)
+
+      val amendedOrder = amendmentRequest(order.id)
+        .headers(setAuthorisation(username = "AUTH_ADM"))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody(OrderAmendmentDto::class.java)
+        .returnResult()
+        .responseBody!!
+
+      assertThat(amendedOrder.outcome).isEqualTo(ProcessingStatus.REJECTED)
+      assertThat(amendedOrder.order.id).isEqualTo(order.id)
+      assertThat(amendedOrder.order.type).isEqualTo(RequestType.AMEND_ORIGINAL_REQUEST)
+      assertThat(repo.findById(order.id).orElseThrow().versions).hasSize(2)
     }
   }
 
@@ -1254,6 +1650,99 @@ class OrderControllerTest : IntegrationTestBase() {
   @Nested
   @DisplayName("GET /api/orders/{orderId}")
   inner class GetOrderVersion {
+    @ParameterizedTest
+    @EnumSource(CaseState::class)
+    fun `submitted eligibility maps FMS states into persisted domain observations`(state: CaseState) {
+      val order = createAndPersistPopulatedOrder(status = OrderStatus.SUBMITTED)
+      stubCaseState(order, state)
+      val expected = when (state) {
+        CaseState.AWAITING_VALIDATION -> ProcessingStatus.ACCEPTED
+        CaseState.CLOSED, CaseState.CANCELLED, CaseState.RESOLVED -> ProcessingStatus.REJECTED
+        else -> null
+      }
+
+      val response = webTestClient.get().uri("/api/orders/${order.id}")
+        .headers(setAuthorisation())
+        .exchange().expectStatus().isOk
+        .expectBody<OrderDto>().returnResult().responseBody!!
+
+      assertThat(response.canAmend).isEqualTo(expected != null)
+      assertThat(response.status).isEqualTo(OrderStatus.SUBMITTED)
+      val expectedUpdates = listOfNotNull(expected)
+      assertThat(response.statusUpdates.map { it.status }).containsExactlyElementsOf(expectedUpdates)
+      assertThat(repo.findById(order.id).orElseThrow().statusUpdates.map { it.status })
+        .containsExactlyElementsOf(expectedUpdates)
+    }
+
+    @Test
+    fun `local rejection is eligible without calling FMS`() {
+      val order = createAndPersistPopulatedOrder(status = OrderStatus.REJECTED)
+      val caseId = fmsResultRepository.findById(order.fmsResultId!!).orElseThrow().caseId!!
+
+      webTestClient.get().uri("/api/orders/${order.id}")
+        .headers(setAuthorisation())
+        .exchange().expectStatus().isOk
+        .expectBody<OrderDto>().consumeWith { assertThat(it.responseBody?.canAmend).isTrue() }
+
+      sercoApi.verify(0, getRequestedFor(urlEqualTo("/now/table/x_serg2_ems_csm_case/$caseId?sysparm_fields=state")))
+    }
+
+    @Test
+    fun `a later return event retains its timestamp and reasons after a rejection observation`() {
+      val order = createAndPersistPopulatedOrder(status = OrderStatus.SUBMITTED)
+      stubCaseState(order, CaseState.CLOSED)
+      webTestClient.get().uri("/api/orders/${order.id}")
+        .headers(setAuthorisation())
+        .exchange().expectStatus().isOk
+      val returned = repo.findById(order.id).orElseThrow()
+      val eventTime = ZonedDateTime.parse("2026-10-01T10:00:00Z")
+      returned.reject(eventTime, listOf(RejectionReason("DEVICE_WEARER", "Wrong name")))
+      repo.save(returned)
+
+      val response = webTestClient.get().uri("/api/orders/${order.id}")
+        .headers(setAuthorisation())
+        .exchange().expectStatus().isOk
+        .expectBody<OrderDto>().returnResult().responseBody!!
+
+      assertThat(response.canAmend).isTrue()
+      assertThat(response.statusUpdates).hasSize(2)
+      val event = response.statusUpdates.single { it.statusUpdateReasons.isNotEmpty() }
+      assertThat(event.datetimeOfStatusChange.toInstant()).isEqualTo(eventTime.toInstant())
+      assertThat(event.statusUpdateReasons.single().details).isEqualTo("Wrong name")
+    }
+
+    @Test
+    fun `It records a terminal outcome once across repeated reads without changing form audit fields`() {
+      val order = createAndPersistPopulatedOrder(status = OrderStatus.SUBMITTED)
+      val caseId = fmsResultRepository.findById(order.fmsResultId!!).orElseThrow().caseId!!
+      stubCaseState(order, CaseState.CLOSED)
+
+      repeat(2) {
+        webTestClient.get()
+          .uri("/api/orders/${order.id}")
+          .headers(setAuthorisation())
+          .exchange()
+          .expectStatus()
+          .isOk
+          .expectBody<OrderDto>()
+          .consumeWith { response ->
+            assertThat(response.responseBody?.canAmend).isTrue()
+            assertThat(response.responseBody?.status).isEqualTo(OrderStatus.SUBMITTED)
+            assertThat(response.responseBody?.statusUpdates?.map { it.status })
+              .containsExactly(ProcessingStatus.REJECTED)
+          }
+      }
+
+      sercoApi.verify(
+        2,
+        getRequestedFor(urlEqualTo("/now/table/x_serg2_ems_csm_case/$caseId?sysparm_fields=state")),
+      )
+      val persisted = repo.findById(order.id).orElseThrow()
+      assertThat(persisted.statusUpdates.map { it.status }).containsExactly(ProcessingStatus.REJECTED)
+      assertThat(persisted.lastUpdatedBy).isEqualTo(order.lastUpdatedBy)
+      assertThat(persisted.lastUpdatedDateTime).isEqualTo(order.lastUpdatedDateTime)
+    }
+
     @Test
     fun `It should return the order if owned by the user`() {
       val order = createOrder()
@@ -1972,7 +2461,6 @@ class OrderControllerTest : IntegrationTestBase() {
       val rawExpectedOrderJson = Files.readString(
         Paths.get("src/test/resources/json/orderControllerTest/ExpectedMo.json"),
       ).trimIndent()
-
       val expectedOrderJson = rawExpectedOrderJson
         .replace("{mockStartDateInBritishTime}", mockStartDateInBritishTime)
         .replace("{mockEndDateInBritishTime}", mockEndDateInBritishTime)
@@ -2492,7 +2980,34 @@ class OrderControllerTest : IntegrationTestBase() {
       ownerCohort = ownerCohort,
       tags = tags,
     )
+    if (status == OrderStatus.SUBMITTED || status == OrderStatus.REJECTED) {
+      val caseId = "case-${UUID.randomUUID()}"
+      val result = FmsSubmissionResult(
+        orderId = order.id,
+        strategy = FmsSubmissionStrategyKind.ORDER,
+        orderSource = FmsOrderSource.CEMO,
+        deviceWearerResult = FmsDeviceWearerSubmissionResult(deviceWearerId = caseId),
+      )
+      fmsResultRepository.save(result)
+      order.fmsResultId = result.id
+    }
     repo.save(order)
+    if (status == OrderStatus.SUBMITTED || status == OrderStatus.REJECTED) {
+      stubCaseState(order, CaseState.AWAITING_VALIDATION)
+    }
     return order
+  }
+
+  private fun amendmentRequest(orderId: UUID) = webTestClient.post()
+    .uri("/api/orders/$orderId/amend")
+
+  private fun stubCaseState(order: Order, state: CaseState) {
+    val result = fmsResultRepository.findById(order.fmsResultId!!).orElseThrow()
+    sercoAuthApi.stubGrantToken()
+    sercoApi.stubGetState(
+      result.caseId!!,
+      HttpStatus.OK,
+      FmsStateResponse(FmsState(state.value)),
+    )
   }
 }
