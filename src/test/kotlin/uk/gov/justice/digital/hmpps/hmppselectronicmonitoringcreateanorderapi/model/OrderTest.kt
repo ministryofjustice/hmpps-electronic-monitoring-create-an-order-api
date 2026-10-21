@@ -81,7 +81,7 @@ class OrderTest : OrderTestBase() {
   }
 
   @Test
-  fun `It should return isValid true for court order without a court order document`() {
+  fun `It should return isValid true for court order with no court order document`() {
     val order = createValidOrder()
     order.additionalDocuments.clear()
     order.orderParameters = OrderParameters(versionId = order.versionId)
