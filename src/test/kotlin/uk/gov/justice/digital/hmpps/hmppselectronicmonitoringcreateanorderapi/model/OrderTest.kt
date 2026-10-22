@@ -84,7 +84,7 @@ class OrderTest : OrderTestBase() {
   fun `It should return isValid true for court order with no court order document`() {
     val order = createValidOrder()
     order.additionalDocuments.clear()
-    order.orderParameters = OrderParameters(versionId = order.versionId)
+    order.orderParameters = OrderParameters(versionId = order.versionId, haveCourtOrder = true)
     order.interestedParties = createInterestedParty(notifyingOrganisation = NotifyingOrganisationDDv5.CROWN_COURT.name)
     assertThat(order.isValid).isTrue()
   }
