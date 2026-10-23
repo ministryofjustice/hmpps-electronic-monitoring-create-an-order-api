@@ -633,6 +633,9 @@ class AdditionalDocumentServiceTest : OrderSectionServiceTestBase() {
     if (fileType == DocumentType.COURT_ORDER) {
       Assertions.assertThat(result.haveCourtOrder).isEqualTo(true)
     }
+    if (fileType == DocumentType.LICENCE) {
+      Assertions.assertThat(result.haveLicence).isEqualTo(true)
+    }
     Assertions.assertThat(result.versionId).isEqualTo(mockVersionId)
   }
 
@@ -653,6 +656,7 @@ class AdditionalDocumentServiceTest : OrderSectionServiceTestBase() {
             versionId = mockVersionId,
             haveCourtOrder = if (fileType == DocumentType.COURT_ORDER) false else null,
             havePhoto = if (fileType == DocumentType.PHOTO_ID) false else null,
+            haveLicence = if (fileType == DocumentType.LICENCE) false else null,
           ),
         ),
       ),
@@ -677,6 +681,9 @@ class AdditionalDocumentServiceTest : OrderSectionServiceTestBase() {
     if (fileType == DocumentType.COURT_ORDER) {
       Assertions.assertThat(result.haveCourtOrder).isEqualTo(true)
     }
+    if (fileType == DocumentType.LICENCE) {
+      Assertions.assertThat(result.haveLicence).isEqualTo(true)
+    }
     Assertions.assertThat(result.versionId).isEqualTo(mockVersionId)
   }
 
@@ -697,6 +704,7 @@ class AdditionalDocumentServiceTest : OrderSectionServiceTestBase() {
             versionId = mockVersionId,
             haveCourtOrder = if (fileType == DocumentType.COURT_ORDER) true else null,
             havePhoto = if (fileType == DocumentType.PHOTO_ID) true else null,
+            haveLicence = if (fileType == DocumentType.LICENCE) true else null,
           ),
           additionalDocuments = mutableListOf(
             AdditionalDocument(
@@ -706,7 +714,7 @@ class AdditionalDocumentServiceTest : OrderSectionServiceTestBase() {
             ),
             AdditionalDocument(
               versionId = mockVersionId,
-              fileType = DocumentType.LICENCE,
+              fileType = if (fileType == DocumentType.LICENCE) DocumentType.PHOTO_ID else DocumentType.LICENCE,
               documentId = mockDocumentId,
             ),
           ),
@@ -733,6 +741,9 @@ class AdditionalDocumentServiceTest : OrderSectionServiceTestBase() {
     if (fileType == DocumentType.COURT_ORDER) {
       Assertions.assertThat(result.haveCourtOrder).isEqualTo(false)
     }
+    if (fileType == DocumentType.LICENCE) {
+      Assertions.assertThat(result.haveLicence).isEqualTo(false)
+    }
     Assertions.assertThat(result.versionId).isEqualTo(mockVersionId)
     Assertions.assertThat(mockOrder.additionalDocuments.size).isEqualTo(1)
     Assertions.assertThat(mockOrder.additionalDocuments.filter { x -> x.fileType == fileType }.size)
@@ -744,6 +755,7 @@ class AdditionalDocumentServiceTest : OrderSectionServiceTestBase() {
     fun expectedFileRequiredTypeParameters() = listOf(
       Arguments.of(DocumentType.COURT_ORDER),
       Arguments.of(DocumentType.PHOTO_ID),
+      Arguments.of(DocumentType.LICENCE),
     )
   }
 }

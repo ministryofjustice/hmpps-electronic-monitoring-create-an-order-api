@@ -29,6 +29,7 @@ import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.time.OffsetDateTime
+import java.util.UUID
 
 class AdditionalDocumentsControllerTest : UpdateOrderIntegrationTestBase() {
 
@@ -611,6 +612,42 @@ class AdditionalDocumentsControllerTest : UpdateOrderIntegrationTestBase() {
       Assertions.assertThat(result.responseBody!!).contains(
         ValidationError("havePhoto", "Select if you have a photo to upload"),
       )
+    }
+  }
+
+  @Nested
+  @DisplayName("PUT /api/orders/{orderId}/attachments/file-required for a licence")
+  inner class LicenceRequired {
+    private fun answerLicenceRequired(orderId: UUID, required: Boolean) {
+      webTestClient.put()
+        .uri("/api/orders/$orderId/attachments/file-required")
+        .contentType(MediaType.APPLICATION_JSON)
+        .bodyValue("""{ "fileType": "LICENCE", "fileRequired": $required }""")
+        .headers(setAuthorisation("AUTH_ADM"))
+        .exchange()
+        .expectStatus()
+        .isOk
+    }
+
+    @Test
+    fun `Saying a new licence is not needed removes the uploaded licence`() {
+      val order = createOrder()
+      documentApi.stubUploadDocument(DocumentUploadResponse())
+      documentApi.stubDeleteDocument("(.*)")
+
+      answerLicenceRequired(order.id, required = true)
+      webTestClient.post()
+        .uri("/api/orders/${order.id}/document-type/${DocumentType.LICENCE}")
+        .bodyValue(createMultiPartBodyBuilder(mockFile("licence.pdf")).build())
+        .headers(setAuthorisation("AUTH_ADM"))
+        .exchange()
+        .expectStatus()
+        .isOk
+      answerLicenceRequired(order.id, required = false)
+
+      val updatedOrder = getOrder(order.id)
+      Assertions.assertThat(updatedOrder.orderParameters?.haveLicence).isFalse()
+      Assertions.assertThat(updatedOrder.additionalDocuments.map { it.fileType }).doesNotContain(DocumentType.LICENCE)
     }
   }
 }
