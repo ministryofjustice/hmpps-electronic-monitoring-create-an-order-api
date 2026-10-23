@@ -499,6 +499,56 @@ class OrderControllerTest : IntegrationTestBase() {
   }
 
   @Nested
+  @DisplayName("Changing a past-dated order as a probation user")
+  inner class ChangePastDatedOrderAsProbationUser {
+    private val probationUser = listOf("ROLE_EM_CEMO__CREATE_ORDER", "ROLE_PROBATION")
+
+    private fun createSubmittedOrder(startDate: ZonedDateTime): Order {
+      val versionId = UUID.randomUUID()
+      val order = TestUtilities.createReadyToSubmitOrder(
+        versionId = versionId,
+        status = OrderStatus.SUBMITTED,
+        startDate = startDate,
+        endDate = ZonedDateTime.now().plusMonths(6),
+        tags = "PRISON",
+        documents = listOf(DocumentType.LICENCE, DocumentType.COURT_ORDER, DocumentType.PHOTO_ID)
+          .map {
+            AdditionalDocument(
+              versionId = versionId,
+              fileName = "$it.pdf",
+              fileType = it,
+              documentId = UUID.randomUUID(),
+            )
+          }
+          .toMutableList(),
+      )
+      order.orderParameters!!.haveCourtOrder = true
+      order.orderParameters!!.haveLicence = true
+      return repo.save(order)
+    }
+
+    @Test
+    fun `The licence is not carried into the change and the user must say whether a new one is needed`() {
+      val order = createSubmittedOrder(startDate = ZonedDateTime.now().minusMonths(1))
+
+      val change = webTestClient.post()
+        .uri("/api/orders/${order.id}/copy-as-variation")
+        .headers(setAuthorisation(roles = probationUser))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody(OrderDto::class.java)
+        .returnResult()
+        .responseBody!!
+
+      assertThat(change.additionalDocuments.map { it.fileType })
+        .containsExactlyInAnyOrder(DocumentType.COURT_ORDER, DocumentType.PHOTO_ID)
+      assertThat(change.orderParameters?.haveCourtOrder).isTrue()
+      assertThat(change.orderParameters?.haveLicence).isNull()
+    }
+  }
+
+  @Nested
   @DisplayName("POST /api/order/amend-rejected-order")
   inner class AmendRejectedOrder {
     @Test

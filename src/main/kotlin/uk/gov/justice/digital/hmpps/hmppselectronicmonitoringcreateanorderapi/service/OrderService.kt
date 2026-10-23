@@ -27,6 +27,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderInformationPageDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderSearchResultDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.VersionInformationDTO
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DocumentType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisationDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderListView
@@ -163,7 +164,7 @@ class OrderService(
         isSentencingAct = currentVersion.isSentencingAct
 
         orderParameters =
-          sourceVersion.orderParameters?.copy(versionId = newVersionId, id = UUID.randomUUID())
+          sourceVersion.orderParameters?.copy(versionId = newVersionId, id = UUID.randomUUID(), haveLicence = null)
         deviceWearer =
           sourceVersion.deviceWearer?.copy(versionId = newVersionId, id = UUID.randomUUID())
         deviceWearerResponsibleAdult =
@@ -272,8 +273,21 @@ class OrderService(
       }
     order.versions.add(newOrderVersion)
     order.recalculateMonitoringStartEndDate()
+    if (mustReconfirmLicence(currentVersion.status, versionType, newOrderVersion, token)) {
+      newOrderVersion.additionalDocuments.removeAll { it.fileType == DocumentType.LICENCE }
+    }
     return updateLastUpdatedByAndSaveOrder(order)
   }
+
+  private fun mustReconfirmLicence(
+    sourceStatus: OrderStatus,
+    versionType: RequestType,
+    newVersion: OrderVersion,
+    token: JwtAuthenticationToken,
+  ): Boolean = sourceStatus == OrderStatus.SUBMITTED &&
+    RequestType.VARIATION_TYPES.contains(versionType) &&
+    newVersion.getMonitoringStartDate()?.isBefore(ZonedDateTime.now()) == true &&
+    userCohortService.getUserCohort(token).cohort == Cohort.PROBATION
 
   fun submitOrder(id: UUID, token: JwtAuthenticationToken, fullName: String): Order {
     val order = getOrder(id, token)
