@@ -56,6 +56,22 @@ class OrderTest : OrderTestBase() {
   }
 
   @Test
+  fun `It should return isValid true without licence when a new licence is not needed`() {
+    val order = createValidOrder()
+    order.additionalDocuments.clear()
+    order.orderParameters = OrderParameters(versionId = order.versionId, haveLicence = false)
+    assertThat(order.isValid).isTrue()
+  }
+
+  @Test
+  fun `It should return isValid false without licence when a new licence is needed`() {
+    val order = createValidOrder()
+    order.additionalDocuments.clear()
+    order.orderParameters = OrderParameters(versionId = order.versionId, haveLicence = true)
+    assertThat(order.isValid).isFalse()
+  }
+
+  @Test
   fun `It should return isValid true for home office order without licence`() {
     val order = createValidOrder()
     order.additionalDocuments.clear()

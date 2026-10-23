@@ -546,6 +546,32 @@ class OrderControllerTest : IntegrationTestBase() {
       assertThat(change.orderParameters?.haveCourtOrder).isTrue()
       assertThat(change.orderParameters?.haveLicence).isNull()
     }
+
+    @Test
+    fun `A change is complete without a licence when the user says a new one is not needed`() {
+      val versionId = UUID.randomUUID()
+      val change = TestUtilities.createReadyToSubmitOrder(
+        versionId = versionId,
+        requestType = RequestType.VARIATION,
+        documents = mutableListOf(
+          AdditionalDocument(versionId = versionId, fileType = DocumentType.PHOTO_ID, documentId = UUID.randomUUID()),
+        ),
+      )
+      change.orderParameters!!.haveLicence = false
+      repo.save(change)
+
+      val result = webTestClient.get()
+        .uri("/api/orders/${change.id}")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody(OrderDto::class.java)
+        .returnResult()
+        .responseBody!!
+
+      assertThat(result.isValid).isTrue()
+    }
   }
 
   @Nested
