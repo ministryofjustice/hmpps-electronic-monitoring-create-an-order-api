@@ -227,13 +227,11 @@ data class OrderVersion(
   private val requiredDocuments: Boolean
     get() {
       val hasLicence = additionalDocuments.any { it.fileType == DocumentType.LICENCE }
-      val satisfiesCourtOrderRequirement =
-        orderParameters?.haveCourtOrder != true || additionalDocuments.any { it.fileType == DocumentType.COURT_ORDER }
       val satisfiesPhotoIDRequirement =
         orderParameters?.havePhoto != true || additionalDocuments.any { it.fileType == DocumentType.PHOTO_ID }
 
       return if (NotifyingOrganisationDDv5.isCourt(interestedParties!!.notifyingOrganisation!!)) {
-        satisfiesPhotoIDRequirement && satisfiesCourtOrderRequirement
+        satisfiesPhotoIDRequirement
       } else if (interestedParties?.notifyingOrganisation == NotifyingOrganisationDDv5.HOME_OFFICE.name) {
         satisfiesPhotoIDRequirement
       } else {
