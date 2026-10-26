@@ -1,4 +1,6 @@
-FROM --platform=$BUILDPLATFORM eclipse-temurin:21.0.11_10-jdk-jammy AS builder
+ARG BASE_IMAGE=ghcr.io/ministryofjustice/hmpps-eclipse-temurin:21-jre-jammy
+FROM --platform=$BUILDPLATFORM ${BASE_IMAGE} AS builder
+
 
 ARG BUILD_NUMBER
 ENV BUILD_NUMBER=${BUILD_NUMBER:-1_0_0}
