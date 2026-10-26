@@ -9,7 +9,7 @@ WORKDIR /app
 COPY . .
 RUN ./gradlew --no-daemon assemble
 
-FROM eclipse-temurin:21.0.11_10-jre-jammy
+FROM ${BASE_IMAGE}
 LABEL maintainer="HMPPS Digital Studio <info@digital.justice.gov.uk>"
 
 ARG BUILD_NUMBER
