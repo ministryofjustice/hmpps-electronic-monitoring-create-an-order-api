@@ -110,4 +110,5 @@ data class OrderDto(
   val ownerCohort: String? = null,
   val isOwner: Boolean = false,
   val isSentencingAct: Boolean? = null,
+  val canAmend: Boolean = false,
 )
