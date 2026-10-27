@@ -630,9 +630,6 @@ class AdditionalDocumentServiceTest : OrderSectionServiceTestBase() {
     if (fileType == DocumentType.PHOTO_ID) {
       Assertions.assertThat(result.havePhoto).isEqualTo(true)
     }
-    if (fileType == DocumentType.COURT_ORDER) {
-      Assertions.assertThat(result.haveCourtOrder).isEqualTo(true)
-    }
     if (fileType == DocumentType.LICENCE) {
       Assertions.assertThat(result.haveLicence).isEqualTo(true)
     }
@@ -654,7 +651,6 @@ class AdditionalDocumentServiceTest : OrderSectionServiceTestBase() {
           dataDictionaryVersion = mockDictionaryVersion,
           orderParameters = OrderParameters(
             versionId = mockVersionId,
-            haveCourtOrder = if (fileType == DocumentType.COURT_ORDER) false else null,
             havePhoto = if (fileType == DocumentType.PHOTO_ID) false else null,
             haveLicence = if (fileType == DocumentType.LICENCE) false else null,
           ),
@@ -678,9 +674,6 @@ class AdditionalDocumentServiceTest : OrderSectionServiceTestBase() {
     if (fileType == DocumentType.PHOTO_ID) {
       Assertions.assertThat(result.havePhoto).isEqualTo(true)
     }
-    if (fileType == DocumentType.COURT_ORDER) {
-      Assertions.assertThat(result.haveCourtOrder).isEqualTo(true)
-    }
     if (fileType == DocumentType.LICENCE) {
       Assertions.assertThat(result.haveLicence).isEqualTo(true)
     }
@@ -702,7 +695,6 @@ class AdditionalDocumentServiceTest : OrderSectionServiceTestBase() {
           dataDictionaryVersion = mockDictionaryVersion,
           orderParameters = OrderParameters(
             versionId = mockVersionId,
-            haveCourtOrder = if (fileType == DocumentType.COURT_ORDER) true else null,
             havePhoto = if (fileType == DocumentType.PHOTO_ID) true else null,
             haveLicence = if (fileType == DocumentType.LICENCE) true else null,
           ),
@@ -738,9 +730,6 @@ class AdditionalDocumentServiceTest : OrderSectionServiceTestBase() {
     if (fileType == DocumentType.PHOTO_ID) {
       Assertions.assertThat(result.havePhoto).isEqualTo(false)
     }
-    if (fileType == DocumentType.COURT_ORDER) {
-      Assertions.assertThat(result.haveCourtOrder).isEqualTo(false)
-    }
     if (fileType == DocumentType.LICENCE) {
       Assertions.assertThat(result.haveLicence).isEqualTo(false)
     }
@@ -750,10 +739,53 @@ class AdditionalDocumentServiceTest : OrderSectionServiceTestBase() {
       .isEqualTo(0)
   }
 
+  @Test
+  fun `should accept retired court document question without changing photo or documents`() {
+    val params = OrderParameters(
+      versionId = mockVersionId,
+      havePhoto = true,
+    )
+    val courtDocument = AdditionalDocument(
+      versionId = mockVersionId,
+      fileType = DocumentType.COURT_ORDER,
+      documentId = mockDocumentId,
+    )
+    val mockOrder = Order(
+      id = mockOrderId,
+      versions = mutableListOf(
+        OrderVersion(
+          id = mockVersionId,
+          status = OrderStatus.IN_PROGRESS,
+          type = RequestType.REQUEST,
+          username = username,
+          orderId = mockOrderId,
+          dataDictionaryVersion = mockDictionaryVersion,
+          orderParameters = params,
+          additionalDocuments = mutableListOf(courtDocument),
+        ),
+      ),
+    )
+    whenever(repo.findById(mockOrderId)).thenReturn(Optional.of(mockOrder))
+    whenever(repo.save(mockOrder)).thenReturn(mockOrder)
+
+    for (fileRequired in listOf(true, false)) {
+      val result = service.updateFileRequired(
+        mockOrderId,
+        username,
+        UpdateFileRequiredDto(
+          fileRequired = fileRequired,
+          fileType = DocumentType.COURT_ORDER,
+        ),
+      )
+
+      assertThat(result.havePhoto).isTrue()
+      assertThat(mockOrder.additionalDocuments).containsExactly(courtDocument)
+    }
+  }
+
   companion object {
     @JvmStatic
     fun expectedFileRequiredTypeParameters() = listOf(
-      Arguments.of(DocumentType.COURT_ORDER),
       Arguments.of(DocumentType.PHOTO_ID),
       Arguments.of(DocumentType.LICENCE),
     )

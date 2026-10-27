@@ -83,7 +83,7 @@ class OrderTest : OrderTestBase() {
   fun `It should return isValid true court order without licence`() {
     val order = createValidOrder()
     order.additionalDocuments.clear()
-    order.orderParameters = OrderParameters(versionId = order.versionId, haveCourtOrder = true)
+    order.orderParameters = OrderParameters(versionId = order.versionId)
     order.additionalDocuments.add(
       AdditionalDocument(
         versionId = UUID.randomUUID(),
@@ -97,12 +97,12 @@ class OrderTest : OrderTestBase() {
   }
 
   @Test
-  fun `It should return isValid false court order yes to court doc but missing`() {
+  fun `It should return isValid true for court order with no court order document`() {
     val order = createValidOrder()
     order.additionalDocuments.clear()
     order.orderParameters = OrderParameters(versionId = order.versionId, haveCourtOrder = true)
     order.interestedParties = createInterestedParty(notifyingOrganisation = NotifyingOrganisationDDv5.CROWN_COURT.name)
-    assertThat(order.isValid).isFalse()
+    assertThat(order.isValid).isTrue()
   }
 
   @Test
