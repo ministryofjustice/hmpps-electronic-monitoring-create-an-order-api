@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
+import org.junit.jupiter.params.provider.EnumSource
 import org.junit.jupiter.params.provider.MethodSource
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.never
@@ -1486,6 +1487,123 @@ class OrderServiceTest {
     }
 
     @Nested
+    @DisplayName("Licence on a change")
+    inner class LicenceOnAChange {
+      private val inThePast = ZonedDateTime.now().minusMonths(1)
+      private val inTheFuture = ZonedDateTime.now().plusMonths(1)
+      private val allDocuments = listOf(DocumentType.LICENCE, DocumentType.COURT_ORDER, DocumentType.PHOTO_ID)
+
+      private fun submittedOrder(startDate: ZonedDateTime, status: OrderStatus = OrderStatus.SUBMITTED): Order {
+        val versionId = UUID.randomUUID()
+        return TestUtilities.createReadyToSubmitOrder(
+          versionId = versionId,
+          status = status,
+          username = authentication.name,
+          startDate = startDate,
+          endDate = ZonedDateTime.now().plusMonths(6),
+          documents = allDocuments
+            .map { AdditionalDocument(versionId = versionId, fileType = it, documentId = UUID.randomUUID()) }
+            .toMutableList(),
+        ).apply {
+          orderParameters!!.haveCourtOrder = true
+          orderParameters!!.haveLicence = true
+        }
+      }
+
+      private fun changeAs(cohort: Cohort, order: Order, type: RequestType = RequestType.VARIATION): OrderVersion {
+        whenever(userCohortService.getUserCohort(authentication)).thenReturn(UserCohort(cohort))
+        whenever(repo.findById(order.id)).thenReturn(Optional.of(order))
+        whenever(repo.save(order)).thenReturn(order)
+        service.createVersion(order.id, authentication, type)
+        return order.getCurrentVersion()
+      }
+
+      private fun OrderVersion.documentTypes() = additionalDocuments.map { it.fileType }
+
+      @ParameterizedTest(name = "{0}")
+      @MethodSource(
+        "uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.OrderServiceTest#variationTypes",
+      )
+      fun `A probation user changing a past-dated order does not keep the licence`(type: RequestType) {
+        val change = changeAs(Cohort.PROBATION, submittedOrder(startDate = inThePast), type)
+
+        assertThat(change.documentTypes()).containsExactlyInAnyOrder(DocumentType.COURT_ORDER, DocumentType.PHOTO_ID)
+        assertThat(change.orderParameters?.haveCourtOrder).isTrue()
+      }
+
+      @Test
+      fun `The start date is calculated from the copied conditions`() {
+        val order = submittedOrder(startDate = inThePast).apply { monitoringConditions!!.startDate = inTheFuture }
+
+        val change = changeAs(Cohort.PROBATION, order)
+
+        assertThat(change.documentTypes()).doesNotContain(DocumentType.LICENCE)
+      }
+
+      @Test
+      fun `A probation user changing a future-dated order keeps the licence`() {
+        val change = changeAs(Cohort.PROBATION, submittedOrder(startDate = inTheFuture))
+
+        assertThat(change.documentTypes()).containsExactlyInAnyOrderElementsOf(allDocuments)
+      }
+
+      @ParameterizedTest(name = "{0}")
+      @MethodSource(
+        "uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.OrderServiceTest#nonProbationCohorts",
+      )
+      fun `A non-probation user changing a past-dated order keeps the licence`(cohort: Cohort) {
+        val change = changeAs(cohort, submittedOrder(startDate = inThePast))
+
+        assertThat(change.documentTypes()).containsExactlyInAnyOrderElementsOf(allDocuments)
+      }
+
+      @Test
+      fun `A probation user amending a rejected order keeps the licence`() {
+        val order = submittedOrder(startDate = inThePast, status = OrderStatus.REJECTED)
+
+        val change = changeAs(Cohort.PROBATION, order, RequestType.AMEND_ORIGINAL_REQUEST)
+
+        assertThat(change.documentTypes()).containsExactlyInAnyOrderElementsOf(allDocuments)
+      }
+
+      @Test
+      fun `A probation user making a variation from a rejected order keeps the licence`() {
+        val order = submittedOrder(startDate = inThePast, status = OrderStatus.REJECTED)
+
+        val change = changeAs(Cohort.PROBATION, order)
+
+        assertThat(change.documentTypes()).containsExactlyInAnyOrderElementsOf(allDocuments)
+      }
+
+      @ParameterizedTest(name = "{0}")
+      @EnumSource(RequestType::class, names = ["VARIATION", "AMEND_ORIGINAL_REQUEST"])
+      fun `Whether a new licence is needed is asked again on every new version`(type: RequestType) {
+        val change = changeAs(Cohort.PRISON, submittedOrder(startDate = inTheFuture), type)
+
+        assertThat(change.orderParameters?.haveLicence).isNull()
+      }
+
+      @Test
+      fun `A second change does not keep the licence uploaded with the first change`() {
+        val order = submittedOrder(startDate = inThePast)
+        val firstChange = changeAs(Cohort.PROBATION, order)
+        firstChange.additionalDocuments.add(
+          AdditionalDocument(
+            versionId = firstChange.id,
+            fileType = DocumentType.LICENCE,
+            documentId = UUID.randomUUID(),
+          ),
+        )
+        firstChange.orderParameters!!.haveLicence = true
+        firstChange.status = OrderStatus.SUBMITTED
+
+        val secondChange = changeAs(Cohort.PROBATION, order)
+
+        assertThat(secondChange.documentTypes()).doesNotContain(DocumentType.LICENCE)
+      }
+    }
+
+    @Nested
     @DisplayName("Create version from fms latest order version")
     inner class CreateVersionFromFms {
       @BeforeEach
@@ -1739,6 +1857,12 @@ class OrderServiceTest {
   }
 
   companion object {
+    @JvmStatic
+    fun variationTypes() = RequestType.VARIATION_TYPES
+
+    @JvmStatic
+    fun nonProbationCohorts() = Cohort.entries.filter { it != Cohort.PROBATION }
+
     @JvmStatic
     fun tagScenarios() = listOf(
       Arguments.of(NotifyingOrganisationDDv5.PROBATION.name, "Probation"),

@@ -98,6 +98,7 @@ class AdditionalDocumentService(val webClient: DocumentApiClient) : OrderSection
 
     val shouldDelete = when (updateRecord.fileType) {
       DocumentType.PHOTO_ID -> params.havePhoto == true && !updateRecord.fileRequired!!
+      DocumentType.LICENCE -> params.haveLicence == true && !updateRecord.fileRequired!!
       else -> false
     }
 
@@ -108,6 +109,7 @@ class AdditionalDocumentService(val webClient: DocumentApiClient) : OrderSection
     when (updateRecord.fileType) {
       DocumentType.COURT_ORDER -> Unit
       DocumentType.PHOTO_ID -> params.havePhoto = updateRecord.fileRequired!!
+      DocumentType.LICENCE -> params.haveLicence = updateRecord.fileRequired
       else -> throw IllegalArgumentException("Unsupported document type: ${updateRecord.fileType}")
     }
 

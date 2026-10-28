@@ -226,7 +226,8 @@ data class OrderVersion(
 
   private val requiredDocuments: Boolean
     get() {
-      val hasLicence = additionalDocuments.any { it.fileType == DocumentType.LICENCE }
+      val satisfiesLicenceRequirement =
+        orderParameters?.haveLicence == false || additionalDocuments.any { it.fileType == DocumentType.LICENCE }
       val satisfiesPhotoIDRequirement =
         orderParameters?.havePhoto != true || additionalDocuments.any { it.fileType == DocumentType.PHOTO_ID }
 
@@ -235,7 +236,7 @@ data class OrderVersion(
       } else if (interestedParties?.notifyingOrganisation == NotifyingOrganisationDDv5.HOME_OFFICE.name) {
         satisfiesPhotoIDRequirement
       } else {
-        satisfiesPhotoIDRequirement && hasLicence
+        satisfiesPhotoIDRequirement && satisfiesLicenceRequirement
       }
     }
 
