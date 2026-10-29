@@ -18,7 +18,7 @@ dependencies {
   implementation("org.apache.tika:tika-core:4.1.0")
   implementation("org.apache.logging.log4j:log4j-api:2.26.1")
   implementation("io.sentry:sentry-spring-boot-4:8.59.0")
-  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.1.1")
+  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.2.0")
   implementation("uk.gov.service.notify:notifications-java-client:6.2.1-RELEASE")
 
   // starters
