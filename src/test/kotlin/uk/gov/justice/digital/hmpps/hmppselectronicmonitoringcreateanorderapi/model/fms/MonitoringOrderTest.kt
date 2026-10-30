@@ -1644,11 +1644,12 @@ class MonitoringOrderTest : OrderTestBase() {
   @ArgumentsSource(AlcoholNotifyingOrganisationArgumentsProvider::class)
   fun `It should correctly map alcohol condition types to Serco`(
     savedValue: NotifyingOrganisationDDv5,
+    savedOrderType: OrderType,
     mappedValue: String,
   ) {
     val order = createOrder(
       interestedParties = createInterestedParty(notifyingOrganisation = savedValue.value),
-      monitoringConditions = createMonitoringConditions(alcohol = true),
+      monitoringConditions = createMonitoringConditions(alcohol = true, orderType = savedOrderType),
       alcoholMonitoringConditions = createAlcoholMonitoringConditions(
         monitoringType = AlcoholMonitoringType.ALCOHOL_LEVEL,
       ),
