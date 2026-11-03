@@ -1,3 +1,3 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception
 
-class CreateSercoEntityException(msg: String) : RuntimeException(msg)
+open class CreateSercoEntityException(msg: String, cause: Throwable? = null) : RuntimeException(msg, cause)

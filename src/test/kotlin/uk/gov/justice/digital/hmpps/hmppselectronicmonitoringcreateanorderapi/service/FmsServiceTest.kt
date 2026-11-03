@@ -23,7 +23,8 @@ import tools.jackson.databind.json.JsonMapper
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.DocumentApiClient
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.FmsClient
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.config.FeatureFlags
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.CreateSercoEntityException
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.FmsCallException
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.FmsFailureCategory
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
@@ -300,15 +301,24 @@ class FmsServiceTest {
         monitoringOrderResult = FmsMonitoringOrderSubmissionResult(),
       )
       whenever(repo.getReferenceById(mockFmsResultId)).thenReturn(mockFmsResponse)
-      whenever(mockClient.getLatestOrderDetails(mockCaseId)).thenThrow(CreateSercoEntityException(errorMessage))
+      whenever(mockClient.getLatestOrderDetails(mockCaseId)).thenThrow(
+        FmsCallException(
+          operation = "retrieve_order_details",
+          failureCategory = FmsFailureCategory.HTTP_ERROR,
+          httpStatusCode = 503,
+          message = errorMessage,
+        ),
+      )
       service.getLatestOrderVersion(mockOrder)
       verify(fmsOrderDetailsRepository, never()).save(any())
       verify(eventService).recordEvent(
-        eq("Failed to retrieve latest order from FMS: $mockCaseId"),
+        eq("FMS_Latest_Order_Version_Fallback"),
         eq(
           mapOf(
-            "error" to errorMessage,
-            "caseId" to mockCaseId,
+            "operation" to "retrieve_order_details",
+            "outcome" to "fallback",
+            "failureCategory" to "http_error",
+            "httpStatusCode" to "503",
           ),
         ),
         any(),

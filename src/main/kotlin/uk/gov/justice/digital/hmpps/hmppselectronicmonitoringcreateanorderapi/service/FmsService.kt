@@ -9,6 +9,8 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.cl
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.FmsClient
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.config.FeatureFlags
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.CreateSercoEntityException
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.FmsCallException
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.FmsFailureCategory
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
@@ -80,13 +82,17 @@ class FmsService(
           fmsOrderDetailsRepository.save(orderDetails)
           return result
         } catch (ex: CreateSercoEntityException) {
-          val errorMessage = ex.message ?: ""
+          val failure = ex as? FmsCallException
+          val failureCategory = failure?.failureCategory?.telemetryValue
+            ?: FmsFailureCategory.CLIENT_ERROR.telemetryValue
           eventService.recordEvent(
-            "Failed to retrieve latest order from FMS: $caseId",
-            mapOf(
-              "error" to errorMessage,
-              "caseId" to caseId,
-            ),
+            "FMS_Latest_Order_Version_Fallback",
+            buildMap {
+              put("operation", failure?.operation ?: "retrieve_order_details")
+              put("outcome", "fallback")
+              put("failureCategory", failureCategory)
+              failure?.httpStatusCode?.let { put("httpStatusCode", it.toString()) }
+            },
           )
         }
       }

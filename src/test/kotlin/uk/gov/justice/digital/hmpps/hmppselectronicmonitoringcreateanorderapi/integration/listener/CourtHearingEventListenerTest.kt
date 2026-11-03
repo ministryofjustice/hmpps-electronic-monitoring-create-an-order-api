@@ -27,6 +27,7 @@ import software.amazon.awssdk.services.sqs.model.SendMessageResponse
 import tools.jackson.databind.ObjectMapper
 import tools.jackson.module.kotlin.jacksonObjectMapper
 import tools.jackson.module.kotlin.readValue
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.config.CorrelationIdContext
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.utilities.S3Uploader
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.SercoAuthMockServerExtension.Companion.sercoAuthApi
@@ -287,7 +288,8 @@ class CourtHearingEventListenerTest : IntegrationTestBase() {
       eq("Common_Platform_Ignored_Request"),
       argThat { it ->
         it.containsKey("Contain notification of electronic monitoring order label") &&
-          it.containsKey("Start Date And Time")
+          it.containsKey("Start Date And Time") &&
+          it[CorrelationIdContext.MDC_KEY] == "eed5fdf9-ea08-5bf2-9d96-a27aed48bb71"
       },
       argThat { it -> it.containsKey("eventTimeMs") },
     )
