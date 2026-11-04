@@ -30,6 +30,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderSearchResultDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.VersionInformationDTO
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.CaseState
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DocumentType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisationDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderListView
@@ -220,6 +221,9 @@ class OrderService(
     )
     order.versions.add(newOrderVersion)
     order.recalculateMonitoringStartEndDate()
+    if (mustReconfirmLicence(currentVersion.status, versionType, newOrderVersion, token)) {
+      newOrderVersion.additionalDocuments.removeAll { it.fileType == DocumentType.LICENCE }
+    }
     return updateLastUpdatedByAndSaveOrder(order)
   }
 
@@ -248,6 +252,9 @@ class OrderService(
     )
     sourceOrder.versions.add(replacementVersion)
     sourceOrder.recalculateMonitoringStartEndDate()
+    if (mustReconfirmLicence(sourceVersion.status, replacementType, replacementVersion, token)) {
+      replacementVersion.additionalDocuments.removeAll { it.fileType == DocumentType.LICENCE }
+    }
     return OrderAmendmentResult(
       order = updateLastUpdatedByAndSaveOrder(sourceOrder),
       outcome = outcome,
@@ -273,7 +280,8 @@ class OrderService(
     variationDetails = null
     isSentencingAct = sourceOrder.isSentencingAct
 
-    orderParameters = sourceVersion.orderParameters?.copy(versionId = newVersionId, id = UUID.randomUUID())
+    orderParameters =
+      sourceVersion.orderParameters?.copy(versionId = newVersionId, id = UUID.randomUUID(), haveLicence = null)
     deviceWearer = sourceVersion.deviceWearer?.copy(versionId = newVersionId, id = UUID.randomUUID())
     deviceWearerResponsibleAdult =
       sourceVersion.deviceWearerResponsibleAdult?.copy(versionId = newVersionId, id = UUID.randomUUID())
@@ -320,7 +328,7 @@ class OrderService(
     detailsOfInstallation =
       sourceVersion.detailsOfInstallation?.copy(versionId = newVersionId, id = UUID.randomUUID())
     mappa = sourceVersion.mappa?.copy(versionId = newVersionId, id = UUID.randomUUID())
-    additionalDocuments = sourceVersion.additionalDocuments.cloneItems {
+    additionalDocuments = sourceOrder.additionalDocuments.cloneItems {
       it.copy(versionId = newVersionId, id = UUID.randomUUID())
     }
     addresses = sourceVersion.addresses.cloneItems { it.copy(versionId = newVersionId, id = UUID.randomUUID()) }
@@ -336,6 +344,16 @@ class OrderService(
     offences = sourceVersion.offences.cloneItems { it.copy(versionId = newVersionId, id = UUID.randomUUID()) }
     dapoClauses = sourceVersion.dapoClauses.cloneItems { it.copy(versionId = newVersionId, id = UUID.randomUUID()) }
   }
+
+  private fun mustReconfirmLicence(
+    sourceStatus: OrderStatus,
+    versionType: RequestType,
+    newVersion: OrderVersion,
+    token: JwtAuthenticationToken,
+  ): Boolean = sourceStatus == OrderStatus.SUBMITTED &&
+    RequestType.VARIATION_TYPES.contains(versionType) &&
+    newVersion.getMonitoringStartDate()?.isBefore(ZonedDateTime.now()) == true &&
+    userCohortService.getUserCohort(token).cohort == Cohort.PROBATION
 
   fun submitOrder(id: UUID, token: JwtAuthenticationToken, fullName: String): Order {
     val order = getOrder(id, token)

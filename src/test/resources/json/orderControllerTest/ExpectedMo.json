@@ -24,7 +24,7 @@
       "end_date": "{mockEndDateInBritishTime}"
     },
     {
-      "condition": "AML",
+      "condition": "AAMR",
       "start_date": "{mockStartDateInBritishTime}",
       "end_date": "{mockEndDateInBritishTime}"
     }

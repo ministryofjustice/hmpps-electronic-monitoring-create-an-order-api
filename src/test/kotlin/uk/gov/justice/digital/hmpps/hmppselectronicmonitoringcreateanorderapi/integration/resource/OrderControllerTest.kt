@@ -783,6 +783,92 @@ class OrderControllerTest : IntegrationTestBase() {
   }
 
   @Nested
+  @DisplayName("Changing a past-dated order as a probation user")
+  inner class ChangePastDatedOrderAsProbationUser {
+    private val probationUser = listOf("ROLE_EM_CEMO__CREATE_ORDER", "ROLE_PROBATION")
+
+    private fun createSubmittedOrder(startDate: ZonedDateTime): Order {
+      val versionId = UUID.randomUUID()
+      val order = TestUtilities.createReadyToSubmitOrder(
+        versionId = versionId,
+        status = OrderStatus.SUBMITTED,
+        startDate = startDate,
+        endDate = ZonedDateTime.now().plusMonths(6),
+        tags = "PRISON",
+        documents = listOf(DocumentType.LICENCE, DocumentType.COURT_ORDER, DocumentType.PHOTO_ID)
+          .map {
+            AdditionalDocument(
+              versionId = versionId,
+              fileName = "$it.pdf",
+              fileType = it,
+              documentId = UUID.randomUUID(),
+            )
+          }
+          .toMutableList(),
+      )
+      order.orderParameters!!.haveCourtOrder = true
+      order.orderParameters!!.haveLicence = true
+      val result = fmsResultRepository.save(
+        FmsSubmissionResult(
+          orderId = order.id,
+          strategy = FmsSubmissionStrategyKind.ORDER,
+          orderSource = FmsOrderSource.CEMO,
+          deviceWearerResult = FmsDeviceWearerSubmissionResult(deviceWearerId = "case-${UUID.randomUUID()}"),
+        ),
+      )
+      order.fmsResultId = result.id
+      return repo.save(order)
+    }
+
+    @Test
+    fun `The licence is not carried into the change and the user must say whether a new one is needed`() {
+      val order = createSubmittedOrder(startDate = ZonedDateTime.now().minusMonths(1))
+      stubCaseState(order, CaseState.AWAITING_VALIDATION)
+
+      val change = webTestClient.post()
+        .uri("/api/orders/${order.id}/amend")
+        .headers(setAuthorisation(roles = probationUser))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody(OrderAmendmentDto::class.java)
+        .returnResult()
+        .responseBody!!.order
+
+      assertThat(change.additionalDocuments.map { it.fileType })
+        .containsExactlyInAnyOrder(DocumentType.COURT_ORDER, DocumentType.PHOTO_ID)
+      assertThat(change.orderParameters?.haveCourtOrder).isTrue()
+      assertThat(change.orderParameters?.haveLicence).isNull()
+    }
+
+    @Test
+    fun `A change is complete without a licence when the user says a new one is not needed`() {
+      val versionId = UUID.randomUUID()
+      val change = TestUtilities.createReadyToSubmitOrder(
+        versionId = versionId,
+        requestType = RequestType.VARIATION,
+        documents = mutableListOf(
+          AdditionalDocument(versionId = versionId, fileType = DocumentType.PHOTO_ID, documentId = UUID.randomUUID()),
+        ),
+      )
+      change.orderParameters!!.haveLicence = false
+      repo.save(change)
+
+      val result = webTestClient.get()
+        .uri("/api/orders/${change.id}")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody(OrderDto::class.java)
+        .returnResult()
+        .responseBody!!
+
+      assertThat(result.isValid).isTrue()
+    }
+  }
+
+  @Nested
   @DisplayName("POST /api/orders/{orderId}/amend - rejected order")
   inner class AmendRejectedOrder {
     @ParameterizedTest

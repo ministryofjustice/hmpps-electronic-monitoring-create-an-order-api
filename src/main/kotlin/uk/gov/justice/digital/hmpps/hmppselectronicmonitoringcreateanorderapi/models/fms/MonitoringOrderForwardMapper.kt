@@ -337,9 +337,8 @@ fun MonitoringOrder.Companion.fromOrder(
   if (order.monitoringConditionsAlcohol?.startDate != null) {
     val condition = order.monitoringConditionsAlcohol!!
     var conditionType = "AAMR"
-    if (monitoringOrder.notifyingOrganization == NotifyingOrganisationDDv5.PRISON.value ||
-      monitoringOrder.notifyingOrganization == NotifyingOrganisationDDv5.PROBATION.value
-    ) {
+
+    if (monitoringOrder.orderType == OrderType.POST_RELEASE.value) {
       conditionType = "AML"
     }
 
