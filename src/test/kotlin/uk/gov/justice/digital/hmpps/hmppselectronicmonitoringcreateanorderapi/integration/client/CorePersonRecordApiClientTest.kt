@@ -16,7 +16,6 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.ex
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.CorePersonRecordNotFoundException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.CorePersonRecordApiExtension.Companion.corePersonRecordApi
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import java.util.UUID
 
 @ActiveProfiles("test")
@@ -70,18 +69,20 @@ class CorePersonRecordApiClientTest : IntegrationTestBase() {
       assertThat(deviceWearer?.nationality).isEqualTo("GB")
     }
 
-    @Test
-    fun `it deserialises and maps the primary address and contact details`() {
-      val versionId = UUID.randomUUID()
-      corePersonRecordApi.stubGetPrisonerDetails("A1234BC", prisonerDetailsJson)
-
-      val result = corePersonRecordApiClient.getPersonByPrisonNumber("A1234BC", versionId)
-
-      val primaryAddress = result.addresses.firstOrNull { it.addressType == AddressType.PRIMARY }
-      assertThat(primaryAddress?.addressLine1).isEqualTo("10 Downing Street")
-      assertThat(primaryAddress?.postcode).isEqualTo("AB1 2CD")
-      assertThat(result.contactDetails?.contactNumber).isEqualTo("07700900000")
-    }
+    // Disable address mapping tests as per https://dsdmoj.atlassian.net/browse/ELM-5153
+    // TODO: Re-enable address mapping tests when the Core Person Record API is updated to return addresses in the expected format
+//    @Test
+//    fun `it deserialises and maps the primary address and contact details`() {
+//      val versionId = UUID.randomUUID()
+//      corePersonRecordApi.stubGetPrisonerDetails("A1234BC", prisonerDetailsJson)
+//
+//      val result = corePersonRecordApiClient.getPersonByPrisonNumber("A1234BC", versionId)
+//
+//      val primaryAddress = result.addresses.firstOrNull { it.addressType == AddressType.PRIMARY }
+//      assertThat(primaryAddress?.addressLine1).isEqualTo("10 Downing Street")
+//      assertThat(primaryAddress?.postcode).isEqualTo("AB1 2CD")
+//      assertThat(result.contactDetails?.contactNumber).isEqualTo("07700900000")
+//    }
 
     @Test
     fun `it translates a not found response into a not found exception`() {

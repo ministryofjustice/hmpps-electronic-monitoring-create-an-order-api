@@ -94,8 +94,9 @@ class CorePersonRecordApiClient(private val corePersonRecordApiWebClient: WebCli
     val record = CorePersonRecord(
       deviceWearer = toDeviceWearer(details, versionId),
       contactDetails = toContactDetails(details, versionId),
-      addresses = listOfNotNull(toPrimaryAddress(details, versionId), toSecondaryAddress(details, versionId)),
-
+      // TODO: Re-enable address mapping when the Core Person Record API is updated to return addresses in the expected format
+      // addresses = listOfNotNull(toPrimaryAddress(details, versionId), toSecondaryAddress(details, versionId)),
+      addresses = emptyList(), // Disable addresses mapping as per https://dsdmoj.atlassian.net/browse/ELM-5153
     )
     if (!record.addresses.any()) {
       record.deviceWearer!!.noFixedAbode = null
