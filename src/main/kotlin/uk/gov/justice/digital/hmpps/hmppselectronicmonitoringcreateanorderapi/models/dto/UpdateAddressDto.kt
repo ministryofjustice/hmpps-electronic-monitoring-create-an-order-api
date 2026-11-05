@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.m
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.Size
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.data.ValidationErrors
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressSource
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 
 data class UpdateAddressDto(
@@ -25,4 +26,6 @@ data class UpdateAddressDto(
   @field:NotBlank(message = ValidationErrors.Address.POSTCODE_REQUIRED)
   @field:Size(max = 200, message = ValidationErrors.Address.POSTCODE_MAX_LENGTH)
   val postcode: String = "",
+
+  val addressSource: AddressSource? = null,
 )
