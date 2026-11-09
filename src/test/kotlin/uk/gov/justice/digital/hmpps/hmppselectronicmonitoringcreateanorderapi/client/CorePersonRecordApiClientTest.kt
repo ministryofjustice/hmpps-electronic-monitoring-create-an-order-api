@@ -4,7 +4,6 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
 import org.springframework.web.reactive.function.client.WebClient
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.corePersonRecord.Address
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.corePersonRecord.Alias
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.corePersonRecord.CodeDescription
@@ -96,71 +95,73 @@ class CorePersonRecordApiClientTest {
     assertThat(result?.nationalInsuranceNumber).isNull()
   }
 
-  @Test
-  fun `maps to primary address`() {
-    val addressDetails = details.copy(
-      addresses = listOf(
-        Address(
-          noFixedAbode = false,
-          postcode = "AB12CD",
-          status = CodeDescription(code = "M", description = ""),
-          buildingNumber = "10",
-          buildingName = null,
-          subBuildingName = "",
-          postTown = "LONDON",
-          county = "COUNTY",
-          thoroughfareName = "DOWNING STREET",
-          contacts = emptyList(),
-        ),
-      ),
-    )
-
-    val address = client.mapToCorePersonRecord(addressDetails, versionId).addresses.firstOrNull {
-      it.addressType ==
-        AddressType.PRIMARY
-    }
-
-    assertThat(address).isNotNull
-    assertThat(address?.postcode).isEqualTo("AB12CD")
-    assertThat(address?.addressType).isEqualTo(AddressType.PRIMARY)
-    assertThat(address?.addressLine1).isEqualTo("10 Downing Street")
-    assertThat(address?.addressLine2).isEqualTo("")
-    assertThat(address?.addressLine3).isEqualTo("London")
-    assertThat(address?.addressLine4).isEqualTo("County")
-  }
-
-  @Test
-  fun `maps to secondary address`() {
-    val addressDetails = details.copy(
-      addresses = listOf(
-        Address(
-          noFixedAbode = false,
-          postcode = "AB12CD",
-          status = CodeDescription(code = "S", description = ""),
-          buildingNumber = "10",
-          buildingName = null,
-          subBuildingName = "",
-          postTown = "LONDON",
-          county = "COUNTY",
-          thoroughfareName = "DOWNING STREET",
-          contacts = emptyList(),
-        ),
-      ),
-    )
-
-    val address = client.mapToCorePersonRecord(addressDetails, versionId).addresses.firstOrNull {
-      it.addressType ==
-        AddressType.SECONDARY
-    }
-
-    assertThat(address).isNotNull
-    assertThat(address?.postcode).isEqualTo("AB12CD")
-    assertThat(address?.addressType).isEqualTo(AddressType.SECONDARY)
-    assertThat(address?.addressLine1).isEqualTo("10 Downing Street")
-    assertThat(address?.addressLine2).isEqualTo("")
-    assertThat(address?.addressLine3).isEqualTo("London")
-    assertThat(address?.addressLine4).isEqualTo("County")
-  }
+  // Disable address mapping tests as per https://dsdmoj.atlassian.net/browse/ELM-5153
+  // TODO: Re-enable address mapping tests when the Core Person Record API is updated to return addresses in the expected format
+//  @Test
+//  fun `maps to primary address`() {
+//    val addressDetails = details.copy(
+//      addresses = listOf(
+//        Address(
+//          noFixedAbode = false,
+//          postcode = "AB12CD",
+//          status = CodeDescription(code = "M", description = ""),
+//          buildingNumber = "10",
+//          buildingName = null,
+//          subBuildingName = "",
+//          postTown = "LONDON",
+//          county = "COUNTY",
+//          thoroughfareName = "DOWNING STREET",
+//          contacts = emptyList(),
+//        ),
+//      ),
+//    )
+//
+//    val address = client.mapToCorePersonRecord(addressDetails, versionId).addresses.firstOrNull {
+//      it.addressType ==
+//        AddressType.PRIMARY
+//    }
+//
+//    assertThat(address).isNotNull
+//    assertThat(address?.postcode).isEqualTo("AB12CD")
+//    assertThat(address?.addressType).isEqualTo(AddressType.PRIMARY)
+//    assertThat(address?.addressLine1).isEqualTo("10 Downing Street")
+//    assertThat(address?.addressLine2).isEqualTo("")
+//    assertThat(address?.addressLine3).isEqualTo("London")
+//    assertThat(address?.addressLine4).isEqualTo("County")
+//  }
+//
+//  @Test
+//  fun `maps to secondary address`() {
+//    val addressDetails = details.copy(
+//      addresses = listOf(
+//        Address(
+//          noFixedAbode = false,
+//          postcode = "AB12CD",
+//          status = CodeDescription(code = "S", description = ""),
+//          buildingNumber = "10",
+//          buildingName = null,
+//          subBuildingName = "",
+//          postTown = "LONDON",
+//          county = "COUNTY",
+//          thoroughfareName = "DOWNING STREET",
+//          contacts = emptyList(),
+//        ),
+//      ),
+//    )
+//
+//    val address = client.mapToCorePersonRecord(addressDetails, versionId).addresses.firstOrNull {
+//      it.addressType ==
+//        AddressType.SECONDARY
+//    }
+//
+//    assertThat(address).isNotNull
+//    assertThat(address?.postcode).isEqualTo("AB12CD")
+//    assertThat(address?.addressType).isEqualTo(AddressType.SECONDARY)
+//    assertThat(address?.addressLine1).isEqualTo("10 Downing Street")
+//    assertThat(address?.addressLine2).isEqualTo("")
+//    assertThat(address?.addressLine3).isEqualTo("London")
+//    assertThat(address?.addressLine4).isEqualTo("County")
+//  }
 
   @Test
   fun `maps to contact details`() {
