@@ -6,6 +6,8 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.NullAndEmptySource
+import org.junit.jupiter.params.provider.NullSource
 import org.junit.jupiter.params.provider.ValueSource
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
@@ -311,9 +313,14 @@ class DeviceWearerControllerTest : UpdateOrderIntegrationTestBase() {
       )
     }
 
-    @Test
-    fun `it should return an error if disabilities is OTHER and otherDisability is not set`() {
+    @ParameterizedTest
+    @NullSource
+    @ValueSource(strings = ["null", "\"\"", "\"Historical description\""])
+    fun `it should allow OTHER with an optional description`(otherDisabilityJson: String?) {
       val order = createOrder()
+      val otherDisabilityField = otherDisabilityJson?.let { "\"otherDisability\": $it," }.orEmpty()
+      val expectedDescription = otherDisabilityJson?.let { objectMapper.readValue(it, String::class.java) }
+      val disabilities = "VISION,HEARING,OTHER"
       val result = webTestClient.put()
         .uri("/api/orders/${order.id}/device-wearer")
         .contentType(MediaType.APPLICATION_JSON)
@@ -328,10 +335,51 @@ class DeviceWearerControllerTest : UpdateOrderIntegrationTestBase() {
               "sex": "$mockSex",
               "gender": "$mockGender",
               "dateOfBirth": "$mockDateOfBirth",
-              "disabilities": "VISION,HEARING,OTHER",
-              "otherDisability": "",
+              "disabilities": "$disabilities",
+              $otherDisabilityField
               "interpreterRequired": true,
               "language": "$mockLanguage"
+            }
+            """.trimIndent(),
+          ),
+        )
+        .headers(setAuthorisation("AUTH_ADM"))
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody(DeviceWearer::class.java)
+        .returnResult()
+
+      Assertions.assertThat(result.responseBody).isNotNull
+      Assertions.assertThat(result.responseBody?.disabilities).isEqualTo(disabilities)
+      Assertions.assertThat(result.responseBody?.otherDisability).isEqualTo(expectedDescription)
+
+      val persistedDeviceWearer = getOrder(order.id).deviceWearer
+      Assertions.assertThat(persistedDeviceWearer).isNotNull
+      Assertions.assertThat(persistedDeviceWearer?.disabilities).isEqualTo(disabilities)
+      Assertions.assertThat(persistedDeviceWearer?.otherDisability).isEqualTo(expectedDescription)
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = ["INVALID_CODE", "OTHER,INVALID_CODE", "VISION,INVALID_CODE,HEARING"])
+    fun `it should reject invalid disability codes`(disabilities: String) {
+      val order = createOrder()
+      val result = webTestClient.put()
+        .uri("/api/orders/${order.id}/device-wearer")
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(
+          BodyInserters.fromValue(
+            """
+            {
+              "firstName": "$mockFirstName",
+              "lastName": "$mockLastName",
+              "adultAtTimeOfInstallation": false,
+              "sex": "$mockSex",
+              "gender": "$mockGender",
+              "dateOfBirth": "$mockDateOfBirth",
+              "disabilities": "$disabilities",
+              "otherDisability": "$mockOtherDisability",
+              "interpreterRequired": false
             }
             """.trimIndent(),
           ),
@@ -343,10 +391,8 @@ class DeviceWearerControllerTest : UpdateOrderIntegrationTestBase() {
         .expectBodyList(ValidationError::class.java)
         .returnResult()
 
-      Assertions.assertThat(result.responseBody).isNotNull
-      Assertions.assertThat(result.responseBody).hasSize(1)
-      Assertions.assertThat(result.responseBody!!).contains(
-        ValidationError("otherDisability", ValidationErrors.DeviceWearer.OTHER_DISABILITY),
+      Assertions.assertThat(result.responseBody).containsExactly(
+        ValidationError("disabilities", ValidationErrors.DeviceWearer.DISABILITIES_INVALID),
       )
     }
 
@@ -420,6 +466,41 @@ class DeviceWearerControllerTest : UpdateOrderIntegrationTestBase() {
         .returnResult()
 
       Assertions.assertThat(deviceWearer.responseBody?.gender).isEqualTo(gender)
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    @ValueSource(strings = [" ", "INVALID_GENDER"])
+    fun `it should reject missing blank or invalid gender for manual entry`(gender: String?) {
+      val order = createOrder()
+      val result = webTestClient.put()
+        .uri("/api/orders/${order.id}/device-wearer")
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(
+          BodyInserters.fromValue(
+            """
+            {
+              "firstName": "$mockFirstName",
+              "lastName": "$mockLastName",
+              "adultAtTimeOfInstallation": false,
+              "sex": "$mockSex",
+              "gender": ${objectMapper.writeValueAsString(gender)},
+              "dateOfBirth": "$mockDateOfBirth",
+              "interpreterRequired": false
+            }
+            """.trimIndent(),
+          ),
+        )
+        .headers(setAuthorisation("AUTH_ADM"))
+        .exchange()
+        .expectStatus()
+        .isBadRequest
+        .expectBodyList(ValidationError::class.java)
+        .returnResult()
+
+      Assertions.assertThat(result.responseBody).containsExactly(
+        ValidationError("gender", ValidationErrors.DeviceWearer.GENDER_REQUIRED),
+      )
     }
   }
 
