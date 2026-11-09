@@ -1497,7 +1497,11 @@ class OrderServiceTest {
       private val inTheFuture = ZonedDateTime.now().plusMonths(1)
       private val allDocuments = listOf(DocumentType.LICENCE, DocumentType.COURT_ORDER, DocumentType.PHOTO_ID)
 
-      private fun submittedOrder(startDate: ZonedDateTime, status: OrderStatus = OrderStatus.SUBMITTED): Order {
+      private fun submittedOrder(
+        startDate: ZonedDateTime,
+        status: OrderStatus = OrderStatus.SUBMITTED,
+        requestType: RequestType = RequestType.REQUEST,
+      ): Order {
         val versionId = UUID.randomUUID()
         return TestUtilities.createReadyToSubmitOrder(
           versionId = versionId,
@@ -1505,6 +1509,7 @@ class OrderServiceTest {
           username = authentication.name,
           startDate = startDate,
           endDate = ZonedDateTime.now().plusMonths(6),
+          requestType = requestType,
           documents = allDocuments
             .map { AdditionalDocument(versionId = versionId, fileType = it, documentId = UUID.randomUUID()) }
             .toMutableList(),
@@ -1563,7 +1568,8 @@ class OrderServiceTest {
 
       @Test
       fun `A probation user amending a rejected order keeps the licence`() {
-        val order = submittedOrder(startDate = inThePast, status = OrderStatus.REJECTED)
+        val order =
+          submittedOrder(startDate = inThePast, status = OrderStatus.REJECTED, requestType = RequestType.VARIATION)
 
         val change = changeAs(Cohort.PROBATION, order, RequestType.AMEND_ORIGINAL_REQUEST)
 
@@ -1572,7 +1578,8 @@ class OrderServiceTest {
 
       @Test
       fun `A probation user making a variation from a rejected order keeps the licence`() {
-        val order = submittedOrder(startDate = inThePast, status = OrderStatus.REJECTED)
+        val order =
+          submittedOrder(startDate = inThePast, status = OrderStatus.REJECTED, requestType = RequestType.VARIATION)
 
         val change = changeAs(Cohort.PROBATION, order)
 
