@@ -8,6 +8,7 @@ import org.springframework.data.domain.SliceImpl
 import org.springframework.security.access.AccessDeniedException
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.ManageUserApi
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.config.FeatureFlags
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.BadRequestException
@@ -18,7 +19,6 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.MonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.StatusUpdate
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.Cohort
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.UserCohort
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.OrderSearchCriteria
@@ -77,7 +77,9 @@ class OrderService(
     return order
   }
 
+  @Transactional
   fun deleteCurrentVersionForOrder(id: UUID, token: JwtAuthenticationToken) {
+    orderRepo.lockById(id)
     val order = getOrder(id, token)
 
     order.deleteCurrentVersion()
@@ -139,40 +141,31 @@ class OrderService(
 
   fun canAmend(order: Order): Boolean {
     if (order.status != OrderStatus.SUBMITTED) return order.status == OrderStatus.REJECTED
-    val updateCount = order.statusUpdates.size
-    val outcome = determineAmendmentOutcome(order)
-    if (order.statusUpdates.size != updateCount) {
-      orderRepo.save(order)
-    }
-    return outcome != null
+    return canAmend(order, fmsService.getCaseState(order))
   }
 
-  private fun determineAmendmentOutcome(order: Order): ProcessingStatus? {
+  fun canAmend(order: Order, caseState: CaseState): Boolean = determineAmendmentOutcome(order, caseState) != null
+
+  private fun determineAmendmentOutcome(order: Order, caseState: CaseState): ProcessingStatus? {
     if (order.status == OrderStatus.REJECTED) return ProcessingStatus.REJECTED
     if (order.status != OrderStatus.SUBMITTED) return null
 
-    val outcome = when (fmsService.getCaseState(order)) {
+    return when (caseState) {
       CaseState.AWAITING_VALIDATION -> ProcessingStatus.ACCEPTED
       CaseState.CANCELLED, CaseState.CLOSED, CaseState.RESOLVED -> ProcessingStatus.REJECTED
       else -> return null
     }
-    if (order.statusUpdates.none { it.status == outcome }) {
-      order.statusUpdates.add(
-        StatusUpdate(
-          versionId = order.versionId,
-          status = outcome,
-          datetimeOfStatusChange = ZonedDateTime.now(),
-        ),
-      )
-    }
-    return outcome
   }
 
-  private fun requireAmendmentOutcome(order: Order): ProcessingStatus =
-    determineAmendmentOutcome(order) ?: throw OrderChangeException(
+  private fun requireAmendmentOutcome(order: Order): ProcessingStatus {
+    val caseState = if (order.status == OrderStatus.SUBMITTED) fmsService.getCaseState(order) else CaseState.UNKNOWN
+    val outcome = determineAmendmentOutcome(order, caseState) ?: throw OrderChangeException(
       if (order.status == OrderStatus.SUBMITTED) "ORDER_CASE_STILL_PROCESSING" else "ORDER_VERSION_NOT_AVAILABLE",
       "The latest order version is not eligible for amendment",
     )
+    if (order.status == OrderStatus.SUBMITTED) order.recordProcessingOutcome(outcome)
+    return outcome
+  }
 
   private fun getSourceRequestType(order: Order, sourceVersion: OrderVersion): RequestType =
     if (sourceVersion.type == RequestType.REJECTED) {
@@ -188,7 +181,9 @@ class OrderService(
       sourceVersion.type
     }
 
+  @Transactional
   fun createVersion(orderId: UUID, token: JwtAuthenticationToken, versionType: RequestType): Order {
+    orderRepo.lockById(orderId)
     val order = getOrder(orderId, token)
     val currentVersion = order.getCurrentVersion()
     if (currentVersion.status == OrderStatus.ERROR) {
@@ -227,7 +222,9 @@ class OrderService(
     return updateLastUpdatedByAndSaveOrder(order)
   }
 
+  @Transactional
   fun amendOrder(orderId: UUID, token: JwtAuthenticationToken): OrderAmendmentResult {
+    orderRepo.lockById(orderId)
     val sourceOrder = getOrder(orderId, token)
     val sourceVersion = sourceOrder.getCurrentVersion()
     val outcome = requireAmendmentOutcome(sourceOrder)
@@ -355,7 +352,9 @@ class OrderService(
     newVersion.getMonitoringStartDate()?.isBefore(ZonedDateTime.now()) == true &&
     userCohortService.getUserCohort(token).cohort == Cohort.PROBATION
 
+  @Transactional(noRollbackFor = [SubmitOrderException::class])
   fun submitOrder(id: UUID, token: JwtAuthenticationToken, fullName: String): Order {
+    orderRepo.lockById(id)
     val order = getOrder(id, token)
 
     if (order.status == OrderStatus.SUBMITTED) {
@@ -479,7 +478,9 @@ class OrderService(
     return orderRepo.searchOrders(searchCriteria)
   }
 
+  @Transactional
   fun updateOrderOwner(orderId: UUID, token: JwtAuthenticationToken, newOwner: String): Order {
+    orderRepo.lockById(orderId)
     val order = getOrder(orderId, token)
     order.username = newOwner
     updateLastUpdatedByAndSaveOrder(order)

@@ -1,9 +1,12 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.config
 
+import jakarta.servlet.http.HttpServletResponse
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.convert.converter.Converter
+import org.springframework.http.HttpStatus
+import org.springframework.http.MediaType
 import org.springframework.security.authentication.AbstractAuthenticationToken
 import org.springframework.security.config.annotation.authentication.configuration.EnableGlobalAuthentication
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity
@@ -19,9 +22,11 @@ import org.springframework.security.oauth2.server.resource.InvalidBearerTokenExc
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter
 import org.springframework.security.web.SecurityFilterChain
+import org.springframework.security.web.access.AccessDeniedHandlerImpl
 import org.springframework.security.web.authentication.Http403ForbiddenEntryPoint
 import tools.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.UserRole
+import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 
 @Configuration
 @EnableWebSecurity
@@ -40,13 +45,29 @@ class OAuth2ResourceServerSecurityConfiguration {
           .requestMatchers("/info").permitAll()
           .requestMatchers("/swagger-ui/**").permitAll()
           .requestMatchers("/v3/api-docs/**").permitAll()
+          .requestMatchers("/api/dev/up3-simulation/**").hasRole("EM_CEMO__CREATE_ORDER")
           .anyRequest().authenticated()
       }
       .anonymous { anonymous ->
         anonymous.disable()
       }
+      .exceptionHandling { exceptions ->
+        exceptions.accessDeniedHandler { request, response, exception ->
+          if (request.requestURI.startsWith("/api/dev/up3-simulation/")) {
+            writeSimulationDenial(response, objectMapper, "UP3_SIMULATION_PERMISSION_DENIED")
+          } else {
+            AccessDeniedHandlerImpl().handle(request, response, exception)
+          }
+        }
+      }
       .oauth2ResourceServer { oauth2ResourceServer ->
-        oauth2ResourceServer.authenticationEntryPoint(Http403ForbiddenEntryPoint())
+        oauth2ResourceServer.authenticationEntryPoint { request, response, exception ->
+          if (request.requestURI.startsWith("/api/dev/up3-simulation/")) {
+            writeSimulationDenial(response, objectMapper, "UP3_SIMULATION_PERMISSION_DENIED")
+          } else {
+            Http403ForbiddenEntryPoint().commence(request, response, exception)
+          }
+        }
         oauth2ResourceServer.jwt { jwt ->
           jwt.jwtAuthenticationConverter(
             AuthAwareTokenConverter(),
@@ -60,6 +81,16 @@ class OAuth2ResourceServerSecurityConfiguration {
       }
 
     return http.build()
+  }
+
+  private fun writeSimulationDenial(response: HttpServletResponse, mapper: ObjectMapper, code: String) {
+    response.status = HttpStatus.FORBIDDEN.value()
+    response.contentType = MediaType.APPLICATION_JSON_VALUE
+    response.writer.write(
+      mapper.writeValueAsString(
+        ErrorResponse(status = HttpStatus.FORBIDDEN, errorCode = code, userMessage = "Simulation access denied"),
+      ),
+    )
   }
 }
 

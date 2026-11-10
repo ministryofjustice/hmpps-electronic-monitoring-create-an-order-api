@@ -14,22 +14,64 @@ on:
         default: 'dev'
       version:
         description: version to be deployed to the environment - must already exist.
-        required: true
+        required: false
         default: ''
         type: string
+      dev_operation:
+        description: Dev-only operation; other environments support deploy only
+        type: choice
+        options: [deploy, preview, cleanup]
+        default: deploy
+        required: true
+      cleanup_confirmation:
+        description: Type DELETE SIMULATED DEV ORDERS for dev cleanup or a legacy-image deployment
+        type: string
+        default: ''
 
 permissions:
   contents: read
 
 jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate deployment request
+        env:
+          ENVIRONMENT: ${{ inputs.environment }}
+          OPERATION: ${{ inputs.dev_operation }}
+          VERSION: ${{ inputs.version }}
+        run: |
+          if [[ "$ENVIRONMENT" != dev && "$OPERATION" != deploy ]]; then
+            echo "::error::Preview and cleanup are permitted only in dev"
+            exit 1
+          fi
+          if [[ "$OPERATION" == deploy && ! "$VERSION" =~ ^[A-Za-z0-9_][A-Za-z0-9_.-]{0,127}$ ]]; then
+            echo "::error::Deployment requires a valid existing image tag"
+            exit 1
+          fi
   helm_lint:
+    if: inputs.dev_operation == 'deploy'
+    needs: [validate]
     name: helm lint
     uses: ministryofjustice/hmpps-github-actions/.github/workflows/test_helm_lint.yml@v2 # WORKFLOW_VERSION
     secrets: inherit
     with:
       environment: ${{ inputs.environment }}
+  dev_maintenance:
+    if: >-
+      always() && !cancelled() && inputs.environment == 'dev' &&
+      needs.validate.result == 'success' &&
+      (inputs.dev_operation != 'deploy' || needs.helm_lint.result == 'success')
+    needs: [validate, helm_lint]
+    uses: ./.github/workflows/dev-up3-maintenance.yml
+    secrets: inherit
+    with:
+      operation: ${{ inputs.dev_operation }}
+      version: ${{ inputs.version }}
+      confirmation: ${{ inputs.cleanup_confirmation }}
   deploy_env:
     name: Deploy to environment
+    if: inputs.environment != 'dev' && inputs.dev_operation == 'deploy'
     needs:
       - helm_lint
     uses: ministryofjustice/hmpps-github-actions/.github/workflows/deploy_env.yml@v2 # WORKFLOW_VERSION

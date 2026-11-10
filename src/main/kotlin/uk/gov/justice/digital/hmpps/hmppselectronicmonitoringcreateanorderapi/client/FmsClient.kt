@@ -18,10 +18,15 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsErrorResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsRetrieveDWandMO
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.Up3SimulationService
 import java.util.*
 
 @Service
-class FmsClient(@Value("\${services.serco.url}") url: String, private val fmsAuthClient: FmsAuthClient) {
+class FmsClient(
+  @Value("\${services.serco.url}") url: String,
+  private val fmsAuthClient: FmsAuthClient,
+  private val simulation: Up3SimulationService,
+) {
 
   private val webClient: WebClient = WebClient.builder().baseUrl(url).build()
 
@@ -53,6 +58,7 @@ class FmsClient(@Value("\${services.serco.url}") url: String, private val fmsAut
   }
 
   fun createDeviceWearer(deviceWearerPayload: String, orderId: UUID, orderSource: FmsOrderSource): FmsResponse {
+    simulation.deviceWearerResponse(orderId)?.let { return it }
     val path = resolvePath(
       orderSource,
       cemoPath = "/x_seem_cemo/device_wearer/createDW",
@@ -68,6 +74,7 @@ class FmsClient(@Value("\${services.serco.url}") url: String, private val fmsAut
   }
 
   fun createMonitoringOrder(orderPayload: String, orderId: UUID, orderSource: FmsOrderSource): FmsResponse {
+    simulation.monitoringOrderResponse(orderId)?.let { return it }
     val path = resolvePath(
       orderSource,
       cemoPath = "/x_seem_cemo/monitoring_order/createMO",
@@ -83,6 +90,7 @@ class FmsClient(@Value("\${services.serco.url}") url: String, private val fmsAut
   }
 
   fun updateDeviceWearer(deviceWearerPayload: String, orderId: UUID, orderSource: FmsOrderSource): FmsResponse {
+    simulation.deviceWearerResponse(orderId)?.let { return it }
     val path = resolvePath(
       orderSource,
       cemoPath = "/x_seem_cemo/device_wearer/updateDW",
@@ -98,6 +106,7 @@ class FmsClient(@Value("\${services.serco.url}") url: String, private val fmsAut
   }
 
   fun updateMonitoringOrder(orderPayload: String, orderId: UUID, orderSource: FmsOrderSource): FmsResponse {
+    simulation.monitoringOrderResponse(orderId)?.let { return it }
     val path = resolvePath(
       orderSource,
       cemoPath = "/x_seem_cemo/monitoring_order/updateMO",
@@ -119,6 +128,7 @@ class FmsClient(@Value("\${services.serco.url}") url: String, private val fmsAut
     documentType: String,
     orderRequestType: RequestType,
   ): FmsAttachmentResponse {
+    simulation.attachmentResponse(caseId, fileName)?.let { return it }
     val token = fmsAuthClient.getClientToken()
     var tableName = "x_serg2_ems_csm_sr_mo_new"
     if (orderRequestType === RequestType.VARIATION) {
@@ -157,6 +167,7 @@ class FmsClient(@Value("\${services.serco.url}") url: String, private val fmsAut
   }
 
   fun getState(caseId: String): CaseState {
+    simulation.stateResponse(caseId)?.let { return it }
     val token = fmsAuthClient.getClientToken()
 
     return webClient.get().uri("/now/table/x_serg2_ems_csm_case/$caseId?sysparm_fields=state")
@@ -179,6 +190,7 @@ class FmsClient(@Value("\${services.serco.url}") url: String, private val fmsAut
   }
 
   fun getLatestOrderDetails(caseId: String): FmsRetrieveDWandMO {
+    simulation.detailsResponse(caseId)?.let { return it }
     val token = fmsAuthClient.getClientToken()
     return webClient.get()
       .uri("/monitoring_order/retrieveDWandMO?u_case_id=$caseId")

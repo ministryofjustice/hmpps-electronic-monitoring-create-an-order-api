@@ -19,12 +19,14 @@ import java.util.Optional
 
 class RejectOrderNotificationServiceTest {
 
+  private val simulation = mock<Up3SimulationService>()
+
   @Test
   fun `propagates the exception when the order cannot be rejected`() {
     val rejectOrderService = mock<RejectOrderService>()
     val orderRepository = mock<OrderRepository>()
     val emailClient = mock<EmailClient>()
-    val service = RejectOrderAndNotify(rejectOrderService, orderRepository, emailClient)
+    val service = RejectOrderAndNotify(rejectOrderService, orderRepository, emailClient, simulation)
 
     val dateTime = ZonedDateTime.now()
     val reasons = listOf(RejectionReason(section = "Section A", details = "A details"))
@@ -41,7 +43,7 @@ class RejectOrderNotificationServiceTest {
     val rejectOrderService = mock<RejectOrderService>()
     val orderRepository = mock<OrderRepository>()
     val emailClient = mock<EmailClient>()
-    val service = RejectOrderAndNotify(rejectOrderService, orderRepository, emailClient)
+    val service = RejectOrderAndNotify(rejectOrderService, orderRepository, emailClient, simulation)
 
     val order = TestUtilities.createReadyToSubmitOrder(submittedBy = "Bob Jones")
     order.submittedByEmail = "bob.jones@justice.gov.uk"
@@ -69,7 +71,7 @@ class RejectOrderNotificationServiceTest {
     val rejectOrderService = mock<RejectOrderService>()
     val orderRepository = mock<OrderRepository>()
     val emailClient = mock<EmailClient>()
-    val service = RejectOrderAndNotify(rejectOrderService, orderRepository, emailClient)
+    val service = RejectOrderAndNotify(rejectOrderService, orderRepository, emailClient, simulation)
 
     val order = TestUtilities.createReadyToSubmitOrder(submittedBy = "Bob Jones")
     order.submittedByEmail = "bob.jones@justice.gov.uk"
@@ -99,7 +101,7 @@ class RejectOrderNotificationServiceTest {
     val rejectOrderService = mock<RejectOrderService>()
     val orderRepository = mock<OrderRepository>()
     val emailClient = mock<EmailClient>()
-    val service = RejectOrderAndNotify(rejectOrderService, orderRepository, emailClient)
+    val service = RejectOrderAndNotify(rejectOrderService, orderRepository, emailClient, simulation)
 
     val order = TestUtilities.createReadyToSubmitOrder(submittedBy = "Bob Jones")
     order.submittedByEmail = "bob.jones@justice.gov.uk"
@@ -120,7 +122,7 @@ class RejectOrderNotificationServiceTest {
     val rejectOrderService = mock<RejectOrderService>()
     val orderRepository = mock<OrderRepository>()
     val emailClient = mock<EmailClient>()
-    val service = RejectOrderAndNotify(rejectOrderService, orderRepository, emailClient)
+    val service = RejectOrderAndNotify(rejectOrderService, orderRepository, emailClient, simulation)
 
     val order = TestUtilities.createReadyToSubmitOrder(submittedBy = "Bob Jones")
     order.submittedByEmail = "bob.jones@justice.gov.uk"
@@ -151,7 +153,7 @@ class RejectOrderNotificationServiceTest {
     val rejectOrderService = mock<RejectOrderService>()
     val orderRepository = mock<OrderRepository>()
     val emailClient = mock<EmailClient>()
-    val service = RejectOrderAndNotify(rejectOrderService, orderRepository, emailClient)
+    val service = RejectOrderAndNotify(rejectOrderService, orderRepository, emailClient, simulation)
 
     val order = TestUtilities.createReadyToSubmitOrder(submittedBy = "Bob Jones")
     order.interestedParties?.notifyingOrganisationEmail = "notify.org@justice.gov.uk"

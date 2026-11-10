@@ -1880,7 +1880,7 @@ class OrderServiceTest {
 
     @ParameterizedTest
     @EnumSource(CaseState::class)
-    fun `submitted eligibility records only terminal outcomes once without changing audit fields`(state: CaseState) {
+    fun `submitted eligibility is read only for every external state`(state: CaseState) {
       val source = TestUtilities.createReadyToSubmitOrder(status = OrderStatus.SUBMITTED, username = "mockUser")
       val auditTime = source.lastUpdatedDateTime
       val auditUser = source.lastUpdatedBy
@@ -1890,25 +1890,13 @@ class OrderServiceTest {
         CaseState.CLOSED, CaseState.CANCELLED, CaseState.RESOLVED -> ProcessingStatus.REJECTED
         else -> null
       }
-      val before = ZonedDateTime.now()
-
       repeat(2) { assertThat(service.canAmend(source)).isEqualTo(expected != null) }
 
       assertThat(source.status).isEqualTo(OrderStatus.SUBMITTED)
       assertThat(source.lastUpdatedDateTime).isEqualTo(auditTime)
       assertThat(source.lastUpdatedBy).isEqualTo(auditUser)
-      if (expected == null) {
-        assertThat(source.statusUpdates).isEmpty()
-        verify(repo, never()).save(source)
-      } else {
-        assertThat(source.statusUpdates).hasSize(1)
-        val update = source.statusUpdates.single()
-        assertThat(update.status).isEqualTo(expected)
-        assertThat(update.versionId).isEqualTo(source.versionId)
-        assertThat(update.datetimeOfStatusChange).isBetween(before, ZonedDateTime.now())
-        assertThat(update.statusUpdateReasons).isEmpty()
-        verify(repo).save(source)
-      }
+      assertThat(source.statusUpdates).isEmpty()
+      verify(repo, never()).save(source)
     }
 
     @ParameterizedTest

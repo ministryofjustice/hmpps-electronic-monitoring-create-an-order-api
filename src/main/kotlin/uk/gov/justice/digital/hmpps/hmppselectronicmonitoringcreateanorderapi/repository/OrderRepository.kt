@@ -1,9 +1,11 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository
 
+import jakarta.persistence.LockModeType
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Slice
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor
+import org.springframework.data.jpa.repository.Lock
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.PagingAndSortingRepository
 import org.springframework.data.repository.query.Param
@@ -18,6 +20,10 @@ interface OrderRepository :
   JpaSpecificationExecutor<Order>,
   JpaRepository<Order, UUID>,
   OrderSearchRepository {
+
+  @Lock(LockModeType.PESSIMISTIC_WRITE)
+  @Query("select o from Order o where o.id = :id")
+  fun lockById(@Param("id") id: UUID): Order?
 
   @Query(
     """

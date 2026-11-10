@@ -1738,7 +1738,7 @@ class OrderControllerTest : IntegrationTestBase() {
   inner class GetOrderVersion {
     @ParameterizedTest
     @EnumSource(CaseState::class)
-    fun `submitted eligibility maps FMS states into persisted domain observations`(state: CaseState) {
+    fun `submitted eligibility maps FMS states without writing history`(state: CaseState) {
       val order = createAndPersistPopulatedOrder(status = OrderStatus.SUBMITTED)
       stubCaseState(order, state)
       val expected = when (state) {
@@ -1754,10 +1754,8 @@ class OrderControllerTest : IntegrationTestBase() {
 
       assertThat(response.canAmend).isEqualTo(expected != null)
       assertThat(response.status).isEqualTo(OrderStatus.SUBMITTED)
-      val expectedUpdates = listOfNotNull(expected)
-      assertThat(response.statusUpdates.map { it.status }).containsExactlyElementsOf(expectedUpdates)
-      assertThat(repo.findById(order.id).orElseThrow().statusUpdates.map { it.status })
-        .containsExactlyElementsOf(expectedUpdates)
+      assertThat(response.statusUpdates).isEmpty()
+      assertThat(repo.findById(order.id).orElseThrow().statusUpdates).isEmpty()
     }
 
     @Test
@@ -1774,7 +1772,7 @@ class OrderControllerTest : IntegrationTestBase() {
     }
 
     @Test
-    fun `a later return event retains its timestamp and reasons after a rejection observation`() {
+    fun `a later return retains its timestamp and reasons after read only eligibility checks`() {
       val order = createAndPersistPopulatedOrder(status = OrderStatus.SUBMITTED)
       stubCaseState(order, CaseState.CLOSED)
       webTestClient.get().uri("/api/orders/${order.id}")
@@ -1791,14 +1789,14 @@ class OrderControllerTest : IntegrationTestBase() {
         .expectBody<OrderDto>().returnResult().responseBody!!
 
       assertThat(response.canAmend).isTrue()
-      assertThat(response.statusUpdates).hasSize(2)
+      assertThat(response.statusUpdates).hasSize(1)
       val event = response.statusUpdates.single { it.statusUpdateReasons.isNotEmpty() }
       assertThat(event.datetimeOfStatusChange.toInstant()).isEqualTo(eventTime.toInstant())
       assertThat(event.statusUpdateReasons.single().details).isEqualTo("Wrong name")
     }
 
     @Test
-    fun `It records a terminal outcome once across repeated reads without changing form audit fields`() {
+    fun `It does not write a terminal outcome across repeated reads or change form audit fields`() {
       val order = createAndPersistPopulatedOrder(status = OrderStatus.SUBMITTED)
       val caseId = fmsResultRepository.findById(order.fmsResultId!!).orElseThrow().caseId!!
       stubCaseState(order, CaseState.CLOSED)
@@ -1815,7 +1813,7 @@ class OrderControllerTest : IntegrationTestBase() {
             assertThat(response.responseBody?.canAmend).isTrue()
             assertThat(response.responseBody?.status).isEqualTo(OrderStatus.SUBMITTED)
             assertThat(response.responseBody?.statusUpdates?.map { it.status })
-              .containsExactly(ProcessingStatus.REJECTED)
+              .isEmpty()
           }
       }
 
@@ -1824,7 +1822,7 @@ class OrderControllerTest : IntegrationTestBase() {
         getRequestedFor(urlEqualTo("/now/table/x_serg2_ems_csm_case/$caseId?sysparm_fields=state")),
       )
       val persisted = repo.findById(order.id).orElseThrow()
-      assertThat(persisted.statusUpdates.map { it.status }).containsExactly(ProcessingStatus.REJECTED)
+      assertThat(persisted.statusUpdates).isEmpty()
       assertThat(persisted.lastUpdatedBy).isEqualTo(order.lastUpdatedBy)
       assertThat(persisted.lastUpdatedDateTime).isEqualTo(order.lastUpdatedDateTime)
     }

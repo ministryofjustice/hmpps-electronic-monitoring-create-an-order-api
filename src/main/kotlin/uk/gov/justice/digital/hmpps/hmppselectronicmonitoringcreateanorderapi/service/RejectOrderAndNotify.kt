@@ -16,14 +16,17 @@ class RejectOrderAndNotify(
   private val rejectOrderService: RejectOrderService,
   private val orderRepository: OrderRepository,
   private val emailClient: EmailClient,
+  private val simulation: Up3SimulationService,
 ) {
   @Transactional
   fun execute(caseId: String, dateTime: ZonedDateTime, reasons: List<RejectionReason>) {
     val orderId = rejectOrderService.execute(caseId, dateTime, reasons)
     val order = orderRepository.findById(orderId).get()
 
-    RejectedUserEmail.fromOrder(order)?.let { sendEmailAndLogFailure(it) }
-    RejectedNOEmail.fromOrder(order)?.let { sendEmailAndLogFailure(it) }
+    val emails = listOfNotNull(RejectedUserEmail.fromOrder(order), RejectedNOEmail.fromOrder(order))
+    if (!simulation.captureNotifications(order, emails)) {
+      emails.forEach { sendEmailAndLogFailure(it) }
+    }
   }
 
   private fun sendEmailAndLogFailure(email: Email) {

@@ -360,6 +360,18 @@ data class Order(
     getCurrentVersion().recalculateMonitoringStartEndDate()
   }
 
+  fun recordProcessingOutcome(outcome: ProcessingStatus) {
+    if (statusUpdates.none { it.status == outcome }) {
+      statusUpdates.add(
+        StatusUpdate(
+          versionId = versionId,
+          status = outcome,
+          datetimeOfStatusChange = ZonedDateTime.now(),
+        ),
+      )
+    }
+  }
+
   fun reject(datetimeOfStatusChange: ZonedDateTime, reasons: List<RejectionReason>) {
     this.status = OrderStatus.REJECTED
     val update = StatusUpdate(

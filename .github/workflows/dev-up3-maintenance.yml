@@ -1,0 +1,75 @@
+name: Dev UP3 simulator maintenance
+
+on:
+  workflow_dispatch:
+    inputs:
+      operation:
+        description: Preview, delete simulated orders, or deploy an existing API image
+        type: choice
+        options: [preview, cleanup, deploy]
+        default: preview
+        required: true
+      version:
+        description: Existing versioned API image tag (deploy only)
+        type: string
+        default: ''
+      confirmation:
+        description: Type DELETE SIMULATED DEV ORDERS for cleanup or a legacy-image deployment
+        type: string
+        default: ''
+  workflow_call:
+    inputs:
+      operation:
+        type: string
+        default: preview
+      version:
+        type: string
+        default: ''
+      confirmation:
+        type: string
+        default: ''
+    secrets:
+      KUBE_CLUSTER:
+        required: false
+      KUBE_NAMESPACE:
+        required: false
+      KUBE_CERT:
+        required: false
+      KUBE_TOKEN:
+        required: false
+
+permissions:
+  contents: read
+
+jobs:
+  maintenance:
+    name: Guarded dev maintenance
+    if: github.actor != 'dependabot[bot]' && github.triggering_actor != 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    environment: dev
+    timeout-minutes: 30
+    concurrency:
+      group: cemo-api-dev-maintenance
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/tool-installers/setup-helm@38a8e31c789777d02669f8b2de309d66ebf00f55
+      - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/tool-installers/setup-kubectl@38a8e31c789777d02669f8b2de309d66ebf00f55
+      - uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/cloud-platform-auth@38a8e31c789777d02669f8b2de309d66ebf00f55
+        with:
+          api: https://${{ secrets.KUBE_CLUSTER }}
+          cert: ${{ secrets.KUBE_CERT }}
+          cluster: ${{ secrets.KUBE_CLUSTER }}
+          namespace: ${{ secrets.KUBE_NAMESPACE }}
+          token: ${{ secrets.KUBE_TOKEN }}
+      - name: Run guarded dev operation
+        env:
+          OPERATION: ${{ inputs.operation }}
+          APP_VERSION: ${{ inputs.version }}
+          CLEANUP_CONFIRMATION: ${{ inputs.confirmation }}
+          KUBE_NAMESPACE: ${{ secrets.KUBE_NAMESPACE }}
+          HMPPS_IP_ALLOWLIST_GROUPS_YAML: ${{ vars.HMPPS_IP_ALLOWLIST_GROUPS_YAML }}
+          HMPPS_IP_ALLOWLIST_GROUPS_VERSION: ${{ vars.HMPPS_IP_ALLOWLIST_GROUPS_VERSION }}
+        run: python3 scripts/up3_simulation_maintenance.py "$OPERATION"

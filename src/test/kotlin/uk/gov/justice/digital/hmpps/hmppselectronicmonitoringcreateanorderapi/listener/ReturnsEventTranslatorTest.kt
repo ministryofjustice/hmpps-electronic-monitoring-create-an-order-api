@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.l
 
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
@@ -9,10 +10,12 @@ import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
+import org.mockito.kotlin.whenever
 import tools.jackson.module.kotlin.jacksonObjectMapper
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.RejectionReason
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.EventService
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.RejectOrderAndNotify
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service.Up3SimulationService
 import java.time.ZonedDateTime
 
 class ReturnsEventTranslatorTest {
@@ -20,7 +23,16 @@ class ReturnsEventTranslatorTest {
   private val rejectOrder = mock<RejectOrderAndNotify>()
   private val objectMapper = jacksonObjectMapper()
   private val eventService = mock<EventService>()
-  private val translator = ReturnsEventTranslator(rejectOrder, objectMapper, eventService)
+  private val simulation = mock<Up3SimulationService>()
+  private val translator = ReturnsEventTranslator(rejectOrder, objectMapper, eventService, simulation)
+
+  @BeforeEach
+  fun setup() {
+    whenever(simulation.processReturn(any(), any())).thenAnswer {
+      it.getArgument<() -> Unit>(1).invoke()
+      true
+    }
+  }
 
   @Test
   fun `translates a rejected returns event into a reject order command`() {

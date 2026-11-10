@@ -1,14 +1,19 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.config
 
 import jakarta.persistence.EntityNotFoundException
+import jakarta.servlet.http.HttpServletRequest
 import jakarta.validation.ConstraintViolationException
 import jakarta.validation.ValidationException
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.dao.DataAccessException
+import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.http.HttpStatus.BAD_GATEWAY
 import org.springframework.http.HttpStatus.BAD_REQUEST
 import org.springframework.http.HttpStatus.CONFLICT
 import org.springframework.http.HttpStatus.FORBIDDEN
 import org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR
+import org.springframework.http.HttpStatus.METHOD_NOT_ALLOWED
 import org.springframework.http.HttpStatus.NOT_FOUND
 import org.springframework.http.HttpStatus.SERVICE_UNAVAILABLE
 import org.springframework.http.ResponseEntity
@@ -16,6 +21,7 @@ import org.springframework.http.converter.HttpMessageNotReadableException
 import org.springframework.security.access.AccessDeniedException
 import org.springframework.transaction.TransactionSystemException
 import org.springframework.validation.FieldError
+import org.springframework.web.HttpRequestMethodNotSupportedException
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
@@ -32,13 +38,52 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.ex
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.OrderChangeException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.SercoConnectionException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.SubmitOrderException
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.Up3SimulationErrorResponse
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.Up3SimulationException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ListItemValidationError
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidationError
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 import java.util.stream.Collectors
 
 @RestControllerAdvice
-class HmppsElectronicMonitoringCreateAnOrderApiExceptionHandler {
+class HmppsElectronicMonitoringCreateAnOrderApiExceptionHandler(
+  @param:Value("\${settings.up3-simulation-enabled:false}") private val simulationEnabled: Boolean = false,
+) {
+
+  @ExceptionHandler(Up3SimulationException::class)
+  fun handleUp3SimulationException(e: Up3SimulationException): ResponseEntity<Up3SimulationErrorResponse> =
+    ResponseEntity.status(e.status).body(
+      Up3SimulationErrorResponse(
+        e.status.value(),
+        e.errorCode,
+        e.message,
+        e.expectedCurrentOrderVersionId,
+        e.currentOrderVersionId,
+        e.expectedSimulatedSubmissionVersionId,
+        e.simulatedSubmissionVersionId,
+      ),
+    ).also { log.info("Simulation command rejected: {}", e.errorCode) }
+
+  @ExceptionHandler(DataAccessException::class)
+  fun handleDataAccessException(e: DataAccessException, request: HttpServletRequest): ResponseEntity<ErrorResponse> {
+    if (!request.requestURI.startsWith("/api/dev/up3-simulation/")) return handleException(e)
+    val status = if (e is DataIntegrityViolationException) {
+      CONFLICT
+    } else {
+      SERVICE_UNAVAILABLE
+    }
+    return ResponseEntity.status(status).body(
+      ErrorResponse(
+        status = status,
+        errorCode = if (status == CONFLICT) {
+          "UP3_SIMULATION_ID_CONFLICT"
+        } else {
+          "UP3_SIMULATION_UNAVAILABLE"
+        },
+        userMessage = "Persistence operation could not be completed",
+      ),
+    ).also { log.error("Persistence operation failed: {}", e.javaClass.simpleName) }
+  }
 
   @ExceptionHandler(HttpMessageNotReadableException::class)
   fun handleHttpMessageNotReadableException(): ResponseEntity<ErrorResponse> = ResponseEntity
@@ -50,6 +95,12 @@ class HmppsElectronicMonitoringCreateAnOrderApiExceptionHandler {
         developerMessage = "The request body is missing, malformed, or contains an invalid value",
       ),
     )
+
+  @ExceptionHandler(HttpRequestMethodNotSupportedException::class)
+  fun handleMethodNotAllowed(e: HttpRequestMethodNotSupportedException): ResponseEntity<ErrorResponse> =
+    ResponseEntity.status(METHOD_NOT_ALLOWED).headers(e.headers).body(
+      ErrorResponse(status = METHOD_NOT_ALLOWED, userMessage = "Method not allowed"),
+    ).also { log.info("Unsupported request method: {}", e.method) }
 
   @ExceptionHandler(ValidationException::class)
   fun handleValidationException(e: ValidationException): ResponseEntity<ErrorResponse> = ResponseEntity
@@ -70,28 +121,49 @@ class HmppsElectronicMonitoringCreateAnOrderApiExceptionHandler {
         status = NOT_FOUND,
         userMessage = "No resource found failure: ${e.message}",
         developerMessage = e.message,
+        errorCode = if (!simulationEnabled && e.resourcePath.startsWith("api/dev/up3-simulation/")) {
+          "UP3_SIMULATION_DISABLED"
+        } else {
+          null
+        },
       ),
     ).also { log.info("No resource found exception: {}", e.message) }
 
   @ExceptionHandler(AccessDeniedException::class)
-  fun handleAccessDeniedException(e: AccessDeniedException): ResponseEntity<ErrorResponse> = ResponseEntity
+  fun handleAccessDeniedException(
+    e: AccessDeniedException,
+    request: HttpServletRequest,
+  ): ResponseEntity<ErrorResponse> = ResponseEntity
     .status(FORBIDDEN)
     .body(
       ErrorResponse(
         status = FORBIDDEN,
         userMessage = "Forbidden: ${e.message}",
         developerMessage = e.message,
+        errorCode = if (request.requestURI.startsWith("/api/dev/up3-simulation/")) {
+          "UP3_SIMULATION_PERMISSION_DENIED"
+        } else {
+          null
+        },
       ),
     ).also { log.debug("Forbidden (403) returned: {}", e.message) }
 
   @ExceptionHandler(EntityNotFoundException::class)
-  fun handleEntityNotFoundException(e: EntityNotFoundException): ResponseEntity<ErrorResponse> = ResponseEntity
+  fun handleEntityNotFoundException(
+    e: EntityNotFoundException,
+    request: HttpServletRequest,
+  ): ResponseEntity<ErrorResponse> = ResponseEntity
     .status(NOT_FOUND)
     .body(
       ErrorResponse(
         status = NOT_FOUND,
         userMessage = "Not Found",
         developerMessage = e.message,
+        errorCode = if (request.requestURI.startsWith("/api/dev/up3-simulation/")) {
+          "UP3_SIMULATION_ORDER_NOT_FOUND"
+        } else {
+          null
+        },
       ),
     ).also { log.info("Entity not found exception: {}", e.message) }
 
@@ -269,16 +341,21 @@ class HmppsElectronicMonitoringCreateAnOrderApiExceptionHandler {
       ).also { log.error("Unexpected exception", e) }
 
   @ExceptionHandler(ForbiddenException::class)
-  fun handleForbiddenException(e: ForbiddenException): ResponseEntity<ErrorResponse> = ResponseEntity
-    .status(FORBIDDEN)
-    .body(
-      ErrorResponse(
-        status = FORBIDDEN,
-        userMessage = "Forbidden: ${e.message}",
-        developerMessage = e.message,
-        errorCode = e.errorCode.toString(),
-      ),
-    ).also { log.debug("Forbidden (403) returned: {}", e.message) }
+  fun handleForbiddenException(e: ForbiddenException, request: HttpServletRequest): ResponseEntity<ErrorResponse> =
+    ResponseEntity
+      .status(FORBIDDEN)
+      .body(
+        ErrorResponse(
+          status = FORBIDDEN,
+          userMessage = "Forbidden: ${e.message}",
+          developerMessage = e.message,
+          errorCode = if (request.requestURI.startsWith("/api/dev/up3-simulation/")) {
+            "UP3_SIMULATION_PERMISSION_DENIED"
+          } else {
+            e.errorCode.toString()
+          },
+        ),
+      ).also { log.debug("Forbidden (403) returned: {}", e.message) }
 
   // The default exception handler returns a fixed text response to avoid leaking internal implementation
   // details. If you want to return a more sensible error,
