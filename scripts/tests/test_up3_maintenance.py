@@ -58,10 +58,10 @@ class MaintenanceTest(unittest.TestCase):
     def prepare(self):
         self.maintenance.deployment = Mock(return_value=(self.deployment, self.container))
         self.maintenance.assert_no_active_jobs = Mock()
-        self.maintenance.pause = Mock(return_value=2)
+        self.maintenance.assert_paused = Mock()
         self.maintenance.database_job = Mock()
         self.maintenance.deploy = Mock()
-        self.maintenance.resume = Mock()
+        self.maintenance.kube = Mock(side_effect=AssertionError("Unexpected cluster command"))
         self.maintenance.pods = Mock(return_value=[
             {"metadata": {}, "spec": {"containers": [copy.deepcopy(self.container)]}},
             {"metadata": {}, "spec": {"containers": [copy.deepcopy(self.container)]}},
@@ -79,92 +79,121 @@ class MaintenanceTest(unittest.TestCase):
         self.prepare()
         self.maintenance.execute("preview")
         self.maintenance.database_job.assert_called_once_with(False)
-        self.maintenance.pause.assert_not_called()
+        self.maintenance.assert_paused.assert_not_called()
         self.maintenance.deploy.assert_not_called()
 
-    def test_cleanup_needs_confirmation_before_pausing(self):
+    def test_cleanup_uses_manual_stop_and_leaves_api_stopped(self):
+        self.deployment["spec"]["replicas"] = 0
+        self.maintenance.deployment = Mock(return_value=(self.deployment, self.container))
+        self.maintenance.assert_no_active_jobs = Mock()
+        self.maintenance.pods = Mock(return_value=[])
+        self.maintenance.database_job = Mock()
+        self.maintenance.kube = Mock(side_effect=AssertionError("Unexpected cluster mutation or scheduler access"))
+        self.maintenance.execute("cleanup", confirmation=module.CONFIRMATION)
+        self.maintenance.database_job.assert_called_once_with(True)
+        self.maintenance.kube.assert_not_called()
+
+    def test_cleanup_needs_confirmation_before_checking_stopped_state(self):
         self.prepare()
         with self.assertRaises(module.MaintenanceError):
             self.maintenance.execute("cleanup")
-        self.maintenance.pause.assert_not_called()
+        self.maintenance.assert_paused.assert_not_called()
         self.maintenance.database_job.assert_not_called()
 
-    def test_failed_cleanup_never_resumes_or_deploys(self):
+    def test_failed_cleanup_never_changes_replicas_or_deploys(self):
         self.prepare()
         self.maintenance.database_job.side_effect = module.MaintenanceError("DB failed")
         with self.assertRaises(module.MaintenanceError):
             self.maintenance.execute("cleanup", confirmation=module.CONFIRMATION)
-        self.maintenance.resume.assert_not_called()
+        self.maintenance.kube.assert_not_called()
         self.maintenance.deploy.assert_not_called()
 
-    def test_successful_cleanup_is_ordered_before_resume(self):
+    def test_cleanup_checks_stopped_state_before_database_changes(self):
         self.prepare()
         calls = Mock()
-        for name in ["pause", "database_job", "resume"]:
+        for name in ["assert_paused", "database_job"]:
             calls.attach_mock(getattr(self.maintenance, name), name)
         self.maintenance.execute("cleanup", confirmation=module.CONFIRMATION)
-        self.assertEqual([call[0] for call in calls.mock_calls], ["pause", "database_job", "resume"])
+        self.assertEqual([call[0] for call in calls.mock_calls], ["assert_paused", "database_job"])
 
     @patch.object(module, "image_metadata", return_value=(False, DIGEST))
     def test_legacy_deployment_without_confirmation_does_not_modify_dev(self, image):
         self.prepare()
         with self.assertRaises(module.MaintenanceError):
             self.maintenance.execute("deploy", version="old-version")
-        self.maintenance.pause.assert_not_called()
+        self.maintenance.assert_paused.assert_not_called()
         self.maintenance.database_job.assert_not_called()
         self.maintenance.deploy.assert_not_called()
 
     @patch.object(module, "image_metadata", side_effect=[(False, DIGEST), (True, DIGEST)])
-    def test_legacy_deployment_cleans_before_starting_image(self, image):
+    def test_legacy_deployment_cleans_and_keeps_new_image_stopped(self, image):
         self.prepare()
+        self.deployment["spec"]["replicas"] = 0
         calls = Mock()
-        for name in ["pause", "database_job", "deploy", "resume"]:
+        for name in ["assert_paused", "database_job", "deploy"]:
             calls.attach_mock(getattr(self.maintenance, name), name)
         self.maintenance.execute("deploy", version="old-version", confirmation=module.CONFIRMATION)
         self.assertEqual(
-            [call[0] for call in calls.mock_calls], ["pause", "database_job", "deploy", "resume"],
+            [call[0] for call in calls.mock_calls], ["assert_paused", "database_job", "deploy", "assert_paused"],
         )
-        self.maintenance.deploy.assert_called_once_with("old-version", DIGEST, False, 2)
+        self.maintenance.deploy.assert_called_once_with("old-version", DIGEST, False, 0)
+        self.maintenance.kube.assert_not_called()
 
     @patch.object(module, "image_metadata", return_value=(True, DIGEST))
     def test_compatible_rolling_deployment_preserves_orders(self, image):
         self.prepare()
         self.maintenance.execute("deploy", version="new-version")
-        self.maintenance.pause.assert_not_called()
-        self.maintenance.database_job.assert_not_called()
-        self.maintenance.deploy.assert_called_once_with("new-version", DIGEST, True, None)
-
-    @patch.object(module, "image_metadata", side_effect=[(True, DIGEST), (False, DIGEST)])
-    def test_first_simulator_release_stops_legacy_pods_before_deployment(self, image):
-        self.prepare()
-        self.maintenance.execute("deploy", version="new-version")
-        self.maintenance.pause.assert_called_once()
+        self.maintenance.assert_paused.assert_not_called()
         self.maintenance.database_job.assert_not_called()
         self.maintenance.deploy.assert_called_once_with("new-version", DIGEST, True, 2)
+
+    @patch.object(module, "image_metadata", side_effect=[(True, DIGEST), (False, DIGEST)])
+    def test_first_simulator_release_requires_manual_stop(self, image):
+        self.prepare()
+        del self.maintenance.assert_paused
+        with self.assertRaisesRegex(module.MaintenanceError, "Stop the dev API manually"):
+            self.maintenance.execute("deploy", version="new-version")
+        self.maintenance.database_job.assert_not_called()
+        self.maintenance.deploy.assert_not_called()
+
+    @patch.object(module, "image_metadata", side_effect=[(True, DIGEST), (False, DIGEST)])
+    def test_first_simulator_release_updates_a_manually_stopped_api(self, image):
+        self.prepare()
+        self.deployment["spec"]["replicas"] = 0
+        self.maintenance.pods.return_value = []
+        del self.maintenance.assert_paused
+        self.maintenance.execute("deploy", version="new-version")
+        self.maintenance.deploy.assert_called_once_with("new-version", DIGEST, True, 0)
+        self.maintenance.database_job.assert_not_called()
+        self.maintenance.kube.assert_not_called()
 
     @patch.object(module, "image_metadata", return_value=(True, DIGEST))
     def test_mutable_current_tag_is_not_treated_as_proof_of_running_image_safety(self, image):
         self.prepare()
         self.container["image"] = module.REPOSITORY + ":dev"
-        self.maintenance.execute("deploy", version="new-version")
-        self.maintenance.pause.assert_called_once()
+        del self.maintenance.assert_paused
+        with self.assertRaises(module.MaintenanceError):
+            self.maintenance.execute("deploy", version="new-version")
+        self.maintenance.deploy.assert_not_called()
         self.assertEqual(image.call_count, 1)
 
     @patch.object(module, "image_metadata", return_value=(True, DIGEST))
     def test_mixed_running_pod_images_require_quiescence(self, image):
         self.prepare()
         self.maintenance.pods.return_value[0]["spec"]["containers"][0]["image"] = module.REPOSITORY + ":old"
-        self.maintenance.execute("deploy", version="new-version")
-        self.maintenance.pause.assert_called_once()
+        del self.maintenance.assert_paused
+        with self.assertRaises(module.MaintenanceError):
+            self.maintenance.execute("deploy", version="new-version")
+        self.maintenance.deploy.assert_not_called()
 
     @patch.object(module, "image_metadata", return_value=(True, DIGEST))
     def test_failed_rollout_has_no_automatic_resume_or_rollback(self, image):
         self.prepare()
-        self.deployment["metadata"]["annotations"][module.REPLICAS_ANNOTATION] = "2"
+        self.deployment["spec"]["replicas"] = 0
         self.maintenance.deploy.side_effect = module.MaintenanceError("Helm failed")
         with self.assertRaises(module.MaintenanceError):
             self.maintenance.execute("deploy", version="new-version")
-        self.maintenance.resume.assert_not_called()
+        self.maintenance.kube.assert_not_called()
         self.maintenance.database_job.assert_not_called()
 
     @patch.object(module, "image_metadata", side_effect=[(False, DIGEST), (True, DIGEST)])
@@ -174,30 +203,46 @@ class MaintenanceTest(unittest.TestCase):
         with self.assertRaises(module.MaintenanceError):
             self.maintenance.execute("deploy", version="old", confirmation=module.CONFIRMATION)
         self.maintenance.deploy.assert_not_called()
-        self.maintenance.resume.assert_not_called()
+        self.maintenance.kube.assert_not_called()
 
     def test_mutable_or_invalid_image_tags_fail_before_any_write(self):
         self.prepare()
         for version in ["", "dev", "latest", "-bad", "_bad", "bad-", "a" * 64, "foo;echo", "tag@sha256:abc"]:
             with self.assertRaises(module.MaintenanceError):
                 self.maintenance.execute("deploy", version=version)
-        self.maintenance.pause.assert_not_called()
+        self.maintenance.assert_paused.assert_not_called()
 
-    def test_pause_retains_original_replicas_after_failed_attempt(self):
+    def test_stopped_check_rejects_remaining_or_terminating_pods(self):
         self.deployment["spec"]["replicas"] = 0
-        self.deployment["metadata"]["annotations"][module.REPLICAS_ANNOTATION] = "2"
+        self.maintenance.deployment = Mock(return_value=(self.deployment, self.container))
+        for pods in [[{"metadata": {}}], [{"metadata": {"deletionTimestamp": "2026-11-11T12:00:00Z"}}]]:
+            with self.subTest(pods=pods):
+                self.maintenance.pods = Mock(return_value=pods)
+                with self.assertRaises(module.MaintenanceError):
+                    self.maintenance.assert_paused()
+
+    def test_cleanup_refuses_a_running_api_before_starting_the_job(self):
+        self.prepare()
+        del self.maintenance.assert_paused
+        with self.assertRaises(module.MaintenanceError):
+            self.maintenance.execute("cleanup", confirmation=module.CONFIRMATION)
+        self.maintenance.database_job.assert_not_called()
+        self.maintenance.kube.assert_not_called()
+
+    @patch.object(module, "image_metadata", side_effect=[(False, DIGEST), (True, DIGEST)])
+    def test_legacy_deployment_refuses_a_running_api(self, image):
+        self.prepare()
+        del self.maintenance.assert_paused
+        with self.assertRaises(module.MaintenanceError):
+            self.maintenance.execute("deploy", version="old", confirmation=module.CONFIRMATION)
+        self.maintenance.database_job.assert_not_called()
+        self.maintenance.deploy.assert_not_called()
+
+    def test_stopped_check_accepts_zero_replicas_and_no_pods(self):
+        self.deployment["spec"]["replicas"] = 0
         self.maintenance.deployment = Mock(return_value=(self.deployment, self.container))
         self.maintenance.pods = Mock(return_value=[])
-        self.maintenance.kube = Mock(return_value={"items": []})
-        self.assertEqual(self.maintenance.pause(), 2)
-        self.maintenance.kube.assert_any_call("scale", "deployment", module.APP, "--replicas=0")
-
-    def test_pause_refuses_an_autoscaler(self):
-        self.maintenance.deployment = Mock(return_value=(self.deployment, self.container))
-        self.maintenance.kube = Mock(return_value={"items": [{"spec": {"scaleTargetRef": {"name": module.APP}}}]})
-        with self.assertRaises(module.MaintenanceError):
-            self.maintenance.pause()
-        self.assertEqual(self.maintenance.kube.call_count, 1)
+        self.maintenance.assert_paused()
 
     def test_existing_unfinished_database_job_blocks_new_operations(self):
         self.maintenance.kube = Mock(return_value={"items": [{"status": {}}]})
@@ -218,8 +263,35 @@ class MaintenanceTest(unittest.TestCase):
         self.assertNotIn("--rollback-on-failure", arguments)
         self.assertNotIn("--atomic", arguments)
         self.assertIn("--post-renderer", arguments)
+        self.assertIn("generic-service.replicaCount=2", arguments)
+        self.assertIn("generic-service.scheduledDowntime.enabled=false", arguments)
+        self.assertFalse(any("scheduledDowntime.startup" in argument or "scheduledDowntime.shutdown" in argument
+                     for argument in arguments))
         self.assertIn("generic-service.env.UP3_SIMULATION_ENABLED=false", arguments)
         self.assertEqual(command.call_args.kwargs["env"]["UP3_API_DIGEST"], DIGEST)
+
+    @patch.object(module, "command", return_value="")
+    def test_stopped_deploy_keeps_zero_replicas_and_rechecks_before_helm(self, command):
+        for restarted in [False, True]:
+            with self.subTest(restarted=restarted), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                chart = root / "helm_deploy" / module.APP
+                chart.mkdir(parents=True)
+                (chart / "Chart.yaml").write_text("appVersion: '1.0'\n")
+                command.reset_mock()
+                self.maintenance.assert_paused = Mock(
+                    side_effect=module.MaintenanceError("API restarted") if restarted else None,
+                )
+                with patch.object(module, "ROOT", root):
+                    if restarted:
+                        with self.assertRaises(module.MaintenanceError):
+                            self.maintenance.deploy("release-123", DIGEST, True, 0)
+                        self.assertFalse(any(call.args[0][:2] == ["helm", "upgrade"]
+                                             for call in command.call_args_list))
+                    else:
+                        self.maintenance.deploy("release-123", DIGEST, True, 0)
+                        self.assertIn("generic-service.replicaCount=0", command.call_args.args[0])
+                self.maintenance.assert_paused.assert_called_once()
 
     def test_database_job_keeps_credentials_in_cluster_and_owns_its_configmap(self):
         self.maintenance.assert_no_active_jobs = Mock()
@@ -280,6 +352,15 @@ class MaintenanceTest(unittest.TestCase):
         with self.assertRaises(module.MaintenanceError):
             self.maintenance.database_job(True)
         self.assertFalse(any(call.args[0] == "delete" for call in self.maintenance.kube.call_args_list))
+
+    def test_database_job_is_cancelled_if_api_restarts_during_cleanup(self):
+        self.maintenance.assert_no_active_jobs = Mock()
+        self.maintenance.assert_paused = Mock(side_effect=[None, module.MaintenanceError("API restarted")])
+        self.maintenance.kube = Mock(side_effect=[{"metadata": {"uid": "job-uid"}}, "", ""])
+        with self.assertRaises(module.MaintenanceError):
+            self.maintenance.database_job(True)
+        self.assertEqual(self.maintenance.kube.call_args.args[:2], ("delete", "job"))
+        self.assertFalse(any(call.args[:2] == ("get", "pods") for call in self.maintenance.kube.call_args_list))
 
     def test_job_is_cancelled_if_configmap_creation_fails(self):
         self.maintenance.assert_no_active_jobs = Mock()
@@ -407,11 +488,15 @@ class HelmRenderingTest(unittest.TestCase):
                 "--values", str(ROOT / "helm_deploy/values-dev.yaml"),
                 "--set-string", "generic-service.image.tag=release-123",
                 "--set", "generic-service.env.UP3_SIMULATION_ENABLED=false",
+                "--set", "generic-service.replicaCount=0",
+                "--set", "generic-service.scheduledDowntime.enabled=false",
                 "--post-renderer", "up3-pin-api-image",
             )
             self.assertRegex(rendered, r'image:\s*["\']?' + re.escape(environment["UP3_API_IMAGE"] + "@" + DIGEST))
             self.assertNotRegex(rendered, r"app.kubernetes.io/version:.*@sha256")
             self.assertRegex(rendered, r'name: UP3_SIMULATION_ENABLED\s+value: ["\']?false')
+            self.assertRegex(rendered, r"replicas:\s*0")
+            self.assertNotRegex(rendered, r"kind:\s*CronJob")
 
 
 if __name__ == "__main__":

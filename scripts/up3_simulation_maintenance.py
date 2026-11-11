@@ -3,7 +3,6 @@
 
 import argparse
 import base64
-import hashlib
 import json
 import os
 from pathlib import Path
@@ -20,7 +19,6 @@ APP = "hmpps-electronic-monitoring-create-an-order-api"
 REPOSITORY = f"ghcr.io/ministryofjustice/{APP}"
 CAPABILITY = "uk.gov.justice.hmpps.up3-simulation-aware"
 CONFIRMATION = "DELETE SIMULATED DEV ORDERS"
-REPLICAS_ANNOTATION = "cemo.hmpps.justice.gov.uk/up3-cleanup-replicas"
 JOB_LABEL = "cemo.hmpps.justice.gov.uk/up3-maintenance"
 
 
@@ -100,34 +98,10 @@ class Maintenance:
     def assert_paused(self):
         deployment, _ = self.deployment()
         if deployment["spec"].get("replicas") != 0 or self.pods(deployment):
-            raise MaintenanceError("API replicas reappeared during maintenance; no deployment is permitted")
-
-    def pause(self):
-        deployment, _ = self.deployment()
-        hpas = self.kube("get", "hpa", "-o", "json", json_output=True)["items"]
-        if any(item["spec"]["scaleTargetRef"]["name"] == APP for item in hpas):
-            raise MaintenanceError("Disable the API autoscaler before maintenance")
-        cronjobs = self.kube("get", "cronjobs", "-o", "json", json_output=True)["items"]
-        if any(
-            not item["spec"].get("suspend", False)
-            and APP in json.dumps(item["spec"])
-            and "scale" in json.dumps(item["spec"])
-            for item in cronjobs
-        ):
-            raise MaintenanceError("Suspend scheduled API scaling before maintenance")
-        annotations = deployment["metadata"].get("annotations", {})
-        original = annotations.get(REPLICAS_ANNOTATION, str(deployment["spec"]["replicas"]))
-        if not re.fullmatch(r"\d{1,3}", original):
-            raise MaintenanceError("Invalid saved API replica count")
-        self.kube("annotate", "deployment", APP, f"{REPLICAS_ANNOTATION}={original}", "--overwrite")
-        self.kube("scale", "deployment", APP, "--replicas=0")
-        deadline = time.monotonic() + 300
-        while self.pods(deployment):
-            if time.monotonic() >= deadline:
-                raise MaintenanceError("Timed out stopping API pods; API remains in maintenance")
-            time.sleep(3)
-        self.assert_paused()
-        return int(original)
+            raise MaintenanceError(
+                "Stop the dev API manually and wait for all API pods to terminate before retrying. "
+                "Keep it stopped until the operation succeeds; this workflow does not stop or restart it."
+            )
 
     def database_report(self, job_uid):
         pods = self.kube(
@@ -262,11 +236,6 @@ printf '%s' "$report"
                 self.kube("delete", "job", name, "--wait=true", "--timeout=60s")
             raise
 
-    def resume(self, replicas):
-        self.kube("scale", "deployment", APP, f"--replicas={replicas}")
-        self.kube("rollout", "status", f"deployment/{APP}", "--timeout=300s")
-        self.kube("annotate", "deployment", APP, f"{REPLICAS_ANNOTATION}-")
-
     def deploy(self, version, digest, aware, replicas):
         chart = ROOT / "helm_deploy" / APP
         chart_file = chart / "Chart.yaml"
@@ -284,16 +253,11 @@ printf '%s' "$report"
             "--set-string", f"generic-service.image.tag={version}",
             "--set-string", f"version={version}", "--set-string", "global.environment=dev",
             "--post-renderer", "up3-pin-api-image",
+            "--set", f"generic-service.replicaCount={replicas}",
+            "--set", "generic-service.scheduledDowntime.enabled=false",
         ]
-        if replicas is not None:
-            arguments += ["--set", f"generic-service.replicaCount={replicas}"]
         if not aware:
             arguments += ["--set", "generic-service.env.UP3_SIMULATION_ENABLED=false"]
-        minute = int(hashlib.md5(APP.encode()).hexdigest()[:4], 16) % 60
-        arguments += [
-            "--set-string", f"generic-service.scheduledDowntime.startup={minute} 6 * * 1-5",
-            "--set-string", f"generic-service.scheduledDowntime.shutdown={minute} 21 * * 1-5",
-        ]
         allowlist_version = os.environ.get("HMPPS_IP_ALLOWLIST_GROUPS_VERSION")
         if allowlist_version:
             arguments += ["--set-string", f"generic-service.allowlist_version={allowlist_version}"]
@@ -309,6 +273,8 @@ printf '%s' "$report"
                 path = Path(directory) / "allowlist.yaml"
                 path.write_bytes(base64.b64decode(allowlist, validate=True))
                 arguments += ["--values", str(path)]
+            if replicas == 0:
+                self.assert_paused()
             print(command(arguments, env=environment), flush=True)
 
     def execute(self, mode, version="", confirmation=""):
@@ -320,9 +286,9 @@ printf '%s' "$report"
         if mode == "cleanup":
             if confirmation != CONFIRMATION:
                 raise MaintenanceError(f"Cleanup requires confirmation: {CONFIRMATION}")
-            replicas = self.pause()
+            self.assert_paused()
             self.database_job(True)
-            self.resume(replicas)
+            print("Cleanup verified. The API remains stopped; restart it manually when ready.", flush=True)
             return
         if not re.fullmatch(
             r"[A-Za-z0-9](?:[A-Za-z0-9_.-]{0,61}[A-Za-z0-9])?", version,
@@ -339,8 +305,7 @@ printf '%s' "$report"
             container["image"],
         ):
             current_aware, _ = image_metadata(container["image"])
-        replicas = None
-        saved = deployment["metadata"].get("annotations", {}).get(REPLICAS_ANNOTATION)
+        replicas = deployment["spec"]["replicas"]
         status = deployment.get("status", {})
         complete = (
             status.get("observedGeneration") == deployment["metadata"]["generation"]
@@ -355,13 +320,14 @@ printf '%s' "$report"
                     for item in pod["spec"]["containers"]
                 ) for pod in pods
             )
-        if not aware or not current_aware or saved is not None or not complete:
-            replicas = self.pause()
+        if replicas == 0 or not aware or not current_aware or not complete:
+            self.assert_paused()
         if not aware:
             self.database_job(True)
         self.deploy(version, digest, aware, replicas)
-        if replicas is not None:
-            self.resume(replicas)
+        if replicas == 0:
+            self.assert_paused()
+            print("Image updated with zero API replicas. Restart manually and verify application health.", flush=True)
 
 
 def main():
