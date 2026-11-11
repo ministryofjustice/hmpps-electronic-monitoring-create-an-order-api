@@ -22,6 +22,19 @@ import up3_simulation_maintenance as module
 DIGEST = "sha256:" + "a" * 64
 
 
+def completed_pod(report):
+    return {
+        "metadata": {"ownerReferences": [{"kind": "Job", "uid": "job-uid", "controller": True}]},
+        "status": {
+            "phase": "Succeeded",
+            "containerStatuses": [{
+                "name": "cleanup",
+                "state": {"terminated": {"exitCode": 0, "message": report}},
+            }],
+        },
+    }
+
+
 def deployment(profile="dev"):
     return {
         "metadata": {"namespace": "cemo-dev", "generation": 1, "annotations": {}},
@@ -217,25 +230,45 @@ class MaintenanceTest(unittest.TestCase):
             if args[0] == "create":
                 resources.append(copy.deepcopy(data))
                 return {"metadata": {"uid": "job-uid"}}
-            if args[0] == "get":
+            if args[:2] == ("get", "job"):
                 return {"status": {"succeeded": 1}}
-            if args[0] == "logs":
-                return json.dumps({
+            if args[:2] == ("get", "pods"):
+                return {"items": [completed_pod(json.dumps({
                     "orders": 1, "versions": 2, "submissions": 2, "return_events": 1,
                     "retained_creation_receipts": 1,
-                })
+                }))]}
             raise AssertionError(args)
 
         self.maintenance.kube = Mock(side_effect=kube)
         self.maintenance.database_job(True)
         pod = resources[0]["spec"]["template"]["spec"]
         self.assertFalse(pod["automountServiceAccountToken"])
+        self.assertEqual(pod["containers"][0]["terminationMessagePath"], "/dev/termination-log")
+        self.assertEqual(pod["containers"][0]["terminationMessagePolicy"], "File")
         self.assertEqual(pod["containers"][0]["env"][-1], {"name": "CLEANUP_APPLY", "value": "true"})
         for variable in pod["containers"][0]["env"][:-1]:
             self.assertEqual(
                 variable["valueFrom"]["secretKeyRef"]["name"], "rds-postgresql-instance-output",
             )
         self.assertEqual(resources[1]["metadata"]["ownerReferences"][0]["uid"], "job-uid")
+
+        for output, exit_code, expected_exit in [('counts', 0, 0), ('counts', 3, 3), ('x' * 3501, 0, 1)]:
+            with self.subTest(exit_code=exit_code, output_length=len(output)), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                executable = root / "psql"
+                executable.write_text('#!/bin/sh\nprintf "%s" "$STUB_OUTPUT"\nexit "$STUB_EXIT"\n')
+                executable.chmod(0o755)
+                report_path = root / "report"
+                report_path.touch()
+                arguments = pod["containers"][0]["command"].copy()
+                arguments[-1] = arguments[-1].replace("/dev/termination-log", str(report_path))
+                result = subprocess.run(arguments, text=True, capture_output=True, env={
+                    **os.environ, "PATH": f"{directory}:{os.environ['PATH']}",
+                    "DB_SERVER": "localhost:5432", "CLEANUP_APPLY": "false",
+                    "STUB_OUTPUT": output, "STUB_EXIT": str(exit_code),
+                })
+                self.assertEqual(result.returncode, expected_exit, result.stderr)
+                self.assertEqual(report_path.read_text(), output if expected_exit == 0 else "")
 
     def test_failed_job_is_retained_for_inspection(self):
         self.maintenance.assert_no_active_jobs = Mock()
@@ -264,13 +297,58 @@ class MaintenanceTest(unittest.TestCase):
         for report in ['{}', '"not an object"', '{"orders":true}', 'not json']:
             with self.subTest(report=report):
                 self.maintenance.kube = Mock(side_effect=[
-                    {"metadata": {"uid": "job-uid"}}, "", {"status": {"succeeded": 1}}, report,
+                    {"metadata": {"uid": "job-uid"}}, "", {"status": {"succeeded": 1}},
+                    {"items": [completed_pod(report)]},
                 ])
                 with self.assertRaises((module.MaintenanceError, json.JSONDecodeError)):
                     self.maintenance.database_job(True)
                 self.assertFalse(any(
                     call.args[0] == "delete" for call in self.maintenance.kube.call_args_list
                 ))
+
+    def test_database_report_requires_one_successful_pod_owned_by_this_job(self):
+        pod = completed_pod('{}')
+        wrong_owner = copy.deepcopy(pod)
+        wrong_owner["metadata"]["ownerReferences"][0]["uid"] = "another-job"
+        failed_pod = copy.deepcopy(pod)
+        failed_pod["status"]["phase"] = "Failed"
+        for pods in [[], [pod, pod], [wrong_owner], [failed_pod]]:
+            with self.subTest(pods=pods):
+                self.maintenance.kube = Mock(return_value={"items": pods})
+                with self.assertRaises(module.MaintenanceError):
+                    self.maintenance.database_report("job-uid")
+                self.maintenance.kube.assert_called_once_with(
+                    "get", "pods", "--selector", "batch.kubernetes.io/controller-uid=job-uid",
+                    "-o", "json", json_output=True,
+                )
+
+    def test_database_report_requires_a_successful_cleanup_container(self):
+        for containers in [
+            [],
+            [{"name": "sidecar", "state": {"terminated": {"exitCode": 0, "message": '{}'}}}],
+            [{"name": "cleanup", "state": {"running": {}}}],
+            [{"name": "cleanup", "state": {"terminated": {"exitCode": 1, "message": '{}'}}}],
+        ]:
+            with self.subTest(containers=containers):
+                pod = completed_pod('{}')
+                pod["status"]["containerStatuses"] = containers
+                self.maintenance.kube = Mock(return_value={"items": [pod]})
+                with self.assertRaises(module.MaintenanceError):
+                    self.maintenance.database_report("job-uid")
+
+    def test_database_report_rejects_missing_oversized_or_invalid_counts(self):
+        valid = dict(orders=1, versions=2, submissions=2, return_events=1, retained_creation_receipts=1)
+        for report in [
+            None, "", "x" * 3501,
+            json.dumps({**valid, "orders": -1}),
+            json.dumps({**valid, "orders": True}),
+            json.dumps({**valid, "orders": "1"}),
+            json.dumps({**valid, "extra": 0}),
+        ]:
+            with self.subTest(report=report):
+                self.maintenance.kube = Mock(return_value={"items": [completed_pod(report)]})
+                with self.assertRaises(module.MaintenanceError):
+                    self.maintenance.database_report("job-uid")
 
 
 class ImagePinningTest(unittest.TestCase):

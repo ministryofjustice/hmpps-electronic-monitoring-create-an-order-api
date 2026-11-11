@@ -129,6 +129,39 @@ class Maintenance:
         self.assert_paused()
         return int(original)
 
+    def database_report(self, job_uid):
+        pods = self.kube(
+            "get", "pods", "--selector", f"batch.kubernetes.io/controller-uid={job_uid}",
+            "-o", "json", json_output=True,
+        )["items"]
+        completed = [
+            pod for pod in pods
+            if pod.get("status", {}).get("phase") == "Succeeded" and any(
+                owner.get("kind") == "Job" and owner.get("uid") == job_uid and owner.get("controller") is True
+                for owner in pod.get("metadata", {}).get("ownerReferences", [])
+            )
+        ]
+        if len(completed) != 1:
+            raise MaintenanceError("Missing or ambiguous cleanup verification pod")
+        containers = [
+            container for container in completed[0]["status"].get("containerStatuses", [])
+            if container.get("name") == "cleanup"
+        ]
+        if len(containers) != 1:
+            raise MaintenanceError("Missing cleanup verification container")
+        terminated = containers[0].get("state", {}).get("terminated", {})
+        if terminated.get("exitCode") != 0:
+            raise MaintenanceError("Cleanup verification container did not exit successfully")
+        message = terminated.get("message", "")
+        if not isinstance(message, str) or not message or len(message.encode("utf-8")) > 3500:
+            raise MaintenanceError("Missing or oversized cleanup verification report")
+        report = json.loads(message)
+        if not isinstance(report, dict) or set(report) != {
+            "orders", "versions", "submissions", "return_events", "retained_creation_receipts",
+        } or any(type(value) is not int or value < 0 for value in report.values()):
+            raise MaintenanceError("Invalid cleanup verification report")
+        return report
+
     def database_job(self, apply):
         self.assert_no_active_jobs()
         if apply:
@@ -136,12 +169,18 @@ class Maintenance:
         name = f"up3-cleanup-{uuid.uuid4().hex[:16]}"
         labels = {JOB_LABEL: "true"}
         shell = """
-export PGHOST="$DB_SERVER" PGPORT=5432 PGSSLMODE=require PGCONNECT_TIMEOUT=10
+export PGHOST="$DB_SERVER" PGPORT=5432 PGSSLMODE=require PGCONNECT_TIMEOUT=10 LC_ALL=C
 case "$DB_SERVER" in
   *:*) export PGHOST="${DB_SERVER%:*}" PGPORT="${DB_SERVER##*:}" ;;
 esac
-exec psql -X --no-password --quiet --tuples-only --no-align \\
-  --set ON_ERROR_STOP=1 --set apply="$CLEANUP_APPLY" --file /cleanup/cleanup.sql
+report="$(psql -X --no-password --quiet --tuples-only --no-align \\
+    --set ON_ERROR_STOP=1 --set apply="$CLEANUP_APPLY" --file /cleanup/cleanup.sql)"
+if [ "${#report}" -gt 3500 ]; then
+    printf '%s' 'Cleanup verification report is too large' >&2
+    exit 1
+fi
+printf '%s' "$report" > /dev/termination-log
+printf '%s' "$report"
 """
         secrets = {
             "DB_SERVER": "rds_instance_endpoint", "PGDATABASE": "database_name",
@@ -168,6 +207,8 @@ exec psql -X --no-password --quiet --tuples-only --no-align \\
                         "containers": [{
                             "name": "cleanup", "image": "postgres:18.6",
                             "command": ["/bin/sh", "-eu", "-c", shell], "env": environment,
+                            "terminationMessagePath": "/dev/termination-log",
+                            "terminationMessagePolicy": "File",
                             "securityContext": {
                                 "allowPrivilegeEscalation": False, "readOnlyRootFilesystem": True,
                                 "capabilities": {"drop": ["ALL"]},
@@ -205,11 +246,7 @@ exec psql -X --no-password --quiet --tuples-only --no-align \\
                     terminal = True
                     if apply:
                         self.assert_paused()
-                    report = json.loads(self.kube("logs", f"job/{name}"))
-                    if not isinstance(report, dict) or set(report) != {
-                        "orders", "versions", "submissions", "return_events", "retained_creation_receipts",
-                    } or any(type(value) is not int or value < 0 for value in report.values()):
-                        raise MaintenanceError("Invalid cleanup verification report")
+                    report = self.database_report(created["metadata"]["uid"])
                     print(json.dumps(report), flush=True)
                     return report
                 if any(
