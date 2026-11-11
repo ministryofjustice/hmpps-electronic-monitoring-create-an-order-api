@@ -155,7 +155,7 @@ class SercoMockApiServer : WireMockServer(WIREMOCK_PORT) {
   fun stubGetDWandMo(caseId: String, status: HttpStatus, result: FmsRetrieveDWandMO, errorResponse: String? = null) {
     val body = errorResponse ?: responseBody(result, null)
     stubFor(
-      get(urlEqualTo("/monitoring_order/retrieveDWandMO?u_case_id=$caseId"))
+      get(urlEqualTo("/x_seem_cemo/monitoring_order/retrieveDWandMO?u_case_id=$caseId"))
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")

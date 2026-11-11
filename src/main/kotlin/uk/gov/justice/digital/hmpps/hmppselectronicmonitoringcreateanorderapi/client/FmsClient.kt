@@ -181,7 +181,7 @@ class FmsClient(@Value("\${services.serco.url}") url: String, private val fmsAut
   fun getLatestOrderDetails(caseId: String): FmsRetrieveDWandMO {
     val token = fmsAuthClient.getClientToken()
     return webClient.get()
-      .uri("/monitoring_order/retrieveDWandMO?u_case_id=$caseId")
+      .uri("/x_seem_cemo/monitoring_order/retrieveDWandMO?u_case_id=$caseId")
       .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
       .exchangeToMono { response ->
         when (response.statusCode().value()) {
