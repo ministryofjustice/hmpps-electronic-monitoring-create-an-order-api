@@ -1497,11 +1497,16 @@ class OrderServiceTest {
       private val inTheFuture = ZonedDateTime.now().plusMonths(1)
       private val allDocuments = listOf(DocumentType.LICENCE, DocumentType.COURT_ORDER, DocumentType.PHOTO_ID)
 
-      private fun submittedOrder(startDate: ZonedDateTime, status: OrderStatus = OrderStatus.SUBMITTED): Order {
+      private fun submittedOrder(
+        startDate: ZonedDateTime,
+        status: OrderStatus = OrderStatus.SUBMITTED,
+        requestType: RequestType = RequestType.REQUEST,
+      ): Order {
         val versionId = UUID.randomUUID()
         return TestUtilities.createReadyToSubmitOrder(
           versionId = versionId,
           status = status,
+          requestType = requestType,
           username = authentication.name,
           startDate = startDate,
           endDate = ZonedDateTime.now().plusMonths(6),
@@ -1520,6 +1525,13 @@ class OrderServiceTest {
         whenever(repo.save(order)).thenReturn(order)
         service.createVersion(order.id, authentication, type)
         return order.getCurrentVersion()
+      }
+
+      private fun amendAs(cohort: Cohort, order: Order): OrderVersion {
+        whenever(userCohortService.getUserCohort(authentication)).thenReturn(UserCohort(cohort))
+        whenever(repo.findById(order.id)).thenReturn(Optional.of(order))
+        whenever(repo.save(order)).thenReturn(order)
+        return service.amendOrder(order.id, authentication).order.getCurrentVersion()
       }
 
       private fun OrderVersion.documentTypes() = additionalDocuments.map { it.fileType }
@@ -1565,17 +1577,23 @@ class OrderServiceTest {
       fun `A probation user amending a rejected order keeps the licence`() {
         val order = submittedOrder(startDate = inThePast, status = OrderStatus.REJECTED)
 
-        val change = changeAs(Cohort.PROBATION, order, RequestType.AMEND_ORIGINAL_REQUEST)
+        val change = amendAs(Cohort.PROBATION, order)
 
+        assertThat(change.type).isEqualTo(RequestType.AMEND_ORIGINAL_REQUEST)
         assertThat(change.documentTypes()).containsExactlyInAnyOrderElementsOf(allDocuments)
       }
 
       @Test
-      fun `A probation user making a variation from a rejected order keeps the licence`() {
-        val order = submittedOrder(startDate = inThePast, status = OrderStatus.REJECTED)
+      fun `A probation user changing a rejected variation keeps the licence`() {
+        val order = submittedOrder(
+          startDate = inThePast,
+          status = OrderStatus.REJECTED,
+          requestType = RequestType.VARIATION,
+        )
 
         val change = changeAs(Cohort.PROBATION, order)
 
+        assertThat(change.type).isEqualTo(RequestType.VARIATION)
         assertThat(change.documentTypes()).containsExactlyInAnyOrderElementsOf(allDocuments)
       }
 

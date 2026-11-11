@@ -10,6 +10,7 @@ RUN ./gradlew --no-daemon assemble
 
 FROM ${BASE_IMAGE}
 LABEL maintainer="HMPPS Digital Studio <info@digital.justice.gov.uk>"
+LABEL uk.gov.justice.hmpps.up3-simulation-aware="true"
 
 ARG BUILD_NUMBER
 ENV BUILD_NUMBER=${BUILD_NUMBER:-1_0_0}

@@ -78,6 +78,7 @@ import java.time.Duration
 import java.time.Instant
 import java.time.OffsetDateTime
 import java.time.ZonedDateTime
+import java.time.temporal.ChronoUnit
 import java.util.UUID
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CountDownLatch
@@ -164,7 +165,7 @@ class Up3SimulationControllerTest : IntegrationTestBase() {
     assertThat(getOrder(order.id).canAmend).isFalse()
 
     val eventId = UUID.randomUUID()
-    val timestamp = Instant.now().minusSeconds(1)
+    val timestamp = Instant.now().minusSeconds(1).truncatedTo(ChronoUnit.MICROS)
     val request = """
       {
         "eventId": "$eventId",
