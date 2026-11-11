@@ -116,11 +116,14 @@ jobs:
     needs:
       - build_dev
       - helm_lint
-    uses: ./.github/workflows/dev-up3-maintenance.yml
+    uses: ministryofjustice/hmpps-github-actions/.github/workflows/deploy_env.yml@v2
     secrets: inherit
     with:
-      operation: deploy
-      version: '${{ needs.build_dev.outputs.app_version }}'
+      environment: 'dev'
+      app_version: '${{ needs.build_dev.outputs.app_version }}'
+      helm_timeout: '5m'
+      autogenerate_scheduled_downtime_cron: false
+      helm_additional_args: '--set generic-service.scheduledDowntime.enabled=false'
   deploy_preprod:
     name: Deploy to the preprod environment
     if: github.ref == 'refs/heads/main'
