@@ -64,6 +64,15 @@ jobs:
           cluster: ${{ secrets.KUBE_CLUSTER }}
           namespace: ${{ secrets.KUBE_NAMESPACE }}
           token: ${{ secrets.KUBE_TOKEN }}
+      - name: Check maintenance access
+        env:
+          NS: ${{ secrets.KUBE_NAMESPACE }}
+        run: |
+          APP=hmpps-electronic-monitoring-create-an-order-api
+          kubectl auth can-i patch "deployments.apps/$APP" -n "$NS"
+          kubectl auth can-i get "deployments.apps/$APP" --subresource=scale -n "$NS"
+          kubectl auth can-i patch "deployments.apps/$APP" --subresource=scale -n "$NS"
+          kubectl get hpa,cronjobs,jobs -n "$NS"
       - name: Run guarded dev operation
         env:
           OPERATION: ${{ inputs.operation }}
