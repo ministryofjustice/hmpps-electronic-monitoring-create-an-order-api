@@ -9,7 +9,6 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.DapoClause
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.MonitoringOrder
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.OffenceData
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.Schedule
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.Zone
 import java.util.stream.Stream
 
@@ -401,9 +400,7 @@ class MonitoringOrderNegativeArgumentsProvider : ArgumentsProvider {
     MonitoringOrderFieldCase(
       "checkinSchedule",
       {
-        it.checkinSchedule = mutableListOf(
-          Schedule("Mo", "10:00", "11:00"),
-        )
+        it.checkinSchedule = ""
       },
     ),
 
