@@ -139,9 +139,6 @@ data class OrderVersion(
   @OneToOne(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "version", orphanRemoval = true)
   var detailsOfInstallation: DetailsOfInstallation? = null,
 
-  @OneToMany(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "version", orphanRemoval = true)
-  var statusUpdates: MutableList<StatusUpdate> = mutableListOf(),
-
   @Column(name = "SUBMITTED_BY", nullable = true)
   var submittedBy: String? = null,
 

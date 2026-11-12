@@ -28,6 +28,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsSubmissionStrategyKind
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.FmsSubmissionResultRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.StatusUpdateRepository
 
 class ReturnsEventTest : IntegrationTestBase() {
 
@@ -39,6 +40,9 @@ class ReturnsEventTest : IntegrationTestBase() {
 
   @MockitoSpyBean
   lateinit var orderRepo: OrderRepository
+
+  @Autowired
+  lateinit var statusUpdateRepo: StatusUpdateRepository
 
   @MockitoSpyBean
   lateinit var fmsSubmissionResultRepository: FmsSubmissionResultRepository
@@ -155,12 +159,13 @@ class ReturnsEventTest : IntegrationTestBase() {
     await().until { queue.isEmpty() }
     assertThat(queue.dlqIsEmpty()).isEqualTo(true)
 
-    val statusUpdates = repo.findById(submittedOrder.id).get().statusUpdates
+    val statusUpdates = statusUpdateRepo.findAllByOrderId(submittedOrder.id)
 
     assertThat(statusUpdates).hasSize(1)
 
     val statusUpdate = statusUpdates.first()
     assertThat(statusUpdate.status).isEqualTo(ProcessingStatus.REJECTED)
+    assertThat(statusUpdate.statusUpdatedBy).isEqualTo("The Electronic Monitoring Service (EMS)")
     assertThat(statusUpdate.datetimeOfStatusChange).isEqualTo("2026-09-23T10:15:00Z")
     assertThat(statusUpdate.statusUpdateReasons).hasSize(1)
     assertThat(statusUpdate.statusUpdateReasons.first().section).isEqualTo("Section 5")

@@ -30,7 +30,6 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.RejectionReason
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderInformationDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderInformationPageDto
@@ -55,6 +54,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.MonitoringOrder
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.FmsSubmissionResultRepository
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.StatusUpdateRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidationError
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.utilities.TestUtilities
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
@@ -72,6 +72,9 @@ class OrderControllerTest : IntegrationTestBase() {
 
   @Autowired
   lateinit var fmsResultRepository: FmsSubmissionResultRepository
+
+  @Autowired
+  lateinit var statusUpdateRepo: StatusUpdateRepository
   private val objectMapper: ObjectMapper = jacksonObjectMapper()
   val mockStartDate = ZonedDateTime.parse("2040-02-07T10:00:00Z")
   val mockEndDate = ZonedDateTime.parse("2040-03-07T11:00:00Z")
@@ -121,6 +124,10 @@ class OrderControllerTest : IntegrationTestBase() {
       assertThat(order.lastUpdatedBy).isEqualTo(testUserFullName)
       assertThat(order.isSentencingAct).isNull()
       assertThat(repo.findById(order.id).orElseThrow().isSentencingAct).isNull()
+
+      val statusUpdate = statusUpdateRepo.findAllByOrderId(order.id).single()
+      assertThat(statusUpdate.status).isEqualTo(ProcessingStatus.CREATED)
+      assertThat(statusUpdate.statusUpdatedBy).isEqualTo(testUserFullName)
     }
 
     @Test
@@ -1415,49 +1422,6 @@ class OrderControllerTest : IntegrationTestBase() {
       assertThat(result.monitoringConditions).isNotNull()
       assertThat(result.monitoringConditions?.startDate).isEqualTo(mockStartDate)
       assertThat(result.monitoringConditions?.endDate).isEqualTo(mockEndDate)
-    }
-
-    @Test
-    fun `It should return the status updates of the current version`() {
-      val order = createSubmittedOrder()
-      order.reject(
-        ZonedDateTime.parse("2025-01-01T10:00:00Z"),
-        listOf(RejectionReason("DEVICE_WEARER", "Wrong name")),
-      )
-      repo.save(order)
-
-      val result = webTestClient.get()
-        .uri("/api/orders/${order.id}")
-        .headers(setAuthorisation())
-        .exchange()
-        .expectStatus()
-        .isOk
-        .expectBody(OrderDto::class.java)
-        .returnResult()
-        .responseBody!!
-
-      assertThat(result.statusUpdates).hasSize(1)
-      assertThat(result.statusUpdates[0].status).isEqualTo(ProcessingStatus.REJECTED)
-      assertThat(result.statusUpdates[0].statusUpdateReasons).hasSize(1)
-      assertThat(result.statusUpdates[0].statusUpdateReasons[0].section).isEqualTo("DEVICE_WEARER")
-      assertThat(result.statusUpdates[0].statusUpdateReasons[0].details).isEqualTo("Wrong name")
-    }
-
-    @Test
-    fun `It should return an empty list of status updates when there are none`() {
-      val order = createOrder()
-
-      val result = webTestClient.get()
-        .uri("/api/orders/${order.id}")
-        .headers(setAuthorisation())
-        .exchange()
-        .expectStatus()
-        .isOk
-        .expectBody(OrderDto::class.java)
-        .returnResult()
-        .responseBody!!
-
-      assertThat(result.statusUpdates).isEmpty()
     }
   }
 
