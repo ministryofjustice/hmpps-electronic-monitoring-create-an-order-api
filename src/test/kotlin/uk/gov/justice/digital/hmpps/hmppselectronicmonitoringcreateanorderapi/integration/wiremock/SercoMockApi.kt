@@ -18,6 +18,8 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsErrorResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsRetrieveDWandMO
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsRetrieveDWandMOResponse
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsRetrieveDWandMOResult
 
 class SercoMockApiExtension :
   BeforeAllCallback,
@@ -153,7 +155,15 @@ class SercoMockApiServer : WireMockServer(WIREMOCK_PORT) {
   }
 
   fun stubGetDWandMo(caseId: String, status: HttpStatus, result: FmsRetrieveDWandMO, errorResponse: String? = null) {
-    val body = errorResponse ?: responseBody(result, null)
+    val response = FmsRetrieveDWandMOResponse(
+      result = listOf(
+        FmsRetrieveDWandMOResult(
+          message = "The request has been processed successfully.",
+          payload = result,
+        ),
+      ),
+    )
+    val body = errorResponse ?: responseBody(response, null)
     stubFor(
       get(urlEqualTo("/x_seem_cemo/monitoring_order/retrieveDWandMO?u_case_id=$caseId"))
         .willReturn(
