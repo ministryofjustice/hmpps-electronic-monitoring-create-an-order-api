@@ -12,6 +12,8 @@ import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.OneToMany
 import jakarta.persistence.Table
+import org.hibernate.annotations.OnDelete
+import org.hibernate.annotations.OnDeleteAction
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ProcessingStatus
 import java.time.ZonedDateTime
 import java.util.UUID
@@ -23,8 +25,8 @@ data class StatusUpdate(
   @Column(name = "ID", nullable = false, unique = true)
   val id: UUID = UUID.randomUUID(),
 
-  @Column(name = "VERSION_ID", nullable = false, unique = false)
-  val versionId: UUID,
+  @Column(name = "ORDER_ID", nullable = false, unique = false)
+  val orderId: UUID,
 
   @Column(name = "STATUS", nullable = false, unique = false)
   @Enumerated(EnumType.STRING)
@@ -33,11 +35,15 @@ data class StatusUpdate(
   @Column(name = "DATE_TIME_OF_STATUS_CHANGE", nullable = false, unique = false)
   val datetimeOfStatusChange: ZonedDateTime,
 
+  @Column(name = "STATUS_UPDATED_BY", nullable = true)
+  val statusUpdatedBy: String? = null,
+
   @OneToMany(fetch = FetchType.LAZY, cascade = [ALL], mappedBy = "statusUpdate", orphanRemoval = true)
   var statusUpdateReasons: MutableList<StatusUpdateReason> = mutableListOf(),
 
   @Schema(hidden = true)
-  @ManyToOne
-  @JoinColumn(name = "VERSION_ID", updatable = false, insertable = false)
-  private val version: OrderVersion? = null,
+  @ManyToOne(fetch = FetchType.LAZY)
+  @OnDelete(action = OnDeleteAction.CASCADE)
+  @JoinColumn(name = "ORDER_ID", updatable = false, insertable = false)
+  private val order: Order? = null,
 )
