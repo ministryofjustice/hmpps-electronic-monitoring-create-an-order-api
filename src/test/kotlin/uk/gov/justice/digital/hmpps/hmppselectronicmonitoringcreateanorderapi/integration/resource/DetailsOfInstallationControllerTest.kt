@@ -7,12 +7,14 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
+import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.web.reactive.function.BodyInserters
 import tools.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.UpdateOrderIntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.UriTestCase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateDetailsOfInstallationDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidationError
+import java.util.UUID
 
 class DetailsOfInstallationControllerTest : UpdateOrderIntegrationTestBase() {
 
@@ -57,6 +59,23 @@ class DetailsOfInstallationControllerTest : UpdateOrderIntegrationTestBase() {
     Assertions.assertThat(updatedOrder.detailsOfInstallation?.genderRiskDetails).isEqualTo("some gender")
   }
 
+  @Test
+  fun `should return error if risk details is more than 500 chars`() {
+    val order = createOrder()
+    val result = callDetailsOfInstallationEndpoint(
+      order.id,
+      mockValidRequestBody(riskDetails = "a".repeat(501)),
+    )
+      .expectStatus()
+      .isBadRequest
+      .expectBodyList(ValidationError::class.java)
+      .returnResult()
+
+    Assertions.assertThat(result.responseBody!!).contains(
+      ValidationError("riskDetails", "Risk details is too long"),
+    )
+  }
+
   @ParameterizedTest(name = "should accept and persist {0}")
   @ValueSource(strings = ["NO_RISK_AT_ADDRESS", "RISK_AT_ADDRESS_UNKNOWN"])
   fun `should accept address-only risk categories`(riskCategory: String) {
@@ -96,6 +115,20 @@ class DetailsOfInstallationControllerTest : UpdateOrderIntegrationTestBase() {
     Assertions.assertThat(result.responseBody!!).contains(
       ValidationError("riskCategory", "Risk categories must be a valid risk category"),
     )
+  }
+
+  private fun callDetailsOfInstallationEndpoint(
+    orderId: UUID,
+    body: String,
+    username: String? = null,
+  ): WebTestClient.ResponseSpec {
+    val headers = if (username != null) setAuthorisation(username) else setAuthorisation()
+    return webTestClient.put()
+      .uri("/api/orders/$orderId/details-of-installation")
+      .contentType(MediaType.APPLICATION_JSON)
+      .body(BodyInserters.fromValue(body))
+      .headers(headers)
+      .exchange()
   }
 
   private fun mockValidRequestBody(
