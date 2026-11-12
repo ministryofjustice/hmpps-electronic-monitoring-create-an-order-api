@@ -227,6 +227,8 @@ class FmsClient(@Value("\${services.serco.url}") url: String, private val fmsAut
           }
         }
       }
-      .block()!!.result.firstOrNull()?.payload?: throw CreateSercoEntityException("No payload returned for caseId=$caseId")
+      .block()!!.result.firstOrNull()?.payload ?: throw CreateSercoEntityException(
+      "No payload returned for caseId=$caseId",
+    )
   }
 }
