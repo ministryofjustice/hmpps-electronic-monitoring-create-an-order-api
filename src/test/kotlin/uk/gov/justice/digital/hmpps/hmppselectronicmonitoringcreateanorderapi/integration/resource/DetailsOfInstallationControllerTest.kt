@@ -60,6 +60,22 @@ class DetailsOfInstallationControllerTest : UpdateOrderIntegrationTestBase() {
   }
 
   @Test
+  fun `should accept and preserve if risk details is 500 chars`() {
+    val order = createOrder()
+    val riskDetails = "a".repeat(500)
+
+    callDetailsOfInstallationEndpoint(
+      order.id,
+      mockValidRequestBody(riskDetails = riskDetails),
+    )
+      .expectStatus()
+      .isOk
+
+    val updatedOrder = getOrder(order.id)
+    Assertions.assertThat(updatedOrder.detailsOfInstallation?.riskDetails).isEqualTo(riskDetails)
+  }
+
+  @Test
   fun `should return error if risk details is more than 500 chars`() {
     val order = createOrder()
     val result = callDetailsOfInstallationEndpoint(
