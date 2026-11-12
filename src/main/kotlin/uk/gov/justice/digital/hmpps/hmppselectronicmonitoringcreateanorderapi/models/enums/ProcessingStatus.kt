@@ -3,4 +3,8 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.m
 enum class ProcessingStatus {
   ACCEPTED,
   REJECTED,
+  CREATED,
+  VERSION_CREATED,
+  SUBMITTED,
+  SUBMISSION_FAILED,
 }

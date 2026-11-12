@@ -35,6 +35,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.co
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.config.FeatureFlags
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.BadRequestException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.ForbiddenException
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.SubmitOrderException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AdditionalDocument
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationAppointment
@@ -42,6 +43,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InterestedParties
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.StatusUpdate
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.Cohort
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.UserCohort
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.CreateOrderDto
@@ -57,6 +59,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderListView
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Prison
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ProcessingStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.SubmissionStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsDeviceWearerSubmissionResult
@@ -64,6 +67,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsSubmissionResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsSubmissionStrategyKind
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.StatusUpdateRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.projections.OrderVersionListInformation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.utilities.TestUtilities
 import java.time.OffsetDateTime
@@ -75,6 +79,7 @@ import java.util.*
 @JsonTest
 class OrderServiceTest {
   private lateinit var repo: OrderRepository
+  private val statusUpdateRepo: StatusUpdateRepository = mock()
   private lateinit var fmsService: FmsService
   private lateinit var service: OrderService
   private lateinit var userCohortService: UserCohortService
@@ -91,14 +96,16 @@ class OrderServiceTest {
     manageUserApi = mock()
     val featureFlags = FeatureFlags(ddV6CourtMappings = true, dataDictionaryVersion = DataDictionaryVersion.DDV4)
 
-    service = OrderService(fmsService, featureFlags, manageUserApi)
+    service = OrderService(fmsService, featureFlags, manageUserApi, statusUpdateRepo)
     service.orderRepo = repo
-    authentication = mock(AuthAwareAuthenticationToken::class.java)
+    val authAwareAuthentication = mock(AuthAwareAuthenticationToken::class.java)
+    whenever(authAwareAuthentication.getUserFullName()).thenReturn("Mock User")
+    authentication = authAwareAuthentication
     whenever(authentication.token).thenReturn(mock<Jwt>())
     whenever(authentication.name).thenReturn("mockUser")
     whenever(userCohortService.getUserCohort(authentication)).thenReturn(UserCohort(Cohort.OTHER))
     val context = SecurityContextHolder.createEmptyContext()
-    context.authentication = authentication
+    context.authentication = authAwareAuthentication
     SecurityContextHolder.setContext(context)
     whenever(repo.save(any<Order>())).thenReturn(TestUtilities.createReadyToSubmitOrder())
     service.userCohortService = userCohortService
@@ -279,6 +286,13 @@ class OrderServiceTest {
   }
 
   @Test
+  fun `Creating an order records a CREATED status update by the user`() {
+    val result = service.createOrder("mockUser", CreateOrderDto())
+
+    assertSingleStatusUpdate(result.id, ProcessingStatus.CREATED)
+  }
+
+  @Test
   fun `Create a standalone variation with Sentencing Act unset`() {
     val result = service.createOrder("mockUser", CreateOrderDto(RequestType.VARIATION))
 
@@ -323,6 +337,53 @@ class OrderServiceTest {
       verify(repo, times(1)).save(capture())
       assertThat(firstValue.getCurrentVersion().submittedBy).isEqualTo("mockName")
     }
+  }
+
+  @Test
+  fun `Submitting an order records a SUBMITTED status update by the user`() {
+    val mockOrder = TestUtilities.createReadyToSubmitOrder(username = "mockUser")
+    whenever(repo.findById(mockOrder.id)).thenReturn(Optional.of(mockOrder))
+    whenever(fmsService.submitOrder(any<Order>(), eq(FmsOrderSource.CEMO))).thenReturn(
+      FmsSubmissionResult(
+        orderId = mockOrder.getCurrentVersion().id,
+        deviceWearerResult = FmsDeviceWearerSubmissionResult(
+          status = SubmissionStatus.SUCCESS,
+          deviceWearerId = "mockDeviceWearerId",
+        ),
+        monitoringOrderResult = FmsMonitoringOrderSubmissionResult(
+          status = SubmissionStatus.SUCCESS,
+          monitoringOrderId = "mockMonitoringOrderId",
+        ),
+        orderSource = FmsOrderSource.CEMO,
+        strategy = FmsSubmissionStrategyKind.ORDER,
+      ),
+    )
+    whenever(repo.save(any<Order>())).thenReturn(mockOrder)
+
+    service.submitOrder(mockOrder.id, authentication, "mockName")
+
+    assertSingleStatusUpdate(mockOrder.id, ProcessingStatus.SUBMITTED)
+  }
+
+  @Test
+  fun `A failed submission records a SUBMISSION_FAILED status update by the user`() {
+    val mockOrder = TestUtilities.createReadyToSubmitOrder(username = "mockUser")
+    whenever(repo.findById(mockOrder.id)).thenReturn(Optional.of(mockOrder))
+    whenever(fmsService.submitOrder(any<Order>(), eq(FmsOrderSource.CEMO))).thenThrow(RuntimeException("FMS down"))
+    whenever(repo.save(any<Order>())).thenReturn(mockOrder)
+
+    assertThrows<SubmitOrderException> { service.submitOrder(mockOrder.id, authentication, "mockName") }
+
+    assertSingleStatusUpdate(mockOrder.id, ProcessingStatus.SUBMISSION_FAILED)
+  }
+
+  private fun assertSingleStatusUpdate(orderId: UUID, status: ProcessingStatus) {
+    val captor = argumentCaptor<StatusUpdate>()
+    verify(statusUpdateRepo).save(captor.capture())
+    assertThat(captor.firstValue.orderId).isEqualTo(orderId)
+    assertThat(captor.firstValue.status).isEqualTo(status)
+    assertThat(captor.firstValue.statusUpdatedBy).isEqualTo("Mock User")
+    assertThat(captor.firstValue.statusUpdateReasons).isEmpty()
   }
 
   @Test
@@ -867,6 +928,7 @@ class OrderServiceTest {
       assertThat(exception.message).isEqualTo("New order version is not allowed for order with status $status")
     } else {
       service.createVersion(orderId, authentication, RequestType.VARIATION)
+      assertSingleStatusUpdate(orderId, ProcessingStatus.VERSION_CREATED)
       argumentCaptor<Order>().apply {
         verify(repo).save(capture())
         assertThat(firstValue.versions).hasSizeGreaterThanOrEqualTo(2)
@@ -915,7 +977,7 @@ class OrderServiceTest {
     @BeforeEach
     fun setup() {
       val featureFlags = FeatureFlags(ddV6CourtMappings = true, dataDictionaryVersion = DataDictionaryVersion.DDV5)
-      service = OrderService(fmsService, featureFlags, manageUserApi)
+      service = OrderService(fmsService, featureFlags, manageUserApi, statusUpdateRepo)
       service.userCohortService = userCohortService
       service.orderRepo = repo
       whenever(repo.findById(order.id)).thenReturn(Optional.of(order))
@@ -1427,7 +1489,7 @@ class OrderServiceTest {
       @BeforeEach
       fun setup() {
         val featureFlags = FeatureFlags(ddV6CourtMappings = true, dataDictionaryVersion = DataDictionaryVersion.DDV5)
-        service = OrderService(fmsService, featureFlags, manageUserApi)
+        service = OrderService(fmsService, featureFlags, manageUserApi, statusUpdateRepo)
         service.orderRepo = repo
         service.userCohortService = userCohortService
         whenever(repo.findById(orderInPast.id)).thenReturn(Optional.of(orderInPast))

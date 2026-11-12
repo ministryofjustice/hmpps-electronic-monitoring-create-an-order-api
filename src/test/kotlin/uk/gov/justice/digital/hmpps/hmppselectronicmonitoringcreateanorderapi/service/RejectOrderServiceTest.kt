@@ -4,12 +4,16 @@ import jakarta.persistence.EntityNotFoundException
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.RejectionReason
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.StatusUpdate
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ProcessingStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.StatusUpdateRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.utilities.TestUtilities
 import java.time.ZonedDateTime
 
@@ -19,7 +23,8 @@ class RejectOrderServiceTest {
   fun `rejects and saves the order matching the given case id`() {
     val gateway = FakeOrderByCaseIdGateway()
     val repo = mock<OrderRepository>()
-    val service = RejectOrderService(gateway, repo)
+    val statusUpdateRepo = mock<StatusUpdateRepository>()
+    val service = RejectOrderService(gateway, repo, statusUpdateRepo)
 
     val order = TestUtilities.createReadyToSubmitOrder()
     gateway.addOrder("CASE123", order)
@@ -31,21 +36,30 @@ class RejectOrderServiceTest {
     )
 
     assertThat(order.status).isEqualTo(OrderStatus.REJECTED)
-    assertThat(order.statusUpdates).hasSize(1)
     assertThat(result).isEqualTo(order.id)
     verify(repo).save(order)
+
+    val captor = argumentCaptor<StatusUpdate>()
+    verify(statusUpdateRepo).save(captor.capture())
+    val update = captor.firstValue
+    assertThat(update.orderId).isEqualTo(order.id)
+    assertThat(update.status).isEqualTo(ProcessingStatus.REJECTED)
+    assertThat(update.statusUpdatedBy).isEqualTo("The Electronic Monitoring Service (EMS)")
+    assertThat(update.statusUpdateReasons.map { it.section }).containsExactly("Section A")
+    assertThat(update.statusUpdateReasons.map { it.statusUpdateId }).containsOnly(update.id)
   }
 
   @Test
   fun `throws and saves nothing when no order matches the given case id`() {
     val gateway = FakeOrderByCaseIdGateway()
     val repo = mock<OrderRepository>()
-    val service = RejectOrderService(gateway, repo)
+    val statusUpdateRepo = mock<StatusUpdateRepository>()
+    val service = RejectOrderService(gateway, repo, statusUpdateRepo)
 
     assertThatThrownBy {
       service.execute("UNKNOWN_CASE_ID", ZonedDateTime.now(), emptyList())
     }.isInstanceOf(EntityNotFoundException::class.java)
 
-    verifyNoInteractions(repo)
+    verifyNoInteractions(repo, statusUpdateRepo)
   }
 }
