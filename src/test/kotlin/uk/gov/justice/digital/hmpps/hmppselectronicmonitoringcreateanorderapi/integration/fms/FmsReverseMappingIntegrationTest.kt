@@ -124,8 +124,8 @@ class FmsReverseMappingIntegrationTest {
     val order = response.monitoringOrder
 
     val curfew = order.toCurfewConditions(versionId)
-    assertThat(curfew!!.startDate).isEqualTo(ZonedDateTime.of(2000, 7, 1, 8, 0, 0, 0, london))
-    assertThat(curfew.endDate).isEqualTo(ZonedDateTime.of(2001, 7, 1, 8, 0, 0, 0, london))
+    assertThat(curfew!!.startDate).isEqualTo(ZonedDateTime.of(2000, 7, 1, 0, 0, 0, 0, london))
+    assertThat(curfew.endDate).isEqualTo(ZonedDateTime.of(2001, 7, 1, 0, 0, 0, 0, london))
     assertThat(curfew.curfewAdditionalDetails).isEqualTo("wears a tag")
 
     val release = order.toCurfewReleaseDateConditions(versionId)
