@@ -1,11 +1,14 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto
 
 import jakarta.validation.constraints.AssertTrue
+import jakarta.validation.constraints.Size
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.data.ValidationErrors
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RiskCategory
 
 data class UpdateDetailsOfInstallationDto(
   val riskCategory: Array<String>? = null,
+
+  @field:Size(max = 500, message = ValidationErrors.InstallationAndRisk.RISK_DETAILS_TOO_LONG)
   val riskDetails: String? = "",
   val genderRiskDetails: String? = null,
 ) {

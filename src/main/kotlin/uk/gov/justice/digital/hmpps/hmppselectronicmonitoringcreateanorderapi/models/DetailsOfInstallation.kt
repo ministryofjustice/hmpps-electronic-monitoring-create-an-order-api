@@ -26,7 +26,7 @@ data class DetailsOfInstallation(
   @Column(name = "RISK_CATEGORY", nullable = true)
   var riskCategory: Array<String>? = null,
 
-  @Column(name = "RISK_DETAILS", nullable = true)
+  @Column(name = "RISK_DETAILS", nullable = true, length = 500)
   var riskDetails: String? = "",
 
   @Column(name = "GENDER_RISK_DETAILS", nullable = true)
