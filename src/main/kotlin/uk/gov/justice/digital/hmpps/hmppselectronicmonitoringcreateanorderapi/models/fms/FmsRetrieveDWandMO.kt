@@ -7,6 +7,10 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import java.util.UUID
 
+data class FmsRetrieveDWandMOResponse(val result: List<FmsRetrieveDWandMOResult>)
+
+data class FmsRetrieveDWandMOResult(val message: String?, val payload: FmsRetrieveDWandMO?)
+
 data class FmsRetrieveDWandMO(
   @JsonProperty("case_id")
   val caseId: String,

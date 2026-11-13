@@ -167,7 +167,7 @@ data class MonitoringOrder(
   @JsonProperty("schedule")
   var schedule: String? = "",
   @JsonProperty("checkin_schedule")
-  var checkinSchedule: MutableList<Schedule>? = mutableListOf(),
+  var checkinSchedule: String? = "",
   @JsonProperty("revocation_date")
   var revocationDate: String? = "",
   @JsonProperty("revocation_type")
