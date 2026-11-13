@@ -1,7 +1,7 @@
 plugins {
   id("uk.gov.justice.hmpps.gradle-spring-boot") version "11.0.15"
-  kotlin("plugin.spring") version "2.4.20"
-  kotlin("plugin.jpa") version "2.4.20"
+  kotlin("plugin.spring") version "2.4.21"
+  kotlin("plugin.jpa") version "2.4.21"
 }
 
 configurations {
@@ -14,32 +14,32 @@ repositories {
 
 dependencies {
   implementation("commons-io:commons-io:2.22.0")
-  implementation("com.googlecode.libphonenumber:libphonenumber:9.0.40")
-  implementation("org.apache.tika:tika-core:4.1.0")
+  implementation("com.googlecode.libphonenumber:libphonenumber:9.0.43")
+  implementation("org.apache.tika:tika-core:4.2.0")
   implementation("org.apache.logging.log4j:log4j-api:2.26.1")
-  implementation("io.sentry:sentry-spring-boot-4:8.59.0")
+  implementation("io.sentry:sentry-spring-boot-4:8.64.0")
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.2.0")
   implementation("uk.gov.service.notify:notifications-java-client:6.2.1-RELEASE")
 
   // starters
-  implementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter:3.0.3")
+  implementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter:3.1.0")
   implementation("org.springframework.boot:spring-boot-starter-webflux")
   implementation("org.springframework.boot:spring-boot-starter-security")
   implementation("org.springframework.boot:spring-boot-starter-web")
   implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
   implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-  implementation("io.awspring.cloud:spring-cloud-aws-starter-s3:4.2.0")
+  implementation("io.awspring.cloud:spring-cloud-aws-starter-s3:4.2.2")
   implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:7.4.1")
   implementation("org.springframework.boot:spring-boot-starter-webclient")
   implementation("org.springframework.boot:spring-boot-starter-flyway")
 
   // other
   runtimeOnly("org.flywaydb:flyway-database-postgresql")
-  runtimeOnly("org.postgresql:postgresql:42.7.13")
+  runtimeOnly("org.postgresql:postgresql:42.7.14")
 
   // test
-  testImplementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter-test:3.0.3")
+  testImplementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter-test:3.1.0")
   testImplementation("org.springframework.boot:spring-boot-webtestclient")
   testImplementation("org.wiremock:wiremock-standalone:3.13.2")
   testImplementation("com.h2database:h2:2.5.252")
