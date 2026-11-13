@@ -3,7 +3,9 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.s
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.CorePersonRecordApi
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.BadRequestException
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CorePersonRecord
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.GetCorePersonDetailsResponse
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Gender
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisationDDv5
 import java.util.UUID
 
@@ -16,6 +18,11 @@ class DeviceWearerDetailsService(private val webClient: CorePersonRecordApi) : O
     val order = this.findEditableOrder(orderId, username)
     val notifyingOrganisation = order.interestedParties?.notifyingOrganisation
     val record = fetchPersonRecord(notifyingOrganisation, normalisedOrganisationSearchId, order.versionId)
+    record.deviceWearer?.let { deviceWearer ->
+      if (deviceWearer.gender.isNullOrBlank()) {
+        deviceWearer.gender = Gender.NOT_ABLE_TO_PROVIDE_THIS_INFORMATION.name
+      }
+    }
     order.deviceWearer = record.deviceWearer
     order.addresses.addAll(record.addresses)
     order.contactDetails = record.contactDetails
@@ -37,12 +44,17 @@ class DeviceWearerDetailsService(private val webClient: CorePersonRecordApi) : O
     )
   }
 
-  private fun fetchPersonRecord(notifyingOrganisation: String?, organisationSearchId: String, versionId: UUID) = when {
-    notifyingOrganisation == NotifyingOrganisationDDv5.PRISON.name ||
-      notifyingOrganisation == NotifyingOrganisationDDv5.YOUTH_CUSTODY_SERVICE.name ->
+  private fun fetchPersonRecord(
+    notifyingOrganisation: String?,
+    organisationSearchId: String,
+    versionId: UUID,
+  ): CorePersonRecord = when (notifyingOrganisation) {
+    NotifyingOrganisationDDv5.PRISON.name, NotifyingOrganisationDDv5.YOUTH_CUSTODY_SERVICE.name ->
       webClient.getPersonByPrisonNumber(organisationSearchId, versionId)
-    notifyingOrganisation == NotifyingOrganisationDDv5.PROBATION.name ->
+
+    NotifyingOrganisationDDv5.PROBATION.name ->
       webClient.getPersonByCrn(organisationSearchId, versionId)
+
     else -> throw BadRequestException(
       "Notifying organisation $notifyingOrganisation is unsupported for Core Person Record lookup",
     )
