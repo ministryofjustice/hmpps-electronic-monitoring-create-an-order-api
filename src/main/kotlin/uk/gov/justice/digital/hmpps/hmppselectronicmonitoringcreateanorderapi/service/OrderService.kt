@@ -77,15 +77,17 @@ class OrderService(
     )
 
     updateLastUpdatedByAndSaveOrder(order)
-    recordStatusUpdate(order.id, ProcessingStatus.CREATED)
+    recordStatusUpdate(order, order.versions[0], ProcessingStatus.CREATED)
     return order
   }
 
-  private fun recordStatusUpdate(orderId: UUID, status: ProcessingStatus) {
+  private fun recordStatusUpdate(order: Order, version: OrderVersion, status: ProcessingStatus) {
     val authentication = SecurityContextHolder.getContext().authentication as AuthAwareAuthenticationToken
     statusUpdateRepo.save(
       StatusUpdate(
-        orderId = orderId,
+        orderId = order.id,
+        orderVersionId = version.id,
+        orderVersionType = version.type,
         status = status,
         datetimeOfStatusChange = ZonedDateTime.now(),
         statusUpdatedBy = authentication.getUserFullName(),
@@ -299,7 +301,7 @@ class OrderService(
       newOrderVersion.additionalDocuments.removeAll { it.fileType == DocumentType.LICENCE }
     }
     val savedOrder = updateLastUpdatedByAndSaveOrder(order)
-    recordStatusUpdate(order.id, ProcessingStatus.VERSION_CREATED)
+    recordStatusUpdate(order, newOrderVersion, ProcessingStatus.VERSION_CREATED)
     return savedOrder
   }
 
@@ -347,12 +349,12 @@ class OrderService(
           order.submittedByEmail = runCatching { manageUserApi.getUserEmail(token.token) }.getOrNull()
           order.tags = getTags(order)
           updateLastUpdatedByAndSaveOrder(order)
-          recordStatusUpdate(order.id, ProcessingStatus.SUBMITTED)
+          recordStatusUpdate(order, order.getCurrentVersion(), ProcessingStatus.SUBMITTED)
         }
       } catch (e: Exception) {
         order.status = OrderStatus.ERROR
         updateLastUpdatedByAndSaveOrder(order)
-        recordStatusUpdate(order.id, ProcessingStatus.SUBMISSION_FAILED)
+        recordStatusUpdate(order, order.getCurrentVersion(), ProcessingStatus.SUBMISSION_FAILED)
         if (e is SubmitOrderException) {
           throw e
         }

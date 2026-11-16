@@ -29,6 +29,8 @@ class RejectOrderService(
 
     val update = StatusUpdate(
       orderId = order.id,
+      orderVersionId = order.versionId,
+      orderVersionType = order.type,
       status = ProcessingStatus.REJECTED,
       datetimeOfStatusChange = dateTime,
       statusUpdatedBy = EMS_NAME,

@@ -10,6 +10,7 @@ import jakarta.persistence.Id
 import jakarta.persistence.OneToMany
 import jakarta.persistence.Table
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ProcessingStatus
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import java.time.ZonedDateTime
 import java.util.UUID
 
@@ -22,6 +23,13 @@ data class StatusUpdate(
 
   @Column(name = "ORDER_ID", nullable = false, unique = false)
   val orderId: UUID,
+
+  @Column(name = "ORDER_VERSION_ID", nullable = false, unique = false)
+  val orderVersionId: UUID,
+
+  @Column(name = "ORDER_VERSION_TYPE", nullable = false, unique = false)
+  @Enumerated(EnumType.STRING)
+  val orderVersionType: RequestType,
 
   @Column(name = "STATUS", nullable = false, unique = false)
   @Enumerated(EnumType.STRING)

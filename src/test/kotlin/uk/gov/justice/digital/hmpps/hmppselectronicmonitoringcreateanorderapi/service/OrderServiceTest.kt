@@ -289,7 +289,7 @@ class OrderServiceTest {
   fun `Creating an order records a CREATED status update by the user`() {
     val result = service.createOrder("mockUser", CreateOrderDto())
 
-    assertSingleStatusUpdate(result.id, ProcessingStatus.CREATED)
+    assertSingleStatusUpdate(result, ProcessingStatus.CREATED)
   }
 
   @Test
@@ -362,7 +362,7 @@ class OrderServiceTest {
 
     service.submitOrder(mockOrder.id, authentication, "mockName")
 
-    assertSingleStatusUpdate(mockOrder.id, ProcessingStatus.SUBMITTED)
+    assertSingleStatusUpdate(mockOrder, ProcessingStatus.SUBMITTED)
   }
 
   @Test
@@ -374,13 +374,16 @@ class OrderServiceTest {
 
     assertThrows<SubmitOrderException> { service.submitOrder(mockOrder.id, authentication, "mockName") }
 
-    assertSingleStatusUpdate(mockOrder.id, ProcessingStatus.SUBMISSION_FAILED)
+    assertSingleStatusUpdate(mockOrder, ProcessingStatus.SUBMISSION_FAILED)
   }
 
-  private fun assertSingleStatusUpdate(orderId: UUID, status: ProcessingStatus) {
+  private fun assertSingleStatusUpdate(order: Order, status: ProcessingStatus) {
     val captor = argumentCaptor<StatusUpdate>()
     verify(statusUpdateRepo).save(captor.capture())
-    assertThat(captor.firstValue.orderId).isEqualTo(orderId)
+    val version = order.getCurrentVersion()
+    assertThat(captor.firstValue.orderId).isEqualTo(order.id)
+    assertThat(captor.firstValue.orderVersionId).isEqualTo(version.id)
+    assertThat(captor.firstValue.orderVersionType).isEqualTo(version.type)
     assertThat(captor.firstValue.status).isEqualTo(status)
     assertThat(captor.firstValue.statusUpdatedBy).isEqualTo("Mock User")
     assertThat(captor.firstValue.statusUpdateReasons).isEmpty()
@@ -928,7 +931,7 @@ class OrderServiceTest {
       assertThat(exception.message).isEqualTo("New order version is not allowed for order with status $status")
     } else {
       service.createVersion(orderId, authentication, RequestType.VARIATION)
-      assertSingleStatusUpdate(orderId, ProcessingStatus.VERSION_CREATED)
+      assertSingleStatusUpdate(order, ProcessingStatus.VERSION_CREATED)
       argumentCaptor<Order>().apply {
         verify(repo).save(capture())
         assertThat(firstValue.versions).hasSizeGreaterThanOrEqualTo(2)

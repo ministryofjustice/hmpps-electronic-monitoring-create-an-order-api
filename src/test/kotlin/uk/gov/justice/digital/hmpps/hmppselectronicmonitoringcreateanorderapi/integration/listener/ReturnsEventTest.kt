@@ -164,6 +164,8 @@ class ReturnsEventTest : IntegrationTestBase() {
     assertThat(statusUpdates).hasSize(1)
 
     val statusUpdate = statusUpdates.first()
+    assertThat(statusUpdate.orderVersionId).isEqualTo(submittedOrder.versionId)
+    assertThat(statusUpdate.orderVersionType).isEqualTo(submittedOrder.type)
     assertThat(statusUpdate.status).isEqualTo(ProcessingStatus.REJECTED)
     assertThat(statusUpdate.statusUpdatedBy).isEqualTo("The Electronic Monitoring Service (EMS)")
     assertThat(statusUpdate.datetimeOfStatusChange).isEqualTo("2026-09-23T10:15:00Z")

@@ -1,21 +1,24 @@
 ALTER TABLE status_update
     ADD COLUMN status_updated_by VARCHAR(255);
 
--- Status updates now belong to the order rather than to a single order version.
+-- Status updates now belong to the order, and keep a record of the version (and its type) they relate to.
 ALTER TABLE status_update
-    ADD COLUMN order_id UUID;
+    ADD COLUMN order_id UUID,
+    ADD COLUMN order_version_type VARCHAR(255);
 
 UPDATE status_update
-SET order_id = (SELECT ov.order_id FROM order_version ov WHERE ov.id = status_update.version_id);
+SET order_id           = (SELECT ov.order_id FROM order_version ov WHERE ov.id = status_update.version_id),
+    order_version_type = (SELECT ov.type FROM order_version ov WHERE ov.id = status_update.version_id);
 
 ALTER TABLE status_update
-    ALTER COLUMN order_id SET NOT NULL;
+    ALTER COLUMN order_id SET NOT NULL,
+    ALTER COLUMN order_version_type SET NOT NULL;
 
 ALTER TABLE status_update
     DROP CONSTRAINT FK_STATUS_UPDATE_ON_VERSION;
 
 ALTER TABLE status_update
-    DROP COLUMN version_id;
+    RENAME COLUMN version_id TO order_version_id;
 
 -- Status updates are no longer owned by Order in JPA, so the database cascades deletes instead.
 ALTER TABLE status_update

@@ -43,6 +43,8 @@ class RejectOrderServiceTest {
     verify(statusUpdateRepo).save(captor.capture())
     val update = captor.firstValue
     assertThat(update.orderId).isEqualTo(order.id)
+    assertThat(update.orderVersionId).isEqualTo(order.versionId)
+    assertThat(update.orderVersionType).isEqualTo(order.type)
     assertThat(update.status).isEqualTo(ProcessingStatus.REJECTED)
     assertThat(update.statusUpdatedBy).isEqualTo("The Electronic Monitoring Service (EMS)")
     assertThat(update.statusUpdateReasons.map { it.section }).containsExactly("Section A")

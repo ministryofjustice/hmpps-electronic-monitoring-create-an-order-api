@@ -126,6 +126,8 @@ class OrderControllerTest : IntegrationTestBase() {
       assertThat(repo.findById(order.id).orElseThrow().isSentencingAct).isNull()
 
       val statusUpdate = statusUpdateRepo.findAllByOrderId(order.id).single()
+      assertThat(statusUpdate.orderVersionId).isEqualTo(order.versionId)
+      assertThat(statusUpdate.orderVersionType).isEqualTo(RequestType.REQUEST)
       assertThat(statusUpdate.status).isEqualTo(ProcessingStatus.CREATED)
       assertThat(statusUpdate.statusUpdatedBy).isEqualTo(testUserFullName)
     }
