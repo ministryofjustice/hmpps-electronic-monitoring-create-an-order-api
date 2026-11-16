@@ -13,4 +13,5 @@ class FeatureFlags(
     $$"${device-wearer-payload-version}",
   ) val deviceWearerPayloadVersion: DeviceWearerPayloadVersion = DeviceWearerPayloadVersion.Prod,
   @param:Value($$"${get-api-enabled:false}") val getApiEnabled: Boolean = false,
+  @param:Value($$"${cvl-integration-enabled:false}") val cvlIntegrationEnabled: Boolean = false,
 )
