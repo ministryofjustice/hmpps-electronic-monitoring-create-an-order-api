@@ -14,6 +14,8 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import org.springframework.http.HttpStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.CorePersonRecordApi
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.CreateAndVaryALicenceApi
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.config.FeatureFlags
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.BadRequestException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.CorePersonRecordDependencyException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.CorePersonRecordNotFoundException
@@ -29,6 +31,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisationDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.createAndVaryALicence.LicenceConditionMapper
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 import java.util.Optional
 import java.util.UUID
@@ -90,7 +93,13 @@ class DeviceWearerDetailsServiceTest {
 
     @BeforeEach
     fun setup() {
-      service = DeviceWearerDetailsService(client)
+      service = DeviceWearerDetailsService(
+        client,
+        mock<CreateAndVaryALicenceApi>(),
+        LicenceConditionMapper(),
+        mock<MonitoringConditionsService>(),
+        mock<FeatureFlags>(),
+      )
       service.orderRepo = mockOrderRepo
 
       mockOrder = Order(
@@ -171,7 +180,13 @@ class DeviceWearerDetailsServiceTest {
 
     @BeforeEach
     fun setup() {
-      service = DeviceWearerDetailsService(client)
+      service = DeviceWearerDetailsService(
+        client,
+        mock<CreateAndVaryALicenceApi>(),
+        LicenceConditionMapper(),
+        mock<MonitoringConditionsService>(),
+        mock<FeatureFlags>(),
+      )
       service.orderRepo = mockOrderRepo
 
       mockOrder = Order(

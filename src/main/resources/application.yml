@@ -114,6 +114,8 @@ services:
     url: ${MANAGE_USER_URL}
   core-person-record:
     url: ${CORE_PERSON_RECORD_URL}
+  cvl:
+    url: ${CVL_URL}
   serco:
     auth-url: ${SERCO_AUTH_URL}
     client-id: ${SERCO_CLIENT_ID}

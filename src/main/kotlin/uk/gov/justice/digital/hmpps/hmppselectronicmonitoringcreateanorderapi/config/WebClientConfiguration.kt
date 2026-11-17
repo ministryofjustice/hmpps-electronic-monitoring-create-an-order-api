@@ -17,6 +17,7 @@ class WebClientConfiguration(
   @Value("\${services.document.url}") val hmppsDocumentManagementApiUrl: String,
   @Value("\${services.manage-user.url}") val manageUserApiUrl: String,
   @Value("\${services.core-person-record.url}") val corePersonRecordApiUrl: String,
+  @Value("\${services.cvl.url}") val cvlApiUrl: String,
 ) {
 
   @Bean
@@ -49,4 +50,9 @@ class WebClientConfiguration(
     url = corePersonRecordApiUrl,
     timeout,
   )
+
+  @Bean
+  fun createAndVaryALicenceApiWebClient(builder: WebClient.Builder): WebClient = WebClient.builder().baseUrl(
+    cvlApiUrl,
+  ).build()
 }
