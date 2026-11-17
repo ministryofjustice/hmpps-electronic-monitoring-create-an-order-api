@@ -17,6 +17,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.ex
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.MonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderParameters
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.StatusUpdate
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.Cohort
@@ -294,11 +295,15 @@ class OrderService(
     dataDictionaryVersion = featureFlags.dataDictionaryVersion,
   ).apply {
     val newVersionId = id
+    val isVariation = versionType in RequestType.VARIATION_TYPES
     variationDetails = null
     isSentencingAct = sourceOrder.isSentencingAct
 
     orderParameters =
       sourceVersion.orderParameters?.copy(versionId = newVersionId, id = UUID.randomUUID(), haveLicence = null)
+        ?: OrderParameters(versionId = newVersionId).takeIf { isVariation }
+    // A photo doesn't need to be resent with a change to an order.
+    if (isVariation) orderParameters?.havePhoto = false
     deviceWearer = sourceVersion.deviceWearer?.copy(versionId = newVersionId, id = UUID.randomUUID())
     deviceWearerResponsibleAdult =
       sourceVersion.deviceWearerResponsibleAdult?.copy(versionId = newVersionId, id = UUID.randomUUID())
@@ -326,7 +331,9 @@ class OrderService(
       responsibleOfficerEmail = currentIPs.responsibleOfficerEmail?.takeIf { startDateIsInFuture },
       responsibleOfficerPhoneNumber = currentIPs.responsibleOfficerPhoneNumber?.takeIf { startDateIsInFuture },
     )
-    probationDeliveryUnit = sourceVersion.probationDeliveryUnit?.copy(versionId = newVersionId, id = UUID.randomUUID())
+    probationDeliveryUnit = sourceVersion.probationDeliveryUnit
+      ?.takeIf { startDateIsInFuture }
+      ?.copy(versionId = newVersionId, id = UUID.randomUUID())
     monitoringConditions = sourceVersion.monitoringConditions?.copy(
       versionId = newVersionId,
       id = UUID.randomUUID(),
@@ -342,12 +349,13 @@ class OrderService(
       sourceVersion.installationAppointment?.copy(versionId = newVersionId, id = UUID.randomUUID())
     offenceAdditionalDetails =
       sourceVersion.offenceAdditionalDetails?.copy(versionId = newVersionId, id = UUID.randomUUID())
+    installationAndRisk = sourceVersion.installationAndRisk?.copy(versionId = newVersionId, id = UUID.randomUUID())
     detailsOfInstallation =
       sourceVersion.detailsOfInstallation?.copy(versionId = newVersionId, id = UUID.randomUUID())
     mappa = sourceVersion.mappa?.copy(versionId = newVersionId, id = UUID.randomUUID())
-    additionalDocuments = sourceOrder.additionalDocuments.cloneItems {
-      it.copy(versionId = newVersionId, id = UUID.randomUUID())
-    }
+    additionalDocuments = sourceOrder.additionalDocuments
+      .filterNot { isVariation && it.fileType == DocumentType.PHOTO_ID }
+      .cloneItems { it.copy(versionId = newVersionId, id = UUID.randomUUID()) }
     addresses = sourceVersion.addresses.cloneItems { it.copy(versionId = newVersionId, id = UUID.randomUUID()) }
     curfewTimeTable = sourceVersion.curfewTimeTable.cloneItems {
       it.copy(versionId = newVersionId, id = UUID.randomUUID())
@@ -370,7 +378,7 @@ class OrderService(
   ): Boolean = sourceStatus == OrderStatus.SUBMITTED &&
     RequestType.VARIATION_TYPES.contains(versionType) &&
     newVersion.getMonitoringStartDate()?.isBefore(ZonedDateTime.now()) == true &&
-    userCohortService.getUserCohort(token).cohort == Cohort.PROBATION
+    userCohortService.getUserCohort(token).cohort in setOf(Cohort.PROBATION, Cohort.PRISON)
 
   fun submitOrder(id: UUID, token: JwtAuthenticationToken, fullName: String): Order {
     val order = getOrder(id, token)

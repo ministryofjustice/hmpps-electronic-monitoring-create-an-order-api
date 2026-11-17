@@ -7,10 +7,10 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.co
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AdditionalDocument
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Result
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.CaseState
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DocumentType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ProcessingStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.SubmissionStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.VariationType
@@ -226,19 +226,8 @@ class FmsVariationSubmissionStrategy(
       return OrderChanges(details, VariationType.OTHER)
     }
 
-    val latestFmsOrderDetails =
-      if (featureFlags.getApiEnabled) {
-        fmsOrderDetailsRepository.findById(
-          lastSuccessfulSubmitResult.deviceWearerResult.deviceWearerId,
-        ).orElse(null)
-      } else {
-        null
-      }
-
-    val deviceWearerJson =
-      latestFmsOrderDetails?.deviceWearerAsJson ?: lastSuccessfulSubmitResult.deviceWearerResult.payload
-    val monitoringOrderJson =
-      latestFmsOrderDetails?.monitoringOrderAsJson ?: lastSuccessfulSubmitResult.monitoringOrderResult.payload
+    val deviceWearerJson = lastSuccessfulSubmitResult.deviceWearerResult.payload
+    val monitoringOrderJson = lastSuccessfulSubmitResult.monitoringOrderResult.payload
 
     val currentDeviceWearer = objectMapper.readValue(submitDeviceWearerResult.payload, DeviceWearer::class.java)
     val lastDeviceWearer = objectMapper.readValue(
@@ -270,19 +259,15 @@ class FmsVariationSubmissionStrategy(
     return OrderChanges(changeDetails, variationType)
   }
 
-  private fun getLastSuccessfulSubmissionResult(order: Order): FmsSubmissionResult? {
-    order.versions
-      .filter { it.fmsResultId != null && it.status == OrderStatus.SUBMITTED }
-      .sortedByDescending { it.versionId }
-      .forEach { version ->
-        val submissionResult = repo.getReferenceById(version.fmsResultId!!)
-        val state = fmsClient.getState(submissionResult.deviceWearerResult.deviceWearerId)
-        if (state != CaseState.CANCELLED && state != CaseState.UNKNOWN) {
-          return submissionResult
-        }
-      }
-    return null
-  }
+  // Every version shares one external case, so its state can't tell which submission was cancelled
+  private fun getLastSuccessfulSubmissionResult(order: Order): FmsSubmissionResult? = order.versions
+    .filter { version ->
+      version.fmsResultId != null &&
+        version.status == OrderStatus.SUBMITTED &&
+        version.statusUpdates.none { it.status == ProcessingStatus.REJECTED }
+    }
+    .maxByOrNull { it.versionId }
+    ?.let { repo.getReferenceById(it.fmsResultId!!) }
 
   fun getOriginalNewOrderCaseId(order: Order): String? = order.versions
     .filter {

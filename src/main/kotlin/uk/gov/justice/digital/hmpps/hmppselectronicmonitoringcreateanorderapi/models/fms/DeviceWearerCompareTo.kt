@@ -6,22 +6,22 @@ fun DeviceWearer.compareTo(previous: DeviceWearer): DeviceWearerCompareToResult 
   val result = DeviceWearerCompareToResult()
 
   fun compareField(change: DeviceWearerChange, newValue: Any?, oldValue: Any?) {
-    if (oldValue != newValue) {
+    if (!sameComparisonValue(oldValue, newValue)) {
       result.addChange(change)
     }
   }
 
   fun <T> compareList(change: DeviceWearerChange, new: List<T>?, old: List<T>?) {
-    if ((old ?: emptyList()) != (new ?: emptyList<T>())) {
+    if (!sameComparisonValue(old ?: emptyList<T>(), new ?: emptyList<T>())) {
       result.addChange(change)
     }
   }
 
   fun compareAdultChild(new: String?, old: String?) {
-    if (new != old) {
-      if (new == "adult") {
+    if (!sameCaseInsensitiveText(new, old)) {
+      if (new.equals("adult", ignoreCase = true)) {
         result.addChange(DeviceWearerChange.ChildToAdult)
-      } else if (new == "child") {
+      } else if (new.equals("child", ignoreCase = true)) {
         result.addChange(DeviceWearerChange.AdultToChild)
       }
     }
@@ -47,52 +47,61 @@ fun DeviceWearer.compareTo(previous: DeviceWearer): DeviceWearerCompareToResult 
   compareField(DeviceWearerChange.Sex, this.sex, previous.sex)
   compareField(DeviceWearerChange.GenderIdentity, this.genderIdentity, previous.genderIdentity)
 
-  if (listOf(
-      address1,
-      address2,
-      address3,
-      address4,
-      addressPostCode,
-    ) != listOf(
-      previous.address1,
-      previous.address2,
-      previous.address3,
-      previous.address4,
-      previous.addressPostCode,
+  if (!sameComparisonValue(
+      listOf(
+        address1,
+        address2,
+        address3,
+        address4,
+        addressPostCode,
+      ),
+      listOf(
+        previous.address1,
+        previous.address2,
+        previous.address3,
+        previous.address4,
+        previous.addressPostCode,
+      ),
     )
   ) {
     result.addChange(DeviceWearerChange.PrimaryAddressChange)
   }
 
-  if (listOf(
-      secondaryAddress1,
-      secondaryAddress2,
-      secondaryAddress3,
-      secondaryAddress4,
-      secondaryAddressPostCode,
-    ) != listOf(
-      previous.secondaryAddress1,
-      previous.secondaryAddress2,
-      previous.secondaryAddress3,
-      previous.secondaryAddress4,
-      previous.secondaryAddressPostCode,
+  if (!sameComparisonValue(
+      listOf(
+        secondaryAddress1,
+        secondaryAddress2,
+        secondaryAddress3,
+        secondaryAddress4,
+        secondaryAddressPostCode,
+      ),
+      listOf(
+        previous.secondaryAddress1,
+        previous.secondaryAddress2,
+        previous.secondaryAddress3,
+        previous.secondaryAddress4,
+        previous.secondaryAddressPostCode,
+      ),
     )
   ) {
     result.addChange(DeviceWearerChange.SecondaryAddressChange)
   }
 
-  if (listOf(
-      tertiaryAddress1,
-      tertiaryAddress2,
-      tertiaryAddress3,
-      tertiaryAddress4,
-      tertiaryAddressPostCode,
-    ) != listOf(
-      previous.tertiaryAddress1,
-      previous.tertiaryAddress2,
-      previous.tertiaryAddress3,
-      previous.tertiaryAddress4,
-      previous.tertiaryAddressPostCode,
+  if (!sameComparisonValue(
+      listOf(
+        tertiaryAddress1,
+        tertiaryAddress2,
+        tertiaryAddress3,
+        tertiaryAddress4,
+        tertiaryAddressPostCode,
+      ),
+      listOf(
+        previous.tertiaryAddress1,
+        previous.tertiaryAddress2,
+        previous.tertiaryAddress3,
+        previous.tertiaryAddress4,
+        previous.tertiaryAddressPostCode,
+      ),
     )
   ) {
     result.addChange(DeviceWearerChange.TertiaryAddressChange)
@@ -106,42 +115,51 @@ fun DeviceWearer.compareTo(previous: DeviceWearer): DeviceWearerCompareToResult 
   compareField(DeviceWearerChange.MappaCategory, this.mappaCategory, previous.mappaCategory)
   compareField(DeviceWearerChange.MappaCaseType, this.mappaCaseType, previous.mappaCaseType)
 
-  if (listOf(
-      pncId,
-      nomisId,
-      deliusId,
-      prisonNumber,
-      complianceAndEnforcementPersonReference,
-    ) != listOf(
-      previous.pncId,
-      previous.nomisId,
-      previous.deliusId,
-      previous.prisonNumber,
-      previous.complianceAndEnforcementPersonReference,
+  if (!sameComparisonValue(
+      listOf(
+        pncId,
+        nomisId,
+        deliusId,
+        prisonNumber,
+        complianceAndEnforcementPersonReference,
+      ),
+      listOf(
+        previous.pncId,
+        previous.nomisId,
+        previous.deliusId,
+        previous.prisonNumber,
+        previous.complianceAndEnforcementPersonReference,
+      ),
     )
   ) {
     result.addChange(DeviceWearerChange.PersonalIdChanged)
   }
 
-  if (listOf(
-      interpreterRequired,
-      language,
-    ) != listOf(
-      previous.interpreterRequired,
-      previous.language,
+  if (!sameComparisonValue(
+      listOf(
+        interpreterRequired,
+        language,
+      ),
+      listOf(
+        previous.interpreterRequired,
+        previous.language,
+      ),
     )
   ) {
     result.addChange(DeviceWearerChange.InterpreterRequired)
   }
 
-  if (listOf(
-      responsibleAdultRequired,
-      parent,
-      guardian,
-    ) != listOf(
-      previous.responsibleAdultRequired,
-      previous.parent,
-      previous.guardian,
+  if (!sameComparisonValue(
+      listOf(
+        responsibleAdultRequired,
+        parent,
+        guardian,
+      ),
+      listOf(
+        previous.responsibleAdultRequired,
+        previous.parent,
+        previous.guardian,
+      ),
     )
   ) {
     result.addChange(DeviceWearerChange.ResponsibleAdultChanged)

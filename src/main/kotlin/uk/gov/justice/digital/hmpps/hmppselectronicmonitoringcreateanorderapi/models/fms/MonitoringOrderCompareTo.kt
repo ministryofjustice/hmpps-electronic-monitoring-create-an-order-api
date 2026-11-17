@@ -7,7 +7,7 @@ fun MonitoringOrder.compareTo(previous: MonitoringOrder): MonitoringOrderCompare
   val result = MonitoringOrderCompareToResult()
 
   fun compareField(change: MonitoringOrderChange, new: Any?, old: Any?) {
-    if (old != new) {
+    if (!sameComparisonValue(old, new)) {
       result.addChange(change)
     }
   }
@@ -21,7 +21,7 @@ fun MonitoringOrder.compareTo(previous: MonitoringOrder): MonitoringOrderCompare
   }
 
   fun <T> compareList(change: MonitoringOrderChange, new: List<T>?, old: List<T>?) {
-    if ((old ?: emptyList()) != (new ?: emptyList<T>())) {
+    if (!sameComparisonValue(old ?: emptyList<T>(), new ?: emptyList<T>())) {
       result.addChange(change)
     }
   }
@@ -192,18 +192,21 @@ fun MonitoringOrder.compareTo(previous: MonitoringOrder): MonitoringOrderCompare
   compareField(MonitoringOrderChange.DapolMissedInError, dapolMissedInError, previous.dapolMissedInError)
   compareField(MonitoringOrderChange.InstallAtSourcePilot, installAtSourcePilot, previous.installAtSourcePilot)
 
-  if (listOf(
-      installationAddress1,
-      installationAddress2,
-      installationAddress3,
-      installationAddress4,
-      installationAddressPostcode,
-    ) != listOf(
-      previous.installationAddress1,
-      previous.installationAddress2,
-      previous.installationAddress3,
-      previous.installationAddress4,
-      previous.installationAddressPostcode,
+  if (!sameComparisonValue(
+      listOf(
+        installationAddress1,
+        installationAddress2,
+        installationAddress3,
+        installationAddress4,
+        installationAddressPostcode,
+      ),
+      listOf(
+        previous.installationAddress1,
+        previous.installationAddress2,
+        previous.installationAddress3,
+        previous.installationAddress4,
+        previous.installationAddressPostcode,
+      ),
     )
   ) {
     result.addMessage(MonitoringOrderChange.InstallationAddress.message)

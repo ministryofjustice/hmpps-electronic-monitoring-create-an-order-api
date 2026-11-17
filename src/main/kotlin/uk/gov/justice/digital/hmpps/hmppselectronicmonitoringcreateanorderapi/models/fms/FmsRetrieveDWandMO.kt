@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OffenceAdditionalDetails
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
@@ -48,7 +49,17 @@ data class FmsRetrieveDWandMO(
 
     version.contactDetails = deviceWearer.toContactDetails(versionId)
 
-    version.installationAndRisk = deviceWearer.toInstallationAndRisk(versionId)
+    val offenceAdditionalDetails = monitoringOrder.offenceAdditionalDetails?.ifBlank { null }
+    if (dataDictionaryVersion.isLaterThanOrEqual(DataDictionaryVersion.DDV6)) {
+      version.detailsOfInstallation = deviceWearer.toDetailsOfInstallation(versionId)
+      version.offenceAdditionalDetails = offenceAdditionalDetails?.let {
+        OffenceAdditionalDetails(versionId = versionId, additionalDetails = it)
+      }
+    } else {
+      version.installationAndRisk = deviceWearer.toInstallationAndRisk(versionId).apply {
+        this.offenceAdditionalDetails = offenceAdditionalDetails
+      }
+    }
 
     version.interestedParties = monitoringOrder.toInterestedParties(versionId)
     version.probationDeliveryUnit = monitoringOrder.toProbationDeliveryUnit(versionId)
