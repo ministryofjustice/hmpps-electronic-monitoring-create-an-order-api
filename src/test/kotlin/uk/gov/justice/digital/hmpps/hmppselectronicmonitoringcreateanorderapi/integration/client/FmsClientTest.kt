@@ -2,6 +2,10 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.i
 
 import FmsState
 import FmsStateResponse
+import com.github.tomakehurst.wiremock.client.WireMock.equalTo
+import com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor
+import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
+import com.microsoft.applicationinsights.TelemetryClient
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.DisplayName
@@ -12,9 +16,13 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.io.InputStreamResource
 import org.springframework.http.HttpStatus
 import org.springframework.test.context.ActiveProfiles
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import tools.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.FmsClient
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.config.CorrelationIdContext
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.CreateSercoEntityException
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.FmsCallException
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.FmsFailureCategory
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.SercoAuthMockServerExtension.Companion.sercoAuthApi
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.SercoMockApiExtension.Companion.sercoApi
@@ -42,9 +50,26 @@ class FmsClientTest : IntegrationTestBase() {
   @Autowired
   lateinit var objectMapper: ObjectMapper
 
+  @MockitoSpyBean
+  lateinit var telemetryClient: TelemetryClient
+
   @Nested
   @DisplayName("POST /api/x_seem_cemo/device_wearer/createDW")
   inner class CreateDeviceWearer {
+    @Test
+    fun `it should return the documented 200 response`() {
+      val orderId = UUID.randomUUID()
+      val expected = FmsResponse(
+        result = listOf(FmsResult(message = "The request has been processed successfully.", id = "1")),
+      )
+      sercoAuthApi.stubGrantToken()
+      sercoApi.stubCreateDeviceWearer(status = HttpStatus.OK, result = expected)
+
+      val result = fmsClient.createDeviceWearer(mockDeviceWearerPayload(), orderId, FmsOrderSource.CEMO)
+
+      assertThat(result).isEqualTo(expected)
+    }
+
     @Test
     fun `it should handle 403 responses`() {
       // Given
@@ -94,6 +119,54 @@ class FmsClientTest : IntegrationTestBase() {
     }
 
     @Test
+    fun `classifies documented 500 failures and propagates correlation id to FMS`() {
+      val orderId = UUID.randomUUID()
+      val correlationId = "integration-test-123"
+      sercoAuthApi.stubGrantToken()
+      sercoApi.stubCreateDeviceWearer(
+        status = HttpStatus.INTERNAL_SERVER_ERROR,
+        result = FmsResponse(),
+        errorResponse = FmsErrorResponse(
+          error = ErrorResponse(message = "Service Error", detail = "The server could not process the request"),
+          status = "failure",
+        ),
+      )
+
+      val exception = CorrelationIdContext.withCorrelationId(correlationId) {
+        assertThrows<FmsCallException> {
+          fmsClient.createDeviceWearer(mockDeviceWearerPayload(), orderId, FmsOrderSource.CEMO)
+        }
+      }
+
+      assertThat(exception.operation).isEqualTo("create_device_wearer")
+      assertThat(exception.failureCategory).isEqualTo(FmsFailureCategory.HTTP_ERROR)
+      assertThat(exception.httpStatusCode).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR.value())
+      sercoApi.verify(
+        1,
+        postRequestedFor(urlEqualTo("/x_seem_cemo/device_wearer/createDW"))
+          .withHeader(CorrelationIdContext.HEADER_NAME, equalTo(correlationId)),
+      )
+      org.mockito.kotlin.verify(telemetryClient).trackEvent(
+        org.mockito.kotlin.eq("FMS_Dependency_Call"),
+        org.mockito.kotlin.argThat {
+          this["operation"] == "create_device_wearer" &&
+            this["outcome"] == "failure" &&
+            this["failureCategory"] == "http_error" &&
+            this["httpStatusCode"] == HttpStatus.INTERNAL_SERVER_ERROR.value().toString() &&
+            this[CorrelationIdContext.MDC_KEY] == correlationId &&
+            keys == setOf(
+              "operation",
+              "outcome",
+              "failureCategory",
+              "httpStatusCode",
+              CorrelationIdContext.MDC_KEY,
+            )
+        },
+        org.mockito.kotlin.any(),
+      )
+    }
+
+    @Test
     fun `it should call the common platform endpoint when orderSource is COMMON_PLATFORM`() {
       val orderId = UUID.randomUUID()
       sercoAuthApi.stubGrantToken()
@@ -111,6 +184,20 @@ class FmsClientTest : IntegrationTestBase() {
   @Nested
   @DisplayName("POST /api/x_seem_cemo/monitoring_order/createMO")
   inner class CreateMonitoringOrder {
+    @Test
+    fun `it should return the documented 200 response`() {
+      val orderId = UUID.randomUUID()
+      val expected = FmsResponse(
+        result = listOf(FmsResult(message = "The request has been processed successfully.", id = "1")),
+      )
+      sercoAuthApi.stubGrantToken()
+      sercoApi.stubCreateMonitoringOrder(status = HttpStatus.OK, result = expected)
+
+      val result = fmsClient.createMonitoringOrder(mockMonitoringOrderPayload(), orderId, FmsOrderSource.CEMO)
+
+      assertThat(result).isEqualTo(expected)
+    }
+
     @Test
     fun `it should handle 403 responses`() {
       // Given
@@ -182,6 +269,20 @@ class FmsClientTest : IntegrationTestBase() {
   @DisplayName("POST /api/x_seem_cemo/device_wearer/updateDW")
   inner class UpdateDeviceWearer {
     @Test
+    fun `it should return the documented 200 response`() {
+      val orderId = UUID.randomUUID()
+      val expected = FmsResponse(
+        result = listOf(FmsResult(message = "The request has been processed successfully.", id = "1")),
+      )
+      sercoAuthApi.stubGrantToken()
+      sercoApi.stubUpdateDeviceWearer(status = HttpStatus.OK, result = expected)
+
+      val result = fmsClient.updateDeviceWearer(mockDeviceWearerPayload(), orderId, FmsOrderSource.CEMO)
+
+      assertThat(result).isEqualTo(expected)
+    }
+
+    @Test
     fun `it should handle 403 responses`() {
       // Given
       val orderId = UUID.randomUUID()
@@ -247,6 +348,20 @@ class FmsClientTest : IntegrationTestBase() {
   @Nested
   @DisplayName("POST /api/x_seem_cemo/monitoring_order/updateMO")
   inner class UpdateMonitoringOrder {
+    @Test
+    fun `it should return the documented 200 response`() {
+      val orderId = UUID.randomUUID()
+      val expected = FmsResponse(
+        result = listOf(FmsResult(message = "The request has been processed successfully.", id = "1")),
+      )
+      sercoAuthApi.stubGrantToken()
+      sercoApi.stubUpdateMonitoringOrder(status = HttpStatus.OK, result = expected)
+
+      val result = fmsClient.updateMonitoringOrder(mockMonitoringOrderPayload(), orderId, FmsOrderSource.CEMO)
+
+      assertThat(result).isEqualTo(expected)
+    }
+
     @Test
     fun `it should handle 403 responses`() {
       // Given
@@ -416,6 +531,17 @@ class FmsClientTest : IntegrationTestBase() {
       assertThat(
         result,
       ).isEqualTo(CaseState.UNKNOWN)
+
+      org.mockito.kotlin.verify(telemetryClient).trackEvent(
+        org.mockito.kotlin.eq("FMS_Dependency_Call"),
+        org.mockito.kotlin.argThat {
+          this["operation"] == "get_case_state" &&
+            this["outcome"] == "failure" &&
+            this["failureCategory"] == "http_error" &&
+            this["httpStatusCode"] == HttpStatus.NOT_FOUND.value().toString()
+        },
+        org.mockito.kotlin.any(),
+      )
     }
 
     @Test
@@ -459,7 +585,7 @@ class FmsClientTest : IntegrationTestBase() {
     }
 
     @Test
-    fun `should throw exception and record event for 400 response`() {
+    fun `should preserve an unexpected 400 response without interpreting its meaning`() {
       val caseId = "CASE123"
       val expected = FmsRetrieveDWandMO(
         caseId = caseId,
@@ -484,12 +610,12 @@ class FmsClientTest : IntegrationTestBase() {
       assertThatThrownBy {
         fmsClient.getLatestOrderDetails(caseId)
       }
-        .isInstanceOf(CreateSercoEntityException::class.java)
-        .hasMessageContaining("Invalid request")
+        .isInstanceOf(FmsCallException::class.java)
+        .hasMessage("FMS returned 400 for caseId=$caseId: $errorResponse")
     }
 
     @Test
-    fun `should throw exception and record event for 404 response`() {
+    fun `should preserve an unexpected 404 response without interpreting its meaning`() {
       val caseId = "CASE123"
       val expected = FmsRetrieveDWandMO(
         caseId = caseId,
@@ -516,8 +642,8 @@ class FmsClientTest : IntegrationTestBase() {
       assertThatThrownBy {
         fmsClient.getLatestOrderDetails(caseId)
       }
-        .isInstanceOf(CreateSercoEntityException::class.java)
-        .hasMessageContaining("Case not found")
+        .isInstanceOf(FmsCallException::class.java)
+        .hasMessage("FMS returned 404 for caseId=$caseId: $errorResponse")
     }
 
     @Test
@@ -545,11 +671,23 @@ class FmsClientTest : IntegrationTestBase() {
         errorResponse = errorResponse,
       )
 
-      assertThatThrownBy {
+      val exception = assertThrows<FmsCallException> {
         fmsClient.getLatestOrderDetails(caseId)
       }
-        .isInstanceOf(CreateSercoEntityException::class.java)
-        .hasMessageContaining("FMS returned 500")
+      assertThat(exception.message).isEqualTo("FMS returned 500 for caseId=$caseId: $errorResponse")
+      assertThat(exception.operation).isEqualTo("retrieve_order_details")
+      assertThat(exception.failureCategory).isEqualTo(FmsFailureCategory.HTTP_ERROR)
+      assertThat(exception.httpStatusCode).isEqualTo(500)
+      org.mockito.kotlin.verify(telemetryClient).trackEvent(
+        org.mockito.kotlin.eq("FMS_Dependency_Call"),
+        org.mockito.kotlin.argThat {
+          this["operation"] == "retrieve_order_details" &&
+            this["outcome"] == "failure" &&
+            this["failureCategory"] == "http_error" &&
+            this["httpStatusCode"] == "500"
+        },
+        org.mockito.kotlin.any(),
+      )
     }
   }
 
