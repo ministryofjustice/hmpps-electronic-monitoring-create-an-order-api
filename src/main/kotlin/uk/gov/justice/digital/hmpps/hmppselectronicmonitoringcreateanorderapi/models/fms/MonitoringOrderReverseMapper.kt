@@ -207,11 +207,6 @@ fun MonitoringOrder.toInterestedParties(versionId: UUID): InterestedParties {
     notifyingOrganisationEmail = noEmail?.ifBlank { null } ?: notifyingOfficerEmail?.ifBlank { null },
   )
 }
-/*
-
-I wrote it against the Jackson 3 deserializer API (ValueDeserializer, p.string), and it compiles. But I haven't confirmed Jackson actually picks up @JsonDeserialize on a Kotlin constructor parameter in this setup. A quick test that reads both your Serco samples into FmsRetrieveDWandMOResponse would prove both fixes. That can wait until you want tests.
-Even with these fixes, the YCS case from today, still with an empty device wearer, would build a change with a blank name and blank device wearer details. Whether to fall back to our stored version when Serco's device wearer is empty is a decision for you. It isn't just a parsing problem.
- */
 
 // Reverses the forward mapper's getNotifyingOrganisationName, which sends the label rather than our name.
 private fun toNotifyingOrganisationName(value: String): String =
