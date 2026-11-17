@@ -10,7 +10,10 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.EnumSource
+import org.junit.jupiter.params.provider.NullAndEmptySource
+import org.junit.jupiter.params.provider.ValueSource
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.http.HttpStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.CorePersonRecordApi
@@ -26,6 +29,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Gender
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisationDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
@@ -200,6 +204,9 @@ class DeviceWearerDetailsServiceTest {
       assertThatCode {
         service.storeDetails("1234", mockOrderId, mockUsername)
       }.doesNotThrowAnyException()
+
+      assertThat(mockOrder.deviceWearer).isNull()
+      verify(mockOrderRepo).save(mockOrder)
     }
 
     @Test
@@ -238,6 +245,55 @@ class DeviceWearerDetailsServiceTest {
 
       assertThat(mockOrder.deviceWearer?.firstName).isEqualTo("John")
       assertThat(mockOrder.deviceWearer?.lastName).isEqualTo("Deer")
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    @ValueSource(strings = [" ", "   ", "\t", "\n"])
+    fun `defaults missing or blank CPR gender to not able to provide this information`(gender: String?) {
+      mockOrder.interestedParties!!.notifyingOrganisation = NotifyingOrganisationDDv5.PRISON.name
+      client.setMockResponse(
+        baseDetails.copy(
+          deviceWearer = DeviceWearer(
+            versionId = mockVersionId,
+            gender = gender,
+          ),
+        ),
+      )
+
+      service.storeDetails("1234", mockOrderId, mockUsername)
+
+      assertThat(mockOrder.deviceWearer?.gender).isEqualTo(Gender.NOT_ABLE_TO_PROVIDE_THIS_INFORMATION.name)
+      verify(mockOrderRepo).save(mockOrder)
+    }
+
+    @ParameterizedTest
+    @ValueSource(
+      strings = [
+        "MALE",
+        "FEMALE",
+        "NON_BINARY",
+        "PREFER_TO_SELF_DESCRIBE",
+        "NOT_ABLE_TO_PROVIDE_THIS_INFORMATION",
+        "Unmapped gender",
+        " MALE ",
+      ],
+    )
+    fun `supplied CPR gender populates the model unchanged`(gender: String) {
+      mockOrder.interestedParties!!.notifyingOrganisation = NotifyingOrganisationDDv5.PRISON.name
+      client.setMockResponse(
+        baseDetails.copy(
+          deviceWearer = DeviceWearer(
+            versionId = mockVersionId,
+            gender = gender,
+          ),
+        ),
+      )
+
+      service.storeDetails("1234", mockOrderId, mockUsername)
+
+      assertThat(mockOrder.deviceWearer?.gender).isEqualTo(gender)
+      verify(mockOrderRepo).save(mockOrder)
     }
 
     @Test
