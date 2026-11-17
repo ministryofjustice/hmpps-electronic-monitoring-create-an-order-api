@@ -151,10 +151,19 @@ class OrderService(
     if (order.status == OrderStatus.REJECTED) return ProcessingStatus.REJECTED
     if (order.status != OrderStatus.SUBMITTED) return null
 
-    val outcome = when (fmsService.getCaseState(order)) {
-      CaseState.AWAITING_VALIDATION -> ProcessingStatus.ACCEPTED
-      CaseState.CANCELLED, CaseState.CLOSED, CaseState.RESOLVED -> ProcessingStatus.REJECTED
-      else -> return null
+    val caseState = fmsService.getCaseState(order)
+    val outcome = if (order.type in RequestType.VARIATION_TYPES) {
+      when (caseState) {
+        CaseState.OPEN, CaseState.AWAITING_VALIDATION, CaseState.RESOLVED -> ProcessingStatus.ACCEPTED
+        CaseState.CANCELLED -> ProcessingStatus.REJECTED
+        else -> return null
+      }
+    } else {
+      when (caseState) {
+        CaseState.AWAITING_VALIDATION -> ProcessingStatus.ACCEPTED
+        CaseState.CANCELLED, CaseState.CLOSED, CaseState.RESOLVED -> ProcessingStatus.REJECTED
+        else -> return null
+      }
     }
     if (order.statusUpdates.none { it.status == outcome }) {
       order.statusUpdates.add(
@@ -188,6 +197,14 @@ class OrderService(
       sourceVersion.type
     }
 
+  // Future-dated orders keep our stored form; EMS data is only used once monitoring has started.
+  private fun getRetrievedOrderVersion(order: Order): OrderVersion? =
+    if (order.getMonitoringStartDate()?.isBefore(ZonedDateTime.now()) == true) {
+      fmsService.getLatestOrderVersion(order)
+    } else {
+      null
+    }
+
   fun createVersion(orderId: UUID, token: JwtAuthenticationToken, versionType: RequestType): Order {
     val order = getOrder(orderId, token)
     val currentVersion = order.getCurrentVersion()
@@ -209,7 +226,7 @@ class OrderService(
       currentVersion.status == OrderStatus.IN_PROGRESS ||
         versionType == RequestType.AMEND_ORIGINAL_REQUEST ||
         isRejectedVariation -> currentVersion
-      else -> fmsService.getLatestOrderVersion(order) ?: currentVersion
+      else -> getRetrievedOrderVersion(order) ?: currentVersion
     }
     val newOrderVersion = buildCopiedVersion(
       sourceOrder = order,
@@ -238,7 +255,7 @@ class OrderService(
       else -> RequestType.VARIATION
     }
     val copySource = if (outcome == ProcessingStatus.ACCEPTED) {
-      fmsService.getLatestOrderVersion(sourceOrder) ?: sourceVersion
+      getRetrievedOrderVersion(sourceOrder) ?: sourceVersion
     } else {
       sourceVersion
     }

@@ -91,6 +91,7 @@ class OrderSearchRepositoryImpl(@PersistenceContext private val entityManager: E
       cb.or(
         cb.equal(version.get<OrderStatus>("status"), OrderStatus.SUBMITTED),
         cb.equal(version.get<OrderStatus>("status"), OrderStatus.IN_PROGRESS),
+        cb.equal(version.get<OrderStatus>("status"), OrderStatus.REJECTED),
       ),
     )
 
