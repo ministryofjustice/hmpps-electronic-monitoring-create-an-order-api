@@ -48,6 +48,32 @@ class DeviceWearerCompareTo {
   }
 
   @Test
+  fun `treats null blank and literal null strings as equivalent`() {
+    val old = baselineWearer().apply {
+      alias = null
+      mappaCaseType = "null"
+    }
+    val updated = baselineWearer().apply {
+      alias = ""
+      mappaCaseType = null
+    }
+
+    val result = updated.compareTo(old)
+
+    Assertions.assertThat(result.messages).isEmpty()
+  }
+
+  @Test
+  fun `ignores adult child casing differences`() {
+    val old = baselineWearer().apply { adultChild = "adult" }
+    val updated = baselineWearer().apply { adultChild = "Adult" }
+
+    val result = updated.compareTo(old)
+
+    Assertions.assertThat(result.messages).isEmpty()
+  }
+
+  @Test
   fun `returns message when value is added`() {
     val old = baselineWearer().apply {
       phoneNumber = ""

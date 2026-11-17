@@ -382,7 +382,14 @@ class OrderControllerTest : IntegrationTestBase() {
         )
         .isEqualTo(order.monitoringConditions)
 
-      assertThat(variationOrder.order.installationAndRisk).isNull()
+      val copiedRisk = variationOrder.order.installationAndRisk
+      assertThat(copiedRisk).isNotNull()
+      assertThat(copiedRisk?.id).isNotEqualTo(order.installationAndRisk?.id)
+      assertThat(copiedRisk?.versionId).isEqualTo(variationOrder.order.versionId)
+      assertThat(copiedRisk)
+        .usingRecursiveComparison()
+        .ignoringFields("id", "versionId", "version")
+        .isEqualTo(order.installationAndRisk)
     }
 
     @Test
@@ -714,7 +721,7 @@ class OrderControllerTest : IntegrationTestBase() {
     @Test
     fun `It creates a selected service-request version when FMS rejected a submitted variation`() {
       val order = createAndPersistPopulatedOrder(status = OrderStatus.SUBMITTED, requestType = RequestType.VARIATION)
-      stubCaseState(order, CaseState.CLOSED)
+      stubCaseState(order, CaseState.CANCELLED)
 
       val amendedOrder = webTestClient.post()
         .uri("/api/orders/${order.id}/amend-order")
@@ -836,9 +843,14 @@ class OrderControllerTest : IntegrationTestBase() {
         .responseBody!!.order
 
       assertThat(change.additionalDocuments.map { it.fileType })
-        .containsExactlyInAnyOrder(DocumentType.COURT_ORDER, DocumentType.PHOTO_ID)
+        .containsExactly(DocumentType.COURT_ORDER)
       assertThat(change.orderParameters?.haveCourtOrder).isTrue()
       assertThat(change.orderParameters?.haveLicence).isNull()
+      assertThat(change.orderParameters?.havePhoto).isFalse()
+      val persistedOrder = repo.findById(order.id).orElseThrow()
+      assertThat(persistedOrder.additionalDocuments.map { it.fileType }).containsExactly(DocumentType.COURT_ORDER)
+      assertThat(persistedOrder.versions.first().additionalDocuments.map { it.fileType })
+        .containsExactlyInAnyOrder(DocumentType.LICENCE, DocumentType.COURT_ORDER, DocumentType.PHOTO_ID)
     }
 
     @Test
@@ -954,14 +966,13 @@ class OrderControllerTest : IntegrationTestBase() {
       assertThat(repo.findById(order.id).orElseThrow().versions).hasSize(2)
     }
 
-    @ParameterizedTest
-    @EnumSource(value = CaseState::class, names = ["CANCELLED", "CLOSED", "RESOLVED"])
-    fun `It should create a variation version for a rejected change order`(caseState: CaseState) {
+    @Test
+    fun `It should create a variation version for a rejected change order`() {
       val order = createAndPersistPopulatedOrder(
         status = OrderStatus.SUBMITTED,
         requestType = RequestType.VARIATION,
       )
-      stubCaseState(order, caseState)
+      stubCaseState(order, CaseState.CANCELLED)
 
       val amendedOrder = amendmentRequest(order.id)
         .headers(setAuthorisation(username = "AUTH_ADM"))
@@ -982,6 +993,50 @@ class OrderControllerTest : IntegrationTestBase() {
       assertThat(updatedOrder.versions).hasSize(2)
       assertThat(updatedOrder.versions.first().status).isEqualTo(OrderStatus.SUBMITTED)
       assertThat(updatedOrder.versions.first().type).isEqualTo(RequestType.VARIATION)
+      assertThat(updatedOrder.versions.first().statusUpdates.map { it.status })
+        .containsExactly(ProcessingStatus.REJECTED)
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = CaseState::class, names = ["OPEN", "AWAITING_VALIDATION", "RESOLVED"])
+    fun `accepted change orders create a variation with an accepted outcome`(caseState: CaseState) {
+      val order = createAndPersistPopulatedOrder(status = OrderStatus.SUBMITTED, requestType = RequestType.VARIATION)
+      stubCaseState(order, caseState)
+
+      val amendedOrder = amendmentRequest(order.id)
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus().isOk
+        .expectBody<OrderAmendmentDto>()
+        .returnResult().responseBody!!
+
+      assertThat(amendedOrder.outcome).isEqualTo(ProcessingStatus.ACCEPTED)
+      assertThat(amendedOrder.order.id).isEqualTo(order.id)
+      assertThat(amendedOrder.order.type).isEqualTo(RequestType.VARIATION)
+      assertThat(amendedOrder.order.status).isEqualTo(OrderStatus.IN_PROGRESS)
+      val updatedOrder = repo.findById(order.id).orElseThrow()
+      assertThat(updatedOrder.versions).hasSize(2)
+      assertThat(updatedOrder.versions.first().status).isEqualTo(OrderStatus.SUBMITTED)
+      assertThat(updatedOrder.versions.first().statusUpdates.map { it.status })
+        .containsExactly(ProcessingStatus.ACCEPTED)
+    }
+
+    @Test
+    fun `a closed FMS case does not allow amendment of a submitted variation`() {
+      val order = createAndPersistPopulatedOrder(status = OrderStatus.SUBMITTED, requestType = RequestType.VARIATION)
+      stubCaseState(order, CaseState.CLOSED)
+
+      val error = amendmentRequest(order.id)
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus().isEqualTo(HttpStatus.CONFLICT)
+        .expectBody<ErrorResponse>()
+        .returnResult().responseBody!!
+
+      assertThat(error.errorCode).isEqualTo("ORDER_CASE_STILL_PROCESSING")
+      val persistedOrder = repo.findById(order.id).orElseThrow()
+      assertThat(persistedOrder.versions).hasSize(1)
+      assertThat(persistedOrder.statusUpdates).isEmpty()
     }
 
     @ParameterizedTest

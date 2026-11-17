@@ -21,6 +21,8 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RiskCategory
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YesNoUnknown
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsRetrieveDWandMO
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.MonitoringOrder
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.Schedule
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.toAddress
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.toAlcoholMonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.toCourtCaseReferenceNumber
@@ -63,6 +65,26 @@ class FmsReverseMappingIntegrationTest {
   @Test
   fun `it should deserialize the example payload`() {
     assertThat(response.caseId).isEqualTo("16542c2e83714b10b2409870ceaad324")
+  }
+
+  @Test
+  fun `it should accept blank DOB and checkin schedule as text or list`() {
+    val blankDateOfBirth = response.deviceWearer.copy(dateOfBirth = "")
+    assertThat(blankDateOfBirth.toDeviceWearer(versionId).dateOfBirth).isNull()
+
+    val emptySchedule = objectMapper.readValue<MonitoringOrder>("""{"checkin_schedule":""}""")
+    assertThat(emptySchedule.checkinSchedule).isEmpty()
+
+    val schedule = objectMapper.readValue<MonitoringOrder>(
+      """{"checkin_schedule":[{"day":"Mo","start":"09:00","end":"10:00"}]}""",
+    )
+    assertThat(schedule.checkinSchedule).containsExactly(
+      Schedule(
+        day = "Mo",
+        start = "09:00",
+        end = "10:00",
+      ),
+    )
   }
 
   @Test
@@ -263,8 +285,8 @@ class FmsReverseMappingIntegrationTest {
 
     assertThat(orderVersion.mappa!!.level).isEqualTo(MappaLevel.MAPPA_TWO)
 
-    assertThat(orderVersion.installationAndRisk!!.riskDetails).isEqualTo("known to be aggressive")
-    assertThat(orderVersion.installationAndRisk!!.riskCategory).containsExactlyInAnyOrder(
+    assertThat(orderVersion.detailsOfInstallation!!.riskDetails).isEqualTo("known to be aggressive")
+    assertThat(orderVersion.detailsOfInstallation!!.riskCategory).containsExactlyInAnyOrder(
       RiskCategory.SEXUAL_OFFENCES.name,
       RiskCategory.RACIAL_ABUSE_OR_THREATS.name,
     )
