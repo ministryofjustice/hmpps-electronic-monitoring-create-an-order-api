@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service
 
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.CorePersonRecordApi
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.CreateAndVaryALicenceApi
@@ -20,7 +21,6 @@ class DeviceWearerDetailsService(
   private val monitoringConditionsService: MonitoringConditionsService,
   private val featureFlags: FeatureFlags,
 ) : OrderSectionServiceBase() {
-
   fun storeDetails(organisationSearchId: String, orderId: UUID, username: String) {
     val normalisedOrganisationSearchId = normaliseOrganisationSearchId(organisationSearchId)
 
@@ -31,14 +31,16 @@ class DeviceWearerDetailsService(
     order.addresses.addAll(record.addresses)
     order.contactDetails = record.contactDetails
 
-    // TODO: Experimenting for the cvl integration, possibly can add a call here to get all licences based on the normalisedOrganisationSearchId
-    // Can then add that to the GetCorePersonDetailsResponse below.
     if (featureFlags.cvlIntegrationEnabled) {
-      val licenceSummary = fetchCvlRecord(notifyingOrganisation, normalisedOrganisationSearchId)
-      val licence = licenceSummary?.let { createAndVaryALicenceApi.getLicenceConditions(it.id) }
-      if (licence != null) {
-        val monitoringConditions: List<MonitoringCondition> = licenceConditionMapper.map(licence, order.versionId)
-        monitoringConditionsService.applyImportedConditions(order, monitoringConditions)
+      try {
+        val licenceSummary = fetchCvlRecord(notifyingOrganisation, normalisedOrganisationSearchId)
+        val licence = licenceSummary?.let { createAndVaryALicenceApi.getLicenceConditions(it.id) }
+        if (licence != null) {
+          val monitoringConditions: List<MonitoringCondition> = licenceConditionMapper.map(licence, order.versionId)
+          monitoringConditionsService.applyImportedConditions(order, monitoringConditions)
+        }
+      } catch (e: BadRequestException) {
+        log.debug("Failed to fetch licence conditions for $organisationSearchId", e)
       }
     }
 
@@ -88,5 +90,9 @@ class DeviceWearerDetailsService(
     }
 
     return trimmedOrganisationSearchId
+  }
+
+  private companion object {
+    private val log = LoggerFactory.getLogger(this::class.java)
   }
 }

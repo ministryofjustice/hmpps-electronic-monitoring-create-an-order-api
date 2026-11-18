@@ -106,6 +106,19 @@
           "type": "STANDARD"
         },
         {
+          "id": 81,
+          "category": "Curfew arrangement",
+          "code": "0a370862-5426-49c1-b6d4-3d074d78a81a",
+          "text": "You must stay at the address approved by your supervising officer between 05:00 pm and 07:00 am each day, unless your supervising officer gives permission for you to be elsewhere during those hours. This is called a curfew.",
+          "curfewTimes": [
+            {
+              "startTime": "17:00",
+              "endTime": "07:00"
+            }
+          ],
+          "type": "CURFEW"
+        },
+        {
           "id": 76,
           "category": "Electronic monitoring",
           "code": "d36a3b77-30ba-40ce-8953-83e761d3b487",

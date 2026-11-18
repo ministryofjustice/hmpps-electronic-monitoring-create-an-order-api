@@ -7,6 +7,7 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertNotNull
+import org.junit.jupiter.api.assertNull
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.context.ActiveProfiles
 import tools.jackson.module.kotlin.jacksonObjectMapper
@@ -25,7 +26,7 @@ class CreateAndVaryALicenceApiClientTest : IntegrationTestBase() {
   val licences = listOf(LicenceSummary("999999", "APPROVED", LocalDateTime.of(2020, 1, 1, 1, 1)))
 
   private val licenceConditions =
-    this::class.java.getResource("/fixtures/cvl/licenceConditions.json")!!.readText()
+    this::class.java.getResource("/fixtures/cvl/licenceConditionsWithEM.json")!!.readText()
 
   @Nested
   @DisplayName("GET licence details")
@@ -110,6 +111,20 @@ class CreateAndVaryALicenceApiClientTest : IntegrationTestBase() {
 
       createAndVaryALicenceApi.verify(1, getRequestedFor(urlPathEqualTo("/public/v2/licences/id/$licenceId")))
       assertNotNull(result)
+    }
+
+    @Test
+    fun `it calls the get licence conditions endpoint but no licence exists`() {
+      val licenceId = "1"
+      createAndVaryALicenceApi.stubGetLicenceConditions(
+        licenceId = licenceId,
+        "",
+      )
+
+      val result = createAndVaryALicenceApiClient.getLicenceConditions(licenceId)
+
+      createAndVaryALicenceApi.verify(1, getRequestedFor(urlPathEqualTo("/public/v2/licences/id/$licenceId")))
+      assertNull(result)
     }
   }
 }

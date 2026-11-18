@@ -30,8 +30,8 @@ class CreateAndVaryALicenceApiClient(private val createAndVaryALicenceApiWebClie
       ?: emptyList()
 
     return licenceSummaryList
-      .filter { it.statusCode == "APPROVED" }
-      .maxByOrNull { it.approvedDateTime }
+      .filter { it.statusCode == "APPROVED" && it.approvedDateTime != null }
+      .maxByOrNull { it.approvedDateTime!! }
   }
 
   override fun getLicenceConditions(licenceId: String): Licence? = createAndVaryALicenceApiWebClient.get()

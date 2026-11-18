@@ -12,7 +12,7 @@ import java.time.ZoneId
 import java.util.*
 
 enum class CvlConditionCode(val code: String) {
-  CURFEW("86e6f2a9-bb60-40f8-9ac4-310ebc72ac2f"),
+  CURFEW("0a370862-5426-49c1-b6d4-3d074d78a81a"),
   TRAIL("524f2fd6-ad53-47dd-8edc-2161d3dd2ed4"),
   ALCOHOL_LEVEL("2F8A5418-C6E4-4F32-9E58-64B23550E504"),
   ALCOHOL_ABSTINENCE("d36a3b77-30ba-40ce-8953-83e761d3b487"),
@@ -35,8 +35,13 @@ class LicenceConditionMapper {
   fun map(licence: Licence, versionId: UUID): List<MonitoringCondition> {
     val additionalConditions = licence.conditions.ap?.additional.orEmpty()
     val result = mutableListOf<MonitoringCondition>()
-    val electronicMonitoringRestrictions =
-      additionalConditions.firstOrNull { it.code.equals(ELECTRONIC_MONITORING_RESTRICTIONS_CODE, true) }?.restrictions
+    val electronicMonitoringParentCondition = additionalConditions
+      .firstOrNull { it.code.equals(ELECTRONIC_MONITORING_RESTRICTIONS_CODE, true) }
+    val electronicMonitoringRestrictions = electronicMonitoringParentCondition?.restrictions
+    val electronicMonitoringDefaultEndDate = electronicMonitoringParentCondition?.endDate?.toInstant()?.atZone(
+      ZoneId.systemDefault(),
+    )
+
     // TODO: Do AP additional for now, need to confirm on if others are even required...
     for (item in additionalConditions) {
       val startDate = licence.licenceStartDate.toInstant().atZone(ZoneId.systemDefault())
@@ -46,7 +51,7 @@ class LicenceConditionMapper {
           CurfewConditions(
             versionId = versionId,
             startDate = startDate,
-            endDate = endDate,
+            endDate = electronicMonitoringDefaultEndDate,
             curfewDescription = item.text,
           ),
         )
@@ -79,7 +84,7 @@ class LicenceConditionMapper {
               EnforcementZoneConditions(
                 versionId = versionId,
                 startDate = startDate,
-                endDate = endDate,
+                endDate = electronicMonitoringDefaultEndDate,
                 zoneType = EnforcementZoneType.RESTRICTION,
                 description = item.text,
               ),
@@ -92,7 +97,7 @@ class LicenceConditionMapper {
               EnforcementZoneConditions(
                 versionId = versionId,
                 startDate = startDate,
-                endDate = endDate,
+                endDate = electronicMonitoringDefaultEndDate,
                 zoneType = EnforcementZoneType.EXCLUSION,
                 description = item.text,
               ),

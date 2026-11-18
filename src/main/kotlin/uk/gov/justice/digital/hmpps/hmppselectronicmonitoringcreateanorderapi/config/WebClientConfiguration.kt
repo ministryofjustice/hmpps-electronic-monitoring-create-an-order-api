@@ -52,7 +52,13 @@ class WebClientConfiguration(
   )
 
   @Bean
-  fun createAndVaryALicenceApiWebClient(builder: WebClient.Builder): WebClient = WebClient.builder().baseUrl(
-    cvlApiUrl,
-  ).build()
+  fun createAndVaryALicenceApiWebClient(
+    authorizedClientManager: OAuth2AuthorizedClientManager,
+    builder: WebClient.Builder,
+  ): WebClient = builder.authorisedWebClient(
+    authorizedClientManager,
+    registrationId = "cvl-api",
+    url = cvlApiUrl,
+    timeout = timeout,
+  )
 }

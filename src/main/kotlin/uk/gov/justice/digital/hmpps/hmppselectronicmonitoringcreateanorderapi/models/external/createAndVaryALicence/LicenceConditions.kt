@@ -1,11 +1,16 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.createAndVaryALicence
 
+import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
 import java.util.Date
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-data class Licence(val conditions: LicenceConditions, val licenceStartDate: Date)
+data class Licence(
+  val conditions: LicenceConditions,
+  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+  val licenceStartDate: Date,
+)
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class LicenceConditions(
@@ -26,6 +31,7 @@ data class LicenceCondition(
   val category: String? = null,
   val text: String? = null,
   val type: String? = null,
+  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
   val endDate: Date? = null,
   val restrictions: List<String>? = null,
 )

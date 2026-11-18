@@ -17,7 +17,10 @@ import java.util.*
 
 class LicenceConditionMapperTest {
   private val licenceConditions =
-    this::class.java.getResource("/fixtures/cvl/licenceConditions.json")!!.readText()
+    this::class.java.getResource("/fixtures/cvl/licenceConditionsWithEM.json")!!.readText()
+
+  private val licenceConditionsWithoutEM =
+    this::class.java.getResource("/fixtures/cvl/licenceConditionsWithoutEM.json")!!.readText()
 
   private val versionId = UUID.fromString("550e8400-e29b-41d4-a716-446655440000")
 
@@ -123,5 +126,13 @@ class LicenceConditionMapperTest {
     assertThat(monitoringCondition.versionId.toString() == versionId.toString())
     assertThat(monitoringCondition.startDate == LocalDate.parse("2026-12-01").atStartOfDay(ZoneId.of("Europe/London")))
     assertThat(monitoringCondition.endDate == null)
+  }
+
+  @Test
+  fun `maps a licence which contains no electronic monitoring conditions`() {
+    val licence = jacksonObjectMapper().readValue<Licence>(licenceConditionsWithoutEM)
+    val result = LicenceConditionMapper().map(licence, versionId)
+
+    assertThat(result).hasSize(0)
   }
 }
