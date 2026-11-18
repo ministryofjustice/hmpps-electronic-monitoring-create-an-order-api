@@ -14,6 +14,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.CurfewSchedule
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.EnforceableCondition
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.MonitoringOrder
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.OffenceData
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.Schedule
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.compareTo
 
@@ -34,6 +35,22 @@ class MonitoringOrderCompareTo {
       EnforceableCondition("Curfew", "2025-01-01"),
     ),
   )
+
+  @Test
+  fun `treats null blank and literal null values as equivalent`() {
+    val old = baselineOrder().apply {
+      noEmail = null
+      offences = mutableListOf(OffenceData(offence = "Theft", offenceDate = null))
+    }
+    val updated = baselineOrder().apply {
+      noEmail = "null"
+      offences = mutableListOf(OffenceData(offence = "Theft", offenceDate = ""))
+    }
+
+    val result = updated.compareTo(old)
+
+    assertThat(result.messages).isEmpty()
+  }
 
   @ParameterizedTest(name = "changing {0} emits message")
   @ArgumentsSource(MonitoringOrderFieldChangeArgumentsProvider::class)

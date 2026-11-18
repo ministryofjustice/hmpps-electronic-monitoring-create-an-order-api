@@ -18,6 +18,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsErrorResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsRetrieveDWandMO
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsRetrieveDWandMOResponse
 import java.util.*
 
 @Service
@@ -181,7 +182,7 @@ class FmsClient(@Value("\${services.serco.url}") url: String, private val fmsAut
   fun getLatestOrderDetails(caseId: String): FmsRetrieveDWandMO {
     val token = fmsAuthClient.getClientToken()
     return webClient.get()
-      .uri("/monitoring_order/retrieveDWandMO?u_case_id=$caseId")
+      .uri("/x_seem_cemo/monitoring_order/retrieveDWandMO?u_case_id=$caseId")
       .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
       .exchangeToMono { response ->
         when (response.statusCode().value()) {
@@ -196,6 +197,7 @@ class FmsClient(@Value("\${services.serco.url}") url: String, private val fmsAut
                 )
               }
           }
+
           404 -> {
             response.bodyToMono<String>()
               .defaultIfEmpty("Case not found for caseId=$caseId")
@@ -207,6 +209,7 @@ class FmsClient(@Value("\${services.serco.url}") url: String, private val fmsAut
                 )
               }
           }
+
           500 -> {
             response.bodyToMono<String>()
               .defaultIfEmpty("Internal Server Error")
@@ -218,11 +221,14 @@ class FmsClient(@Value("\${services.serco.url}") url: String, private val fmsAut
                 )
               }
           }
+
           else -> {
-            response.bodyToMono<FmsRetrieveDWandMO>()
+            response.bodyToMono<FmsRetrieveDWandMOResponse>()
           }
         }
       }
-      .block()!!
+      .block()!!.result.firstOrNull()?.payload ?: throw CreateSercoEntityException(
+      "No payload returned for caseId=$caseId",
+    )
   }
 }

@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.m
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
+import tools.jackson.databind.annotation.JsonDeserialize
 
 data class MonitoringOrder(
   @JsonProperty("case_id")
@@ -167,6 +168,7 @@ data class MonitoringOrder(
   @JsonProperty("schedule")
   var schedule: String? = "",
   @JsonProperty("checkin_schedule")
+  @JsonDeserialize(using = CheckinScheduleDeserializer::class)
   var checkinSchedule: MutableList<Schedule>? = mutableListOf(),
   @JsonProperty("revocation_date")
   var revocationDate: String? = "",

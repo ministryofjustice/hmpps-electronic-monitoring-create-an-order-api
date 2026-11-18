@@ -98,8 +98,8 @@ class MonitoringOrderReverseMappingTest {
   @Test
   fun `it should map curfew conditions when curfew start is present`() {
     val dto = monitoringOrderDto.copy(
-      curfewStart = "2000-07-01 08:00:00",
-      curfewEnd = "2001-07-01 08:00:00",
+      curfewStart = "2000-07-01",
+      curfewEnd = "2001-07-01",
       curfewDescription = "wears a tag",
     )
     val curfew = dto.toCurfewConditions(versionId)
@@ -107,10 +107,10 @@ class MonitoringOrderReverseMappingTest {
     assertThat(curfew).isNotNull
     assertThat(curfew!!.versionId).isEqualTo(versionId)
     assertThat(curfew.startDate).isEqualTo(
-      ZonedDateTime.of(2000, 7, 1, 8, 0, 0, 0, ZoneId.of("Europe/London")),
+      ZonedDateTime.of(2000, 7, 1, 0, 0, 0, 0, ZoneId.of("Europe/London")),
     )
     assertThat(curfew.endDate).isEqualTo(
-      ZonedDateTime.of(2001, 7, 1, 8, 0, 0, 0, ZoneId.of("Europe/London")),
+      ZonedDateTime.of(2001, 7, 1, 0, 0, 0, 0, ZoneId.of("Europe/London")),
     )
     assertThat(curfew.curfewAdditionalDetails).isEqualTo("wears a tag")
   }

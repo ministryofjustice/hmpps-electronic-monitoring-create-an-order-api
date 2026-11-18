@@ -8,6 +8,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Disability
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.EnforcementZoneType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MappaCategory
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MappaLevel
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MonitoringConditionType
@@ -20,7 +21,11 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ResponsibleOrganisation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RiskCategory
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YesNoUnknown
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.EnforceableCondition
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsRetrieveDWandMO
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.MonitoringOrder
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.Schedule
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.Zone
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.toAddress
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.toAlcoholMonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.toCourtCaseReferenceNumber
@@ -63,6 +68,26 @@ class FmsReverseMappingIntegrationTest {
   @Test
   fun `it should deserialize the example payload`() {
     assertThat(response.caseId).isEqualTo("16542c2e83714b10b2409870ceaad324")
+  }
+
+  @Test
+  fun `it should accept blank DOB and checkin schedule as text or list`() {
+    val blankDateOfBirth = response.deviceWearer.copy(dateOfBirth = "")
+    assertThat(blankDateOfBirth.toDeviceWearer(versionId).dateOfBirth).isNull()
+
+    val emptySchedule = objectMapper.readValue<MonitoringOrder>("""{"checkin_schedule":""}""")
+    assertThat(emptySchedule.checkinSchedule).isEmpty()
+
+    val schedule = objectMapper.readValue<MonitoringOrder>(
+      """{"checkin_schedule":[{"day":"Mo","start":"09:00","end":"10:00"}]}""",
+    )
+    assertThat(schedule.checkinSchedule).containsExactly(
+      Schedule(
+        day = "Mo",
+        start = "09:00",
+        end = "10:00",
+      ),
+    )
   }
 
   @Test
@@ -124,8 +149,8 @@ class FmsReverseMappingIntegrationTest {
     val order = response.monitoringOrder
 
     val curfew = order.toCurfewConditions(versionId)
-    assertThat(curfew!!.startDate).isEqualTo(ZonedDateTime.of(2000, 7, 1, 8, 0, 0, 0, london))
-    assertThat(curfew.endDate).isEqualTo(ZonedDateTime.of(2001, 7, 1, 8, 0, 0, 0, london))
+    assertThat(curfew!!.startDate).isEqualTo(ZonedDateTime.of(2000, 7, 1, 0, 0, 0, 0, london))
+    assertThat(curfew.endDate).isEqualTo(ZonedDateTime.of(2001, 7, 1, 0, 0, 0, 0, london))
     assertThat(curfew.curfewAdditionalDetails).isEqualTo("wears a tag")
 
     val release = order.toCurfewReleaseDateConditions(versionId)
@@ -138,6 +163,26 @@ class FmsReverseMappingIntegrationTest {
     assertThat(timetable[0].dayOfWeek).isEqualTo(DayOfWeek.MONDAY)
     assertThat(timetable[0].curfewAddress).isEqualTo("PRIMARY_ADDRESS")
     assertThat(timetable[1].dayOfWeek).isEqualTo(DayOfWeek.WEDNESDAY)
+  }
+
+  @Test
+  fun `it should preserve the curfew end time from enforceable condition`() {
+    val order = MonitoringOrder(
+      curfewStart = "2026-11-16",
+      curfewEnd = "2027-05-16",
+      enforceableCondition = mutableListOf(
+        EnforceableCondition(
+          condition = "Curfew with EM",
+          startDate = "2026-11-16 00:00:00",
+          endDate = "2027-05-16 22:59:00",
+        ),
+      ),
+    )
+
+    val curfew = order.toCurfewConditions(versionId)
+
+    assertThat(curfew!!.startDate).isEqualTo(ZonedDateTime.of(2026, 11, 16, 0, 0, 0, 0, london))
+    assertThat(curfew.endDate).isEqualTo(ZonedDateTime.of(2027, 5, 16, 22, 59, 0, 0, london))
   }
 
   @Test
@@ -160,6 +205,25 @@ class FmsReverseMappingIntegrationTest {
     assertThat(zones[0].zoneId).isEqualTo(0)
     assertThat(zones[1].description).isEqualTo("must stay here")
     assertThat(zones[1].zoneId).isEqualTo(1)
+  }
+
+  @Test
+  fun `it should map restriction zones`() {
+    val order = MonitoringOrder(
+      restrictionZones = mutableListOf(
+        Zone(
+          description = "no restriction zone",
+          start = "2026-11-12",
+          end = "2027-11-12",
+        ),
+      ),
+    )
+
+    val zones = order.toEnforcementZoneConditions(versionId)
+
+    assertThat(zones).hasSize(1)
+    assertThat(zones.single().zoneType).isEqualTo(EnforcementZoneType.RESTRICTION)
+    assertThat(zones.single().description).isEqualTo("no restriction zone")
   }
 
   @Test
@@ -263,8 +327,8 @@ class FmsReverseMappingIntegrationTest {
 
     assertThat(orderVersion.mappa!!.level).isEqualTo(MappaLevel.MAPPA_TWO)
 
-    assertThat(orderVersion.installationAndRisk!!.riskDetails).isEqualTo("known to be aggressive")
-    assertThat(orderVersion.installationAndRisk!!.riskCategory).containsExactlyInAnyOrder(
+    assertThat(orderVersion.detailsOfInstallation!!.riskDetails).isEqualTo("known to be aggressive")
+    assertThat(orderVersion.detailsOfInstallation!!.riskCategory).containsExactlyInAnyOrder(
       RiskCategory.SEXUAL_OFFENCES.name,
       RiskCategory.RACIAL_ABUSE_OR_THREATS.name,
     )

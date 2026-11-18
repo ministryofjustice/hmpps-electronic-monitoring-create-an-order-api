@@ -16,8 +16,13 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.VariationDetails
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.CivilCountyCourtDDv5
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.CrownCourtDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DeviceType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.EnforcementZoneType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FamilyCourtDDv5
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MagistrateCourtDDv5
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MilitaryCourtDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MonitoringConditionType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisationDDv5
@@ -26,26 +31,36 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderTypeDescription
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Pilot
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.PoliceAreas
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Prison
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ProbationDeliveryUnits
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ProbationServiceRegion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ResponsibleOrganisation
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.SentenceType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YesNoUnknown
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YouthCourtDDv5
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YouthCustodyServiceRegionDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YouthJusticeServiceRegions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ddv6.PoliceAreasDDv6
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ddv6.ProbationDeliveryUnitsDDv6
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ddv6.YouthCustodyServiceRegionDDv6
 import java.util.UUID
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Offence as OffenceEntity
 
 private val log = LoggerFactory.getLogger(MonitoringOrder::class.java)
 
 fun MonitoringOrder.toCurfewConditions(versionId: UUID): CurfewConditions? {
-  if (curfewStart.isNullOrBlank()) return null
+  val enforceableCurfew = enforceableCondition.orEmpty().firstOrNull { it.condition == "Curfew with EM" }
+  val startDate = FmsDates.parseDateTimeOrNull(enforceableCurfew?.startDate ?: "")
+    ?: FmsDates.parseDateOrNull(curfewStart ?: "")
+    ?: return null
+  val endDate = FmsDates.parseDateTimeOrNull(enforceableCurfew?.endDate ?: "")
+    ?: FmsDates.parseDateOrNull(curfewEnd ?: "")
 
   return CurfewConditions(
     versionId = versionId,
-    startDate = FmsDates.parseDateTime(curfewStart ?: ""),
-    endDate = FmsDates.parseDateTimeOrNull(curfewEnd ?: ""),
+    startDate = startDate,
+    endDate = endDate,
     curfewAdditionalDetails = curfewDescription,
   )
 }
@@ -95,7 +110,8 @@ fun MonitoringOrder.toAlcoholMonitoringConditions(versionId: UUID): AlcoholMonit
 fun MonitoringOrder.toEnforcementZoneConditions(versionId: UUID): List<EnforcementZoneConditions> {
   val zones =
     exclusionZones.map { it to EnforcementZoneType.EXCLUSION } +
-      inclusionZones.map { it to EnforcementZoneType.INCLUSION }
+      inclusionZones.map { it to EnforcementZoneType.INCLUSION } +
+      restrictionZones.map { it to EnforcementZoneType.RESTRICTION }
 
   return zones.mapIndexed { zoneId, (zone, type) -> zone.toZoneConditions(versionId, type, zoneId) }
 }
@@ -160,7 +176,17 @@ fun MonitoringOrder.toMonitoringConditions(versionId: UUID): MonitoringCondition
   prarr = trueFalseToYesNo(releasedUnderPrarr),
   dapolMissedInError = if (dapolMissedInError == "true") YesNoUnknown.YES else null,
   offenceType = toOffenceType(),
+  sentenceType = toSentenceType(),
 )
+
+private fun MonitoringOrder.toSentenceType(): SentenceType? = matchOrLog("sentence type", sentenceType) { value ->
+  // DDv6 sends IPP with a different label to SentenceType.IPP.value.
+  if (value == "IPP (Imprisonment for Public Protection)") {
+    SentenceType.IPP
+  } else {
+    SentenceType.entries.firstOrNull { it.value == value }
+  }
+}
 
 fun MonitoringOrder.toInterestedParties(versionId: UUID): InterestedParties {
   val matchedNotifyingOrg = NotifyingOrganisationDDv5.fromValue(notifyingOrganization)
@@ -178,14 +204,28 @@ fun MonitoringOrder.toInterestedParties(versionId: UUID): InterestedParties {
     }?.name,
     responsibleOfficerName = responsibleOfficerName?.ifBlank { null },
     responsibleOfficerEmail = responsibleOfficerEmail?.ifBlank { null },
-    responsibleOfficerPhoneNumber = responsibleOfficerPhone?.ifBlank { null },
+    responsibleOfficerPhoneNumber =
+    responsibleOfficerPhone?.takeUnless { it.isBlank() || it.equals("null", ignoreCase = true) },
     responsibleOrganisationEmail = roEmail?.ifBlank { null },
     responsibleOrganisationRegion = region,
     notifyingOrganisation = matchedNotifyingOrg?.name,
-    notifyingOrganisationName = noName?.ifBlank { null },
-    notifyingOrganisationEmail = noEmail?.ifBlank { null },
+    notifyingOrganisationName = noName?.ifBlank { null }?.let { toNotifyingOrganisationName(it) },
+    notifyingOrganisationEmail = noEmail?.ifBlank { null } ?: notifyingOfficerEmail?.ifBlank { null },
   )
 }
+
+// Reverses the forward mapper's getNotifyingOrganisationName, which sends the label rather than our name.
+private fun toNotifyingOrganisationName(value: String): String =
+  CivilCountyCourtDDv5.entries.firstOrNull { it.value == value }?.name
+    ?: CrownCourtDDv5.entries.firstOrNull { it.value == value }?.name
+    ?: FamilyCourtDDv5.entries.firstOrNull { it.value == value }?.name
+    ?: MagistrateCourtDDv5.entries.firstOrNull { it.value == value }?.name
+    ?: MilitaryCourtDDv5.entries.firstOrNull { it.value == value }?.name
+    ?: Prison.entries.firstOrNull { it.value == value }?.name
+    ?: YouthCourtDDv5.entries.firstOrNull { it.value == value }?.name
+    ?: YouthCustodyServiceRegionDDv5.entries.firstOrNull { it.value == value }?.name
+    ?: YouthCustodyServiceRegionDDv6.entries.firstOrNull { it.value == value }?.name
+    ?: value
 
 fun MonitoringOrder.toDapo(versionId: UUID): List<Dapo> = dapoOrderClauseNumbers.orEmpty().map {
   Dapo(

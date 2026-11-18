@@ -16,10 +16,12 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.cl
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.FmsClient
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.config.FeatureFlags
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.StatusUpdate
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.CaseState
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ProcessingStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.DeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsAttachmentResponse
@@ -36,6 +38,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.FmsOrderDetailsRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.FmsSubmissionResultRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.utilities.TestUtilities
+import java.time.ZonedDateTime
 import java.util.Optional
 import java.util.UUID
 
@@ -224,6 +227,13 @@ class FmsVariationSubmissionStrategyTest {
       fmsResultId = mockCancelledSubmissionResultId,
       versionNumber = 1,
     )
+    cancelledVariation.getCurrentVersion().statusUpdates.add(
+      StatusUpdate(
+        versionId = cancelledVariation.getCurrentVersion().id,
+        status = ProcessingStatus.REJECTED,
+        datetimeOfStatusChange = ZonedDateTime.now(),
+      ),
+    )
     cancelledVariation.deviceWearer!!.firstName = order.deviceWearer!!.firstName + "Not"
     order.versions.add(cancelledVariation.getCurrentVersion())
 
@@ -263,7 +273,7 @@ class FmsVariationSubmissionStrategyTest {
   }
 
   @Test
-  fun `Should get latest fms order details and generate CEMO determined changes`() {
+  fun `Should compare against submitted payload instead of latest fms order details`() {
     val mockSubmissionResultId = UUID.randomUUID()
     val order = TestUtilities.createReadyToSubmitOrder(
       mockOrderId,
@@ -336,7 +346,8 @@ class FmsVariationSubmissionStrategyTest {
     assertThat(result.monitoringOrderResult.payload).contains("User entered:")
     assertThat(result.monitoringOrderResult.payload).contains("Change to address")
     assertThat(result.monitoringOrderResult.payload).contains("CEMO determined changes:")
-    assertThat(result.monitoringOrderResult.payload).contains("Device wearer's name has changed")
+    assertThat(result.monitoringOrderResult.payload).doesNotContain("Device wearer's name has changed")
+    verify(fmsOrderDetailsRepository, never()).findById(any())
   }
 
   @Test

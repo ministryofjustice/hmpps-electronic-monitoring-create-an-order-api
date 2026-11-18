@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.m
 import org.slf4j.LoggerFactory
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Address
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ContactDetails
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DetailsOfInstallation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InstallationAndRisk
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Mappa
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ResponsibleAdult
@@ -21,7 +22,8 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 private val log = LoggerFactory.getLogger(DeviceWearer::class.java)
 
 fun DeviceWearer.toDeviceWearer(versionId: UUID): CemoDeviceWearer {
-  val parsedDob = LocalDate.parse(dateOfBirth ?: "", FmsDates.dateFormatter).atStartOfDay(FmsDates.londonTimeZone)
+  val parsedDob = dateOfBirth?.takeIf { it.isNotBlank() }
+    ?.let { LocalDate.parse(it, FmsDates.dateFormatter).atStartOfDay(FmsDates.londonTimeZone) }
 
   return CemoDeviceWearer(
     versionId = versionId,
@@ -30,7 +32,7 @@ fun DeviceWearer.toDeviceWearer(versionId: UUID): CemoDeviceWearer {
     lastName = lastName,
     alias = alias,
     dateOfBirth = parsedDob,
-    adultAtTimeOfInstallation = adultChild == "adult",
+    adultAtTimeOfInstallation = adultChild.equals("adult", ignoreCase = true),
     interpreterRequired = interpreterRequired == "true",
     language = language,
     gender = Gender.nameFromValue(genderIdentity),
@@ -109,21 +111,25 @@ fun DeviceWearer.toMappa(versionId: UUID): Mappa {
   )
 }
 
-fun DeviceWearer.toInstallationAndRisk(versionId: UUID): InstallationAndRisk {
-  val matchedCategories = riskCategory.orEmpty().mapNotNull { entry ->
-    val match = RiskCategory.from(entry.category)
-    if (match == null) {
-      log.error("Unmatched risk category value: {}", entry.category)
-    }
-    match?.name
+private fun DeviceWearer.matchedRiskCategories(): Array<String>? = riskCategory.orEmpty().mapNotNull { entry ->
+  val match = RiskCategory.from(entry.category)
+  if (match == null) {
+    log.error("Unmatched risk category value: {}", entry.category)
   }
+  match?.name
+}.takeIf { it.isNotEmpty() }?.toTypedArray()
 
-  return InstallationAndRisk(
-    versionId = versionId,
-    riskDetails = riskDetails,
-    riskCategory = matchedCategories.takeIf { it.isNotEmpty() }?.toTypedArray(),
-  )
-}
+fun DeviceWearer.toInstallationAndRisk(versionId: UUID): InstallationAndRisk = InstallationAndRisk(
+  versionId = versionId,
+  riskDetails = riskDetails,
+  riskCategory = matchedRiskCategories(),
+)
+
+fun DeviceWearer.toDetailsOfInstallation(versionId: UUID): DetailsOfInstallation = DetailsOfInstallation(
+  versionId = versionId,
+  riskDetails = riskDetails,
+  riskCategory = matchedRiskCategories(),
+)
 
 fun DeviceWearer.toResponsibleAdult(versionId: UUID): ResponsibleAdult? {
   val fullName: String
@@ -146,7 +152,7 @@ fun DeviceWearer.toResponsibleAdult(versionId: UUID): ResponsibleAdult? {
     versionId = versionId,
     fullName = fullName,
     relationship = relationship,
-    contactNumber = parentPhoneNumber,
+    contactNumber = parentPhoneNumber?.takeUnless { it.isBlank() || it.equals("null", ignoreCase = true) },
   )
 }
 

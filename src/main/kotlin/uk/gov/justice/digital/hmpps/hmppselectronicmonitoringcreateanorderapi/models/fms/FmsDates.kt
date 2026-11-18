@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.m
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
+import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
@@ -18,11 +19,12 @@ internal object FmsDates {
     dateTime?.toInstant()?.atZone(londonTimeZone)?.format(dateTimeFormatter)
 
   fun parseDate(date: String): ZonedDateTime =
-    LocalDate.parse(date, dateFormatter).atStartOfDay().atZone(londonTimeZone)
+    LocalDate.parse(date, dateFormatter).atStartOfDay().atZone(londonTimeZone).withZoneSameInstant(ZoneOffset.UTC)
 
   fun parseDateOrNull(date: String): ZonedDateTime? = if (date.isNotBlank()) parseDate(date) else null
 
-  fun parseDateTime(date: String): ZonedDateTime = LocalDateTime.parse(date, dateTimeFormatter).atZone(londonTimeZone)
+  fun parseDateTime(date: String): ZonedDateTime =
+    LocalDateTime.parse(date, dateTimeFormatter).atZone(londonTimeZone).withZoneSameInstant(ZoneOffset.UTC)
 
   fun parseDateTimeOrNull(date: String): ZonedDateTime? = if (date.isNotBlank()) parseDateTime(date) else null
 }
