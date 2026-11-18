@@ -116,6 +116,7 @@ object ValidationErrors {
   object InstallationAndRisk {
     const val OFFENCE_VALID: String = "Offence must be a valid offence"
     const val RISK_CATEGORY_VALID: String = "Risk categories must be a valid risk category"
+    const val RISK_DETAILS_TOO_LONG: String = "Risk details is too long"
   }
 
   object Mappa {
