@@ -50,12 +50,17 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 private val log = LoggerFactory.getLogger(MonitoringOrder::class.java)
 
 fun MonitoringOrder.toCurfewConditions(versionId: UUID): CurfewConditions? {
-  if (curfewStart.isNullOrBlank()) return null
+  val enforceableCurfew = enforceableCondition.orEmpty().firstOrNull { it.condition == "Curfew with EM" }
+  val startDate = FmsDates.parseDateTimeOrNull(enforceableCurfew?.startDate ?: "")
+    ?: FmsDates.parseDateOrNull(curfewStart ?: "")
+    ?: return null
+  val endDate = FmsDates.parseDateTimeOrNull(enforceableCurfew?.endDate ?: "")
+    ?: FmsDates.parseDateOrNull(curfewEnd ?: "")
 
   return CurfewConditions(
     versionId = versionId,
-    startDate = FmsDates.parseDate(curfewStart ?: ""),
-    endDate = FmsDates.parseDateOrNull(curfewEnd ?: ""),
+    startDate = startDate,
+    endDate = endDate,
     curfewAdditionalDetails = curfewDescription,
   )
 }
@@ -105,7 +110,8 @@ fun MonitoringOrder.toAlcoholMonitoringConditions(versionId: UUID): AlcoholMonit
 fun MonitoringOrder.toEnforcementZoneConditions(versionId: UUID): List<EnforcementZoneConditions> {
   val zones =
     exclusionZones.map { it to EnforcementZoneType.EXCLUSION } +
-      inclusionZones.map { it to EnforcementZoneType.INCLUSION }
+      inclusionZones.map { it to EnforcementZoneType.INCLUSION } +
+      restrictionZones.map { it to EnforcementZoneType.RESTRICTION }
 
   return zones.mapIndexed { zoneId, (zone, type) -> zone.toZoneConditions(versionId, type, zoneId) }
 }

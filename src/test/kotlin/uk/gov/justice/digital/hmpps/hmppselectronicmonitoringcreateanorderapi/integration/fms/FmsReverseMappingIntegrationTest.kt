@@ -8,6 +8,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Disability
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.EnforcementZoneType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MappaCategory
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MappaLevel
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.MonitoringConditionType
@@ -20,9 +21,11 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ResponsibleOrganisation
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RiskCategory
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YesNoUnknown
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.EnforceableCondition
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsRetrieveDWandMO
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.MonitoringOrder
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.Schedule
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.Zone
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.toAddress
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.toAlcoholMonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.toCourtCaseReferenceNumber
@@ -163,6 +166,26 @@ class FmsReverseMappingIntegrationTest {
   }
 
   @Test
+  fun `it should preserve the curfew end time from enforceable condition`() {
+    val order = MonitoringOrder(
+      curfewStart = "2026-11-16",
+      curfewEnd = "2027-05-16",
+      enforceableCondition = mutableListOf(
+        EnforceableCondition(
+          condition = "Curfew with EM",
+          startDate = "2026-11-16 00:00:00",
+          endDate = "2027-05-16 22:59:00",
+        ),
+      ),
+    )
+
+    val curfew = order.toCurfewConditions(versionId)
+
+    assertThat(curfew!!.startDate).isEqualTo(ZonedDateTime.of(2026, 11, 16, 0, 0, 0, 0, london))
+    assertThat(curfew.endDate).isEqualTo(ZonedDateTime.of(2027, 5, 16, 22, 59, 0, 0, london))
+  }
+
+  @Test
   fun `it should map trail and alcohol monitoring conditions`() {
     val order = response.monitoringOrder
 
@@ -182,6 +205,25 @@ class FmsReverseMappingIntegrationTest {
     assertThat(zones[0].zoneId).isEqualTo(0)
     assertThat(zones[1].description).isEqualTo("must stay here")
     assertThat(zones[1].zoneId).isEqualTo(1)
+  }
+
+  @Test
+  fun `it should map restriction zones`() {
+    val order = MonitoringOrder(
+      restrictionZones = mutableListOf(
+        Zone(
+          description = "no restriction zone",
+          start = "2026-11-12",
+          end = "2027-11-12",
+        ),
+      ),
+    )
+
+    val zones = order.toEnforcementZoneConditions(versionId)
+
+    assertThat(zones).hasSize(1)
+    assertThat(zones.single().zoneType).isEqualTo(EnforcementZoneType.RESTRICTION)
+    assertThat(zones.single().description).isEqualTo("no restriction zone")
   }
 
   @Test
