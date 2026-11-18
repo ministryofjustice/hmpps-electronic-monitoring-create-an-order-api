@@ -6,9 +6,12 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Slice
 import org.springframework.data.domain.SliceImpl
 import org.springframework.security.access.AccessDeniedException
+import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.ManageUserApi
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.config.AuthAwareAuthenticationToken
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.config.FeatureFlags
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.BadRequestException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.ForbiddenException
@@ -17,6 +20,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.MonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.StatusUpdate
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.Cohort
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.auth.UserCohort
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.OrderSearchCriteria
@@ -33,7 +37,9 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderListView
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Prison
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ProcessingStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.StatusUpdateRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.projections.OrderVersionListInformation
 import java.time.ZonedDateTime
 import java.util.*
@@ -46,6 +52,7 @@ class OrderService(
   val fmsService: FmsService,
   private val featureFlags: FeatureFlags,
   private val manageUserApi: ManageUserApi,
+  private val statusUpdateRepo: StatusUpdateRepository,
 ) : OrderSectionServiceBase() {
 
   fun createOrder(username: String, createRecord: CreateOrderDto): Order {
@@ -70,7 +77,22 @@ class OrderService(
     )
 
     updateLastUpdatedByAndSaveOrder(order)
+    recordStatusUpdate(order, order.versions[0], ProcessingStatus.CREATED)
     return order
+  }
+
+  private fun recordStatusUpdate(order: Order, version: OrderVersion, status: ProcessingStatus) {
+    val authentication = SecurityContextHolder.getContext().authentication as AuthAwareAuthenticationToken
+    statusUpdateRepo.save(
+      StatusUpdate(
+        orderId = order.id,
+        orderVersionId = version.id,
+        orderVersionType = version.type,
+        status = status,
+        datetimeOfStatusChange = ZonedDateTime.now(),
+        statusUpdatedBy = authentication.getUserFullName(),
+      ),
+    )
   }
 
   fun deleteCurrentVersionForOrder(id: UUID, token: JwtAuthenticationToken) {
@@ -134,6 +156,8 @@ class OrderService(
   private fun <T> List<T>.cloneItems(transform: (T) -> T): MutableList<T> = map(transform).toMutableList()
 
   private val allowNewVersionStatuses = listOf(OrderStatus.SUBMITTED, OrderStatus.REJECTED)
+
+  @Transactional
   fun createVersion(orderId: UUID, token: JwtAuthenticationToken, versionType: RequestType): Order {
     val order = getOrder(orderId, token)
     val currentVersion = order.getCurrentVersion()
@@ -276,7 +300,9 @@ class OrderService(
     if (mustReconfirmLicence(currentVersion.status, versionType, newOrderVersion, token)) {
       newOrderVersion.additionalDocuments.removeAll { it.fileType == DocumentType.LICENCE }
     }
-    return updateLastUpdatedByAndSaveOrder(order)
+    val savedOrder = updateLastUpdatedByAndSaveOrder(order)
+    recordStatusUpdate(order, newOrderVersion, ProcessingStatus.VERSION_CREATED)
+    return savedOrder
   }
 
   private fun mustReconfirmLicence(
@@ -323,10 +349,12 @@ class OrderService(
           order.submittedByEmail = runCatching { manageUserApi.getUserEmail(token.token) }.getOrNull()
           order.tags = getTags(order)
           updateLastUpdatedByAndSaveOrder(order)
+          recordStatusUpdate(order, order.getCurrentVersion(), ProcessingStatus.SUBMITTED)
         }
       } catch (e: Exception) {
         order.status = OrderStatus.ERROR
         updateLastUpdatedByAndSaveOrder(order)
+        recordStatusUpdate(order, order.getCurrentVersion(), ProcessingStatus.SUBMISSION_FAILED)
         if (e is SubmitOrderException) {
           throw e
         }

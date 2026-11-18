@@ -9,7 +9,6 @@ import jakarta.persistence.OneToMany
 import jakarta.persistence.Table
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ProcessingStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import java.time.OffsetDateTime
 import java.time.ZonedDateTime
@@ -286,11 +285,6 @@ data class Order(
       getCurrentVersion().detailsOfInstallation = detailsOfInstallation
     }
 
-  val statusUpdates: MutableList<StatusUpdate>
-    get() {
-      return getCurrentVersion().statusUpdates
-    }
-
   val versionId: UUID
     get() {
       return getCurrentVersion().id
@@ -358,24 +352,5 @@ data class Order(
 
   fun recalculateMonitoringStartEndDate() {
     getCurrentVersion().recalculateMonitoringStartEndDate()
-  }
-
-  fun reject(datetimeOfStatusChange: ZonedDateTime, reasons: List<RejectionReason>) {
-    this.status = OrderStatus.REJECTED
-    val update = StatusUpdate(
-      versionId = versionId,
-      status = ProcessingStatus.REJECTED,
-      datetimeOfStatusChange = datetimeOfStatusChange,
-    )
-    update.statusUpdateReasons.addAll(
-      reasons.map {
-        StatusUpdateReason(
-          statusUpdateId = update.id,
-          section = it.section,
-          details = it.details,
-        )
-      },
-    )
-    statusUpdates.add(update)
   }
 }

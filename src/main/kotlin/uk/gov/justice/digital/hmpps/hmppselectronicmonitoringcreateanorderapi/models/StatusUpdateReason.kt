@@ -7,6 +7,8 @@ import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
+import org.hibernate.annotations.OnDelete
+import org.hibernate.annotations.OnDeleteAction
 import java.util.UUID
 
 @Entity
@@ -27,6 +29,7 @@ data class StatusUpdateReason(
 
   @Schema(hidden = true)
   @ManyToOne
+  @OnDelete(action = OnDeleteAction.CASCADE)
   @JoinColumn(name = "STATUS_UPDATE_ID", updatable = false, insertable = false)
   private val statusUpdate: StatusUpdate? = null,
 )
