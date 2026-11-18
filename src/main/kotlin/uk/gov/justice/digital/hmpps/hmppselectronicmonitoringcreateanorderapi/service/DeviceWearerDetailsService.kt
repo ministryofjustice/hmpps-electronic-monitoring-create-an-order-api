@@ -11,7 +11,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.createAndVaryALicence.LicenceConditionMapper
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.createAndVaryALicence.LicenceSummary
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.interfaces.MonitoringCondition
-import java.util.*
+import java.util.UUID
 
 @Service
 class DeviceWearerDetailsService(
@@ -40,7 +40,7 @@ class DeviceWearerDetailsService(
           monitoringConditionsService.applyImportedConditions(order, monitoringConditions)
         }
       } catch (e: BadRequestException) {
-        log.debug("Failed to fetch licence conditions for $organisationSearchId", e)
+        log.debug("Failed to fetch licence conditions.", e)
       }
     }
 

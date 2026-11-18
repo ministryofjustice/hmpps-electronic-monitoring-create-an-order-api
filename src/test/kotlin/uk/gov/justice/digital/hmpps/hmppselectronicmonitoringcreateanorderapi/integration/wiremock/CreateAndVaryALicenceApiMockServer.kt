@@ -71,4 +71,18 @@ class CreateAndVaryALicenceApiMockServer : WireMockServer(WIREMOCK_PORT) {
         ),
     )
   }
+
+  fun stubGetLicenceConditionsError(licenceId: String, status: Int) {
+    stubFor(
+      get(urlPathTemplate("/public/v2/licences/id/$licenceId"))
+        .willReturn(aResponse().withStatus(status)),
+    )
+  }
+
+  fun stubGetLicenceByPrisonNumberError(prisonNumber: String, status: Int) {
+    stubFor(
+      get(urlPathTemplate("/public/licence-summaries/prison-number/$prisonNumber"))
+        .willReturn(aResponse().withStatus(status)),
+    )
+  }
 }

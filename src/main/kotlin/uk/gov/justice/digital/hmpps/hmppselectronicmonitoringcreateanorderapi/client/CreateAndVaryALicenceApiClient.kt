@@ -14,6 +14,7 @@ class CreateAndVaryALicenceApiClient(private val createAndVaryALicenceApiWebClie
 
   val crnSearch: String = "/public/licence-summaries/crn/"
   val prisonSearch: String = "/public/licence-summaries/prison-number/"
+  val approvedLicenceStatus: String = "APPROVED"
 
   override fun getLicenceByCrn(crn: String): LicenceSummary? = getLicenceSummary(crnSearch, crn)
 
@@ -30,7 +31,7 @@ class CreateAndVaryALicenceApiClient(private val createAndVaryALicenceApiWebClie
       ?: emptyList()
 
     return licenceSummaryList
-      .filter { it.statusCode == "APPROVED" && it.approvedDateTime != null }
+      .filter { it.statusCode == approvedLicenceStatus && it.approvedDateTime != null }
       .maxByOrNull { it.approvedDateTime!! }
   }
 

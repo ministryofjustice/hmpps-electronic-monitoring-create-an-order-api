@@ -8,6 +8,8 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertNotNull
 import org.junit.jupiter.api.assertNull
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.ValueSource
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.context.ActiveProfiles
 import tools.jackson.module.kotlin.jacksonObjectMapper
@@ -125,6 +127,34 @@ class CreateAndVaryALicenceApiClientTest : IntegrationTestBase() {
 
       createAndVaryALicenceApi.verify(1, getRequestedFor(urlPathEqualTo("/public/v2/licences/id/$licenceId")))
       assertNull(result)
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = [404, 500, 503])
+    fun `it returns no licence conditions when the api responds with an error status`(status: Int) {
+      createAndVaryALicenceApi.stubGetLicenceConditionsError("1", status)
+
+      assertNull(createAndVaryALicenceApiClient.getLicenceConditions("1"))
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = [404, 500, 503])
+    fun `it returns no licence summary when the api responds with an error status`(status: Int) {
+      createAndVaryALicenceApi.stubGetLicenceByPrisonNumberError("X123456", status)
+
+      assertNull(createAndVaryALicenceApiClient.getLicenceByPrisonNumber("X123456"))
+    }
+
+    @Test
+    fun `it ignores licences that are not approved`() {
+      createAndVaryALicenceApi.stubGetLicenceByCrn(
+        crn = "X123456",
+        jacksonObjectMapper().writeValueAsString(
+          listOf(LicenceSummary("1", "IN_PROGRESS", LocalDateTime.of(2026, 1, 1, 1, 1))),
+        ),
+      )
+
+      assertNull(createAndVaryALicenceApiClient.getLicenceByCrn("X123456"))
     }
   }
 }

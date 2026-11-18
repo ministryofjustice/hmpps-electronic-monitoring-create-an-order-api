@@ -30,6 +30,8 @@ enum class CvlConditionCode(val code: String) {
 class LicenceConditionMapper {
   private companion object {
     const val ELECTRONIC_MONITORING_RESTRICTIONS_CODE = "fd129172-bdd3-4d97-a4a0-efd7b47a49d4"
+    const val RESTRICTION_ZONE_TYPE = "RESTRICTION_ZONE"
+    const val EXCLUSION_ZONE_TYPE = "EXCLUSION_ZONE"
   }
 
   fun map(licence: Licence, versionId: UUID): List<MonitoringCondition> {
@@ -42,7 +44,6 @@ class LicenceConditionMapper {
       ZoneId.systemDefault(),
     )
 
-    // TODO: Do AP additional for now, need to confirm on if others are even required...
     for (item in additionalConditions) {
       val startDate = licence.licenceStartDate.toInstant().atZone(ZoneId.systemDefault())
       val endDate = item.endDate?.toInstant()?.atZone(ZoneId.systemDefault())
@@ -79,7 +80,7 @@ class LicenceConditionMapper {
           ),
         )
         CvlConditionCode.RESTRICTION -> {
-          if (electronicMonitoringRestrictions?.contains("RESTRICTION_ZONE") ?: false) {
+          if (electronicMonitoringRestrictions?.contains(RESTRICTION_ZONE_TYPE) ?: false) {
             result.add(
               EnforcementZoneConditions(
                 versionId = versionId,
@@ -92,7 +93,7 @@ class LicenceConditionMapper {
           }
         }
         CvlConditionCode.EXCLUSION_ATTACHMENT, CvlConditionCode.EXCLUSION_TEXT -> {
-          if (electronicMonitoringRestrictions?.contains("EXCLUSION_ZONE") ?: false) {
+          if (electronicMonitoringRestrictions?.contains(EXCLUSION_ZONE_TYPE) ?: false) {
             result.add(
               EnforcementZoneConditions(
                 versionId = versionId,
