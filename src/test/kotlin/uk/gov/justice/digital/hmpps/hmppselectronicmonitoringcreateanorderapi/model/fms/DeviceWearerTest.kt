@@ -19,12 +19,24 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisationDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YesNoUnknown
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.fromOrder
+import java.time.ZonedDateTime
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.DeviceWearer as FmsDeviceWearer
 
 @ActiveProfiles("test")
 class DeviceWearerTest : OrderTestBase() {
   private val featureFlags = FeatureFlags(ddV6CourtMappings = false, dataDictionaryVersion = DataDictionaryVersion.DDV6)
   private val dataSource = FmsOrderSource.CEMO
+
+  @Test
+  fun `It should preserve London DOB when stored as a UTC instant`() {
+    val order = createOrder(
+      deviceWearer = createDeviceWearer(dateOfBirth = ZonedDateTime.parse("1970-05-02T23:00:00Z")),
+    )
+
+    val fmsDeviceWearer = FmsDeviceWearer.fromOrder(order, featureFlags, dataSource)
+
+    assertThat(fmsDeviceWearer.dateOfBirth).isEqualTo("1970-05-03")
+  }
 
   @Test
   fun `It should map primary address to Serco`() {
