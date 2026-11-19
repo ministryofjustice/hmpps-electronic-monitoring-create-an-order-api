@@ -83,7 +83,10 @@ class LicenceConditionMapperTest {
       byType.getValue(AlcoholMonitoringType.ALCOHOL_ABSTINENCE).startDate ==
         LocalDate.parse("2026-12-01").atStartOfDay(ZoneId.of("Europe/London")),
     )
-    assertThat(byType.getValue(AlcoholMonitoringType.ALCOHOL_ABSTINENCE).endDate).isNull()
+    assertThat(
+      byType.getValue(AlcoholMonitoringType.ALCOHOL_ABSTINENCE).endDate ==
+        LocalDate.parse("2027-01-01").atStartOfDay(ZoneId.of("Europe/London")),
+    )
   }
 
   @Test
