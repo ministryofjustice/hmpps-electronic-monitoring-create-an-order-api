@@ -7,8 +7,10 @@ import org.springframework.http.MediaType
 import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.CorePersonRecordApiExtension.Companion.corePersonRecordApi
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.wiremock.CreateAndVaryALicenceApiExtension.Companion.createAndVaryALicenceApi
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InterestedParties
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.GetCorePersonDetailsResponse
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.OrderDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisationDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.resource.validator.ValidationError
 import java.util.UUID
@@ -183,5 +185,103 @@ class DeviceWearerDetailsControllerTest : IntegrationTestBase() {
       .exchange()
       .expectStatus()
       .isNotFound
+  }
+
+  @Test
+  fun `imports licence conditions from CVL when storing device wearer details`() {
+    val order = createPrisonOrder()
+    stubPrisonerAndLicence("A1234BC")
+
+    putDeviceWearerDetails(order.id, "A1234BC")
+
+    val updatedOrder = repo.findById(order.id).orElseThrow()
+    assertThat(updatedOrder.deviceWearer?.firstName).isEqualTo("Bob")
+    assertThat(updatedOrder.monitoringConditions?.trail).isTrue()
+    assertThat(updatedOrder.monitoringConditionsTrail).isNotNull
+  }
+
+  @Test
+  fun `stores device wearer details when CVL has no licence for the person`() {
+    val order = createPrisonOrder()
+    stubPrisoner("A1234BC")
+    createAndVaryALicenceApi.stubGetLicenceByPrisonNumber("A1234BC", "[]")
+
+    putDeviceWearerDetails(order.id, "A1234BC")
+
+    val updatedOrder = repo.findById(order.id).orElseThrow()
+    assertThat(updatedOrder.deviceWearer?.firstName).isEqualTo("Bob")
+    assertThat(updatedOrder.monitoringConditionsTrail).isNull()
+  }
+
+  @Test
+  fun `stores device wearer details when CVL responds with a server error`() {
+    val order = createPrisonOrder()
+    stubPrisoner("A1234BC")
+    createAndVaryALicenceApi.stubGetLicenceByPrisonNumberError("A1234BC", 500)
+
+    putDeviceWearerDetails(order.id, "A1234BC")
+
+    val updatedOrder = repo.findById(order.id).orElseThrow()
+    assertThat(updatedOrder.deviceWearer?.firstName).isEqualTo("Bob")
+    assertThat(updatedOrder.monitoringConditionsTrail).isNull()
+  }
+
+  @Test
+  fun `re-importing licence conditions does not duplicate or discard existing conditions`() {
+    val order = createPrisonOrder()
+    stubPrisonerAndLicence("A1234BC")
+
+    putDeviceWearerDetails(order.id, "A1234BC")
+    val first = repo.findById(order.id).orElseThrow()
+    val trailId = first.monitoringConditionsTrail!!.id
+    val zoneCount = first.enforcementZoneConditions.size
+
+    putDeviceWearerDetails(order.id, "A1234BC")
+
+    val second = repo.findById(order.id).orElseThrow()
+    assertThat(second.monitoringConditionsTrail!!.id).isEqualTo(trailId)
+    assertThat(second.enforcementZoneConditions).hasSize(zoneCount)
+    assertThat(second.monitoringConditions?.trail).isTrue()
+  }
+
+  private fun createPrisonOrder(): OrderDto {
+    val order = createOrder()
+    val storedOrder = repo.findById(order.id).orElseThrow()
+    storedOrder.interestedParties = InterestedParties(
+      versionId = storedOrder.versionId,
+      notifyingOrganisation = NotifyingOrganisationDDv5.PRISON.name,
+    )
+    repo.save(storedOrder)
+    return order
+  }
+
+  private fun stubPrisoner(prisonNumber: String) {
+    corePersonRecordApi.stubGetPrisonerDetails(
+      prisonNumber,
+      """{"firstName": "Bob", "lastName": "Builder", "dateOfBirth": "1990-08-21", "nationalities": []}""",
+    )
+  }
+
+  private fun stubPrisonerAndLicence(prisonNumber: String) {
+    stubPrisoner(prisonNumber)
+    createAndVaryALicenceApi.stubGetLicenceByPrisonNumber(
+      prisonNumber,
+      """[{"id": "1", "statusCode": "APPROVED", "approvedDateTime": "2026-11-01T10:00:00"}]""",
+    )
+    createAndVaryALicenceApi.stubGetLicenceConditions(
+      "1",
+      this::class.java.getResource("/fixtures/cvl/licenceConditionsWithEM.json")!!.readText(),
+    )
+  }
+
+  private fun putDeviceWearerDetails(orderId: UUID, organisationSearchId: String) {
+    webTestClient.put()
+      .uri("/api/orders/$orderId/device-wearer-details")
+      .contentType(MediaType.APPLICATION_JSON)
+      .body(BodyInserters.fromValue("""{"organisationSearchId": "$organisationSearchId"}"""))
+      .headers(setAuthorisation(testUser))
+      .exchange()
+      .expectStatus()
+      .isNoContent
   }
 }

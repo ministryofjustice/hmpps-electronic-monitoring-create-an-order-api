@@ -22,12 +22,14 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.TrailMonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateMonitoringConditionsDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.EnforcementZoneType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.InstallationLocationType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Pilot
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.SentenceType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
 import java.time.DayOfWeek
 import java.time.ZoneId
@@ -467,5 +469,109 @@ class MonitoringConditionsServiceTest : OrderSectionServiceTestBase() {
     whenever(repo.save(mockOrder)).thenReturn(mockOrder)
 
     service.removeTagAtSource(mockOrderId, mockUsername)
+  }
+
+  @Test
+  fun `applyImportedConditions creates parent row, sets flags and recalculates dates`() {
+    val start = ZonedDateTime.of(2026, 12, 1, 0, 0, 0, 0, ZoneId.of("Europe/London"))
+    val end = start.plusYears(1)
+
+    service.applyImportedConditions(
+      mockOrder,
+      listOf(
+        CurfewConditions(versionId = mockOrder.versionId, startDate = start, endDate = end),
+        TrailMonitoringConditions(versionId = mockOrder.versionId, startDate = start, endDate = end.plusDays(5)),
+      ),
+    )
+
+    assertThat(mockOrder.monitoringConditions?.curfew).isTrue()
+    assertThat(mockOrder.monitoringConditions?.trail).isTrue()
+    assertThat(mockOrder.monitoringConditions?.alcohol).isNull()
+    assertThat(mockOrder.curfewConditions).isNotNull
+    assertThat(mockOrder.monitoringConditions?.startDate).isEqualTo(start)
+    assertThat(mockOrder.monitoringConditions?.endDate).isEqualTo(end.plusDays(5))
+  }
+
+  @Test
+  fun `applyImportedConditions keeps existing parent row and leaves unmentioned types alone`() {
+    val existingTrail = TrailMonitoringConditions(versionId = mockOrder.versionId)
+    mockOrder.monitoringConditions = MonitoringConditions(
+      versionId = mockOrder.versionId,
+      sentenceType = SentenceType.STANDARD_DETERMINATE_SENTENCE,
+      trail = true,
+    )
+    mockOrder.monitoringConditionsTrail = existingTrail
+    val parentId = mockOrder.monitoringConditions!!.id
+
+    service.applyImportedConditions(
+      mockOrder,
+      listOf(CurfewConditions(versionId = mockOrder.versionId)),
+    )
+
+    assertThat(mockOrder.monitoringConditions?.id).isEqualTo(parentId)
+    assertThat(mockOrder.monitoringConditions?.sentenceType).isEqualTo(SentenceType.STANDARD_DETERMINATE_SENTENCE)
+    assertThat(mockOrder.monitoringConditions?.trail).isTrue()
+    assertThat(mockOrder.monitoringConditionsTrail).isSameAs(existingTrail)
+    assertThat(mockOrder.monitoringConditions?.curfew).isTrue()
+  }
+
+  @Test
+  fun `applyImportedConditions updates an existing single condition in place`() {
+    val existing = CurfewConditions(versionId = mockOrder.versionId, curfewAddress = "user entered")
+    mockOrder.curfewConditions = existing
+    val end = ZonedDateTime.of(2027, 1, 1, 0, 0, 0, 0, ZoneId.of("Europe/London"))
+
+    service.applyImportedConditions(
+      mockOrder,
+      listOf(CurfewConditions(versionId = mockOrder.versionId, endDate = end, curfewDescription = "from cvl")),
+    )
+
+    assertThat(mockOrder.curfewConditions).isSameAs(existing)
+    assertThat(existing.curfewAddress).isEqualTo("user entered")
+    assertThat(existing.endDate).isEqualTo(end)
+    assertThat(existing.curfewDescription).isEqualTo("from cvl")
+  }
+
+  @Test
+  fun `applyImportedConditions uses the first alcohol condition when several are supplied`() {
+    service.applyImportedConditions(
+      mockOrder,
+      listOf(
+        AlcoholMonitoringConditions(
+          versionId = mockOrder.versionId,
+          monitoringType = AlcoholMonitoringType.ALCOHOL_LEVEL,
+        ),
+        AlcoholMonitoringConditions(
+          versionId = mockOrder.versionId,
+          monitoringType = AlcoholMonitoringType.ALCOHOL_ABSTINENCE,
+        ),
+      ),
+    )
+
+    assertThat(mockOrder.monitoringConditionsAlcohol?.monitoringType).isEqualTo(AlcoholMonitoringType.ALCOHOL_LEVEL)
+    assertThat(mockOrder.monitoringConditions?.alcohol).isTrue()
+  }
+
+  @Test
+  fun `applyImportedConditions replaces enforcement zones and numbers them`() {
+    mockOrder.enforcementZoneConditions.add(EnforcementZoneConditions(versionId = mockOrder.versionId, zoneId = 0))
+
+    service.applyImportedConditions(
+      mockOrder,
+      listOf(
+        EnforcementZoneConditions(versionId = mockOrder.versionId, zoneType = EnforcementZoneType.EXCLUSION),
+        EnforcementZoneConditions(versionId = mockOrder.versionId, zoneType = EnforcementZoneType.RESTRICTION),
+      ),
+    )
+
+    assertThat(mockOrder.enforcementZoneConditions).extracting<Int?> { it.zoneId }.containsExactly(0, 1)
+    assertThat(mockOrder.monitoringConditions?.exclusionZone).isTrue()
+  }
+
+  @Test
+  fun `applyImportedConditions does nothing for an empty list`() {
+    service.applyImportedConditions(mockOrder, emptyList())
+
+    assertThat(mockOrder.monitoringConditions).isNull()
   }
 }
