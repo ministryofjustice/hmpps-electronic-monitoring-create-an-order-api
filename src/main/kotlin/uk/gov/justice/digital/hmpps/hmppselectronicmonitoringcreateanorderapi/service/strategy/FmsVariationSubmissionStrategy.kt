@@ -176,7 +176,9 @@ class FmsVariationSubmissionStrategy(
     val monitoringOrder = monitoringOrderResult.data!!
 
     if (orderSource == FmsOrderSource.CEMO) {
-      val orderChanges = calculateOrderChanges(monitoringOrder, submitDeviceWearerResult, lastSuccessfulSubmitResult)
+      val caseId = getOriginalNewOrderCaseId(order)
+      val orderChanges =
+        calculateOrderChanges(monitoringOrder, submitDeviceWearerResult, lastSuccessfulSubmitResult, caseId)
       monitoringOrder.orderVariationDetails = orderChanges.variationDetails
       if (order.type == RequestType.VARIATION) {
         monitoringOrder.orderVariationType = orderChanges.variationType.value
@@ -217,8 +219,10 @@ class FmsVariationSubmissionStrategy(
     monitoringOrder: MonitoringOrder,
     submitDeviceWearerResult: FmsDeviceWearerSubmissionResult,
     lastSuccessfulSubmitResult: FmsSubmissionResult?,
+    caseId: String?,
   ): OrderChanges {
-    if (lastSuccessfulSubmitResult == null) {
+    val latestFmsDetails = fmsOrderDetailsRepository.findById(caseId ?: "").orElse(null)
+    if (lastSuccessfulSubmitResult == null && latestFmsDetails == null) {
       val details = buildString {
         appendLine("User entered:")
         appendLine(monitoringOrder.orderVariationDetails)
@@ -226,8 +230,10 @@ class FmsVariationSubmissionStrategy(
       return OrderChanges(details, VariationType.OTHER)
     }
 
-    val deviceWearerJson = lastSuccessfulSubmitResult.deviceWearerResult.payload
-    val monitoringOrderJson = lastSuccessfulSubmitResult.monitoringOrderResult.payload
+    val deviceWearerJson =
+      latestFmsDetails?.deviceWearerAsJson ?: lastSuccessfulSubmitResult!!.deviceWearerResult.payload
+    val monitoringOrderJson =
+      latestFmsDetails?.monitoringOrderAsJson ?: lastSuccessfulSubmitResult!!.monitoringOrderResult.payload
 
     val currentDeviceWearer = objectMapper.readValue(submitDeviceWearerResult.payload, DeviceWearer::class.java)
     val lastDeviceWearer = objectMapper.readValue(

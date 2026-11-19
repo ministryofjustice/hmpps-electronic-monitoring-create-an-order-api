@@ -4,7 +4,6 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
-import org.mockito.Mockito.never
 import org.mockito.kotlin.any
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
@@ -185,7 +184,6 @@ class FmsVariationSubmissionStrategyTest {
     assertThat(result.monitoringOrderResult.payload).contains("Change to address")
     assertThat(result.monitoringOrderResult.payload).contains("CEMO determined changes:")
     assertThat(result.monitoringOrderResult.payload).contains("Device wearer's name has changed")
-    verify(fmsOrderDetailsRepository, never()).findById(any())
   }
 
   @Test
@@ -290,21 +288,12 @@ class FmsVariationSubmissionStrategyTest {
         strategy = FmsSubmissionStrategyKind.VARIATION,
         orderSource = FmsOrderSource.CEMO,
         deviceWearerResult = FmsDeviceWearerSubmissionResult(
-          payload = objectMapper.writeValueAsString(
-            DeviceWearer.fromOrder(order, mockFeatureFlags, FmsOrderSource.CEMO),
-          ),
+          payload = "",
 
           deviceWearerId = "1",
         ),
         monitoringOrderResult = FmsMonitoringOrderSubmissionResult(
-          payload = objectMapper.writeValueAsString(
-            MonitoringOrder.fromOrder(
-              order,
-              "1",
-              mockFeatureFlags,
-              FmsOrderSource.CEMO,
-            ),
-          ),
+          payload = "",
         ),
       ),
     )
@@ -346,8 +335,65 @@ class FmsVariationSubmissionStrategyTest {
     assertThat(result.monitoringOrderResult.payload).contains("User entered:")
     assertThat(result.monitoringOrderResult.payload).contains("Change to address")
     assertThat(result.monitoringOrderResult.payload).contains("CEMO determined changes:")
-    assertThat(result.monitoringOrderResult.payload).doesNotContain("Device wearer's name has changed")
-    verify(fmsOrderDetailsRepository, never()).findById(any())
+    assertThat(result.monitoringOrderResult.payload).contains("Device wearer's name has changed")
+  }
+
+  @Test
+  fun `Should compare against fms order details from repository when available`() {
+    val mockSubmissionResultId = UUID.randomUUID()
+    val order = TestUtilities.createReadyToSubmitOrder(
+      mockOrderId,
+      mockOrderVersionId,
+      requestType = RequestType.REQUEST,
+      status = OrderStatus.SUBMITTED,
+      fmsResultId = mockSubmissionResultId,
+    )
+    val submittedDeviceWearer = DeviceWearer.fromOrder(order, mockFeatureFlags, FmsOrderSource.CEMO)
+    val submittedMonitoringOrder = MonitoringOrder.fromOrder(order, "1", mockFeatureFlags, FmsOrderSource.CEMO)
+
+    whenever(repo.getReferenceById(mockSubmissionResultId)).thenReturn(
+      FmsSubmissionResult(
+        id = mockSubmissionResultId,
+        orderId = mockOrderId,
+        strategy = FmsSubmissionStrategyKind.ORDER,
+        orderSource = FmsOrderSource.CEMO,
+        deviceWearerResult = FmsDeviceWearerSubmissionResult(
+          payload = objectMapper.writeValueAsString(submittedDeviceWearer),
+          deviceWearerId = "1",
+        ),
+        monitoringOrderResult = FmsMonitoringOrderSubmissionResult(
+          payload = objectMapper.writeValueAsString(submittedMonitoringOrder),
+        ),
+      ),
+    )
+
+    whenever(fmsOrderDetailsRepository.findById("1")).thenReturn(
+      Optional.of(
+        FmsOrderDetails(
+          "1",
+          deviceWearerAsJson = objectMapper.writeValueAsString(
+            submittedDeviceWearer.apply { firstName += "Not" },
+          ),
+          monitoringOrderAsJson = objectMapper.writeValueAsString(submittedMonitoringOrder),
+        ),
+      ),
+    )
+    val newOrder = TestUtilities.createReadyToSubmitOrder(
+      mockOrderId,
+      mockOrderVersionId,
+      requestType = RequestType.VARIATION,
+      versionNumber = 1,
+    )
+    newOrder.additionalDocuments.clear()
+    newOrder.enforcementZoneConditions.clear()
+    order.versions.add(newOrder.getCurrentVersion())
+
+    val result = strategy.submitOrder(order, FmsOrderSource.CEMO)
+
+    assertThat(result.success).isTrue
+    assertThat(result.monitoringOrderResult.payload).contains("CEMO determined changes:")
+    assertThat(result.monitoringOrderResult.payload).contains("Device wearer's name has changed")
+    verify(fmsOrderDetailsRepository).findById("1")
   }
 
   @Test
