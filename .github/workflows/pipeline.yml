@@ -15,6 +15,15 @@ on:
         required: true
         default: false
         type: boolean
+      deploy_target:
+        description: Environment to deploy to (non-main branches only)
+        required: true
+        default: dev
+        type: choice
+        options:
+          - dev
+          - test
+          - dev and test
 permissions:
   contents: read
   packages: write
@@ -25,7 +34,7 @@ jobs:
   helm_lint:
     strategy:
       matrix:
-        environments: [ 'dev', 'preprod', 'prod' ]
+        environments: [ 'dev', 'test', 'preprod', 'prod' ]
     name: helm lint
     uses: ministryofjustice/hmpps-github-actions/.github/workflows/test_helm_lint.yml@v2 # WORKFLOW_VERSION
     secrets: inherit
@@ -80,7 +89,7 @@ jobs:
       tag_latest: false
   deploy_dev:
     name: Deploy to the dev environment
-    if: github.ref != 'refs/heads/main'
+    if: github.ref != 'refs/heads/main' && (github.event_name != 'workflow_dispatch' || inputs.deploy_target != 'test')
     needs:
       - build_dev
       - helm_lint
@@ -88,6 +97,18 @@ jobs:
     secrets: inherit
     with:
       environment: 'dev'
+      app_version: '${{ needs.build_dev.outputs.app_version }}'
+      helm_timeout: '5m'
+  deploy_test:
+    name: Deploy to the test environment
+    if: github.ref != 'refs/heads/main' && github.event_name == 'workflow_dispatch' && inputs.deploy_target != 'dev'
+    needs:
+      - build_dev
+      - helm_lint
+    uses: ministryofjustice/hmpps-github-actions/.github/workflows/deploy_env.yml@v2
+    secrets: inherit
+    with:
+      environment: 'test'
       app_version: '${{ needs.build_dev.outputs.app_version }}'
       helm_timeout: '5m'
   deploy_preprod:

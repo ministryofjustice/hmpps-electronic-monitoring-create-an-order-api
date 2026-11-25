@@ -1,0 +1,26 @@
+---
+# Per environment values which override defaults in hmpps-electronic-monitoring-create-an-order-api/values.yaml
+
+generic-service:
+  replicaCount: 2
+
+  ingress:
+    host: hmpps-electronic-monitoring-create-an-order-api-test.hmpps.service.justice.gov.uk
+
+  env:
+    SPRING_PROFILES_ACTIVE: dev
+    APPLICATIONINSIGHTS_CONFIGURATION_FILE: "applicationinsights.dev.json"
+    HMPPS_AUTH_URL: "https://sign-in-dev.hmpps.service.justice.gov.uk/auth"
+    DOCUMENT_MANAGEMENT_URL: "https://document-api-dev.hmpps.service.justice.gov.uk/"
+    CP_PROCESSING_ENABLED: true
+    CP_FMS_INTEGRATION_ENABLED: true
+    SETTINGS_DATA_DICTIONARY_VERSION: DDV7
+    DDV6_COURT_MAPPINGS: true
+    MANAGE_USER_URL: "https://manage-users-api-dev.hmpps.service.justice.gov.uk/"
+    CORE_PERSON_RECORD_URL: "https://hmpps-person-record-dev.hmpps.service.justice.gov.uk/"
+
+
+# CloudPlatform AlertManager receiver to route prometheus alerts to slack
+# See https://user-guide.cloud-platform.service.justice.gov.uk/documentation/monitoring-an-app/how-to-create-alarms.html#creating-your-own-custom-alerts
+generic-prometheus-alerts:
+  alertSeverity: hmpps-ems-cemo-ui-dev
