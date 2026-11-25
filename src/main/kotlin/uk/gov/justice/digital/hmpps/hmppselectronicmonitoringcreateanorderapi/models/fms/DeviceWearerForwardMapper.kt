@@ -38,7 +38,7 @@ fun DeviceWearer.Companion.fromOrder(
     middleName = order.deviceWearer?.middleName ?: "",
     lastName = order.deviceWearer?.lastName,
     alias = order.deviceWearer?.alias,
-    dateOfBirth = FmsDates.getBritishDate(order.deviceWearer?.dateOfBirth) ?: "",
+    dateOfBirth = order.deviceWearer?.dateOfBirth?.format(FmsDates.dateFormatter) ?: "",
     adultChild = adultChild,
     sex = getSex(order),
     genderIdentity = getGender(order),

@@ -50,17 +50,12 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 private val log = LoggerFactory.getLogger(MonitoringOrder::class.java)
 
 fun MonitoringOrder.toCurfewConditions(versionId: UUID): CurfewConditions? {
-  val enforceableCurfew = enforceableCondition.orEmpty().firstOrNull { it.condition == "Curfew with EM" }
-  val startDate = FmsDates.parseDateTimeOrNull(enforceableCurfew?.startDate ?: "")
-    ?: FmsDates.parseDateOrNull(curfewStart ?: "")
-    ?: return null
-  val endDate = FmsDates.parseDateTimeOrNull(enforceableCurfew?.endDate ?: "")
-    ?: FmsDates.parseDateOrNull(curfewEnd ?: "")
+  if (curfewStart.isNullOrBlank()) return null
 
   return CurfewConditions(
     versionId = versionId,
-    startDate = startDate,
-    endDate = endDate,
+    startDate = FmsDates.parseDate(curfewStart ?: ""),
+    endDate = FmsDates.parseDateOrNull(curfewEnd ?: ""),
     curfewAdditionalDetails = curfewDescription,
   )
 }
@@ -150,17 +145,22 @@ fun MonitoringOrder.toProbationDeliveryUnit(versionId: UUID): ProbationDeliveryU
   return ProbationDeliveryUnit(versionId = versionId, unit = matched)
 }
 
-fun MonitoringOrder.toOffences(versionId: UUID): List<OffenceEntity> = offences.orEmpty().mapNotNull { offenceData ->
-  val matched = Offence.fromValue(offenceData.offence)
-  if (matched == null) {
-    log.error("Unmatched offence value: {}", offenceData.offence)
-    return@mapNotNull null
+fun MonitoringOrder.toOffences(versionId: UUID): List<OffenceEntity> {
+  val offenceData = offences?.takeIf { it.isNotEmpty() }
+    ?: listOfNotNull(offence?.takeIf { it.isNotBlank() }?.let { OffenceData(it, offenceDate) })
+
+  return offenceData.mapNotNull { entry ->
+    val matched = Offence.fromValue(entry.offence)
+    if (matched == null) {
+      log.error("Unmatched offence value: {}", entry.offence)
+      return@mapNotNull null
+    }
+    OffenceEntity(
+      versionId = versionId,
+      offenceType = matched.name,
+      offenceDate = FmsDates.parseDateOrNull(entry.offenceDate ?: ""),
+    )
   }
-  OffenceEntity(
-    versionId = versionId,
-    offenceType = matched.name,
-    offenceDate = FmsDates.parseDateOrNull(offenceData.offenceDate ?: ""),
-  )
 }
 
 fun MonitoringOrder.toOffenceType(): String? = acEligibleOffences?.firstOrNull()?.offence

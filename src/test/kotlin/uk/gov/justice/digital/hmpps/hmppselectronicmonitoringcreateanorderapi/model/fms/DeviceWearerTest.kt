@@ -4,6 +4,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
+import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.provider.MethodSource
 import org.junit.jupiter.params.provider.ValueSource
 import org.springframework.test.context.ActiveProfiles
@@ -19,7 +20,9 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisationDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YesNoUnknown
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.fromOrder
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.toDeviceWearer
 import java.time.ZonedDateTime
+import java.util.UUID
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.DeviceWearer as FmsDeviceWearer
 
 @ActiveProfiles("test")
@@ -27,15 +30,46 @@ class DeviceWearerTest : OrderTestBase() {
   private val featureFlags = FeatureFlags(ddV6CourtMappings = false, dataDictionaryVersion = DataDictionaryVersion.DDV6)
   private val dataSource = FmsOrderSource.CEMO
 
-  @Test
-  fun `It should preserve London DOB when stored as a UTC instant`() {
+  @ParameterizedTest
+  @CsvSource(
+    "1970-05-02T23:00:00Z, 1970-05-02",
+    "1990-07-01T23:30:00Z, 1990-07-01",
+    "1990-07-01T00:00:00+01:00[Europe/London], 1990-07-01",
+    "1990-01-01T00:00:00Z, 1990-01-01",
+    "1990-07-01T00:00:00+10:00, 1990-07-01",
+  )
+  fun `It should send the stored DOB calendar date without converting to British time`(
+    storedDateOfBirth: String,
+    expectedDateOfBirth: String,
+  ) {
     val order = createOrder(
-      deviceWearer = createDeviceWearer(dateOfBirth = ZonedDateTime.parse("1970-05-02T23:00:00Z")),
+      deviceWearer = createDeviceWearer(dateOfBirth = ZonedDateTime.parse(storedDateOfBirth)),
     )
 
     val fmsDeviceWearer = FmsDeviceWearer.fromOrder(order, featureFlags, dataSource)
 
-    assertThat(fmsDeviceWearer.dateOfBirth).isEqualTo("1970-05-03")
+    assertThat(fmsDeviceWearer.dateOfBirth).isEqualTo(expectedDateOfBirth)
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = ["1990-01-01", "1990-07-01", "1970-01-01", "1970-05-03"])
+  fun `It should preserve date-only DOB on an in-memory FMS round trip`(dateOfBirth: String) {
+    val deviceWearer = FmsDeviceWearer(dateOfBirth = dateOfBirth).toDeviceWearer(UUID.randomUUID())
+    val order = createOrder(deviceWearer = deviceWearer)
+
+    val fmsDeviceWearer = FmsDeviceWearer.fromOrder(order, featureFlags, dataSource)
+
+    assertThat(fmsDeviceWearer.dateOfBirth).isEqualTo(dateOfBirth)
+  }
+
+  @Test
+  fun `It should send a blank DOB when none is stored`() {
+    val order = createOrder()
+    order.deviceWearer?.dateOfBirth = null
+
+    val fmsDeviceWearer = FmsDeviceWearer.fromOrder(order, featureFlags, dataSource)
+
+    assertThat(fmsDeviceWearer.dateOfBirth).isEmpty()
   }
 
   @Test

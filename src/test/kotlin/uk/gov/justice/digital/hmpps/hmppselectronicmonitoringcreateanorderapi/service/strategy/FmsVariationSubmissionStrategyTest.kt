@@ -23,6 +23,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ProcessingStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.DeviceWearer
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.EnforceableCondition
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsAttachmentResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsAttachmentResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsDeviceWearerSubmissionResult
@@ -33,7 +34,9 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsSubmissionResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsSubmissionStrategyKind
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.MonitoringOrder
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.Zone
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.fromOrder
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.toEnforcementZoneConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.FmsOrderDetailsRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.FmsSubmissionResultRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.utilities.TestUtilities
@@ -394,6 +397,88 @@ class FmsVariationSubmissionStrategyTest {
     assertThat(result.monitoringOrderResult.payload).contains("CEMO determined changes:")
     assertThat(result.monitoringOrderResult.payload).contains("Device wearer's name has changed")
     verify(fmsOrderDetailsRepository).findById("1")
+  }
+
+  @Test
+  fun `Should preserve separate zone condition times from the latest FMS details`() {
+    val originalResultId = UUID.randomUUID()
+    val order = TestUtilities.createReadyToSubmitOrder(
+      mockOrderId,
+      mockOrderVersionId,
+      requestType = RequestType.REQUEST,
+      status = OrderStatus.SUBMITTED,
+      fmsResultId = originalResultId,
+    )
+    val submittedDeviceWearer = DeviceWearer.fromOrder(order, mockFeatureFlags, FmsOrderSource.CEMO)
+    val submittedMonitoringOrder = MonitoringOrder.fromOrder(order, "1", mockFeatureFlags, FmsOrderSource.CEMO)
+    whenever(repo.getReferenceById(originalResultId)).thenReturn(
+      FmsSubmissionResult(
+        id = originalResultId,
+        orderId = mockOrderId,
+        strategy = FmsSubmissionStrategyKind.ORDER,
+        orderSource = FmsOrderSource.CEMO,
+        deviceWearerResult = FmsDeviceWearerSubmissionResult(
+          payload = objectMapper.writeValueAsString(submittedDeviceWearer),
+          deviceWearerId = "1",
+        ),
+        monitoringOrderResult = FmsMonitoringOrderSubmissionResult(
+          payload = objectMapper.writeValueAsString(submittedMonitoringOrder),
+        ),
+      ),
+    )
+
+    val exclusionEnd = "2027-05-16 23:59:00"
+    val restrictionEnd = "2027-06-20 22:30:00"
+    val retrievedMonitoringOrder = submittedMonitoringOrder.copy(
+      enforceableCondition = mutableListOf(
+        EnforceableCondition("EM Exclusion / Inclusion Zone", "2026-11-16 00:00:00", exclusionEnd),
+        EnforceableCondition("Restriction Zones", "2026-11-16 00:00:00", restrictionEnd),
+      ),
+      exclusionZones = mutableListOf(Zone(start = "2026-11-16", end = "2027-05-16")),
+      restrictionZones = mutableListOf(Zone(start = "2026-11-16", end = "2027-06-20")),
+    )
+    whenever(fmsOrderDetailsRepository.findById("1")).thenReturn(
+      Optional.of(
+        FmsOrderDetails(
+          caseId = "1",
+          deviceWearerAsJson = objectMapper.writeValueAsString(submittedDeviceWearer),
+          monitoringOrderAsJson = objectMapper.writeValueAsString(retrievedMonitoringOrder),
+        ),
+      ),
+    )
+
+    val variation = TestUtilities.createReadyToSubmitOrder(
+      mockOrderId,
+      mockOrderVersionId,
+      requestType = RequestType.VARIATION,
+      versionNumber = 1,
+    )
+    variation.additionalDocuments.clear()
+    variation.enforcementZoneConditions.clear()
+    variation.enforcementZoneConditions.addAll(
+      retrievedMonitoringOrder.copy(
+        restrictionZones = mutableListOf(Zone(start = "2026-11-16", end = "2027-06-21")),
+      ).toEnforcementZoneConditions(variation.getCurrentVersion().id),
+    )
+    order.versions.add(variation.getCurrentVersion())
+
+    val result = strategy.submitOrder(order, FmsOrderSource.CEMO)
+    val submittedMonitoringOrderPayload = objectMapper.readValue(
+      result.monitoringOrderResult.payload,
+      MonitoringOrder::class.java,
+    )
+
+    assertThat(result.success).isTrue
+    assertThat(
+      submittedMonitoringOrderPayload.enforceableCondition
+        ?.single { it.condition == "EM Exclusion / Inclusion Zone" }?.endDate,
+    ).isEqualTo(exclusionEnd)
+    assertThat(
+      submittedMonitoringOrderPayload.enforceableCondition
+        ?.single { it.condition == "Restriction Zones" }?.endDate,
+    ).isEqualTo("2027-06-21 22:30:00")
+    assertThat(submittedMonitoringOrderPayload.exclusionZones.single().end).isEqualTo("2027-05-16")
+    assertThat(submittedMonitoringOrderPayload.restrictionZones.single().end).isEqualTo("2027-06-21")
   }
 
   @Test

@@ -18,6 +18,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsAttachmentSubmissionResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsDeviceWearerSubmissionResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsMonitoringOrderSubmissionResult
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsOrderDetails
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsSubmissionResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsSubmissionStrategyKind
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.MonitoringOrder
@@ -177,8 +178,22 @@ class FmsVariationSubmissionStrategy(
 
     if (orderSource == FmsOrderSource.CEMO) {
       val caseId = getOriginalNewOrderCaseId(order)
+      val latestFmsDetails = caseId?.takeIf { it.isNotBlank() }
+        ?.let { fmsOrderDetailsRepository.findById(it).orElse(null) }
+      val previousMonitoringOrderJson = latestFmsDetails?.monitoringOrderAsJson
+        ?: lastSuccessfulSubmitResult?.monitoringOrderResult?.payload
+      val previousMonitoringOrder = previousMonitoringOrderJson?.let {
+        objectMapper.readValue(it, MonitoringOrder::class.java)
+      }
+      previousMonitoringOrder?.let { preserveZoneConditionTimes(monitoringOrder, it) }
       val orderChanges =
-        calculateOrderChanges(monitoringOrder, submitDeviceWearerResult, lastSuccessfulSubmitResult, caseId)
+        calculateOrderChanges(
+          monitoringOrder,
+          submitDeviceWearerResult,
+          lastSuccessfulSubmitResult,
+          latestFmsDetails,
+          previousMonitoringOrder,
+        )
       monitoringOrder.orderVariationDetails = orderChanges.variationDetails
       if (order.type == RequestType.VARIATION) {
         monitoringOrder.orderVariationType = orderChanges.variationType.value
@@ -219,9 +234,9 @@ class FmsVariationSubmissionStrategy(
     monitoringOrder: MonitoringOrder,
     submitDeviceWearerResult: FmsDeviceWearerSubmissionResult,
     lastSuccessfulSubmitResult: FmsSubmissionResult?,
-    caseId: String?,
+    latestFmsDetails: FmsOrderDetails?,
+    previousMonitoringOrder: MonitoringOrder?,
   ): OrderChanges {
-    val latestFmsDetails = fmsOrderDetailsRepository.findById(caseId ?: "").orElse(null)
     if (lastSuccessfulSubmitResult == null && latestFmsDetails == null) {
       val details = buildString {
         appendLine("User entered:")
@@ -232,18 +247,12 @@ class FmsVariationSubmissionStrategy(
 
     val deviceWearerJson =
       latestFmsDetails?.deviceWearerAsJson ?: lastSuccessfulSubmitResult!!.deviceWearerResult.payload
-    val monitoringOrderJson =
-      latestFmsDetails?.monitoringOrderAsJson ?: lastSuccessfulSubmitResult!!.monitoringOrderResult.payload
-
     val currentDeviceWearer = objectMapper.readValue(submitDeviceWearerResult.payload, DeviceWearer::class.java)
     val lastDeviceWearer = objectMapper.readValue(
       deviceWearerJson,
       DeviceWearer::class.java,
     )
-    val lastMonitoringOrder = objectMapper.readValue(
-      monitoringOrderJson,
-      MonitoringOrder::class.java,
-    )
+    val lastMonitoringOrder = requireNotNull(previousMonitoringOrder)
 
     val deviceWearerChanges = currentDeviceWearer.compareTo(lastDeviceWearer)
     val monitoringOrderChanges = monitoringOrder.compareTo(lastMonitoringOrder)
@@ -263,6 +272,28 @@ class FmsVariationSubmissionStrategy(
       listOf(deviceWearerChanges.orderVariationType, monitoringOrderChanges.orderVariationType).minBy { it.priority }
 
     return OrderChanges(changeDetails, variationType)
+  }
+
+  private fun preserveZoneConditionTimes(current: MonitoringOrder, previous: MonitoringOrder) {
+    val zoneConditionNames = setOf("EM Exclusion / Inclusion Zone", "Restriction Zones")
+    val previousConditions = previous.enforceableCondition.orEmpty().associateBy { it.condition }
+    current.enforceableCondition = current.enforceableCondition.orEmpty().map { condition ->
+      if (condition.condition !in zoneConditionNames) return@map condition
+      val previousCondition = previousConditions[condition.condition] ?: return@map condition
+      condition.copy(
+        startDate = preserveTimePart(condition.startDate, previousCondition.startDate),
+        endDate = preserveTimePart(condition.endDate, previousCondition.endDate),
+      )
+    }.toMutableList()
+  }
+
+  private fun preserveTimePart(current: String?, previous: String?): String? {
+    if (current.isNullOrBlank() || previous.isNullOrBlank()) return current
+
+    val time = previous.substringAfter(' ', missingDelimiterValue = "")
+    if (time.isBlank()) return current
+
+    return "${current.substringBefore(' ')} $time"
   }
 
   // Every version shares one external case, so its state can't tell which submission was cancelled

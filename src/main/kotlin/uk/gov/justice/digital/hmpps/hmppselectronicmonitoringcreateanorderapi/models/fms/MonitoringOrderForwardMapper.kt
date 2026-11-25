@@ -272,33 +272,33 @@ fun MonitoringOrder.Companion.fromOrder(
     monitoringOrder.trailMonitoring = "Yes"
   }
 
-  if (order.enforcementZoneConditions.count() > 0) {
-    val enforcementZoneStartDate = order.enforcementZoneConditions.mapNotNull { it.startDate }.minOrNull()
-    val enforcementZoneEndDate =
-      order.enforcementZoneConditions.mapNotNull { it.endDate }.maxOrNull() ?: defaultEndDate
-
-    if (order.enforcementZoneConditions.any {
-        it.zoneType in setOf(
-          EnforcementZoneType.INCLUSION,
-          EnforcementZoneType.EXCLUSION,
-        )
-      }
-    ) {
+  if (order.enforcementZoneConditions.isNotEmpty()) {
+    val exclusionAndInclusionZones = order.enforcementZoneConditions.filter {
+      it.zoneType == EnforcementZoneType.INCLUSION || it.zoneType == EnforcementZoneType.EXCLUSION
+    }
+    if (exclusionAndInclusionZones.isNotEmpty()) {
+      val startDate = exclusionAndInclusionZones.mapNotNull { it.startDate }.minOrNull()
+      val endDate = exclusionAndInclusionZones.mapNotNull { it.endDate }.maxOrNull() ?: defaultEndDate
       monitoringOrder.enforceableCondition?.add(
         EnforceableCondition(
           "EM Exclusion / Inclusion Zone",
-          startDate = getBritishDateAndTime(enforcementZoneStartDate),
-          endDate = getBritishDateAndTime(enforcementZoneEndDate) ?: "",
+          startDate = getBritishDateAndTime(startDate),
+          endDate = getBritishDateAndTime(endDate) ?: "",
         ),
       )
     }
 
-    if (order.enforcementZoneConditions.any { it.zoneType == EnforcementZoneType.RESTRICTION }) {
+    val restrictionZones = order.enforcementZoneConditions.filter {
+      it.zoneType == EnforcementZoneType.RESTRICTION
+    }
+    if (restrictionZones.isNotEmpty()) {
+      val startDate = restrictionZones.mapNotNull { it.startDate }.minOrNull()
+      val endDate = restrictionZones.mapNotNull { it.endDate }.maxOrNull() ?: defaultEndDate
       monitoringOrder.enforceableCondition?.add(
         EnforceableCondition(
           "Restriction Zones",
-          startDate = getBritishDateAndTime(enforcementZoneStartDate),
-          endDate = getBritishDateAndTime(enforcementZoneEndDate) ?: "",
+          startDate = getBritishDateAndTime(startDate),
+          endDate = getBritishDateAndTime(endDate) ?: "",
         ),
       )
     }

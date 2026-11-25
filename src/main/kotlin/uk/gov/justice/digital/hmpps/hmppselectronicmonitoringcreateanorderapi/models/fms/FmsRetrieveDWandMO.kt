@@ -49,6 +49,7 @@ data class FmsRetrieveDWandMO(
 
     version.contactDetails = deviceWearer.toContactDetails(versionId)
 
+    version.offences = monitoringOrder.toOffences(versionId).toMutableList()
     val offenceAdditionalDetails = monitoringOrder.offenceAdditionalDetails?.ifBlank { null }
     if (dataDictionaryVersion.isLaterThanOrEqual(DataDictionaryVersion.DDV6)) {
       version.detailsOfInstallation = deviceWearer.toDetailsOfInstallation(versionId)
@@ -57,6 +58,7 @@ data class FmsRetrieveDWandMO(
       }
     } else {
       version.installationAndRisk = deviceWearer.toInstallationAndRisk(versionId).apply {
+        offence = version.offences.firstOrNull()?.offenceType ?: ""
         this.offenceAdditionalDetails = offenceAdditionalDetails
       }
     }
@@ -66,7 +68,6 @@ data class FmsRetrieveDWandMO(
     version.monitoringConditions = monitoringOrder.toMonitoringConditions(versionId)
     version.monitoringConditionsTrail = monitoringOrder.toTrailMonitoringConditions(versionId)
     version.monitoringConditionsAlcohol = monitoringOrder.toAlcoholMonitoringConditions(versionId)
-    version.offences = monitoringOrder.toOffences(versionId).toMutableList()
     version.dapoClauses = monitoringOrder.toDapo(versionId).toMutableList()
     version.enforcementZoneConditions = monitoringOrder.toEnforcementZoneConditions(versionId).toMutableList()
     version.curfewConditions = monitoringOrder.toCurfewConditions(versionId)
