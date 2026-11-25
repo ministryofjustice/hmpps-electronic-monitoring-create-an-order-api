@@ -1,4 +1,4 @@
-ARG BASE_IMAGE=ghcr.io/ministryofjustice/hmpps-eclipse-temurin:21-jre-jammy
+ARG BASE_IMAGE=ghcr.io/ministryofjustice/hmpps-eclipse-temurin:25-jre-jammy
 FROM --platform=$BUILDPLATFORM eclipse-temurin:21-jdk-jammy AS builder
 
 ARG BUILD_NUMBER
