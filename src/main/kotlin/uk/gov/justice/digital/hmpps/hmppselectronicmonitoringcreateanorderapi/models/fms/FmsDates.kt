@@ -23,6 +23,11 @@ internal object FmsDates {
 
   fun parseDateOrNull(date: String): ZonedDateTime? = if (date.isNotBlank()) parseDate(date) else null
 
+  fun parseDateOrDateTime(date: String): ZonedDateTime = if (date.length == 10) parseDate(date) else parseDateTime(date)
+
+  fun parseDateOrDateTimeOrNull(date: String): ZonedDateTime? =
+    if (date.isNotBlank()) parseDateOrDateTime(date) else null
+
   fun parseDateTime(date: String): ZonedDateTime =
     LocalDateTime.parse(date, dateTimeFormatter).atZone(londonTimeZone).withZoneSameInstant(ZoneOffset.UTC)
 

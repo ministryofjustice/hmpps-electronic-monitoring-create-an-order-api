@@ -54,8 +54,8 @@ fun MonitoringOrder.toCurfewConditions(versionId: UUID): CurfewConditions? {
 
   return CurfewConditions(
     versionId = versionId,
-    startDate = FmsDates.parseDate(curfewStart ?: ""),
-    endDate = FmsDates.parseDateOrNull(curfewEnd ?: ""),
+    startDate = FmsDates.parseDateOrDateTime(curfewStart ?: ""),
+    endDate = FmsDates.parseDateOrDateTimeOrNull(curfewEnd ?: ""),
     curfewAdditionalDetails = curfewDescription,
   )
 }
