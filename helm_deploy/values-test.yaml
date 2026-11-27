@@ -9,15 +9,15 @@ generic-service:
 
   namespace_secrets:
     sqs-court-case-events-fifo-secret:
-      HMPPS_SQS_QUEUES_COURTHEARINGEVENTQUEUE_QUEUENAME: null
-      HMPPS_SQS_QUEUES_COURTHEARINGEVENTQUEUE_QUEUEARN: null
+      HMPPS_SQS_QUEUES_COURTHEARINGEVENTQUEUE_QUEUENAME: "sqs_queue_name"
+      HMPPS_SQS_QUEUES_COURTHEARINGEVENTQUEUE_QUEUEARN: "sqs_queue_arn"
     sqs-court-case-events-fifo-dlq-secret:
-      HMPPS_SQS_QUEUES_COURTHEARINGEVENTQUEUE_DLQNAME: null
+      HMPPS_SQS_QUEUES_COURTHEARINGEVENTQUEUE_DLQNAME: "sqs_queue_name"
     sqs-returns-events-fifo-secret:
-      HMPPS_SQS_QUEUES_RETURNSEVENTQUEUE_QUEUENAME: null
-      HMPPS_SQS_QUEUES_RETURNSEVENTQUEUE_QUEUEARN: null
+      HMPPS_SQS_QUEUES_RETURNSEVENTQUEUE_QUEUENAME: "sqs_queue_name"
+      HMPPS_SQS_QUEUES_RETURNSEVENTQUEUE_QUEUEARN: "sqs_queue_arn"
     sqs-returns-events-fifo-dlq-secret:
-      HMPPS_SQS_QUEUES_RETURNSEVENTQUEUE_DLQNAME: null
+      HMPPS_SQS_QUEUES_RETURNSEVENTQUEUE_DLQNAME: "sqs_queue_name"
 
   env:
     SPRING_PROFILES_ACTIVE: dev
