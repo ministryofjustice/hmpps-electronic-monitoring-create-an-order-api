@@ -9,6 +9,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Result
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DocumentType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Offence
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ProcessingStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
@@ -185,7 +186,11 @@ class FmsVariationSubmissionStrategy(
       val previousMonitoringOrder = previousMonitoringOrderJson?.let {
         objectMapper.readValue(it, MonitoringOrder::class.java)
       }
-      previousMonitoringOrder?.let { preserveZoneConditionTimes(monitoringOrder, it) }
+      previousMonitoringOrder?.let {
+        preserveCurfewConditionDates(monitoringOrder, it)
+        preserveZoneConditionTimes(monitoringOrder, it)
+        preserveRetrievedFields(monitoringOrder, it, order.installationLocation == null)
+      }
       val orderChanges =
         calculateOrderChanges(
           monitoringOrder,
@@ -284,6 +289,61 @@ class FmsVariationSubmissionStrategy(
         startDate = preserveTimePart(condition.startDate, previousCondition.startDate),
         endDate = preserveTimePart(condition.endDate, previousCondition.endDate),
       )
+    }.toMutableList()
+  }
+
+  private fun preserveRetrievedFields(
+    current: MonitoringOrder,
+    previous: MonitoringOrder,
+    installationLocationMissing: Boolean,
+  ) {
+    if (hasSameCalendarDate(current.orderEnd, previous.orderEnd)) {
+      current.orderEnd = previous.orderEnd
+    }
+    if (installationLocationMissing) {
+      if (current.tagAtSource.isNullOrBlank()) current.tagAtSource = previous.tagAtSource
+      if (current.installAtSourcePilot.isNullOrBlank()) {
+        current.installAtSourcePilot = previous.installAtSourcePilot
+      }
+    }
+
+    val currentOffences = current.offences ?: return
+    val previousOffenceLabels = previous.offences.orEmpty().mapNotNull { offence ->
+      val label = offence.offence?.takeIf { it.isNotBlank() } ?: return@mapNotNull null
+      val offenceType = Offence.fromValue(label) ?: return@mapNotNull null
+      (offenceType to offence.offenceDate) to label
+    }.toMap()
+
+    current.offences = currentOffences.map { offence ->
+      val offenceType = Offence.fromValue(offence.offence)
+      val previousLabel = offenceType?.let { previousOffenceLabels[it to offence.offenceDate] }
+      if (previousLabel != null) {
+        offence.copy(offence = previousLabel)
+      } else {
+        offence
+      }
+    }.toMutableList()
+  }
+
+  private fun hasSameCalendarDate(current: String?, previous: String?): Boolean = when {
+    current.isNullOrBlank() || previous.isNullOrBlank() -> false
+    else -> current.substringBefore(' ') == previous.substringBefore(' ')
+  }
+
+  private fun preserveCurfewConditionDates(current: MonitoringOrder, previous: MonitoringOrder) {
+    val conditionName = "Curfew with EM"
+    val previousCurfewCondition = previous.enforceableCondition.orEmpty()
+      .firstOrNull { it.condition == conditionName } ?: return
+
+    current.enforceableCondition = current.enforceableCondition.orEmpty().map { condition ->
+      if (condition.condition == conditionName) {
+        condition.copy(
+          startDate = previousCurfewCondition.startDate,
+          endDate = previousCurfewCondition.endDate,
+        )
+      } else {
+        condition
+      }
     }.toMutableList()
   }
 

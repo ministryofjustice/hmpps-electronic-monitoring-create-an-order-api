@@ -1699,6 +1699,81 @@ class OrderServiceTest {
           .ignoringFields("id", "versionId", "version")
           .isEqualTo(sourceDeviceWearer)
       }
+
+      @Test
+      fun `It retrieves the latest FMS version when creating a change to an approved community order`() {
+        val approvedVariation = TestUtilities.createReadyToSubmitOrder(
+          id = UUID.randomUUID(),
+          status = OrderStatus.SUBMITTED,
+          requestType = RequestType.VARIATION,
+          versionNumber = 1,
+          startDate = ZonedDateTime.now().minusMonths(1),
+        )
+        val refreshedVersion = OrderVersion(
+          orderId = approvedVariation.id,
+          username = approvedVariation.username,
+          status = OrderStatus.IN_PROGRESS,
+          type = RequestType.VARIATION,
+          dataDictionaryVersion = DataDictionaryVersion.DDV6,
+          deviceWearer = approvedVariation.deviceWearer!!.copy(firstName = "Refreshed"),
+        )
+        whenever(repo.findById(approvedVariation.id)).thenReturn(Optional.of(approvedVariation))
+        whenever(repo.save(approvedVariation)).thenReturn(approvedVariation)
+        whenever(authentication.name).thenReturn(approvedVariation.username)
+        whenever(fmsService.getLatestOrderVersion(approvedVariation)).thenReturn(refreshedVersion)
+
+        service.createVersion(approvedVariation.id, authentication, RequestType.VARIATION)
+
+        verify(fmsService).getLatestOrderVersion(approvedVariation)
+        assertThat(approvedVariation.versions.last().deviceWearer?.firstName).isEqualTo("Refreshed")
+      }
+
+      @Test
+      fun `It uses the submitted variation start date when refreshing an in-progress variation`() {
+        val approvedVariation = TestUtilities.createReadyToSubmitOrder(
+          id = UUID.randomUUID(),
+          status = OrderStatus.SUBMITTED,
+          requestType = RequestType.VARIATION,
+          versionNumber = 1,
+          startDate = ZonedDateTime.now().minusMonths(1),
+        )
+        val submittedVersion = approvedVariation.getCurrentVersion()
+        val draftVersionId = UUID.randomUUID()
+        val draftVersion = submittedVersion.copy(
+          id = draftVersionId,
+          versionId = submittedVersion.versionId + 1,
+          status = OrderStatus.IN_PROGRESS,
+          deviceWearer = approvedVariation.deviceWearer!!.copy(
+            id = UUID.randomUUID(),
+            versionId = draftVersionId,
+            firstName = "Draft",
+          ),
+          monitoringConditions = approvedVariation.monitoringConditions!!.copy(
+            versionId = draftVersionId,
+            startDate = ZonedDateTime.now().plusMonths(1),
+          ),
+        )
+        approvedVariation.versions.add(draftVersion)
+        val fmsDateOfBirth = ZonedDateTime.now().minusYears(30)
+        val refreshedVersion = OrderVersion(
+          orderId = approvedVariation.id,
+          username = approvedVariation.username,
+          status = OrderStatus.IN_PROGRESS,
+          type = RequestType.VARIATION,
+          dataDictionaryVersion = DataDictionaryVersion.DDV6,
+          deviceWearer = approvedVariation.deviceWearer!!.copy(dateOfBirth = fmsDateOfBirth),
+        )
+        whenever(repo.findById(approvedVariation.id)).thenReturn(Optional.of(approvedVariation))
+        whenever(repo.save(approvedVariation)).thenReturn(approvedVariation)
+        whenever(authentication.name).thenReturn(approvedVariation.username)
+        whenever(fmsService.getLatestOrderVersion(approvedVariation)).thenReturn(refreshedVersion)
+
+        service.createVersion(approvedVariation.id, authentication, RequestType.VARIATION)
+
+        verify(fmsService).getLatestOrderVersion(approvedVariation)
+        assertThat(approvedVariation.versions.last().deviceWearer?.firstName).isEqualTo("Draft")
+        assertThat(approvedVariation.versions.last().deviceWearer?.dateOfBirth).isEqualTo(fmsDateOfBirth)
+      }
     }
   }
 

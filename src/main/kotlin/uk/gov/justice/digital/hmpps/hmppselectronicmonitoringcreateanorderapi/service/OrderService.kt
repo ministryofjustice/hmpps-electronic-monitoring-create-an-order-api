@@ -199,12 +199,31 @@ class OrderService(
     }
 
   // Future-dated orders keep our stored form; EMS data is only used once monitoring has started.
-  private fun getRetrievedOrderVersion(order: Order): OrderVersion? =
-    if (order.getMonitoringStartDate()?.isBefore(ZonedDateTime.now()) == true) {
-      fmsService.getLatestOrderVersion(order)
+  private fun getRetrievedOrderVersion(order: Order): OrderVersion? {
+    val currentVersion = order.getCurrentVersion()
+    val isInProgressVariation = currentVersion.status == OrderStatus.IN_PROGRESS &&
+      currentVersion.type in RequestType.VARIATION_TYPES
+    val versionWithMonitoringStartDate = if (isInProgressVariation) {
+      order.versions
+        .filter { it.status == OrderStatus.SUBMITTED }
+        .maxByOrNull { it.versionId }
     } else {
-      null
+      currentVersion
     }
+
+    if (versionWithMonitoringStartDate?.getMonitoringStartDate()?.isBefore(ZonedDateTime.now()) != true) {
+      return null
+    }
+
+    val latestFmsVersion = fmsService.getLatestOrderVersion(order) ?: return null
+    if (!isInProgressVariation) return latestFmsVersion
+
+    val currentDeviceWearer = currentVersion.deviceWearer ?: return null
+    val latestDateOfBirth = latestFmsVersion.deviceWearer?.dateOfBirth ?: return null
+    return currentVersion.copy(
+      deviceWearer = currentDeviceWearer.copy(dateOfBirth = latestDateOfBirth),
+    )
+  }
 
   fun createVersion(orderId: UUID, token: JwtAuthenticationToken, versionType: RequestType): Order {
     val order = getOrder(orderId, token)
@@ -224,8 +243,10 @@ class OrderService(
     }
 
     val sourceVersion = when {
+      versionType == RequestType.AMEND_ORIGINAL_REQUEST -> currentVersion
+      currentVersion.status == OrderStatus.IN_PROGRESS && currentVersion.type in RequestType.VARIATION_TYPES ->
+        getRetrievedOrderVersion(order) ?: currentVersion
       currentVersion.status == OrderStatus.IN_PROGRESS ||
-        versionType == RequestType.AMEND_ORIGINAL_REQUEST ||
         isRejectedVariation -> currentVersion
       else -> getRetrievedOrderVersion(order) ?: currentVersion
     }
