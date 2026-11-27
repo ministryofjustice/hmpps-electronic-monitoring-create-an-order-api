@@ -1,0 +1,173 @@
+{
+  "id": 1,
+  "kind": "CRD",
+  "licenceType": "AP",
+  "policyVersion": "V4_1",
+  "version": "1.0",
+  "statusCode": "APPROVED",
+  "prisonNumber": "P123456",
+  "bookingId": 1,
+  "crn": "A123456",
+  "approvedByUsername": null,
+  "approvedDateTime": null,
+  "createdByUsername": "TEST",
+  "createdDateTime": "2026-11-05T15:11:19",
+  "updatedByUsername": "TEST",
+  "updatedDateTime": "2026-11-17T08:42:38",
+  "licenceStartDate": "2026-12-01",
+  "isInPssPeriod": false,
+  "conditions": {
+    "AP": {
+      "standard": [
+        {
+          "code": "9ce9d594-e346-4785-9642-c87e764bee37",
+          "text": "Behave well in a way that supports the purpose of you being on licence, and do not commit any crime."
+        },
+        {
+          "code": "e670ac69-eda2-4b04-a0a1-a3c8492fe1e6",
+          "text": "Get permission from your supervising officer to stay at an address and if you want to stay somewhere else for one or more nights."
+        },
+        {
+          "code": "3361683a-504a-4357-ae22-6aa01b370b4a",
+          "text": "Keep in touch and meet with your supervising officer in the way they tell you to. This includes meeting them where you live."
+        },
+        {
+          "code": "78A5F860-4791-48F2-B707-D6D4413850EE",
+          "text": "Tell your supervising officer about any names you use that are different to the names on this licence."
+        },
+        {
+          "code": "6FA6E492-F0AB-4E76-B868-63813DB44696",
+          "text": "Inform your supervising officer if your contact details change. For example, your phone number or email address."
+        },
+        {
+          "code": "88069445-08cb-4f16-915f-5a162d085c26",
+          "text": "Tell your supervising officer about any new work, or a type of work, you want to do. Get their approval before you start this work."
+        },
+        {
+          "code": "7d416906-0e94-4fde-ae86-8339d339ccb7",
+          "text": "Get permission from your supervising officer if you want to leave the United Kingdom, Isle of Man or the Channel Islands. This does not apply if you are being deported or removed for immigration purposes."
+        },
+        {
+          "code": "21E5216D-C601-4282-A221-697834D0C7C4",
+          "text": "Get permission from your supervising officer if you want to apply for a new passport. If requested, tell your supervising officer about any passports you have already."
+        }
+      ],
+      "additional": [
+        {
+          "id": 48,
+          "category": "Residence at a specific place",
+          "code": "5db26ab3-9b6f-4bee-b2aa-53aa3f3be7dd",
+          "text": "You must reside overnight within North East probation region while of no fixed abode, unless otherwise approved by your supervising officer.",
+          "type": "STANDARD"
+        },
+        {
+          "id": 49,
+          "category": "Contact with a person",
+          "code": "9ae2a336-3491-4667-aaed-dd852b09b4b9",
+          "text": "Receive home visits from a Mental Health Worker.",
+          "type": "STANDARD"
+        },
+        {
+          "id": 50,
+          "category": "Programmes or activities",
+          "code": "df3f08a8-4ae0-41fe-b3bc-d0be1fd2d8aa",
+          "text": "To comply with any requirements specified by your supervising officer for the purpose of ensuring that you address your sexual offending.",
+          "type": "STANDARD"
+        },
+        {
+          "id": 73,
+          "category": "Electronic monitoring",
+          "code": "fd129172-bdd3-4d97-a4a0-efd7b47a49d4",
+          "text": "You must agree to have an electronic monitoring tag put on you. You must also keep the tag charged and allow equipment needed for it to work to be installed at your home. Report any issues with this equipment or tag to your supervising officer immediately and do not tamper with it. Your electronic monitoring tag will be checking that you comply with your curfew, that you do not drink any alcohol, that you attend appointments, your alcohol consumption and your location until Saturday 12 December 2026.",
+          "endDate": "2026-12-12",
+          "restrictions": [
+            "CURFEW",
+            "ALCOHOL_ABSTINENCE",
+            "ATTENDANCE_AT_APPOINTMENTS",
+            "ALCOHOL_MONITORING",
+            "LOCATION_MONITORING",
+            "RESTRICTION_ZONE"
+          ],
+          "type": "ELECTRONIC_MONITORING_WITH_RESTRICTIONS"
+        },
+        {
+          "id": 74,
+          "category": "Electronic monitoring",
+          "code": "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
+          "text": "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on Wednesday 1 December 2027, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
+          "endDate": "2027-12-01",
+          "type": "ELECTRONIC_MONITORING"
+        },
+        {
+          "id": 75,
+          "category": "Electronic monitoring",
+          "code": "86e6f2a9-bb60-40f8-9ac4-310ebc72ac2f",
+          "text": "You must stay at 123 Test Street, Test, T1234TT between 5pm and midnight every day until your electronic tag is installed unless otherwise authorised by your supervising officer.",
+          "type": "STANDARD"
+        },
+        {
+          "id": 81,
+          "category": "Curfew arrangement",
+          "code": "0a370862-5426-49c1-b6d4-3d074d78a81a",
+          "text": "You must stay at the address approved by your supervising officer between 05:00 pm and 07:00 am each day, unless your supervising officer gives permission for you to be elsewhere during those hours. This is called a curfew.",
+          "curfewTimes": [
+            {
+              "startTime": "17:00",
+              "endTime": "07:00"
+            }
+          ],
+          "type": "CURFEW"
+        },
+        {
+          "id": 76,
+          "category": "Electronic monitoring",
+          "code": "d36a3b77-30ba-40ce-8953-83e761d3b487",
+          "text": "You must not drink any alcohol until Friday 1 January 2027. You will need to wear an electronic tag all the time so we can check this.",
+          "endDate": "2027-01-01",
+          "type": "STANDARD"
+        },
+        {
+          "id": 77,
+          "category": "Electronic monitoring",
+          "code": "2F8A5418-C6E4-4F32-9E58-64B23550E504",
+          "text": "You will need to wear an electronic tag all the time until Friday 5 February 2027 so we can check how much alcohol you are drinking, and if you are drinking alcohol when you have been told you must not. To help you drink less alcohol you must take part in any activities your probation officer asks you to.",
+          "endDate": "2027-02-05",
+          "type": "ELECTRONIC_MONITORING"
+        },
+        {
+          "id": 51,
+          "category": "Serious organised crime",
+          "code": "4e52fd9c-d436-4f82-9032-7813b130f620",
+          "text": "Provide your supervising officer with the details of the full postal addresses of all premises and storage facilities, including business addresses, to which you have a right of access.",
+          "type": "STANDARD"
+        },
+        {
+          "code": "005d70e4-a247-4f82-b8b3-6d294a0f5051",
+          "text": "Not to leave the area as defined by the attached map without the prior approval of your supervising officer.",
+          "category": "Freedom of movement",
+          "categoryShort": null,
+          "requiresUserInput": true
+        },
+        {
+          "code": "0f9a20f4-35c7-4c77-8af8-f200f153fa11",
+          "text": "Not to enter the area as defined by the attached map without the prior approval of your supervising officer.",
+          "category": "Freedom of movement",
+          "categoryShort": null,
+          "requiresUserInput": true
+        },
+        {
+          "code": "42f71b40-84cd-446d-8647-f00bbb6c079c",
+          "text": "Not to enter [NAME / TYPE OF PREMISES / ADDRESS / ROAD] without the prior approval of your supervising officer.",
+          "category": "Freedom of movement",
+          "categoryShort": null,
+          "requiresUserInput": true
+        }
+      ],
+      "bespoke": []
+    },
+    "PSS": {
+      "standard": [],
+      "additional": []
+    }
+  }
+}

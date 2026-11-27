@@ -12,17 +12,25 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.EnumSource
 import org.junit.jupiter.params.provider.NullAndEmptySource
 import org.junit.jupiter.params.provider.ValueSource
+import org.mockito.kotlin.any
+import org.mockito.kotlin.argThat
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
 import org.springframework.http.HttpStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.CorePersonRecordApi
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.CreateAndVaryALicenceApi
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.config.FeatureFlags
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.BadRequestException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.CorePersonRecordDependencyException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.CorePersonRecordNotFoundException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Address
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.ContactDetails
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CorePersonRecord
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.InterestedParties
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
@@ -33,7 +41,15 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisationDDv5
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.createAndVaryALicence.ConditionSet
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.createAndVaryALicence.Licence
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.createAndVaryALicence.LicenceCondition
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.createAndVaryALicence.LicenceConditionMapper
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.createAndVaryALicence.LicenceConditions
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.createAndVaryALicence.LicenceSummary
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.OrderRepository
+import java.time.LocalDateTime
+import java.util.Date
 import java.util.Optional
 import java.util.UUID
 
@@ -94,7 +110,13 @@ class DeviceWearerDetailsServiceTest {
 
     @BeforeEach
     fun setup() {
-      service = DeviceWearerDetailsService(client)
+      service = DeviceWearerDetailsService(
+        client,
+        mock<CreateAndVaryALicenceApi>(),
+        LicenceConditionMapper(),
+        mock<MonitoringConditionsService>(),
+        mock<FeatureFlags>(),
+      )
       service.orderRepo = mockOrderRepo
 
       mockOrder = Order(
@@ -167,6 +189,9 @@ class DeviceWearerDetailsServiceTest {
   inner class StoreDetails {
     private val mockOrderRepo: OrderRepository = mock()
     private lateinit var service: DeviceWearerDetailsService
+    private val cvlApi: CreateAndVaryALicenceApi = mock()
+    private val monitoringConditionsService: MonitoringConditionsService = mock()
+    private val featureFlags: FeatureFlags = mock()
 
     private lateinit var mockOrder: Order
     private val mockOrderId: UUID = UUID.randomUUID()
@@ -175,7 +200,13 @@ class DeviceWearerDetailsServiceTest {
 
     @BeforeEach
     fun setup() {
-      service = DeviceWearerDetailsService(client)
+      service = DeviceWearerDetailsService(
+        client,
+        cvlApi,
+        LicenceConditionMapper(),
+        monitoringConditionsService,
+        featureFlags,
+      )
       service.orderRepo = mockOrderRepo
 
       mockOrder = Order(
@@ -421,6 +452,83 @@ class DeviceWearerDetailsServiceTest {
         .matches {
           (it as CorePersonRecordDependencyException).upstreamStatusCode == HttpStatus.INTERNAL_SERVER_ERROR
         }
+    }
+
+    private val curfewCode = "0a370862-5426-49c1-b6d4-3d074d78a81a"
+    private val licence = Licence(
+      conditions = LicenceConditions(
+        ap = ConditionSet(additional = listOf(LicenceCondition(code = curfewCode, text = "Curfew"))),
+      ),
+      licenceStartDate = Date(),
+    )
+    private val summary = LicenceSummary("99", "APPROVED", LocalDateTime.of(2026, 1, 1, 0, 0))
+
+    @Test
+    fun `does not call CVL when the integration is disabled`() {
+      mockOrder.interestedParties!!.notifyingOrganisation = NotifyingOrganisationDDv5.PRISON.name
+      whenever(featureFlags.cvlIntegrationEnabled).thenReturn(false)
+
+      service.storeDetails("A1234BC", mockOrderId, mockUsername)
+
+      verifyNoInteractions(cvlApi)
+      verifyNoInteractions(monitoringConditionsService)
+    }
+
+    @Test
+    fun `imports licence conditions by prison number when enabled`() {
+      mockOrder.interestedParties!!.notifyingOrganisation = NotifyingOrganisationDDv5.PRISON.name
+      whenever(featureFlags.cvlIntegrationEnabled).thenReturn(true)
+      whenever(cvlApi.getLicenceByPrisonNumber("A1234BC")).thenReturn(summary)
+      whenever(cvlApi.getLicenceConditions("99")).thenReturn(licence)
+
+      service.storeDetails("A1234BC", mockOrderId, mockUsername)
+
+      verify(cvlApi, never()).getLicenceByCrn(any())
+      verify(monitoringConditionsService).applyImportedConditions(
+        eq(mockOrder),
+        argThat { size == 1 && first() is CurfewConditions },
+      )
+    }
+
+    @Test
+    fun `imports licence conditions by crn for probation when enabled`() {
+      mockOrder.interestedParties!!.notifyingOrganisation = NotifyingOrganisationDDv5.PROBATION.name
+      whenever(featureFlags.cvlIntegrationEnabled).thenReturn(true)
+      whenever(cvlApi.getLicenceByCrn("X12345")).thenReturn(summary)
+      whenever(cvlApi.getLicenceConditions("99")).thenReturn(licence)
+
+      service.storeDetails("X12345", mockOrderId, mockUsername)
+
+      verify(cvlApi, never()).getLicenceByPrisonNumber(any())
+      verify(monitoringConditionsService).applyImportedConditions(eq(mockOrder), any())
+    }
+
+    @Test
+    fun `still stores core person details when no approved licence is found`() {
+      mockOrder.interestedParties!!.notifyingOrganisation = NotifyingOrganisationDDv5.PRISON.name
+      whenever(featureFlags.cvlIntegrationEnabled).thenReturn(true)
+      whenever(cvlApi.getLicenceByPrisonNumber("A1234BC")).thenReturn(null)
+      client.setMockResponse(baseDetails.copy(deviceWearer = DeviceWearer(versionId = mockVersionId, firstName = "Al")))
+
+      service.storeDetails("A1234BC", mockOrderId, mockUsername)
+
+      verify(cvlApi, never()).getLicenceConditions(any())
+      verifyNoInteractions(monitoringConditionsService)
+      assertThat(mockOrder.deviceWearer?.firstName).isEqualTo("Al")
+      verify(mockOrderRepo).save(mockOrder)
+    }
+
+    @Test
+    fun `does not apply conditions when the licence cannot be retrieved`() {
+      mockOrder.interestedParties!!.notifyingOrganisation = NotifyingOrganisationDDv5.PRISON.name
+      whenever(featureFlags.cvlIntegrationEnabled).thenReturn(true)
+      whenever(cvlApi.getLicenceByPrisonNumber("A1234BC")).thenReturn(summary)
+      whenever(cvlApi.getLicenceConditions("99")).thenReturn(null)
+
+      service.storeDetails("A1234BC", mockOrderId, mockUsername)
+
+      verifyNoInteractions(monitoringConditionsService)
+      verify(mockOrderRepo).save(mockOrder)
     }
   }
 }

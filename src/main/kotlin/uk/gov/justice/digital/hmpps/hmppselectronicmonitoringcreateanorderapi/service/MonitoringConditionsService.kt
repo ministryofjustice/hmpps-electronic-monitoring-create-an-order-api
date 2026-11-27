@@ -1,10 +1,15 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service
 
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AlcoholMonitoringConditions
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CurfewConditions
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.EnforcementZoneConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.MonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.TrailMonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.UpdateMonitoringConditionsDto
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.interfaces.MonitoringCondition
 import java.util.*
 
 @Service
@@ -44,6 +49,60 @@ class MonitoringConditionsService : OrderSectionServiceBase() {
     order.recalculateMonitoringStartEndDate()
 
     return updateLastUpdatedByAndSaveOrder(order).monitoringConditions!!
+  }
+
+  fun applyImportedConditions(order: Order, conditions: List<MonitoringCondition>) {
+    if (conditions.isEmpty()) return
+
+    val parent = order.monitoringConditions
+      ?: MonitoringConditions(versionId = order.versionId).also { order.monitoringConditions = it }
+
+    conditions.filterIsInstance<CurfewConditions>().firstOrNull()?.let { imported ->
+      val existing = order.curfewConditions
+      if (existing == null) {
+        order.curfewConditions = imported
+      } else {
+        existing.startDate = imported.startDate
+        existing.endDate = imported.endDate
+        existing.curfewDescription = imported.curfewDescription
+      }
+      parent.curfew = true
+    }
+
+    conditions.filterIsInstance<TrailMonitoringConditions>().firstOrNull()?.let { imported ->
+      val existing = order.monitoringConditionsTrail
+      if (existing == null) {
+        order.monitoringConditionsTrail = imported
+      } else {
+        existing.startDate = imported.startDate
+        existing.endDate = imported.endDate
+      }
+      parent.trail = true
+    }
+
+    conditions.filterIsInstance<AlcoholMonitoringConditions>().firstOrNull()?.let { imported ->
+      val existing = order.monitoringConditionsAlcohol
+      if (existing == null) {
+        order.monitoringConditionsAlcohol = imported
+      } else {
+        existing.startDate = imported.startDate
+        existing.endDate = imported.endDate
+        existing.monitoringType = imported.monitoringType
+      }
+      parent.alcohol = true
+    }
+
+    val zones = conditions.filterIsInstance<EnforcementZoneConditions>()
+    if (zones.isNotEmpty()) {
+      order.enforcementZoneConditions.clear()
+      zones.forEachIndexed { index, zone ->
+        zone.zoneId = index
+        order.enforcementZoneConditions.add(zone)
+      }
+      parent.exclusionZone = true
+    }
+
+    order.recalculateMonitoringStartEndDate()
   }
 
   private fun clearDeselectedConditionDetails(order: Order) {

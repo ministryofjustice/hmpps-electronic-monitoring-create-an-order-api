@@ -1,17 +1,28 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.service
 
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.CorePersonRecordApi
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.CreateAndVaryALicenceApi
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.config.FeatureFlags
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.BadRequestException
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.CorePersonRecord
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.dto.GetCorePersonDetailsResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Gender
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.NotifyingOrganisationDDv5
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.createAndVaryALicence.LicenceConditionMapper
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.external.createAndVaryALicence.LicenceSummary
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.interfaces.MonitoringCondition
 import java.util.UUID
 
 @Service
-class DeviceWearerDetailsService(private val webClient: CorePersonRecordApi) : OrderSectionServiceBase() {
-
+class DeviceWearerDetailsService(
+  private val webClient: CorePersonRecordApi,
+  private val createAndVaryALicenceApi: CreateAndVaryALicenceApi,
+  private val licenceConditionMapper: LicenceConditionMapper,
+  private val monitoringConditionsService: MonitoringConditionsService,
+  private val featureFlags: FeatureFlags,
+) : OrderSectionServiceBase() {
   fun storeDetails(organisationSearchId: String, orderId: UUID, username: String) {
     val normalisedOrganisationSearchId = normaliseOrganisationSearchId(organisationSearchId)
 
@@ -26,6 +37,20 @@ class DeviceWearerDetailsService(private val webClient: CorePersonRecordApi) : O
     order.deviceWearer = record.deviceWearer
     order.addresses.addAll(record.addresses)
     order.contactDetails = record.contactDetails
+
+    if (featureFlags.cvlIntegrationEnabled) {
+      log.info("CVL Searching for $organisationSearchId")
+      try {
+        val licenceSummary = fetchCvlRecord(notifyingOrganisation, normalisedOrganisationSearchId)
+        val licence = licenceSummary?.let { createAndVaryALicenceApi.getLicenceConditions(it.id) }
+        if (licence != null) {
+          val monitoringConditions: List<MonitoringCondition> = licenceConditionMapper.map(licence, order.versionId)
+          monitoringConditionsService.applyImportedConditions(order, monitoringConditions)
+        }
+      } catch (e: BadRequestException) {
+        log.debug("Failed to fetch licence conditions.", e)
+      }
+    }
 
     orderRepo.save(order)
   }
@@ -60,6 +85,17 @@ class DeviceWearerDetailsService(private val webClient: CorePersonRecordApi) : O
     )
   }
 
+  private fun fetchCvlRecord(notifyingOrganisation: String?, organisationSearchId: String): LicenceSummary? = when {
+    notifyingOrganisation == NotifyingOrganisationDDv5.PRISON.name ||
+      notifyingOrganisation == NotifyingOrganisationDDv5.YOUTH_CUSTODY_SERVICE.name ->
+      createAndVaryALicenceApi.getLicenceByPrisonNumber(organisationSearchId)
+    notifyingOrganisation == NotifyingOrganisationDDv5.PROBATION.name ->
+      createAndVaryALicenceApi.getLicenceByCrn(organisationSearchId)
+    else -> throw BadRequestException(
+      "Notifying organisation $notifyingOrganisation is unsupported for CVL record lookup",
+    )
+  }
+
   private fun normaliseOrganisationSearchId(organisationSearchId: String): String {
     val trimmedOrganisationSearchId = organisationSearchId.trim()
     if (trimmedOrganisationSearchId.isBlank()) {
@@ -67,5 +103,9 @@ class DeviceWearerDetailsService(private val webClient: CorePersonRecordApi) : O
     }
 
     return trimmedOrganisationSearchId
+  }
+
+  private companion object {
+    private val log = LoggerFactory.getLogger(this::class.java)
   }
 }

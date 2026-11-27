@@ -30,17 +30,19 @@ hmpps.s3:
   bucketName: testbucket
 services:
   hmppsauth:
-    url: http://localhost:9091/auth
-  #    url: https://sign-in-dev.hmpps.service.justice.gov.uk/auth
+#    url: http://localhost:9091/auth
+      url: https://sign-in-dev.hmpps.service.justice.gov.uk/auth
   document:
-    url: http://localhost:9091/hmpps
-  #    url: https://document-api-dev.hmpps.service.justice.gov.uk/
+#    url: http://localhost:9091/hmpps
+      url: https://document-api-dev.hmpps.service.justice.gov.uk/
   manage-user:
-    url: http://localhost:9091/manage-user/
-  #    url: https://manage-users-api-dev.hmpps.service.justice.gov.uk/
+#    url: http://localhost:9091/manage-user/
+      url: https://manage-users-api-dev.hmpps.service.justice.gov.uk/
   core-person-record:
-    url: http://localhost:9091/cpr
-#    url: https://hmpps-person-record-dev.hmpps.service.justice.gov.uk/
+#    url: http://localhost:9091/cpr
+    url: https://hmpps-person-record-dev.hmpps.service.justice.gov.uk/
+  cvl:
+    url: https://create-and-vary-a-licence-api-dev.hmpps.service.justice.gov.uk/
 
 notify:
   api-key: test
@@ -53,3 +55,4 @@ CLIENT_SECRET: clientsecret
 
 settings:
   device-wearer-payload-version: Dev
+  cvl-integration-enabled: true
