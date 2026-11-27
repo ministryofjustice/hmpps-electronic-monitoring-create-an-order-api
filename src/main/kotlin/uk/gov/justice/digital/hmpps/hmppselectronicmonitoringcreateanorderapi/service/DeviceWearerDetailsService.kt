@@ -39,6 +39,7 @@ class DeviceWearerDetailsService(
     order.contactDetails = record.contactDetails
 
     if (featureFlags.cvlIntegrationEnabled) {
+      log.info("CVL Searching for $organisationSearchId")
       try {
         val licenceSummary = fetchCvlRecord(notifyingOrganisation, normalisedOrganisationSearchId)
         val licence = licenceSummary?.let { createAndVaryALicenceApi.getLicenceConditions(it.id) }
