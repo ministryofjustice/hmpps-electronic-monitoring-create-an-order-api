@@ -15,7 +15,6 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Sex
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YesNoUnknown
 import java.time.LocalDate
-import java.time.ZoneOffset
 import java.util.UUID
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.DeviceWearer as CemoDeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Disability as DisabilityEnum
@@ -24,7 +23,7 @@ private val log = LoggerFactory.getLogger(DeviceWearer::class.java)
 
 fun DeviceWearer.toDeviceWearer(versionId: UUID): CemoDeviceWearer {
   val parsedDob = dateOfBirth?.takeIf { it.isNotBlank() }
-    ?.let { LocalDate.parse(it, FmsDates.dateFormatter).atStartOfDay(ZoneOffset.UTC) }
+    ?.let { LocalDate.parse(it, FmsDates.dateFormatter).atStartOfDay(FmsDates.londonTimeZone) }
 
   return CemoDeviceWearer(
     versionId = versionId,

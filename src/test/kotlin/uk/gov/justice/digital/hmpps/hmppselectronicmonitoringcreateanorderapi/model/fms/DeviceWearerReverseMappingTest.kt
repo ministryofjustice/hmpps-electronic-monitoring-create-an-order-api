@@ -15,7 +15,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.toResponsibleAdult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.toSecondaryAddress
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.toTertiaryAddress
-import java.time.ZoneOffset
+import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.util.UUID
 
@@ -92,7 +92,7 @@ class DeviceWearerReverseMappingTest {
       0,
       0,
       0,
-      ZoneOffset.UTC,
+      ZoneId.of("Europe/London"),
     )
 
     assertThat(deviceWearer.dateOfBirth).isEqualTo(expectedDOB)
