@@ -6,6 +6,9 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
+import org.junit.jupiter.params.provider.EnumSource
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.never
 import org.mockito.Mockito.verifyNoInteractions
@@ -24,9 +27,13 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.cl
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.FmsClient
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.config.FeatureFlags
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.exception.CreateSercoEntityException
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.CaseState
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.DeviceWearer
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsDeviceWearerSubmissionResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsMonitoringOrderSubmissionResult
@@ -314,5 +321,154 @@ class FmsServiceTest {
         any(),
       )
     }
+  }
+
+  @Test
+  fun `getCaseState returns UNKNOWN when the order has no versions`() {
+    val order = Order()
+
+    assertThat(service.getCaseState(order)).isEqualTo(CaseState.UNKNOWN)
+    verifyNoInteractions(repo, mockClient)
+  }
+
+  @ParameterizedTest
+  @CsvSource(
+    "SUBMITTED,OPEN",
+    "SUBMITTED,CANCELLED",
+    "REJECTED,OPEN",
+    "REJECTED,CANCELLED",
+    "IN_PROGRESS,OPEN",
+    "IN_PROGRESS,CANCELLED",
+    "ERROR,OPEN",
+    "ERROR,CANCELLED",
+  )
+  fun `getCaseState returns UNKNOWN when the latest version has no FMS result ID`(
+    status: OrderStatus,
+    olderCaseState: CaseState,
+  ) {
+    val order = TestUtilities.createReadyToSubmitOrder(status = OrderStatus.SUBMITTED)
+    val previousSubmitted = order.getCurrentVersion()
+    val previousResultId = UUID.randomUUID()
+    previousSubmitted.fmsResultId = previousResultId
+    val latestSubmitted = OrderVersion(
+      orderId = order.id,
+      versionId = previousSubmitted.versionId + 1,
+      username = "user",
+      status = status,
+      type = RequestType.VARIATION,
+      dataDictionaryVersion = DataDictionaryVersion.DDV6,
+    )
+    order.versions.add(latestSubmitted)
+    val caseId = "older-case"
+    whenever(repo.findById(previousResultId)).thenReturn(
+      Optional.of(
+        FmsSubmissionResult(
+          id = previousResultId,
+          orderId = order.id,
+          strategy = FmsSubmissionStrategyKind.ORDER,
+          orderSource = FmsOrderSource.CEMO,
+          deviceWearerResult = FmsDeviceWearerSubmissionResult(deviceWearerId = caseId),
+        ),
+      ),
+    )
+    whenever(mockClient.getState(caseId)).thenReturn(olderCaseState)
+
+    assertThat(service.getCaseState(order)).isEqualTo(CaseState.UNKNOWN)
+    verifyNoInteractions(repo, mockClient)
+  }
+
+  @ParameterizedTest
+  @EnumSource(OrderStatus::class)
+  fun `getCaseState only fetches FMS state for the latest submitted version`(status: OrderStatus) {
+    val order = TestUtilities.createReadyToSubmitOrder(status = OrderStatus.SUBMITTED)
+    val previousSubmitted = order.getCurrentVersion()
+    val latestResultId = UUID.randomUUID()
+    val previousResultId = UUID.randomUUID()
+    previousSubmitted.fmsResultId = previousResultId
+    val latestSubmitted = OrderVersion(
+      orderId = order.id,
+      versionId = previousSubmitted.versionId + 1,
+      username = "user",
+      status = status,
+      type = RequestType.VARIATION,
+      dataDictionaryVersion = DataDictionaryVersion.DDV6,
+      fmsResultId = latestResultId,
+    )
+    order.versions.add(0, latestSubmitted)
+    val caseId = "latest-case"
+    whenever(repo.findById(latestResultId)).thenReturn(
+      Optional.of(
+        FmsSubmissionResult(
+          id = latestResultId,
+          orderId = order.id,
+          strategy = FmsSubmissionStrategyKind.VARIATION,
+          orderSource = FmsOrderSource.CEMO,
+          deviceWearerResult = FmsDeviceWearerSubmissionResult(deviceWearerId = caseId),
+        ),
+      ),
+    )
+    whenever(mockClient.getState(caseId)).thenReturn(CaseState.OPEN)
+
+    if (status == OrderStatus.SUBMITTED) {
+      assertThat(service.getCaseState(order)).isEqualTo(CaseState.OPEN)
+      verify(repo).findById(latestResultId)
+      verify(repo, never()).findById(previousResultId)
+      verify(mockClient).getState(caseId)
+    } else {
+      assertThat(service.getCaseState(order)).isEqualTo(CaseState.UNKNOWN)
+      verifyNoInteractions(repo, mockClient)
+    }
+  }
+
+  @ParameterizedTest
+  @EnumSource(CaseState::class)
+  fun `getCaseState reads the external state on every submitted lookup`(caseState: CaseState) {
+    val order = TestUtilities.createReadyToSubmitOrder(status = OrderStatus.SUBMITTED)
+    val version = order.getCurrentVersion().apply {
+      fmsResultId = UUID.randomUUID()
+    }
+    val caseId = "submitted-case"
+    whenever(repo.findById(version.fmsResultId!!)).thenReturn(
+      Optional.of(
+        FmsSubmissionResult(
+          id = version.fmsResultId!!,
+          orderId = order.id,
+          strategy = FmsSubmissionStrategyKind.ORDER,
+          orderSource = FmsOrderSource.CEMO,
+          deviceWearerResult = FmsDeviceWearerSubmissionResult(deviceWearerId = caseId),
+        ),
+      ),
+    )
+    whenever(mockClient.getState(caseId)).thenReturn(caseState, CaseState.UNKNOWN)
+
+    assertThat(service.getCaseState(order)).isEqualTo(caseState)
+    assertThat(service.getCaseState(order)).isEqualTo(CaseState.UNKNOWN)
+  }
+
+  @Test
+  fun `getCaseState returns UNKNOWN on lookup failure`() {
+    val order = TestUtilities.createReadyToSubmitOrder(status = OrderStatus.SUBMITTED)
+    val version = order.getCurrentVersion().apply {
+      fmsResultId = UUID.randomUUID()
+    }
+    whenever(repo.findById(version.fmsResultId!!)).thenThrow(RuntimeException("FMS unavailable"))
+
+    assertThat(service.getCaseState(order)).isEqualTo(CaseState.UNKNOWN)
+  }
+
+  @Test
+  fun `getCaseState does not query FMS for rejected orders`() {
+    val order = TestUtilities.createReadyToSubmitOrder(status = OrderStatus.REJECTED)
+
+    assertThat(service.getCaseState(order)).isEqualTo(CaseState.UNKNOWN)
+    verifyNoInteractions(repo, mockClient)
+  }
+
+  @Test
+  fun `getCaseState returns UNKNOWN when no linked submission exists`() {
+    val order = TestUtilities.createReadyToSubmitOrder(status = OrderStatus.IN_PROGRESS)
+
+    assertThat(service.getCaseState(order)).isEqualTo(CaseState.UNKNOWN)
+    verifyNoInteractions(mockClient)
   }
 }

@@ -4,7 +4,6 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
-import org.mockito.Mockito.never
 import org.mockito.kotlin.any
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
@@ -15,15 +14,20 @@ import tools.jackson.databind.json.JsonMapper
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.DocumentApiClient
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.client.FmsClient
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.config.FeatureFlags
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Offence
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.StatusUpdate
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.CaseState
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ProcessingStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.DeviceWearer
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.EnforceableCondition
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsAttachmentResponse
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsAttachmentResult
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsDates
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsDeviceWearerSubmissionResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsMonitoringOrderSubmissionResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsOrderDetails
@@ -32,10 +36,14 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsSubmissionResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsSubmissionStrategyKind
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.MonitoringOrder
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.OffenceData
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.Zone
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.fromOrder
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.toEnforcementZoneConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.FmsOrderDetailsRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.repository.FmsSubmissionResultRepository
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.utilities.TestUtilities
+import java.time.ZonedDateTime
 import java.util.Optional
 import java.util.UUID
 
@@ -182,7 +190,6 @@ class FmsVariationSubmissionStrategyTest {
     assertThat(result.monitoringOrderResult.payload).contains("Change to address")
     assertThat(result.monitoringOrderResult.payload).contains("CEMO determined changes:")
     assertThat(result.monitoringOrderResult.payload).contains("Device wearer's name has changed")
-    verify(fmsOrderDetailsRepository, never()).findById(any())
   }
 
   @Test
@@ -224,6 +231,13 @@ class FmsVariationSubmissionStrategyTest {
       fmsResultId = mockCancelledSubmissionResultId,
       versionNumber = 1,
     )
+    cancelledVariation.getCurrentVersion().statusUpdates.add(
+      StatusUpdate(
+        versionId = cancelledVariation.getCurrentVersion().id,
+        status = ProcessingStatus.REJECTED,
+        datetimeOfStatusChange = ZonedDateTime.now(),
+      ),
+    )
     cancelledVariation.deviceWearer!!.firstName = order.deviceWearer!!.firstName + "Not"
     order.versions.add(cancelledVariation.getCurrentVersion())
 
@@ -263,7 +277,7 @@ class FmsVariationSubmissionStrategyTest {
   }
 
   @Test
-  fun `Should get latest fms order details and generate CEMO determined changes`() {
+  fun `Should compare against submitted payload instead of latest fms order details`() {
     val mockSubmissionResultId = UUID.randomUUID()
     val order = TestUtilities.createReadyToSubmitOrder(
       mockOrderId,
@@ -280,21 +294,12 @@ class FmsVariationSubmissionStrategyTest {
         strategy = FmsSubmissionStrategyKind.VARIATION,
         orderSource = FmsOrderSource.CEMO,
         deviceWearerResult = FmsDeviceWearerSubmissionResult(
-          payload = objectMapper.writeValueAsString(
-            DeviceWearer.fromOrder(order, mockFeatureFlags, FmsOrderSource.CEMO),
-          ),
+          payload = "",
 
           deviceWearerId = "1",
         ),
         monitoringOrderResult = FmsMonitoringOrderSubmissionResult(
-          payload = objectMapper.writeValueAsString(
-            MonitoringOrder.fromOrder(
-              order,
-              "1",
-              mockFeatureFlags,
-              FmsOrderSource.CEMO,
-            ),
-          ),
+          payload = "",
         ),
       ),
     )
@@ -337,6 +342,268 @@ class FmsVariationSubmissionStrategyTest {
     assertThat(result.monitoringOrderResult.payload).contains("Change to address")
     assertThat(result.monitoringOrderResult.payload).contains("CEMO determined changes:")
     assertThat(result.monitoringOrderResult.payload).contains("Device wearer's name has changed")
+  }
+
+  @Test
+  fun `Should compare against fms order details from repository when available`() {
+    val mockSubmissionResultId = UUID.randomUUID()
+    val order = TestUtilities.createReadyToSubmitOrder(
+      mockOrderId,
+      mockOrderVersionId,
+      requestType = RequestType.REQUEST,
+      status = OrderStatus.SUBMITTED,
+      fmsResultId = mockSubmissionResultId,
+    )
+    val submittedDeviceWearer = DeviceWearer.fromOrder(order, mockFeatureFlags, FmsOrderSource.CEMO)
+    val submittedMonitoringOrder = MonitoringOrder.fromOrder(order, "1", mockFeatureFlags, FmsOrderSource.CEMO)
+
+    whenever(repo.getReferenceById(mockSubmissionResultId)).thenReturn(
+      FmsSubmissionResult(
+        id = mockSubmissionResultId,
+        orderId = mockOrderId,
+        strategy = FmsSubmissionStrategyKind.ORDER,
+        orderSource = FmsOrderSource.CEMO,
+        deviceWearerResult = FmsDeviceWearerSubmissionResult(
+          payload = objectMapper.writeValueAsString(submittedDeviceWearer),
+          deviceWearerId = "1",
+        ),
+        monitoringOrderResult = FmsMonitoringOrderSubmissionResult(
+          payload = objectMapper.writeValueAsString(submittedMonitoringOrder),
+        ),
+      ),
+    )
+
+    whenever(fmsOrderDetailsRepository.findById("1")).thenReturn(
+      Optional.of(
+        FmsOrderDetails(
+          "1",
+          deviceWearerAsJson = objectMapper.writeValueAsString(
+            submittedDeviceWearer.apply { firstName += "Not" },
+          ),
+          monitoringOrderAsJson = objectMapper.writeValueAsString(submittedMonitoringOrder),
+        ),
+      ),
+    )
+    val newOrder = TestUtilities.createReadyToSubmitOrder(
+      mockOrderId,
+      mockOrderVersionId,
+      requestType = RequestType.VARIATION,
+      versionNumber = 1,
+    )
+    newOrder.additionalDocuments.clear()
+    newOrder.enforcementZoneConditions.clear()
+    order.versions.add(newOrder.getCurrentVersion())
+
+    val result = strategy.submitOrder(order, FmsOrderSource.CEMO)
+
+    assertThat(result.success).isTrue
+    assertThat(result.monitoringOrderResult.payload).contains("CEMO determined changes:")
+    assertThat(result.monitoringOrderResult.payload).contains("Device wearer's name has changed")
+    verify(fmsOrderDetailsRepository).findById("1")
+  }
+
+  @Test
+  fun `Should preserve separate zone condition times from the latest FMS details`() {
+    val originalResultId = UUID.randomUUID()
+    val order = TestUtilities.createReadyToSubmitOrder(
+      mockOrderId,
+      mockOrderVersionId,
+      requestType = RequestType.REQUEST,
+      status = OrderStatus.SUBMITTED,
+      fmsResultId = originalResultId,
+    )
+    val submittedDeviceWearer = DeviceWearer.fromOrder(order, mockFeatureFlags, FmsOrderSource.CEMO)
+    val submittedMonitoringOrder = MonitoringOrder.fromOrder(order, "1", mockFeatureFlags, FmsOrderSource.CEMO)
+    whenever(repo.getReferenceById(originalResultId)).thenReturn(
+      FmsSubmissionResult(
+        id = originalResultId,
+        orderId = mockOrderId,
+        strategy = FmsSubmissionStrategyKind.ORDER,
+        orderSource = FmsOrderSource.CEMO,
+        deviceWearerResult = FmsDeviceWearerSubmissionResult(
+          payload = objectMapper.writeValueAsString(submittedDeviceWearer),
+          deviceWearerId = "1",
+        ),
+        monitoringOrderResult = FmsMonitoringOrderSubmissionResult(
+          payload = objectMapper.writeValueAsString(submittedMonitoringOrder),
+        ),
+      ),
+    )
+
+    val exclusionEnd = "2027-05-16 23:59:00"
+    val restrictionEnd = "2027-06-20 22:30:00"
+    val curfewStart = "2026-11-16 19:00:00"
+    val curfewEnd = "2100-07-12 07:00:00"
+    val curfewConditionStart = "2026-11-16 00:00:00"
+    val curfewConditionEnd = "2027-05-16 23:59:00"
+    val retrievedMonitoringOrder = submittedMonitoringOrder.copy(
+      enforceableCondition = mutableListOf(
+        EnforceableCondition("Curfew with EM", curfewConditionStart, curfewConditionEnd),
+        EnforceableCondition("EM Exclusion / Inclusion Zone", "2026-11-16 00:00:00", exclusionEnd),
+        EnforceableCondition("Restriction Zones", "2026-11-16 00:00:00", restrictionEnd),
+      ),
+      curfewStart = curfewStart,
+      curfewEnd = curfewEnd,
+      exclusionZones = mutableListOf(Zone(start = "2026-11-16", end = "2027-05-16")),
+      restrictionZones = mutableListOf(Zone(start = "2026-11-16", end = "2027-06-20")),
+    )
+    whenever(fmsOrderDetailsRepository.findById("1")).thenReturn(
+      Optional.of(
+        FmsOrderDetails(
+          caseId = "1",
+          deviceWearerAsJson = objectMapper.writeValueAsString(submittedDeviceWearer),
+          monitoringOrderAsJson = objectMapper.writeValueAsString(retrievedMonitoringOrder),
+        ),
+      ),
+    )
+
+    val variation = TestUtilities.createReadyToSubmitOrder(
+      mockOrderId,
+      mockOrderVersionId,
+      requestType = RequestType.VARIATION,
+      versionNumber = 1,
+    )
+    variation.additionalDocuments.clear()
+    variation.enforcementZoneConditions.clear()
+    variation.curfewConditions!!.startDate = FmsDates.parseDateTime(curfewStart)
+    variation.curfewConditions!!.endDate = FmsDates.parseDateTime(curfewEnd)
+    variation.enforcementZoneConditions.addAll(
+      retrievedMonitoringOrder.copy(
+        restrictionZones = mutableListOf(Zone(start = "2026-11-16", end = "2027-06-21")),
+      ).toEnforcementZoneConditions(variation.getCurrentVersion().id),
+    )
+    order.versions.add(variation.getCurrentVersion())
+
+    val result = strategy.submitOrder(order, FmsOrderSource.CEMO)
+    val submittedMonitoringOrderPayload = objectMapper.readValue(
+      result.monitoringOrderResult.payload,
+      MonitoringOrder::class.java,
+    )
+
+    assertThat(result.success).isTrue
+    assertThat(submittedMonitoringOrderPayload.curfewStart).isEqualTo(curfewStart)
+    assertThat(submittedMonitoringOrderPayload.curfewEnd).isEqualTo(curfewEnd)
+    assertThat(
+      submittedMonitoringOrderPayload.enforceableCondition
+        ?.single { it.condition == "Curfew with EM" }?.startDate,
+    ).isEqualTo(curfewConditionStart)
+    assertThat(
+      submittedMonitoringOrderPayload.enforceableCondition
+        ?.single { it.condition == "Curfew with EM" }?.endDate,
+    ).isEqualTo(curfewConditionEnd)
+    assertThat(
+      submittedMonitoringOrderPayload.enforceableCondition
+        ?.single { it.condition == "EM Exclusion / Inclusion Zone" }?.endDate,
+    ).isEqualTo(exclusionEnd)
+    assertThat(
+      submittedMonitoringOrderPayload.enforceableCondition
+        ?.single { it.condition == "Restriction Zones" }?.endDate,
+    ).isEqualTo("2027-06-21 22:30:00")
+    assertThat(submittedMonitoringOrderPayload.exclusionZones.single().end).isEqualTo("2027-05-16")
+    assertThat(submittedMonitoringOrderPayload.restrictionZones.single().end).isEqualTo("2027-06-21")
+  }
+
+  @Test
+  fun `Should preserve retrieved order end flags and offence casing on an unchanged variation`() {
+    val originalResultId = UUID.randomUUID()
+    val orderEndDate = FmsDates.parseDateTime("2027-11-27 00:00:00")
+    val orderStartDate = FmsDates.parseDateTime("2026-11-16 00:00:00")
+    val order = TestUtilities.createReadyToSubmitOrder(
+      mockOrderId,
+      mockOrderVersionId,
+      requestType = RequestType.REQUEST,
+      status = OrderStatus.SUBMITTED,
+      fmsResultId = originalResultId,
+      dataDictionaryVersion = DataDictionaryVersion.DDV6,
+      startDate = orderStartDate,
+      endDate = orderEndDate,
+    )
+    order.offences.clear()
+    order.offences.addAll(
+      listOf(
+        Offence(versionId = mockOrderVersionId, offenceType = "SUMMARY_NON_MOTORING", offenceDate = null),
+        Offence(versionId = mockOrderVersionId, offenceType = "FRAUD_OFFENCES", offenceDate = null),
+      ),
+    )
+
+    whenever(repo.getReferenceById(originalResultId)).thenReturn(
+      submissionResult(originalResultId, order, FmsSubmissionStrategyKind.ORDER, "original-case-id"),
+    )
+
+    val latestFmsDeviceWearer = DeviceWearer.fromOrder(order, mockFeatureFlags, FmsOrderSource.CEMO)
+    val latestFmsMonitoringOrder = MonitoringOrder(
+      orderEnd = "2027-11-27 23:59:00",
+      tagAtSource = "false",
+      installAtSourcePilot = "false",
+      offences = mutableListOf(
+        OffenceData(offence = "Summary non-motoring", offenceDate = null),
+        OffenceData(offence = "Fraud offences", offenceDate = null),
+      ),
+    )
+    whenever(fmsOrderDetailsRepository.findById("original-case-id")).thenReturn(
+      Optional.of(
+        FmsOrderDetails(
+          caseId = "original-case-id",
+          deviceWearerAsJson = objectMapper.writeValueAsString(latestFmsDeviceWearer),
+          monitoringOrderAsJson = objectMapper.writeValueAsString(latestFmsMonitoringOrder),
+        ),
+      ),
+    )
+
+    val variation = TestUtilities.createReadyToSubmitOrder(
+      mockOrderId,
+      UUID.randomUUID(),
+      requestType = RequestType.VARIATION,
+      versionNumber = 1,
+      dataDictionaryVersion = DataDictionaryVersion.DDV6,
+      startDate = orderStartDate,
+      endDate = orderEndDate,
+    )
+    variation.additionalDocuments.clear()
+    variation.enforcementZoneConditions.clear()
+    variation.installationLocation = null
+    variation.offences.clear()
+    variation.offences.addAll(
+      listOf(
+        Offence(versionId = variation.getCurrentVersion().id, offenceType = "SUMMARY_NON_MOTORING", offenceDate = null),
+        Offence(versionId = variation.getCurrentVersion().id, offenceType = "FRAUD_OFFENCES", offenceDate = null),
+      ),
+    )
+    order.versions.add(variation.getCurrentVersion())
+    strategy = FmsVariationSubmissionStrategy(
+      objectMapper,
+      mockClient,
+      mockDocumentApiClient,
+      FeatureFlags(
+        dataDictionaryVersion = DataDictionaryVersion.DDV6,
+        ddV6CourtMappings = true,
+        deviceWearerPayloadVersion = mockFeatureFlags.deviceWearerPayloadVersion,
+        getApiEnabled = true,
+      ),
+      repo,
+      fmsOrderDetailsRepository,
+    )
+
+    val result = strategy.submitOrder(order, FmsOrderSource.CEMO)
+    val submittedMonitoringOrder = objectMapper.readValue(
+      result.monitoringOrderResult.payload,
+      MonitoringOrder::class.java,
+    )
+
+    assertThat(result.success).isTrue
+    assertThat(submittedMonitoringOrder.orderEnd).isEqualTo("2027-11-27 23:59:00")
+    assertThat(submittedMonitoringOrder.tagAtSource).isEqualTo("false")
+    assertThat(submittedMonitoringOrder.installAtSourcePilot).isEqualTo("false")
+    assertThat(submittedMonitoringOrder.offences?.map { it.offence })
+      .containsExactly("Summary non-motoring", "Fraud offences")
+
+    order.monitoringConditions!!.endDate = FmsDates.parseDateTime("2027-11-28 00:00:00")
+    val changedEndDateResult = strategy.submitOrder(order, FmsOrderSource.CEMO)
+    val changedEndDatePayload = objectMapper.readValue(
+      changedEndDateResult.monitoringOrderResult.payload,
+      MonitoringOrder::class.java,
+    )
+    assertThat(changedEndDatePayload.orderEnd).isEqualTo("2027-11-28 00:00:00")
   }
 
   @Test

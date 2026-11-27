@@ -3,14 +3,21 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.r
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.integration.IntegrationTestBase
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest
+import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.criteria.OrderSearchCriteria
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.utilities.TestUtilities
 import java.time.ZonedDateTime
 import java.util.UUID
 
-class OrderSearchRepositoryImplTest : IntegrationTestBase() {
+@ActiveProfiles("test")
+@DataJpaTest(properties = ["spring.test.database.replace=none"])
+class OrderSearchRepositoryImplTest {
+
+  @Autowired
+  lateinit var repo: OrderRepository
 
   @BeforeEach
   fun cleanup() {

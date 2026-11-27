@@ -28,7 +28,7 @@ enum class Offence(val value: String) {
       if (value.isNullOrBlank()) return NO_OFFENCE_COMMITTED
 
       return Offence.entries.firstOrNull {
-        it.value == value
+        it.value.equals(value, ignoreCase = true)
       }
     }
   }

@@ -2,6 +2,9 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.m
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.NullAndEmptySource
+import org.junit.jupiter.params.provider.ValueSource
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AlcoholMonitoringType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DeviceType
@@ -98,8 +101,8 @@ class MonitoringOrderReverseMappingTest {
   @Test
   fun `it should map curfew conditions when curfew start is present`() {
     val dto = monitoringOrderDto.copy(
-      curfewStart = "2000-07-01 08:00:00",
-      curfewEnd = "2001-07-01 08:00:00",
+      curfewStart = "2000-07-01",
+      curfewEnd = "2001-07-01",
       curfewDescription = "wears a tag",
     )
     val curfew = dto.toCurfewConditions(versionId)
@@ -107,10 +110,10 @@ class MonitoringOrderReverseMappingTest {
     assertThat(curfew).isNotNull
     assertThat(curfew!!.versionId).isEqualTo(versionId)
     assertThat(curfew.startDate).isEqualTo(
-      ZonedDateTime.of(2000, 7, 1, 8, 0, 0, 0, ZoneId.of("Europe/London")),
+      ZonedDateTime.of(2000, 7, 1, 0, 0, 0, 0, ZoneId.of("Europe/London")),
     )
     assertThat(curfew.endDate).isEqualTo(
-      ZonedDateTime.of(2001, 7, 1, 8, 0, 0, 0, ZoneId.of("Europe/London")),
+      ZonedDateTime.of(2001, 7, 1, 0, 0, 0, 0, ZoneId.of("Europe/London")),
     )
     assertThat(curfew.curfewAdditionalDetails).isEqualTo("wears a tag")
   }
@@ -118,6 +121,55 @@ class MonitoringOrderReverseMappingTest {
   @Test
   fun `it should not build curfew conditions when curfew start is blank`() {
     assertThat(monitoringOrderDto.toCurfewConditions(versionId)).isNull()
+  }
+
+  @ParameterizedTest
+  @NullAndEmptySource
+  @ValueSource(strings = [" ", "\t"])
+  fun `it should not restore curfew from an enforceable condition when curfew start is missing`(curfewStart: String?) {
+    val dto = monitoringOrderDto.copy(
+      curfewStart = curfewStart,
+      curfewEnd = "2027-05-16",
+      enforceableCondition = mutableListOf(
+        EnforceableCondition("Curfew with EM", "2026-11-16 00:00:00", "2027-05-16 23:59:00"),
+      ),
+    )
+
+    assertThat(dto.toCurfewConditions(versionId)).isNull()
+  }
+
+  @Test
+  fun `it should use date-only curfew fields rather than enforceable condition timestamps`() {
+    val dto = monitoringOrderDto.copy(
+      curfewStart = "2026-11-16",
+      curfewEnd = "2027-05-16",
+      enforceableCondition = mutableListOf(
+        EnforceableCondition("Curfew with EM", "2026-11-16 08:00:00", "2027-05-16 23:59:00"),
+      ),
+    )
+
+    val curfew = requireNotNull(dto.toCurfewConditions(versionId))
+
+    assertThat(requireNotNull(curfew.startDate).toInstant().toString()).isEqualTo("2026-11-16T00:00:00Z")
+    assertThat(curfew.endDate?.toInstant().toString()).isEqualTo("2027-05-15T23:00:00Z")
+    assertThat(curfew.versionId).isEqualTo(versionId)
+  }
+
+  @ParameterizedTest
+  @NullAndEmptySource
+  @ValueSource(strings = [" "])
+  fun `it should leave curfew end null when date-only end is missing`(curfewEnd: String?) {
+    val dto = monitoringOrderDto.copy(
+      curfewStart = "2026-11-16",
+      curfewEnd = curfewEnd,
+      enforceableCondition = mutableListOf(
+        EnforceableCondition("Curfew with EM", "2026-11-16 00:00:00", "2027-05-16 23:59:00"),
+      ),
+    )
+
+    val curfew = requireNotNull(dto.toCurfewConditions(versionId))
+
+    assertThat(curfew.endDate).isNull()
   }
 
   @Test
@@ -373,6 +425,38 @@ class MonitoringOrderReverseMappingTest {
   }
 
   @Test
+  fun `it should map restriction zones`() {
+    val dto = monitoringOrderDto.copy(
+      restrictionZones = mutableListOf(Zone("restriction", "", "2000-07-01", "2001-07-01")),
+    )
+
+    val zones = dto.toEnforcementZoneConditions(versionId)
+
+    assertThat(zones).hasSize(1)
+    assertThat(zones.single().zoneType).isEqualTo(EnforcementZoneType.RESTRICTION)
+  }
+
+  @Test
+  fun `it should map restriction zones after exclusion and inclusion zones`() {
+    val dto = monitoringOrderDto.copy(
+      exclusionZones = mutableListOf(Zone("exclusion", "", "2000-07-01", "")),
+      inclusionZones = mutableListOf(Zone("inclusion", "", "2000-07-01", "")),
+      restrictionZones = mutableListOf(Zone("restriction", "", "2000-07-01", "")),
+    )
+
+    val zones = dto.toEnforcementZoneConditions(versionId)
+
+    assertThat(zones.map { it.zoneType }).containsExactly(
+      EnforcementZoneType.EXCLUSION,
+      EnforcementZoneType.INCLUSION,
+      EnforcementZoneType.RESTRICTION,
+    )
+    assertThat(zones.map { it.zoneId }).containsExactly(0, 1, 2)
+    assertThat(zones.map { it.versionId }).containsOnly(versionId)
+    assertThat(zones.map { it.id }).doesNotHaveDuplicates()
+  }
+
+  @Test
   fun `it should map variation details when order variation date is present`() {
     val dto = monitoringOrderDto.copy(
       orderVariationDate = "2000-07-01 08:00:00",
@@ -471,6 +555,25 @@ class MonitoringOrderReverseMappingTest {
     assertThat(offences[0].offenceType).isEqualTo(Offence.ROBBERY.name)
     assertThat(offences[0].offenceDate).isEqualTo(
       ZonedDateTime.of(2000, 7, 1, 0, 0, 0, 0, ZoneId.of("Europe/London")),
+    )
+  }
+
+  @Test
+  fun `it should map FMS offences when label casing differs`() {
+    val dto = monitoringOrderDto.copy(
+      offences = mutableListOf(
+        OffenceData(offence = "Summary non-motoring"),
+        OffenceData(offence = "Summary motoring"),
+        OffenceData(offence = "Fraud offences"),
+      ),
+    )
+
+    val offences = dto.toOffences(versionId)
+
+    assertThat(offences.map { it.offenceType }).containsExactly(
+      Offence.SUMMARY_NON_MOTORING.name,
+      Offence.SUMMARY_MOTORING.name,
+      Offence.FRAUD_OFFENCES.name,
     )
   }
 

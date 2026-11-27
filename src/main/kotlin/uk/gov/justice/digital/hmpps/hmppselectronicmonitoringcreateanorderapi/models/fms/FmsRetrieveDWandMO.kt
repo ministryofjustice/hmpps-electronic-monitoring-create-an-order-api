@@ -1,11 +1,16 @@
 package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OffenceAdditionalDetails
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.OrderVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DataDictionaryVersion
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import java.util.UUID
+
+data class FmsRetrieveDWandMOResponse(val result: List<FmsRetrieveDWandMOResult>)
+
+data class FmsRetrieveDWandMOResult(val message: String?, val payload: FmsRetrieveDWandMO?)
 
 data class FmsRetrieveDWandMO(
   @JsonProperty("case_id")
@@ -44,14 +49,25 @@ data class FmsRetrieveDWandMO(
 
     version.contactDetails = deviceWearer.toContactDetails(versionId)
 
-    version.installationAndRisk = deviceWearer.toInstallationAndRisk(versionId)
+    version.offences = monitoringOrder.toOffences(versionId).toMutableList()
+    val offenceAdditionalDetails = monitoringOrder.offenceAdditionalDetails?.ifBlank { null }
+    if (dataDictionaryVersion.isLaterThanOrEqual(DataDictionaryVersion.DDV6)) {
+      version.detailsOfInstallation = deviceWearer.toDetailsOfInstallation(versionId)
+      version.offenceAdditionalDetails = offenceAdditionalDetails?.let {
+        OffenceAdditionalDetails(versionId = versionId, additionalDetails = it)
+      }
+    } else {
+      version.installationAndRisk = deviceWearer.toInstallationAndRisk(versionId).apply {
+        offence = version.offences.firstOrNull()?.offenceType ?: ""
+        this.offenceAdditionalDetails = offenceAdditionalDetails
+      }
+    }
 
     version.interestedParties = monitoringOrder.toInterestedParties(versionId)
     version.probationDeliveryUnit = monitoringOrder.toProbationDeliveryUnit(versionId)
     version.monitoringConditions = monitoringOrder.toMonitoringConditions(versionId)
     version.monitoringConditionsTrail = monitoringOrder.toTrailMonitoringConditions(versionId)
     version.monitoringConditionsAlcohol = monitoringOrder.toAlcoholMonitoringConditions(versionId)
-    version.offences = monitoringOrder.toOffences(versionId).toMutableList()
     version.dapoClauses = monitoringOrder.toDapo(versionId).toMutableList()
     version.enforcementZoneConditions = monitoringOrder.toEnforcementZoneConditions(versionId).toMutableList()
     version.curfewConditions = monitoringOrder.toCurfewConditions(versionId)

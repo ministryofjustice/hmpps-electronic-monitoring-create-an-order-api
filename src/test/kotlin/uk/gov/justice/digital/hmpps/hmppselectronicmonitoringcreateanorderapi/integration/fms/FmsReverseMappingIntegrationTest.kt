@@ -2,6 +2,8 @@ package uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.i
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
 import tools.jackson.module.kotlin.jacksonObjectMapper
 import tools.jackson.module.kotlin.readValue
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.AddressType
@@ -21,6 +23,8 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RiskCategory
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.YesNoUnknown
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsRetrieveDWandMO
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.MonitoringOrder
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.Schedule
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.toAddress
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.toAlcoholMonitoringConditions
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.toCourtCaseReferenceNumber
@@ -46,7 +50,9 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.time.DayOfWeek
+import java.time.Instant
 import java.time.ZoneId
+import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.util.UUID
 
@@ -63,6 +69,26 @@ class FmsReverseMappingIntegrationTest {
   @Test
   fun `it should deserialize the example payload`() {
     assertThat(response.caseId).isEqualTo("16542c2e83714b10b2409870ceaad324")
+  }
+
+  @Test
+  fun `it should accept blank DOB and checkin schedule as text or list`() {
+    val blankDateOfBirth = response.deviceWearer.copy(dateOfBirth = "")
+    assertThat(blankDateOfBirth.toDeviceWearer(versionId).dateOfBirth).isNull()
+
+    val emptySchedule = objectMapper.readValue<MonitoringOrder>("""{"checkin_schedule":""}""")
+    assertThat(emptySchedule.checkinSchedule).isEmpty()
+
+    val schedule = objectMapper.readValue<MonitoringOrder>(
+      """{"checkin_schedule":[{"day":"Mo","start":"09:00","end":"10:00"}]}""",
+    )
+    assertThat(schedule.checkinSchedule).containsExactly(
+      Schedule(
+        day = "Mo",
+        start = "09:00",
+        end = "10:00",
+      ),
+    )
   }
 
   @Test
@@ -124,8 +150,8 @@ class FmsReverseMappingIntegrationTest {
     val order = response.monitoringOrder
 
     val curfew = order.toCurfewConditions(versionId)
-    assertThat(curfew!!.startDate).isEqualTo(ZonedDateTime.of(2000, 7, 1, 8, 0, 0, 0, london))
-    assertThat(curfew.endDate).isEqualTo(ZonedDateTime.of(2001, 7, 1, 8, 0, 0, 0, london))
+    assertThat(curfew!!.startDate).isEqualTo(ZonedDateTime.of(2000, 7, 1, 0, 0, 0, 0, london))
+    assertThat(curfew.endDate).isEqualTo(ZonedDateTime.of(2001, 7, 1, 0, 0, 0, 0, london))
     assertThat(curfew.curfewAdditionalDetails).isEqualTo("wears a tag")
 
     val release = order.toCurfewReleaseDateConditions(versionId)
@@ -232,6 +258,95 @@ class FmsReverseMappingIntegrationTest {
   }
 
   @Test
+  fun `it should use restriction zone dates for the monitoring period when assembling a retrieved variation`() {
+    val monitoringOrder = objectMapper.readValue<MonitoringOrder>(
+      """
+      {
+        "curfew_start": "",
+        "curfew_end": "",
+        "enforceable_condition": [
+          {"condition": "Curfew with EM", "start_date": "2026-11-16 00:00:00", "end_date": "2027-05-16 23:59:00"}
+        ],
+        "restriction_zones": [{"description": "restriction", "start": "2026-11-16", "end": "2027-05-16"}]
+      }
+      """.trimIndent(),
+    )
+    val orderId = UUID.randomUUID()
+
+    val version = response.copy(monitoringOrder = monitoringOrder).toOrderVersion(
+      orderId = orderId,
+      username = "a-probation-user",
+      status = OrderStatus.IN_PROGRESS,
+      type = RequestType.VARIATION,
+      dataDictionaryVersion = DataDictionaryVersion.DDV7,
+    )
+
+    assertThat(monitoringOrder.enforceableCondition).hasSize(1)
+    assertThat(monitoringOrder.restrictionZones).hasSize(1)
+    assertThat(version.orderId).isEqualTo(orderId)
+    assertThat(version.type).isEqualTo(RequestType.VARIATION)
+    assertThat(version.status).isEqualTo(OrderStatus.IN_PROGRESS)
+    assertThat(version.curfewConditions).isNull()
+    assertThat(version.curfewTimeTable).isEmpty()
+    assertThat(version.enforcementZoneConditions).hasSize(1)
+    assertThat(version.enforcementZoneConditions.single().description).isEqualTo("restriction")
+    assertThat(version.monitoringConditions?.startDate)
+      .isEqualTo(ZonedDateTime.of(2026, 11, 16, 0, 0, 0, 0, london))
+    assertThat(version.monitoringConditions?.endDate)
+      .isEqualTo(ZonedDateTime.of(2027, 5, 16, 0, 0, 0, 0, london))
+  }
+
+  @ParameterizedTest
+  @CsvSource(
+    "2026-01-15 12:00:00, 2026-01-15T12:00:00Z",
+    "2026-07-15 12:00:00, 2026-07-15T11:00:00Z",
+    "2026-07-15 00:00:00, 2026-07-14T23:00:00Z",
+  )
+  fun `it should interpret retrieved timestamps as British clock times when assembling a version`(
+    timestamp: String,
+    expectedInstant: String,
+  ) {
+    val monitoringOrder = objectMapper.readValue<MonitoringOrder>(
+      """
+      {
+        "date_and_time_installation_will_take_place": "$timestamp",
+        "order_variation_date": "$timestamp",
+        "enforceable_condition": [
+          {"condition": "Location Monitoring (Fitted Device)", "start_date": "$timestamp", "end_date": "$timestamp"},
+          {"condition": "AML", "start_date": "$timestamp", "end_date": "$timestamp"}
+        ]
+      }
+      """.trimIndent(),
+    )
+
+    val version = response.copy(monitoringOrder = monitoringOrder).toOrderVersion(
+      orderId = UUID.randomUUID(),
+      username = "a-probation-user",
+      status = OrderStatus.IN_PROGRESS,
+      type = RequestType.VARIATION,
+      dataDictionaryVersion = DataDictionaryVersion.DDV7,
+    )
+
+    val dates = listOf(
+      version.installationAppointment?.appointmentDate,
+      version.variationDetails?.variationDate,
+      version.monitoringConditionsTrail?.startDate,
+      version.monitoringConditionsTrail?.endDate,
+      version.monitoringConditionsAlcohol?.startDate,
+      version.monitoringConditionsAlcohol?.endDate,
+      version.monitoringConditions?.startDate,
+      version.monitoringConditions?.endDate,
+    )
+    assertThat(dates).doesNotContainNull()
+    assertThat(dates.map { it?.toInstant() }).containsOnly(Instant.parse(expectedInstant))
+    assertThat(dates.map { it?.offset }).containsOnly(ZoneOffset.UTC)
+    assertThat(version.installationAppointment?.versionId).isEqualTo(version.id)
+    assertThat(version.variationDetails?.versionId).isEqualTo(version.id)
+    assertThat(version.monitoringConditionsTrail?.versionId).isEqualTo(version.id)
+    assertThat(version.monitoringConditionsAlcohol?.versionId).isEqualTo(version.id)
+  }
+
+  @Test
   fun `it should map the full response onto an order version with every child entity wired`() {
     val orderId = UUID.randomUUID()
 
@@ -263,8 +378,8 @@ class FmsReverseMappingIntegrationTest {
 
     assertThat(orderVersion.mappa!!.level).isEqualTo(MappaLevel.MAPPA_TWO)
 
-    assertThat(orderVersion.installationAndRisk!!.riskDetails).isEqualTo("known to be aggressive")
-    assertThat(orderVersion.installationAndRisk!!.riskCategory).containsExactlyInAnyOrder(
+    assertThat(orderVersion.detailsOfInstallation!!.riskDetails).isEqualTo("known to be aggressive")
+    assertThat(orderVersion.detailsOfInstallation!!.riskCategory).containsExactlyInAnyOrder(
       RiskCategory.SEXUAL_OFFENCES.name,
       RiskCategory.RACIAL_ABUSE_OR_THREATS.name,
     )

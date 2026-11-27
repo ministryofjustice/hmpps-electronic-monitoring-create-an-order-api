@@ -7,10 +7,11 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.co
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.AdditionalDocument
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Order
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.Result
-import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.CaseState
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.DocumentType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.FmsOrderSource
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.Offence
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.OrderStatus
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.ProcessingStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.RequestType
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.SubmissionStatus
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.enums.VariationType
@@ -18,6 +19,7 @@ import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.mo
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsAttachmentSubmissionResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsDeviceWearerSubmissionResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsMonitoringOrderSubmissionResult
+import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsOrderDetails
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsSubmissionResult
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.FmsSubmissionStrategyKind
 import uk.gov.justice.digital.hmpps.hmppselectronicmonitoringcreateanorderapi.models.fms.MonitoringOrder
@@ -176,7 +178,27 @@ class FmsVariationSubmissionStrategy(
     val monitoringOrder = monitoringOrderResult.data!!
 
     if (orderSource == FmsOrderSource.CEMO) {
-      val orderChanges = calculateOrderChanges(monitoringOrder, submitDeviceWearerResult, lastSuccessfulSubmitResult)
+      val caseId = getOriginalNewOrderCaseId(order)
+      val latestFmsDetails = caseId?.takeIf { it.isNotBlank() }
+        ?.let { fmsOrderDetailsRepository.findById(it).orElse(null) }
+      val previousMonitoringOrderJson = latestFmsDetails?.monitoringOrderAsJson
+        ?: lastSuccessfulSubmitResult?.monitoringOrderResult?.payload
+      val previousMonitoringOrder = previousMonitoringOrderJson?.let {
+        objectMapper.readValue(it, MonitoringOrder::class.java)
+      }
+      previousMonitoringOrder?.let {
+        preserveCurfewConditionDates(monitoringOrder, it)
+        preserveZoneConditionTimes(monitoringOrder, it)
+        preserveRetrievedFields(monitoringOrder, it, order.installationLocation == null)
+      }
+      val orderChanges =
+        calculateOrderChanges(
+          monitoringOrder,
+          submitDeviceWearerResult,
+          lastSuccessfulSubmitResult,
+          latestFmsDetails,
+          previousMonitoringOrder,
+        )
       monitoringOrder.orderVariationDetails = orderChanges.variationDetails
       if (order.type == RequestType.VARIATION) {
         monitoringOrder.orderVariationType = orderChanges.variationType.value
@@ -217,8 +239,10 @@ class FmsVariationSubmissionStrategy(
     monitoringOrder: MonitoringOrder,
     submitDeviceWearerResult: FmsDeviceWearerSubmissionResult,
     lastSuccessfulSubmitResult: FmsSubmissionResult?,
+    latestFmsDetails: FmsOrderDetails?,
+    previousMonitoringOrder: MonitoringOrder?,
   ): OrderChanges {
-    if (lastSuccessfulSubmitResult == null) {
+    if (lastSuccessfulSubmitResult == null && latestFmsDetails == null) {
       val details = buildString {
         appendLine("User entered:")
         appendLine(monitoringOrder.orderVariationDetails)
@@ -226,29 +250,14 @@ class FmsVariationSubmissionStrategy(
       return OrderChanges(details, VariationType.OTHER)
     }
 
-    val latestFmsOrderDetails =
-      if (featureFlags.getApiEnabled) {
-        fmsOrderDetailsRepository.findById(
-          lastSuccessfulSubmitResult.deviceWearerResult.deviceWearerId,
-        ).orElse(null)
-      } else {
-        null
-      }
-
     val deviceWearerJson =
-      latestFmsOrderDetails?.deviceWearerAsJson ?: lastSuccessfulSubmitResult.deviceWearerResult.payload
-    val monitoringOrderJson =
-      latestFmsOrderDetails?.monitoringOrderAsJson ?: lastSuccessfulSubmitResult.monitoringOrderResult.payload
-
+      latestFmsDetails?.deviceWearerAsJson ?: lastSuccessfulSubmitResult!!.deviceWearerResult.payload
     val currentDeviceWearer = objectMapper.readValue(submitDeviceWearerResult.payload, DeviceWearer::class.java)
     val lastDeviceWearer = objectMapper.readValue(
       deviceWearerJson,
       DeviceWearer::class.java,
     )
-    val lastMonitoringOrder = objectMapper.readValue(
-      monitoringOrderJson,
-      MonitoringOrder::class.java,
-    )
+    val lastMonitoringOrder = requireNotNull(previousMonitoringOrder)
 
     val deviceWearerChanges = currentDeviceWearer.compareTo(lastDeviceWearer)
     val monitoringOrderChanges = monitoringOrder.compareTo(lastMonitoringOrder)
@@ -270,19 +279,92 @@ class FmsVariationSubmissionStrategy(
     return OrderChanges(changeDetails, variationType)
   }
 
-  private fun getLastSuccessfulSubmissionResult(order: Order): FmsSubmissionResult? {
-    order.versions
-      .filter { it.fmsResultId != null && it.status == OrderStatus.SUBMITTED }
-      .sortedByDescending { it.versionId }
-      .forEach { version ->
-        val submissionResult = repo.getReferenceById(version.fmsResultId!!)
-        val state = fmsClient.getState(submissionResult.deviceWearerResult.deviceWearerId)
-        if (state != CaseState.CANCELLED && state != CaseState.UNKNOWN) {
-          return submissionResult
-        }
-      }
-    return null
+  private fun preserveZoneConditionTimes(current: MonitoringOrder, previous: MonitoringOrder) {
+    val zoneConditionNames = setOf("EM Exclusion / Inclusion Zone", "Restriction Zones")
+    val previousConditions = previous.enforceableCondition.orEmpty().associateBy { it.condition }
+    current.enforceableCondition = current.enforceableCondition.orEmpty().map { condition ->
+      if (condition.condition !in zoneConditionNames) return@map condition
+      val previousCondition = previousConditions[condition.condition] ?: return@map condition
+      condition.copy(
+        startDate = preserveTimePart(condition.startDate, previousCondition.startDate),
+        endDate = preserveTimePart(condition.endDate, previousCondition.endDate),
+      )
+    }.toMutableList()
   }
+
+  private fun preserveRetrievedFields(
+    current: MonitoringOrder,
+    previous: MonitoringOrder,
+    installationLocationMissing: Boolean,
+  ) {
+    if (hasSameCalendarDate(current.orderEnd, previous.orderEnd)) {
+      current.orderEnd = previous.orderEnd
+    }
+    if (installationLocationMissing) {
+      if (current.tagAtSource.isNullOrBlank()) current.tagAtSource = previous.tagAtSource
+      if (current.installAtSourcePilot.isNullOrBlank()) {
+        current.installAtSourcePilot = previous.installAtSourcePilot
+      }
+    }
+
+    val currentOffences = current.offences ?: return
+    val previousOffenceLabels = previous.offences.orEmpty().mapNotNull { offence ->
+      val label = offence.offence?.takeIf { it.isNotBlank() } ?: return@mapNotNull null
+      val offenceType = Offence.fromValue(label) ?: return@mapNotNull null
+      (offenceType to offence.offenceDate) to label
+    }.toMap()
+
+    current.offences = currentOffences.map { offence ->
+      val offenceType = Offence.fromValue(offence.offence)
+      val previousLabel = offenceType?.let { previousOffenceLabels[it to offence.offenceDate] }
+      if (previousLabel != null) {
+        offence.copy(offence = previousLabel)
+      } else {
+        offence
+      }
+    }.toMutableList()
+  }
+
+  private fun hasSameCalendarDate(current: String?, previous: String?): Boolean = when {
+    current.isNullOrBlank() || previous.isNullOrBlank() -> false
+    else -> current.substringBefore(' ') == previous.substringBefore(' ')
+  }
+
+  private fun preserveCurfewConditionDates(current: MonitoringOrder, previous: MonitoringOrder) {
+    val conditionName = "Curfew with EM"
+    val previousCurfewCondition = previous.enforceableCondition.orEmpty()
+      .firstOrNull { it.condition == conditionName } ?: return
+
+    current.enforceableCondition = current.enforceableCondition.orEmpty().map { condition ->
+      if (condition.condition == conditionName) {
+        condition.copy(
+          startDate = previousCurfewCondition.startDate,
+          endDate = previousCurfewCondition.endDate,
+        )
+      } else {
+        condition
+      }
+    }.toMutableList()
+  }
+
+  private fun preserveTimePart(current: String?, previous: String?): String? {
+    if (current.isNullOrBlank() || previous.isNullOrBlank()) return current
+
+    val time = previous.substringAfter(' ', missingDelimiterValue = "")
+    if (time.isBlank()) return current
+
+    return "${current.substringBefore(' ')} $time"
+  }
+
+  // Every version shares one external case, so its state can't tell which submission was cancelled
+  private fun getLastSuccessfulSubmissionResult(order: Order): FmsSubmissionResult? = order.versions
+    .filter { version ->
+      version.fmsResultId != null &&
+        version.status == OrderStatus.SUBMITTED &&
+        version.statusUpdates.none { it.status == ProcessingStatus.REJECTED }
+    }
+    .maxByOrNull { it.versionId }
+    ?.let { repo.getReferenceById(it.fmsResultId!!) }
 
   fun getOriginalNewOrderCaseId(order: Order): String? = order.versions
     .filter {
