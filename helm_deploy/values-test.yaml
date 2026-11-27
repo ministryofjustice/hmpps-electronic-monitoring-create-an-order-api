@@ -7,13 +7,26 @@ generic-service:
   ingress:
     host: hmpps-electronic-monitoring-create-an-order-api-test.hmpps.service.justice.gov.uk
 
+  namespace_secrets:
+    sqs-court-case-events-fifo-secret:
+      HMPPS_SQS_QUEUES_COURTHEARINGEVENTQUEUE_QUEUENAME: null
+      HMPPS_SQS_QUEUES_COURTHEARINGEVENTQUEUE_QUEUEARN: null
+    sqs-court-case-events-fifo-dlq-secret:
+      HMPPS_SQS_QUEUES_COURTHEARINGEVENTQUEUE_DLQNAME: null
+    sqs-returns-events-fifo-secret:
+      HMPPS_SQS_QUEUES_RETURNSEVENTQUEUE_QUEUENAME: null
+      HMPPS_SQS_QUEUES_RETURNSEVENTQUEUE_QUEUEARN: null
+    sqs-returns-events-fifo-dlq-secret:
+      HMPPS_SQS_QUEUES_RETURNSEVENTQUEUE_DLQNAME: null
+
   env:
     SPRING_PROFILES_ACTIVE: dev
     APPLICATIONINSIGHTS_CONFIGURATION_FILE: "applicationinsights.dev.json"
     HMPPS_AUTH_URL: "https://sign-in-dev.hmpps.service.justice.gov.uk/auth"
     DOCUMENT_MANAGEMENT_URL: "https://document-api-dev.hmpps.service.justice.gov.uk/"
-    CP_PROCESSING_ENABLED: true
+    CP_PROCESSING_ENABLED: false
     CP_FMS_INTEGRATION_ENABLED: true
+    RETURN_LISTENER_ENABLED: false
     SETTINGS_DATA_DICTIONARY_VERSION: DDV7
     DDV6_COURT_MAPPINGS: true
     MANAGE_USER_URL: "https://manage-users-api-dev.hmpps.service.justice.gov.uk/"
